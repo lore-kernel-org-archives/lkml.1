@@ -1,98 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbXF0WME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762893AbXF0WON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762034AbXF0WME (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 18:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbXF0WLw
+	id S1762893AbXF0WON (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 18:14:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755669AbXF0WN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 18:11:52 -0400
-Received: from rwcrmhc15.comcast.net ([204.127.192.85]:39956 "EHLO
-	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbXF0WLv (ORCPT
+	Wed, 27 Jun 2007 18:13:59 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58322 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754209AbXF0WN6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 18:11:51 -0400
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-From: Nicholas Miell <nmiell@comcast.net>
+	Wed, 27 Jun 2007 18:13:58 -0400
+Date: Wed, 27 Jun 2007 15:11:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@gmail.com>,
-       blaisorblade@yahoo.it,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706271135560.32731@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2>
-	 <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com>
-	 <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com>
-	 <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com>
-	 <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
-	 <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
-	 <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
-	 <Pine.LNX.4.64.0706271111040.32731@alien.or.mcafeemobile.com>
-	 <Pine.LNX.4.64.0706271921280.29060@blonde.wat.veritas.com>
-	 <Pine.LNX.4.64.0706271135560.32731@alien.or.mcafeemobile.com>
-Content-Type: text/plain
-Date: Wed, 27 Jun 2007 15:11:49 -0700
-Message-Id: <1182982309.2737.9.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.0.njm.1) 
-Content-Transfer-Encoding: 7bit
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Eric Dumazet <dada1@cosmosbay.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] long freezes on thinkpad t60
+In-Reply-To: <Pine.LNX.4.64.0706271310550.5219@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.0.98.0706271500260.8675@woody.linux-foundation.org>
+References: <20070620093612.GA1626@ff.dom.local>
+ <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+ <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
+ <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
+ <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
+ <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
+ <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
+ <4680D162.9050603@yahoo.com.au> <alpine.LFD.0.98.0706261016200.8675@woody.linux-foundation.org>
+ <4681F448.3040201@yahoo.com.au> <alpine.LFD.0.98.0706262249590.8675@woody.linux-foundation.org>
+ <alpine.LFD.0.98.0706271233300.8675@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706271310550.5219@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-27 at 11:45 -0700, Davide Libenzi wrote:
-> On Wed, 27 Jun 2007, Hugh Dickins wrote:
-> 
-> > On Wed, 27 Jun 2007, Davide Libenzi wrote:
-> > > On Wed, 27 Jun 2007, Hugh Dickins wrote:
-> > > 
-> > > > In honesty, I should add that I dislike and distrust Davide's
-> > > > MAP_NOZERO very much indeed!  Would much rather leave my cpus
-> > > > spending a little time in clear_page().  A uid in struct page
-> > > > (though I'm sure we could find somewhere to tuck it away) -
-> > > > the horror, the horror!  But I've so far failed to find a killer
-> > > > argument against it, and am hoping for someone else to do so.
-> > > 
-> > > Little time? Please, do not trust me. Start oprofile and run a kernel 
-> > > build. Look, I'm not even talking about som micro benchmark explicitly 
-> > > built to exploit the thing. A kernel build.
-> > > You will find clear_page to be the *1st* kernel entry after cc1 and as.
-> > > That is bad for two reasons. The time it spends in there, and the cache it 
-> > > blows.
+
+
+On Wed, 27 Jun 2007, Davide Libenzi wrote:
 > > 
-> > I don't doubt that it shows real benefits; but dangerously cutting
-> > corners usually shows benefits too.  Relying on a uid at this level
-> > feels very wrong to me - but as I said, I've not found a killer
-> > argument against it.
+> > Now, I have good reason to believe that all Intel and AMD CPU's have a 
+> > stricter-than-documented memory ordering, and that your spinlock may 
+> > actually work perfectly well. But it still worries me. As far as I can 
+> > tell, there's a theoretical problem with your spinlock implementation.
 > 
-> The reason why I posted is exactly so other ppl can look at it and find 
-> possible flaws in the way pages and retired. If an effective UID was able 
-> to see (or it generated) the data on that page, it should be able to get 
-> that page back uncleared (when VM_NOZERO is set).
-> >From a performance POV, a 2-3% boost on a non-micro-bench test like a 
-> kernel build is not exaclty peanuts. And for more heavy malloc/anon-mmap 
-> appliations, the boost goes up to 10-15%. That is not exactly what I 
-> call "little time" ;)
->
-> - Davide
-> 
+> Nice catch ;) But wasn't Intel suggesting in not relying on the old 
+> "strict" ordering rules?
 
-I don't think the security issues with this will ever make it
-worthwhile.
+Actually, both Intel and AMD engineers have been talking about making the 
+documentation _stricter_, rather than looser. They apparently already are 
+pretty damn strict, because not being stricter than the docs imply just 
+ends up exposing too many potential problems in software that didn't 
+really follow the rules.
 
-Consider:
+For example, it's quite possible to do loads out of order, but guarantee 
+that the result is 100% equivalent with a totally in-order machine. One 
+way you do that is to keep track of the cacheline for any speculative 
+loads, and if it gets invalidated before the speculative instruction has 
+completed, you just throw the speculation away.
 
-1) euid is not sufficient, you need to store away arbitrary LSM
-information and call LSM hooks to decide security equivalence. The same
-applies to VServer or whatever other container system you use.
+End result: you can do any amount of speculation you damn well please at a 
+micro-architectural level, but if the speculation would ever have been 
+architecturally _visible_, it never happens!
 
-2) Two processes, A and B, are in separate VFS namespaces but have
-equivalent security identity according to LSM. Process A reads data from
-file F which is not visible in process's B's namespace. You have to
-prevent process B from ever getting a page that once contained data from
-file F.
+(Yeah, that is just me in my non-professional capacity of hw engineer 
+wanna-be: I'm not saying that that is necessarily what Intel or AMD 
+actually ever do, and they may have other approaches entirely).
 
-3) mlock() is often used by programs like GPG to prevent decrypted
-secret keys from ever getting swapped out. You need to zero all
-once-mlocked pages before they get reused to prevent that page from
-getting swapped to disk or application bugs from leaking the key.
+> IOW shouldn't an mfence always be there? Not only loads could leak up 
+> into the wait phase, but stores too, if they have no dependency with the 
+> "head" and "tail" loads.
 
--- 
-Nicholas Miell <nmiell@comcast.net>
+Stores never "leak up". They only ever leak down (ie past subsequent loads 
+or stores), so you don't need to worry about them. That's actually already 
+documented (although not in those terms), and if it wasn't true, then we 
+couldn't do the spin unlock with just a regular store anyway.
 
+(There's basically never any reason to "speculate" stores before other mem 
+ops. It's hard, and pointless. Stores you want to just buffer and move as 
+_late_ as possible, loads you want to speculate and move as _early_ as 
+possible. Anything else doesn't make sense).
+
+So I'm fairly sure that the only thing you really need to worry about in 
+this thing is the load-load ordering (the load for the spinlock compare vs 
+any loads "inside" the spinlock), and I'm reasonably certain that no 
+existing x86 (and likely no future x86) will make load-load reordering 
+effects architecturally visible, even if the implementation may do so 
+*internally* when it's not possible to see it in the end result.
+
+			Linus
