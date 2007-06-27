@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbXF0P6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbXF0QAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762034AbXF0P6i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757310AbXF0P6a
+	id S1762190AbXF0QAU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbXF0QAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:58:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33565 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754750AbXF0P63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:58:29 -0400
-Message-ID: <4682891A.2070900@redhat.com>
-Date: Wed, 27 Jun 2007 11:58:18 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Wed, 27 Jun 2007 12:00:05 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3381 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752894AbXF0QAB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 12:00:01 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 27 Jun 2007 08:59:52 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
+In-Reply-To: <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706270845460.32400@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
+ <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
+ <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com>
+ <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com>
+ <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Andre Noll <maan@systemlinux.org>
-CC: mchan@broadcom.com, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net
-Subject: Re: 2.6.21.x kernel panic (tg3 and nfs related)
-References: <20070627101608.GQ22589@skl-net.de>
-In-Reply-To: <20070627101608.GQ22589@skl-net.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/27/2007 06:16 AM, Andre Noll wrote:
-> Hi
-> 
-> Our nfs server recently paniced under heavy nfs load. The backtrace
-> indicates that this might be a problem with the tigon3 network driver
-> which drives the onboard chips of the machine.
-> 
-> The first crash under 2.6.21.1 happened after about 4 days of uptime, 
-> 2.6.21.5 already crashed after 15 Minutes.
-> 
-> Screenshots of the resulting kernel panics are available at
-> 
-> 	http://www.systemlinux.org/~maan/shots/huangho-crash-2.6.21.1.png
-> and
-> 	http://www.systemlinux.org/~maan/shots/huangho-crash-2.6.21.5.png
-> 
+On Wed, 27 Jun 2007, Hugh Dickins wrote:
 
-Looks the the known oops in show_mem(); patch is queued for 2.6.21.6.
+> On Tue, 26 Jun 2007, Ulrich Drepper wrote:
+> > On 6/26/07, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > 
+> > > OTOH glibc could implement __morecore using mmap(MAP_NOZERO), and hence
+> > > brk2() would not be needed, no?
+> > 
+> > No.  mmap calls create individual VMAs which gets expensive.  There
+> > are also some hardware drivers which get more expensive the more VMAs
+> > there are.  I want to go away as much as possible from mmap for
+> > malloc.
+> 
+> Not so: if an mmap can be done by extending either adjacent vma (prot
+> and flags and file and offset all match up), that's what's done and no
+> separate vma is created.  (And adjacent vmas get merged when mprotect
+> removes the difference in protection.)
+> 
+> I don't think there's any such reason to prefer brk to mmap.  But you
+> may have encountered something which we in the kernel are thinking of
+> as an insignificant corner case, which is actually breaking things up
+> badly in practice (I recall the kernel's internal VM_ACCOUNT flag,
+> relating to non-overcommit accounting, which might get turned on at
+> any time, sometimes preventing a vma merge you'd otherwise expect).
+> Please let me know if you've a test case which shows more vmas than
+> expected.
 
-But it is hard to tell when the screen shot doesn't show the whole
-message...
+The only way I can see vma fragmentation happen in that case, is if 
+userspace uses a mixture of mmaps and mallocs, and flags+prots of the two 
+does not match. The glibc allocator seems to support it just fine. There's 
+a macro where you specify if the heaps are contiguous or not.
+
+
+- Davide
+
+
