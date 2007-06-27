@@ -1,95 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbXF0Art@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbXF0AwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbXF0Art (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 20:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXF0Arj
+	id S1755639AbXF0AwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 20:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXF0AwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 20:47:39 -0400
-Received: from mail.windriver.com ([147.11.1.11]:55783 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752079AbXF0Ari convert rfc822-to-8bit (ORCPT
+	Tue, 26 Jun 2007 20:52:08 -0400
+Received: from mail-in-02.arcor-online.net ([151.189.21.42]:56999 "EHLO
+	mail-in-02.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753079AbXF0AwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 20:47:38 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
-Date: Tue, 26 Jun 2007 17:46:13 -0700
-Message-ID: <7ED098B05D69FE41B380586BF1474DBA441F47@ala-mail08.corp.ad.wrs.com>
-In-Reply-To: <20070626160753.f86d8803.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
-Thread-Index: Ace4Rvsp4rIinW+TQZiZwfqEGyAOPgADURlA
-From: "Wessel, Jason" <jason.wessel@windriver.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jarek Poplawski" <jarkao2@o2.pl>
-Cc: "Folkert van Heusden" <folkert@vanheusden.com>,
-       <linux-kernel@vger.kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       <stable@kernel.org>, <netdev@vger.kernel.org>
-X-OriginalArrivalTime: 27 Jun 2007 00:46:13.0802 (UTC) FILETIME=[901E58A0:01C7B854]
+	Tue, 26 Jun 2007 20:52:07 -0400
+Subject: Re: NDAs - ANY KNOWN RULES?
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: linux-kernel@vger.kernel.org, video4linux-list@redhat.com,
+       linux-dvb@linuxtv.org
+In-Reply-To: <Pine.LNX.4.64.0706262019440.14638@iabervon.org>
+References: <1182902611.7876.11.camel@pc06.localdom.local>
+	 <Pine.LNX.4.64.0706262019440.14638@iabervon.org>
+Content-Type: text/plain
+Date: Wed, 27 Jun 2007 02:50:39 +0200
+Message-Id: <1182905439.7479.2.camel@pc08.localdom.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+Am Dienstag, den 26.06.2007, 20:24 -0400 schrieb Daniel Barkalow:
+> On Wed, 27 Jun 2007, hermann pitton wrote:
+> 
+> > Hi,
 > > 
-> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+> > such stuff causes a lot of troubles since long.
 > > 
-> > ---
-> > 
-> > diff -Nurp 2.6.21-/net/core/netpoll.c 2.6.21/net/core/netpoll.c
-> > --- 2.6.21-/net/core/netpoll.c	2007-04-26 
-> 15:08:32.000000000 +0200
-> > +++ 2.6.21/net/core/netpoll.c	2007-06-12 
-> 21:05:23.000000000 +0200
-> > @@ -73,7 +73,8 @@ static void queue_process(struct work_st
-> >  			netif_tx_unlock(dev);
-> >  			local_irq_restore(flags);
-> >  
-> > -			schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> > +			if (atomic_read(&npinfo->refcnt))
-> > +				
-> schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> >  			return;
-> >  		}
-> >  		netif_tx_unlock(dev);
-> > @@ -780,9 +781,15 @@ void netpoll_cleanup(struct netpoll *np)
-> >  			if (atomic_dec_and_test(&npinfo->refcnt)) {
-> >  				skb_queue_purge(&npinfo->arp_tx);
-> >  				skb_queue_purge(&npinfo->txq);
-> > -				
-> cancel_rearming_delayed_work(&npinfo->tx_work);
-> > +				cancel_delayed_work(&npinfo->tx_work);
-> >  				flush_scheduled_work();
-> >  
-> > +				/* clean after last, unfinished work */
-> > +				if (!skb_queue_empty(&npinfo->txq)) {
-> > +					struct sk_buff *skb;
-> > +					skb = 
-> __skb_dequeue(&npinfo->txq);
-> > +					kfree_skb(skb);
-> > +				}
-> >  				kfree(npinfo);
-> >  			}
-> >  		}
+> > Are there any rules, or can everybody go on as some sort of freelancer
+> > exclusively on such? I don't like it!
 > 
-> Everything went quiet?
+> http://www.linux-foundation.org/en/NDA_program
 > 
-> If this patch has been tested and fixes the bug, can you 
-> please send a version which is ready for merging?  (ie: add a 
-> suitable description of what it does).
+> In short, the Linux Foundation can negotiate a reasonable NDA for you to 
+> sign, and they may be able to show you relevant documents as a freelancer 
+> under a reasonable and standardized contract.
 > 
-> 
+> 	-Daniel
+> *This .sig left intentionally blank*
 
-I mailed Jarek separately.
+Thanks for your explanations,
 
-I had tested the patch with netconsole and kgdb and it does in fact fix
-the problem that was reported.
+but I know for sure it does't work.
 
-Jason. 
+Cheers,
+Hermann
+
+
