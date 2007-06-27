@@ -1,55 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbXF0RL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761259AbXF0RP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761595AbXF0RL5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbXF0RLu
+	id S1761259AbXF0RP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbXF0RPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:11:50 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37832 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbXF0RLu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:11:50 -0400
-Date: Wed, 27 Jun 2007 18:11:49 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Please release a stable kernel Linux 3.0
-Message-ID: <20070627171149.GZ21478@ftp.linux.org.uk>
-References: <200706271653.58870.a1426z@gawab.com>
-Mime-Version: 1.0
+	Wed, 27 Jun 2007 13:15:16 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:35291 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752158AbXF0RPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 13:15:14 -0400
+Date: Wed, 27 Jun 2007 12:15:06 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>, James Morris <jmorris@namei.org>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] file capabilities: introduce cap_setfcap
+Message-ID: <20070627171506.GA16764@sergelap.austin.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200706271653.58870.a1426z@gawab.com>
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 04:53:58PM +0300, Al Boldi wrote:
-> Al Viro wrote:
-> > On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
-> > > And as I understand it, this is (was ?) the whole point of
-> > > stable/development kernels. "We" can trust a newer stable
-> > > kernel to be a drop-in replacement for an older stable
-> > > kernel (from the same series), while development kernels
-> > > need time to stabilise with the new whizz-bang-pfouit stuff
-> > > that you all so nicely add.
-> >
-> > "Drop-in" in which sense?  That out-of-tree modules keep working?
-> > Not really...
-> 
-> Al, be reasonable.  There are many out-of-tree GPL modules that won't be 
-> accepted into mainline, never mind those that shouldn't be accepted.  But 
-> these modules do have a right to not be obsoleted by constant API changes.
+Here's the first patch (of several or many to come) to address some of
+Andrew's comments.
 
-Modules do not have any rights; it's software, for fsck sake...
+Kaigai, IIUC cap_names.h will eventually be automatically updated?  (I
+had to manually tweak it for testing as the new kernel sources were not
+located on the test system)
+
+thanks,
+-serge
+
+>From fefcd341e478bd9e490d34abe9efd3c3c4f0b8a0 Mon Sep 17 00:00:00 2001
+From: Serge E. Hallyn <serue@us.ibm.com>
+Date: Wed, 27 Jun 2007 13:09:20 -0400
+Subject: [PATCH 1/1] file capabilities: introduce cap_setfcap
+
+Setting file capabilities previously required the
+cap_sys_admin capability, since they are stored as
+extended attributes in the security.* namespace.
+
+Introduce CAP_SETFCAP (to mirror CAP_SETPCAP), and
+require it for setting file capabilities instead of
+CAP_SYS_ADMIN.
+
+Quoting Andrew Morgan,
+
+"CAP_SYS_ADMIN is way too overloaded and this
+functionality is special."
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ include/linux/capability.h |    4 +++-
+ security/commoncap.c       |   12 ++++++++++--
+ 2 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 89125df..cdfaa10 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -324,7 +324,9 @@ typedef __u32 kernel_cap_t;
  
-> You are effectively inhibiting the development of an out-of-tree GPL module 
-> pool, by constantly pulling the rug under that community.
-
-The same thing happens with any yet-to-be-merged code.
+ #define CAP_AUDIT_CONTROL    30
  
-> Do you think this is fair?
+-#define CAP_NUMCAPS	     31
++#define CAP_SETFCAP	     31
++
++#define CAP_NUMCAPS	     32
+ 
+ #ifdef __KERNEL__
+ /* 
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 4e9ff02..24de4fa 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -290,7 +290,11 @@ int cap_bprm_secureexec (struct linux_binprm *bprm)
+ int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
+ 		       size_t size, int flags)
+ {
+-	if (!strncmp(name, XATTR_SECURITY_PREFIX,
++	if (!strcmp(name, XATTR_NAME_CAPS)) {
++		if (!capable(CAP_SETFCAP))
++			return -EPERM;
++		return 0;
++	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+ 	    !capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+@@ -299,7 +303,11 @@ int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
+ 
+ int cap_inode_removexattr(struct dentry *dentry, char *name)
+ {
+-	if (!strncmp(name, XATTR_SECURITY_PREFIX,
++	if (!strcmp(name, XATTR_NAME_CAPS)) {
++		if (!capable(CAP_SETFCAP))
++			return -EPERM;
++		return 0;
++	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+ 	    !capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+-- 
+1.5.1.1.GIT
 
-Yes, it is fair.  Decision to maintain your code out of tree indefinitely
-is your decision.
