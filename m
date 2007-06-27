@@ -1,68 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbXF0R0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762296AbXF0R3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762616AbXF0R0a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758834AbXF0R0W
+	id S1762296AbXF0R3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759217AbXF0R3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:26:22 -0400
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:55064 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758735AbXF0R0V (ORCPT
+	Wed, 27 Jun 2007 13:29:10 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55156 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758994AbXF0R3J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:26:21 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <alpine.LFD.0.98.0706271001070.8675@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0706271138220.18280@hermes-1.csi.cam.ac.uk> <alpine.LFD.0.98.0706271001070.8675@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3EDCA6F8-1597-4413-B496-55CF9361455B@cam.ac.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ntfs-dev@lists.sourceforge.net, ldm@flatcap.org
-Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [2.6 PATCH] Fix LDM for new field in the VOL5 VBLK.
-Date: Wed, 27 Jun 2007 18:26:12 +0100
+	Wed, 27 Jun 2007 13:29:09 -0400
+Date: Wed, 27 Jun 2007 18:29:03 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.3)
+Cc: Neil Booth <neil@daikokuya.co.uk>, Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070627172903.GB21478@ftp.linux.org.uk>
+References: <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk> <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27 Jun 2007, at 18:03, Linus Torvalds wrote:
-> On Wed, 27 Jun 2007, Anton Altaparmakov wrote:
->>
->> Please apply the below patch to the LDM driver.
->
-> This looks fine, but last time I applied a LDM patch just before  
-> release,
-> there was some embarrassing compile problem with it.
->
-> See commit 72dd9ca59944.
->
-> Which just makes me go "hmm.." at this stage.
+On Wed, Jun 27, 2007 at 09:19:17AM -0700, Linus Torvalds wrote:
+> In particular, "offsetof()" should be portably able to basically be the 
+> standard #define, which involves an integer cast from a constant pointer. 
+> That had *better* be a valid constant integer expression, because it's 
+> very useful.
 
-Up to you.  What Ash tested was dropping the ldm.c and ldm.h that I  
-emailed him into his kernel tree and compiling and booting.  Once he  
-confirmed that it works and is parsing his LDM drives correctly I on  
-my machine did "git diff > file", then scp-ed the file to the mail  
-server, created a message in pine, and did "ctrl+r file" to insert it  
-into the message.  After I had sent the message to you I exported the  
-message to a file in pine, deleted the message text and did a diff  
-with the original patch and it showed no differences.
-
-What you refer to when I did the diff after the fact the diff failed  
-with a line difference...  The patch had gotten corrupted (probably  
-by me)...
-
-So I can only assume it will work this time.
-
-Best regards,
-
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
-
+Eh...  I'd say that my variant for offsetof() is simply better - it usually
+directly turns into EXPR_VALUE, right in place, without rather convoluted
+work.  Aside of "should such cast be a constant integer expression"...
