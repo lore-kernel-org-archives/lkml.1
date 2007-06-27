@@ -1,71 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbXF0IoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbXF0IqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbXF0IoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 04:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXF0IoL
+	id S1754971AbXF0IqW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 04:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbXF0IqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 04:44:11 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:3652 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751262AbXF0IoK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 04:44:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OY9jJynhIHp3OjHGPGUHNP9Tx4K6F1GtfRR6JcmgVX+Ae3TOGkzRvS1k7TlWb/LiVVfjC2eiYJx/cWDJq2b01nag5mXBxWQs6rv48XZEiJorFsQc3NOIFUB1wFwXhqkFtZA2sGzizHte14F7pbbpOlrxe5BiMvtzcq/K/eI0rKw=
-Message-ID: <5d5443650706270144l2d905d2h142617d01f515785@mail.gmail.com>
-Date: Wed, 27 Jun 2007 14:14:08 +0530
-From: "Trilok Soni" <soni.trilok@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [PATCH 01/17] OMAP: Add TI OMAP framebuffer driver
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-       akpm@linux-foundation.org, "Tony Lindgren" <tony@atomide.com>,
-       imre.deak@solidboot.com, juha.yrjola@solidboot.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070626165003.GA22389@uranus.ravnborg.org>
+	Wed, 27 Jun 2007 04:46:15 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:34538 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751811AbXF0IqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 04:46:14 -0400
+Message-ID: <468223D0.90305@sw.ru>
+Date: Wed, 27 Jun 2007 12:46:08 +0400
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Vasily Averin <vvs@sw.ru>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       netfilter-devel@lists.netfilter.org, rusty@rustcorp.com.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Jan Engelhardt <jengelh@computergmbh.de>
+Subject: [NETFILTER] early_drop() imrovement (v4)
+References: <4615FE1D.80206@sw.ru> <20070406102433.d3a670a5.dada1@cosmosbay.com> <4616203A.80203@sw.ru> <4616626C.9020100@trash.net> <4617845F.7080203@sw.ru> <461789CF.8000106@cosmosbay.com> <46187770.1070106@sw.ru> <46417137.5080501@sw.ru> <467FC8D2.5070102@trash.net> <46811292.1010501@sw.ru>
+In-Reply-To: <46811292.1010501@sw.ru>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5d5443650706260533r218c05b1u5d4336015c4a4a9b@mail.gmail.com>
-	 <20070626165003.GA22389@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+When the number of conntracks is reached nf_conntrack_max limit, early_drop()
+tries to free one of already used conntracks. If it does not find any conntracks
+that may be freed, it leads to transmission errors.
+In current implementation the conntracks are searched in one hash bucket only.
+It have some drawbacks: if used hash bucket is empty we have not any chances to
+find something. On the other hand the hash bucket can contain a huge number of
+conntracks and its check can last a long time.
+The proposed patch limits the number of checked conntracks and allows to search
+conntracks in other hash buckets. As result in any case the search will have the
+same chances to free one of the conntracks and the check will not lead to long
+delays.
 
-On 6/26/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
-> new file mode 100644
-> index 0000000..5aa7175
-> --- /dev/null
-> +++ b/drivers/video/omap/Makefile
-> @@ -0,0 +1,10 @@
-> +#
-> +# Makefile for the new OMAP framebuffer device driver
-> +#
-> +
-> +obj-$(CONFIG_FB_OMAP) += omapfb.o
-> +
-> +objs-yy := omapfb_main.o
-> +
-> +omapfb-objs := $(objs-yy)
-> +
->
-> This looks strangs.
-> Please use:
-> obj-$(CONFIG_FB_OMAP) += omapfb.o
->
-> omapfb-y := omapfb_main.o
->
-> Or even better rename your .c file to omapfb.c then
-> you only need to use:
-> obj-$(CONFIG_FB_OMAP) += omapfb.o
->
+Signed-off-by:	Vasily Averin <vvs@sw.ru>
 
-Thanx for the review. I will incorporate your suggestions into the
-next update of fb patches.
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index 7a15e30..0540a88 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -526,7 +526,7 @@ EXPORT_SYMBOL_GPL(nf_conntrack_tuple_taken);
 
--- 
---Trilok Soni
+ /* There's a small race here where we may free a just-assured
+    connection.  Too bad: we're in trouble anyway. */
+-static int early_drop(struct list_head *chain)
++static int __early_drop(struct list_head *chain, unsigned int *cnt)
+ {
+ 	/* Traverse backwards: gives us oldest, which is roughly LRU */
+ 	struct nf_conntrack_tuple_hash *h;
+@@ -541,6 +541,8 @@ static int early_drop(struct list_head *chain)
+ 			atomic_inc(&ct->ct_general.use);
+ 			break;
+ 		}
++		if (!--(*cnt))
++			break;
+ 	}
+ 	read_unlock_bh(&nf_conntrack_lock);
+
+@@ -556,6 +558,25 @@ static int early_drop(struct list_head *chain)
+ 	return dropped;
+ }
+
++#define NF_CT_EVICTION_RANGE	8U
++
++static int early_drop(const struct nf_conntrack_tuple *orig)
++{
++	unsigned int i, hash, cnt;
++	int ret = 0;
++
++	hash = hash_conntrack(orig);
++	cnt = NF_CT_EVICTION_RANGE;
++
++	for (i = 0; i < nf_conntrack_htable_size; i++) {
++		ret = __early_drop(&nf_conntrack_hash[hash], &cnt);
++		if (ret || !cnt)
++			break;
++		hash++;	hash %= nf_conntrack_htable_size;
++	}
++	return ret;
++}
++
+ static struct nf_conn *
+ __nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
+ 		     const struct nf_conntrack_tuple *repl,
+@@ -575,9 +596,7 @@ __nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
+
+ 	if (nf_conntrack_max
+ 	    && atomic_read(&nf_conntrack_count) > nf_conntrack_max) {
+-		unsigned int hash = hash_conntrack(orig);
+-		/* Try dropping from this hash chain. */
+-		if (!early_drop(&nf_conntrack_hash[hash])) {
++		if (!early_drop(orig)) {
+ 			atomic_dec(&nf_conntrack_count);
+ 			if (net_ratelimit())
+ 				printk(KERN_WARNING
+
+
