@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763631AbXF0Wrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763429AbXF0WyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763631AbXF0Wrc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 18:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbXF0WrX
+	id S1763429AbXF0WyW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 18:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761638AbXF0WyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 18:47:23 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:35804 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759527AbXF0WrW (ORCPT
+	Wed, 27 Jun 2007 18:54:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:53928 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761152AbXF0WyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 18:47:22 -0400
-Message-ID: <4682E8E1.6090701@novell.com>
-Date: Wed, 27 Jun 2007 15:46:57 -0700
-From: Crispin Cowan <crispin@novell.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 27 Jun 2007 18:54:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=E7Bw5iluXPykeoU1SzQA9QV8qFujmUQ5WX2onq2KJQHvNK46X0X5sZ5hV6wffIo8/DOGznT8QAzv90ob74mD+WPTeB84EJXi5XW+D0/QzFkk961SvOdeKCeB9LbhbGH8brfe7cmZz0+UyIWZ0upgss0Trp+2qmCJ8eChFmLOM0c=
+Message-ID: <20f65d530706271554j665ec1fne3030ce30597676d@mail.gmail.com>
+Date: Thu, 28 Jun 2007 10:54:12 +1200
+From: "Keith Chew" <keith.chew@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: [linux-usb-devel] usb_fill_bulk_urb() broken for USB1.1?
+Cc: linux-usb-devel@lists.sourceforge.net, "Chuck Ebbert" <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200706270935.14657.oliver@neukum.org>
 MIME-Version: 1.0
-To: Sean <seanlkml@sympatico.ca>
-CC: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 00/44] AppArmor security module overview
-References: <20070626230756.519733902@suse.de>	<20070626165202.bfe8e6df.akpm@linux-foundation.org>	<20070627022403.GB14656@suse.de>	<20070626194700.5b0ff477.akpm@linux-foundation.org>	<20070627151114.GM1094@stusta.de>	<4682D13C.6060107@novell.com> <20070627172940.1cabd5c4.seanlkml@sympatico.ca>
-In-Reply-To: <20070627172940.1cabd5c4.seanlkml@sympatico.ca>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20f65d530706260720w797861fuc4e10bbbe2a489d2@mail.gmail.com>
+	 <200706270827.50698.oliver@neukum.org>
+	 <20f65d530706270030y5650e302yc5136adc0ac8dd46@mail.gmail.com>
+	 <200706270935.14657.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sean wrote:
-> On Wed, 27 Jun 2007 14:06:04 -0700
-> Crispin Cowan <crispin@novell.com> wrote:
->   
->> I am hoping for a reconciliation where the people who don't like
->> AppArmor live with it by not using it. AppArmor is not intended to
->> replace SELinux, it is intended to address a different set of goals.
->>     
-> You keep saying that.   But for that to be true you'd have to believe
-> _everyone_ using Novell distributions has needs that align exactly
-> with AppArmor.  Otherwise, how to explain that you don't offer and
-> support both SELinux and AppArmor to your users?
->   
-They are meant to co-exist in the Linux kernel source tree.
+Hi Oliver
 
-It is a fact that there exist use cases where AppArmor is incapable of
-meeting the need and SELinux is just the right thing. It is Novell's
-business judgment that there are not enough of those situations in our
-customer base to be worth the additional expense at this time.
+> You are initialising an interrupt urb with an initializer for
+> a bulk urb. The behavior is undefined. In older kernels
+> by random chance a sensible interval was set.
+>
+> You need to use the correct initializer and the correct interval,
+> which usually can be read from the device's descriptors.
+>
 
-But we do not want to prevent other people from using SELinux if it
-suits them. Linux is about choice, and that is especially vital in
-security. As Linus himself observed when LSM was started, there are a
-lot of security models, they have various strengths and weaknesses, and
-often are not compatible with each other. That is why it is important
-that LSM persist, that SELinux not be the only in-tree user of LSM, and
-why we think AppArmor should be included upstream, so that non-SUSE
-users can also use AppArmor if it suits them.
+Thank you very much for all your help. Will correct the code and
+report back very soon.
 
-Crispin
-
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
-Director of Software Engineering   http://novell.com
-	AppArmor Chat: irc.oftc.net/#apparmor
-
+Regards
+Keith
