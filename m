@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761466AbXF0OMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbXF0OMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761466AbXF0OMk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 10:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXF0OMd
+	id S1761559AbXF0OMz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXF0OMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 10:12:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:45393 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbXF0OMc (ORCPT
+	Wed, 27 Jun 2007 10:12:46 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:57820 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755365AbXF0OMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 10:12:32 -0400
-Message-ID: <4682708A.5040509@oracle.com>
-Date: Wed, 27 Jun 2007 07:13:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 27 Jun 2007 10:12:45 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: 2.6.21.5 BUG: USB FTDI FT323BM usb exports duplicate symbols
+Date: Wed, 27 Jun 2007 16:12:45 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <46826EA3.2020707@anagramm.de>
+In-Reply-To: <46826EA3.2020707@anagramm.de>
 MIME-Version: 1.0
-To: gshan <gshan@alcatel-lucent.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6 Linux for PowerPC supports kdb?
-References: <4681D39B.2000604@alcatel-lucent.com> <20070626220520.380c1798.randy.dunlap@oracle.com> <4682007F.2080504@alcatel-lucent.com>
-In-Reply-To: <4682007F.2080504@alcatel-lucent.com>
-Content-Type: text/plain; charset=windows-1256; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+Message-Id: <200706271612.46175.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gshan wrote:
-> Randy Dunlap wrote:
->> On Tue, 26 Jun 2007 23:03:55 -0400 Shan, Guo Wen (Gavin) wrote:
->>
->>  
->>> Does anybody knew if 2.6 linux for PowerPC supports kdb?
->>>     
->>
->> PowerPC isn't listed AFAICT:
->> ftp://oss.sgi.com/www/projects/kdb/download/v4.4/README
->>
->> I.e., all that I see are i386, x86_64, and ia64.
->>
->> ---
->> ~Randy
->> *** Remember to use Documentation/SubmitChecklist when testing your 
->> code ***
->>   
-> Thanks, Randy. So the kgdb is the only tool I could use to debug the 
-> kernel right now?
+Am Mittwoch, 27. Juni 2007 schrieb Clemens Koller:
+> Whenever I plug/unplug the FTDI FT232BM USB-RS232 converter, the latest
+> 2.6.21.5 kernel complains:
+> 
+> usb 2-1: USB disconnect, address 7
+> ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+> ftdi_sio 2-1:1.0: device disconnected
+> usb 3-1: new full speed USB device using ohci_hcd and address 43
+> usb 3-1: configuration #1 chosen from 1 choice
+> ftdi_sio 3-1:1.0: FTDI USB Serial Device converter detected
+> drivers/usb/serial/ftdi_sio.c: Detected FT232BM
+> usb 3-1: FTDI USB Serial Device converter now attached to ttyUSB0
+> usbcore: exports duplicate symbol usb_buffer_unmap_sg (owned by kernel)
+> usbserial: exports duplicate symbol usb_serial_port_softint (owned by kernel)
 
-AFAIK, yes.
+Please rebuild your kernel and modules from scratch. It looks like you are
+mixing builds.
 
--- 
-~Randy
+	Regards
+		Oliver
+
