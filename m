@@ -1,123 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbXF0BEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbXF0BEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbXF0BEZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 21:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbXF0BEN
+	id S1757851AbXF0BEj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 21:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbXF0BER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 21:04:13 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59838 "EHLO mx2.suse.de"
+	Tue, 26 Jun 2007 21:04:17 -0400
+Received: from ns2.suse.de ([195.135.220.15]:59843 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752500AbXF0BEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 21:04:12 -0400
+	id S1753962AbXF0BEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 21:04:15 -0400
 X-Mailbox-Line: From jjohansen@suse.de Tue Jun 26 17:32:31 2007
-Message-Id: <20070627003230.918844332@suse.de>
+Message-Id: <20070627003231.051114488@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 17:32:21 -0700
+Date: Tue, 26 Jun 2007 17:32:22 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Tony Jones <tonyj@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 24/44] Pass struct vfsmount to the inode_getxattr LSM hook
-Content-Disposition: inline; filename=security-getxattr.diff
+       linux-fsdevel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 31/44] Add d_namespace_path() to compute namespace relative pathnames
+Content-Disposition: inline; filename=d_namespace_path.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+In AppArmor, we are interested in pathnames relative to the namespace root.
+This is the same as d_path() except for the root where the search ends. Add
+a function for computing the namespace-relative path.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/xattr.c               |    2 +-
- include/linux/security.h |   13 ++++++++-----
- security/dummy.c         |    3 ++-
- security/selinux/hooks.c |    3 ++-
- 4 files changed, 13 insertions(+), 8 deletions(-)
+ fs/dcache.c            |    6 +++---
+ fs/namespace.c         |   27 +++++++++++++++++++++++++++
+ include/linux/dcache.h |    2 ++
+ include/linux/mount.h  |    2 ++
+ 4 files changed, 34 insertions(+), 3 deletions(-)
 
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -116,7 +116,7 @@ vfs_getxattr(struct dentry *dentry, stru
- 	if (error)
- 		return error;
- 
--	error = security_inode_getxattr(dentry, name);
-+	error = security_inode_getxattr(dentry, mnt, name);
- 	if (error)
- 		return error;
- 
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -391,7 +391,7 @@ struct request_sock;
-  * 	@value identified by @name for @dentry and @mnt.
-  * @inode_getxattr:
-  * 	Check permission before obtaining the extended attributes
-- * 	identified by @name for @dentry.
-+ * 	identified by @name for @dentry and @mnt.
-  * 	Return 0 if permission is granted.
-  * @inode_listxattr:
-  * 	Check permission before obtaining the list of extended attribute 
-@@ -1248,7 +1248,8 @@ struct security_operations {
- 				     struct vfsmount *mnt,
- 				     char *name, void *value,
- 				     size_t size, int flags);
--	int (*inode_getxattr) (struct dentry *dentry, char *name);
-+	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
-+			       char *name);
- 	int (*inode_listxattr) (struct dentry *dentry);
- 	int (*inode_removexattr) (struct dentry *dentry, char *name);
- 	const char *(*inode_xattr_getsuffix) (void);
-@@ -1782,11 +1783,12 @@ static inline void security_inode_post_s
- 	security_ops->inode_post_setxattr (dentry, mnt, name, value, size, flags);
- }
- 
--static inline int security_inode_getxattr (struct dentry *dentry, char *name)
-+static inline int security_inode_getxattr (struct dentry *dentry,
-+					    struct vfsmount *mnt, char *name)
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1779,9 +1779,9 @@ shouldnt_be_hashed:
+  *
+  * Returns the buffer or an error code.
+  */
+-static char *__d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
+-		      struct dentry *root, struct vfsmount *rootmnt,
+-		      char *buffer, int buflen, int fail_deleted)
++char *__d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
++	       struct dentry *root, struct vfsmount *rootmnt,
++	       char *buffer, int buflen, int fail_deleted)
  {
- 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_getxattr (dentry, name);
-+	return security_ops->inode_getxattr (dentry, mnt, name);
- }
+ 	int namelen, is_slash, vfsmount_locked = 0;
  
- static inline int security_inode_listxattr (struct dentry *dentry)
-@@ -2487,7 +2489,8 @@ static inline void security_inode_post_s
- 						 int flags)
- { }
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1868,3 +1868,30 @@ void __put_mnt_ns(struct mnt_namespace *
+ 	release_mounts(&umount_list);
+ 	kfree(ns);
+ }
++
++char *d_namespace_path(struct dentry *dentry, struct vfsmount *vfsmnt,
++		       char *buf, int buflen)
++{
++	struct vfsmount *rootmnt, *nsrootmnt = NULL;
++	struct dentry *root = NULL;
++	char *res;
++
++	read_lock(&current->fs->lock);
++	rootmnt = mntget(current->fs->rootmnt);
++	read_unlock(&current->fs->lock);
++	spin_lock(&vfsmount_lock);
++	if (rootmnt->mnt_ns)
++		nsrootmnt = mntget(rootmnt->mnt_ns->root);
++	spin_unlock(&vfsmount_lock);
++	mntput(rootmnt);
++	if (nsrootmnt)
++		root = dget(nsrootmnt->mnt_root);
++	res = __d_path(dentry, vfsmnt, root, nsrootmnt, buf, buflen, 1);
++	dput(root);
++	mntput(nsrootmnt);
++	/* Prevent empty path for lazily unmounted filesystems. */
++	if (!IS_ERR(res) && *res == '\0')
++		*--res = '.';
++	return res;
++}
++EXPORT_SYMBOL(d_namespace_path);
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -299,6 +299,8 @@ extern int d_validate(struct dentry *, s
+  */
+ extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
  
--static inline int security_inode_getxattr (struct dentry *dentry, char *name)
-+static inline int security_inode_getxattr (struct dentry *dentry,
-+					    struct vfsmount *mnt, char *name)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -368,7 +368,8 @@ static void dummy_inode_post_setxattr (s
- {
- }
++extern char *__d_path(struct dentry *, struct vfsmount *, struct dentry *,
++		      struct vfsmount *, char *, int, int);
+ extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
+   
+ /* Allocation counts.. */
+--- a/include/linux/mount.h
++++ b/include/linux/mount.h
+@@ -103,5 +103,7 @@ extern void shrink_submounts(struct vfsm
+ extern spinlock_t vfsmount_lock;
+ extern dev_t name_to_dev_t(char *name);
  
--static int dummy_inode_getxattr (struct dentry *dentry, char *name)
-+static int dummy_inode_getxattr (struct dentry *dentry,
-+			          struct vfsmount *mnt, char *name)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2393,7 +2393,8 @@ static void selinux_inode_post_setxattr(
- 	return;
- }
- 
--static int selinux_inode_getxattr (struct dentry *dentry, char *name)
-+static int selinux_inode_getxattr (struct dentry *dentry, struct vfsmount *mnt,
-+				   char *name)
- {
- 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
- }
++extern char *d_namespace_path(struct dentry *, struct vfsmount *, char *, int);
++
+ #endif
+ #endif /* _LINUX_MOUNT_H */
 
 -- 
 
