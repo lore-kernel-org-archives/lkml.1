@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbXF0TcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762805AbXF0TcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760912AbXF0TcJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXF0Tbz
+	id S1762805AbXF0TcZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXF0TcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:31:55 -0400
-Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:36598 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751250AbXF0Tby (ORCPT
+	Wed, 27 Jun 2007 15:32:11 -0400
+Received: from eastrmmtao103.cox.net ([68.230.240.9]:38922 "EHLO
+	eastrmmtao103.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760835AbXF0TcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:31:54 -0400
-Message-ID: <4682BB2B.7030002@opengridcomputing.com>
-Date: Wed, 27 Jun 2007 14:31:55 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, divy@chelsio.com
-Subject: Re: [PATCH 0/6] iw_cxgb3: Bug Fixes for 2.6.23
-References: <20070627155119.24944.44172.stgit@dell3.ogc.int> <adafy4dryzf.fsf@cisco.com>
-In-Reply-To: <adafy4dryzf.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 15:32:09 -0400
+Date: Wed, 27 Jun 2007 15:32:07 -0400
+From: Chris Shoemaker <c.shoemaker@cox.net>
+To: Josh Triplett <josht@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, josh@kernel.org
+Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
+Message-ID: <20070627193207.GA1219@pe.Belkin>
+References: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com> <20070627180552.GA746@pe.Belkin> <1182968229.8970.124.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182968229.8970.124.camel@josh-work.beaverton.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > Here are some bug fixes to the iw_cxgb3 driver that I'd like included
->  > for 2.6.23. NOTE: Patch 1 requires a firmware interface change, so
->  > there is a version bump to 4.3 included in that patch that hits cxgb3.
->  > This will likely conflict with a previous version change that is in
->  > Jeff's upstream branch.  The net is: we need the firmware version bumped
->  > to 4.3 with these iw_cxgb3 changes.
+On Wed, Jun 27, 2007 at 11:17:09AM -0700, Josh Triplett wrote:
+> On Wed, 2007-06-27 at 14:05 -0400, Chris Shoemaker wrote:
+> > On Wed, Jun 27, 2007 at 10:59:20AM -0700, Josh Triplett wrote:
+> > > +Do not leave trailing whitespace at the ends of lines.  Some editors with
+> > > +"smart" indentation will insert whitespace at the beginning of new lines as
+> > > +appropriate, so you can start typing the next line of code right away.
+> > > +However, some such editors do not remove the whitespace if you end up not
+> > > +putting a line of code there, such as if you leave a blank line.  As a result,
+> > > +you end up with lines containing trailing whitespace.
+> > > +
+> > > +Git will warn you about patches that introduce trailing whitespace, and can
+> > > +optionally strip the trailing whitespace for you; however, if applying a series
+> > > +of patches, this may make later patches in the series fail by changing their
+> > > +context lines.
+> > 
+> > What I'd really like to see is, _why_ is trailing whitespace
+> > considered harmful?  Something about MUAs not preserving it or
+> > something?
 > 
-> OK, I'll probably pull this into my tree and hold off on asking Linus
-> to pull until after he pulls Jeff's net driver tree.  Once that
-> happens I'll fix up any conflicts and ask Linus to pull.
+> When the trailing whitespace later disappears, that change shows up in
+> diffs, and since you can't see the whitespace difference, it just looks
+> like a mysterious change until you check it more closely.  
 
-Sounds good.
+Okay, but it seems like this is more of an argument that diffs
+containing lines that change only the trailing whitespace are
+considered harmful.  I buy that, but I don't see why it follows that
+new code shouldn't have any trailing whitespace at all.
 
-Thanks,
+> It also introduces gratuitous conflicts and other such annoyances.
 
-Steve.
+I don't get this part.  Only changes can create conflicts.  Are there
+some editors (or MUAs) that change trailing whitespace without being
+told to?  (And I'm not even talking about your warning about conflicts
+created by applying stripped versions of early patches in a series -
+that's just self-inflicted pain.)
+
+-chris
