@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbXF0OMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761507AbXF0OQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761559AbXF0OMz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 10:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXF0OMq
+	id S1761507AbXF0OQR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXF0OQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 10:12:46 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:57820 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755365AbXF0OMp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 10:12:45 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Clemens Koller <clemens.koller@anagramm.de>
-Subject: Re: 2.6.21.5 BUG: USB FTDI FT323BM usb exports duplicate symbols
-Date: Wed, 27 Jun 2007 16:12:45 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <46826EA3.2020707@anagramm.de>
-In-Reply-To: <46826EA3.2020707@anagramm.de>
+	Wed, 27 Jun 2007 10:16:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:38353 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751330AbXF0OQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 10:16:07 -0400
+Message-ID: <468270F5.7040408@goop.org>
+Date: Wed, 27 Jun 2007 10:15:17 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Andi Kleen <ak@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>, Tony Luck <tony.luck@intel.com>,
+       Muli Ben-Yehuda <muli@il.ibm.com>
+Subject: Re: dma_mapping_ops for i386
+References: <46817016.7090400@goop.org> <200706270021.11434.ak@suse.de>
+In-Reply-To: <200706270021.11434.ak@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706271612.46175.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 27. Juni 2007 schrieb Clemens Koller:
-> Whenever I plug/unplug the FTDI FT232BM USB-RS232 converter, the latest
-> 2.6.21.5 kernel complains:
-> 
-> usb 2-1: USB disconnect, address 7
-> ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
-> ftdi_sio 2-1:1.0: device disconnected
-> usb 3-1: new full speed USB device using ohci_hcd and address 43
-> usb 3-1: configuration #1 chosen from 1 choice
-> ftdi_sio 3-1:1.0: FTDI USB Serial Device converter detected
-> drivers/usb/serial/ftdi_sio.c: Detected FT232BM
-> usb 3-1: FTDI USB Serial Device converter now attached to ttyUSB0
-> usbcore: exports duplicate symbol usb_buffer_unmap_sg (owned by kernel)
-> usbserial: exports duplicate symbol usb_serial_port_softint (owned by kernel)
+Andi Kleen wrote:
+> Ok, if you can do it without ifdefs. 
+>   
 
-Please rebuild your kernel and modules from scratch. It looks like you are
-mixing builds.
+That should be OK.  All the existing i386 mapping operations would just 
+have their own ops structure, right?
 
-	Regards
-		Oliver
+> And no swiotlb on i386; that is something that is completely broken
+> in upstream Xen and needs to be fixed properly anyways.
+>   
 
+Hm, OK.  I'm not really familiar with the issues here.  What are they?  
+Looks like Jan has made a number of Xen-ish changes to lib/swiotlb.c; 
+are more changes be needed?
+
+    J
