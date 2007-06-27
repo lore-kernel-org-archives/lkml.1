@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbXF0BjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbXF0Buq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbXF0BjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 21:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbXF0BjM
+	id S1755272AbXF0Buq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 21:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbXF0Buh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 21:39:12 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33187 "EHLO mx2.suse.de"
+	Tue, 26 Jun 2007 21:50:37 -0400
+Received: from mga01.intel.com ([192.55.52.88]:23857 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752520AbXF0BjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 21:39:11 -0400
-Date: Wed, 27 Jun 2007 03:39:03 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] remove nobh_{prepare,commit}_write()
-Message-ID: <20070627013903.GA21268@wotan.suse.de>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070614221555.GY3588@stusta.de> <20070626133203.d1aa5383.akpm@linux-foundation.org> <1182890938.11569.27.camel@kleikamp.austin.ibm.com> <20070626142320.9336df5b.akpm@linux-foundation.org> <20070626143335.684887f9.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070626143335.684887f9.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.9i
+	id S1752479AbXF0Buf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 21:50:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,465,1175497200"; 
+   d="scan'208";a="261537288"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [md-accel PATCH 00/19] md raid acceleration and the async_tx api
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Cc: neilb@suse.de, akpm@linux-foundation.org, davem@davemloft.net,
+       christopher.leech@intel.com, shannon.nelson@intel.com,
+       herbert@gondor.apana.org.au, jeff@garzik.org
+Date: Tue, 26 Jun 2007 18:50:34 -0700
+Message-ID: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 02:33:35PM -0700, Randy Dunlap wrote:
-> On Tue, 26 Jun 2007 14:23:20 -0700 Andrew Morton wrote:
-> 
-> > On Tue, 26 Jun 2007 15:48:58 -0500
-> > Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Tue, 2007-06-26 at 13:32 -0700, Andrew Morton wrote:
-> > > > On Fri, 15 Jun 2007 00:15:55 +0200
-> > > > Adrian Bunk <bunk@stusta.de> wrote:
-> > > > 
-> > > > > nobh_{prepare,commit}_write() are no longer used.
-> > > > 
-> > > > wth?  What happened to ext2 and ext3 nobh mode?  They seem to
-> > > > have magically and unchangeloggedly disappeared?
-> > > 
-> > > They were removed with Nick's new aops patches.
-> >            ^secretly
-> > > 
-> > 
-> > That much I worked out for myself.  It's kinda staggering that a fairly
-> > major feature in two fairly major filesystems got removed without even a
-> > mention in the changelog.  I don't recall having seen it discussed in email
-> > but I obviously missed that bit.
-> > 
-> > Look, I'm one micron from just dropping the whole lot.  These changes
-> > simply have not received the amount of energy, effort, care, attention and
-> > testing which a change of this magnitude requires.
-> 
-> so be sure to discuss that (not the patches themselves so much,
-> but the process(es)) at the kernel summit etc....
+Greetings,
 
-I did of course mention that nobh wasn't converted when sending the
-patches.
+Per Andrew's suggestion this is the md raid5 acceleration patch set
+updated with more thorough changelogs to lower the barrier to entry for
+reviewers.  To get started with the code I would suggest the following
+order:
+[md-accel PATCH 01/19] dmaengine: refactor dmaengine around dma_async_tx_descriptor
+[md-accel PATCH 04/19] async_tx: add the async_tx api
+[md-accel PATCH 07/19] md: raid5_run_ops - run stripe operations outside sh->lock
+[md-accel PATCH 16/19] dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
 
-I asked for comments about how much it is used in real world. Badari
-was the only one who replied about that but we didn't reach a conclusion.
+The patch set can be broken down into three main categories:
+1/ API (async_tx: patches 1 - 4)
+2/ implementation (md changes: patches 5 - 15)
+3/ driver (iop-adma: patches 16 - 19)
 
-I don't know about energy, but I have seen lots of other patches cause
-a lot more problems...
+I have worked with Neil to get approval of the category 2 changes.
+However for the category 1 and 3 changes there was no obvious
+merge-path/maintainer to work through.  I have thus far extrapolated
+Neil's comments about 2 out to 1 and 3, Jeff gave some direction on a
+early revision about the scalability of the API, and the patch set has
+picked up various fixes and suggestions from being in -mm for a few
+releases.  Please help me ensure that this code is ready for Linus to
+pull for 2.6.23.
+
+	git://lost.foo-projects.org/~dwillia2/git/iop md-accel-linus
+
+Dan Williams (19):
+      dmaengine: refactor dmaengine around dma_async_tx_descriptor
+      dmaengine: make clients responsible for managing channels
+      xor: make 'xor_blocks' a library routine for use with async_tx
+      async_tx: add the async_tx api
+      raid5: refactor handle_stripe5 and handle_stripe6 (v2)
+      raid5: replace custom debug PRINTKs with standard pr_debug
+      md: raid5_run_ops - run stripe operations outside sh->lock
+      md: common infrastructure for running operations with raid5_run_ops
+      md: handle_stripe5 - add request/completion logic for async write ops
+      md: handle_stripe5 - add request/completion logic for async compute ops
+      md: handle_stripe5 - add request/completion logic for async check ops
+      md: handle_stripe5 - add request/completion logic for async read ops
+      md: handle_stripe5 - add request/completion logic for async expand ops
+      md: handle_stripe5 - request io processing in raid5_run_ops
+      md: remove raid5 compute_block and compute_parity5
+      dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
+      iop13xx: surface the iop13xx adma units to the iop-adma driver
+      iop3xx: surface the iop3xx DMA and AAU units to the iop-adma driver
+      ARM: Add drivers/dma to arch/arm/Kconfig
+
+Administrivia:
+This patch set contains three new patches compared to the previous
+release they are:
+[md-accel PATCH 03/19] xor: make 'xor_blocks' a library routine for use with async_tx
+[md-accel PATCH 05/19] raid5: refactor handle_stripe5 and handle_stripe6 (v2) 
+[md-accel PATCH 06/19] raid5: replace custom debug PRINTKs with standard pr_debug
+
+net/core/dev.c is touched by the following:
+[md-accel PATCH 02/19] dmaengine: make clients responsible for managing channels
