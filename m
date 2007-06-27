@@ -1,103 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbXF0NSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbXF0NSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761381AbXF0NSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 09:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbXF0NS1
+	id S1759451AbXF0NSt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 09:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761412AbXF0NSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 09:18:27 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44343 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757690AbXF0NS0 (ORCPT
+	Wed, 27 Jun 2007 09:18:39 -0400
+Received: from stinky.trash.net ([213.144.137.162]:56748 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761403AbXF0NSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 09:18:26 -0400
-Date: Wed, 27 Jun 2007 14:18:23 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Neil Booth <neil@daikokuya.co.uk>
-Cc: Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627131823.GR21478@ftp.linux.org.uk>
-References: <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk> <20070627123031.GO21478@ftp.linux.org.uk> <20070627125958.GA16758@daikokuya.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070627125958.GA16758@daikokuya.co.uk>
-User-Agent: Mutt/1.4.1i
+	Wed, 27 Jun 2007 09:18:37 -0400
+Message-ID: <4682638F.40507@trash.net>
+Date: Wed, 27 Jun 2007 15:18:07 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Vasily Averin <vvs@sw.ru>
+CC: netfilter-devel@lists.netfilter.org, rusty@rustcorp.com.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       "David S. Miller" <davem@davemloft.net>, devel@openvz.org
+Subject: Re: [NETFILTER] early_drop() imrovement (v4)
+References: <4615FE1D.80206@sw.ru>	<20070406102433.d3a670a5.dada1@cosmosbay.com>	<4616203A.80203@sw.ru> <4616626C.9020100@trash.net>	<4617845F.7080203@sw.ru> <461789CF.8000106@cosmosbay.com>	<46187770.1070106@sw.ru> <46417137.5080501@sw.ru>	<467FC8D2.5070102@trash.net> <46811292.1010501@sw.ru>	<468223D0.90305@sw.ru> <46822540.2010004@trash.net> <4682523F.6000002@trash.net> <4682582D.7080501@sw.ru> <46825D63.3060500@trash.net> <46825FE0.7060306@sw.ru>
+In-Reply-To: <46825FE0.7060306@sw.ru>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------040001010701060403070901"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 09:59:58PM +0900, Neil Booth wrote:
-> Al Viro wrote:-
+This is a multi-part message in MIME format.
+--------------040001010701060403070901
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+Vasily Averin wrote:
+> Patrick McHardy wrote:
 > 
-> > If you want to test ICE recognition, right now only the following places
-> > are checking for it:
-> > 	* bitfield width
-> > 	* __attribute__((aligned(<number>)))
-> > 	* __attribute__((address_space(<number>)))
-> > 	* [<index>] in designators within initializer list
-> > 	* [<index> ... <index>] - ditto, gccism
-> > 
-> > That's it.  We can use it elsewhere too, but that's a separate bunch of
-> > patches (trivial to do now).
-> 
-> Bah.  You don't escape that easily :)
-> 
-> extern int a;
-> struct b { unsigned int b1:(1,2); };
+> it is incorrect again: when cnt=0 you should break both cycles.
 
-Son of a...  expand_comma() cannibalizes the node, should restore ->flags
-to 0 (same as other similar suckers).
+Indeed, thanks. Fixed now. Also changed it to leave the loop
+if we found an entry within a chain (we want the last one of
+the chain, so we still walk it entirely) and replaced
 
-> struct c { unsigned int c1: 1 ? 2: a++; };
+hash = (hash + 1) % nf_conntrack_htable_size
 
-Ditto for expand_conditional, but there we should preserve the original
-->flags instead - might be non-zero and we ought to do that after
-expanding the taken branch...
+by
 
-From: Al Viro <viro@zeniv.linux.org.uk>
-Date: Wed, 27 Jun 2007 09:10:54 -0400
-Subject: [PATCH] fix the missed cannibalizing simplifications
+hash = (hash + 1) & (nf_conntrack_htable_size - 1)
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+since one of my queued patches makes sure that its always
+a power of two.
+
+--------------040001010701060403070901
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+[NETFILTER]: nf_conntrack: early_drop improvement
+
+When the maximum number of conntrack entries is reached and a new
+one needs to be allocated, conntrack tries to drop an unassured
+connection from the same hash bucket the new conntrack would hash
+to. Since with a properly sized hash the average number of entries
+per bucket is 1, the chances of actually finding one are not very
+good. This patch increases those chances by walking over the hash
+until 8 entries are checked.
+
+Based on patch by Vasily Averin <vvs@sw.ru>.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
 ---
- expand.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+commit 047d8f088a71f30d3042cc7615a7a25aa60a668b
+tree c83c4a356caf608fe21a646c24678bef74023270
+parent 665d98d03473cab252830129f414e1b38fb2b038
+author Patrick McHardy <kaber@trash.net> Wed, 27 Jun 2007 15:17:17 +0200
+committer Patrick McHardy <kaber@trash.net> Wed, 27 Jun 2007 15:17:17 +0200
 
-diff --git a/expand.c b/expand.c
-index f945518..9a536d5 100644
---- a/expand.c
-+++ b/expand.c
-@@ -429,8 +429,10 @@ static int expand_comma(struct expression *expr)
- 
- 	cost = expand_expression(expr->left);
- 	cost += expand_expression(expr->right);
--	if (expr->left->type == EXPR_VALUE || expr->left->type == EXPR_FVALUE)
-+	if (expr->left->type == EXPR_VALUE || expr->left->type == EXPR_FVALUE) {
- 		*expr = *expr->right;
-+		expr->flags = 0;
-+	}
- 	return cost;
+ net/netfilter/nf_conntrack_core.c |   26 ++++++++++++++++++--------
+ 1 files changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index d7e62ad..2d5c10f 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -377,22 +377,33 @@ nf_conntrack_tuple_taken(const struct nf_conntrack_tuple *tuple,
  }
+ EXPORT_SYMBOL_GPL(nf_conntrack_tuple_taken);
  
-@@ -488,12 +490,15 @@ static int expand_conditional(struct expression *expr)
++#define NF_CT_EVICTION_RANGE	8
++
+ /* There's a small race here where we may free a just-assured
+    connection.  Too bad: we're in trouble anyway. */
+-static int early_drop(struct hlist_head *chain)
++static int early_drop(unsigned int hash)
+ {
+ 	/* Use oldest entry, which is roughly LRU */
+ 	struct nf_conntrack_tuple_hash *h;
+ 	struct nf_conn *ct = NULL, *tmp;
+ 	struct hlist_node *n;
+-	int dropped = 0;
++	unsigned int i;
++	int dropped = 0, cnt = NF_CT_EVICTION_RANGE;
  
- 	cond_cost = expand_expression(cond);
- 	if (cond->type == EXPR_VALUE) {
-+		unsigned flags = expr->flags;
- 		if (!cond->value)
- 			true = false;
- 		if (!true)
- 			true = cond;
-+		cost = expand_expression(*true);
- 		*expr = *true;
--		return expand_expression(expr);
-+		expr->flags = flags;
-+		return cost;
+ 	read_lock_bh(&nf_conntrack_lock);
+-	hlist_for_each_entry(h, n, chain, hnode) {
+-		tmp = nf_ct_tuplehash_to_ctrack(h);
+-		if (!test_bit(IPS_ASSURED_BIT, &tmp->status))
+-			ct = tmp;
++	for (i = 0; i < nf_conntrack_htable_size; i++) {
++		hlist_for_each_entry(h, n, &nf_conntrack_hash[hash], hnode) {
++			tmp = nf_ct_tuplehash_to_ctrack(h);
++			if (!test_bit(IPS_ASSURED_BIT, &tmp->status))
++				ct = tmp;
++			if (--cnt <= 0)
++				goto stop;
++		}
++		if (ct)
++			break;
++		hash = (hash + 1) & (nf_conntrack_htable_size - 1);
  	}
- 
- 	cost = expand_expression(true);
--- 
-1.5.0-rc2.GIT
++stop:
+ 	if (ct)
+ 		atomic_inc(&ct->ct_general.use);
+ 	read_unlock_bh(&nf_conntrack_lock);
+@@ -425,8 +436,7 @@ struct nf_conn *nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
+ 	if (nf_conntrack_max
+ 	    && atomic_read(&nf_conntrack_count) > nf_conntrack_max) {
+ 		unsigned int hash = hash_conntrack(orig);
+-		/* Try dropping from this hash chain. */
+-		if (!early_drop(&nf_conntrack_hash[hash])) {
++		if (!early_drop(hash)) {
+ 			atomic_dec(&nf_conntrack_count);
+ 			if (net_ratelimit())
+ 				printk(KERN_WARNING
 
+--------------040001010701060403070901--
