@@ -1,176 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761984AbXF0PS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbXF0PXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761984AbXF0PS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbXF0PSt
+	id S1757498AbXF0PXz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbXF0PXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:18:49 -0400
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:46789 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752925AbXF0PSs (ORCPT
+	Wed, 27 Jun 2007 11:23:47 -0400
+Received: from sperry-02.control.lth.se ([130.235.83.189]:55550 "EHLO
+	sperry-02.control.lth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbXF0PXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:18:48 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070627115056.GW14224@think.oraclecorp.com>
-References: <20070624014528.GA17609@wotan.suse.de> <20070626030640.GM989688@sgi.com> <46808E1F.1000509@yahoo.com.au> <20070626092309.GF31489@sgi.com> <20070626123449.GM14224@think.oraclecorp.com> <20070627053245.GA6033@wotan.suse.de> <20070627115056.GW14224@think.oraclecorp.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <31B65C6A-BECB-4B95-B2D8-ADF422AA6B77@cam.ac.uk>
-Cc: Nick Piggin <npiggin@suse.de>, David Chinner <dgc@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
+	Wed, 27 Jun 2007 11:23:46 -0400
+X-Greylist: delayed 1498 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 11:23:46 EDT
+Message-ID: <46827B20.6000501@control.lth.se>
+Date: Wed, 27 Jun 2007 16:58:40 +0200
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Manuel Estrada Sainz <ranty@debian.org>
+Subject: [PATCH] Documentation/firmware_class/firmware_sample_driver.c
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [RFC] fsblock
-Date: Wed, 27 Jun 2007 16:18:32 +0100
-To: Chris Mason <chris.mason@oracle.com>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27 Jun 2007, at 12:50, Chris Mason wrote:
-> On Wed, Jun 27, 2007 at 07:32:45AM +0200, Nick Piggin wrote:
->> On Tue, Jun 26, 2007 at 08:34:49AM -0400, Chris Mason wrote:
->>> On Tue, Jun 26, 2007 at 07:23:09PM +1000, David Chinner wrote:
->>>> On Tue, Jun 26, 2007 at 01:55:11PM +1000, Nick Piggin wrote:
->>>
->>> [ ... fsblocks vs extent range mapping ]
->>>
->>>> iomaps can double as range locks simply because iomaps are
->>>> expressions of ranges within the file.  Seeing as you can only
->>>> access a given range exclusively to modify it, inserting an empty
->>>> mapping into the tree as a range lock gives an effective method of
->>>> allowing safe parallel reads, writes and allocation into the file.
->>>>
->>>> The fsblocks and the vm page cache interface cannot be used to
->>>> facilitate this because a radix tree is the wrong type of tree to
->>>> store this information in. A sparse, range based tree (e.g. btree)
->>>> is the right way to do this and it matches very well with
->>>> a range based API.
->>>
->>> I'm really not against the extent based page cache idea, but I  
->>> kind of
->>> assumed it would be too big a change for this kind of generic  
->>> setup.  At
->>> any rate, if we'd like to do it, it may be best to ditch the idea of
->>> "attach mapping information to a page", and switch to "lookup  
->>> mapping
->>> information and range locking for a page".
->>
->> Well the get_block equivalent API is extent based one now, and I'll
->> look at what is required in making map_fsblock a more generic call
->> that could be used for an extent-based scheme.
->>
->> An extent based thing IMO really isn't appropriate as the main  
->> generic
->> layer here though. If it is really useful and popular, then it could
->> be turned into generic code and sit along side fsblock or underneath
->> fsblock...
->
-> Lets look at a typical example of how IO actually gets done today,
-> starting with sys_write():
+Signed-off-by: Anders Blomdell <anders.blomdell@control.lth.se>
 
-Yes, this is very inefficient which is one of the reasons I don't use  
-the generic file write helpers in NTFS.  The other reasons are that  
-supporting larger logical block sizes than PAGE_CACHE_SIZE becomes a  
-pain if it is not done this way when the write targets a hole as that  
-requires all pages in the hole to be locked simultaneously which  
-would mean dropping the page lock to acquire the others that are of  
-lower page index and to then re-take the page lock which is horrible  
-- much better to lock all at once from the outset and the other  
-reason is that in NTFS there is such a thing as the initialized size  
-of an attribute which basically states "anything past this byte  
-offset must be returned as 0 on read, i.e. it does not have to be  
-read from disk at all, and on write beyond the initialized_size you  
-have to zero on disk everything between the old initialized size and  
-the start of the write before you begin writing and certainly before  
-you update the initalized_size otherwise a concurrent read would see  
-random old data from the disk.
+Minor modifications to make the example load and unload without Oops
 
-For NTFS this effectively becomes:
+This is what unpatched version generates with 2.6.21.3
 
-> sys_write(file, buffer, 1MB)
+kernel: Oops: 0000 [#2]
+...
+kernel: Call Trace:
+kernel:  [<c04ae541>] sysfs_create_dir+0x49/0x63
+kernel:  [<c04e76ae>] kobject_shadow_add+0xd5/0x17d
+kernel:  [<c04e7908>] kobject_set_name+0x2b/0x92
+kernel:  [<c0556444>] device_add+0x9a/0x58e
+kernel:  [<c0620b65>] klist_init+0x23/0x2e
+kernel:  [<c055bfee>] _request_firmware+0x116/0x29f
+kernel:  [<c062149f>] wait_for_completion+0x8b/0x93
+kernel:  [<c055c20b>] request_firmware+0xf/0x11
+kernel:  [<e09420d9>] sample_init+0x59/0xc0 [firmware_sample_driver]
+kernel:  [<c0446c92>] sys_init_module+0x16b7/0x17ee
+kernel:  [<c04294de>] printk+0x0/0x1f
+kernel:  [<c0488436>] mntput_no_expire+0x11/0x6e
+kernel:  [<c0404fa8>] syscall_call+0x7/0xb
 
-allocate space for the entire 1MB write
 
-if write offset past the initialized_size zero out on disk starting  
-at initialized_size up to the start offset for the write and update  
-the initialized size to be equal to the start offset of the write
 
-do {
-	if (current position is in a hole and the NTFS logical block size is  
- > PAGE_CACHE_SIZE) {
-		work on (NTFS logical block size / PAGE_CACHE_SIZE) pages in one go;
-		do_pages = vol->cluster_size / PAGE_CACHE_SIZE;
-	} else {
-		work on only one page;
-		do_pages = 1;
-	}
-	fault in for read (do_pages*PAGE_CACHE_SIZE) bytes worth of source  
-pages
-	grab do_pages worth of pages
-	prepare_write - attach buffers to grabbed pages
-	copy data from source to grabbed&prepared pages
-	commit_write the copied pages by dirtying their buffers
-} while (data left to write);
+diff -u Documentation/firmware_class/firmware_sample_driver.c
+/tmp/fw/firmware_sample_driver.c
+--- Documentation/firmware_class/firmware_sample_driver.c       2007-05-24
+23:22:47.000000000 +0200
++++ /tmp/fw/firmware_sample_driver.c    2007-06-27 16:51:16.000000000 +0200
+@@ -15,11 +15,16 @@
 
-The allocation in advance is a huge win both in terms of avoiding  
-fragmentation (NTFS still uses a very simple/stupid allocator so you  
-get a lot of fragmentation if two processes write to different files  
-simultaneously and do so in small chunks) and in terms of performance.
+ #include "linux/firmware.h"
 
-I have wondered whether I should perhaps turn on the "multi page"  
-stuff on for all writes rather than just for ones that go into a hole  
-and the logical size is greater than the PAGE_CACHE_SIZE as that  
-might improve performance even further but I haven't had the time/ 
-inclination to experiment...
++static void ghost_release(struct device *dev)
++{
++       printk(KERN_DEBUG "firmware_sample_driver: ghost_release\n");
++}
++
+ static struct device ghost_device = {
+        .bus_id    = "ghost0",
++       .release   = ghost_release
+ };
 
-And I have also wondered whether to go direct to bio/wholes pages at  
-once instead of bothering with dirtying each buffer but the buffers  
-(which are always 512 bytes on NTFS) allow me to easily support  
-dirtying smaller parts of the page which is desired at least on  
-volumes with a logical block size < PAGE_CACHE_SIZE as different bits  
-of the page could then reside on completely different locations on  
-disk so writing out unneeded bits of the page could result in a lot  
-of wasted disk head seek times.
+-
+ static void sample_firmware_load(char *firmware, int size)
+ {
+        u8 buf[size+1];
+@@ -97,16 +102,17 @@
 
-Best regards,
+ static int sample_init(void)
+ {
+-       device_initialize(&ghost_device);
++       device_register(&ghost_device);
+        /* since there is no real hardware insertion I just call the
+         * sample probe functions here */
+-       sample_probe_specific();
++       /* sample_probe_specific(); */
+        sample_probe_default();
+-       sample_probe_async();
++       /*sample_probe_async();*/
+        return 0;
+ }
+ static void __exit sample_exit(void)
+ {
++       device_unregister(&ghost_device);
+ }
 
-	Anton
-
-> for each page:
->     prepare_write()
-> 	allocate contiguous chunks of disk
->         attach buffers
->     copy_from_user()
->     commit_write()
->         dirty buffers
->
-> pdflush:
->     writepages()
->         find pages with contiguous chunks of disk
-> 	build and submit large bios
->
-> So, we replace prepare_write and commit_write with an extent based  
-> api,
-> but we keep the dirty each buffer part.  writepages has to turn that
-> back into extents (bio sized), and the result is completely full of  
-> dark
-> dark corner cases.
->
-> I do think fsblocks is a nice cleanup on its own, but Dave has a good
-> point that it makes sense to look for ways generalize things even  
-> more.
->
-> -chris
+ module_init (sample_init);
 
 -- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
-
+Anders Blomdell                  Email: anders.blomdell@control.lth.se
+Department of Automatic Control
+Lund University                  Phone:    +46 46 222 4625
+P.O. Box 118                     Fax:      +46 46 138118
+SE-221 00 Lund, Sweden
