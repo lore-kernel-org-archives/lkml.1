@@ -1,43 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbXF0DSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbXF0D3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbXF0DSz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 23:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbXF0DSj
+	id S1758486AbXF0D3B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 23:29:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXF0D2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 23:18:39 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48858 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760024AbXF0DSi (ORCPT
+	Tue, 26 Jun 2007 23:28:52 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4214 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbXF0D2w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 23:18:38 -0400
-Date: Tue, 26 Jun 2007 20:18:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@google.com>
-cc: Ethan Solomita <solo@google.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-Subject: Re: [RFC 1/7] cpuset write dirty map
-In-Reply-To: <20070626152204.b6b4bc3f.akpm@google.com>
-Message-ID: <Pine.LNX.4.64.0706262017260.24504@schroedinger.engr.sgi.com>
-References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>
- <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>
- <468023CA.2090401@google.com> <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
- <20070626152204.b6b4bc3f.akpm@google.com>
+	Tue, 26 Jun 2007 23:28:52 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 26 Jun 2007 20:28:49 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Rik van Riel <riel@redhat.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/3] MAP_NOZERO - implement a new VM_NOZERO/MAP_NOZERO
+ page retirement policy
+In-Reply-To: <4681D37E.2020706@redhat.com>
+Message-ID: <Pine.LNX.4.64.0706262016080.26540@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912259.1>
+ <4681D37E.2020706@redhat.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007, Andrew Morton wrote:
+On Tue, 26 Jun 2007, Rik van Riel wrote:
 
-> Is in my queue somewhere.  Could be that by the time I get to it it will
-> need refreshing (again), we'll see.
+> SUID programs should not be able to use this feature,
+> either.
+
+Why? A SUID programs runs under the UID of the owner, and should be no 
+problems in it seeing the owners data.
+But the patch post was more a quest for possible scenarios where the use 
+of MAP_NOZERO can result in lower security WRT the same program (under the 
+same security restrictions) not using such feature.
+If you have something specific in mind, please go ahead and shoot.
+
+
+
+> > When pages exit (unmapped from) a  vma, they are marked with the effective
+> > UID of the  mm_struct  that owns it.
 > 
-> One open question is the interaction between these changes and with Peter's
-> per-device-dirty-throttling changes.  They also are in my queue somewhere. 
-> Having a 100:1 coder:reviewer ratio doesn't exactly make for swift
-> progress.
+> 
+> > --- linux-2.6.mod.orig/include/linux/mm_types.h	2007-06-21
+> > 14:02:06.000000000 -0700
+> > +++ linux-2.6.mod/include/linux/mm_types.h	2007-06-25 19:11:22.000000000
+> > -0700
+> > @@ -64,6 +64,7 @@
+> >  	struct list_head lru;		/* Pageout list, eg. active_list
+> >  					 * protected by zone->lru_lock !
+> >  					 */
+> > +	int owner_uid;			/* Last owner of the page */
+> >  	/*
+> >  	 * On machines where all RAM is mapped into kernel address space,
+> >  	 * we can simply calculate the virtual address. On machines with
+> 
+> Since this is only set when the page is freed, could
+> the owner_uid and security context be put inside a
+> union with some fields that are not otherwise used
+> for free pages?
 
-Hmmmm.. How can we help? I can look at some aspects of Peter's per device 
-throttling.
+I tried to look, and the attempt to reuse _mapcount failed miserably :)
+The last time we have the owner info (vma->mm) available, is before 
+processing of the other fields ends. OTOH I'm not VM guru either, so I may 
+be wrong. It can share ->virtual (when enabled).
+
+
+
+
+- Davide
+
 
