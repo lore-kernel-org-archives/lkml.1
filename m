@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbXF0G0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXF0G1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760262AbXF0G0l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 02:26:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757867AbXF0G0d
+	id S1760766AbXF0G1y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 02:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbXF0G1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 02:26:33 -0400
-Received: from sccrmhc11.comcast.net ([63.240.77.81]:57828 "EHLO
-	sccrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755721AbXF0G0d (ORCPT
+	Wed, 27 Jun 2007 02:27:47 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:39709 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755721AbXF0G1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 02:26:33 -0400
-Message-ID: <46820316.7070406@ringle.org>
-Date: Wed, 27 Jun 2007 02:26:30 -0400
-From: Jon Ringle <jon@ringle.org>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Wed, 27 Jun 2007 02:27:47 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] usb_fill_bulk_urb() broken for USB1.1?
+Date: Wed, 27 Jun 2007 08:27:50 +0200
+User-Agent: KMail/1.9.7
+Cc: Chuck Ebbert <cebbert@redhat.com>, Keith Chew <keith.chew@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <20f65d530706260720w797861fuc4e10bbbe2a489d2@mail.gmail.com> <46815269.8060507@redhat.com>
+In-Reply-To: <46815269.8060507@redhat.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Jon Ringle <JRingle@vertical.com>, linux-kernel@vger.kernel.org
-Subject: Re: scheduling while atomic and DEBUG_SPINLOCK_SLEEP
-References: <4DD3AF7ECBBC43409BA36508938D01851B0E7E@CVAEX1.VERTICAL.COM> <1182919609.3201.2.camel@laptopd505.fenrus.org>
-In-Reply-To: <1182919609.3201.2.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706270827.50698.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 2007-06-26 at 22:55 -0400, Jon Ringle wrote:
->   
->> Hello,
->> Out of these two, the first one that is showing "in_atomic():1" seems
->> more likely to me to be a potential cause of the "scheduling while
->> atomic" dump.
->>
->> Does this logic seem reasonable? Are there other debugging techniques I
->> can use to narrow down the cause for the "scheduling while atomic"?
->>     
->
->
-> you could start by giving us pointers to the sources of the two
-> drivers... without that... how can we look and help?
->
->   
-You can get Intel's source from here:
-GPL_ixp400LinuxEthernetDriverPatch-1_5.zip:
-http://downloadcenter.intel.com/detail_desc.aspx?agr=N&ProductID=2100&DwnldID=9519
+Am Dienstag, 26. Juni 2007 schrieb Chuck Ebbert:
+> On 06/26/2007 10:20 AM, Keith Chew wrote:
+> 
+> [cc: linux-usb-devel]
+> 
+> > We have been using a Zydas based WIFI drivers under kernel 2.6.16.18
+> > with great success. Recently, when we upgraded to 2.6.20.1 (also
+> > tested on 2.6.21.5), we found that during initialisation, these calls
+> > works with USB2.0 but stopped working on USB1.1:
+> > 
+> > usb_fill_bulk_urb();
+> > usb_submit_urb();
 
-BSD_ixp400AccessLibrary-2_1.zip:
-http://downloadfinder.intel.com/scripts-df/detail_desc.asp?agr=Y&ProductID=2100&DwnldID=10146
+What do you use as arguments for usb_fill_bulk_urb() ? One of the sanity tests
+in usb_submit_urb() is triggered.
 
-Jon
+	Regards
+		Oliver
+
+
