@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762208AbXF0Qoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762583AbXF0Qo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762208AbXF0Qoq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbXF0Qog
+	id S1762583AbXF0Qo6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757708AbXF0Qoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:44:36 -0400
-Received: from mail.tmr.com ([64.65.253.246]:43530 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921AbXF0Qof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 12:44:39 -0400
+Received: from mailgw1.fraunhofer.de ([153.96.1.18]:63914 "EHLO
+	mailgw1.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752130AbXF0Qof (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 Jun 2007 12:44:35 -0400
-Message-ID: <46829432.4050302@tmr.com>
-Date: Wed, 27 Jun 2007 12:45:38 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+Date: Wed, 27 Jun 2007 18:41:17 +0200
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: bunk@stusta.de
+Cc: schilling@fokus.fraunhofer.de, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org, arjan@infradead.org
+Subject: Re: Linux Kernel include files
+Message-ID: <4682932d.pVHCxteMR+otOnHO%Joerg.Schilling@fokus.fraunhofer.de>
+References: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
+ <20070627164012.GQ1094@stusta.de>
+In-Reply-To: <20070627164012.GQ1094@stusta.de>
+User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de,
-       akpm@linux-foundation.org, davem@davemloft.net,
-       christopher.leech@intel.com, shannon.nelson@intel.com,
-       herbert@gondor.apana.org.au, jeff@garzik.org
-Subject: Re: [md-accel PATCH 00/19] md raid acceleration and the async_tx
- api
-References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 27 Jun 2007 16:43:15.0298 (UTC) FILETIME=[41FF4C20:01C7B8DA]
+X-Fraunhofer-Email-Policy: accepted
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-> Greetings,
->
-> Per Andrew's suggestion this is the md raid5 acceleration patch set
-> updated with more thorough changelogs to lower the barrier to entry for
-> reviewers.  To get started with the code I would suggest the following
-> order:
-> [md-accel PATCH 01/19] dmaengine: refactor dmaengine around dma_async_tx_descriptor
-> [md-accel PATCH 04/19] async_tx: add the async_tx api
-> [md-accel PATCH 07/19] md: raid5_run_ops - run stripe operations outside sh->lock
-> [md-accel PATCH 16/19] dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
->
-> The patch set can be broken down into three main categories:
-> 1/ API (async_tx: patches 1 - 4)
-> 2/ implementation (md changes: patches 5 - 15)
-> 3/ driver (iop-adma: patches 16 - 19)
->
-> I have worked with Neil to get approval of the category 2 changes.
-> However for the category 1 and 3 changes there was no obvious
-> merge-path/maintainer to work through.  I have thus far extrapolated
-> Neil's comments about 2 out to 1 and 3, Jeff gave some direction on a
-> early revision about the scalability of the API, and the patch set has
-> picked up various fixes and suggestions from being in -mm for a few
-> releases.  Please help me ensure that this code is ready for Linus to
-> pull for 2.6.23.
->
-> 	git://lost.foo-projects.org/~dwillia2/git/iop md-accel-linus
->   
+Adrian Bunk <bunk@stusta.de> wrote:
 
-Dan, I hope you will release these as a patchset against 2.6.22 when 
-it's out or 2.6.21. I find I have a lot more confidence in results, good 
-or bad, when comparing something I have run in production with just one 
-patchset added. There are enough other changes in an -rc to confuse the 
-issue, and I don't run them in production (at least not usually).
+> > On Suse Linux 10.0, I get e.g.:
+> > 
+> > cat t.c
+> > #include <stdio.h>
+> > #include <linux/ext2_fs.h>
+> > 
+> > gcc -c t.c
+> > In file included from /usr/include/linux/ext2_fs.h:20,
+> >                  from t.c:2:
+> > /usr/include/linux/ext2_fs_sb.h:40: error: syntax error before âuid_tâ
+> > /usr/include/linux/ext2_fs_sb.h:49: error: syntax error before âs_next_generationâ
+> > /usr/include/linux/ext2_fs_sb.h:51: error: syntax error before â*â token
+> > /usr/include/linux/ext2_fs_sb.h:56: error: syntax error before â}â token
+>
+> Already fixed since kernel 2.6.18.
+>
+> Our header were a mess and we are working on getting them better.
+> But we can't timetravel and fix old distributions.
+
+Well, I did report these kind of problems many years ago and as it has not been 
+fixed after some years, I was asuming that it is still the way I see it on Suse 
+10.0.
+
+
+
+J�rg
 
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) J�rg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
