@@ -1,65 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbXF0MUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759798AbXF0MYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759292AbXF0MUA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 08:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbXF0MTv
+	id S1759798AbXF0MYE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 08:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbXF0MXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 08:19:51 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46183 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751811AbXF0MTu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 08:19:50 -0400
-Date: Wed, 27 Jun 2007 13:19:48 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Neil Booth <neil@daikokuya.co.uk>
-Cc: Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627121948.GN21478@ftp.linux.org.uk>
-References: <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070626233226.GO7590@daikokuya.co.uk> <20070627001803.GJ21478@ftp.linux.org.uk> <20070627115245.GP7590@daikokuya.co.uk>
+	Wed, 27 Jun 2007 08:23:52 -0400
+Received: from mail.screens.ru ([213.234.233.54]:44206 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755916AbXF0MXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 08:23:51 -0400
+Date: Wed, 27 Jun 2007 16:24:37 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Jeff Layton <jlayton@redhat.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-cifs-client@lists.samba.org
+Subject: Re: [PATCH] RFC: have tcp_recvmsg() check kthread_should_stop() and treat it as if it were signalled
+Message-ID: <20070627122437.GA158@tv-sign.ru>
+References: <20070608123527.9b4cdafe.jlayton@redhat.com> <E1HwpmG-0008LW-00@gondolin.me.apana.org.au> <20070609070826.7bd3480c.jlayton@redhat.com> <a781481a0706251241n36126456x7f4b445a86d1a68f@mail.gmail.com> <20070626115449.GA92@tv-sign.ru> <a781481a0706261553i1e65e620o884708d0b068b0f8@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070627115245.GP7590@daikokuya.co.uk>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <a781481a0706261553i1e65e620o884708d0b068b0f8@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 08:52:45PM +0900, Neil Booth wrote:
-> Al Viro wrote:-
-> 
-> > 
-> > sparse simply doesn't check that.  We don't have anything resembling
-> > support of VLA.  Note that check for integer constant expression
-> > has nothing to do with that;
-> > 
-> > 	int x[(int)(0.6 + 0.6)];
-> > 
-> > is valid (if stupid).
-> 
-> It isn't valid; it fails the test twice.  Both 0.6 are not "immediate
-> operands of casts".  Their sum is, but that's irrelevant.
-> Therefore the dimension is not an ICE and a diagnostic is required.
+On 06/27, Satyam Sharma wrote:
+>
+> Thanks for your comments, I'm still not convinced, however.
 
-Egads...  After rereading that...  What a mess.
+An perhaps you are right. I don't have a very strong opinion on that.
+Still I can't understand why it is better if kthread_stop() sends a
+signal as well. Contrary, I believe we should avoid signals when it
+comes to kernel threads.
 
-int foo(void)
-{
-	static int a[1][0,2];
-}
+One can always use force_sig() or allow_signal() + send_sig() when
+it is really needed, like cifs does.
 
-is, AFAICS, allowed.  Reason:
-	int a[0,2]
-is a VLA due to 6.7.5.2[4] (0,2 is not an ICE).  However, due to the language
-in the same section,
-	int a[1][0,2]
-is *not* a VLA, since (a) 2 is an ICE and (b) its element type "has a known
-constant size" (it does - the value of 0,2 is certainly guaranteed to be 2).
-I.e., it's VM type, but not a VLA.  I.e. only the first part of 6.7.5.2[2]
-applies and we are actually fine.
+> On 6/26/07, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> >
+> >Personally, I don't think we should do this.
+> >
+> >kthread_stop() doesn't always mean "kill this thread asap". Suppose that
+> >CPU_DOWN does kthread_stop(workqueue->thread) but doesn't flush the queue
+> >before that (we did so before 2.6.22 and perhaps we will do again). Now
+> >work_struct->func() doing tcp_recvmsg() or wait_event_interruptible()
+> >fails,
+> >but this is probably not that we want.
+>
+> Anyway, I think _all_ usages of kthread_stop() in the kernel *do* want
+> the thread to stop *right then*. After all, kthread_stop() doesn't even
+> return (gets blocked on wait_for_completion()) till it knows the target
+> kthread *has* exited completely.
 
-	So we can have a static single-element array of int [0,2], but
-not a plain static int [0,2].  Lovely, that...
+Yes, kthread_stop(k) means that k should exit eventually, but I don't
+think that kthread_stop() should try to force the exit.
+
+> And if a workqueue is blocked on tcp_recvmsg() or skb_recv_datagram()
+> or some such, I don't see how that flush_workqueue (if that is what you
+> meant) would succeed anyway (unless you do send the signal too),
+
+timeout, but this was just a silly example. I am talking about the case
+when wait_event_interruptible() should not fail (unless something bad
+happens) inside the "while (!kthread_should_stop())" loop.
+
+Note also that kthread could use TASK_INTERRUPTIBLE sleep because it
+doesn't want to contribute to loadavg, and because it knows that all
+signals are ignored.
+
+> Note that the exact scenario you're talking about wouldn't mean the
+> kthread getting killed before it's supposed to be stopped anyway.
+
+Yes sure, we can't kill the kernel thread via signal. I meant we can have
+some unexpected failure.
+
+> >(offtopic)
+> >
+> >        cifs_mount:
+> >
+> >                send_sig(SIGKILL,srvTcp->tsk,1);
+> >                tsk = srvTcp->tsk;
+> >                if(tsk)
+> >                        kthread_stop(tsk);
+> >
+> >This "if(tsk)" looks wrong to me.
+>
+> I think it's bogus myself. [ Added linux-cifs-client@lists.samba.org to Cc:
+> ]
+>
+> >Can srvTcp->tsk be NULL? If yes, send_sig()
+> >is not safe. Can srvTcp->tsk become NULL after send_sig() ? If yes, this
+> >check is racy, and kthread_stop() is not safe.
+>
+> That's again something the atomicity I proposed above could avoid?
+
+I think this "if(tsk)" is just bogus, and should be killed.
+
+Oleg.
+
