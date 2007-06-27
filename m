@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763952AbXF0XJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764019AbXF0XJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763952AbXF0XJk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 19:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762567AbXF0XJb
+	id S1764019AbXF0XJx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 19:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763843AbXF0XJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 19:09:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53263 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753518AbXF0XJa (ORCPT
+	Wed, 27 Jun 2007 19:09:39 -0400
+Received: from wx-out-0506.google.com ([66.249.82.233]:58742 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763943AbXF0XJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 19:09:30 -0400
-Date: Wed, 27 Jun 2007 16:09:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: Adrian Bunk <bunk@stusta.de>, paulus@samba.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: mm snapshot broken-out-2007-06-27-03-28.tar.gz uploaded
-Message-Id: <20070627160908.fe9052e4.akpm@linux-foundation.org>
-In-Reply-To: <200706280057.07481.m.kozlowski@tuxland.pl>
-References: <200706271030.l5RAUgKE015163@imap1.linux-foundation.org>
-	<200706280057.07481.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Jun 2007 19:09:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=rE7XI8R24rQ+LwIsJlMj9nEId7NgHgXbNe+N/tyqEvtMBd4fMk5AT54eqdlloyRf0ngrq8Wkt5CLDtikC/yeMQjCGEld4ndQTmMOu72v3DcBsYOI4JUurZ6pbECm7oyQ+o6Qgvs/CMLkUYqQsJswJYZkA2YNkijam/STqJZNCH8=
+Message-ID: <6f703f960706271609m6fdfb9c1ha3555a68fe1d9d55@mail.gmail.com>
+Date: Wed, 27 Jun 2007 15:09:37 -0800
+From: "Kent Overstreet" <kent.overstreet@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [RFC] LVM/RAID/FS integration
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007 00:57:07 +0200
-Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+I believe I have the right way of going about it. I agree with the
+kernel developers who've stated that ZFS is a layering violation, and
+we can do better.
 
-> Hello,
-> 
-> 	Build problems on iMac G3.
-> 
-> 1) allnoconfig results in this:
-> 
->  CC      arch/powerpc/mm/tlb_32.o
-> In file included from include/asm/tlb.h:60,
->                  from arch/powerpc/mm/tlb_32.c:30:
-> include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
-> include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
-> include/asm-generic/tlb.h: In function 'tlb_remove_page':
-> include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
-> make[1]: *** [arch/powerpc/mm/tlb_32.o] Blad 1
-> make: *** [arch/powerpc/mm] Blad 2
-> 
-> 
-> The patch below fixes that for me.
-> 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> 
->  arch/powerpc/mm/tlb_32.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- linux-2.6.22-rc6-bo-a/arch/powerpc/mm/tlb_32.c	2007-06-27 23:38:49.000000000 +0200
-> +++ linux-2.6.22-rc6-bo-b/arch/powerpc/mm/tlb_32.c	2007-06-27 23:18:05.000000000 +0200
-> @@ -26,6 +26,8 @@
->  #include <linux/mm.h>
->  #include <linux/init.h>
->  #include <linux/highmem.h>
-> +#include <linux/pagemap.h>
-> +
->  #include <asm/tlbflush.h>
->  #include <asm/tlb.h>
+ Consider a filesystem on a set of drives; it may want some data to be
+in a raid5 and some to be mirrored. The correct interface for the
+filesystem is to have two or more opaque volumes, which it may be able
+to resize depending on usage.
 
-OK.
-  
-> 
-> 
-> 2) These are conflicts introduced by kernel-sys_nic-should-include-linux-syscallsh.patch
-> 
->   CC      kernel/sys_ni.o
-> kernel/sys_ni.c:16: error: conflicting types for 'sys_nfsservctl'
-> include/linux/syscalls.h:497: error: previous declaration of 'sys_nfsservctl' was here
-> kernel/sys_ni.c:17: error: conflicting types for 'sys_quotactl'
+Basically, the order we want is fs -> raid -> lvm. Given a set of
+identical drives, we want LVM to handle them separately and divide
+them up into LVs identically; then corresponding LVs are raided
+together. We might have a raid5 volume and a raid1 volume, each of
+which can be resized independently. The FS then makes use of both of
+them, putting metadata and frequently used data on the raid1 and
+everything else on the raid5 (btrfs, as I understand it, will be able
+to do this sort of thing eventually).
 
-erk, I suspect that's unfixable, or not worth fixing.
+The trouble is it's completely impractical with current tools; we need
+tighter integration between md and LVM. Basically, we need a new type
+of VG; you'd only be able to make it out of PVs that are the same size
+(or close). Then, when you create an LV you decide what kind of
+redundancy you want; the LVM internally creates multiple LVs and raids
+them together to make the LV the fs sees.
+
+This could, sort of, be done in userspace, but I think it'll work
+better if dm and md are better integrated in the kernel. I thought i'd
+throw out my ideas before I get too far in. Thoughts?
