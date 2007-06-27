@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbXF0Pw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761841AbXF0Pwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758864AbXF0Pw2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760940AbXF0Pvf
+	id S1761841AbXF0Pwo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761126AbXF0Pvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:51:35 -0400
-Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:39352 "EHLO
+	Wed, 27 Jun 2007 11:51:41 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:39358 "EHLO
 	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760850AbXF0Pve (ORCPT
+	by vger.kernel.org with ESMTP id S1756687AbXF0Pvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:51:34 -0400
+	Wed, 27 Jun 2007 11:51:40 -0400
 From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 3/6] iw_cxgb3: Don't count neg_adv abort_req_rss messages as real aborts.
-Date: Wed, 27 Jun 2007 10:51:35 -0500
+Subject: [PATCH 4/6] iw_cxgb3: ctrl-qp init/clear shouldn't set the gen bit.
+Date: Wed, 27 Jun 2007 10:51:40 -0500
 To: rdreier@cisco.com
 Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org, divy@chelsio.com
-Message-Id: <20070627155135.24944.44327.stgit@dell3.ogc.int>
+Message-Id: <20070627155140.24944.61647.stgit@dell3.ogc.int>
 In-Reply-To: <20070627155119.24944.44172.stgit@dell3.ogc.int>
 References: <20070627155119.24944.44172.stgit@dell3.ogc.int>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -26,46 +26,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-iw_cxgb3: Don't count neg_adv abort_req_rss messages as real aborts.
-
-negative advice messages should _not_ count toward the 2 abort requests
-needed to indicate an abort request.
+iw_cxgb3: ctrl-qp init/clear shouldn't set the gen bit.
 
 Signed-off-by: Steve Wise <swise@opengridcomputing.com>
 ---
 
- drivers/infiniband/hw/cxgb3/iwch_cm.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/infiniband/hw/cxgb3/cxio_hal.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-index 7b8d5aa..4d7c277 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-@@ -1465,6 +1465,13 @@ static int peer_abort(struct t3cdev *tde
- 	int ret;
- 	int state;
- 
-+	if (is_neg_adv_abort(req->status)) {
-+		PDBG("%s neg_adv_abort ep %p tid %d\n", __FUNCTION__, ep,
-+		     ep->hwtid);
-+		t3_l2t_send_event(ep->com.tdev, ep->l2t);
-+		return CPL_RET_BUF_DONE;
-+	}
-+
- 	/*
- 	 * We get 2 peer aborts from the HW.  The first one must
- 	 * be ignored except for scribbling that we need one more.
-@@ -1474,13 +1481,6 @@ static int peer_abort(struct t3cdev *tde
- 		return CPL_RET_BUF_DONE;
+diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.c b/drivers/infiniband/hw/cxgb3/cxio_hal.c
+index 215bbe5..1518b41 100644
+--- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
++++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
+@@ -144,7 +144,7 @@ static int cxio_hal_clear_qp_ctx(struct 
  	}
- 
--	if (is_neg_adv_abort(req->status)) {
--		PDBG("%s neg_adv_abort ep %p tid %d\n", __FUNCTION__, ep,
--		     ep->hwtid);
--		t3_l2t_send_event(ep->com.tdev, ep->l2t);
--		return CPL_RET_BUF_DONE;
--	}
--
- 	state = state_read(&ep->com);
- 	PDBG("%s ep %p state %u\n", __FUNCTION__, ep, state);
- 	switch (state) {
+ 	wqe = (struct t3_modify_qp_wr *) skb_put(skb, sizeof(*wqe));
+ 	memset(wqe, 0, sizeof(*wqe));
+-	build_fw_riwrh((struct fw_riwrh *) wqe, T3_WR_QP_MOD, 3, 1, qpid, 7);
++	build_fw_riwrh((struct fw_riwrh *) wqe, T3_WR_QP_MOD, 3, 0, qpid, 7);
+ 	wqe->flags = cpu_to_be32(MODQP_WRITE_EC);
+ 	sge_cmd = qpid << 8 | 3;
+ 	wqe->sge_cmd = cpu_to_be64(sge_cmd);
+@@ -548,7 +548,7 @@ static int cxio_hal_init_ctrl_qp(struct 
+ 			V_EC_UP_TOKEN(T3_CTL_QP_TID) | F_EC_VALID)) << 32;
+ 	wqe = (struct t3_modify_qp_wr *) skb_put(skb, sizeof(*wqe));
+ 	memset(wqe, 0, sizeof(*wqe));
+-	build_fw_riwrh((struct fw_riwrh *) wqe, T3_WR_QP_MOD, 0, 1,
++	build_fw_riwrh((struct fw_riwrh *) wqe, T3_WR_QP_MOD, 0, 0,
+ 		       T3_CTL_QP_TID, 7);
+ 	wqe->flags = cpu_to_be32(MODQP_WRITE_EC);
+ 	sge_cmd = (3ULL << 56) | FW_RI_SGEEC_START << 8 | 3;
