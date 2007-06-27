@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbXF0B4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760401AbXF0B5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760662AbXF0B4x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 21:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbXF0Bvx
+	id S1760401AbXF0B5Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 21:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757587AbXF0Bv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 21:51:53 -0400
-Received: from mga09.intel.com ([134.134.136.24]:42886 "EHLO mga09.intel.com"
+	Tue, 26 Jun 2007 21:51:57 -0400
+Received: from mga01.intel.com ([192.55.52.88]:51709 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757289AbXF0Bvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 21:51:47 -0400
+	id S1756851AbXF0Bvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 21:51:51 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,465,1175497200"; 
-   d="scan'208";a="100478105"
+   d="scan'208";a="261537634"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [md-accel PATCH 14/19] md: handle_stripe5 - request io processing in
-	raid5_run_ops
+Subject: [md-accel PATCH 15/19] md: remove raid5 compute_block and
+	compute_parity5
 To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
 Cc: neilb@suse.de, akpm@linux-foundation.org, davem@davemloft.net,
        christopher.leech@intel.com, shannon.nelson@intel.com,
        herbert@gondor.apana.org.au, jeff@garzik.org
-Date: Tue, 26 Jun 2007 18:51:45 -0700
-Message-ID: <20070627015145.18962.45060.stgit@dwillia2-linux.ch.intel.com>
+Date: Tue, 26 Jun 2007 18:51:50 -0700
+Message-ID: <20070627015150.18962.29466.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
 References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.12.1
@@ -30,130 +30,147 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I/O submission requests were already handled outside of the stripe lock in
-handle_stripe.  Now that handle_stripe is only tasked with finding work,
-this logic belongs in raid5_run_ops.
+replaced by raid5_run_ops
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Acked-By: NeilBrown <neilb@suse.de>
 ---
 
- drivers/md/raid5.c |   71 ++++++++++------------------------------------------
- 1 files changed, 13 insertions(+), 58 deletions(-)
+ drivers/md/raid5.c |  124 ----------------------------------------------------
+ 1 files changed, 0 insertions(+), 124 deletions(-)
 
 diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index e0ae26d..a09bc5f 100644
+index a09bc5f..0579d1f 100644
 --- a/drivers/md/raid5.c
 +++ b/drivers/md/raid5.c
-@@ -2319,6 +2319,9 @@ static void handle_issuing_new_write_requests5(raid5_conf_t *conf,
- 						"%d for r-m-w\n", i);
- 					set_bit(R5_LOCKED, &dev->flags);
- 					set_bit(R5_Wantread, &dev->flags);
-+					if (!test_and_set_bit(
-+						STRIPE_OP_IO, &sh->ops.pending))
-+						sh->ops.count++;
- 					s->locked++;
- 				} else {
- 					set_bit(STRIPE_DELAYED, &sh->state);
-@@ -2342,6 +2345,9 @@ static void handle_issuing_new_write_requests5(raid5_conf_t *conf,
- 						"%d for Reconstruct\n", i);
- 					set_bit(R5_LOCKED, &dev->flags);
- 					set_bit(R5_Wantread, &dev->flags);
-+					if (!test_and_set_bit(
-+						STRIPE_OP_IO, &sh->ops.pending))
-+						sh->ops.count++;
- 					s->locked++;
- 				} else {
- 					set_bit(STRIPE_DELAYED, &sh->state);
-@@ -2538,6 +2544,9 @@ static void handle_parity_checks5(raid5_conf_t *conf, struct stripe_head *sh,
+@@ -1509,130 +1509,6 @@ static void copy_data(int frombio, struct bio *bio,
+ 			   }						  \
+ 			} while(0)
  
- 		set_bit(R5_LOCKED, &dev->flags);
- 		set_bit(R5_Wantwrite, &dev->flags);
-+		if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
-+			sh->ops.count++;
-+
- 		clear_bit(STRIPE_DEGRADED, &sh->state);
- 		s->locked++;
- 		set_bit(STRIPE_INSYNC, &sh->state);
-@@ -2923,12 +2932,16 @@ static void handle_stripe5(struct stripe_head *sh)
- 		dev = &sh->dev[s.failed_num];
- 		if (!test_bit(R5_ReWrite, &dev->flags)) {
- 			set_bit(R5_Wantwrite, &dev->flags);
-+			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
-+				sh->ops.count++;
- 			set_bit(R5_ReWrite, &dev->flags);
- 			set_bit(R5_LOCKED, &dev->flags);
- 			s.locked++;
- 		} else {
- 			/* let's read it back */
- 			set_bit(R5_Wantread, &dev->flags);
-+			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
-+				sh->ops.count++;
- 			set_bit(R5_LOCKED, &dev->flags);
- 			s.locked++;
- 		}
-@@ -2989,64 +3002,6 @@ static void handle_stripe5(struct stripe_head *sh)
- 			      test_bit(BIO_UPTODATE, &bi->bi_flags)
- 			        ? 0 : -EIO);
- 	}
--	for (i=disks; i-- ;) {
--		int rw;
--		struct bio *bi;
--		mdk_rdev_t *rdev;
--		if (test_and_clear_bit(R5_Wantwrite, &sh->dev[i].flags))
--			rw = WRITE;
--		else if (test_and_clear_bit(R5_Wantread, &sh->dev[i].flags))
--			rw = READ;
--		else
--			continue;
-- 
--		bi = &sh->dev[i].req;
-- 
--		bi->bi_rw = rw;
--		if (rw == WRITE)
--			bi->bi_end_io = raid5_end_write_request;
--		else
--			bi->bi_end_io = raid5_end_read_request;
-- 
--		rcu_read_lock();
--		rdev = rcu_dereference(conf->disks[i].rdev);
--		if (rdev && test_bit(Faulty, &rdev->flags))
--			rdev = NULL;
--		if (rdev)
--			atomic_inc(&rdev->nr_pending);
--		rcu_read_unlock();
-- 
--		if (rdev) {
--			if (s.syncing || s.expanding || s.expanded)
--				md_sync_acct(rdev->bdev, STRIPE_SECTORS);
 -
--			bi->bi_bdev = rdev->bdev;
--			pr_debug("for %llu schedule op %ld on disc %d\n",
--				(unsigned long long)sh->sector, bi->bi_rw, i);
--			atomic_inc(&sh->count);
--			bi->bi_sector = sh->sector + rdev->data_offset;
--			bi->bi_flags = 1 << BIO_UPTODATE;
--			bi->bi_vcnt = 1;	
--			bi->bi_max_vecs = 1;
--			bi->bi_idx = 0;
--			bi->bi_io_vec = &sh->dev[i].vec;
--			bi->bi_io_vec[0].bv_len = STRIPE_SIZE;
--			bi->bi_io_vec[0].bv_offset = 0;
--			bi->bi_size = STRIPE_SIZE;
--			bi->bi_next = NULL;
--			if (rw == WRITE &&
--			    test_bit(R5_ReWrite, &sh->dev[i].flags))
--				atomic_add(STRIPE_SECTORS, &rdev->corrected_errors);
--			generic_make_request(bi);
--		} else {
--			if (rw == WRITE)
--				set_bit(STRIPE_DEGRADED, &sh->state);
--			pr_debug("skip op %ld on disc %d for sector %llu\n",
--				bi->bi_rw, i, (unsigned long long)sh->sector);
--			clear_bit(R5_LOCKED, &sh->dev[i].flags);
--			set_bit(STRIPE_HANDLE, &sh->state);
--		}
+-static void compute_block(struct stripe_head *sh, int dd_idx)
+-{
+-	int i, count, disks = sh->disks;
+-	void *ptr[MAX_XOR_BLOCKS], *dest, *p;
+-
+-	pr_debug("compute_block, stripe %llu, idx %d\n",
+-		(unsigned long long)sh->sector, dd_idx);
+-
+-	dest = page_address(sh->dev[dd_idx].page);
+-	memset(dest, 0, STRIPE_SIZE);
+-	count = 0;
+-	for (i = disks ; i--; ) {
+-		if (i == dd_idx)
+-			continue;
+-		p = page_address(sh->dev[i].page);
+-		if (test_bit(R5_UPTODATE, &sh->dev[i].flags))
+-			ptr[count++] = p;
+-		else
+-			printk(KERN_ERR "compute_block() %d, stripe %llu, %d"
+-				" not present\n", dd_idx,
+-				(unsigned long long)sh->sector, i);
+-
+-		check_xor();
 -	}
- }
- 
- static void handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
+-	if (count)
+-		xor_blocks(count, STRIPE_SIZE, dest, ptr);
+-	set_bit(R5_UPTODATE, &sh->dev[dd_idx].flags);
+-}
+-
+-static void compute_parity5(struct stripe_head *sh, int method)
+-{
+-	raid5_conf_t *conf = sh->raid_conf;
+-	int i, pd_idx = sh->pd_idx, disks = sh->disks, count;
+-	void *ptr[MAX_XOR_BLOCKS], *dest;
+-	struct bio *chosen;
+-
+-	pr_debug("compute_parity5, stripe %llu, method %d\n",
+-		(unsigned long long)sh->sector, method);
+-
+-	count = 0;
+-	dest = page_address(sh->dev[pd_idx].page);
+-	switch(method) {
+-	case READ_MODIFY_WRITE:
+-		BUG_ON(!test_bit(R5_UPTODATE, &sh->dev[pd_idx].flags));
+-		for (i=disks ; i-- ;) {
+-			if (i==pd_idx)
+-				continue;
+-			if (sh->dev[i].towrite &&
+-			    test_bit(R5_UPTODATE, &sh->dev[i].flags)) {
+-				ptr[count++] = page_address(sh->dev[i].page);
+-				chosen = sh->dev[i].towrite;
+-				sh->dev[i].towrite = NULL;
+-
+-				if (test_and_clear_bit(R5_Overlap, &sh->dev[i].flags))
+-					wake_up(&conf->wait_for_overlap);
+-
+-				BUG_ON(sh->dev[i].written);
+-				sh->dev[i].written = chosen;
+-				check_xor();
+-			}
+-		}
+-		break;
+-	case RECONSTRUCT_WRITE:
+-		memset(dest, 0, STRIPE_SIZE);
+-		for (i= disks; i-- ;)
+-			if (i!=pd_idx && sh->dev[i].towrite) {
+-				chosen = sh->dev[i].towrite;
+-				sh->dev[i].towrite = NULL;
+-
+-				if (test_and_clear_bit(R5_Overlap, &sh->dev[i].flags))
+-					wake_up(&conf->wait_for_overlap);
+-
+-				BUG_ON(sh->dev[i].written);
+-				sh->dev[i].written = chosen;
+-			}
+-		break;
+-	case CHECK_PARITY:
+-		break;
+-	}
+-	if (count) {
+-		xor_blocks(count, STRIPE_SIZE, dest, ptr);
+-		count = 0;
+-	}
+-	
+-	for (i = disks; i--;)
+-		if (sh->dev[i].written) {
+-			sector_t sector = sh->dev[i].sector;
+-			struct bio *wbi = sh->dev[i].written;
+-			while (wbi && wbi->bi_sector < sector + STRIPE_SECTORS) {
+-				copy_data(1, wbi, sh->dev[i].page, sector);
+-				wbi = r5_next_bio(wbi, sector);
+-			}
+-
+-			set_bit(R5_LOCKED, &sh->dev[i].flags);
+-			set_bit(R5_UPTODATE, &sh->dev[i].flags);
+-		}
+-
+-	switch(method) {
+-	case RECONSTRUCT_WRITE:
+-	case CHECK_PARITY:
+-		for (i=disks; i--;)
+-			if (i != pd_idx) {
+-				ptr[count++] = page_address(sh->dev[i].page);
+-				check_xor();
+-			}
+-		break;
+-	case READ_MODIFY_WRITE:
+-		for (i = disks; i--;)
+-			if (sh->dev[i].written) {
+-				ptr[count++] = page_address(sh->dev[i].page);
+-				check_xor();
+-			}
+-	}
+-	if (count)
+-		xor_blocks(count, STRIPE_SIZE, dest, ptr);
+-
+-	if (method != CHECK_PARITY) {
+-		set_bit(R5_UPTODATE, &sh->dev[pd_idx].flags);
+-		set_bit(R5_LOCKED,   &sh->dev[pd_idx].flags);
+-	} else
+-		clear_bit(R5_UPTODATE, &sh->dev[pd_idx].flags);
+-}
+-
+ static void compute_parity6(struct stripe_head *sh, int method)
+ {
+ 	raid6_conf_t *conf = sh->raid_conf;
