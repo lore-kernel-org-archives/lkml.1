@@ -1,294 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763627AbXF1P3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763992AbXF1Pbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763627AbXF1P3s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 11:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbXF1P3l
+	id S1763992AbXF1Pbb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 11:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbXF1PbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 11:29:41 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55306 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756832AbXF1P3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 11:29:39 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] get rid of CONFIG_DISABLE_CONSOLE_SUSPEND
-Date: Thu, 28 Jun 2007 17:34:54 +0200
-User-Agent: KMail/1.9.5
-Cc: seife@suse.de, nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       suspend-devel@lists.sourceforge.net
-References: <20070628135108.GA1810@elf.ucw.cz>
-In-Reply-To: <20070628135108.GA1810@elf.ucw.cz>
+	Thu, 28 Jun 2007 11:31:24 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:54414 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756832AbXF1PbX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 11:31:23 -0400
+Message-ID: <4683D444.5030408@anagramm.de>
+Date: Thu, 28 Jun 2007 17:31:16 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706281734.54642.rjw@sisk.pl>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-kernel@vger.kernel.org, daniel.ritz@gmx.ch,
+       hs4233@mail.mn-solutions.de
+Subject: Re: 2.6.21.5: BUG: usbtouchscreen.c DMC TSC-10 wrong descriptor type
+ / type->init() failed.
+References: <468294E4.40801@anagramm.de> <d120d5000706271004u5e2304dekd4ad5315cdd4a55@mail.gmail.com>
+In-Reply-To: <d120d5000706271004u5e2304dekd4ad5315cdd4a55@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX18wz7lGwycalSkx/IWpSadvUKY4mwKMcUSH4G/
+ 3uTGJ8B1r5elKZ2m3mELbN5FuZ/8rxoY8ifhdTrLWNk7ihtOOH
+ noZdqvhQNIPmEWIc1gdZQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello, Dimitry!
 
-On Thursday, 28 June 2007 15:51, Pavel Machek wrote:
-> Hi!
+Dmitry Torokhov schrieb:
+> Hi,
 > 
-> What about this? (Only compile tested, but looks pretty obvious to
-> me). Something like this should get us rid of ugly option, and still
-> solve debugging problems... Hmmm?
-> 								Pavel
+> On 6/27/07, Clemens Koller <clemens.koller@anagramm.de> wrote:
+>> drivers/usb/input/usbtouchscreen.c: usbtouch_probe - type->init() 
+>> failed, err: -19
 > 
-> Kill CONFIG_DISABLE_CONSOLE_SUSPEND; it should not be configurable at
-> all, instead, we should automatically keep console alive when
-> possible.
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-> index 62051f8..8267ff8 100644
-> --- a/drivers/char/lp.c
-> +++ b/drivers/char/lp.c
-> @@ -144,7 +144,7 @@ static unsigned int lp_count = 0;
->  static struct class *lp_class;
->  
->  #ifdef CONFIG_LP_CONSOLE
-> -static struct parport *console_registered; // initially NULL
-> +static struct parport *console_registered;
->  #endif /* CONFIG_LP_CONSOLE */
+> dmc_tsc10_init() returns -ENODEV (-19) when device responds with
+> something other than 0x06 0x00 to the "reset" and "set rate" commands.
+> It would be interesting to see what your touchscreen responses are.
 
-Could you please avoid fixing things like this, white space etc. in this patch?
-It would be easier to read ...
+I found the problem:
+After the reset, I got a 0x06 0x00 back, which is fine.
 
->  #undef LP_DEBUG
-> @@ -749,8 +749,8 @@ #endif /* console on line printer */
->  /* --- initialisation code ------------------------------------- */
->  
->  static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
-> -static char *parport[LP_NO] = { NULL,  };
-> -static int reset = 0;
-> +static char *parport[LP_NO];
-> +static int reset;
->  
->  module_param_array(parport, charp, NULL, 0);
->  module_param(reset, bool, 0);
-> @@ -758,10 +758,10 @@ module_param(reset, bool, 0);
->  #ifndef MODULE
->  static int __init lp_setup (char *str)
->  {
-> -	static int parport_ptr; // initially zero
-> +	static int parport_ptr;
->  	int x;
->  
-> -	if (get_option (&str, &x)) {
-> +	if (get_option(&str, &x)) {
->  		if (x == 0) {
->  			/* disable driver on "lp=" or "lp=0" */
->  			parport_nr[0] = LP_PARPORT_OFF;
-> @@ -808,7 +808,7 @@ static int lp_register(int nr, struct pa
->  #ifdef CONFIG_LP_CONSOLE
->  	if (!nr) {
->  		if (port->modes & PARPORT_MODE_SAFEININT) {
-> -			register_console (&lpcons);
-> +			register_console(&lpcons);
->  			console_registered = port;
->  			printk (KERN_INFO "lp%d: console ready\n", CONSOLE_LP);
->  		} else
-> @@ -824,8 +824,7 @@ static void lp_attach (struct parport *p
->  {
->  	unsigned int i;
->  
-> -	switch (parport_nr[0])
-> -	{
-> +	switch (parport_nr[0]) {
->  	case LP_PARPORT_UNSPEC:
->  	case LP_PARPORT_AUTO:
->  		if (parport_nr[0] == LP_PARPORT_AUTO &&
-> @@ -856,7 +855,7 @@ static void lp_detach (struct parport *p
->  	/* Write this some day. */
->  #ifdef CONFIG_LP_CONSOLE
->  	if (console_registered == port) {
-> -		unregister_console (&lpcons);
-> +		unregister_console(&lpcons);
->  		console_registered = NULL;
->  	}
->  #endif /* CONFIG_LP_CONSOLE */
-> diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
-> index 69233f6..7f7c2ce 100644
-> --- a/drivers/net/netconsole.c
-> +++ b/drivers/net/netconsole.c
-> @@ -75,7 +75,7 @@ static void write_msg(struct console *co
->  
->  	local_irq_save(flags);
->  
-> -	for(left = len; left; ) {
-> +	for (left = len; left; ) {
->  		frag = min(left, MAX_PRINT_CHUNK);
->  		netpoll_send_udp(&np, msg, frag);
->  		msg += frag;
-> @@ -103,10 +103,10 @@ static int init_netconsole(void)
->  {
->  	int err;
->  
-> -	if(strlen(config))
-> +	if (strlen(config))
->  		option_setup(config);
->  
-> -	if(!configured) {
-> +	if (!configured) {
->  		printk("netconsole: not configured, aborting\n");
->  		return 0;
->  	}
-> @@ -115,6 +115,7 @@ static int init_netconsole(void)
->  	if (err)
->  		return err;
->  
-> +	disable_console_on_suspend++;
->  	register_console(&netconsole);
->  	printk(KERN_INFO "netconsole: network logging started\n");
->  	return 0;
-> @@ -123,6 +124,7 @@ static int init_netconsole(void)
->  static void cleanup_netconsole(void)
->  {
->  	unregister_console(&netconsole);
-> +	disable_console_on_suspend--;
->  	netpoll_cleanup(&np);
->  }
->  
-> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-> index 326020f..b2331a5 100644
-> --- a/drivers/serial/serial_core.c
-> +++ b/drivers/serial/serial_core.c
-> @@ -1934,12 +1934,10 @@ int uart_suspend_port(struct uart_driver
->  
->  	mutex_lock(&state->mutex);
->  
-> -#ifdef CONFIG_DISABLE_CONSOLE_SUSPEND
->  	if (uart_console(port)) {
->  		mutex_unlock(&state->mutex);
->  		return 0;
->  	}
-> -#endif
->  
->  	if (state->info && state->info->flags & UIF_INITIALIZED) {
->  		const struct uart_ops *ops = port->ops;
-> @@ -1982,12 +1980,10 @@ int uart_resume_port(struct uart_driver 
->  
->  	mutex_lock(&state->mutex);
->  
-> -#ifdef CONFIG_DISABLE_CONSOLE_SUSPEND
->  	if (uart_console(port)) {
->  		mutex_unlock(&state->mutex);
->  		return 0;
->  	}
-> -#endif
->  
->  	uart_change_pm(state, 0);
->  
-> diff --git a/include/linux/console.h b/include/linux/console.h
-> index 62ef6e1..3cb477e 100644
-> --- a/include/linux/console.h
-> +++ b/include/linux/console.h
-> @@ -120,14 +120,11 @@ extern void console_stop(struct console 
->  extern void console_start(struct console *);
->  extern int is_console_locked(void);
->  
-> -#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
-> +extern int disable_console_on_suspend;
-> +
->  /* Suspend and resume console messages over PM events */
->  extern void suspend_console(void);
->  extern void resume_console(void);
-> -#else
-> -static inline void suspend_console(void) {}
-> -static inline void resume_console(void) {}
-> -#endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
->  
->  int mda_console_init(void);
->  void prom_con_init(void);
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 7564c38..59f103b 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -37,17 +37,6 @@ config PM_DEBUG
->  	code. This is helpful when debugging and reporting various PM bugs, 
->  	like suspend support.
->  
-> -config DISABLE_CONSOLE_SUSPEND
-> -	bool "Keep console(s) enabled during suspend/resume (DANGEROUS)"
-> -	depends on PM && PM_DEBUG
-> -	default n
-> -	---help---
-> -	This option turns off the console suspend mechanism that prevents
-> -	debug messages from reaching the console during the suspend/resume
-> -	operations.  This may be helpful when debugging device drivers'
-> -	suspend/resume routines, but may itself lead to problems, for example
-> -	if netconsole is used.
-> -
->  config PM_TRACE
->  	bool "Suspend/resume event tracing"
->  	depends on PM && PM_DEBUG && X86_32 && EXPERIMENTAL
-> @@ -57,8 +46,8 @@ config PM_TRACE
->  	RTC across reboots, so that you can debug a machine that just hangs
->  	during suspend (or more commonly, during resume).
->  
-> -	To use this debugging feature you should attempt to suspend the machine,
-> -	then reboot it, then run
-> +	To use this debugging feature you should attempt to suspend the
-> +	machine, then reboot it, then run
->  
->  		dmesg -s 1000000 | grep 'hash matches'
->  
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index 0bbdeac..c057023 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -726,7 +726,8 @@ int __init add_preferred_console(char *n
->  	return 0;
->  }
->  
-> -#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
-> +int disable_console_on_suspend;
-> +
->  /**
->   * suspend_console - suspend the console subsystem
->   *
-> @@ -734,17 +735,22 @@ #ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
->   */
->  void suspend_console(void)
->  {
-> -	printk("Suspending console(s)\n");
-> -	acquire_console_sem();
-> -	console_suspended = 1;
-> +	if (disable_console_on_suspend) {
-> +		printk("Suspending console(s)\n");
-> +		acquire_console_sem();
-> +		console_suspended = 1;
-> +	}
->  }
->  
->  void resume_console(void)
->  {
-> -	console_suspended = 0;
-> -	release_console_sem();
-> +	if (console_suspended) {
-> +		BUG_ON(!disable_console_on_suspend);
+But when the driver sets the coordinate output rate, the TSC-103
+answered 0x15 0x01 which means that the TSC-10 is used with an
+EEPROM but the EEPROM data is empty (which is correct).
 
-Isn't that a bit extreme?
+In that case the driver should at least continue to allow
+initialization of the EEPROM later on. But as we don't have the
+infrastructure to write the calibration data back to EEPROM, only
+touch screen manufacturers which want to use the EEPROM will run into
+that problem...
 
-> +		console_suspended = 0;
-> +		release_console_sem();
-> +	}
->  }
-> -#endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
-> +
->  
->  /**
->   * acquire_console_sem - lock the console system for exclusive use.
+The same is true if there is no EEPROM present but the EEPROM is enabled.
+Anyway, I disabled my EEPROM by pulling the SEL4 pin high because I don't
+need/want it (yet).
 
-I generally agree with the idea, but the patch needs a clean up, IMHO.
+So, it *works for me* but just for future reference:
+The DMC TSC-10 driver doesn't start, when it has an empty (new)
+EEPROM attached.
 
-Greetings,
-Rafael
+I started to do some more error handling, but it's propably not
+worth doing so if the driver(s) has only limited functionality (and
+no userspace app using it).
 
-
+Thank you,
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
