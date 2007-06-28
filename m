@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbXF1Nge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbXF1Nha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760023AbXF1Nge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 09:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbXF1Ng0
+	id S1760741AbXF1Nha (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 09:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbXF1NhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 09:36:26 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:48769 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753810AbXF1NgZ (ORCPT
+	Thu, 28 Jun 2007 09:37:19 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:16451 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755072AbXF1NhS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 09:36:25 -0400
-Date: Thu, 28 Jun 2007 08:36:12 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "Serge E. Hallyn" <serge@hallyn.com>,
-       Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
-       casey@schaufler-ca.com, Andrew Morton <akpm@google.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: implement-file-posix-capabilities.patch
-Message-ID: <20070628133612.GA29641@sergelap.austin.ibm.com>
-References: <4676007F.7060503@kernel.org> <20070618044017.GW3723@sequoia.sous-sol.org> <20070620171037.GA28670@sergelap.ibm.com> <20070620174613.GF3723@sequoia.sous-sol.org> <20070621160011.GB9913@sergelap.austin.ibm.com> <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com> <4681EED8.6050005@kernel.org> <20070627131654.GA2679@sergelap> <468352EC.2080704@kernel.org>
+	Thu, 28 Jun 2007 09:37:18 -0400
+Date: Thu, 28 Jun 2007 15:37:15 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
+Message-ID: <20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <468352EC.2080704@kernel.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Serge E. Hallyn wrote:
-> >> Does that explain it?
-> > 
-> > Yes, thanks, but then it still could come in handy to have fE be a full
-> > bitset, so the application gets some eff caps automatically, while
-> > others it has to manually set...
-> 
-> [We touched on this a number of emails back.]
-> 
-> If an application is capability aware, it can manipulate its own
-> capabilities and should have fE=0.
-> 
-> If an application is not capability aware, it needs to have *all* of its
-> capabilities enabled at exec() time. Otherwise, it won't work.
-> 
-> The only reason for having an fE bitmap is to allow a capability-aware
-> program (you really trust to do its privileged operations carefully) to
-> be lazy and get some of its capabilities raised for free. Perhaps you
-> can clarify why this is a desirable thing? :-)
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Sure - because it doesn't hurt anything, someone just *might* find it
-useful one day, and mostly the three bitmaps just look a lot cleaner to
-me than hiding a bit inside the version field.  There are a *few* people
-using this, and so a complete switch in format for no actual net gain
-seems wrong.  If we want to fake fE to the user as being one bit we can
-do that through the setfcaps/getfcaps programs.
+check_signature() uses readb() and therefore should only be build on
+CONFIG_HAS_IOMEM.
 
-There also are prior examples of doing it this way (i.e. Olaf Dietsche's
-implementation)
+Otherwise breaks s390:
+lib/check_signature.c: In function `check_signature':
+lib/check_signature.c:19: error: implicit declaration of function `readb'
 
-OTOH I don't deny implementing it fully as you describe seems to make
-the intent of the code clearer to readers and maintainers.
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ lib/Makefile |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-I guess maybe I'll give it a go and see what turns out.
-
-thanks,
--serge
+Index: linux-2.6.22-rc6-mm1/lib/Makefile
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/lib/Makefile
++++ linux-2.6.22-rc6-mm1/lib/Makefile
+@@ -5,8 +5,7 @@
+ lib-y := ctype.o string.o vsprintf.o cmdline.o \
+ 	 rbtree.o radix-tree.o dump_stack.o \
+ 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
+-	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
+-	 check_signature.o
++	 sha1.o irq_regs.o reciprocal_div.o argv_split.o
+ 
+ lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
+ lib-$(CONFIG_SMP) += cpumask.o
+@@ -22,7 +21,7 @@ CFLAGS_kobject_uevent.o += -DDEBUG
+ endif
+ 
+ obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
+-obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
++obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
+ obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
+ obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
+ lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
