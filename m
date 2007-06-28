@@ -1,132 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763888AbXF1A4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763440AbXF1BeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763888AbXF1A4u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 20:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbXF1A4m
+	id S1763440AbXF1BeU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 21:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXF1BeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 20:56:42 -0400
-Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:60444 "EHLO
-	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758944AbXF1A4l (ORCPT
+	Wed, 27 Jun 2007 21:34:09 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:39106 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759242AbXF1BeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 20:56:41 -0400
-To: davids@webmaster.com
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-References: <MDEHLPKNGKAHNMBLJOLKAELBEOAC.davids@webmaster.com>
-From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Date: Wed, 27 Jun 2007 21:56:22 -0300
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAELBEOAC.davids@webmaster.com> (David Schwartz's message of "Wed\, 27 Jun 2007 16\:53\:14 -0700")
-Message-ID: <ory7i4zykp.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Wed, 27 Jun 2007 21:34:08 -0400
+Message-ID: <46830FDE.7060502@ak.jp.nec.com>
+Date: Thu, 28 Jun 2007 10:33:18 +0900
+From: KaiGai Kohei <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>, James Morris <jmorris@namei.org>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] file capabilities: introduce cap_setfcap
+References: <20070627171506.GA16764@sergelap.austin.ibm.com>
+In-Reply-To: <20070627171506.GA16764@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 27, 2007, "David Schwartz" <davids@webmaster.com> wrote:
+Serge E. Hallyn wrote:
+> Here's the first patch (of several or many to come) to address some of
+> Andrew's comments.
+> 
+> Kaigai, IIUC cap_names.h will eventually be automatically updated?  (I
+> had to manually tweak it for testing as the new kernel sources were not
+> located on the test system)
 
-> Alexandre Oliva writes:
+The origin of cap_names.h is "/usr/include/linux/capability.h".
+Some scripts kicked by Makefile convert it, then cap_names.h will
+be generated.
 
->> Yes, but in the scenario I proposed, the source code *is* in the
->> preferred form for making modifications, it just so happens to be
->> behind a barrier you cannot trespass.  This is not different from
->> shipping binaries and sources in a CD inside a locked box that you
->> can't open.  You've received both, but how is the fact that you can't
->> reach the source code (or the binaries) a violation of the GPL in this
->> case?
+I don't know whether we can expect the kernel headers are always
+deployed under "/usr/include/linux", or not.
+In Fedora system, the kernel-headers package deploys all headers
+there, so cap_names.h will eventually be automatically updated.
 
-> Behind a barrier is not the preferred form for modification.
+Thanks,
 
-Where does it state that there must not be a barrier?  I see it saying
-the source must accompany the binary, under 3a.  
+> thanks,
+> -serge
+> 
+>>From fefcd341e478bd9e490d34abe9efd3c3c4f0b8a0 Mon Sep 17 00:00:00 2001
+> From: Serge E. Hallyn <serue@us.ibm.com>
+> Date: Wed, 27 Jun 2007 13:09:20 -0400
+> Subject: [PATCH 1/1] file capabilities: introduce cap_setfcap
+> 
+> Setting file capabilities previously required the
+> cap_sys_admin capability, since they are stored as
+> extended attributes in the security.* namespace.
+> 
+> Introduce CAP_SETFCAP (to mirror CAP_SETPCAP), and
+> require it for setting file capabilities instead of
+> CAP_SYS_ADMIN.
+> 
+> Quoting Andrew Morgan,
+> 
+> "CAP_SYS_ADMIN is way too overloaded and this
+> functionality is special."
+> 
+> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> ---
+>  include/linux/capability.h |    4 +++-
+>  security/commoncap.c       |   12 ++++++++++--
+>  2 files changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/capability.h b/include/linux/capability.h
+> index 89125df..cdfaa10 100644
+> --- a/include/linux/capability.h
+> +++ b/include/linux/capability.h
+> @@ -324,7 +324,9 @@ typedef __u32 kernel_cap_t;
+>  
+>  #define CAP_AUDIT_CONTROL    30
+>  
+> -#define CAP_NUMCAPS	     31
+> +#define CAP_SETFCAP	     31
+> +
+> +#define CAP_NUMCAPS	     32
+>  
+>  #ifdef __KERNEL__
+>  /* 
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index 4e9ff02..24de4fa 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -290,7 +290,11 @@ int cap_bprm_secureexec (struct linux_binprm *bprm)
+>  int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
+>  		       size_t size, int flags)
+>  {
+> -	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+> +	if (!strcmp(name, XATTR_NAME_CAPS)) {
+> +		if (!capable(CAP_SETFCAP))
+> +			return -EPERM;
+> +		return 0;
+> +	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
+>  		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+>  	    !capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+> @@ -299,7 +303,11 @@ int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
+>  
+>  int cap_inode_removexattr(struct dentry *dentry, char *name)
+>  {
+> -	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+> +	if (!strcmp(name, XATTR_NAME_CAPS)) {
+> +		if (!capable(CAP_SETFCAP))
+> +			return -EPERM;
+> +		return 0;
+> +	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
+>  		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+>  	    !capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
 
-> Encrypted with a key you don't have is not the preferred form for
-> modification.
-
-Indeed, but why does it matter?  In a CD is not the preferred form for
-making modifications either.  In fact, in the CD, you can't modify it
-at all.  What's *behind* encryption is the source code, along with the
-binary it accompanies.
-
->> And, if it's not a violation, what is it that makes the case of
->> shipping programs in a locked enclosure different from shipping them
->> in a locked computing device?
-
-> I honestly don't see what relevance this could possibly
-> have. Getting access to the source is a fundamental GPL right.
-
-That's the spirit.  But where does the *letter* of the GPL state it?
-
-> By this argument, shipping a GPL'd work in ROM would violate the GPL
-> because you cannot easily modify that particular copy.
-
-I've already explained that the inability to modify what's in the CD
-is not a restriction imposed by whoever recorded the bits in there as
-a means to stop you from making modifications.
-
->> I ought to be entitled to modify any bit in the executable and
->> expect that to have the same effect as modifying that bit on that
->> executable on any other computer.
-
-> Nope, sorry. If this were true, you ought to be entitled to modify a bit in
-> the Linux kernel and have it have the same effect as modifying that Linux
-> kernel on my desktop.
-
-If your desktop is sufficiently similar, and the kernel binaries are
-identical, why should I not expect the same result to arise?
-
-> Again, nonsense view leads to nonsense conclusions.  The fix is to
-> reject the nonsense view. There are no special GPL rights to
-> particular copies of works or particular hardware.
-
-  2. You may modify your copy or copies of the Program or any portion
-     of it          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
->> The fact that it stops
->> working as a result of TiVo's design to prohibit modification, rather
->> than by any other differences in the computer (e.g., the absence of
->> the signature checks), just goes to show that there is intent to
->> impose further restrictions on modification of the software.
-
-> Intent is not the issue.
-
-Imposing further restrictions is the issue.
-
-> If modifying software in this way is a GPL right, then anything that
-> prevents you from modifying software in this way is a GPL violation.
-
-If it is imposed by the licensee, yes, it is indeed.
-
-> If you can't distribute so as to give all GPL rights, you can't
-> distribute at all.
-
-Exactly.
-
-> If the GPL says I can modify my distributed copy, then distributing
-> on CDROM is a GPL violation.
-
-It doesn't state "you must distribute sources in modifyable media", it
-says "you may modify your copies, and the distributor must not have
-imposed restrictions on your exercise of this right"
-
-If you can't modify your copies because others get in the way, too
-bad.  If you can't just because the distributor stops you, there's a
-GPL violation.
-
-> It is mind-bogglingly obvious that any sort of "right to modify one
-> particular copy" is *not* a GPL right.
-
-Please read the license instead of assuming you know what it says.
-You clearly don't.  See above.
-
-> You are wasting an awful lot of time and effort analyzing things that have
-> *NO* GPL consequence at all.
-
-Let's just say I honestly hope you are right and I'm wrong.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Open Source Software Promotion Center, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
