@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932662AbXF1Xti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbXF1XyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932662AbXF1Xti (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 19:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761387AbXF1Xt1
+	id S932323AbXF1XyV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 19:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761156AbXF1XyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 19:49:27 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43809 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932555AbXF1XtZ (ORCPT
+	Thu, 28 Jun 2007 19:54:14 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:64306 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759461AbXF1XyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 19:49:25 -0400
-Date: Fri, 29 Jun 2007 01:49:49 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, perex@suse.cz
-Subject: Re: [PATCH] ALSA: more section mismatches
-Message-ID: <20070628234949.GF6087@stusta.de>
-References: <20070628150515.0d819891.randy.dunlap@oracle.com> <20070628153949.8582d3a4.akpm@linux-foundation.org>
+	Thu, 28 Jun 2007 19:54:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JbOHMRkVaIM5m8ZTvWxZEmVsuXlPkdjd3Qzo5PK0kkhCZd77e/Fb4pSEPSixIPOIOnF/aYw2jn/bmbwqWnVf98tEsRJ5rLWM5yvObJsEBHPpY9S8xtj1xOTokvrXH3Y/TFec/K8VnsNg42wQJ6v4gn38yft6BasayFM5tAYzMfc=
+Message-ID: <8bd0f97a0706281654r37a3e10cja74a359bf7d425f@mail.gmail.com>
+Date: Thu, 28 Jun 2007 18:54:12 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Kyle McMartin" <kyle@mcmartin.ca>
+Subject: Re: [PATCH] Info dump on Oops or panic()
+Cc: "Joshua Wise" <jwise@google.com>, linux-kernel@vger.kernel.org,
+       akpm@google.com, thockin@google.com, mikew@google.com,
+       masouds@google.com
+In-Reply-To: <20070628221835.GI2784@fattire.cabal.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070628153949.8582d3a4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <Pine.LNX.4.64.0706281502350.617@internets.corp.google.com>
+	 <20070628221835.GI2784@fattire.cabal.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 03:39:49PM -0700, Andrew Morton wrote:
-> On Thu, 28 Jun 2007 15:05:15 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Fix section mismatch warnings:
-> > 
-> > WARNING: sound/built-in.o(.exit.text+0x3ad): Section mismatch: reference to .init.text: (between 'sb_exit' and 'unload_uart6850')
-> > WARNING: sound/built-in.o(.exit.text+0x753): Section mismatch: reference to .init.text: (between 'snd_mts64_module_exit' and 'snd_portman_module_exit')
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > ---
-> >  sound/drivers/mts64.c |    2 +-
-> >  sound/oss/sb_card.c   |    2 +-
-> >  2 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > --- linux-2622-rc6.orig/sound/drivers/mts64.c
-> > +++ linux-2622-rc6/sound/drivers/mts64.c
-> > @@ -1048,7 +1048,7 @@ static struct platform_driver snd_mts64_
-> >  /*********************************************************************
-> >   * module init stuff
-> >   *********************************************************************/
-> > -static void __init_or_module snd_mts64_unregister_all(void)
-> > +static void snd_mts64_unregister_all(void)
-> 
-> Well this is called from __exit, so __init_or_module isn't right.  But we
-> don't have an __exit_or_module.
->...
+On 6/28/07, Kyle McMartin <kyle@mcmartin.ca> wrote:
+> On Thu, Jun 28, 2007 at 03:05:56PM -0700, Joshua Wise wrote:
+> > --- a/arch/x86_64/kernel/process.c
+> > +++ b/arch/x86_64/kernel/process.c
+> > @@ -356,6 +356,7 @@ void show_regs(struct pt_regs *regs)
+> >       printk("CPU %d:", smp_processor_id());
+> >       __show_regs(regs);
+> >       show_trace(NULL, regs, (void *)(regs + 1));
+> > +     atomic_notifier_call_chain(&info_dumper_list, 0, NULL);
+> >  }
+> >
+>
+> woah woah woah. This could push critical bits of the register dump or
+> stacktrace off the screen... Barring any other problems with the patch,
+> this should probably be dumped in the oops header, not trailing it where
+> it could hide critical debugging info.
 
-No, it's correct. It simply says that this code can only be discarted 
-after initialization if it's not a module, since it's also used from 
-__exit code.
-
-The idea behind __init_or_module is that __exit code is never executed 
-for non-modular code, and such cases where some function is executed 
-both by both __init and __exit and never from other code aren't that 
-unusual.
-
-I'm not sure how realistic it is, but it would be best if we could at 
-some point in the future simply give gcc a few basic hints that stuff 
-like module_init() can use code that is __init and let gcc figure out 
-which code to move to this section...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+on the flip side, poorly written chained funcs could oops thus
+preventing the good info (like stacktrace) from being shown ...
+-mike
