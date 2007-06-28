@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765930AbXF1Suq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765680AbXF1Szh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765930AbXF1Suq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765251AbXF1Std
+	id S1765680AbXF1Szh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758668AbXF1Sz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:49:33 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:4288 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765045AbXF1Stb (ORCPT
+	Thu, 28 Jun 2007 14:55:29 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:47182 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757104AbXF1Sz3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:49:31 -0400
-X-AuthUser: davidel@xmailserver.org
-From: Davide Libenzi <davidel@xmailserver.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Rik van Riel <riel@redhat.com>, Andy Isaacson <adi@hexapodia.org>
-Date: Thu, 28 Jun 2007 11:49:24 -0700
-Subject: [patch 4/4] MAP_NOZERO v2 - avoid ptrace/setuid+exec races
+	Thu, 28 Jun 2007 14:55:29 -0400
+Date: Thu, 28 Jun 2007 14:55:26 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Eric Paris <eparis@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/7] ICH Force HPET: Make generic time capable of switching
+ broadcast timer
+In-Reply-To: <20070628110254.3957c927.akpm@linux-foundation.org>
+Message-ID: <Line.LNX.4.64.0706281452400.14008@localhost.localdomain>
+References: <20070622203822.GA22807@linux-os.sc.intel.com>
+ <20070628001221.364438ce.akpm@linux-foundation.org>
+ <20070628012749.caf450f6.akpm@linux-foundation.org>
+ <1183034748.3504.3.camel@localhost.localdomain> <20070628110254.3957c927.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.5792.1183056570.4>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It can happen that a root application doing:
+On Thu, 28 Jun 2007, Andrew Morton wrote:
 
-     setuid(newuid);
-                         <- ptrace_attach();
-     exec(...);
-     exit(1);
+> We cannot merge a kernel change which requires a userspace upgrade to get
+> the X server working again.
 
-is raced by an application running under "newuid" and is ptrace-attached
-and its memory is peek/poke.
-The patch add a new "exec uid" that is set only after the complete detach
-from the old process context is done. The ptrace's may_attach() function
-is also changed to check that the attacher xuid matches the attached xuid.
+Agreed.
+
+> 
+> You can do it the other way: make the X server work by default (my patch)
+> then, in your upgraded userspace, set /proc/sys/kernel/mmap_min_addr to
+> 65536.  
+> 
+> Repeat: I think you should have used /proc/sys/vm/ for that tunable.
+
+Andrew, I sent patches for these earlier.  Possibly lost somewhere?
+
+http://marc.info/?l=linux-kernel&m=118304565827673&w=2
+http://marc.info/?l=linux-kernel&m=118304566015586&w=2
 
 
-
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-
-
-- Davide
-
-
----
- fs/exec.c             |    2 ++
- include/linux/sched.h |    2 +-
- kernel/ptrace.c       |    1 +
- 3 files changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.mod/fs/exec.c
-===================================================================
---- linux-2.6.mod.orig/fs/exec.c	2007-06-28 11:45:06.000000000 -0700
-+++ linux-2.6.mod/fs/exec.c	2007-06-28 11:45:20.000000000 -0700
-@@ -905,6 +905,8 @@
- 	flush_signal_handlers(current, 0);
- 	flush_old_files(current->files);
- 
-+	current->xuid = current->uid;
-+
- 	return 0;
- 
- mmap_failed:
-Index: linux-2.6.mod/include/linux/sched.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/sched.h	2007-06-28 11:45:20.000000000 -0700
-+++ linux-2.6.mod/include/linux/sched.h	2007-06-28 11:45:20.000000000 -0700
-@@ -917,7 +917,7 @@
- 	struct list_head cpu_timers[3];
- 
- /* process credentials */
--	uid_t uid,euid,suid,fsuid;
-+	uid_t uid,euid,suid,fsuid,xuid;
- 	gid_t gid,egid,sgid,fsgid;
- 	struct group_info *group_info;
- 	kernel_cap_t   cap_effective, cap_inheritable, cap_permitted;
-Index: linux-2.6.mod/kernel/ptrace.c
-===================================================================
---- linux-2.6.mod.orig/kernel/ptrace.c	2007-06-28 11:45:06.000000000 -0700
-+++ linux-2.6.mod/kernel/ptrace.c	2007-06-28 11:45:20.000000000 -0700
-@@ -135,6 +135,7 @@
- 		return 0;
- 	if (((current->uid != task->euid) ||
- 	     (current->uid != task->suid) ||
-+	     (current->xuid != task->xuid) ||
- 	     (current->uid != task->uid) ||
- 	     (current->gid != task->egid) ||
- 	     (current->gid != task->sgid) ||
-
+-- 
+James Morris
+<jmorris@namei.org>
