@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932242AbXF1Wcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXF1WkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932242AbXF1Wcu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 18:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764667AbXF1Wcm
+	id S932095AbXF1WkQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 18:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbXF1WkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 18:32:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50456 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763628AbXF1Wcm (ORCPT
+	Thu, 28 Jun 2007 18:40:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38878 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755669AbXF1WkB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 18:32:42 -0400
-Subject: Re: New format Intel microcode...
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Shaohua Li <shaohua.li@intel.com>, jamagallon@ono.com,
-       tigran@aivazian.fsnet.co.uk,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <468434DE.103@tmr.com>
-References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com>
-	 <1174610594.6598.3.camel@sli10-conroe.sh.intel.com>
-	 <6278d2220706261442u9b137c5xb6225b3f56605554@mail.gmail.com>
-	 <p731wfy5m74.fsf@bingen.suse.de> <4683BD56.7070707@tmr.com>
-	 <20070628152747.GA14519@one.firstfloor.org>  <468434DE.103@tmr.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Thu, 28 Jun 2007 15:30:55 -0700
-Message-Id: <1183069855.5889.2.camel@laptopd505.fenrus.org>
+	Thu, 28 Jun 2007 18:40:01 -0400
+Date: Thu, 28 Jun 2007 15:39:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, perex@suse.cz
+Subject: Re: [PATCH] ALSA: more section mismatches
+Message-Id: <20070628153949.8582d3a4.akpm@linux-foundation.org>
+In-Reply-To: <20070628150515.0d819891.randy.dunlap@oracle.com>
+References: <20070628150515.0d819891.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 Jun 2007 15:05:15 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> I was mainly concerned with this being a new issue, and curious if 
-> Microsoft was calling an O/S bug a "microcode fix," given that the 
-> average Windows user doesn't know microcode from nanotech anyway. The 
-> non-answer from Arjan didn't answer either, and started by calling the
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix section mismatch warnings:
+> 
+> WARNING: sound/built-in.o(.exit.text+0x3ad): Section mismatch: reference to .init.text: (between 'sb_exit' and 'unload_uart6850')
+> WARNING: sound/built-in.o(.exit.text+0x753): Section mismatch: reference to .init.text: (between 'snd_mts64_module_exit' and 'snd_portman_module_exit')
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  sound/drivers/mts64.c |    2 +-
+>  sound/oss/sb_card.c   |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-2622-rc6.orig/sound/drivers/mts64.c
+> +++ linux-2622-rc6/sound/drivers/mts64.c
+> @@ -1048,7 +1048,7 @@ static struct platform_driver snd_mts64_
+>  /*********************************************************************
+>   * module init stuff
+>   *********************************************************************/
+> -static void __init_or_module snd_mts64_unregister_all(void)
+> +static void snd_mts64_unregister_all(void)
 
-then ask questions?
-Linux 2.6 is not affected.. what more is there to say? Regardless of
-that as I said, Intel recommends always running the most current
-microcode. 
+Well this is called from __exit, so __init_or_module isn't right.  But we
+don't have an __exit_or_module.
 
+>  {
+>  	int i;
+>  
+> --- linux-2622-rc6.orig/sound/oss/sb_card.c
+> +++ linux-2622-rc6/sound/oss/sb_card.c
+> @@ -290,7 +290,7 @@ static struct pnp_card_driver sb_pnp_dri
+>  MODULE_DEVICE_TABLE(pnp_card, sb_pnp_card_table);
+>  #endif /* CONFIG_PNP */
+>  
+> -static void __init_or_module sb_unregister_all(void)
+> +static void sb_unregister_all(void)
+>  {
+>  #ifdef CONFIG_PNP
+>  	if (pnp_registered)
 
-> I'd like the microcode update, some people elsewhere speculate that user 
-> level code could effect reliability if not security.
+One of these is alsa and the other isn't.
 
-those "people" are speculating. Simple as that.
-
-(oh and the microcode update is already there as I said... so what's the
-problem?)
-
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+But what the heck: obviously safe, I'll slam it all in.
