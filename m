@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765103AbXF1VGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765561AbXF1VJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765103AbXF1VGA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 17:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbXF1VFv
+	id S1765561AbXF1VJc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 17:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761069AbXF1VJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 17:05:51 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43644 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759332AbXF1VFv (ORCPT
+	Thu, 28 Jun 2007 17:09:25 -0400
+Received: from aurora.bayour.com ([84.243.56.243]:57821 "EHLO
+	aurora.bayour.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760948AbXF1VJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 17:05:51 -0400
-Date: Thu, 28 Jun 2007 23:06:14 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Nix <nix@esperi.org.uk>
-Cc: Olivier Galibert <galibert@pobox.com>, Takashi Iwai <tiwai@suse.de>,
-       Tomasz K?oczko <kloczek@rudy.mif.pg.gda.pl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Message-ID: <20070628210614.GC6087@stusta.de>
-References: <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl> <20070624215724.025a5de5@the-village.bc.nu> <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl> <s5h3b0gi9mp.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl> <s5hzm2ogqr7.wl%tiwai@suse.de> <20070625124442.GA44019@dspnet.fr.eu.org> <20070625132107.GD1094@stusta.de> <87tzssextf.fsf@hades.wkstn.nix>
+	Thu, 28 Jun 2007 17:09:25 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jun 2007 17:09:24 EDT
+From: Turbo Fredriksson <turbo@bayour.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Moving MD/LVM from PPC to x86
+Organization: Bah!
+X-PGP-Fingerprint: B7 92 93 0E 06 94 D6 22  98 1F 0B 5B FE 33 A1 0B
+X-PGP-Key-ID: 0x788CD1A9
+X-URL: http://www.bayour.com/
+Date: Thu, 28 Jun 2007 23:02:39 +0200
+Message-ID: <87wsxneqs0.fsf@pumba.bayour.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.95 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <87tzssextf.fsf@hades.wkstn.nix>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 07:30:36PM +0100, Nix wrote:
-> On 25 Jun 2007, Adrian Bunk stated:
-> > If people often run into this problem it might make sense to deprecate 
-> > the in-kernel OSS emulation and point people to the userspace emulation 
-> > instead?
-> 
-> So now people need to know internal implementation details like if a
-> program uses ALSA or OSS interfaces before they know how to *run* it?
-> 
-> That doesn't sound especially nice to use (and before you say
-> `distributors will do it', not all programs are built by distributors).
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-The interesting point is that what you call "internal implementation 
-details" is much _more_ exposed with the OSS emulation in the kernel
-_enabled_.
+I'm trying to move some disks from my PPC desktop to a dedicated
+server. Yesterday my system looked like this:
 
-Why?
+  1. /dev/md0     372.61Gb  (sda1+missing)
+  2. /dev/hdb      74.53Gb
+  3. /dev/sdb     298.09Gb
 
-Linux software not supporting ALSA has becoming quite esoteric.
+Now with the paycheck, I bought a third SATA disk (400Gb). I new from
+the start that disk wouldn't fit in my desktopbox, so I also bought a
+500W PSU (I had a huge server case without PSU from previously).
 
-But software like mplayer supporting both and trying OSS first and 
-software supporting both and letting the user choose is today much more 
-common. And that's exactly the case where users run into the results of 
-the "internal implementation detail" that their application used the 
-in-kernel OSS emulation instead of ALSA resulting in exactly these 
-problems.
+I was a little impatient, so I added the new disk (physically just
+dangling outside the box :) to the LVM (as md1+missing).
 
-There is also a userspace OSS emulation for ALSA not suffering from 
-these problems.
+The idea was to re-create sdb as mdX+missing, so I tried pvmove sdb.
+But instantly received a lot of errors. Now I can't remove it
+from the VG!
 
-It's not my decision whether or not to remove the in-kernel OSS emulation, 
-all I'm saying is that removing it might actually result in less users 
-having problems.
+My new server is a i386, and I already had a disk with Linux installed
+for Intel, so that disk was also moved (from another server I don't
+need any more - it was a Pentium 1 - to slow! :).
 
-cu
-Adrian
+In with the system disk, in with the LVM disk and started. The system
+had to be upgraded (from Ubuntu 6.xx to 7.04 - Feisty). Took a couple
+of hours, and when that was done, I started to get the MD's working.
+No go... One of the disks didn't even have a partition table!? None
+of the disks had a MD superblock!
 
--- 
+I wasn't really scared, I knew I haven't tried to modify the disks.
+Put everything back into the PPC, and yes, everything works as
+expected (exept the read errors from sdc/md1).
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+So, long winded explanation of what i've done, any idea about:
+
+  1. How do I remove md1/sdc before I get data on it (i have the
+     LVM unmounted for the time being).
+
+  2. How do I move a VG/PV/LV from PPC to x86?
+     I.e., how do I fix/solve/get around the problem with endianness
+     so I can move the disks between the machines?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+Comment: Processed by Mailcrypt 3.5.8 <http://mailcrypt.sourceforge.net/>
+
+iD8DBQFGhCHomlWzPKccHgARApC7AJ9eFBMpNObARyIiFptbwChKCWzaXACfSr6z
+m6k0jAvBS0PtC/1Is8OWTvk=
+=qrJb
+-----END PGP SIGNATURE-----
