@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765655AbXF1UlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765695AbXF1Umt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765655AbXF1UlR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 16:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbXF1UlG
+	id S1765695AbXF1Umt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 16:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759878AbXF1Umm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 16:41:06 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:32998 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757192AbXF1UlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 16:41:05 -0400
-Subject: Re: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
-From: Zan Lynx <zlynx@acm.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ashok.raj@intel.com, shaohua.li@intel.com,
-       anil.s.keshavamurthy@intel.com
-In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-b8z8SMVyvtgEnqr7BQ7X"
-Date: Thu, 28 Jun 2007 14:40:32 -0600
-Message-Id: <1183063232.7813.23.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-Envelope-From: zlynx@acm.org
+	Thu, 28 Jun 2007 16:42:42 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43620 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757619AbXF1Umm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 16:42:42 -0400
+Date: Thu, 28 Jun 2007 22:43:05 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: Rene Herman <rene.herman@gmail.com>, Nix <nix@esperi.org.uk>,
+       Olivier Galibert <galibert@pobox.com>, Takashi Iwai <tiwai@suse.de>,
+       Tomasz K?oczko <kloczek@rudy.mif.pg.gda.pl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Message-ID: <20070628204305.GB6087@stusta.de>
+References: <20070624215724.025a5de5@the-village.bc.nu> <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl> <s5h3b0gi9mp.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl> <s5hzm2ogqr7.wl%tiwai@suse.de> <20070625124442.GA44019@dspnet.fr.eu.org> <20070625132107.GD1094@stusta.de> <87tzssextf.fsf@hades.wkstn.nix> <468413D2.60101@gmail.com> <75b66ecd0706281320s29178c8brec8c3ef6b7fe7e7b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <75b66ecd0706281320s29178c8brec8c3ef6b7fe7e7b@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 28, 2007 at 04:20:45PM -0400, Lee Revell wrote:
+> On 6/28/07, Rene Herman <rene.herman@gmail.com> wrote:
+>> ALSA has been the Linux soundsystem for a number of years now and as such,
+>> an application that runs under Linux and produces sound more and more can 
+>> be
+>> expected to do so using the Linux API. The only reason it _can_ be seen as 
+>> a
+>> detail is due to the Just Works nature of the OSS emulation but that is
+>> changing due to the software mixing. Binary apps are also moving to ALSA
+>> currently, ie, flash, skype, ...
+>
+> If your disto ships with any OSS apps using the in-kernel emulation
+> you should file a bug report, as it results in bizarre and undesirable
+> behavior - a single app opening /dev/dsp will block audio for every
+> other app (OSS or ALSA) on the vast majority of hardware out there.
 
---=-b8z8SMVyvtgEnqr7BQ7X
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+There's software like mplayer that supports both and tries OSS first...
 
-On Thu, 2007-06-28 at 03:43 -0700, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/=
-2.6.22-rc6-mm1/
+> Lee
 
-> +intel-iommu-dmar-detection-and-parsing-logic.patch
-> +intel-iommu-pci-generic-helper-function.patch
-> +intel-iommu-pci-generic-helper-function-fix.patch
-> +intel-iommu-clflush_cache_range-now-takes-size-param.patch
-> +intel-iommu-iova-allocation-and-management-routines.patch
-> +intel-iommu-iova-allocation-and-management-routines-fix.patch
-> +intel-iommu-iova-allocation-and-management-routines-fix-2.patch
-> +intel-iommu-intel-iommu-driver.patch
-> +intel-iommu-intel-iommu-driver-fix.patch
-> +intel-iommu-intel-iommu-driver-fix-2.patch
-> +intel-iommu-avoid-memory-allocation-failures-in-dma-map-api-calls.patch
-> +intel-iommu-intel-iommu-cmdline-option-forcedac.patch
-> +intel-iommu-dmar-fault-handling-support.patch
-> +intel-iommu-iommu-gfx-workaround.patch
-> +intel-iommu-iommu-floppy-workaround.patch
-> +intel-iommu-iommu-floppy-workaround-fix.patch
-> +intel-iommu-iommu-floppy-workaround-fix-fix.patch
->=20
->  Intel IOMMU support
+cu
+Adrian
 
-I believe the above patch set is causing the problem.  On my first try
-with rc6-mm1 I said Yes to the CONFIG_DMAR options. (I'm nearly as good
-as random option selection :-)
+-- 
 
-The system panicked during boot, I believe it was trying to detect an
-Intel IOMMU.  Later when I have a camera, I will try to post a
-screenshot of the backtrace. (I can't seem to get netconsole to work on
-boot, only in a module).
-
-When I recompiled without DMAR set, things seem to be working great.  I
-seem to be getting better disk read throughput than rc3-mm1, by the way.
-
-This laptop is an AMD Athlon64 on a NForce3 running a 64-bit Gentoo
-build.
-
-I'll provide more details on request, and when I get the chance.  This
-is a heads-up on the BUG in case someone has an "ah ha!" moment.
---=20
-Zan Lynx <zlynx@acm.org>
-
---=-b8z8SMVyvtgEnqr7BQ7X
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGhBzAG8fHaOLTWwgRAljYAKCqBDMHVv7AsO+OFlO+2RphFsZRiACfeOeP
-8Zj8zkR7ffqVrv2iKFluVW8=
-=43jF
------END PGP SIGNATURE-----
-
---=-b8z8SMVyvtgEnqr7BQ7X--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
