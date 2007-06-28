@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764164AbXF1L6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764626AbXF1L6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764164AbXF1L6I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 07:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbXF1L55
+	id S1764626AbXF1L6v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 07:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbXF1L6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 07:57:57 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:26848 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758250AbXF1L54 (ORCPT
+	Thu, 28 Jun 2007 07:58:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:3367 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758258AbXF1L6n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 07:57:56 -0400
+	Thu, 28 Jun 2007 07:58:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=g8wNJkzHDbD4soLIyvOL4Liz00T6iAQC2Xb0EbefiKe/h/D1cj0QrEEfYh3l8vCQxV/vaO40SIl/fOGY8TBwXa4Rz2FUxJ7AjjGB8dHwXLuGUYvU0dlkLjBN94KPNMq3uU0TKDmicb5JXTMmhYclWc3ImPSkD3vBTbGaFEjVSuc=
-Message-ID: <a781481a0706280457r4abb5046wc82cff9d49b7975e@mail.gmail.com>
-Date: Thu, 28 Jun 2007 17:27:55 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Mike Frysinger" <vapier@gentoo.org>
-Subject: sh section mismatches [was Re: 2.6.22-rc6 on Dreamcast (SH4)]
-Cc: linuxsh-dev@lists.sourceforge.net,
-       "Adrian McMenamin" <adrian@newgolddream.dyndns.info>,
-       LKML <linux-kernel@vger.kernel.org>, "Sam Ravnborg" <sam@ravnborg.org>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=kBVd3prZjFTsBrsT2xZqdazt3P43h37viBokC1i5NldzO84mt8jU9uZwb9h1i9yjq8eNiY3r8u4ub2Fb/Olmcg8PHj/ZRCKk2o0DmDiPrzwxDINVR8NXyHxFyQ7u+CtTi0v08SK0p+2by7KxNYGcH/L2+y8EaXxbBCfHfY6dRZ8=
+Message-ID: <4683A26F.7050600@googlemail.com>
+Date: Thu, 28 Jun 2007 13:58:39 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: =?UTF-8?B?VG9tYXN6IEvFgm9jemtv?= <kloczek@rudy.mif.pg.gda.pl>
+CC: Patrick Draper <pdraper@gmail.com>, Rene Herman <rene.herman@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <200706271825.17459.ahartmetz@gmail.com> <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com> <4682EEDD.4020501@gmail.com> <4682FE5C.5070004@gmail.com> <468315AF.1080105@gmail.com> <4683252B.9010205@gmail.com> <Pine.BSO.4.63.0706281336260.25800@rudy.mif.pg.gda.pl>
+In-Reply-To: <Pine.BSO.4.63.0706281336260.25800@rudy.mif.pg.gda.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tomasz Kłoczko wrote:
+> On Wed, 27 Jun 2007, Patrick Draper wrote:
+>
+>   
+>> Rene Herman wrote:
+>>     
+>>> So -- the fact that mixing actually works for you when using libaoss means 
+>>> software mixing is working correctly for your ALSA setup. The only thing 
+>>> you should do is _use_ ALSA (natively) and not its OSS emulation so you can 
+>>> drop the library preload.
+>>>       
+>> Cool. How do I go about figuring out what every app uses? For example, you 
+>> mentioned that the flash 9 plugin, which I also use, is an ALSA aware 
+>> application. How do you know? I need the check out everything that I use 
+>> which needs sound (vmware, skype, kmplayer, etc.) I don't have source code 
+>> for at least two of those.
+>>     
+>
+> If can I join .. (again)
+>   
+Heh =)
 
-> On Monday 25 June 2007, Adrian McMenamin wrote:
-> > Still getting this:
-> >
-> >  MODPOST vmlinux
-> > WARNING: arch/sh/boards/dreamcast/built-in.o(.data+0x0): Section
-> > mismatch: reference to .init.text: (between 'mv_dreamcast' and
-> > 'systemasic_int')
+> ALSA does not privide application mixer settings on application level. 
+> Some messages on skype forums suggests some workarouds in ~/.asoudrc 
+> but where is documentation for this part ?
+>   
+You may want to read this one:
 
-I had sent a patch for this earlier ... Adrian, did you try (build + boot +
-testrun) with it? Does this one go away (and system executes fine)?
+http://www.alsa-project.org/alsa-doc/doc-php/asoundrc.php
 
-[ http://lkml.org/lkml/diff/2007/6/23/116/1 ]
+> Anywhere are described ALSA diagnostics procedures/technics ?
+>
+> kloczek
+>   
 
-[ This has to do with __init functions calling __initmv functions in a
-zillion files in arch/sh/boards/.../setup.c which is problematic when
-__initmv is not __init itself (!SH_GENERIC && !SH_UNKNOWN) ]
-
-> > WARNING: drivers/built-in.o(.text+0x168e0): Section mismatch: reference
-> > to .init.data: (between 'pvr2fb_check_var' and 'pvr2fb_interrupt')
-> > WARNING: drivers/built-in.o(.text+0x1701c): Section mismatch: reference
-> > to .init.data: (between 'pvr2fb_pci_probe' and 'read_mem')
-> > WARNING: drivers/built-in.o(.text+0x17024): Section mismatch: reference
-> > to .init.text: (between 'pvr2fb_pci_probe' and 'read_mem')
-> > WARNING: drivers/built-in.o(.data+0x738): Section mismatch: reference
-> > to .init.text: (between 'board_list' and 'pvr2fb_pci_driver')
-> > WARNING: drivers/built-in.o(.data+0x750): Section mismatch: reference
-> > to .init.text: (between 'board_list' and 'pvr2fb_pci_driver')
-
-drivers/video/pvr2fb.c is a mess with __init, __initdata, __devinit and
-__devinitdata (__exit and __devexit variants for good measure) all being
-used and referencing each other freely ... I have no idea what function
-should actually be what. Sam normally knows about such things,
-adding him to Cc: list.
-
-On 6/28/07, Mike Frysinger <vapier@gentoo.org> wrote:
-> it means there is code that is not marked as init making references
-> function/data that is marked as init ...
-
-These warnings are most likely bogus (still good to get rid of them,
-of course).
-
-BTW, in include/asm-sh/machvec_init.h, __initmv is:
-
-__attribute__((__section__(".machvec.init")))	/* .machvec.init */
-
-But from arch/sh/kernel/vmlinux.ld.S the name of the section is:
-
-__machvec_start = .;
-.init.machvec : { *(.init.machvec) }		/* .init.machvec */
-__machvec_end = .;
-
-Am I obtuse, or is there something weird about this?
-
-Satyam
+Gabriel C
