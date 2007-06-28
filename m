@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbXF1GPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763694AbXF1GTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763471AbXF1GPq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 02:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbXF1GPj
+	id S1763694AbXF1GTj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 02:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbXF1GTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 02:15:39 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2233 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755666AbXF1GPi (ORCPT
+	Thu, 28 Jun 2007 02:19:31 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:37601 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756163AbXF1GTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 02:15:38 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Alexandre Oliva" <oliva@lsd.ic.unicamp.br>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: RE: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Date: Wed, 27 Jun 2007 23:15:29 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKAEMEEOAC.davids@webmaster.com>
+	Thu, 28 Jun 2007 02:19:30 -0400
+Message-ID: <468352EC.2080704@kernel.org>
+Date: Wed, 27 Jun 2007 23:19:24 -0700
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070531)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: "Serge E. Hallyn" <serge@hallyn.com>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: implement-file-posix-capabilities.patch
+References: <afff21250706110926l244ddc28i44289cb08a6721e2@mail.gmail.com> <20070617135239.GA17689@sergelap> <4676007F.7060503@kernel.org> <20070618044017.GW3723@sequoia.sous-sol.org> <20070620171037.GA28670@sergelap.ibm.com> <20070620174613.GF3723@sequoia.sous-sol.org> <20070621160011.GB9913@sergelap.austin.ibm.com> <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com> <4681EED8.6050005@kernel.org> <20070627131654.GA2679@sergelap>
+In-Reply-To: <20070627131654.GA2679@sergelap>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <or1wfwznz5.fsf@oliva.athome.lsd.ic.unicamp.br>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 23:15:26 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 23:15:27 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Let's hope courts see it this way.
+Serge E. Hallyn wrote:
+>> Does that explain it?
+> 
+> Yes, thanks, but then it still could come in handy to have fE be a full
+> bitset, so the application gets some eff caps automatically, while
+> others it has to manually set...
 
-> But then, why is it that I can't use hardware to stop someone from
-> copying or modifying the source code, but I can use hardware to stop
-> someone from copying or modifying the binary?  Or is that not so?
+[We touched on this a number of emails back.]
 
-You can use the hardware to stop someone from copying or modifying some
-particular copy of the source code, so long as there is some copy of the
-source code they can copy and modify. You are equivocating between a
-particular copy and any copy at all.
+If an application is capability aware, it can manipulate its own
+capabilities and should have fE=0.
 
-The GPL requires the source code to be provided in a customary way and be
-the preferred form for making modifications. It grants you the right to copy
-and distrbute the source code. One accessible copy and no copyright
-impediments should be all you need. The "further restriction" section solves
-the issue of various workarounds to this.
+If an application is not capability aware, it needs to have *all* of its
+capabilities enabled at exec() time. Otherwise, it won't work.
 
-Having access to the source code, being able to copy and modify it, being
-able to incorporate bits of the source code in other GPL projects -- these
-are all fundamental GPL rights. I do not see how anyone can get away with
-encumbering these.
+The only reason for having an fE bitmap is to allow a capability-aware
+program (you really trust to do its privileged operations carefully) to
+be lazy and get some of its capabilities raised for free. Perhaps you
+can clarify why this is a desirable thing? :-)
 
-> Remember, section 2 talks about modifying *your* *copies* of the
-> Program, without any reference whatsoever as to whether they're in
-> source or object form.
+Cheers
 
-I agree. You have the legal GPL right to modify any copy of a GPL'd work,
-provided no technical or authorization obstacles stand in your way. If the
-source code is on CDROM, you cannot modify that particular copy even though
-you have the legal right to modify "the source code". You have the right to
-copy it to someplace where no obstacles prevent you from modifying it.
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
 
-The GPL grants you a right of access to the source code that is a genuine
-guaranteed ability. The GPL also grants you the right to modify the source
-code, but that is a legal right, not a guaranteed ability.
-
-The GPL does sometimes use the word "may" where it's not clear whether it
-means you have permission or you must be able to. The general rule of
-construction is that "may" means permission, unless there's some clear
-indication to the contrary. The "may"s in sections one and two are
-permisssion against a claim of copyright enfrocement. The "further
-restriction" clause is, at it states, only on the exercise of *rights*
-(which I think means those rights licensed to you under copyright law,
-namely the right of distribution and copying).
-
-DS
-
-
+iD8DBQFGg1LqQheEq9QabfIRAo3BAKCO8QrfcKBNqhfnn2BHp8O/qDkgXgCgleEl
+xP7LZPU9Qn6AjqI3ZM3FZ+4=
+=urmz
+-----END PGP SIGNATURE-----
