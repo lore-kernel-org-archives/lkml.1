@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764759AbXF1MsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763669AbXF1NAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764759AbXF1MsS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 08:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761173AbXF1MsD
+	id S1763669AbXF1NAu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 09:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760734AbXF1NAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 08:48:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35992 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760761AbXF1MsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 08:48:00 -0400
-Subject: Re: [PATCH 1/7] ICH Force HPET: Make generic time capable of
-	switching broadcast timer
-From: Eric Paris <eparis@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070628012749.caf450f6.akpm@linux-foundation.org>
-References: <20070622203822.GA22807@linux-os.sc.intel.com>
-	 <20070628001221.364438ce.akpm@linux-foundation.org>
-	 <20070628012749.caf450f6.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 28 Jun 2007 08:45:48 -0400
-Message-Id: <1183034748.3504.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Jun 2007 09:00:43 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:55848 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760836AbXF1NAm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 09:00:42 -0400
+Message-ID: <4683B01E.5050602@gmail.com>
+Date: Thu, 28 Jun 2007 14:57:02 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: =?UTF-8?B?VG9tYXN6IEvFgm9jemtv?= <kloczek@rudy.mif.pg.gda.pl>
+CC: Patrick Draper <pdraper@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <200706271825.17459.ahartmetz@gmail.com> <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com> <4682EEDD.4020501@gmail.com> <4682FE5C.5070004@gmail.com> <468315AF.1080105@gmail.com> <4683252B.9010205@gmail.com> <Pine.BSO.4.63.0706281336260.25800@rudy.mif.pg.gda.pl>
+In-Reply-To: <Pine.BSO.4.63.0706281336260.25800@rudy.mif.pg.gda.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-28 at 01:27 -0700, Andrew Morton wrote:
-> On Thu, 28 Jun 2007 00:12:21 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > I can't start the X server any more, but that's probably unrelated ;)
-> > 
-> > <goes back to yet another bisection search.  sigh.  you guys have
-> > me hopelessly outnumbered>
-> 
-> And the winner of the u-o-akpm-1-hour-of-his-life-back award (and the bonus
-> u-delayed-next-mm-by-a-day award!) is ....  git-selinux.patch!
-> 
-> (II) Loading /usr/lib/xorg/modules/libvgahw.so
-> (II) Module vgahw: vendor="X.Org Foundation"
->         compiled for 7.0.0, module version = 0.1.0
->         ABI class: X.Org Video Driver, version 0.8
-> (**) I810(0): Depth 24, (--) framebuffer bpp 32
-> (==) I810(0): RGB weight 888
-> (==) I810(0): Default visual is TrueColor
-> (II) Loading sub module "int10"
-> (II) LoadModule: "int10"
-> (II) Reloading /usr/lib/xorg/modules/libint10.so
-> (II) I810(0): initializing int10
-> (EE) I810(0): Cannot shmat() low memory
-> (EE) I810(0): shmat(low_mem) error: Invalid argument
-> (EE) I810(0): VBE initialization failed.
+On 06/28/2007 01:50 PM, Tomasz Kłoczko wrote:
 
-It has been found and the policy people already know about it.  I'm not
-sure what the upstream status of the fixed policy is should appear soon.
-(I also talked with the X people and apparently this is unfixable on
-i686.  ajax posted about this on the original thread)
+> If can I join .. (again)
 
-There is another bug however which I have a patch but haven't tested
-much, I'll try to get it out today.  If you use a hint > 0 but <
-mmap_min_addr without map fixed you will likely be denied.  Simple fix,
-change hints up to mmap_min_addr if they are too low.
+Welcome...
 
--Eric
+> After upgrade to skype 1.4.x all sound output in skype I have only in 
+> left channel. Serching for skype+left+channel on google shows many 
+> people have this kind problem :>
+
+This would seem to be a (fairly, it's no doubt just outputting mono) skype 
+specific problem and given that skype is a proprietary closed source 
+application, you now get to go suck on a Skype support engineer! Hurrah!
+
+Or this might be helpful:
+
+http://forum.skype.com/lofiversion/index.php/t85880.html
+
+No, no idea why skype would require you to do this yourself. Maybe you 
+should ask them. This is now _really_ no longer a kernel issue though.
+
+Rene.
 
