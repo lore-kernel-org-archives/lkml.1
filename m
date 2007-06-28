@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765024AbXF1SHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765363AbXF1SH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765024AbXF1SHZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbXF1SHP
+	id S1765363AbXF1SH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761214AbXF1SHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:07:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48800 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753731AbXF1SHN (ORCPT
+	Thu, 28 Jun 2007 14:07:49 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:34118 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753743AbXF1SHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:07:13 -0400
-Date: Thu, 28 Jun 2007 11:06:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
-Message-Id: <20070628110644.a530cfef.akpm@linux-foundation.org>
-In-Reply-To: <20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-	<20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 28 Jun 2007 14:07:47 -0400
+Date: Thu, 28 Jun 2007 23:37:50 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: David Chinner <dgc@sgi.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 7/7][TAKE5] ext4: support new modes
+Message-ID: <20070628180750.GB1674@amitarora.in.ibm.com>
+References: <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625135051.GH1951@amitarora.in.ibm.com> <20070625215625.GL5181@schatzie.adilger.int> <20070626120751.GC19870@amitarora.in.ibm.com> <20070626161400.GE6652@schatzie.adilger.int> <20070626192908.GC13324@amitarora.in.ibm.com> <20070627000456.GT31489@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070627000456.GT31489@sgi.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007 15:37:15 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Wed, Jun 27, 2007 at 10:04:56AM +1000, David Chinner wrote:
+> On Wed, Jun 27, 2007 at 12:59:08AM +0530, Amit K. Arora wrote:
+> > On Tue, Jun 26, 2007 at 12:14:00PM -0400, Andreas Dilger wrote:
+> > > On Jun 26, 2007  17:37 +0530, Amit K. Arora wrote:
+> > > > I think, modifying ctime/mtime should be dependent on the other flags.
+> > > > E.g., if we do not zero out data blocks on allocation/deallocation,
+> > > > update only ctime. Otherwise, update ctime and mtime both.
+> > > 
+> > > I'm only being the advocate for requirements David Chinner has put
+> > > forward due to existing behaviour in XFS.  This is one of the reasons
+> > > why I think the "flags" mechanism we now have - we can encode the
+> > > various different behaviours in any way we want and leave it to the
+> > > caller.
+> > 
+> > I understand. May be we can confirm once more with David Chinner if this
+> > is really required. Will it really be a compatibility issue if new XFS
+> > preallocations (ie. via fallocate) update mtime/ctime?
 > 
-> check_signature() uses readb() and therefore should only be build on
-> CONFIG_HAS_IOMEM.
-> 
-> Otherwise breaks s390:
-> lib/check_signature.c: In function `check_signature':
-> lib/check_signature.c:19: error: implicit declaration of function `readb'
-> 
+> It should be left up to the filesystem to decide. Only the
+> filesystem knows whether something changed and the timestamp should
+> or should not be updated.
 
-Ah, right, I've been discussing identical m68k breakage with Roman and Geert.
+Since Andreas had suggested FA_FL_NO_MTIME flag thinking it as a
+requirement from XFS (whereas XFS does not need this flag), I don't think
+we need to add this new flag.
 
-> ---
->  lib/Makefile |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6.22-rc6-mm1/lib/Makefile
-> ===================================================================
-> --- linux-2.6.22-rc6-mm1.orig/lib/Makefile
-> +++ linux-2.6.22-rc6-mm1/lib/Makefile
-> @@ -5,8 +5,7 @@
->  lib-y := ctype.o string.o vsprintf.o cmdline.o \
->  	 rbtree.o radix-tree.o dump_stack.o \
->  	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
-> -	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
-> -	 check_signature.o
-> +	 sha1.o irq_regs.o reciprocal_div.o argv_split.o
->  
->  lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
->  lib-$(CONFIG_SMP) += cpumask.o
-> @@ -22,7 +21,7 @@ CFLAGS_kobject_uevent.o += -DDEBUG
->  endif
->  
->  obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
-> -obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
-> +obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
->  obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
->  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
->  lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
+Please let know if someone still feels FA_FL_NO_MTIME flag can be
+useful.
 
-We didn't think of that.
+--
+Regards,
+Amit Arora
 
-Alas, m68k `make allmodconfig' creates CONFIG_ISA=n, CONFIG_PCI=n,
-CONFIG_HAS_IOMEM=y, so it will still be busted.
-
-But this seems to be the correct fix.  Perhaps m68k config needs
-attention?
