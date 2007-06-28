@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765348AbXF1TPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764808AbXF1TPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765348AbXF1TPB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 15:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbXF1TOy
+	id S1764808AbXF1TPY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 15:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764938AbXF1TO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 15:14:54 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4251 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760162AbXF1TOx (ORCPT
+	Thu, 28 Jun 2007 15:14:58 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:54407 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764807AbXF1TO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 15:14:53 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Date: Thu, 28 Jun 2007 12:13:49 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEPKEOAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	Thu, 28 Jun 2007 15:14:57 -0400
+Subject: Re: [patch] Move led attributes out of device name and into sysfs
+	attributes, was Re: LED devices
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Richard Hughes <hughsient@gmail.com>
+Cc: Richard Purdie <rpurdie@openedhand.com>, Greg KH <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Bryn M. Reeves" <breeves@redhat.com>, John Lenz <lenz@cs.wisc.edu>
+In-Reply-To: <1182854798.16516.5.camel@work>
+References: <1180710270.3782.5.camel@localhost.localdomain>
+	 <1180712592.6390.139.camel@localhost.localdomain>
+	 <1180713579.12843.8.camel@localhost.localdomain>
+	 <1180715004.6390.169.camel@localhost.localdomain>
+	 <20070608185710.GB14372@kroah.com>
+	 <1181343748.9506.116.camel@localhost.localdomain>
+	 <20070608234629.GA11723@kroah.com>
+	 <1181381117.24811.35.camel@localhost.localdomain>
+	 <20070625050606.GC30043@kroah.com>
+	 <1182852173.11449.22.camel@localhost.localdomain>
+	 <1182854798.16516.5.camel@work>
+Content-Type: text/plain
+Date: Thu, 28 Jun 2007 21:15:53 +0200
+Message-Id: <1183058153.3479.24.camel@lov.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <or8xa4x9ig.fsf@oliva.athome.lsd.ic.unicamp.br>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 28 Jun 2007 12:13:51 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 28 Jun 2007 12:13:52 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-06-26 at 11:46 +0100, Richard Hughes wrote:
+> On Tue, 2007-06-26 at 11:02 +0100, Richard Purdie wrote:
+> > There were some other opinions voiced including one from the person
+> > who started this discussion.
+> > 
+> > So no, the people who write the tools that parse sysfs (like HAL.)
+> > don't appreciate this.
+> > 
+> > People who write tools that parse sysfs like shell scripts don't
+> > appreciate it either, as I illustrated.
+> 
+> >From a hal point of view, we don't care if the device name is 'led01' or
+> 'light_to_dance_the_fandango' and from a shell point of view it's
+> probably best for the latter. I think the point Greg tried to make is
+> that it shouldn't matter, and HAL shouldn't export (nor parse) the
+> device name as anything sensible.
+> 
+> > You've yet to give any technical reason why we can't have meaningful
+> > busids rather than random numbers. Your entire argument seems to be
+> > that its wrong because its a bit different and nobody else does it...
+> 
+> If it's a trivial name then I think led_thinklight0 is perfectly okay, I
+> think Kay was talking more about the attribute vs. name-in-device
+> encoding.
 
-Alexandre Oliva write:
+I see no problem to use the function name and add an enumeration number
+to that name to be able to handle multiple instances with the same
+function name. Like pointed out in earlier mail:
+  http://lists.freedesktop.org/archives/hal/2007-May/008552.html
 
-> > The GPL does sometimes use the word "may" where it's not clear
-> > whether it
-> > means you have permission or you must be able to. The general rule of
-> > construction is that "may" means permission, unless there's some clear
-> > indication to the contrary. The "may"s in sections one and two are
-> > permisssion against a claim of copyright enfrocement. The "further
-> > restriction" clause is, at it states, only on the exercise of *rights*
-> > (which I think means those rights licensed to you under copyright law,
-> > namely the right of distribution and copying).
-
-> ... and modification and, depending on the jurisdiction, execution.
-
-Modification, yes. Execution, well, if the rules of a jurisdiction are
-insane, you will get insane results from almost any contract.
-
-Fortunately, the GPL makes it clear that execution is unrestricted for GPL'd
-works, but does not style this as a GPL right. One would hope that
-jurisidictions that have such strange rules would interpret the GPL to
-effect the same result under their laws as was intended under the laws the
-GPL was written with respect to, to the extent possible.
-
-Treating ordinary use as a copyright privilege leads to nonsensical results
-no matter what you do. For example, you get that I can drop copies of my
-poem from an airplane and then sue anyone who reads it.
-
-DS
-
+Thanks,
+Kay
 
