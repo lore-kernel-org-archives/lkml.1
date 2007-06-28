@@ -1,118 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762730AbXF1GNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbXF1GPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762730AbXF1GNM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 02:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbXF1GM7
+	id S1763471AbXF1GPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 02:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbXF1GPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 02:12:59 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:16752 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755391AbXF1GM6 (ORCPT
+	Thu, 28 Jun 2007 02:15:39 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2233 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755666AbXF1GPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 02:12:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mDZhsBBhyv8WL/G4RDNW+fqUmXPZLiyZ+Gln1AObzPlhsbQ5GNRjBuxkvWiNwMLgRrxdkVYpqebsYoqCS4IPcHrelmmHFhnKpcEcNBTDdqs5b5kWu3/rAoJ30Nk0NnxTMuk+QF3BAy8EcyPb7lTGVpyFVhxP2iYiHqwBR3zh3xA=
-Message-ID: <a8e1da0706272312t46c01984l56d982adca327053@mail.gmail.com>
-Date: Thu, 28 Jun 2007 06:12:56 +0000
-From: "dave young" <hidave.darkstar@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: [PATCH] atkbd: cleanup only once
-Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <200706280118.36052.dtor@insightbb.com>
+	Thu, 28 Jun 2007 02:15:38 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Alexandre Oliva" <oliva@lsd.ic.unicamp.br>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: RE: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Date: Wed, 27 Jun 2007 23:15:29 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKAEMEEOAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070627105907.GA1802@darkstar.te-china.tietoenator.com>
-	 <200706270059.33550.dtor@insightbb.com>
-	 <a8e1da0706262202i3af320a7gaec8a5f0680beb13@mail.gmail.com>
-	 <200706280118.36052.dtor@insightbb.com>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <or1wfwznz5.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 23:15:26 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 23:15:27 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->2007/6/28, Dmitry Torokhov <dtor@insightbb.com>:
-> On Wednesday 27 June 2007 01:02, dave young wrote:
-> > 2007/6/27, Dmitry Torokhov <dtor@insightbb.com>:
-> > > On Wednesday 27 June 2007 00:28, Greg KH wrote:
-> > > > On Wed, Jun 27, 2007 at 12:34:09AM -0400, Dmitry Torokhov wrote:
-> > > > > Hi Dave,
-> > > > >
-> > > > > On Wednesday 27 June 2007 06:59, Dave Young wrote:
-> > > > > > Hi,
-> > > > > >
-> > > > > > If you press ctrl+alt+del several times as kernel booting (before user level bootin), the kernel will oops. I found the ps2_command is called more than once, then the ps2dev->serio maybe NULL pointer.
-> > > > > >
-> > > > > > 2.6.22-rc5 and 2.6.22-rc6 have same result.
-> > > > > >
-> > > > > > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> > > > > > ---
-> > > > > > diff -upr linux/drivers/input/keyboard/atkbd.c linux.new/drivers/input/keyboard/atkbd.c
-> > > > > > --- linux/drivers/input/keyboard/atkbd.c  2007-06-27 10:38:37.000000000 +0000
-> > > > > > +++ linux.new/drivers/input/keyboard/atkbd.c      2007-06-27 10:37:39.000000000 +0000
-> > > > > > @@ -795,6 +795,11 @@ static int atkbd_activate(struct atkbd *
-> > > > > >
-> > > > > >  static void atkbd_cleanup(struct serio *serio)
-> > > > > >  {
-> > > > > > + static int flag;
-> > > > > > +
-> > > > > > + if(flag)
-> > > > > > +         return;
-> > > > > > + flag = 1;
-> > > > >
-> > > > > Unfortunately this will prevent atkbd from resetting keyboard on 2nd
-> > > > > suspend attempt. It will also not work if you have an active MUX and
-> > > > > have a couple of keyboards connected.
-> > > > >
-> > > > > Greg, now that you removed rwsem from subsystem (and subsystem itself
-> > > > > for that matter) there is nothing as far as I can see that stops
-> > > > > several threads from running device_shutdown() simultaneously. I also
-> > > > > do not see what would isolate device probing and shutting them down
-> > > > > at the same time. Am I missing something?
-> > > >
-> > > > There was never anything stopping that from happening before.  No driver
-> > > > core code was using that rwsem, so it wasn't protecting anything,
-> > > > despite people trying to use it as if it was :)
-> > > >
-> > >
-> > > It did protect device_shutdown() from itself, didn't it?
-> > >
-> > > --
-> > > Dmitry
-> > >
-> > how about check ps2dev->serio in ps2_command before use it?
->
-> I don't think we ever set it to NULL. Does the patch below help any?
->
-> --
-> Dmitry
->
->
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> ---
->
->  drivers/input/serio/serio.c |    2 ++
->  1 files changed, 2 insertions(+)
->
-> Index: work/drivers/input/serio/serio.c
-> ===================================================================
-> --- work.orig/drivers/input/serio/serio.c
-> +++ work/drivers/input/serio/serio.c
-> @@ -769,8 +769,10 @@ static int serio_driver_remove(struct de
->
->  static void serio_cleanup(struct serio *serio)
->  {
-> +       mutex_lock(&serio->drv_mutex);
->         if (serio->drv && serio->drv->cleanup)
->                 serio->drv->cleanup(serio);
-> +       mutex_unlock(&serio->drv_mutex);
->  }
->
->  static void serio_shutdown(struct device *dev)
->
 
-Yes, l tested with this patch, looks good to me.
+> Let's hope courts see it this way.
 
-Regards
-dave
+> But then, why is it that I can't use hardware to stop someone from
+> copying or modifying the source code, but I can use hardware to stop
+> someone from copying or modifying the binary?  Or is that not so?
+
+You can use the hardware to stop someone from copying or modifying some
+particular copy of the source code, so long as there is some copy of the
+source code they can copy and modify. You are equivocating between a
+particular copy and any copy at all.
+
+The GPL requires the source code to be provided in a customary way and be
+the preferred form for making modifications. It grants you the right to copy
+and distrbute the source code. One accessible copy and no copyright
+impediments should be all you need. The "further restriction" section solves
+the issue of various workarounds to this.
+
+Having access to the source code, being able to copy and modify it, being
+able to incorporate bits of the source code in other GPL projects -- these
+are all fundamental GPL rights. I do not see how anyone can get away with
+encumbering these.
+
+> Remember, section 2 talks about modifying *your* *copies* of the
+> Program, without any reference whatsoever as to whether they're in
+> source or object form.
+
+I agree. You have the legal GPL right to modify any copy of a GPL'd work,
+provided no technical or authorization obstacles stand in your way. If the
+source code is on CDROM, you cannot modify that particular copy even though
+you have the legal right to modify "the source code". You have the right to
+copy it to someplace where no obstacles prevent you from modifying it.
+
+The GPL grants you a right of access to the source code that is a genuine
+guaranteed ability. The GPL also grants you the right to modify the source
+code, but that is a legal right, not a guaranteed ability.
+
+The GPL does sometimes use the word "may" where it's not clear whether it
+means you have permission or you must be able to. The general rule of
+construction is that "may" means permission, unless there's some clear
+indication to the contrary. The "may"s in sections one and two are
+permisssion against a claim of copyright enfrocement. The "further
+restriction" clause is, at it states, only on the exercise of *rights*
+(which I think means those rights licensed to you under copyright law,
+namely the right of distribution and copying).
+
+DS
+
+
