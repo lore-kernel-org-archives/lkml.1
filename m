@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763622AbXF1Qdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764289AbXF1Qe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763622AbXF1Qdu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 12:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758536AbXF1Qdl
+	id S1764289AbXF1Qe3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 12:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759332AbXF1QeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 12:33:41 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:57344 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756745AbXF1Qdk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 12:33:40 -0400
-Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <1182969638.4769.56.camel@johannes.berg>
-References: <1182969638.4769.56.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-uMpuGcvJ42F0wUS/qSa5"
-Date: Thu, 28 Jun 2007 18:33:49 +0200
-Message-Id: <1183048429.4089.1.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Thu, 28 Jun 2007 12:34:21 -0400
+Received: from mg.nix.la ([75.126.232.227]:43407 "EHLO mg.nix.la"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759308AbXF1QeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 12:34:20 -0400
+From: Anton Petrusevich <casus@casus.us>
+To: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Date: Thu, 28 Jun 2007 18:34:16 +0200
+User-Agent: KMail/1.9.7
+References: <200706281442.05239.casus@casus.us> <4683CD9F.5030202@gmail.com>
+In-Reply-To: <4683CD9F.5030202@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706281834.16564.casus@casus.us>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 28 June 2007 17:02:55 you wrote:
+> Please always use Reply-to-All on this list -- subscribers here like to
+> also get personal copies.
 
---=-uMpuGcvJ42F0wUS/qSa5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I am not subscribed to linux-kernel, I am reading it on the web.
 
-On Wed, 2007-06-27 at 20:40 +0200, Johannes Berg wrote:
+> > I have ICE1724, a very good sound card to my taste, works like a charm.
+> > But with ALSA I had a really hard time to configure it properly, wanna
+> > see my .asoundrc?
+> Not particularly. I don't count as a great fan of the config file syntax
+> and don't use any configuration myself. 
 
-> --- linux-2.6-git.orig/kernel/workqueue.c	2007-06-27 19:10:35.183199046 +=
-0200
-> +++ linux-2.6-git/kernel/workqueue.c	2007-06-27 20:30:00.896667168 +0200
-> @@ -61,8 +61,15 @@ struct workqueue_struct {
->  	const char *name;
->  	int singlethread;
->  	int freezeable;		/* Freeze threads during suspend */
-> +#ifdef CONFIG_LOCKDEP
-> +	struct lockdep_map lockdep_map;
-> +#endif
->  };
-> =20
-> +#ifdef CONFIG_LOCKDEP
-> +static struct lock_class_key wq_lockdep_key;
-> +#endif
+Do you have an SPDIF out? If you don't then you don't need .asoundrc of 
+course.
 
-I think I misunderstood how lockdep works because the output was
-actually wrong, should the key be part of the workqueue_struct as well?
+> The first thing I don't know is why you need an .asoundrc at all. 
 
-johannes
+Because I want to route it differently, sometimes to spdif, sometimes to 
+headphones, sometimes to mix sounds from different apps. Well, my config may 
+be a bit ancient as it was written when dmix was not default.
 
---=-uMpuGcvJ42F0wUS/qSa5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> I've CCed 
+> the alsa-user list -- some subscribers to it probably have experience with
+> ice1724 and might be able to get you specific advice if you want.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+I have read some advices for ice1724 already. The main reason I wrote to  
+lkml -- I hate .asounrc and reading docs about it. I hate "flexebility" that 
+requires restarting apps after changing sound routes.
 
-iD8DBQBGg+Lt/ETPhpq3jKURAgK7AKCTY4e2N/M+4rWX8PrM8Toyuq+LZACgiPDn
-9TjECpFb/ZM3wuUpmYdOhRk=
-=OmGJ
------END PGP SIGNATURE-----
+> > Is there a tool which can be used to configure .asoundrc?
+> vi.
 
---=-uMpuGcvJ42F0wUS/qSa5--
+I perfectly know this one. I would like to use some really user-friendly tool.
 
+>
+> > I want to be able to hear sound from flashplayer on my reciever or in my
+> > headphones -- how?
+>
+> Not sure? Is your receiver on an analog output and are your headphones
+
+My receiver is on spdif out.
+
+> connected directly to a card output as well? In that case, "or" would seem
+> to be just a mixer issue, and "and" would be dependent on hardware
+> abilities and needs someone who knows your specific card and setup.
+>
+> > It's not quite clear to me how to get full duplex working with my
+> > .asoundrc.
+>
+> It's not working without an .asoundrc?
+
+Looks like it's not working with. As skype is not so informative.
+
+> But -- I'll personally not continue this very specific subthread simply due
+> to not having the hardware, nor great generic experience with an .asounrc
+> due to not needing it myself. When I do use one, I alway start by googling
+> up a few examples and take it from there. Perhaps someone from alsa-user
+> will step in.
+
+I am not about ice1724 or .asounrc here. I am trying to talk about 
+user-friendliness of ALSA. It's very unfriendly.
+
+-- 
+Anton Petrusevich
