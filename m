@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764008AbXF1Phm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762893AbXF1PjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764008AbXF1Phm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 11:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758699AbXF1PhR
+	id S1762893AbXF1PjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 11:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbXF1Pi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 11:37:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59864 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757042AbXF1PhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 11:37:15 -0400
-Date: Thu, 28 Jun 2007 16:34:08 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mike Anderson <andmike@us.ibm.com>
-Subject: Re: [PATCH 2.6.22-rc6-mm1] compile error when CONFIG_DM_NETLINK is not defined
-Message-ID: <20070628153407.GX25016@agk.fab.redhat.com>
-Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Mike Anderson <andmike@us.ibm.com>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <1183042157.9880.9.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
+	Thu, 28 Jun 2007 11:38:58 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:46751 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756399AbXF1Pi4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 11:38:56 -0400
+Date: Thu, 28 Jun 2007 10:38:44 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Andrew Morgan <morgan@kernel.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>,
+       Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: implement-file-posix-capabilities.patch
+Message-ID: <20070628153844.GA1977@sergelap.austin.ibm.com>
+References: <468352EC.2080704@kernel.org> <924812.95310.qm@web36611.mail.mud.yahoo.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1183042157.9880.9.camel@kleikamp.austin.ibm.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <924812.95310.qm@web36611.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 09:49:17AM -0500, Dave Kleikamp wrote:
-> I got this compile error:
->   LD      drivers/md/built-in.o
-> drivers/md/dm-multipath.o: In function `dm_path_event':
-> drivers/md/dm-netlink.h:56: multiple definition of `dm_path_event'
-> drivers/md/dm-mod.o:drivers/md/dm-netlink.h:56: first defined here
-> drivers/md/dm-multipath.o: In function `dm_netlink_send_events':
-> drivers/md/dm-netlink.h:51: multiple definition of `dm_netlink_send_events'
-> drivers/md/dm-mod.o:drivers/md/dm-netlink.h:51: first defined here
-> make[2]: *** [drivers/md/built-in.o] Error 1
+Quoting Casey Schaufler (casey@schaufler-ca.com):
 > 
-> I was able to fix it by making the dummy inline functions static.
+> --- Andrew Morgan <morgan@kernel.org> wrote:
 > 
-> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> > -----BEGIN PGP SIGNED MESSAGE-----
+> > Hash: SHA1
+> > 
+> > Serge E. Hallyn wrote:
+> > >> Does that explain it?
+> > > 
+> > > Yes, thanks, but then it still could come in handy to have fE be a full
+> > > bitset, so the application gets some eff caps automatically, while
+> > > others it has to manually set...
+> > 
+> > [We touched on this a number of emails back.]
+> > 
+> > If an application is capability aware, it can manipulate its own
+> > capabilities and should have fE=0.
+> > 
+> > If an application is not capability aware, it needs to have *all* of its
+> > capabilities enabled at exec() time. Otherwise, it won't work.
+> 
+> The intent of the fE vector in the POSIX draft is that those capabilities
+> are set on exec (lower vectors permitting). There are cases where it
+> does make sense to raise just some (e.g. ping). 
+> 
+> > The only reason for having an fE bitmap is to allow a capability-aware
+> > program (you really trust to do its privileged operations carefully) to
+> > be lazy and get some of its capabilities raised for free. Perhaps you
+> > can clarify why this is a desirable thing? :-)
+> 
+> No, it's to allow you to grant a subset of the available capabilities
+> to a program that is not aware of capabilities. You can give "date"
+> the capability to reset the clock without giving it the capability
+> to remove other people's files without changing the code or running
+> it setuid.
 
-Sorry for that - I've added your fix to dm-netlink-add-to-core.patch.
-Of course I forgot to test with the new option disabled:-(
+Would there be a difference between that and setting either fI or fP
+(depending on your intent) to those caps, and setting fE=1 in Andrew's
+scheme?
 
-Alasdair
--- 
-agk@redhat.com
+thanks,
+-serge
