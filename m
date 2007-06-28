@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765569AbXF1Uj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765265AbXF1Ujv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765569AbXF1Uj1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 16:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762550AbXF1UjE
+	id S1765265AbXF1Ujv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 16:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbXF1Ujk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 16:39:04 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:39622 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761719AbXF1UjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 16:39:03 -0400
-Date: Thu, 28 Jun 2007 22:38:58 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Antonino Ingargiola <tritemio@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [Possible BUG] Logitech USB keyboard inconsistent led state
-In-Reply-To: <5486cca80706281309q473c6300l6bd221c361d3f5df@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706282238270.31463@twin.jikos.cz>
-References: <5486cca80706270758x540f75a9vfdd4aa5b6a7d8e4f@mail.gmail.com> 
- <Pine.LNX.4.64.0706272144280.9610@twin.jikos.cz> 
- <5486cca80706280059pabcaa59u7f44440134490590@mail.gmail.com> 
- <Pine.LNX.4.64.0706281923230.31463@twin.jikos.cz>
- <5486cca80706281309q473c6300l6bd221c361d3f5df@mail.gmail.com>
+	Thu, 28 Jun 2007 16:39:40 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43614 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758226AbXF1Ujj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 16:39:39 -0400
+Date: Thu, 28 Jun 2007 22:40:01 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
+       chrisw@sous-sol.org, xen-devel@lists.xensource.com
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.22-rc6-mm1: Xen: WARNING: Absolute relocations present
+Message-ID: <20070628204001.GA6087@stusta.de>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, Antonino Ingargiola wrote:
+<--  snip  -->
 
-> Tried on 2.6.22-rc6-cfs18 and it works, thanks :)
-> Now the led is off by default on boot but the state is consistent.
-> Can we have this patch in 2.6.22?
-> (Feel free to add a Tested off with my name is this make any sense in
-> this case).
+...
+  RELOCS  arch/i386/boot/compressed/vmlinux.relocs
+WARNING: Absolute relocations present
+Offset     Info     Type     Sym.Value Sym.Name
+c0101f80 020c6501   R_386_32 00000000  xen_irq_disable_direct_reloc
+c0101f9a 0221ea01   R_386_32 00000000  xen_save_fl_direct_reloc
+...
 
-I will queue it in my tree for next upstream merge, thanks.
+<--  snip  -->
+
+cu
+Adrian
 
 -- 
-Jiri Kosina
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
