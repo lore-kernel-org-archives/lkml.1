@@ -1,124 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763802AbXF1AoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763703AbXF1AsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763802AbXF1AoV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 20:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759126AbXF1AoI
+	id S1763703AbXF1AsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 20:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXF1AsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 20:44:08 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:59509 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758645AbXF1AoG (ORCPT
+	Wed, 27 Jun 2007 20:48:01 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60914 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759482AbXF1AsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 20:44:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PnYd/UlDv4uPqPB6Qn8BDBjaKhL9F6LlU2c2iqf2LoOJKg+uR1DECucH1vuVzQMFtwblxoNtaa209DgOpo1JQFRakCxrCimFK54EcDcHadRoMCBRDmSeksjXutDq6B7ZQiiDn8PVnsa/jXvI/zd7Y3KSgPFNiKUmoo817PZXtFw=
-Message-ID: <a781481a0706271744i9181641sff43e2053dde0f9@mail.gmail.com>
-Date: Thu, 28 Jun 2007 06:14:04 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: Re: [PATCH] RFC: have tcp_recvmsg() check kthread_should_stop() and treat it as if it were signalled
-Cc: "Jeff Layton" <jlayton@redhat.com>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-cifs-client@lists.samba.org
-In-Reply-To: <20070627122437.GA158@tv-sign.ru>
+	Wed, 27 Jun 2007 20:48:00 -0400
+Date: Wed, 27 Jun 2007 17:46:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Eric Dumazet <dada1@cosmosbay.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] long freezes on thinkpad t60
+In-Reply-To: <Pine.LNX.4.64.0706271545490.3879@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.0.98.0706271725050.8675@woody.linux-foundation.org>
+References: <20070620093612.GA1626@ff.dom.local>
+ <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+ <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
+ <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
+ <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
+ <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
+ <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
+ <4680D162.9050603@yahoo.com.au> <alpine.LFD.0.98.0706261016200.8675@woody.linux-foundation.org>
+ <4681F448.3040201@yahoo.com.au> <alpine.LFD.0.98.0706262249590.8675@woody.linux-foundation.org>
+ <alpine.LFD.0.98.0706271233300.8675@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706271310550.5219@alien.or.mcafeemobile.com>
+ <alpine.LFD.0.98.0706271500260.8675@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706271545490.3879@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070608123527.9b4cdafe.jlayton@redhat.com>
-	 <E1HwpmG-0008LW-00@gondolin.me.apana.org.au>
-	 <20070609070826.7bd3480c.jlayton@redhat.com>
-	 <a781481a0706251241n36126456x7f4b445a86d1a68f@mail.gmail.com>
-	 <20070626115449.GA92@tv-sign.ru>
-	 <a781481a0706261553i1e65e620o884708d0b068b0f8@mail.gmail.com>
-	 <20070627122437.GA158@tv-sign.ru>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oleg,
 
-On 6/27/07, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> On 06/27, Satyam Sharma wrote:
-> >
-> > Thanks for your comments, I'm still not convinced, however.
->
-> An perhaps you are right. I don't have a very strong opinion on that.
-> Still I can't understand why it is better if kthread_stop() sends a
-> signal as well.
-> [...]
-> One can always use force_sig() or allow_signal() + send_sig() when
-> it is really needed, like cifs does.
 
-The way I look at it, this is about an API being the one with "least surprise".
-So when one writes a kthread using its API, one would expect
-kthread_stop() to dtrt and just work, which it will not, if the kthread has one
-of such functions (which are just like any other, after all). Also, imagine
-such a function being added to a kthread that didn't have it previously ...
-the solution to which (sending a signal before kthread_stop) is un-intuitive.
-Hence, why not make it part of the API itself ... It's not like the signal
-would do any harm to other kthreads (that don't use such function) either.
+On Wed, 27 Jun 2007, Davide Libenzi wrote:
 
-> Contrary, I believe we should avoid signals when it
-> comes to kernel threads.
+> On Wed, 27 Jun 2007, Linus Torvalds wrote:
+> > 
+> > Stores never "leak up". They only ever leak down (ie past subsequent loads 
+> > or stores), so you don't need to worry about them. That's actually already 
+> > documented (although not in those terms), and if it wasn't true, then we 
+> > couldn't do the spin unlock with just a regular store anyway.
+> 
+> Yes, Intel has never done that. They'll probably never do it since it'll 
+> break a lot of system software (unless they use a new mode-bit that 
+> allows system software to enable lose-ordering). Although I clearly 
+> remember to have read in one of their P4 optimization manuals to not 
+> assume this in the future.
 
-And I agree, but there's quite a subtle difference between signals being
-used like they normally are, and this case here. Fact is, there is simply
-no other way to break out of certain functions (if there was, I would've
-preferred that myself).
+That optimization manual was confused. 
 
-In fact, what I'm proposing is that kthreads should *not* be tinkering
-with (flushing, handling, dequeueing, whatever) signals at all, because
-like you mentioned, if they do that, it's possible that the TIF_SIGPENDING
-could get lost.
+The Intel memory ordering documentation *clearly* states that only reads 
+pass writes, not the other way around.
 
-> > Anyway, I think _all_ usages of kthread_stop() in the kernel *do* want
-> > the thread to stop *right then*. After all, kthread_stop() doesn't even
-> > return (gets blocked on wait_for_completion()) till it knows the target
-> > kthread *has* exited completely.
->
-> Yes, kthread_stop(k) means that k should exit eventually, but I don't
-> think that kthread_stop() should try to force the exit.
+Some very confused people have thought that "pass" is a two-way thing. 
+It's not. "Passing" in the Intel memory ordering means "go _ahead_ of", 
+exactly the same way it means in traffic. You don't "pass" people by 
+falling behind them.
 
-Well, it's just an additional notice (apart from setting kthread_stop_info)
-sent to the target kthread that its time has come ... I'm not sure how a
-kthread would have exit "forced" upon it just by sending it a signal.
-Also, note that _not_ using a signal would in fact mean that the kthread
-_never_ exits at all (forget asap).
+It's also obvious from reading the manual, because any other reading would 
+be very strange: it says
 
-> I am talking about the case
-> when wait_event_interruptible() should not fail (unless something bad
-> happens) inside the "while (!kthread_should_stop())" loop.
-> Note also that kthread could use TASK_INTERRUPTIBLE sleep
-> [...] and because it knows that all signals are ignored.
+ 1. Reads can be carried out speculatively and in any order
 
-Ok, I think you're saying that if a kthread used wait_event_interruptible
-(and was not expecting signals, because it ignores them), then bad
-things (say exit in inconsistent state, etc) will happen if we break that
-wait_event_interruptible unexpectedly.
+ 2. Reads can pass buffered writes, but the processor is self-consistent
 
-First, such an error ought to be handled gracefully by kthread itself
-anyway -- anybody who doesn't check the return of _interruptible()
-functions is just asking for trouble.
+ 3. Writes to memory are always carried out in program order [.. and then 
+    lists exceptions that are not interesting - it's clflush and the 
+    non-temporal stores, not any normal writes ]
 
-Second, the kthread must expect that the stop notification _could_
-have come during that sleep (in fact all good kthreads I've seen do
-always put a kthread_should_stop() after all such blocking functions,
-and not only in the while loop's condition) -- but even if it doesn't check
-explicitly, what do we lose? If the kthread code _after_ the
-wait_event_interruptible is written such that it assumes that the wait
-condition has become true (as I mentioned above), then that code is
-inherently buggy.
+ 4. Writes can be buffered
 
-And thirdly, what I'm proposing is putting the check for checking the
-SIGKILL in kthread_should_stop itself, in /addition/ to the
-kthread_stop_info.k == current check. So the kthread will check
-should_stop(), and if true, then exiting cleanly -- this is something that
-all existing kthreads would do already (if some kthread out there exits
-_uncleanly_ even after seeing seeing kthread_should_stop == true,
-then it needs fixing anyway).
+ 5. Writes are not performed speculatively; they are only performed for 
+    instructions that have actually been retired.
 
-Satyam
+ 6. Data from buffered writes can be forwarded to waiting reads within the 
+    processor.
+
+ 7. Reads or writes cannot pass (be carried out ahead of) I/O 
+    instructions, locked instructions or serializing instructions.
+
+ 8. Reads cannot pass LFENCE and MFENCE instructions.
+
+ 9. Writes cannot pass SFENCE or MFENCE instructions.
+
+The thing to note is:
+
+ a) in (1), Intel says that reads can occur in any order, but (2) makes it 
+    clear that that is only relevant wrt other _reads_
+
+ b) in (2), they say "pass", but then they actually explain that "pass" 
+    means "be carried out ahead of" in (7). 
+
+    HOWEVER, it should be obvious in (2) even _without_ the explicit 
+    clarification in (7) that "pass" is a one-way thing, because otherwise 
+    (2) is totally _meaningless_. It would be meaningless for two reasons:
+
+     - (1) already said that reads can be done in any order, so if that 
+       was a "any order wrt writes", then (2) would be pointless. So (2) 
+       must mean something *else* than "any order", and the only sane 
+       reading of it that isn't "any order" is that "pass" is a one-way 
+       thing: you pass somebody when you go ahead of them, you do *not* 
+       pass somebody when you fall behind them!
+
+     - if (2) really meant that reads and writes can just be re-ordered, 
+       then the choice of words makes no sense. It would be much more 
+       sensible to say that "reads can be carried out in any order wrt 
+       writes", instead of talking explicitly about "passing buffered 
+       writes"
+
+Anyway, I'm pretty damn sure my reading is correct. And no, it's not a "it 
+happens to work". It's _architecturally_required_ to work, and nobody has 
+ever complained about the use of a simple store to unlock a spinlock 
+(which would only work if the "reads can pass" only means "*later* reads 
+can pass *earlier* writes").
+
+And it turns out that I think #1 is going away. Yes, the uarch will 
+internally re-order reads, wrt each other, but if it isn't architecturally 
+visible, then from an architectural standpoint #1 simply doesn't happen.
+
+I can't guarantee that will happen, of course, but from talking to both 
+AMD and Intel people, I think that they'll just document the stricter 
+rules as the de-facto rules.
+
+		Linus
