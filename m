@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765114AbXF1UBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765105AbXF1UGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765114AbXF1UBm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 16:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbXF1UBd
+	id S1765105AbXF1UGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 16:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760720AbXF1UGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 16:01:33 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57258 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757104AbXF1UBb (ORCPT
+	Thu, 28 Jun 2007 16:06:14 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:49053 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758581AbXF1UGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 16:01:31 -0400
-Date: Thu, 28 Jun 2007 13:01:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Mark Salyzyn <aacraid@adaptec.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, kkeil@suse.de,
-       kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de
-Subject: Re: 2.6.22-rc6-mm1: multiple definition of `check_reset'
-Message-Id: <20070628130102.ef6e7d12.akpm@linux-foundation.org>
-In-Reply-To: <20070628192950.GT1094@stusta.de>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-	<20070628192950.GT1094@stusta.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Jun 2007 16:06:13 -0400
+Message-ID: <468413D2.60101@gmail.com>
+Date: Thu, 28 Jun 2007 22:02:26 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Nix <nix@esperi.org.uk>
+CC: Adrian Bunk <bunk@stusta.de>, Olivier Galibert <galibert@pobox.com>,
+       Takashi Iwai <tiwai@suse.de>,
+       Tomasz K?oczko <kloczek@rudy.mif.pg.gda.pl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>	<20070624200837.16e11305@the-village.bc.nu>	<Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>	<20070624215724.025a5de5@the-village.bc.nu>	<Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl>	<s5h3b0gi9mp.wl%tiwai@suse.de>	<Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl>	<s5hzm2ogqr7.wl%tiwai@suse.de>	<20070625124442.GA44019@dspnet.fr.eu.org>	<20070625132107.GD1094@stusta.de> <87tzssextf.fsf@hades.wkstn.nix>
+In-Reply-To: <87tzssextf.fsf@hades.wkstn.nix>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007 21:29:50 +0200
-Adrian Bunk <bunk@stusta.de> wrote:
+On 06/28/2007 08:30 PM, Nix wrote:
 
->  LD      drivers/built-in.o
-> drivers/isdn/built-in.o: In function `check_reset': (.text+0xab974):
-> multiple definition of `check_reset'
-> drivers/scsi/built-in.o:(.data+0xdba8): first defined here
-> ld: Warning: size of symbol `check_reset' changed from 4 in drivers/scsi/built-in.o to 214 in drivers/isdn/built-in.o
-> ld: Warning: type of symbol `check_reset' changed from 1 to 2 in drivers/isdn/built-in.o
+> On 25 Jun 2007, Adrian Bunk stated:
+>> If people often run into this problem it might make sense to deprecate 
+>> the in-kernel OSS emulation and point people to the userspace emulation 
+>> instead?
+> 
+> So now people need to know internal implementation details like if a
+> program uses ALSA or OSS interfaces before they know how to *run* it?
 
-check_reset wasn't a great choice of identifier...
+Point, but one that does hinge on whether or not you feel you can call using 
+the ALSA or OSS interface an implementation detail.
 
+ALSA has been the Linux soundsystem for a number of years now and as such, 
+an application that runs under Linux and produces sound more and more can be 
+expected to do so using the Linux API. The only reason it _can_ be seen as a 
+detail is due to the Just Works nature of the OSS emulation but that is 
+changing due to the software mixing. Binary apps are also moving to ALSA 
+currently, ie, flash, skype, ...
 
-diff -puN drivers/scsi/aacraid/aachba.c~aacraid-rename-check_reset drivers/scsi/aacraid/aachba.c
---- a/drivers/scsi/aacraid/aachba.c~aacraid-rename-check_reset
-+++ a/drivers/scsi/aacraid/aachba.c
-@@ -177,9 +177,9 @@ int check_interval = 24 * 60 * 60;
- module_param(check_interval, int, S_IRUGO|S_IWUSR);
- MODULE_PARM_DESC(check_interval, "Interval in seconds between adapter health checks.");
- 
--int check_reset = 1;
--module_param(check_reset, int, S_IRUGO|S_IWUSR);
--MODULE_PARM_DESC(check_reset, "If adapter fails health check, reset the adapter.");
-+int aacraid_check_reset = 1;
-+module_param_named(check_reset, aacraid_check_reset, int, S_IRUGO|S_IWUSR);
-+MODULE_PARM_DESC(aacraid_check_reset, "If adapter fails health check, reset the adapter.");
- 
- int expose_physicals = -1;
- module_param(expose_physicals, int, S_IRUGO|S_IWUSR);
-@@ -1211,7 +1211,7 @@ int aac_get_adapter_info(struct aac_dev*
- 			  (int)sizeof(dev->supplement_adapter_info.VpdInfo.Tsid),
- 			  dev->supplement_adapter_info.VpdInfo.Tsid);
- 		}
--		if (!check_reset ||
-+		if (!aacraid_check_reset ||
- 		  (dev->supplement_adapter_info.SupportedOptions2 &
- 		  le32_to_cpu(AAC_OPTION_IGNORE_RESET))) {
- 			printk(KERN_INFO "%s%d: Reset Adapter Ignored\n",
-diff -puN drivers/scsi/aacraid/aacraid.h~aacraid-rename-check_reset drivers/scsi/aacraid/aacraid.h
---- a/drivers/scsi/aacraid/aacraid.h~aacraid-rename-check_reset
-+++ a/drivers/scsi/aacraid/aacraid.h
-@@ -1857,4 +1857,4 @@ extern int aac_reset_devices;
- extern int aac_commit;
- extern int update_interval;
- extern int check_interval;
--extern int check_reset;
-+extern int aacraid_check_reset;
-diff -puN drivers/scsi/aacraid/commsup.c~aacraid-rename-check_reset drivers/scsi/aacraid/commsup.c
---- a/drivers/scsi/aacraid/commsup.c~aacraid-rename-check_reset
-+++ a/drivers/scsi/aacraid/commsup.c
-@@ -1370,8 +1370,9 @@ int aac_check_health(struct aac_dev * aa
- 
- 	printk(KERN_ERR "%s: Host adapter BLINK LED 0x%x\n", aac->name, BlinkLED);
- 
--	if (!check_reset || (aac->supplement_adapter_info.SupportedOptions2 &
--	  le32_to_cpu(AAC_OPTION_IGNORE_RESET)))
-+	if (!aacraid_check_reset ||
-+		(aac->supplement_adapter_info.SupportedOptions2 &
-+			le32_to_cpu(AAC_OPTION_IGNORE_RESET)))
- 		goto out;
- 	host = aac->scsi_host_ptr;
- 	if (aac->thread->pid != current->pid)
-_
+Anyways, I suspect at least Takashi Iwai would simply say "no" to removing 
+or deprecating the in kernel emulation anyway, although it's not likely to 
+grow features anymore.
+
+Rene.
 
