@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764133AbXF1IHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764428AbXF1IJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764133AbXF1IHY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 04:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbXF1IHK
+	id S1764428AbXF1IJX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 04:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761336AbXF1IJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 04:07:10 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35389 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759676AbXF1IHI (ORCPT
+	Thu, 28 Jun 2007 04:09:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33277 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758178AbXF1IJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 04:07:08 -0400
-X-Sasl-enc: 6vV7VJ2nuoBSD/UoZ/BvDKp1KokewbwB7l9j53ykhMKP 1183018027
-Date: Thu, 28 Jun 2007 05:07:00 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC #2] hwrng: Add type categories
-Message-ID: <20070628080700.GB13258@khazad-dum.debian.net>
-References: <200706262021.51410.mb@bu3sch.de> <200706271505.33970.mb@bu3sch.de> <20070627170331.GB6508@khazad-dum.debian.net> <200706271954.16963.mb@bu3sch.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706271954.16963.mb@bu3sch.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 28 Jun 2007 04:09:09 -0400
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070627224623.GO13886@enneenne.com>
+References: <20070626100628.GO24183@enneenne.com>
+	 <1182855427.12109.203.camel@pmac.infradead.org>
+	 <20070626170622.GA13886@enneenne.com>
+	 <1182879520.3263.19.camel@shinybook.infradead.org>
+	 <20070627101449.GH13886@enneenne.com>
+	 <1182939510.6409.17.camel@pmac.infradead.org>
+	 <20070627125802.GI13886@enneenne.com>
+	 <1182960660.1170.12.camel@pmac.infradead.org>
+	 <20070627174537.GM13886@enneenne.com>
+	 <1182966588.1170.28.camel@pmac.infradead.org>
+	 <20070627224623.GO13886@enneenne.com>
+Content-Type: text/plain
+Date: Thu, 28 Jun 2007 09:08:53 +0100
+Message-Id: <1183018133.1170.46.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Michael Buesch wrote:
-> Ok, all very good ideas. Patches are welcome ;)
+On Thu, 2007-06-28 at 00:46 +0200, Rodolfo Giometti wrote:
+> Just last question: I still don't well understand where I should
+> declare the new compat_sys_time_pps_fetch() syscall... it's
+> automagically defined by the system when CONFIG_COMPAT is enabled? :-o
 
-Not from me, sorry. I really don't have the time, or the drive, to do it
-right now.  thinkpad-acpi is taking all my "kernel code" time, which is not
-much.
+It isn't used on i386. On a 64-bit architecture, you need to put
+compat_sys_time_pps_fetch() into the syscall table for 32-bit
+processes. 
 
-> > I don't much like sysfs over IOCTLs for this, as you will probably need to
-> > be able to set and get things in an atomic way.  A sysfs binary attribute
-> > would also work.  A sysfs one-value-per-attribute bunch of them is
-> > completely useless from a security point of view.
-> 
-> hm? Why?
-
-Because you cannot risk anyone changing one of them behind your back while
-you are trying to set them all before you lock them.  And I am not even
-considering an attack scenario, I am considering two apps trying to set it
-up concurrently.
-
-You need some sort of locking for this sort of device, and exclusive open +
-ioctl solves the problem completely.  Sysfs is not made for this kind of
-thing.
+On PowerPC you do this by using COMPAT_SYS_SPU(time_pps_fetch) instead
+of SYSCALL_SPU(..) in include/asm-powerpc/systbl.h. On x86_64 you'd put
+it into the ia32_sys_call_table in arch/x86_64/ia32/ia32entry.S
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+dwmw2
+
