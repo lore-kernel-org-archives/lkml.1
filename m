@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbXF1OhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbXF1OkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759761AbXF1OhO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756343AbXF1OhA
+	id S1755743AbXF1OkZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 10:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbXF1OkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:37:00 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:38160 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754309AbXF1Og6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:36:58 -0400
-Subject: Re: [PATCH 0/6][TAKE5] fallocate system call
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
-       suparna@in.ibm.com, xfs@oss.sgi.com
-In-Reply-To: <20070628025543.9467216f.akpm@linux-foundation.org>
-References: <20070510005926.GT85884050@sgi.com>
-	 <20070510115620.GB21400@amitarora.in.ibm.com>
-	 <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com>
-	 <20070512080157.GF85884050@sgi.com>
-	 <20070612061652.GA6320@amitarora.in.ibm.com>
-	 <20070613235217.GS86004887@sgi.com>
-	 <20070614091458.GH5181@schatzie.adilger.int>
-	 <20070614120413.GD86004887@sgi.com>
-	 <20070614193347.GN5181@schatzie.adilger.int>
-	 <20070625132810.GA1951@amitarora.in.ibm.com>
-	 <20070628025543.9467216f.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 28 Jun 2007 10:36:47 -0700
-Message-Id: <1183052207.4420.17.camel@localhost.localdomain>
+	Thu, 28 Jun 2007 10:40:16 -0400
+Received: from minus.inr.ac.ru ([194.67.69.97]:45797 "HELO ms2.inr.ac.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1755053AbXF1OkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 10:40:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ms2.inr.ac.ru;
+  b=p8SsQ53hc7UFq/MFpRFRE7fxXwEVGRfmx0wUXGVBAdRHxFo/Bbt3uLSGIZdTLjl/809GVVUW+oXjP3EjwOuUCQ54gsbvlzmRNXPAJjipO7u/5BmpCgqnHjDmJDtCdUOLxcICZyCJghNU3BsHMeoHZTuOh7qu7KUvUiFdQGdG/tg=;
+Date: Thu, 28 Jun 2007 18:38:50 +0400
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070628143850.GA11780@ms2.inr.ac.ru>
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070628092340.GB23566@elte.hu>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-28 at 02:55 -0700, Andrew Morton wrote:
+Hello!
 
-> Please drop the non-ext4 patches from the ext4 tree and send incremental
-> patches against the (non-ext4) fallocate patches in -mm.
-> 
-The ext4 fallocate() patches are dependent on the core fallocate()
-patches, so ext4 patch-queue and git tree won't compile (it's not based
-on mm tree) without the core changes.
+> the context-switch argument i'll believe if i see numbers. You'll 
+> probably need in excess of tens of thousands of irqs/sec to even be able 
+> to measure its overhead. (workqueues are driven by nice kernel threads 
+> so there's no TLB overhead, etc.)
 
-We can send ext4 fallocate patches (incremental patches against mm tree)
-and drop the full fallocate patches(ext4 and non ext4 part) from ext4
-patch queue if you prefer this way.
+It was authors of the patch who were supposed to give some numbers,
+at least one or two, just to prove the concept. :-)
 
-> And try to get the code finished?  Time is pressing.
-> 
-I looked at the mm tree, there are other ext4 features/changes that are
-currently in ext4-patch-queue(not ext4 git tree) that not in part of
-ext4 series yet. Ted, can you merge those patches to your git tree?
-Thanks!
+According to my measurements (maybe, wrong) on 2.5GHz P4 tasklet
+schedule and execution eats ~300ns, workqueue eats ~4usec.
+On my 1.8GHz PM notebook (UP kernel), the numbers are 170ns and 1.2usec.
+
+Formally looking awful, this result is positive: tasklets are almost
+never used in hot paths. I am sure only about one such place: acenic
+driver uses tasklet to refill rx queue. This generates not more than
+3000 tasklet schedules per second. Even on P4 it pure workqueue schedule
+will eat ~1% of bare cpu ticks.
+
+Anyway, all the uses of tasklet should be verified:
+
+The most dubios place is popular Neterion 10Gbit driver, which uses
+tasklet like acenic. But at 10Gbit, multiply acenic numbers and panic. :-)
+
+Also, there exists some hardware which uses tasklets even harder,
+but I have no idea what real frequencies are: f.e. sundance.
+
+The case with acenic/s2io is quite special: normally network drivers
+refill queues in irq handlers. It was Jes Sorensen observation
+that offloading refilling from irq improves performance, I do not
+remember numbers. Probably, switching to workqueues will not affect
+performance at all, probably it will just collapse, no idea.
 
 
-Thanks for your patience.
+> ... workqueues are also possibly much more scalable
 
-Mingming.
+I cannot figure out - scale in what direction? :-)
+ 
 
+>						 (percpu workqueues 
+> are easy without changing anything in your code but the call where you 
+> create the workqueue).
+
+I do not see how it is related to scalability. And the statement
+does not even make sense. The patch already uses per-cpu workqueue
+for tasklets, otherwise it would be a disaster: guaranteed cpu non-locality.
+
+Tasklet is single thread by definition and purpose. Those a few places
+where people used tasklets to do per-cpu jobs (RCU f.e.) exist just because
+they had troubles with allocating new softirq. Workqueues do not make
+any difference: tasklet is not workqueue, it is work_struct, and you
+still will have to allocate array of per-cpu work structs, everything
+remains the same.
+
+
+> the only remaining argument is latency:
+
+You could set realtime prioriry by default, not a poor nice -5.
+If some network adapters were killed just because I run some task
+with nice --22, it would be just ridiculous.
+
+Alexey
