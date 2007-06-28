@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762893AbXF1PjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbXF1Pky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762893AbXF1PjN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 11:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbXF1Pi6
+	id S1764101AbXF1Pky (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 11:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbXF1Pkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 11:38:58 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:46751 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756399AbXF1Pi4 (ORCPT
+	Thu, 28 Jun 2007 11:40:43 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:33526 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289AbXF1Pkn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 11:38:56 -0400
-Date: Thu, 28 Jun 2007 10:38:44 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Andrew Morgan <morgan@kernel.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>,
-       Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: implement-file-posix-capabilities.patch
-Message-ID: <20070628153844.GA1977@sergelap.austin.ibm.com>
-References: <468352EC.2080704@kernel.org> <924812.95310.qm@web36611.mail.mud.yahoo.com>
+	Thu, 28 Jun 2007 11:40:43 -0400
+Date: Thu, 28 Jun 2007 11:40:39 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] selinux: don't enable minimum mmap checking by default
+In-Reply-To: <20070628012749.caf450f6.akpm@linux-foundation.org>
+Message-ID: <Line.LNX.4.64.0706281139010.13114@localhost.localdomain>
+References: <20070622203822.GA22807@linux-os.sc.intel.com>
+ <20070628001221.364438ce.akpm@linux-foundation.org>
+ <20070628012749.caf450f6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <924812.95310.qm@web36611.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Casey Schaufler (casey@schaufler-ca.com):
-> 
-> --- Andrew Morgan <morgan@kernel.org> wrote:
-> 
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> > 
-> > Serge E. Hallyn wrote:
-> > >> Does that explain it?
-> > > 
-> > > Yes, thanks, but then it still could come in handy to have fE be a full
-> > > bitset, so the application gets some eff caps automatically, while
-> > > others it has to manually set...
-> > 
-> > [We touched on this a number of emails back.]
-> > 
-> > If an application is capability aware, it can manipulate its own
-> > capabilities and should have fE=0.
-> > 
-> > If an application is not capability aware, it needs to have *all* of its
-> > capabilities enabled at exec() time. Otherwise, it won't work.
-> 
-> The intent of the fE vector in the POSIX draft is that those capabilities
-> are set on exec (lower vectors permitting). There are cases where it
-> does make sense to raise just some (e.g. ping). 
-> 
-> > The only reason for having an fE bitmap is to allow a capability-aware
-> > program (you really trust to do its privileged operations carefully) to
-> > be lazy and get some of its capabilities raised for free. Perhaps you
-> > can clarify why this is a desirable thing? :-)
-> 
-> No, it's to allow you to grant a subset of the available capabilities
-> to a program that is not aware of capabilities. You can give "date"
-> the capability to reset the clock without giving it the capability
-> to remove other people's files without changing the code or running
-> it setuid.
+Don't enable minimum mmap checking by default in SELinux, as it may break
+existing applications which do not have updated policy.
 
-Would there be a difference between that and setting either fI or fP
-(depending on your intent) to those caps, and setting fE=1 in Andrew's
-scheme?
+We will be able to enable it by default later, once we have code to handle
+new permissions which are not present in the user's policy.
 
-thanks,
--serge
+Signed-off-by: James Morris <jmorris@namei.org>
+---
+
+This is an updated version of the patch, essentially a reverting an 
+earlier patch which I'll drop once this are settles down.
+
+
+ security/selinux/hooks.c |   16 ----------------
+ 1 files changed, 0 insertions(+), 16 deletions(-)
+
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 4b0ecfd..8575555 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -112,9 +112,6 @@ int selinux_enabled = 1;
+ /* Original (dummy) security module. */
+ static struct security_operations *original_ops = NULL;
+ 
+-/* Did we enable minimum mmap address checking? */
+-static int enabled_mmap_min_addr;
+-
+ /* Minimal support for a secondary security module,
+    just to allow the use of the dummy or capability modules.
+    The owlsm module can alternatively be used as a secondary
+@@ -4917,15 +4914,6 @@ static __init int selinux_init(void)
+ 					    sizeof(struct inode_security_struct),
+ 					    0, SLAB_PANIC, NULL, NULL);
+ 
+-	/*
+-	 * Tasks cannot mmap below this without the mmap_zero permission.
+-	 * If not enabled already, do so by setting it to 64KB.
+-	 */
+-	if (mmap_min_addr == 0) {
+-		enabled_mmap_min_addr = 1;
+-		mmap_min_addr = 65536;
+-	}
+-
+ 	avc_init();
+ 
+ 	original_ops = secondary_ops = security_ops;
+@@ -5076,10 +5064,6 @@ int selinux_disable(void)
+ 	selinux_disabled = 1;
+ 	selinux_enabled = 0;
+ 
+-	/* Disable minimum mmap address check only if we enabled it */
+-	if (enabled_mmap_min_addr)
+-		mmap_min_addr = 0;
+-
+ 	/* Reset security_ops to the secondary module, dummy or capability. */
+ 	security_ops = secondary_ops;
+ 
+-- 
+1.5.0.6
+
