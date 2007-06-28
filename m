@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765680AbXF1Szh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765652AbXF1S5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765680AbXF1Szh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758668AbXF1Sz3
+	id S1765652AbXF1S5z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764917AbXF1S5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:55:29 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:47182 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757104AbXF1Sz3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:55:29 -0400
-Date: Thu, 28 Jun 2007 14:55:26 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Eric Paris <eparis@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/7] ICH Force HPET: Make generic time capable of switching
- broadcast timer
-In-Reply-To: <20070628110254.3957c927.akpm@linux-foundation.org>
-Message-ID: <Line.LNX.4.64.0706281452400.14008@localhost.localdomain>
-References: <20070622203822.GA22807@linux-os.sc.intel.com>
- <20070628001221.364438ce.akpm@linux-foundation.org>
- <20070628012749.caf450f6.akpm@linux-foundation.org>
- <1183034748.3504.3.camel@localhost.localdomain> <20070628110254.3957c927.akpm@linux-foundation.org>
+	Thu, 28 Jun 2007 14:57:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51253 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757104AbXF1S5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 14:57:44 -0400
+Message-ID: <468404A0.503@garzik.org>
+Date: Thu, 28 Jun 2007 14:57:36 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 0/6][TAKE5] fallocate system call
+References: <20070510223950.GD86004887@sgi.com>	<20070511110301.GB28425@in.ibm.com>	<20070512080157.GF85884050@sgi.com>	<20070612061652.GA6320@amitarora.in.ibm.com>	<20070613235217.GS86004887@sgi.com>	<20070614091458.GH5181@schatzie.adilger.int>	<20070614120413.GD86004887@sgi.com>	<20070614193347.GN5181@schatzie.adilger.int>	<20070625132810.GA1951@amitarora.in.ibm.com>	<20070628025543.9467216f.akpm@linux-foundation.org>	<20070628175757.GA1674@amitarora.in.ibm.com> <20070628113342.c9c0f49c.akpm@linux-foundation.org>
+In-Reply-To: <20070628113342.c9c0f49c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, Andrew Morton wrote:
+Andrew Morton wrote:
+> b) We do what we normally don't do and reserve the syscall slots in mainline.
 
-> We cannot merge a kernel change which requires a userspace upgrade to get
-> the X server working again.
+If everyone agrees it's going to happen... why not?
 
-Agreed.
-
-> 
-> You can do it the other way: make the X server work by default (my patch)
-> then, in your upgraded userspace, set /proc/sys/kernel/mmap_min_addr to
-> 65536.  
-> 
-> Repeat: I think you should have used /proc/sys/vm/ for that tunable.
-
-Andrew, I sent patches for these earlier.  Possibly lost somewhere?
-
-http://marc.info/?l=linux-kernel&m=118304565827673&w=2
-http://marc.info/?l=linux-kernel&m=118304566015586&w=2
+	Jeff
 
 
--- 
-James Morris
-<jmorris@namei.org>
