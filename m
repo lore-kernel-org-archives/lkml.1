@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759996AbXF1Nt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbXF1NuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759996AbXF1Nt1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 09:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXF1NtU
+	id S1760857AbXF1NuH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 09:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbXF1Nt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 09:49:20 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:27011 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752929AbXF1NtU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 09:49:20 -0400
-Date: Thu, 28 Jun 2007 15:49:19 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>, arjan@infradead.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       schilling@fokus.fraunhofer.de, Ulrich Drepper <drepper@gmail.com>
-Subject: Re: Linux Kernel include files
-In-Reply-To: <20070627171812.GA31705@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0706281546340.22579@fbirervta.pbzchgretzou.qr>
-References: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
- <20070627171812.GA31705@uranus.ravnborg.org>
+	Thu, 28 Jun 2007 09:49:56 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:47394 "EHLO relay4.usu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755503AbXF1Ntz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 09:49:55 -0400
+Message-ID: <4683BC76.8070805@ums.usu.ru>
+Date: Thu, 28 Jun 2007 19:49:42 +0600
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: man-pages-2.59 and man-pages-2.60 are released
+References: <467F8FCF.4080009@gmx.net>
+In-Reply-To: <467F8FCF.4080009@gmx.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Michael Kerrisk wrote:
 
-On Jun 27 2007 19:18, Sam Ravnborg wrote:
->
->For my test I used latest -git of the Linux kernel.
->In this version the include of ext2_fs_bh.h is guarded
->by __KERNEL__ like this:
->
->#ifdef __KERNEL__
->#include <linux/ext2_fs_sb.h>
->static inline struct ext2_sb_info *EXT2_SB(struct super_block *sb)
->{
->        return sb->s_fs_info;
->}
-[...]
+> I just released man-pages-2.59 and man-pages-2.60.
+> 
+> These releases are now available for download at:
+> 
+>     http://www.kernel.org/pub/linux/docs/manpages
 
-I'll have to chime in here.
-Test program:
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <linux/in.h> /* get IP_FREEBIND */
+There is one little problem with this: there is no stable URL for a given 
+version. This hurts, e.g., automated Linux From Scratch rebuilds (the 
+official script grabs the URL from the book, but it becomes invalid too soon).
 
-Creates a lot of error messages.
-(Lots of redefinitions.)
+Could you please, in order to avoid this, do what SAMBA team does: place 
+into http://www.kernel.org/pub/linux/docs/manpages/Old not only old 
+versions, but also the current version? This way, LFS will be sure that the 
+2.60 version is always available as 
+http://www.kernel.org/pub/linux/docs/manpages/Old/man-pages-2.60.tar.bz2 
+(even if it is in fact the latest version).
 
-$ rpm -q linux-kernel-headers glibc
-linux-kernel-headers-2.6.21-7
-glibc-2.6-5
-(suse 10.3 factory)
+Thanks in advance.
 
-So looks like there's still something to do.
-
-
-
-	Jan
 -- 
+Alexander E. Patrakov
