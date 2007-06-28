@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932092AbXF1SuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765837AbXF1Sua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932092AbXF1SuF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765033AbXF1Stb
+	id S1765837AbXF1Sua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765147AbXF1Stc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:49:31 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:4282 "EHLO
+	Thu, 28 Jun 2007 14:49:32 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4285 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764954AbXF1St3 (ORCPT
+	with ESMTP id S1764975AbXF1Sta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:49:29 -0400
+	Thu, 28 Jun 2007 14:49:30 -0400
 X-AuthUser: davidel@xmailserver.org
 From: Davide Libenzi <davidel@xmailserver.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Rik van Riel <riel@redhat.com>, Andy Isaacson <adi@hexapodia.org>
 Date: Thu, 28 Jun 2007 11:49:24 -0700
-Subject: [patch 2/4] MAP_NOZERO v2 - implement sys_brk2()
+Subject: [patch 3/4] MAP_NOZERO v2 - wire sys_brk2() to the x86 family
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.5792.1183056568.2>
+Message-ID: <send-serie.davidel@xmailserver.org.5792.1183056569.3>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch implements the sys_brk2() syscall, that nothing is
-other than a sys_brk() with an extra "flags" parameter. This can be used
-to pass the new MAP_NOZERO bit, to ask the kernel to hand over non-zero
-pages if possible.
+Wires up sys_brk2() to the x86 family.
 
 
 
@@ -36,111 +33,59 @@ Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
 ---
- include/linux/mm.h       |    3 ++-
- include/linux/syscalls.h |    1 +
- mm/mmap.c                |   22 ++++++++++++++++++----
- 3 files changed, 21 insertions(+), 5 deletions(-)
+ arch/i386/kernel/syscall_table.S |    1 +
+ arch/x86_64/ia32/ia32entry.S     |    1 +
+ include/asm-i386/unistd.h        |    3 ++-
+ include/asm-x86_64/unistd.h      |    2 ++
+ 4 files changed, 6 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.mod/include/linux/mm.h
+Index: linux-2.6.mod/arch/i386/kernel/syscall_table.S
 ===================================================================
---- linux-2.6.mod.orig/include/linux/mm.h	2007-06-27 22:41:33.000000000 -0700
-+++ linux-2.6.mod/include/linux/mm.h	2007-06-28 11:08:50.000000000 -0700
-@@ -1114,7 +1114,8 @@
- }
- 
- extern int do_munmap(struct mm_struct *, unsigned long, size_t);
--
-+extern unsigned long do_brk_flags(unsigned long addr, unsigned long len,
-+				  unsigned long vmflags);
- extern unsigned long do_brk(unsigned long, unsigned long);
- 
- /* filemap.c */
-Index: linux-2.6.mod/include/linux/syscalls.h
+--- linux-2.6.mod.orig/arch/i386/kernel/syscall_table.S	2007-06-27 22:41:31.000000000 -0700
++++ linux-2.6.mod/arch/i386/kernel/syscall_table.S	2007-06-28 11:08:52.000000000 -0700
+@@ -323,3 +323,4 @@
+ 	.long sys_signalfd
+ 	.long sys_timerfd
+ 	.long sys_eventfd
++	.long sys_brk2
+Index: linux-2.6.mod/arch/x86_64/ia32/ia32entry.S
 ===================================================================
---- linux-2.6.mod.orig/include/linux/syscalls.h	2007-06-27 22:41:31.000000000 -0700
-+++ linux-2.6.mod/include/linux/syscalls.h	2007-06-28 11:08:50.000000000 -0700
-@@ -263,6 +263,7 @@
- asmlinkage long sys_fremovexattr(int fd, char __user *name);
- 
- asmlinkage unsigned long sys_brk(unsigned long brk);
-+asmlinkage unsigned long sys_brk2(unsigned long brk, unsigned long flags);
- asmlinkage long sys_mprotect(unsigned long start, size_t len,
- 				unsigned long prot);
- asmlinkage unsigned long sys_mremap(unsigned long addr,
-Index: linux-2.6.mod/mm/mmap.c
+--- linux-2.6.mod.orig/arch/x86_64/ia32/ia32entry.S	2007-06-27 22:41:31.000000000 -0700
++++ linux-2.6.mod/arch/x86_64/ia32/ia32entry.S	2007-06-28 11:08:52.000000000 -0700
+@@ -719,4 +719,5 @@
+ 	.quad compat_sys_signalfd
+ 	.quad compat_sys_timerfd
+ 	.quad sys_eventfd
++	.quad sys_brk2
+ ia32_syscall_end:
+Index: linux-2.6.mod/include/asm-i386/unistd.h
 ===================================================================
---- linux-2.6.mod.orig/mm/mmap.c	2007-06-27 22:41:33.000000000 -0700
-+++ linux-2.6.mod/mm/mmap.c	2007-06-28 11:08:50.000000000 -0700
-@@ -35,6 +35,8 @@
- #define arch_mmap_check(addr, len, flags)	(0)
- #endif
+--- linux-2.6.mod.orig/include/asm-i386/unistd.h	2007-06-27 22:41:31.000000000 -0700
++++ linux-2.6.mod/include/asm-i386/unistd.h	2007-06-28 11:08:52.000000000 -0700
+@@ -329,10 +329,11 @@
+ #define __NR_signalfd		321
+ #define __NR_timerfd		322
+ #define __NR_eventfd		323
++#define __NR_brk2		324
  
-+#define BRK_ALLOWED_FLAGS	(VM_NOZERO)
-+
- static void unmap_region(struct mm_struct *mm,
- 		struct vm_area_struct *vma, struct vm_area_struct *prev,
- 		unsigned long start, unsigned long end);
-@@ -234,7 +236,7 @@
- 	return next;
- }
+ #ifdef __KERNEL__
  
--asmlinkage unsigned long sys_brk(unsigned long brk)
-+asmlinkage unsigned long sys_brk2(unsigned long brk, unsigned long flags)
- {
- 	unsigned long rlim, retval;
- 	unsigned long newbrk, oldbrk;
-@@ -271,8 +273,10 @@
- 	if (find_vma_intersection(mm, oldbrk, newbrk+PAGE_SIZE))
- 		goto out;
+-#define NR_syscalls 324
++#define NR_syscalls 325
  
-+	flags = BRK_ALLOWED_FLAGS & calc_vm_flag_bits(flags);
-+
- 	/* Ok, looks good - let it rip. */
--	if (do_brk(oldbrk, newbrk-oldbrk) != oldbrk)
-+	if (do_brk_flags(oldbrk, newbrk-oldbrk, flags) != oldbrk)
- 		goto out;
- set_brk:
- 	mm->brk = brk;
-@@ -282,6 +286,11 @@
- 	return retval;
- }
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+Index: linux-2.6.mod/include/asm-x86_64/unistd.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-x86_64/unistd.h	2007-06-27 22:41:31.000000000 -0700
++++ linux-2.6.mod/include/asm-x86_64/unistd.h	2007-06-28 11:08:52.000000000 -0700
+@@ -630,6 +630,8 @@
+ __SYSCALL(__NR_timerfd, sys_timerfd)
+ #define __NR_eventfd		284
+ __SYSCALL(__NR_eventfd, sys_eventfd)
++#define __NR_brk2		285
++__SYSCALL(__NR_brk2, sys_brk2)
  
-+asmlinkage unsigned long sys_brk(unsigned long brk)
-+{
-+	return sys_brk2(brk, 0);
-+}
-+
- #ifdef DEBUG_MM_RB
- static int browse_rb(struct rb_root *root)
- {
-@@ -1868,7 +1877,8 @@
-  *  anonymous maps.  eventually we may be able to do some
-  *  brk-specific accounting here.
-  */
--unsigned long do_brk(unsigned long addr, unsigned long len)
-+unsigned long do_brk_flags(unsigned long addr, unsigned long len,
-+			   unsigned long vmflags)
- {
- 	struct mm_struct * mm = current->mm;
- 	struct vm_area_struct * vma, * prev;
-@@ -1887,7 +1897,7 @@
- 	if (is_hugepage_only_range(mm, addr, len))
- 		return -EINVAL;
- 
--	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
-+	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags | vmflags;
- 
- 	error = arch_mmap_check(addr, len, flags);
- 	if (error)
-@@ -1964,6 +1974,10 @@
- 	return addr;
- }
- 
-+unsigned long do_brk(unsigned long addr, unsigned long len)
-+{
-+	return do_brk_flags(addr, len, 0);
-+}
- EXPORT_SYMBOL(do_brk);
- 
- /* Release all mmaps. */
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
 
