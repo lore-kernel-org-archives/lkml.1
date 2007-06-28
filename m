@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763283AbXF1Kwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762756AbXF1K5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763283AbXF1Kwq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 06:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbXF1Kwi
+	id S1762756AbXF1K5Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 06:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXF1K5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 06:52:38 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:33397 "EHLO smtp.gentoo.org"
+	Thu, 28 Jun 2007 06:57:06 -0400
+Received: from lug-owl.de ([195.71.106.12]:56443 "EHLO lug-owl.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757403AbXF1Kwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 06:52:37 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: linuxsh-dev@lists.sourceforge.net
-Subject: Re: 2.6.22-rc6 on Dreamcast (SH4)
-Date: Thu, 28 Jun 2007 06:53:14 -0400
-User-Agent: KMail/1.9.7
-Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1182810862.6017.2.camel@localhost.localdomain>
-In-Reply-To: <1182810862.6017.2.camel@localhost.localdomain>
+	id S1753530AbXF1K5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 06:57:05 -0400
+Date: Thu, 28 Jun 2007 12:57:02 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
+Cc: dwmw2@infradead.org, schilling@fokus.fraunhofer.de,
+       linux-kernel@vger.kernel.org, harald@skogtun.org, david@lang.hm
+Subject: Re: Linux Kernel include files
+Message-ID: <20070628105702.GA27862@lug-owl.de>
+Mail-Followup-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>,
+	dwmw2@infradead.org, schilling@fokus.fraunhofer.de,
+	linux-kernel@vger.kernel.org, harald@skogtun.org, david@lang.hm
+References: <46826d62.lTsuVo9cC7wGjcjf%Joerg.Schilling@fokus.fraunhofer.de> <1182960282.1170.4.camel@pmac.infradead.org> <46838d16.ut8KQOMKsZ9HqPYT%Joerg.Schilling@fokus.fraunhofer.de> <1183027034.1170.104.camel@pmac.infradead.org> <46838ffd.bUYvs93vY6OX67Mk%Joerg.Schilling@fokus.fraunhofer.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1639096.T8bK5irRbL";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706280653.15577.vapier@gentoo.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="KZQuPInE688wxjG+"
+Content-Disposition: inline
+In-Reply-To: <46838ffd.bUYvs93vY6OX67Mk%Joerg.Schilling@fokus.fraunhofer.de>
+X-Operating-System: Linux mail 2.6.18-4-686
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1639096.T8bK5irRbL
-Content-Type: text/plain;
-  charset="iso-8859-1"
+
+--KZQuPInE688wxjG+
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2007-06-28 12:39:57 +0200, Joerg Schilling <Joerg.Schilling@fokus.f=
+raunhofer.de> wrote:
+> > > > By the way, your mailer seems to be sometimes omitting In-Reply-To:=
+ and
+> > > > References: headers, which RFC2822 says you SHOULD include in repli=
+es.=20
+> > >=20
+> > > Sending such accusation without knowing the reason is not polite.
+> >
+> > It's not an accusation -- it's merely an observation. You may not have
+> > noticed that your mailer was misbehaving; now you _do_ know, and if you
+> > care about RFC compliance you might want to fix it. You're not _obliged_
+> > to fix it, of course. I just thought you'd like to know.
+>=20
+> Well there you are: my mailer is definitely NOT missbehaving.
+> Please do not repeat similar accusations when not knowing the reason.
+
+Just out of interest: In which cases do you want to break threading?
+
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:              What we do for ourselves dies with us. What we d=
+o for
+the second  :         others and the world remains and is immortal. (Albert=
+ Pine)
+
+--KZQuPInE688wxjG+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 Content-Disposition: inline
 
-On Monday 25 June 2007, Adrian McMenamin wrote:
-> Still getting this:
->
->  MODPOST vmlinux
-> WARNING: arch/sh/boards/dreamcast/built-in.o(.data+0x0): Section
-> mismatch: reference to .init.text: (between 'mv_dreamcast' and
-> 'systemasic_int')
-> WARNING: drivers/built-in.o(.text+0x168e0): Section mismatch: reference
-> to .init.data: (between 'pvr2fb_check_var' and 'pvr2fb_interrupt')
-> WARNING: drivers/built-in.o(.text+0x1701c): Section mismatch: reference
-> to .init.data: (between 'pvr2fb_pci_probe' and 'read_mem')
-> WARNING: drivers/built-in.o(.text+0x17024): Section mismatch: reference
-> to .init.text: (between 'pvr2fb_pci_probe' and 'read_mem')
-> WARNING: drivers/built-in.o(.data+0x738): Section mismatch: reference
-> to .init.text: (between 'board_list' and 'pvr2fb_pci_driver')
-> WARNING: drivers/built-in.o(.data+0x750): Section mismatch: reference
-> to .init.text: (between 'board_list' and 'pvr2fb_pci_driver')
-
-it means there is code that is not marked as init making references=20
-function/data that is marked as init ... this is normally not noticed at bo=
-ot=20
-as the init sections arent cleared/clobbered until well after boot and=20
-usually these are problems just for initialization routines ...
-
-i'd review the symbols that are being warned about here to see if they're=20
-missing the proper section markers (aka functions that should be labeled as=
-=20
-__init but arent)
-=2Dmike
-
---nextPart1639096.T8bK5irRbL
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iQIVAwUARoOTG0FjO5/oN/WBAQJqgQ/9FRaZT3HCuh+ZkfZryeAxuVLnVNC1gEC6
-MAx2Kda7czKCCO7ng7i9jAS8OG8w/3GL/CkY4VrRGaN2QCrb64Rkf/FcOoWz5fxS
-gbsN32MZRNokhLudzeLlMkhZZRB4HbZq/F0IBK5f28S5uLQyHB0f+H568C23i2ig
-ZceeldLUTkYAlimQ1K6OP0Jp7tRhlukh8pF9/RGU7UoFeWA/8rsJVtA0+llft4pF
-p3MrDtAq+86x/qRRTukbFSaxVVyybKJHkrOhGNKhbUjk6ORoGb5m2nLKRF5vKFxU
-ZTaUkYAZkfFKvWzc+J3sh6Byz7sks3Y6U1FMhvq3ewwEc0LnjFl8EkW54cPGgkvt
-zNVXFg7Hvu2nK8WVaBlLM2fj/A8X+K3w6yS7I3zkyYaALVCDBsSQyTA1X1isUYHa
-vmcpfEyYim+QihG68EL0I9OpYgVShYDMMsX3O3b4zAxAnYCQWElOEEFD8gTUh+yk
-nEWMMO7OfSQzw3TvF+ALEMIOSuKefEj7BCDB2yT113EK4f+1Rjxh5QlHcs87/6lI
-ziGoGSPlNeI0/tHifqoNVWK7Nh/CPh56Z8Qjn1LkFm1i/s99piZJfCyMATLHGmtY
-zEcAodTzbN59t7juOzew7yJ/NmzVzqzV9CqgpsD2Xqen++AH1M+Xo8Cywba53FAn
-57pZjgoXeo4=
-=sxWm
+iD8DBQFGg5P+Hb1edYOZ4bsRAneoAJ9DejQ3XQ6am8Vd3Dcu7BX8iS8/hwCfU0WA
+ku2DE98f3TJj6mqn1sEztzA=
+=flky
 -----END PGP SIGNATURE-----
 
---nextPart1639096.T8bK5irRbL--
+--KZQuPInE688wxjG+--
