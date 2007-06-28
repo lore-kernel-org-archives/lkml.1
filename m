@@ -1,110 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764549AbXF1MXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763674AbXF1MdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764549AbXF1MXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 08:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760355AbXF1MXd
+	id S1763674AbXF1MdR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 08:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760240AbXF1MdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 08:23:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:59112 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757196AbXF1MXc (ORCPT
+	Thu, 28 Jun 2007 08:33:07 -0400
+Received: from smtp-03.mandic.com.br ([200.225.81.143]:56612 "EHLO
+	smtp-03.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759841AbXF1MdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 08:23:32 -0400
-Date: Thu, 28 Jun 2007 08:20:31 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: David Chinner <dgc@sgi.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC] fsblock
-Message-ID: <20070628122031.GF5313@think.oraclecorp.com>
-References: <20070624014528.GA17609@wotan.suse.de> <20070626030640.GM989688@sgi.com> <46808E1F.1000509@yahoo.com.au> <20070626092309.GF31489@sgi.com> <20070626123449.GM14224@think.oraclecorp.com> <20070627053245.GA6033@wotan.suse.de> <20070627115056.GW14224@think.oraclecorp.com> <20070627223548.GS989688@sgi.com> <20070628024443.GB6038@wotan.suse.de>
+	Thu, 28 Jun 2007 08:33:05 -0400
+Message-ID: <4683A80E.4070006@mandic.com.br>
+Date: Thu, 28 Jun 2007 09:22:38 -0300
+From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070628024443.GB6038@wotan.suse.de>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+CC: Richard Hughes <hughsient@gmail.com>, John Belmonte <john@neggie.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Bastien Nocera <hadess@hadess.net>, Mathieu.Berard@crans.org
+Subject: Re: Add INPUT support to toshiba_acpi
+References: <1180614979.2693.26.camel@localhost.localdomain> <200706260703.22994.eike-kernel@sf-tec.de> <1182848195.2335.0.camel@work> <200706281327.29962.eike-kernel@sf-tec.de>
+In-Reply-To: <200706281327.29962.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 04:44:43AM +0200, Nick Piggin wrote:
-> On Thu, Jun 28, 2007 at 08:35:48AM +1000, David Chinner wrote:
-> > On Wed, Jun 27, 2007 at 07:50:56AM -0400, Chris Mason wrote:
-> > > Lets look at a typical example of how IO actually gets done today,
-> > > starting with sys_write():
-> > > 
-> > > sys_write(file, buffer, 1MB)
-> > > for each page:
-> > >     prepare_write()
-> > > 	allocate contiguous chunks of disk
-> > >         attach buffers
-> > >     copy_from_user()
-> > >     commit_write()
-> > >         dirty buffers
-> > > 
-> > > pdflush:
-> > >     writepages()
-> > >         find pages with contiguous chunks of disk
-> > > 	build and submit large bios
-> > > 
-> > > So, we replace prepare_write and commit_write with an extent based api,
-> > > but we keep the dirty each buffer part.  writepages has to turn that
-> > > back into extents (bio sized), and the result is completely full of dark
-> > > dark corner cases.
+Rolf Eike Beer wrote:
+> Richard Hughes wrote:
+>> Yes, although this is out of my area or expertise, sorry.
 > 
-> That's true but I don't think an extent data structure means we can
-> become too far divorced from the pagecache or the native block size
-> -- what will end up happening is that often we'll need "stuff" to map
-> between all those as well, even if it is only at IO-time.
+> I've looked a bit but can't find any driver interaction of those programs. Any 
+> further ideas welcome.
 
-I think the fundamental difference is that fsblock still does:
-mapping_info = page->something, where something is attached on a per
-page basis.  What we really want is mapping_info = lookup_mapping(page),
-where that function goes and finds something stored on a per extent
-basis, with extra bits for tracking dirty and locked state.
+Do you try omnibook driver?
+svn export https://svn.sourceforge.net/svnroot/omnibook/omnibook/trunk
 
-Ideally, in at least some of the cases the dirty and locked state could
-be at an extent granularity (streaming IO) instead of the block
-granularity (random IO).
+toshiba_acpi don't work on my Toshiba M45-S355 (Toshiba BIOS) and I try 
+this module above and now I can change brightness writing in 
+/proc/omnibook/lcd and kpowersave can change brightness too.
 
-In my little brain, even block based filesystems should be able to take
-advantage of this...but such things are always easier to believe in
-before the coding starts.
+But, is impossible use multimedia keys (play, pause, browser, etc) and 
+couple keys (fn-fx), because Fn key and Multimedia keys don't is recognized.
 
-> 
-> But the point is taken, and I do believe that at least for APIs, extent
-> based seems like the best way to go. And that should allow fsblock to
-> be replaced or augmented in future without _too_ much pain.
-> 
->  
-> > Yup - I've been on the painful end of those dark corner cases several
-> > times in the last few months.
-> > 
-> > It's also worth pointing out that mpage_readpages() already works on
-> > an extent basis - it overloads bufferheads to provide a "map_bh" that
-> > can point to a range of blocks in the same state. The code then iterates
-> > the map_bh range a page at a time building bios (i.e. not even using
-> > buffer heads) from that map......
-> 
-> One issue I have with the current nobh and mpage stuff is that it
-> requires multiple calls into get_block (first to prepare write, then
-> to writepage), it doesn't allow filesystems to attach resources
-> required for writeout at prepare_write time, and it doesn't play nicely
-> with buffers in general. (not to mention that nobh error handling is
-> buggy).
-> 
-> I haven't done any mpage-like code for fsblocks yet, but I think they
-> wouldn't be too much trouble, and wouldn't have any of the above
-> problems...
-
-Could be, but the fundamental issue of sometimes pages have mappings
-attached and sometimes they don't is still there.  The window is
-smaller, but non-zero.
-
--chris
-
+Regards,
+Renato S. Yamane
