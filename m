@@ -1,87 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763016AbXF1P3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763627AbXF1P3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763016AbXF1P3A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 11:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbXF1P2x
+	id S1763627AbXF1P3s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 11:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbXF1P3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 11:28:53 -0400
-Received: from hosting.zipcon.net ([209.221.136.3]:40523 "EHLO
-	hosting.zipcon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756745AbXF1P2w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 11:28:52 -0400
-Message-ID: <4683D3B0.1040708@beezmo.com>
-Date: Thu, 28 Jun 2007 08:28:48 -0700
-From: William D Waddington <william.waddington@beezmo.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Thu, 28 Jun 2007 11:29:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55306 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756832AbXF1P3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 11:29:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] get rid of CONFIG_DISABLE_CONSOLE_SUSPEND
+Date: Thu, 28 Jun 2007 17:34:54 +0200
+User-Agent: KMail/1.9.5
+Cc: seife@suse.de, nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       suspend-devel@lists.sourceforge.net
+References: <20070628135108.GA1810@elf.ucw.cz>
+In-Reply-To: <20070628135108.GA1810@elf.ucw.cz>
 MIME-Version: 1.0
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-CC: linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>
-Subject: Re: Please release a stable kernel Linux 3.0
-References: <fa.ZV8hYZHQHqzfx1dgOFeEVFRogSg@ifi.uio.no> <oor483d2nqn6ae728com1v7v56g0ksotov@4ax.com> <4683983E.5020103@aitel.hist.no>
-In-Reply-To: <4683983E.5020103@aitel.hist.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - hosting.zipcon.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - beezmo.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Disposition: inline
+Message-Id: <200706281734.54642.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+On Thursday, 28 June 2007 15:51, Pavel Machek wrote:
+> Hi!
+> 
+> What about this? (Only compile tested, but looks pretty obvious to
+> me). Something like this should get us rid of ugly option, and still
+> solve debugging problems... Hmmm?
+> 								Pavel
+> 
+> Kill CONFIG_DISABLE_CONSOLE_SUSPEND; it should not be configurable at
+> all, instead, we should automatically keep console alive when
+> possible.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> diff --git a/drivers/char/lp.c b/drivers/char/lp.c
+> index 62051f8..8267ff8 100644
+> --- a/drivers/char/lp.c
+> +++ b/drivers/char/lp.c
+> @@ -144,7 +144,7 @@ static unsigned int lp_count = 0;
+>  static struct class *lp_class;
+>  
+>  #ifdef CONFIG_LP_CONSOLE
+> -static struct parport *console_registered; // initially NULL
+> +static struct parport *console_registered;
+>  #endif /* CONFIG_LP_CONSOLE */
 
-Helge Hafting wrote:
-> Bill Waddington wrote:
->> (And taking my drivers main-line isn't an option.  It would be fine
->> with me, but there is *zero* chance that my funky code would be
->> welcomed into the tree.)
->>   
-> If the only merge-stopper is code quality, why not
-> post your driver and get some feedback?  Cleaning up code
-> will take some effort of course;
-> but once it is done, you're protected from module API changes. . .
+Could you please avoid fixing things like this, white space etc. in this patch?
+It would be easier to read ...
 
-Fair enough:
-http://www.tahomatech.com/downloads/drivers/linux_2.6/pci/x86/compressed_tarfiles/
-or for your browsing pleasure:
-http://www.tahomatech.com/downloads/drivers/linux_2.6/pci/x86/files/
+>  #undef LP_DEBUG
+> @@ -749,8 +749,8 @@ #endif /* console on line printer */
+>  /* --- initialisation code ------------------------------------- */
+>  
+>  static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
+> -static char *parport[LP_NO] = { NULL,  };
+> -static int reset = 0;
+> +static char *parport[LP_NO];
+> +static int reset;
+>  
+>  module_param_array(parport, charp, NULL, 0);
+>  module_param(reset, bool, 0);
+> @@ -758,10 +758,10 @@ module_param(reset, bool, 0);
+>  #ifndef MODULE
+>  static int __init lp_setup (char *str)
+>  {
+> -	static int parport_ptr; // initially zero
+> +	static int parport_ptr;
+>  	int x;
+>  
+> -	if (get_option (&str, &x)) {
+> +	if (get_option(&str, &x)) {
+>  		if (x == 0) {
+>  			/* disable driver on "lp=" or "lp=0" */
+>  			parport_nr[0] = LP_PARPORT_OFF;
+> @@ -808,7 +808,7 @@ static int lp_register(int nr, struct pa
+>  #ifdef CONFIG_LP_CONSOLE
+>  	if (!nr) {
+>  		if (port->modes & PARPORT_MODE_SAFEININT) {
+> -			register_console (&lpcons);
+> +			register_console(&lpcons);
+>  			console_registered = port;
+>  			printk (KERN_INFO "lp%d: console ready\n", CONSOLE_LP);
+>  		} else
+> @@ -824,8 +824,7 @@ static void lp_attach (struct parport *p
+>  {
+>  	unsigned int i;
+>  
+> -	switch (parport_nr[0])
+> -	{
+> +	switch (parport_nr[0]) {
+>  	case LP_PARPORT_UNSPEC:
+>  	case LP_PARPORT_AUTO:
+>  		if (parport_nr[0] == LP_PARPORT_AUTO &&
+> @@ -856,7 +855,7 @@ static void lp_detach (struct parport *p
+>  	/* Write this some day. */
+>  #ifdef CONFIG_LP_CONSOLE
+>  	if (console_registered == port) {
+> -		unregister_console (&lpcons);
+> +		unregister_console(&lpcons);
+>  		console_registered = NULL;
+>  	}
+>  #endif /* CONFIG_LP_CONSOLE */
+> diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+> index 69233f6..7f7c2ce 100644
+> --- a/drivers/net/netconsole.c
+> +++ b/drivers/net/netconsole.c
+> @@ -75,7 +75,7 @@ static void write_msg(struct console *co
+>  
+>  	local_irq_save(flags);
+>  
+> -	for(left = len; left; ) {
+> +	for (left = len; left; ) {
+>  		frag = min(left, MAX_PRINT_CHUNK);
+>  		netpoll_send_udp(&np, msg, frag);
+>  		msg += frag;
+> @@ -103,10 +103,10 @@ static int init_netconsole(void)
+>  {
+>  	int err;
+>  
+> -	if(strlen(config))
+> +	if (strlen(config))
+>  		option_setup(config);
+>  
+> -	if(!configured) {
+> +	if (!configured) {
+>  		printk("netconsole: not configured, aborting\n");
+>  		return 0;
+>  	}
+> @@ -115,6 +115,7 @@ static int init_netconsole(void)
+>  	if (err)
+>  		return err;
+>  
+> +	disable_console_on_suspend++;
+>  	register_console(&netconsole);
+>  	printk(KERN_INFO "netconsole: network logging started\n");
+>  	return 0;
+> @@ -123,6 +124,7 @@ static int init_netconsole(void)
+>  static void cleanup_netconsole(void)
+>  {
+>  	unregister_console(&netconsole);
+> +	disable_console_on_suspend--;
+>  	netpoll_cleanup(&np);
+>  }
+>  
+> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+> index 326020f..b2331a5 100644
+> --- a/drivers/serial/serial_core.c
+> +++ b/drivers/serial/serial_core.c
+> @@ -1934,12 +1934,10 @@ int uart_suspend_port(struct uart_driver
+>  
+>  	mutex_lock(&state->mutex);
+>  
+> -#ifdef CONFIG_DISABLE_CONSOLE_SUSPEND
+>  	if (uart_console(port)) {
+>  		mutex_unlock(&state->mutex);
+>  		return 0;
+>  	}
+> -#endif
+>  
+>  	if (state->info && state->info->flags & UIF_INITIALIZED) {
+>  		const struct uart_ops *ops = port->ops;
+> @@ -1982,12 +1980,10 @@ int uart_resume_port(struct uart_driver 
+>  
+>  	mutex_lock(&state->mutex);
+>  
+> -#ifdef CONFIG_DISABLE_CONSOLE_SUSPEND
+>  	if (uart_console(port)) {
+>  		mutex_unlock(&state->mutex);
+>  		return 0;
+>  	}
+> -#endif
+>  
+>  	uart_change_pm(state, 0);
+>  
+> diff --git a/include/linux/console.h b/include/linux/console.h
+> index 62ef6e1..3cb477e 100644
+> --- a/include/linux/console.h
+> +++ b/include/linux/console.h
+> @@ -120,14 +120,11 @@ extern void console_stop(struct console 
+>  extern void console_start(struct console *);
+>  extern int is_console_locked(void);
+>  
+> -#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
+> +extern int disable_console_on_suspend;
+> +
+>  /* Suspend and resume console messages over PM events */
+>  extern void suspend_console(void);
+>  extern void resume_console(void);
+> -#else
+> -static inline void suspend_console(void) {}
+> -static inline void resume_console(void) {}
+> -#endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
+>  
+>  int mda_console_init(void);
+>  void prom_con_init(void);
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index 7564c38..59f103b 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -37,17 +37,6 @@ config PM_DEBUG
+>  	code. This is helpful when debugging and reporting various PM bugs, 
+>  	like suspend support.
+>  
+> -config DISABLE_CONSOLE_SUSPEND
+> -	bool "Keep console(s) enabled during suspend/resume (DANGEROUS)"
+> -	depends on PM && PM_DEBUG
+> -	default n
+> -	---help---
+> -	This option turns off the console suspend mechanism that prevents
+> -	debug messages from reaching the console during the suspend/resume
+> -	operations.  This may be helpful when debugging device drivers'
+> -	suspend/resume routines, but may itself lead to problems, for example
+> -	if netconsole is used.
+> -
+>  config PM_TRACE
+>  	bool "Suspend/resume event tracing"
+>  	depends on PM && PM_DEBUG && X86_32 && EXPERIMENTAL
+> @@ -57,8 +46,8 @@ config PM_TRACE
+>  	RTC across reboots, so that you can debug a machine that just hangs
+>  	during suspend (or more commonly, during resume).
+>  
+> -	To use this debugging feature you should attempt to suspend the machine,
+> -	then reboot it, then run
+> +	To use this debugging feature you should attempt to suspend the
+> +	machine, then reboot it, then run
+>  
+>  		dmesg -s 1000000 | grep 'hash matches'
+>  
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index 0bbdeac..c057023 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -726,7 +726,8 @@ int __init add_preferred_console(char *n
+>  	return 0;
+>  }
+>  
+> -#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
+> +int disable_console_on_suspend;
+> +
+>  /**
+>   * suspend_console - suspend the console subsystem
+>   *
+> @@ -734,17 +735,22 @@ #ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
+>   */
+>  void suspend_console(void)
+>  {
+> -	printk("Suspending console(s)\n");
+> -	acquire_console_sem();
+> -	console_suspended = 1;
+> +	if (disable_console_on_suspend) {
+> +		printk("Suspending console(s)\n");
+> +		acquire_console_sem();
+> +		console_suspended = 1;
+> +	}
+>  }
+>  
+>  void resume_console(void)
+>  {
+> -	console_suspended = 0;
+> -	release_console_sem();
+> +	if (console_suspended) {
+> +		BUG_ON(!disable_console_on_suspend);
 
-But I really don't see much hope :(  Coding style, masses of ioctls,
-build and install technique,  limited user base, etc, etc, etc...  Most
-of the above to keep API compatibility with other OS/older drivers -
-back to SunOS 4.1.3.  (BTW, it does seem to work...)
+Isn't that a bit extreme?
 
-And I probably have the license wrong.  The code has always been in
-the public domain.  (Advice welcome...)
+> +		console_suspended = 0;
+> +		release_console_sem();
+> +	}
+>  }
+> -#endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
+> +
+>  
+>  /**
+>   * acquire_console_sem - lock the console system for exclusive use.
 
-It really isn't that important to me to get this into the mainline,
-or to have a stable kernel API.  I _might_ argue that a stable and
-well documented kernel API (DKI) is a sign of a grown-up OS, but I
-won't :)  It isn't that hard to recode for API changes.  There's always
-LDD17 or 18 or 99 or whatever...
+I generally agree with the idea, but the patch needs a clean up, IMHO.
 
-My (mild) beef is more like what I take to be Al's point: it feels like
-there is a kind of hostility toward out-of-tree maintainers.  Why not
-encourage _all_ of us who are beavering away at open-source code?  My
-stuff doesn't belong in mainline, but it _is_ open, and in some minor
-way allows more folks to run Linux.
+Greetings,
+Rafael
 
-A cleaned-up, consistent, and out-of-tree friendly way of handling API
-changes might help us all.
-
-Thanks for listening,
-Bill
 
 -- 
---------------------------------------------
-William D Waddington
-Bainbridge Island, WA, USA
-william.waddington@beezmo.com
---------------------------------------------
-"Even bugs...are unexpected signposts on
-the long road of creativity..." - Ken Burtch
+"Premature optimization is the root of all evil." - Donald Knuth
