@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbXF1WDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932264AbXF1WEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200AbXF1WDf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 18:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763572AbXF1WD2
+	id S932264AbXF1WEW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 18:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763343AbXF1WEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 18:03:28 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:28288 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763386AbXF1WD1 (ORCPT
+	Thu, 28 Jun 2007 18:04:13 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36835 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761387AbXF1WEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 18:03:27 -0400
-Date: Thu, 28 Jun 2007 15:05:15 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: perex@suse.cz, akpm <akpm@linux-foundation.org>
-Subject: [PATCH] ALSA: more section mismatches
-Message-Id: <20070628150515.0d819891.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 28 Jun 2007 18:04:12 -0400
+Message-ID: <46842F7B.1010105@gmail.com>
+Date: Fri, 29 Jun 2007 00:00:27 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: William D Waddington <william.waddington@beezmo.com>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Please release a stable kernel Linux 3.0
+References: <fa.ZV8hYZHQHqzfx1dgOFeEVFRogSg@ifi.uio.no>	<oor483d2nqn6ae728com1v7v56g0ksotov@4ax.com>	<4683983E.5020103@aitel.hist.no>	<4683D3B0.1040708@beezmo.com> <20070628173051.4a3422c0@the-village.bc.nu>
+In-Reply-To: <20070628173051.4a3422c0@the-village.bc.nu>
+Content-Type: multipart/mixed;
+ boundary="------------060406030205040301060207"
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+This is a multi-part message in MIME format.
+--------------060406030205040301060207
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Fix section mismatch warnings:
+On 06/28/2007 06:30 PM, Alan Cox wrote:
 
-WARNING: sound/built-in.o(.exit.text+0x3ad): Section mismatch: reference to .init.text: (between 'sb_exit' and 'unload_uart6850')
-WARNING: sound/built-in.o(.exit.text+0x753): Section mismatch: reference to .init.text: (between 'snd_mts64_module_exit' and 'snd_portman_module_exit')
+> Public domain is GPL compatible.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- sound/drivers/mts64.c |    2 +-
- sound/oss/sb_card.c   |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Would you happen to have an opinion on the attached? I don't so much need it 
+or anything but I thought about submitting this once when I was working on 
+some stuff locally. I didn't since I was expecting arguments that public 
+domain is not so much a license, and how it becomes GPL anyway, ...
 
---- linux-2622-rc6.orig/sound/drivers/mts64.c
-+++ linux-2622-rc6/sound/drivers/mts64.c
-@@ -1048,7 +1048,7 @@ static struct platform_driver snd_mts64_
- /*********************************************************************
-  * module init stuff
-  *********************************************************************/
--static void __init_or_module snd_mts64_unregister_all(void)
-+static void snd_mts64_unregister_all(void)
- {
- 	int i;
+Stating that code which one intends to be in the public domain has "GPL and 
+additional rights" is a bit of a travesty though.
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+
+Rene.
+
+--------------060406030205040301060207
+Content-Type: text/plain;
+ name="public_domain.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="public_domain.diff"
+
+diff --git a/include/linux/license.h b/include/linux/license.h
+index decdbf4..1176471 100644
+--- a/include/linux/license.h
++++ b/include/linux/license.h
+@@ -8,7 +8,8 @@ static inline int license_is_gpl_compatible(const char *license)
+ 		|| strcmp(license, "GPL and additional rights") == 0
+ 		|| strcmp(license, "Dual BSD/GPL") == 0
+ 		|| strcmp(license, "Dual MIT/GPL") == 0
+-		|| strcmp(license, "Dual MPL/GPL") == 0);
++		|| strcmp(license, "Dual MPL/GPL") == 0
++		|| strcmp(license, "Public Domain") == 0);
+ }
  
---- linux-2622-rc6.orig/sound/oss/sb_card.c
-+++ linux-2622-rc6/sound/oss/sb_card.c
-@@ -290,7 +290,7 @@ static struct pnp_card_driver sb_pnp_dri
- MODULE_DEVICE_TABLE(pnp_card, sb_pnp_card_table);
- #endif /* CONFIG_PNP */
- 
--static void __init_or_module sb_unregister_all(void)
-+static void sb_unregister_all(void)
- {
- #ifdef CONFIG_PNP
- 	if (pnp_registered)
+ #endif
+diff --git a/include/linux/module.h b/include/linux/module.h
+index e6e0f86..2ecacf8 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -107,6 +107,7 @@ extern struct module __this_module;
+  *					 or MIT license choice]
+  *	"Dual MPL/GPL"			[GNU Public License v2
+  *					 or Mozilla license choice]
++ *	"Public Domain"			[Public domain products]
+  *
+  * The following other idents are available
+  *
+
+--------------060406030205040301060207--
