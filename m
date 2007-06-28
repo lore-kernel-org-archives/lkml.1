@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765416AbXF1ScV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765475AbXF1Sds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765416AbXF1ScV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764692AbXF1ScL
+	id S1765475AbXF1Sds (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbXF1Sdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:32:11 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36210 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764281AbXF1ScJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:32:09 -0400
-Date: Thu, 28 Jun 2007 13:31:56 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: Linus Torvalds <torvalds@osdl.org>
-cc: netdev@vger.kernel.org, Andy Fleming <afleming@freescale.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Please pull from 'from_linus' branch
-Message-ID: <Pine.LNX.4.64.0706281330290.32589@blarg.am.freescale.net>
+	Thu, 28 Jun 2007 14:33:41 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:54062 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757199AbXF1Sdk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 14:33:40 -0400
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Olivier Galibert <galibert@pobox.com>, Takashi Iwai <tiwai@suse.de>,
+       Tomasz K?oczko <kloczek@rudy.mif.pg.gda.pl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+	<20070624200837.16e11305@the-village.bc.nu>
+	<Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
+	<20070624215724.025a5de5@the-village.bc.nu>
+	<Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl>
+	<s5h3b0gi9mp.wl%tiwai@suse.de>
+	<Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl>
+	<s5hzm2ogqr7.wl%tiwai@suse.de>
+	<20070625124442.GA44019@dspnet.fr.eu.org>
+	<20070625132107.GD1094@stusta.de>
+From: Nix <nix@esperi.org.uk>
+Emacs: an inspiring example of form following function... to Hell.
+Date: Thu, 28 Jun 2007 19:30:36 +0100
+In-Reply-To: <20070625132107.GD1094@stusta.de> (Adrian Bunk's message of "25 Jun 2007 14:21:10 +0100")
+Message-ID: <87tzssextf.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-DCC-CTc-dcc2-Metrics: hades 1031; Body=6 Fuz1=6 Fuz2=6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from 'for_linus' branch of
+On 25 Jun 2007, Adrian Bunk stated:
+> If people often run into this problem it might make sense to deprecate 
+> the in-kernel OSS emulation and point people to the userspace emulation 
+> instead?
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_linus
+So now people need to know internal implementation details like if a
+program uses ALSA or OSS interfaces before they know how to *run* it?
 
-to receive the following updates:
-
- drivers/net/phy/mdio_bus.c |    3 ++-
- drivers/net/phy/vitesse.c  |    2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-Kumar Gala (1):
-      phy: Fix phy_id for Vitesse 824x PHY
-
-commit 5f708dd91d15876e26d7a57f97a255cedffca463
-Author: Kumar Gala <galak@kernel.crashing.org>
-Date:   Thu Jun 28 13:26:06 2007 -0500
-
-    phy: Fix phy_id for Vitesse 824x PHY
-
-    The phy_id specified for the Vitesse 824x PHY would never match because
-    it was expecting bits to be set that would be masked by the phy_id_mask.
-    Fix the phy_id so it will match properly, and changed the mdio_bus_match
-    to mask both the driver and devices phy_id with the mask so we dont have
-    this issue in the future.
-
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index fc4aee9..fc2f0e6 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -131,7 +131,8 @@ static int mdio_bus_match(struct device *dev, struct device_driver *drv)
- 	struct phy_device *phydev = to_phy_device(dev);
- 	struct phy_driver *phydrv = to_phy_driver(drv);
-
--	return (phydrv->phy_id == (phydev->phy_id & phydrv->phy_id_mask));
-+	return ((phydrv->phy_id & phydrv->phy_id_mask) ==
-+		(phydev->phy_id & phydrv->phy_id_mask));
- }
-
- /* Suspend and resume.  Copied from platform_suspend and
-diff --git a/drivers/net/phy/vitesse.c b/drivers/net/phy/vitesse.c
-index 792716b..596222b 100644
---- a/drivers/net/phy/vitesse.c
-+++ b/drivers/net/phy/vitesse.c
-@@ -84,7 +84,7 @@ static int vsc824x_config_intr(struct phy_device *phydev)
-
- /* Vitesse 824x */
- static struct phy_driver vsc8244_driver = {
--	.phy_id		= 0x000fc6c2,
-+	.phy_id		= 0x000fc6c0,
- 	.name		= "Vitesse VSC8244",
- 	.phy_id_mask	= 0x000fffc0,
- 	.features	= PHY_GBIT_FEATURES,
+That doesn't sound especially nice to use (and before you say
+`distributors will do it', not all programs are built by distributors).
