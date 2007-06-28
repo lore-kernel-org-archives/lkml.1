@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbXF1ExU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762053AbXF1E71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760140AbXF1ExU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 00:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbXF1ExM
+	id S1762053AbXF1E71 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 00:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbXF1E7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 00:53:12 -0400
-Received: from keil-draco.com ([216.193.185.50]:50098 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbXF1ExL (ORCPT
+	Thu, 28 Jun 2007 00:59:10 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:60589 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753171AbXF1E7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 00:53:11 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+	Thu, 28 Jun 2007 00:59:08 -0400
+To: davids@webmaster.com
+Cc: "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Date: Thu, 28 Jun 2007 00:52:48 -0400
-User-Agent: KMail/1.9.6
-Cc: davids@webmaster.com, linux-kernel@vger.kernel.org
-References: <MDEHLPKNGKAHNMBLJOLKOELFEOAC.davids@webmaster.com> <200706272251.48884.dhazelton@enter.net> <or1wfwznz5.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or1wfwznz5.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <MDEHLPKNGKAHNMBLJOLKEELNEOAC.davids@webmaster.com>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Thu, 28 Jun 2007 01:57:18 -0300
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKEELNEOAC.davids@webmaster.com> (David Schwartz's message of "Wed\, 27 Jun 2007 20\:44\:21 -0700")
+Message-ID: <orwsxoy8up.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706280052.48543.dhazelton@enter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 June 2007 00:45:18 Alexandre Oliva wrote:
-> On Jun 27, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > Section 3 doesn't apply to this situation. However, other sections
-> > do. They are distributing in line with the distribution requirement,
-> > but not the "modification and copying" requirements. These are
-> > granted early in the license and covered by the "no further
-> > restrictions" clause.
-> >
-> > You have to be able to copy and modify the source code for it to
-> > comply with the GPL.
->
-> Let's hope courts see it this way.
+On Jun 28, 2007, "David Schwartz" <davids@webmaster.com> wrote:
 
-I'm sure they will. Section 0 of the GPLv2 states what the license covers. 
-Copying & modification are two of those things.
+> Until someplace you can't actually access the software is customarily used
+> for software interchange, ...
 
-> But then, why is it that I can't use hardware to stop someone from
-> copying or modifying the source code, but I can use hardware to stop
-> someone from copying or modifying the binary?  Or is that not so?
+As in TiVo boxes? :-) :-)
 
-As has been repeatedly stated, on a TiVO or similar device they can stop you 
-from running a user-built binary. They cannot, and do not, stop you from 
-accessing the copy on the disc. They don't even prevent modification of it. 
-What they do is stop the hardware from running the modified form.
+> This is a defect in the GPL. At least as I understood it, the intent
+> was to force distributors to remove any code for which there was a
+> patent claim that might threaten redistribution. Section 7 fails to
+> do that.
 
-> Remember, section 2 talks about modifying *your* *copies* of the
-> Program, without any reference whatsoever as to whether they're in
-> source or object form.
+It's not intended to do that.  The existence of a patent doesn't
+render the Software non-Free.  The patent holder's threats or
+willingness to enforce it doesn't render the Software non-Free.  It's
+accepting a restrictive license, voluntarily or by means of a court
+order, that does.  And the GPL is not about anything but doing as much
+as a copyright license can do to make sure the covered Free Software
+remains Free for all its users.  So, requesting licensees to not use
+their patents to deny other users' freedoms is something a copyright
+license can do.  But since it can't affect patent holders that are not
+copyright licensees, or any other legal mechanisms that non-licensees
+could use to restrict users' freedoms, it remains silent about this,
+rather than forcing licensees to comply with laws or avoid risks that
+might not even apply to themselves.
 
-I can't argue with this.
+> While you are granted rights under copyright, section 7 does not prevent
+> people from using other laws (so long as they don't impose the restrictions
+> or agree to them) to hamer your right to redistribute (or for those who
+> receive a distribution from you to lawfully use the work).
 
-DRH
+I think that's correct, and IMHO that's how it's intended to be.
+
+> It is quite difficult to actually arrange this. You would need something
+> like a third party to indemnify your customers without your having to agree
+> to such indemnification.
+
+... and without making you a party in this collusion.  Basically, if
+you're involved in the process of denying users' freedoms, the GPL may
+have teeth for you.  If you're not, and you're not a licensee of code
+present in that software, there's no way the GPL can stop you from
+imposing whatever restrictions that law permits you to impose, if you
+choose to do so.  But the GPL won't impose restrictions on others just
+in case their downstream users might become your next target.
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
