@@ -1,91 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764294AbXF1Mmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764330AbXF1Mrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764294AbXF1Mmx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 08:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbXF1Mmq
+	id S1764330AbXF1Mrw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 08:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760761AbXF1Mro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 08:42:46 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:50835 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760240AbXF1Mmq (ORCPT
+	Thu, 28 Jun 2007 08:47:44 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43216 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760734AbXF1Mrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 08:42:46 -0400
-Message-ID: <4683ABE7.3020109@gmail.com>
-Date: Thu, 28 Jun 2007 14:39:03 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Thu, 28 Jun 2007 08:47:43 -0400
+Date: Thu, 28 Jun 2007 14:48:06 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: David Miller <davem@davemloft.net>, crispin@novell.com,
+       seanlkml@sympatico.ca, akpm@linux-foundation.org, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+Message-ID: <20070628124806.GS1094@stusta.de>
+References: <4682D13C.6060107@novell.com> <20070627172940.1cabd5c4.seanlkml@sympatico.ca> <4682E8E1.6090701@novell.com> <20070627.160535.71552808.davem@davemloft.net> <46839B10.7040005@imap.cc>
 MIME-Version: 1.0
-To: Patrick Draper <pdraper@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <200706271825.17459.ahartmetz@gmail.com> <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com> <4682EEDD.4020501@gmail.com> <4682FE5C.5070004@gmail.com> <468315AF.1080105@gmail.com> <4683252B.9010205@gmail.com>
-In-Reply-To: <4683252B.9010205@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46839B10.7040005@imap.cc>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/28/2007 05:04 AM, Patrick Draper wrote:
-
-> Rene Herman wrote:
-
->> So -- the fact that mixing actually works for you when using libaoss 
->> means software mixing is working correctly for your ALSA setup. The 
->> only thing you should do is _use_ ALSA (natively) and not its OSS 
->> emulation so you can drop the library preload.
+On Thu, Jun 28, 2007 at 01:27:12PM +0200, Tilman Schmidt wrote:
+> David Miller schrieb:
+> > What you get by the code going into the upstream kernel tree is that
+> > it a) adds some pseudo legitimacy to AppArmour (which I don't
+> > personally think is warranted) and b) gets the work of keeping
+> > apparmour working with upstream largely off of your back and in the
+> > hands of the upstream community.
+> > 
+> > Neither of those are reasons why something should go into the tree.
 > 
-> Cool. How do I go about figuring out what every app uses? For example, 
-> you mentioned that the flash 9 plugin, which I also use, is an ALSA 
-> aware application. How do you know?
+> I beg to differ. b) is *the* reason cited again and again on LKML
+> for submitting code for inclusion in the tree. Whenever anyone
+> posts anything which is remotely related to out-of-tree code,
+> whether it's a question on the usage of some standard in-tree
+> function, a request for help with a coding or debugging problem,
+> or out-of-tree repercussions of an in-tree change, he or she
+> invariably has to put up with an answer along the lines of: "put
+> your code into the tree and all your problems will be solved" -
+> or its sarcastic variant: "I can't find your code anywhere in
+> the current kernel sources".
+> 
+> You can't have it both ways. Either you go around bashing
+> people for maintaining their code out-of-tree or you go around
+> bashing people for trying to get their code into the tree.
 
-Various methods. If all's well, the application has a config menu where you 
-can look at and change the settings.
+You have a point.
 
-Or, running ldd on the binary to see if it's linked to libasound, "grep 
-/proc/<pid>/maps libasound" (also catches dlopen), "strace" or usually 
-easiest and what I tended to do -- "lsmod" to see if starting the app 
-triggered the automatic loading of snd-pcm-oss and snd-mixer-oss which I 
-don't normally have loaded.
+But:
+Code in the kernel must fulfill some (not completely fixed) quality 
+criteria. It wouldn't be good to blindly include every bit of GPL'ed 
+kernel code available anywhere in the Internet.
 
-This is the "[things are still not great] partly _due_ to people maintaining 
-OSS is somehow a valid choice on Linux" that I stated early in this thread. 
-I actually believe the kernel space OSS emulation has been fairly counter 
-productive -- it's allowed applications to stay with an obsolete interface 
-since the users didn't even have to _know_ due to it all just working. At 
-least with the userspace emulation, people know they are using an OSS 
-emulation if they are starting the application with an library preload.
+As an example, it's highly unlikely that some external device driver 
+will be accepted without the author/maintainer doing some changes for 
+getting it included.
 
-The kernel space emulation is a bit more bullet-proof in the sense that the 
-userspace emulation would not for example help with applications that use 
-direct syscalls to open device nodes and I guess that was important.
+If [1] AppArmor is considered to be generally insecure or in all 
+respects inferior to SELinux it doesn't belong into the kernel.
 
-When OSS/Free was replaced with ALSA inside the Linux kernel this was a big 
-change in an area most users use and any such change inevitably opens up big 
-cans of change resistant wankers who understand the old interface and have 
-no need for the new one and will tell you that you did it all wrong, it was 
-all for nothing and you suck period. They'll keep it up for years and years 
-generally. The kernel-space OSS emulation _does_ mostly just work, which is 
-the kind of thing that you need in this environment to be allowed to tell 
-these people to go sexually entertain themselves.
+Being blessed with some of the holy penguin pee by being included in the 
+kernel is considered by many users as a quality criteria.
 
-Perhaps it's now finally coming to the time where the kernel space emulation 
-can be deprecated and eventually removed. Or not...
+Sure, this contradicts a bit the "get your code upstream" mantra, but 
+these are two conflicting goals and there's therefore no ideal solution.
 
-> I need the check out everything that I use which needs sound (vmware,
-> skype, kmplayer, etc.) I don't have source code for at least two of
-> those.
+If [1] AppArmor is offering required functionality not available through 
+SELinux and it's considered a correct and secure solution for these 
+purposes it should go into the kernel. Otherwise, it should not go into 
+the kernel.
 
-I don't know if vmware by now supports native ALSA but it didn't use to. The 
-current version of skype (1.4, still called a beta it seems) does.
+cu
+Adrian
 
-kmplayer seems to be a frontend for various mediaplayer solutions. Don't you 
-just love that mess? Its backends include MPlayer and Xine, and both these 
-can talk native ALSA fine at least. For mplayer, use a "ao=alsa" line in the 
-.mplayer/config file (or just start it with -ao alsa) and for xine, look in 
-its setup menu (audio tab, having set the interface level to beter than 
-"beginner").
+[1] note the "if"
 
-Rene.
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
