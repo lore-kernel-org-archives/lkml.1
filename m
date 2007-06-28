@@ -1,49 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbXF1FPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762779AbXF1FSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762736AbXF1FPJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 01:15:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbXF1FO5
+	id S1762779AbXF1FSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 01:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXF1FSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 01:14:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35161 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753842AbXF1FO5 (ORCPT
+	Thu, 28 Jun 2007 01:18:39 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:34072 "EHLO
+	asav05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbXF1FSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 01:14:57 -0400
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-From: Arjan van de Ven <arjan@infradead.org>
-To: Patrick Draper <pdraper@gmail.com>
-Cc: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4683252B.9010205@gmail.com>
-References: <200706271825.17459.ahartmetz@gmail.com>
-	 <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com>
-	 <4682EEDD.4020501@gmail.com> <4682FE5C.5070004@gmail.com>
-	 <468315AF.1080105@gmail.com>  <4683252B.9010205@gmail.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 27 Jun 2007 22:13:34 -0700
-Message-Id: <1183007614.2662.2.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+	Thu, 28 Jun 2007 01:18:38 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AoQrAOzggkZKhRO4R2dsb2JhbACBT4Vdh3ABARsNBhEB
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: dave young <hidave.darkstar@gmail.com>
+Subject: Re: [PATCH] atkbd: cleanup only once
+Date: Thu, 28 Jun 2007 01:18:35 -0400
+User-Agent: KMail/1.9.3
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <20070627105907.GA1802@darkstar.te-china.tietoenator.com> <200706270059.33550.dtor@insightbb.com> <a8e1da0706262202i3af320a7gaec8a5f0680beb13@mail.gmail.com>
+In-Reply-To: <a8e1da0706262202i3af320a7gaec8a5f0680beb13@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200706280118.36052.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-27 at 22:04 -0500, Patrick Draper wrote:
-> Rene Herman wrote:
-> > So -- the fact that mixing actually works for you when using libaoss 
-> > means software mixing is working correctly for your ALSA setup. The only 
-> > thing you should do is _use_ ALSA (natively) and not its OSS emulation 
-> > so you can drop the library preload.
-> 
-> Cool. How do I go about figuring out what every app uses? For example, 
-> you mentioned that the flash 9 plugin, which I also use, is an ALSA 
-> aware application. How do you know? I need the check out everything that 
-> I use which needs sound (vmware, skype, kmplayer, etc.) I don't have 
-> source code for at least two of those.
+On Wednesday 27 June 2007 01:02, dave young wrote:
+> 2007/6/27, Dmitry Torokhov <dtor@insightbb.com>:
+> > On Wednesday 27 June 2007 00:28, Greg KH wrote:
+> > > On Wed, Jun 27, 2007 at 12:34:09AM -0400, Dmitry Torokhov wrote:
+> > > > Hi Dave,
+> > > >
+> > > > On Wednesday 27 June 2007 06:59, Dave Young wrote:
+> > > > > Hi,
+> > > > >
+> > > > > If you press ctrl+alt+del several times as kernel booting (before user level bootin), the kernel will oops. I found the ps2_command is called more than once, then the ps2dev->serio maybe NULL pointer.
+> > > > >
+> > > > > 2.6.22-rc5 and 2.6.22-rc6 have same result.
+> > > > >
+> > > > > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> > > > > ---
+> > > > > diff -upr linux/drivers/input/keyboard/atkbd.c linux.new/drivers/input/keyboard/atkbd.c
+> > > > > --- linux/drivers/input/keyboard/atkbd.c  2007-06-27 10:38:37.000000000 +0000
+> > > > > +++ linux.new/drivers/input/keyboard/atkbd.c      2007-06-27 10:37:39.000000000 +0000
+> > > > > @@ -795,6 +795,11 @@ static int atkbd_activate(struct atkbd *
+> > > > >
+> > > > >  static void atkbd_cleanup(struct serio *serio)
+> > > > >  {
+> > > > > + static int flag;
+> > > > > +
+> > > > > + if(flag)
+> > > > > +         return;
+> > > > > + flag = 1;
+> > > >
+> > > > Unfortunately this will prevent atkbd from resetting keyboard on 2nd
+> > > > suspend attempt. It will also not work if you have an active MUX and
+> > > > have a couple of keyboards connected.
+> > > >
+> > > > Greg, now that you removed rwsem from subsystem (and subsystem itself
+> > > > for that matter) there is nothing as far as I can see that stops
+> > > > several threads from running device_shutdown() simultaneously. I also
+> > > > do not see what would isolate device probing and shutting them down
+> > > > at the same time. Am I missing something?
+> > >
+> > > There was never anything stopping that from happening before.  No driver
+> > > core code was using that rwsem, so it wasn't protecting anything,
+> > > despite people trying to use it as if it was :)
+> > >
+> >
+> > It did protect device_shutdown() from itself, didn't it?
+> >
+> > --
+> > Dmitry
+> >
+> how about check ps2dev->serio in ps2_command before use it?
 
-run ldd on the binary...
+I don't think we ever set it to NULL. Does the patch below help any?
+
+-- 
+Dmitry
 
 
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ drivers/input/serio/serio.c |    2 ++
+ 1 files changed, 2 insertions(+)
+
+Index: work/drivers/input/serio/serio.c
+===================================================================
+--- work.orig/drivers/input/serio/serio.c
++++ work/drivers/input/serio/serio.c
+@@ -769,8 +769,10 @@ static int serio_driver_remove(struct de
+ 
+ static void serio_cleanup(struct serio *serio)
+ {
++	mutex_lock(&serio->drv_mutex);
+ 	if (serio->drv && serio->drv->cleanup)
+ 		serio->drv->cleanup(serio);
++	mutex_unlock(&serio->drv_mutex);
+ }
+ 
+ static void serio_shutdown(struct device *dev)
