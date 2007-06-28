@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765733AbXF1UKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765359AbXF1UUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765733AbXF1UKj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 16:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763989AbXF1UKc
+	id S1765359AbXF1UUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 16:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759927AbXF1UUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 16:10:32 -0400
-Received: from www.osadl.org ([213.239.205.134]:46032 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762925AbXF1UKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 16:10:32 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: Mounting MMC card
-Date: Thu, 28 Jun 2007 22:10:23 +0200
-User-Agent: KMail/1.9.5
-Cc: Midhun Agnihotram <agnimidhun@gmail.com>, linux-kernel@vger.kernel.org
-References: <4dde4acb0706261146s5906d8f3vb787d5aecb429116@mail.gmail.com> <4dde4acb0706281008h2241f4c4nef18dc130bfe6fdd@mail.gmail.com> <46840A66.1010901@drzeus.cx>
-In-Reply-To: <46840A66.1010901@drzeus.cx>
-Organization: Linutronix
+	Thu, 28 Jun 2007 16:20:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:55815 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758843AbXF1UUq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 16:20:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XPNoFsHVZrKKBY4rvq7s6ze0SooiQdaw0+7p21aUbRkbBttXDDWh9JmCACUOkLvEw/OW8Zo+iBOSMyxy346SsOsPtqy00J7cpFhg/g9L06UyixWoqHWYl7XM+e1S+a8Y20AUF3XhDWJYXdyRNVLOTdWeTfHGg4YWN13sCcu6Ic0=
+Message-ID: <75b66ecd0706281320s29178c8brec8c3ef6b7fe7e7b@mail.gmail.com>
+Date: Thu, 28 Jun 2007 16:20:45 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Rene Herman" <rene.herman@gmail.com>
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Cc: Nix <nix@esperi.org.uk>, "Adrian Bunk" <bunk@stusta.de>,
+       "Olivier Galibert" <galibert@pobox.com>, "Takashi Iwai" <tiwai@suse.de>,
+       "Tomasz K?oczko" <kloczek@rudy.mif.pg.gda.pl>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <468413D2.60101@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706282210.23770.hjk@linutronix.de>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+	 <20070624215724.025a5de5@the-village.bc.nu>
+	 <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl>
+	 <s5h3b0gi9mp.wl%tiwai@suse.de>
+	 <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl>
+	 <s5hzm2ogqr7.wl%tiwai@suse.de>
+	 <20070625124442.GA44019@dspnet.fr.eu.org>
+	 <20070625132107.GD1094@stusta.de> <87tzssextf.fsf@hades.wkstn.nix>
+	 <468413D2.60101@gmail.com>
+X-Google-Sender-Auth: b55ef0d8be628676
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 28 Juni 2007 21:22 schrieb Pierre Ossman:
-> Since you use busybox I
-> assume the system is too lightweight to run udev.
+On 6/28/07, Rene Herman <rene.herman@gmail.com> wrote:
+> ALSA has been the Linux soundsystem for a number of years now and as such,
+> an application that runs under Linux and produces sound more and more can be
+> expected to do so using the Linux API. The only reason it _can_ be seen as a
+> detail is due to the Just Works nature of the OSS emulation but that is
+> changing due to the software mixing. Binary apps are also moving to ALSA
+> currently, ie, flash, skype, ...
 
-I run udev on an arm system, it costs you about 200kBytes,
-and saves you all the trouble with creating device files.
-Note that you don't need any rules files. If you want to write
-rules, you can even implement a poor-man's hotplug without HAL.
-If you can afford 200k, use udev.
+If your disto ships with any OSS apps using the in-kernel emulation
+you should file a bug report, as it results in bizarre and undesirable
+behavior - a single app opening /dev/dsp will block audio for every
+other app (OSS or ALSA) on the vast majority of hardware out there.
 
-Hans
-
+Lee
