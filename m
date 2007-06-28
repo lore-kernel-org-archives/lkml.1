@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932143AbXF1Vxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765614AbXF1WAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932143AbXF1Vxe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 17:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761868AbXF1Vx0
+	id S1765614AbXF1WAq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 18:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761387AbXF1WAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 17:53:26 -0400
-Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:42611 "HELO
-	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760948AbXF1Vx0 (ORCPT
+	Thu, 28 Jun 2007 18:00:38 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:60941 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760915AbXF1WAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 17:53:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=cWudFtX6VmX4VNFrvu3Md/13o+lzYRexQL5fx6Iuycio+2GzTten+IdIYQZGQAmEwbNlg4m1UtMh5HME3b9Y2TI7tuGF9Bg4MPKe2B+LeulqZPxOEFwJFoCCxacYmCojLD2yVfht9ZNVgLwrF1WrRaNGT3SFlH8YUXY7ob5noyE=  ;
-X-YMail-OSG: BvqrP20VM1muGkoPeRdqMg3p3nnN_h729bTN4UAfOCMWi0zjsGQjhHJbqQiOJQSao.ynbfaosT55Igw3k4_VUs4m1RuCJ1zkDnVRepvIL_waImG9yLg-
-From: David Brownell <david-b@pacbell.net>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Subject: Re: [PATCH] PXA27x UDC driver.
-Date: Thu, 28 Jun 2007 14:53:22 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-usb-devel@lists.sourceforge.net,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+	Thu, 28 Jun 2007 18:00:37 -0400
+Date: Thu, 28 Jun 2007 18:00:31 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Dan Williams <dan.j.williams@intel.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Li Yang-r58472 <LeoLi@freescale.com>
-References: <20070628103619.GW13886@enneenne.com> <989B956029373F45A0B8AF0297081890D834FA@zch01exm26.fsl.freescale.net> <20070628141205.GA13886@enneenne.com>
-In-Reply-To: <20070628141205.GA13886@enneenne.com>
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+In-Reply-To: <e9c3a7c20706281423p27059e90qe7f986d7485753a7@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0706281758560.27847@gandalf.stny.rr.com>
+References: <20070622040014.234651401@goodmis.org>  <20070622204058.GA11777@elte.hu>
+  <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> 
+ <20070622215953.GA22917@elte.hu>  <e9c3a7c20706251846v17347ab2n4a1d314734528c95@mail.gmail.com>
+  <1182823276.5493.240.camel@localhost.localdomain> 
+ <e9c3a7c20706251912i77ac75a0o60981590a08c34e6@mail.gmail.com> 
+ <Pine.LNX.4.58.0706280823020.19012@gandalf.stny.rr.com> 
+ <e9c3a7c20706281102l5db2e91alf465e7983d68f284@mail.gmail.com> 
+ <Pine.LNX.4.58.0706281632510.27157@gandalf.stny.rr.com>
+ <e9c3a7c20706281423p27059e90qe7f986d7485753a7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706281453.23414.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 June 2007, Rodolfo Giometti wrote:
 
-> As suggest by Leo let me propose to you my new patch for PXA27x UDC
-> support.
-> 
-> Please, let me know what I have to do for kernel inclusion. :)
+On Thu, 28 Jun 2007, Dan Williams wrote:
 
-Let's start with *JUST* a driver, not trying to update everything
-else in the USB Gadget stack so that it looks like it's designed
-specifically to handle all of Intel's design botches related to
-endpoint config ... and work worse for essentially everything else.
+> > CONFIG_PREEMPT?
+> >
+> Everything thus far has been CONFIG_PREEMPT=n (the default for this platform).
+>
+> With CONFIG_PREEMPT=y the resync is back in the 50MB/s range.
 
-(Unlike pretty much every other vendor, Intel wanted hardware config
-management.  It was unusably buggy in pxa21x/25x/26x, and not much
-better in pxa27x.)
+So with upping the prio for the work queue you got back your performance?
 
+>
+> [iop-adma: hi-prio workqueue, CONFIG_PREEMPT=y]
+> iq81340mc:~# cat /proc/mdstat
+> Personalities : [raid0] [raid1] [raid10] [raid6] [raid5] [raid4]
+> md0 : active raid5 sdd[4] sdc[2] sdb[1] sda[0]
+>       468872448 blocks level 5, 64k chunk, algorithm 2 [4/3] [UUU_]
+>       [=>...................]  recovery =  5.8% (9136404/156290816)
+> finish=46.1min speed=53161K/sec
+>
+> The tasklet configuration stays in 50MB/s ballpark, and the default
+> priority (nice -5) workqueue case remains in the 30's with
+> CONFIG_PREEMPT=n.
 
-So in technical terms, and to repeat what I've said before:  just
-configure it to act more like a PXA 25x chip (no altsettings) and
-get it so it passes all the tests [1], modulo errata which have no
-workarounds ... then submit that.  No epautoconfig updates, no
-patches to every gadget driver to cope with updated autoconfig.
+[noted: should be CONFIG_PREEMPT=y]
 
-Once there's a basic working no-frills version merged, then we can
-talk about whether things in the rest of the stack should change
-to accomodate the bizarre concepts of this controller.
+This is expected. Seems you may have otherthings running at a higher prio.
 
-- Dave
+-- Steve
 
-
-[1] http://www.linux-usb.org/usbtest/
