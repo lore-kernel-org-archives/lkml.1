@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765310AbXF1SKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763864AbXF1SKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765310AbXF1SKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762051AbXF1SKZ
+	id S1763864AbXF1SKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764864AbXF1SK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:10:25 -0400
-Received: from www.osadl.org ([213.239.205.134]:38532 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754946AbXF1SKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:10:24 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-To: "Midhun Agnihotram" <agnimidhun@gmail.com>
-Subject: Re: Mounting MMC card
-Date: Thu, 28 Jun 2007 20:10:16 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
-References: <4dde4acb0706261146s5906d8f3vb787d5aecb429116@mail.gmail.com> <4dde4acb0706281000p180d0066s11a21afe17336fb4@mail.gmail.com> <4dde4acb0706281008h2241f4c4nef18dc130bfe6fdd@mail.gmail.com>
-In-Reply-To: <4dde4acb0706281008h2241f4c4nef18dc130bfe6fdd@mail.gmail.com>
-Organization: Linutronix
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Jun 2007 14:10:29 -0400
+Received: from mail.screens.ru ([213.234.233.54]:37885 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764777AbXF1SK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 14:10:28 -0400
+Date: Thu, 28 Jun 2007 22:10:44 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Sattler <tsattler@gmx.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.22-rc6 spurious hangs
+Message-ID: <20070628181044.GA613@tv-sign.ru>
+References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru> <4683CC89.80406@gmx.de> <20070628150826.GA487@tv-sign.ru> <4683F145.2060705@gmx.de> <4683F48F.9010603@gmx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706282010.16856.hjk@linutronix.de>
+In-Reply-To: <4683F48F.9010603@gmx.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 28 Juni 2007 19:08 schrieb Midhun Agnihotram:
+On 06/28, Thomas Sattler wrote:
+>
+> Here is the logfile.
 
->     How do I access the MMC card data now? If I try to mount it,
-> busybox doesnot mount it.
-> 
-> # mount /dev/mmcblk0p0 /mnt/mmc
-> mount: mounting /dev/mmcblk0p0 on /mnt/mmc failed
-> 
->   I have tried with /dev/mmcblk0p0, mmcblk0p1,etc. But of no use. How
-> do I access the contents of MMC card? Is there any thing missing in my
-> settings? Busybox does not say anything other than the above error
-> message.
+> Jun 28 18:26:03 pearl ERR!! events/0 flush hang: f573759c f573759c 5782 5782 0 1
+> Jun 28 18:26:03 pearl CURR: 5557 5557 dvbd 0 129024
+> Jun 28 18:26:03 pearl wq_barrier_func+0x0/0xd
+> Jun 28 18:26:03 pearl cache_reap+0x0/0xe3
+> Jun 28 18:26:03 pearl ----
+> Jun 28 18:26:03 pearl cinergyt2_query_rc+0x0/0x2e9 [cinergyT2]
+> ...
+> Jun 28 19:23:03 pearl ERR!! events/0 flush hang: f573759c f573759c 5782 5782 1 1
+> Jun 28 19:23:03 pearl CURR: 5557 5557 dvbd 0 129138
+> Jun 28 19:23:03 pearl wq_barrier_func+0x0/0xd
+> Jun 28 19:23:03 pearl cache_reap+0x0/0xe3
+> Jun 28 19:23:03 pearl console_callback+0x0/0xca
+> Jun 28 19:23:03 pearl flush_to_ldisc+0x0/0xf7
+> Jun 28 19:23:03 pearl rekey_seq_generator+0x0/0x4e
+> Jun 28 19:23:03 pearl ----
+> Jun 28 19:23:03 pearl cinergyt2_query_rc+0x0/0x2e9 [cinergyT2]
 
-Unfortunately, busybox mount is not very verbose. You get the above
-mentioned error message even if the device file doesn't exist...
+cinergyt2_query_rc() hangs. I'll try to look tomorrov, but I know nothing
+about drivers/media/dvb/.
 
-You should check:
+This log is strange, flush_work() should report every 30 seconds, but it
+looks like wait_for_completion_timeout(HZ * 30) returns a lot earlier.
 
-* Is the driver for your MMC actually loaded?
-* Did it initialize correctly? Does it find your MMC card?
-* Is support for the file system on the MMC in your kernel?
-* /dev/mmcblk0p0 and /mnt/mmc really exist? (sorry, but...)
+Could you also show the result of sysrq-T ?
 
-Check the output of dmesg for messages from the mmc driver.
+Thanks!
 
-Hans
+Oleg.
 
