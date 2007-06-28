@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbXF1V2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765768AbXF1V3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765504AbXF1V2z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 17:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760824AbXF1V2s
+	id S1765768AbXF1V3k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 17:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759655AbXF1V3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 17:28:48 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:52291 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759994AbXF1V2r (ORCPT
+	Thu, 28 Jun 2007 17:29:33 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:38455 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759446AbXF1V3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 17:28:47 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=oE7U4hkfYMswk1GG6TaiVEA1Bm1YN++y26vfSUoxYxufAumMxA2gBZw7+olzzkmHz
-	Vz5ucM0cGaciFgzbUglbA==
-Message-ID: <6599ad830706281427m36f5b0eft7a677cf0feada663@mail.gmail.com>
-Date: Thu, 28 Jun 2007 17:27:25 -0400
-From: "Paul Menage" <menage@google.com>
-To: "William Lee Irwin III" <wli@holomorphy.com>
-Subject: Re: [PATCH 00/10] Containers(V10): Generic Process Containers
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
-       haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
-       pj@sgi.com, cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       mbligh@google.com, rohitseth@google.com, devel@openvz.org
-In-Reply-To: <20070530073959.GC6909@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070529130104.461765000@menage.corp.google.com>
-	 <20070530001455.45cf1dc5.akpm@linux-foundation.org>
-	 <20070530073959.GC6909@holomorphy.com>
+	Thu, 28 Jun 2007 17:29:33 -0400
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm <akpm@linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm] scripts/decodecode: fix for /bin/sh (cc your enemies)
+In-Reply-To: <20070628105137.bf5e5607.randy.dunlap@oracle.com>
+References: <20070628105137.bf5e5607.randy.dunlap@oracle.com>
+Date: Thu, 28 Jun 2007 23:42:24 +0200
+Message-Id: <E1I41ku-0007Xd-Kw@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/30/07, William Lee Irwin III <wli@holomorphy.com> wrote:
-> On Wed, May 30, 2007 at 12:14:55AM -0700, Andrew Morton wrote:
-> > So how do we do this?
-> > Is there any sneaky way in which we can modify the kernel so that this new
-> > code gets exercised more?  Obviously, tossing init into some default
-> > system-wide container would be a start.  But I wonder if we can be
-> > sneakier - for example, create a new container on each setuid(), toss the
-> > task into that.  Or something along those lines?
+* Date: Thu, 28 Jun 2007 10:51:37 -0700
+
+I didn't want to respond to your prev. messages, because i felt, that
+they will be mis-read again as my original NAK (ASCII negative
+acknowledgement symbol, no other "fsky" meaning inside). Also i wanted
+to come up with more nice tool, like colour support (like `ls' or 
+`quilt diff'), CROSS toolchains support, nicer sed magic in implementation,
+etc.
+
+All this was in my short original comment. Yes that message was short and
+somebody even thought i was not so polite -- from my POV that was
+concrete description of the bug, with clear goodwill to help. Therefore,
+IMNSHO one *must* suppress any personal angriness before replying to
+(very simple and small in this case) technical issues.
+
+Now i feel the same as Bartlomiej described in the discussion of regression
+tracking, that got even quoted in LWN prev. kernel page [0].
+
+I will not say i'm sad, i will say it's awesome to have so much attention
+to silly issues like /bin/sh->/bin/bash. By the way it was Linus who
+pointed out *my*, possibly bad, usage of GNU find extensions in the
+Makefile near you. After that, i started to check at least busybox's
+tools before i will go to GNU's luxury of features. And as you may
+noticed, Ubuntu even defaults shell like dash in its setup, while in
+Debian i have questions and/or `update-alternatives'.
+
+It's obvious for me now, why that regression tracking thread has ended
+without useful implementation ideas or counter-arguments against Debian
+BTS....
+
+[0] The Kernel page with link to "Cc those reviwers, who, you think, are
+    your enemies" <http://lwn.net/Articles/238283/>
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 >
-> How about a container for each thread group, pgrp, session, and user?
+> Convert substring expressions to be sh-compatible.
 >
-
-I've been thinking about this, and figured that it could be quite
-useful to be able to mount a container tree that groups tasks by
-userid or thread group - for doing per-user resource controls, for
-example, without having to write a controller that specifically
-handles the per-user case.
-
-One option would be to add a mount option, something like
-
-mount -t container -ogroupkey=<X>
-
-where X could be one of: uid, gid, pgrp, sid, tgid
-
-And put hooks in the various places where these ids could change, in
-order to move tasks between contaners as appropriate.  But after some
-thought it seems to me that this is putting complexity in the kernel
-that probably doesn't belong there, and additionally is probably not
-sufficently flexible for some real-life situations. (E.g. the user
-wants all users in the "student" group to be lumped into the same
-container, but each user in the "professor" group gets their own
-container).
-
-So maybe this would be better handled in userspace? Have a daemon
-listing on a process connector socket, and move processes between
-containers based on notifications from the connector and user-defined
-rules.
-
-We'd probably also want to add some new connector events, such as
-PROC_EVENT_PGRP, and PROC_EVENT_SID
-
-A simple daemon that handles the case where we're classifying based on
-a single key with no complex rules shouldn't be too hard to write.
-
-It also sounds rather like the classification engine that
-ResourceGroups had originally in the kernel and moved to userspace, so
-I'll take a look at that and see if it's adaptable for this.
-
-Paul
+> Tested by Arne Georg Gleditsch <argggh@dolphinics.no>
+____
