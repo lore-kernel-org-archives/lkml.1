@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXF1O62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbXF1PBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbXF1O62 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbXF1O6V
+	id S1762824AbXF1PBA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 11:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbXF1PAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:58:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59027 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755418AbXF1O6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:58:20 -0400
-X-Authenticated: #1474915
-X-Provags-ID: V01U2FsdGVkX19IsCtPJtpIrKQGSQ7Pk3mmaZn+NMGDpcEL2UHvCQ
-	YkPlylyeawExdl
-Message-ID: <4683CC89.80406@gmx.de>
-Date: Thu, 28 Jun 2007 16:58:17 +0200
-From: Thomas Sattler <tsattler@gmx.de>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+	Thu, 28 Jun 2007 11:00:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46378 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752289AbXF1PAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 11:00:52 -0400
+Date: Thu, 28 Jun 2007 17:00:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Sattler <tsattler@gmx.de>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: 2.6.22-rc6 spurious hangs
-References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru>
-In-Reply-To: <20070628144741.GA437@tv-sign.ru>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Message-ID: <20070628150047.GA14494@elte.hu>
+References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru> <4683CC89.80406@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4683CC89.80406@gmx.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> As Ingo told me I run 'echo t > /proc/sysrq-trigger' this time. The
->> corresponding part of my syslogs is attached, as well as my kernel config.
+
+* Thomas Sattler <tsattler@gmx.de> wrote:
+
+> >> As Ingo told me I run 'echo t > /proc/sysrq-trigger' this time. The
+> >> corresponding part of my syslogs is attached, as well as my kernel config.
+> > 
+> > Could you try the patch below? It dumps some info when flush_workqueue()
+> > hangs.
 > 
-> Could you try the patch below? It dumps some info when flush_workqueue()
-> hangs.
+> I'm compiling a patched kernel right now. As I wrote in my former mail 
+> the whole thing not easy to trigger. So it can take some time to get 
+> the info.
 
-I'm compiling a patched kernel right now. As I wrote in my former mail the
-whole thing not easy to trigger. So it can take some time to get the info.
+i'd suggest to increase CONFIG_LOG_BUF_SHIFT=17 to =20 in your .config - 
+to make sure the full SysRq-t dump is captured when you do it.
 
-Thanks so far,
-Thomas
-
--- 
-keep mailinglists in english, feel free to send PM in german
+	Ingo
