@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932100AbXF1XGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932296AbXF1XJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932100AbXF1XGu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 19:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763604AbXF1XGn
+	id S932296AbXF1XJY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 19:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764858AbXF1XJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 19:06:43 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48528 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759911AbXF1XGm (ORCPT
+	Thu, 28 Jun 2007 19:09:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43335 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763876AbXF1XJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 19:06:42 -0400
-Date: Fri, 29 Jun 2007 00:12:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
-Message-ID: <20070629001244.3ce09917@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0706290048290.1817@scrub.home>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-	<20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
-	<20070628110644.a530cfef.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706282017450.30789@anakin>
-	<20070628113819.c24e592d.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706282044360.30789@anakin>
-	<20070628132947.e3378811.akpm@linux-foundation.org>
-	<20070628232537.02ced21c@the-village.bc.nu>
-	<Pine.LNX.4.64.0706290048290.1817@scrub.home>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 28 Jun 2007 19:09:16 -0400
+Date: Fri, 29 Jun 2007 01:09:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Shaohua Li <shaohua.li@intel.com>, jamagallon@ono.com,
+       tigran@aivazian.fsnet.co.uk,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: New format Intel microcode...
+Message-ID: <20070628230914.GB14519@one.firstfloor.org>
+References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com> <1174610594.6598.3.camel@sli10-conroe.sh.intel.com> <6278d2220706261442u9b137c5xb6225b3f56605554@mail.gmail.com> <p731wfy5m74.fsf@bingen.suse.de> <4683BD56.7070707@tmr.com> <20070628152747.GA14519@one.firstfloor.org> <468434DE.103@tmr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <468434DE.103@tmr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > check_signature is relevant for anything with MMIO space (for example you
-> > can legitimately want to check_signature a MAC68K Nubus ROM).
-> 
-> A generic check_signature() is a little difficult if we have separate io 
-> functions for every bus.
+> I was mainly concerned with this being a new issue, and curious if 
+> Microsoft was calling an O/S bug a "microcode fix," given that the 
+> average Windows user doesn't know microcode from nanotech anyway. The 
+> non-answer from Arjan didn't answer either, and started by calling the 
+> report FUD, implying that Slashdot was wrong (not about this), and 
+> issuing so little answer and so much obfuscation that I thought he might 
+> be running for President. ;-)
 
-Does M68K implement iomap() and pci_iomap and friends yet ?
-check_signature has fairly few users so moving to be iomap based wouldn't
-be hard if that was a problem. The other option would seem to be
-bus->check_signature() ?
+Well you can read the Intel documentation if you want the whole story.
+You can hardly expect a full introduction in the basics and then
+subtle issues of TLB flushing in a quick email.  You asked about opinions 
+and summaries and those you got.
 
-Alan
+> I'd like the microcode update, 
+
+It's called the "placebo effect" in the literature I believe.
+
+> some people elsewhere speculate that user 
+> level code could effect reliability if not security. 
+
+speculate is the key word.
+
+> I worry that an old 
+> 2.4 kernel would be an issue, even in kvm, if that were the case.
+
+TLB flushing in virtualization works completely different. I doubt
+it would be affected.
+
+-Andi
+
