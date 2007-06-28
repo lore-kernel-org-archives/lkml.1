@@ -1,67 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764133AbXF1CwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764151AbXF1C5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764133AbXF1CwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 22:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760740AbXF1CwL
+	id S1764151AbXF1C5v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 22:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760060AbXF1C5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 22:52:11 -0400
-Received: from keil-draco.com ([216.193.185.50]:50445 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760562AbXF1CwK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 22:52:10 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Date: Wed, 27 Jun 2007 22:51:48 -0400
-User-Agent: KMail/1.9.6
-Cc: davids@webmaster.com, linux-kernel@vger.kernel.org
-References: <MDEHLPKNGKAHNMBLJOLKOELFEOAC.davids@webmaster.com> <orsl8cztvt.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orsl8cztvt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Wed, 27 Jun 2007 22:57:44 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:57923 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759235AbXF1C5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 22:57:43 -0400
+Date: Wed, 27 Jun 2007 22:57:39 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 007 of 8] knfsd: nfsd4: vary maximum delegation limit based on RAM size
+Message-ID: <20070628025739.GD20605@fieldses.org>
+References: <20070621142604.727.patches@notabene> <1070621043112.1144@suse.de> <20070625205244.bbf0976a.akpm@linux-foundation.org> <20070628021551.GB20605@fieldses.org> <20070627193613.746dfbf3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706272251.48884.dhazelton@enter.net>
+In-Reply-To: <20070627193613.746dfbf3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 June 2007 22:37:42 Alexandre Oliva wrote:
-> On Jun 27, 2007, "David Schwartz" <davids@webmaster.com> wrote:
-> > Behind a barrier is not on a medium customarily used for software
-> > interchange, which 3a requires.
->
-> Are you per chance claiming that you've never heard of anyone
-> receiving encrypted software in a CD, or pre-installed in a computer?
+On Wed, Jun 27, 2007 at 07:36:13PM -0700, Andrew Morton wrote:
+> How's this?
 
-It isn't common. In fact, I can only think of *ONE* instance of this - that of 
-the original Quake 1 "Demo" CD that, when given the proper unlock codes, 
-contained the entire game, along with all previous idsoft games.
+Makes sense to me, thanks.  I guess fs/nsfd/nfssvc:nfsd_create_serv()
+should be similarly modified?  It calculates the size of per-nfsd-thread
+buffers used to hold requests, which will eventually be allocated with
+an alloc_page(GFP_KERNEL), and it bases the calculation on the same
+.totalram field from struct sysinfo.
 
-> >> > I honestly don't see what relevance this could possibly
-> >> > have. Getting access to the source is a fundamental GPL right.
-> >>
-> >> That's the spirit.  But where does the *letter* of the GPL state it?
-> >
-> > 3a says it.
->
-> It says the sources must accompany the binaries (check), must be
-> machine-readable (check), and must be on a medium customarily used for
-> software interchange (check).
->
-> Where does it say you have to be able to access the sources?  Or the
-> binary, for that matter?
-
-Section 3 doesn't apply to this situation. However, other sections do. They 
-are distributing in line with the distribution requirement, but not 
-the "modification and copying" requirements. These are granted early in the 
-license and covered by the "no further restrictions" clause.
-
-You have to be able to copy and modify the source code for it to comply with 
-the GPL. 
-
-DRH
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+--b.
