@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762540AbXF1ORY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760363AbXF1O1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762540AbXF1ORY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760664AbXF1ORG
+	id S1760363AbXF1O1d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 10:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXF1O1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:17:06 -0400
-Received: from mba.ocn.ne.jp ([122.1.175.29]:55325 "EHLO smtp.mba.ocn.ne.jp"
+	Thu, 28 Jun 2007 10:27:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57845 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760211AbXF1ORF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:17:05 -0400
-Date: Thu, 28 Jun 2007 23:17:49 +0900 (JST)
-Message-Id: <20070628.231749.51865304.anemo@mba.ocn.ne.jp>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, ralf@linux-mips.org
-Subject: [PATCH 2/2] serial_txx9: Cleanup includes
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1755053AbXF1O1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 10:27:25 -0400
+Message-ID: <4683C539.4070202@redhat.com>
+Date: Thu, 28 Jun 2007 10:27:05 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Andy Isaacson <adi@hexapodia.org>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/3] MAP_NOZERO - implement a new VM_NOZERO/MAP_NOZERO
+ page retirement policy
+References: <send-serie.davidel@xmailserver.org.29496.1182912259.1> <4681D37E.2020706@redhat.com> <Pine.LNX.4.64.0706262016080.26540@alien.or.mcafeemobile.com> <4681E52A.8030300@redhat.com> <Pine.LNX.4.64.0706262127300.26540@alien.or.mcafeemobile.com> <20070628061911.GA16986@hexapodia.org>
+In-Reply-To: <20070628061911.GA16986@hexapodia.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not include some header files already indluded by serial_core.h.
+Andy Isaacson wrote:
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
-index 407fca0..7480dc8 100644
---- a/drivers/serial/serial_txx9.c
-+++ b/drivers/serial/serial_txx9.c
-@@ -25,15 +25,11 @@
- #include <linux/ioport.h>
- #include <linux/init.h>
- #include <linux/console.h>
--#include <linux/sysrq.h>
- #include <linux/delay.h>
- #include <linux/platform_device.h>
- #include <linux/pci.h>
--#include <linux/tty.h>
--#include <linux/tty_flip.h>
- #include <linux/serial_core.h>
- #include <linux/serial.h>
--#include <linux/mutex.h>
- 
- #include <asm/io.h>
- 
+> That said, I think I like the idea of MAP_NOZERO.  Could it be
+> generalized to some kind of "free pool" rather than keyed off of uid?
+
+Good idea.  At exec() time the new mm can inherit the "free pool"
+pointer that the parent process points to, when nothing changes.
+
+Certain events can cause a process to need another "free pool",
+for example changing the UID, changing security context or
+changing CPU/NUMA node binding.
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
