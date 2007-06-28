@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbXF1R1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764864AbXF1R2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764859AbXF1R1O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 13:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbXF1R1A
+	id S1764864AbXF1R2L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 13:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbXF1R16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 13:27:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50635 "EHLO mail.dvmed.net"
+	Thu, 28 Jun 2007 13:27:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56660 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758220AbXF1R07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 13:26:59 -0400
-Message-ID: <4683EF50.30108@garzik.org>
-Date: Thu, 28 Jun 2007 13:26:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	id S1755810AbXF1R16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 13:27:58 -0400
+Message-ID: <4683EF87.1050303@redhat.com>
+Date: Thu, 28 Jun 2007 13:27:35 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
 User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
-CC: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu>
-In-Reply-To: <20070628160001.GA15495@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Bill Davidsen <davidsen@tmr.com>, Andi Kleen <andi@firstfloor.org>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Shaohua Li <shaohua.li@intel.com>, jamagallon@ono.com,
+       tigran@aivazian.fsnet.co.uk,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: New format Intel microcode...
+References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com>	 <1174610594.6598.3.camel@sli10-conroe.sh.intel.com>	 <6278d2220706261442u9b137c5xb6225b3f56605554@mail.gmail.com>	 <p731wfy5m74.fsf@bingen.suse.de>  <4683BD56.7070707@tmr.com> <1183039975.14676.12.camel@laptopd505.fenrus.org>
+In-Reply-To: <1183039975.14676.12.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> my argument was: workqueues are more scalable than tasklets in general.
+On 06/28/2007 10:12 AM, Arjan van de Ven wrote:
+> (while I work for Intel this is not an official Intel statement, but
+> there is so much FUD going around now that I feel I need to at least
+> point out a few things others "forget")
+>> Slashdot carried an article this morning saying that an error in Intel 
+>> microcode was being fixed.
+> 
+> don't just always believe everything you read on slashdot please
+> 
+>>  However, it listed only Windows related sites 
+>> for the "fix" download. Is this the same TLB issue? And are these really 
+>> fixes for Windows to flush the TLB properly the way Linux does?
+> 
+> First of all, Linux has microcode updates as well. Some of the more
+> hypish news-bulletins just conveniently "forgot" about this. Basically
+> all distributions ship them, so users who use the distro update tools
+> get these automatically. And the update mentioned has been shipping for
+> a while (in version 1.17).
+> 
 
-Here is my argument:  that is totally irrelevant to $subject, when it 
-comes to dealing with managing existing [network driver] behavior and 
-performance.
-
-My overall objection is the attempt to replace apples with oranges.
-
-Network drivers use tasklets TODAY.  Each driver -- in particular 
-acenic, ns83820, and the 10Gbps drivers -- has been carefully tuned to 
-use tasklets, hardirqs, and perhaps NAPI too.  Changing to workqueue 
-WILL affect network driver hot paths, yet I see no analysis or 
-measurement at all of the behavior differences.
-
-If hackers are willing to revisit each network driver, rework the 
-tasklet code to something more sane [in your opinion], and TEST it, I 
-will review the patches and happily ACK away.
-
-Given that I feel that course of action is unlikely (the preferred 
-alternative apparently being "I don't use these drivers, but surely my 
-changes are OK anyway"), I do not see how this effort can proceed as is.
-
-Lots of time went into tuning these network drivers for the specific 
-thread model they use.  Maybe that thread model is no longer in style. 
-Maybe modern machine behavior dictates a different approach.  The point 
-is... you don't know.
-
-	Jeff
+Fedora 6 has version 1.13
+Fedora 7 also has 1.13
+RHEL 5 has 1.15
+Debian stable has 1.15 (9 Oct 2006)
+Suse 10.1 has 1.13
 
 
