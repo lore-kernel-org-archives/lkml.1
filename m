@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763535AbXF1RWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764470AbXF1RYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763535AbXF1RWs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 13:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbXF1RWl
+	id S1764470AbXF1RYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 13:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbXF1RYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 13:22:41 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22505 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786AbXF1RWk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 13:22:40 -0400
-Date: Thu, 28 Jun 2007 10:24:38 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       perex@suse.cz, sam@ravnborg.org
-Subject: Re: [PATCH -mm] ALSA portman2x4 section mismatch
-Message-Id: <20070628102438.cafa1b41.randy.dunlap@oracle.com>
-In-Reply-To: <s5h3b0dg1fr.wl%tiwai@suse.de>
-References: <20070626153013.264f5a92.randy.dunlap@oracle.com>
-	<s5h3b0dg1fr.wl%tiwai@suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Thu, 28 Jun 2007 13:24:09 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:58100 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758220AbXF1RYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 13:24:08 -0400
+Date: Thu, 28 Jun 2007 19:24:04 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Antonino Ingargiola <tritemio@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [Possible BUG] Logitech USB keyboard inconsistent led state
+In-Reply-To: <5486cca80706280059pabcaa59u7f44440134490590@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706281923230.31463@twin.jikos.cz>
+References: <5486cca80706270758x540f75a9vfdd4aa5b6a7d8e4f@mail.gmail.com> 
+ <Pine.LNX.4.64.0706272144280.9610@twin.jikos.cz>
+ <5486cca80706280059pabcaa59u7f44440134490590@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 12:02:32 +0200 Takashi Iwai wrote:
+On Thu, 28 Jun 2007, Antonino Ingargiola wrote:
 
-> At Tue, 26 Jun 2007 15:30:13 -0700,
-> Randy Dunlap wrote:
-> > 
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > FIx section mismatch when CONFIG_HOTPLUG=n:
-> > 
-> > WARNING: sound/built-in.o(.exit.text+0x271): Section mismatch: reference to .init.text:snd_p
-> > ortman_unregister_all (between 'snd_portman_module_exit' and 'alsa_mpu401_uart_exit')
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> I applied it to ALSA tree now because it's the simplest way to fix
-> this warning.  But, I'm still wondering whether it was really wrong.
-> 
-> The function snd_portmap_unregister_all() is called both from the
-> module init and exit functions.  Would the module_exit function be
-> called even CONFIG_MODULE=n ?
+> $ cat /sys/bus/usb/devices/1-1.2/idVendor
+> 046d
+> $ cat /sys/bus/usb/devices/1-1.2/idProduct
+> c311
 
-No, it's not called when the driver is built-in.
+Please try the patch below (against any post-2.6.22-rc1 kernel)
 
-> If not, __init_or_module should be
-> correct since the function is called only from module_init.
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index f6c4145..adc3752 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -196,6 +196,7 @@
+ #define USB_VENDOR_ID_LOGITECH		0x046d
+ #define USB_DEVICE_ID_LOGITECH_RECEIVER	0xc101
+ #define USB_DEVICE_ID_LOGITECH_WHEEL	0xc294
++#define USB_DEVICE_ID_LOGITECH_KBD	0xc311
+ #define USB_DEVICE_ID_S510_RECEIVER	0xc50c
+ #define USB_DEVICE_ID_S510_RECEIVER_2	0xc517
+ #define USB_DEVICE_ID_MX3000_RECEIVER	0xc513
+@@ -448,6 +449,7 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY, HID_QUIRK_POWERBOOK_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
+ 
+ 	{ USB_VENDOR_ID_DELL, USB_DEVICE_ID_DELL_W7658, HID_QUIRK_RESET_LEDS },
++	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_KBD, HID_QUIRK_RESET_LEDS },
+ 
+ 	{ USB_VENDOR_ID_CYPRESS, USB_DEVICE_ID_CYPRESS_BARCODE_1, HID_QUIRK_SWAPPED_MIN_MAX },
+ 	{ USB_VENDOR_ID_CYPRESS, USB_DEVICE_ID_CYPRESS_BARCODE_2, HID_QUIRK_SWAPPED_MIN_MAX },
 
-[adding Sam to cc:]
-
-I see.  So to try to summarize:
-
-When CONFIG_MODULES=n, __exit functions can be allowed to reference
-__init functions since the __init functions won't be called because
-the __exit functions are not invoked.
-
-Does that sound correct?  Can & should modpost add this knowledge?
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+Jiri Kosina
