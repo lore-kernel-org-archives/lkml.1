@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765165AbXF1Ryk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762829AbXF1Ryx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765165AbXF1Ryk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 13:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761309AbXF1Ryc
+	id S1762829AbXF1Ryx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 13:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765162AbXF1Ryk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 13:54:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:51266 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761250AbXF1Ryb (ORCPT
+	Thu, 28 Jun 2007 13:54:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36672 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765129AbXF1Ryi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 13:54:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N4WA0iP5Yq0abRq6W/Dc1KZTFM3CEE1IBxhKjBH0qo/rjkSe1Zkjr/EmqTQ3jUpsxGvSvRSv1rRwuICDDSBpYpfSLBnS4Ada6vJANqRg6SGUJPGA0axoKOU+yPaf2W+QU15ULCjPrC1F1p3wH4RhI/WkMOENKCTu5DeZxQ/J9BU=
-Message-ID: <6278d2220706281054m476873ffn32375725fe5c4f88@mail.gmail.com>
-Date: Thu, 28 Jun 2007 18:54:29 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>
-Subject: Re: New format Intel microcode...
-Cc: "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Bill Davidsen" <davidsen@tmr.com>, "Andi Kleen" <andi@firstfloor.org>,
-       "Shaohua Li" <shaohua.li@intel.com>, jamagallon@ono.com,
-       tigran@aivazian.fsnet.co.uk,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4683EF87.1050303@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 28 Jun 2007 13:54:38 -0400
+Date: Thu, 28 Jun 2007 10:54:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc6-mm1
+Message-Id: <20070628105431.18092084.akpm@linux-foundation.org>
+In-Reply-To: <4683A4D1.3000703@googlemail.com>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+	<4683A4D1.3000703@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com>
-	 <1174610594.6598.3.camel@sli10-conroe.sh.intel.com>
-	 <6278d2220706261442u9b137c5xb6225b3f56605554@mail.gmail.com>
-	 <p731wfy5m74.fsf@bingen.suse.de> <4683BD56.7070707@tmr.com>
-	 <1183039975.14676.12.camel@laptopd505.fenrus.org>
-	 <4683EF87.1050303@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/06/07, Chuck Ebbert <cebbert@redhat.com> wrote:
-> On 06/28/2007 10:12 AM, Arjan van de Ven wrote:
-[snip]
-> >>  However, it listed only Windows related sites
-> >> for the "fix" download. Is this the same TLB issue? And are these really
-> >> fixes for Windows to flush the TLB properly the way Linux does?
+On Thu, 28 Jun 2007 14:08:49 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+
+> Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/
 > >
-> > First of all, Linux has microcode updates as well. Some of the more
-> > hypish news-bulletins just conveniently "forgot" about this. Basically
-> > all distributions ship them, so users who use the distro update tools
-> > get these automatically. And the update mentioned has been shipping for
-> > a while (in version 1.17).
->
-> Fedora 6 has version 1.13
-> Fedora 7 also has 1.13
-> RHEL 5 has 1.15
-> Debian stable has 1.15 (9 Oct 2006)
-> Suse 10.1 has 1.13
+> >   
+> 
+> Compile error here.
+> 
+> ...
+> 
+> Kernel: arch/i386/boot/bzImage is ready (#1)
+> ERROR: "check_signature" [drivers/input/misc/wistron_btns.ko] undefined!
+> ERROR: "check_signature" [drivers/block/xd.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> 
 
-You've got to give credit to Intel for providing the ucode updates though.
+grrr.
 
-The Ubuntu/Debian microcode.ctl package fetches a new version upon
-installation/reconfiguration [1]; I guess if there were ucode updates
-that resolved stability/vulnerability issues with Linux, the security
-team could release an updated package with new default microcode.
+--- a/lib/Makefile~uninline-check_signature-fix
++++ a/lib/Makefile
+@@ -5,8 +5,7 @@
+ lib-y := ctype.o string.o vsprintf.o cmdline.o \
+ 	 rbtree.o radix-tree.o dump_stack.o \
+ 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
+-	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
+-	 check_signature.o
++	 sha1.o irq_regs.o reciprocal_div.o argv_split.o
+ 
+ lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
+ lib-$(CONFIG_SMP) += cpumask.o
+@@ -14,7 +13,7 @@ lib-$(CONFIG_SMP) += cpumask.o
+ lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
+ 
+ obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
+-	 bust_spinlocks.o hexdump.o
++	 bust_spinlocks.o hexdump.o check_signature.o
+ 
+ ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+ CFLAGS_kobject.o += -DDEBUG
+_
 
-However, I think the package isn't installed per default in Ubuntu
-7.04 ia32/x86-64...
-
-Daniel
-
---- [1]
-
-# dpkg-reconfigure microcode.ctl
-Local microcode is old, you need an update.
-Trying to download an new version of microcode.
-Now attempting to download microcode.
-microcode downloaded sucessfully
--- 
-Daniel J Blueman
