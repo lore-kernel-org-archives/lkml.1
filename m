@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764204AbXF1RdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764908AbXF1RfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764204AbXF1RdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 13:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbXF1RdH
+	id S1764908AbXF1RfR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 13:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760948AbXF1RfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 13:33:07 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:57454 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751781AbXF1RdG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 13:33:06 -0400
-Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <1183048429.4089.1.camel@johannes.berg>
-References: <1182969638.4769.56.camel@johannes.berg>
-	 <1183048429.4089.1.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-hKxaA+x3qOVrHv+4Lq6Z"
-Date: Thu, 28 Jun 2007 19:33:21 +0200
-Message-Id: <1183052001.4089.2.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Thu, 28 Jun 2007 13:35:06 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52477 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756399AbXF1RfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 13:35:05 -0400
+X-Authenticated: #1474915
+X-Provags-ID: V01U2FsdGVkX1+rqlU9XSarNuPfV6sWXkCrwxMFFGxS0sTMsJXWWx
+	4GBXFcTHK1rTJp
+Message-ID: <4683F145.2060705@gmx.de>
+Date: Thu, 28 Jun 2007 19:35:01 +0200
+From: Thomas Sattler <tsattler@gmx.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.22-rc6 spurious hangs
+References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru> <4683CC89.80406@gmx.de> <20070628150826.GA487@tv-sign.ru>
+In-Reply-To: <20070628150826.GA487@tv-sign.ru>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>> As Ingo told me I run 'echo t > /proc/sysrq-trigger' this time. The
+>>>> corresponding part of my syslogs is attached, as well as my kernel config.
+>>> Could you try the patch below? It dumps some info when flush_workqueue()
+>>> hangs.
+>> I'm compiling a patched kernel right now. As I wrote in my former mail the
+>> whole thing not easy to trigger. So it can take some time to get the info.
+> 
+> Forgot to say, if you manage to trigger the hang, please wait a couple of
+> minutes to collect more info from flush_wait().
 
---=-hKxaA+x3qOVrHv+4Lq6Z
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Seems today is my lucky day: I triggered it in just a few minutes.
 
-On Thu, 2007-06-28 at 18:33 +0200, Johannes Berg wrote:
+The logfile is attached.
 
-> I think I misunderstood how lockdep works because the output was
-> actually wrong, should the key be part of the workqueue_struct as well?
+Thomas
 
-No, that's not right either, but Arjan just helped me a bit with how
-lockdep works and I think I have the right idea now. Ignore this for
-now, I'll send a new patch in a few days.
-
-johannes
-
---=-hKxaA+x3qOVrHv+4Lq6Z
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGg/Dh/ETPhpq3jKURAjddAJ9YQtTPMEbFM5zKxN9YWs+3gpuPYQCgodvk
-/2MzgMCk7jqPK1XcFKe7aew=
-=kBZb
------END PGP SIGNATURE-----
-
---=-hKxaA+x3qOVrHv+4Lq6Z--
-
+-- 
+keep mailinglists in english, feel free to send PM in german
