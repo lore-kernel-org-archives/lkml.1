@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761382AbXF1NkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757534AbXF1NrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761382AbXF1NkN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 09:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbXF1NkA
+	id S1757534AbXF1NrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 09:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbXF1NrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 09:40:00 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:42943 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756032AbXF1Nj7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 09:39:59 -0400
-Date: Thu, 28 Jun 2007 15:39:56 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch -mm] s390: rename CPU_IDLE to S390_CPU_IDLE
-Message-ID: <20070628133956.GC4343@osiris.boeblingen.de.ibm.com>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+	Thu, 28 Jun 2007 09:47:05 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35211 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751996AbXF1NrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 09:47:02 -0400
+Date: Thu, 28 Jun 2007 08:47:02 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morgan <morgan@kernel.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>, James Morris <jmorris@namei.org>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] file capabilities: get_file_caps cleanups
+Message-ID: <20070628134702.GB29641@sergelap.austin.ibm.com>
+References: <20070628002041.GA10429@sergelap.austin.ibm.com> <468350D1.9010902@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <468350D1.9010902@kernel.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Quoting Andrew Morgan (morgan@kernel.org):
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> This contains a typo:
+> 
+> Serge E. Hallyn wrote:
+> >>From 588755d9498c87c4e963527ba0f49c11107de354 Mon Sep 17 00:00:00 2001
+> > From: Serge E. Hallyn <serue@us.ibm.com>
+> > Date: Wed, 27 Jun 2007 19:55:27 -0400
+> > Subject: [PATCH 1/1] file capabilities: get_file_caps cleanups
+> > 
+> > Two cleanups relating to set_file caps.
+> [...]
+> > @@ -187,12 +186,21 @@ out:
+> >  	dput(dentry);
+> >  	if ((void *)dcaps != (void *)&v1caps)
+> >  		kfree(dcaps);
+> Move this two lines down (rc defaults to 0 in goto above):
+> from here-->
+> > +clear_caps:
+> > +	if (rc) {
+> to here-->
 
-sched-cfs-v2.6.22-git-v18.patch introduces CPU_IDLE in sched.h.
-This conflict with the already existing define in
-include/asm-s390/processor.h
-Just rename the s390 defines, since they will go away as soon as
-we support CONFIG_NO_HZ instead of our own CONFIG_NO_IDLE_HZ.
+Hmm?  But if we succeeded we still want to free dcaps if we
+kmalloc()'d it.
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- arch/s390/kernel/process.c   |    6 +++---
- arch/s390/kernel/time.c      |    4 ++--
- arch/s390/kernel/vtime.c     |    4 ++--
- include/asm-s390/processor.h |    4 ++--
- 4 files changed, 9 insertions(+), 9 deletions(-)
+If we didn't kmalloc it, dcaps==v1caps and it won't be freed.
 
-Index: linux-2.6.22-rc6-mm1/arch/s390/kernel/process.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/arch/s390/kernel/process.c
-+++ linux-2.6.22-rc6-mm1/arch/s390/kernel/process.c
-@@ -93,8 +93,8 @@ void do_monitor_call(struct pt_regs *reg
- 	/* disable monitor call class 0 */
- 	__ctl_clear_bit(8, 15);
- 
--	atomic_notifier_call_chain(&idle_chain, CPU_NOT_IDLE,
--			    (void *)(long) smp_processor_id());
-+	atomic_notifier_call_chain(&idle_chain, S390_CPU_NOT_IDLE,
-+				   (void *)(long) smp_processor_id());
- }
- 
- extern void s390_handle_mcck(void);
-@@ -115,7 +115,7 @@ static void default_idle(void)
- 	}
- 
- 	rc = atomic_notifier_call_chain(&idle_chain,
--			CPU_IDLE, (void *)(long) cpu);
-+					S390_CPU_IDLE, (void *)(long) cpu);
- 	if (rc != NOTIFY_OK && rc != NOTIFY_DONE)
- 		BUG();
- 	if (rc != NOTIFY_OK) {
-Index: linux-2.6.22-rc6-mm1/arch/s390/kernel/time.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/arch/s390/kernel/time.c
-+++ linux-2.6.22-rc6-mm1/arch/s390/kernel/time.c
-@@ -226,10 +226,10 @@ static int nohz_idle_notify(struct notif
- 			    unsigned long action, void *hcpu)
- {
- 	switch (action) {
--	case CPU_IDLE:
-+	case S390_CPU_IDLE:
- 		stop_hz_timer();
- 		break;
--	case CPU_NOT_IDLE:
-+	case S390_CPU_NOT_IDLE:
- 		start_hz_timer();
- 		break;
- 	}
-Index: linux-2.6.22-rc6-mm1/arch/s390/kernel/vtime.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/arch/s390/kernel/vtime.c
-+++ linux-2.6.22-rc6-mm1/arch/s390/kernel/vtime.c
-@@ -545,10 +545,10 @@ static int vtimer_idle_notify(struct not
- 			      unsigned long action, void *hcpu)
- {
- 	switch (action) {
--	case CPU_IDLE:
-+	case S390_CPU_IDLE:
- 		stop_cpu_timer();
- 		break;
--	case CPU_NOT_IDLE:
-+	case S390_CPU_NOT_IDLE:
- 		start_cpu_timer();
- 		break;
- 	}
-Index: linux-2.6.22-rc6-mm1/include/asm-s390/processor.h
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/include/asm-s390/processor.h
-+++ linux-2.6.22-rc6-mm1/include/asm-s390/processor.h
-@@ -357,8 +357,8 @@ extern void (*s390_base_ext_handler_fn)(
- /*
-  * CPU idle notifier chain.
-  */
--#define CPU_IDLE	0
--#define CPU_NOT_IDLE	1
-+#define S390_CPU_IDLE		0
-+#define S390_CPU_NOT_IDLE	1
- 
- struct notifier_block;
- int register_idle_notifier(struct notifier_block *nb);
+thanks,
+-serge
+
+> > +		cap_clear (bprm->cap_inheritable);
+> > +		cap_clear (bprm->cap_permitted);
+> > +		cap_clear (bprm->cap_effective);
+> > +	}
+> >  	return rc;
+> 
+> Cheers
+> 
+> Andrew
+> 
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.2.6 (GNU/Linux)
+> 
+> iD8DBQFGg1DNQheEq9QabfIRApNqAJ99rNMF4VU/FPOolDLHlXbbQ2MRMwCeO3Fy
+> 8ze7XhlBuBKdHElbZmWFJ5Y=
+> =gAEK
+> -----END PGP SIGNATURE-----
