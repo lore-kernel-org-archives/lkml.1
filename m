@@ -1,97 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbXF1P5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764360AbXF1QAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763473AbXF1P5N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 11:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbXF1P47
+	id S1764360AbXF1QAO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 12:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759736AbXF1QAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 11:56:59 -0400
-Received: from web36610.mail.mud.yahoo.com ([209.191.85.27]:46158 "HELO
-	web36610.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756169AbXF1P46 (ORCPT
+	Thu, 28 Jun 2007 12:00:01 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2867 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757055AbXF1QAA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 11:56:58 -0400
-X-YMail-OSG: x2FhyR4VM1mMw9D3UO9Gw5mT7aZVmpYmLTie1EKaEK_gv0OK
-X-RocketYMMF: rancidfat
-Date: Thu, 28 Jun 2007 08:56:57 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: implement-file-posix-capabilities.patch
-To: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Cc: Andrew Morgan <morgan@kernel.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>,
-       Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070628153844.GA1977@sergelap.austin.ibm.com>
+	Thu, 28 Jun 2007 12:00:00 -0400
+X-Greylist: delayed 1717 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jun 2007 12:00:00 EDT
+Date: Thu, 28 Jun 2007 16:31:16 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Harald Arnesen <harald@skogtun.org>, Adrian Bunk <bunk@stusta.de>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>, david@lang.hm
+Message-ID: <20070628153116.GC3650@sirena.org.uk>
+Mail-Followup-To: Kyle Moffett <mrmacman_g4@mac.com>,
+	Harald Arnesen <harald@skogtun.org>, Adrian Bunk <bunk@stusta.de>,
+	LKML Kernel <linux-kernel@vger.kernel.org>,
+	David Woodhouse <dwmw2@infradead.org>, david@lang.hm
+References: <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm> <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de> <1182483527.10524.31.camel@shinybook.infradead.org> <20070622150038.GN23017@stusta.de> <E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com> <20070627154046.GN1094@stusta.de> <468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de> <20070627173240.GR1094@stusta.de> <87ejjwgytd.fsf@basilikum.skogtun.org> <DBDB2ED7-97C8-4002-BF0A-01FF3F5737F4@mac.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <325190.92239.qm@web36610.mail.mud.yahoo.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="32u276st3Jlj2kUU"
+Content-Disposition: inline
+In-Reply-To: <DBDB2ED7-97C8-4002-BF0A-01FF3F5737F4@mac.com>
+X-Cookie: This space intentionally left blank.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 212.50.174.218
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: Userspace compiler support of "long long"
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+--32u276st3Jlj2kUU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Quoting Casey Schaufler (casey@schaufler-ca.com):
-> > 
-> > --- Andrew Morgan <morgan@kernel.org> wrote:
-> > 
-> > > -----BEGIN PGP SIGNED MESSAGE-----
-> > > Hash: SHA1
-> > > 
-> > > Serge E. Hallyn wrote:
-> > > >> Does that explain it?
-> > > > 
-> > > > Yes, thanks, but then it still could come in handy to have fE be a full
-> > > > bitset, so the application gets some eff caps automatically, while
-> > > > others it has to manually set...
-> > > 
-> > > [We touched on this a number of emails back.]
-> > > 
-> > > If an application is capability aware, it can manipulate its own
-> > > capabilities and should have fE=0.
-> > > 
-> > > If an application is not capability aware, it needs to have *all* of its
-> > > capabilities enabled at exec() time. Otherwise, it won't work.
-> > 
-> > The intent of the fE vector in the POSIX draft is that those capabilities
-> > are set on exec (lower vectors permitting). There are cases where it
-> > does make sense to raise just some (e.g. ping). 
-> > 
-> > > The only reason for having an fE bitmap is to allow a capability-aware
-> > > program (you really trust to do its privileged operations carefully) to
-> > > be lazy and get some of its capabilities raised for free. Perhaps you
-> > > can clarify why this is a desirable thing? :-)
-> > 
-> > No, it's to allow you to grant a subset of the available capabilities
-> > to a program that is not aware of capabilities. You can give "date"
-> > the capability to reset the clock without giving it the capability
-> > to remove other people's files without changing the code or running
-> > it setuid.
-> 
-> Would there be a difference between that and setting either fI or fP
-> (depending on your intent) to those caps, and setting fE=1 in Andrew's
-> scheme?
+On Thu, Jun 28, 2007 at 08:11:59AM -0400, Kyle Moffett wrote:
 
-Arg, you're making me think. The POSIX group went through this,
-let me see if I can reconstruct the logic.
+> I can't even find the docs for their "tcc".  Their "tchk" appears to =20
 
-The main issue is one if there being a possible case where you
-have a capability ignorant program that you want to exec with
-a different fP and fE. On first glance it seems that since the
-program is capability ignorant it can't matter. But what if your
-capability ignorant program exec's a capability aware program
-to perform a helper function? You may well want the first program
-to have a capability that it does not use in fP (but not fE)
-to pass along to the helper program. True, you could probably
-come up with a way to set the capabilities on the helper program
-to account for this use, but there may be design and security
-constraints that make doing so complicated. 
+tchk is the same thing pretty much with output disabled.  There's a HTML
+copy of the man page here:
 
+  http://www.penguin-soft.com/penguin/man/1/tendracc.html
 
+It's packaged for Debian and therefore Ubuntu and other derived
+distributions.
 
-Casey Schaufler
-casey@schaufler-ca.com
+> have a "#pragma longlong type allow" or something, so I'd imagine the =20
+> same exists for tcc and would be required to build stuff using kernel =20
+> headers.
+
+You just need to specify -Ysystem (or some other API selection option)
+when building to get it to accept long long.  Since TenDRA focuses on
+strict standards conformance it defaults to something roughly equivalent
+to GCC with -std=3Dc89 -pedantic -Werror and requires the user to
+explicitly enable support for any other APIs and features they want to
+use.
+
+>           On the other hand, their compiler looks so immature that it =20
+> does not appear to be worth spending much time worrying about now.  =20
+> When somebody shows up with a solution for that compiler then we can =20
+> look at it at that time.
+
+The compiler is solid enough but old - it predates C99 and has had no
+real development since then beyond updating the system include overrides
+to work with newer glibc versions.
+
+--=20
+"You grabbed my hand and we fell into it, like a daydream - or a fever."
+
+--32u276st3Jlj2kUU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iQCVAwUBRoPUQQ2erOLNe+68AQKeuQQAl2iD2PKWAtAh78g6j4+j6Zei/cTBnSd1
+kv3+R5/gkuif9EUjRPn9rZuay1OaawrmHCMWr3I5UO9+HPLx+A+MVmhUvaGKrlH/
+vLQB2PG6G9+FynMrvvU3PBbtdyRgNSK9NGHdUBgcNn+44B+HINU4pof7/DuHaMYs
+GU4v0mpWl/k=
+=lRmC
+-----END PGP SIGNATURE-----
+
+--32u276st3Jlj2kUU--
