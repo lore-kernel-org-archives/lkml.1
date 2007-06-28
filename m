@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXF1WkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbXF1Wm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932095AbXF1WkQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 18:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbXF1WkE
+	id S932275AbXF1Wm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 18:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764917AbXF1WmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 18:40:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38878 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755669AbXF1WkB (ORCPT
+	Thu, 28 Jun 2007 18:42:21 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47090 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755669AbXF1WmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 18:40:01 -0400
-Date: Thu, 28 Jun 2007 15:39:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, perex@suse.cz
-Subject: Re: [PATCH] ALSA: more section mismatches
-Message-Id: <20070628153949.8582d3a4.akpm@linux-foundation.org>
-In-Reply-To: <20070628150515.0d819891.randy.dunlap@oracle.com>
-References: <20070628150515.0d819891.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 28 Jun 2007 18:42:20 -0400
+Date: Thu, 28 Jun 2007 23:48:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: William D Waddington <william.waddington@beezmo.com>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Please release a stable kernel Linux 3.0
+Message-ID: <20070628234807.4c446062@the-village.bc.nu>
+In-Reply-To: <46842F7B.1010105@gmail.com>
+References: <fa.ZV8hYZHQHqzfx1dgOFeEVFRogSg@ifi.uio.no>
+	<oor483d2nqn6ae728com1v7v56g0ksotov@4ax.com>
+	<4683983E.5020103@aitel.hist.no>
+	<4683D3B0.1040708@beezmo.com>
+	<20070628173051.4a3422c0@the-village.bc.nu>
+	<46842F7B.1010105@gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007 15:05:15 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Fri, 29 Jun 2007 00:00:27 +0200
+Rene Herman <rene.herman@gmail.com> wrote:
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+> On 06/28/2007 06:30 PM, Alan Cox wrote:
 > 
-> Fix section mismatch warnings:
+> > Public domain is GPL compatible.
 > 
-> WARNING: sound/built-in.o(.exit.text+0x3ad): Section mismatch: reference to .init.text: (between 'sb_exit' and 'unload_uart6850')
-> WARNING: sound/built-in.o(.exit.text+0x753): Section mismatch: reference to .init.text: (between 'snd_mts64_module_exit' and 'snd_portman_module_exit')
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  sound/drivers/mts64.c |    2 +-
->  sound/oss/sb_card.c   |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- linux-2622-rc6.orig/sound/drivers/mts64.c
-> +++ linux-2622-rc6/sound/drivers/mts64.c
-> @@ -1048,7 +1048,7 @@ static struct platform_driver snd_mts64_
->  /*********************************************************************
->   * module init stuff
->   *********************************************************************/
-> -static void __init_or_module snd_mts64_unregister_all(void)
-> +static void snd_mts64_unregister_all(void)
+> Would you happen to have an opinion on the attached? I don't so much need it 
 
-Well this is called from __exit, so __init_or_module isn't right.  But we
-don't have an __exit_or_module.
+The answer is "NO!!!!"
 
->  {
->  	int i;
->  
-> --- linux-2622-rc6.orig/sound/oss/sb_card.c
-> +++ linux-2622-rc6/sound/oss/sb_card.c
-> @@ -290,7 +290,7 @@ static struct pnp_card_driver sb_pnp_dri
->  MODULE_DEVICE_TABLE(pnp_card, sb_pnp_card_table);
->  #endif /* CONFIG_PNP */
->  
-> -static void __init_or_module sb_unregister_all(void)
-> +static void sb_unregister_all(void)
->  {
->  #ifdef CONFIG_PNP
->  	if (pnp_registered)
+Public domain also means "I don't have to give you the source".
+If its merged with the kernel the resulting work is GPL anyway
 
-One of these is alsa and the other isn't.
+> Stating that code which one intends to be in the public domain has "GPL and 
+> additional rights" is a bit of a travesty though.
 
-But what the heck: obviously safe, I'll slam it all in.
+Indeed if its public domain you may have almost no rights at all
+depending what you were given. Once you get the source code you can do
+stuff but I don't have to give you that. If its public domain I can find
+security holes in it, and refuse to provide the fixed module in source
+form even.
+
+(And public domain is a pretty 'brave' choice of licence as in many
+countries it does not imply any of the no warranty stuf the GPL does).
+
+So essentially, if its public domain and you put a copy in the kernel GPL
+the kernel copy. It doesn't mean the PD version ceased to be PD. If you
+want to keep it PD then also ask that anyone contributing to the GPL
+version also sends you a PD version of any changes. (They may not but
+then right now they dont have to anyway)
+
+Alan
