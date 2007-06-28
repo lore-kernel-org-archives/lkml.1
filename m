@@ -1,104 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbXF1Xju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbXF1Xrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932526AbXF1Xju (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 19:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760105AbXF1Xjn
+	id S932268AbXF1Xrm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 19:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757145AbXF1Xrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 19:39:43 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:65308 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757524AbXF1Xjm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 19:39:42 -0400
-Date: Thu, 28 Jun 2007 19:38:55 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH RT] Move RECURSION_LIMIT define up for global use.
-In-Reply-To: <Pine.LNX.4.58.0706281846580.28911@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0706281936520.29589@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0706281846580.28911@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 28 Jun 2007 19:47:33 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:51014 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756516AbXF1Xrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 19:47:31 -0400
+Date: Fri, 29 Jun 2007 01:42:22 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, jeff@garzik.org, Roel.Teuwen@advalvas.be,
+       Tim Durack <tdurack@gmail.com>, Jens Stroebel <drifter@bcsoft.de>,
+       Soren Hansen <soren@ubuntu.com>,
+       Kacper Bielecki <kazjote@stud.ics.p.lodz.pl>,
+       Andrew Paprocki <andrew@ishiboo.com>,
+       Clemens Brunner <clemens.brunner@tugraz.at>,
+       Alexey Borzenkov <snaury@gmail.com>, Benjamin LaHaise <bcrl@kvack.org>,
+       Edward Hsu <edward_hsu@realtek.com.tw>,
+       Lennert Buytenhek <buytenh@wantstofly.org>,
+       Daniel Drake <dsd@gentoo.org>, Raoul Bhatia <r.bhatia@ipax.at>,
+       Philip Craig <philipc@snapgear.com>, Mike Isely <isely@pobox.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       mirek kratochvil <exa.exa@gmail.com>, Mathew <mathewfer@gmail.com>,
+       Oleg Verych <olecom@flower.upol.cz>,
+       Will Trives <will@trivescon.com.au>, "Thomas A. Oehser" <tom@toms.net>,
+       James Morris <jmorris@namei.org>,
+       "Boris B. Zhmurov" <bb@kernelpanic.ru>,
+       Andy Gospodarek <andy@greyhouse.net>
+Subject: [RFT] r8169 changes against 2.6.22-rc6
+Message-ID: <20070628234222.GA8180@electric-eye.fr.zoreil.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The latest serie of r8169 changes is available against 2.6.22-rc6 as:
+http://www.fr.zoreil.com/people/francois/misc/20070628-2.6.22-rc6-r8169-test.patch
 
+or (tarball sits one level higher):
 
-On Thu, 28 Jun 2007, Steven Rostedt wrote:
->
-> If one has CONFIG_PROVE_LOCKING off but CONFIG_TRACE_IRQFLAGS on, the
-> RECURSION_LIMIT definition is not defined.  This patch move
-> RECURSION_LIMIT up for global use.
+http://www.fr.zoreil.com/linux/kernel/2.6.x/2.6.22-rc6/r8169-20070628/
 
-Arg, this wasn't good enough.
+or (rebase prone branch)
 
-Here's a better patch (drop the previous one please).
+git://electric-eye.fr.zoreil.com/home/romieu/linux-2.6.git#r8169
+ 
+Please do not clone your whole git kernel tree from here, thanks.
 
-I also added a ifdef that removes a warning of unused static function.
+Changes (most recent first):
 
-Thanks,
+- perform RX config change after mac filtering
+- mac address change support
+- display some extra debug information during startup
+- add endianess annotations to [RT]xDesc
+- align the IP header when there is no DMA constraint
+- add bit description for the TxPoll register
+- cleanup
+- remove the media option
+- small 8101 comment
+- confusion between hardware and IP header alignment
+- merge with version 8.001.00 of Realtek's r8168 driver
+- merge with version 6.001.00 of Realtek's r8169 driver
+- prettify mac_version
+- populate the hw_start handler for the 8110
+- populate the hw_start handler for the 8168
+- add helpers for per-device hw_start handler
+- add hooks for per-device hw_start handler
+- Rx path update
+- kill eth_copy_and_sum()
+- de-obfuscate modulo arithmetic
+- use netdev_alloc_skb
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Index: linux-2.6.21.5-rt18/kernel/lockdep.c
-===================================================================
---- linux-2.6.21.5-rt18.orig/kernel/lockdep.c	2007-06-28 18:36:32.000000000 -0400
-+++ linux-2.6.21.5-rt18/kernel/lockdep.c	2007-06-28 19:30:43.000000000 -0400
-@@ -687,6 +687,21 @@ static void print_kernel_version(void)
- 		init_utsname()->version);
+Use of this serie is strongly suggested if:
+- you own an asrock ConRoe945G-DVI
+- you need bonding
+- you need to fix the performance regression due to misalignment
+
+This serie should fix the non-wol related issues if you are an asus P5B
+user.
+
+Catastrophic events apart, the patches will be sent for review on netdev
+tomorow and scheduled for inclusion in 2.6.23.
+
+Success and failure reports or patches will be welcome. Please Cc: netdev
+and include "r8169" in the Subject.
+
+As a bonus, the patch below on top of the current serie could help Benjamin
+(and probably others too). It's still WIP though.
+
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 2fe3652..dc302c2 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -2518,7 +2518,7 @@ static inline u32 rtl8169_tso_csum(struct sk_buff *skb, struct net_device *dev)
+ static int rtl8169_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+-	unsigned int frags, entry = tp->cur_tx % NUM_TX_DESC;
++	unsigned int frags, cur_tx, entry = tp->cur_tx % NUM_TX_DESC;
+ 	struct TxDesc *txd = tp->TxDescArray + entry;
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	dma_addr_t mapping;
+@@ -2571,13 +2571,17 @@ static int rtl8169_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	dev->trans_start = jiffies;
+ 
++	cur_tx = tp->cur_tx;
++
+ 	tp->cur_tx += frags + 1;
+ 
+-	smp_wmb();
++	mmiowb();
+ 
+-	RTL_W8(TxPoll, NPQ);	/* set polling bit */
++	smp_mb();
+ 
+-	if (TX_BUFFS_AVAIL(tp) < MAX_SKB_FRAGS) {
++	if (cur_tx == tp->dirty_tx)
++		RTL_W8(TxPoll, NPQ);
++	else if (TX_BUFFS_AVAIL(tp) < MAX_SKB_FRAGS) {
+ 		netif_stop_queue(dev);
+ 		smp_rmb();
+ 		if (TX_BUFFS_AVAIL(tp) >= MAX_SKB_FRAGS)
+@@ -2681,10 +2685,18 @@ static void rtl8169_tx_interrupt(struct net_device *dev,
+ 
+ 	if (tp->dirty_tx != dirty_tx) {
+ 		tp->dirty_tx = dirty_tx;
+-		smp_wmb();
+-		if (netif_queue_stopped(dev) &&
+-		    (TX_BUFFS_AVAIL(tp) >= MAX_SKB_FRAGS)) {
+-			netif_wake_queue(dev);
++		smp_mb();
++		if (unlikely(netif_queue_stopped(dev))) {
++			netif_tx_lock(dev);
++		    	if (TX_BUFFS_AVAIL(tp) >= MAX_SKB_FRAGS)
++				netif_wake_queue(dev);
++			if (dirty_tx != tp->cur_tx)
++				RTL_W8(TxPoll, NPQ);
++			netif_tx_unlock(dev);
++		} else if (dirty_tx != tp->cur_tx) {
++			netif_tx_lock(dev);
++			RTL_W8(TxPoll, NPQ);
++			netif_tx_unlock(dev);
+ 		}
+ 	}
  }
 
-+#if defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_TRACE_IRQFLAGS)
-+
-+#define RECURSION_LIMIT 40
-+
-+static int noinline print_infinite_recursion_bug(void)
-+{
-+	if (!debug_locks_off_graph_unlock())
-+		return 0;
-+
-+	WARN_ON(1);
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PROVE_LOCKING || CONFIG_TRACE_IRQFLAGS */
-+
- #ifdef CONFIG_PROVE_LOCKING
- /*
-  * When a circular dependency is detected, print the
-@@ -740,18 +755,6 @@ static noinline int print_circular_bug_t
- 	return 0;
- }
-
--#define RECURSION_LIMIT 40
--
--static int noinline print_infinite_recursion_bug(void)
--{
--	if (!debug_locks_off_graph_unlock())
--		return 0;
--
--	WARN_ON(1);
--
--	return 0;
--}
--
- /*
-  * Prove that the dependency graph starting at <entry> can not
-  * lead to <target>. Print an error and return 0 if it does.
-@@ -878,6 +881,7 @@ find_usage_backwards(struct lock_class *
- 	return 1;
- }
-
-+#ifdef CONFIG_PROVE_LOCKING
- static int
- print_bad_irq_dependency(struct task_struct *curr,
- 			 struct held_lock *prev,
-@@ -960,6 +964,7 @@ check_usage(struct task_struct *curr, st
- 	return print_bad_irq_dependency(curr, prev, next,
- 			bit_backwards, bit_forwards, irqclass);
- }
-+#endif /* CONFIG_PROVE_LOCKING */
-
- #endif
-
+-- 
+Ueimor
