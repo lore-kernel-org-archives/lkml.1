@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764354AbXF1DHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764201AbXF1DLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764354AbXF1DHU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 23:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764023AbXF1DHJ
+	id S1764201AbXF1DLO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 23:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759293AbXF1DLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 23:07:09 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46831 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763768AbXF1DHI (ORCPT
+	Wed, 27 Jun 2007 23:11:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56425 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759348AbXF1DK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 23:07:08 -0400
-Date: Thu, 28 Jun 2007 13:07:00 +1000
-From: David Chinner <dgc@sgi.com>
-To: mmarek@suse.cz
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/3] Fix XFS_IOC_*_TO_HANDLE and XFS_IOC_{OPEN,READLINK}_BY_HANDLE in compat mode
-Message-ID: <20070628030700.GD989688@sgi.com>
-References: <20070619132549.266927601@suse.cz> <20070619132726.627137347@suse.cz>
+	Wed, 27 Jun 2007 23:10:59 -0400
+Date: Wed, 27 Jun 2007 20:10:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 007 of 8] knfsd: nfsd4: vary maximum delegation limit
+ based on RAM size
+Message-Id: <20070627201035.dbbb84e7.akpm@linux-foundation.org>
+In-Reply-To: <20070628025739.GD20605@fieldses.org>
+References: <20070621142604.727.patches@notabene>
+	<1070621043112.1144@suse.de>
+	<20070625205244.bbf0976a.akpm@linux-foundation.org>
+	<20070628021551.GB20605@fieldses.org>
+	<20070627193613.746dfbf3.akpm@linux-foundation.org>
+	<20070628025739.GD20605@fieldses.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070619132726.627137347@suse.cz>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 03:25:51PM +0200, mmarek@suse.cz wrote:
-> 32bit struct xfs_fsop_handlereq has different size and offsets (due to
-> pointers). TODO: case XFS_IOC_{FSSETDM,ATTRLIST,ATTRMULTI}_BY_HANDLE
-> still not handled.
+On Wed, 27 Jun 2007 22:57:39 -0400 "J. Bruce Fields" <bfields@fieldses.org> wrote:
 
-Looks good. Added to my qa tree...
+> On Wed, Jun 27, 2007 at 07:36:13PM -0700, Andrew Morton wrote:
+> > How's this?
+> 
+> Makes sense to me, thanks.  I guess fs/nsfd/nfssvc:nfsd_create_serv()
+> should be similarly modified?  It calculates the size of per-nfsd-thread
+> buffers used to hold requests, which will eventually be allocated with
+> an alloc_page(GFP_KERNEL), and it bases the calculation on the same
+> .totalram field from struct sysinfo.
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Yup, it'd be better to use nr_free_buffer_pages() there too.
