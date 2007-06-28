@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764121AbXF1GuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764262AbXF1Guj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764121AbXF1GuT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 02:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759062AbXF1GuH
+	id S1764262AbXF1Guj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 02:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760123AbXF1GuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 02:50:07 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:11267 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759486AbXF1GuF (ORCPT
+	Thu, 28 Jun 2007 02:50:24 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:12046 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764149AbXF1GuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 02:50:05 -0400
-Date: Thu, 28 Jun 2007 08:50:03 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, david@lang.hm,
-       linux-arch@vger.kernel.org
-Subject: Re: Userspace compiler support of "long long"
-In-Reply-To: <Pine.LNX.4.64.0706280411520.26289@anakin>
-Message-ID: <Pine.LNX.4.64.0706280844030.22579@fbirervta.pbzchgretzou.qr>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
- <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
- <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
- <1182483527.10524.31.camel@shinybook.infradead.org> <20070622150038.GN23017@stusta.de>
- <E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com> <20070627154046.GN1094@stusta.de>
- <468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de>
- <20070627173240.GR1094@stusta.de> <B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com>
- <20070627155715.60ebc48f.randy.dunlap@oracle.com>
- <20070627161648.52d3786d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706280411520.26289@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 28 Jun 2007 02:50:22 -0400
+X-Greylist: delayed 1870 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jun 2007 02:50:21 EDT
+Date: Wed, 27 Jun 2007 23:19:11 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Rik van Riel <riel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/3] MAP_NOZERO - implement a new VM_NOZERO/MAP_NOZERO page retirement policy
+Message-ID: <20070628061911.GA16986@hexapodia.org>
+References: <send-serie.davidel@xmailserver.org.29496.1182912259.1> <4681D37E.2020706@redhat.com> <Pine.LNX.4.64.0706262016080.26540@alien.or.mcafeemobile.com> <4681E52A.8030300@redhat.com> <Pine.LNX.4.64.0706262127300.26540@alien.or.mcafeemobile.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706262127300.26540@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4.2.2i
+X-PGP-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-PGP-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 26, 2007 at 09:32:44PM -0700, Davide Libenzi wrote:
+> > Because an SUID program can change its UID back.
+> > 
+> > At least, one that was SUID root.  OTOH, any
+> > program running as root can change UID, so we
+> > should probably not allow root to get nonzeroed
+> > pages.
+> 
+> Well, root can in general access the whole system in any case. At the 
+> moment, root cannot access othe UIDs pages. Only their own. And this 
+> differs from standard security policies where root can access everything.
+> Pages used internally by the kernel, cannot be reused by anyone.
 
-On Jun 28 2007 04:12, Geert Uytterhoeven wrote:
->On Wed, 27 Jun 2007, Randy Dunlap wrote:
->> On Wed, 27 Jun 2007 15:57:15 -0700 Randy Dunlap wrote:
->> > LDD3 ch. 11 says that long on Sparc64 is 32 bits.
->> > Same for "ppc" (don't know which power* arch. they mean by that).
->> 
->> Hm, I suppose that table only applies to userspace, not kernel...
->
->32-bit userspace?
->
->On 64-bit, `long' is 64-bit on all platforms supported by Linux.
+But MAP_NOZERO adds a new possible information leak from root out to the
+non-root user.  If root does
 
-All types are as wide as the compiler makes them.
+    setuid(newuid);
+    exec(...);
+    exit(1);
 
-Compiler  short  int long llong
-Turbo C      16   16   32     -
-GCC -m32     16   32   32    64
-GCC -m64     16   32   64    64
+and there are MAP_NOZERO pages which contain sensitive information,
+a process running as newuid would be able to race the exec with
+PTRACE_ATTACH and extract the sensitive information.  Without MAP_NOZERO
+the information leak is limited to information which was in the setuid
+program's address space (and presumably, setuid programs are written to
+be careful about such things).
 
+That said, I think I like the idea of MAP_NOZERO.  Could it be
+generalized to some kind of "free pool" rather than keyed off of uid?
 
-
-	Jan
--- 
+-andy
