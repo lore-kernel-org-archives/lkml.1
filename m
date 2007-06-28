@@ -1,91 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764044AbXF1Hs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763520AbXF1H4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764044AbXF1Hs1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 03:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759676AbXF1HsS
+	id S1763520AbXF1H4i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 03:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbXF1H4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 03:48:18 -0400
-Received: from ozlabs.org ([203.10.76.45]:60335 "EHLO ozlabs.org"
+	Thu, 28 Jun 2007 03:56:30 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:27797 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759272AbXF1HsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 03:48:17 -0400
-To: Paul Mackerras <paulus@samba.org>
-Cc: <decimal@us.ibm.com>, <linux-arch@vger.kernel.org>,
-       Arnd Bergmann <arnd.bergmann@de.ibm.com>, <cbe-oss-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>, <petr@vandrovec.name>, <ak@suse.de>,
-       <jdelsign@totalviewtech.com>
-Message-Id: <67867aa5e78ae107a62706a33a2aa643e8244256.1183016719.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/1] Fix elf_core_dump() when writing arch specific notes (spu coredumps)
-Date: Thu, 28 Jun 2007 17:48:16 +1000 (EST)
+	id S1754627AbXF1H43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 03:56:29 -0400
+Date: Thu, 28 Jun 2007 11:55:52 +0400
+From: Dmitry Monakhov <dmonakhov@sw.ru>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: corentincj@iksaif.net, sziwan@users.sourceforge.net,
+       acpi4asus-user@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Oops on rmmod asus_acpi
+Message-ID: <20070628075551.GA10551@localhost.sw.ru>
+Mail-Followup-To: Jan Engelhardt <jengelh@computergmbh.de>,
+	corentincj@iksaif.net, sziwan@users.sourceforge.net,
+	acpi4asus-user@lists.sourceforge.net,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0706272113120.11120@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0706272113120.11120@fbirervta.pbzchgretzou.qr>
+Organization: SWsoft.
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-elf_core_dump() supports dumping arch specific ELF notes, via the #define
-ELF_CORE_WRITE_EXTRA_NOTES. Currently the only user of this is the powerpc
-spu coredump code.
-
-There is a bug in the handling of foffset WRT the arch notes, which causes
-us to erroneously increment foffset by the size of the arch notes, leaving
-a block of zeroes in the file, and causing all subsequent data in the file
-to be at <supposed position> + <arch note size>. eg:
-
-  LOAD  0x050000 0x00100000 0x00000000 0x20000 0x20000 R E 0x10000
-
-Tells us we should have a chunk of data at 0x50000. The truth is the data is
-at 0x90dbc = 0x50000 + 0x40dbc (the size of the arch notes).
-
-This bug prevents gdb from reading the core file correctly.
-
-The simplest fix is to simply remember the size of the arch notes, and add
-it to foffset after we've written the arch notes. The only drawback is that
-if the arch code doesn't write as many bytes as it said it would, we end up
-with a broken core dump again. For now I think that's a reasonable
-requirement.
-
-Tested on a Cell blade, gdb no longer complains about the core file being
-bogus.
-
-While I'm here I should point out that the spu coredump code does not work
-if we're dumping to a pipe - we'll have to wait for 23 to fix that.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- fs/binfmt_elf.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index fa8ea33..08e4414 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1499,6 +1499,9 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
- #endif
- 	int thread_status_size = 0;
- 	elf_addr_t *auxv;
-+#ifdef ELF_CORE_WRITE_EXTRA_NOTES
-+	int extra_notes_size;
-+#endif
- 
- 	/*
- 	 * We no longer stop all VM operations.
-@@ -1628,7 +1631,8 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
- 		sz += thread_status_size;
- 
- #ifdef ELF_CORE_WRITE_EXTRA_NOTES
--		sz += ELF_CORE_EXTRA_NOTES_SIZE;
-+		extra_notes_size = ELF_CORE_EXTRA_NOTES_SIZE;
-+		sz += extra_notes_size;
- #endif
- 
- 		fill_elf_note_phdr(&phdr, sz, offset);
-@@ -1674,6 +1678,7 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
- 
- #ifdef ELF_CORE_WRITE_EXTRA_NOTES
- 	ELF_CORE_WRITE_EXTRA_NOTES;
-+	foffset += extra_notes_size;
- #endif
- 
- 	/* write out the thread status notes section */
--- 
-1.5.1.3.g7a33b
+On 21:16 Срд 27 Июн     , Jan Engelhardt wrote:
+> Hi,
+> 
+> 
+> 
+> 	modprobe asus_acpi
+> 	rmmod asus_acpi
+> 
+> is all that is needed to trigger an Oops in 2.6.22-rc6 (x86).
+> If you need more info, please let me know, thanks.
+> 
+> Note that the machine is not ASUS at all (vmware).
+> (But suse_factory loads asus_acpi anyway -wtf?!)
+Fixed in -mm tree by asus_acpi-fix-oops-on-non-asus-machines.patch
+> 
+> 
+> Jun 27 21:11:33 su1 kernel: WARNING: at /ws/linux-2.6.22/lib/kref.c:33 kref_get()
+> Jun 27 21:11:33 su1 kernel:  [<c01c5e75>] kref_get+0x34/0x3f
+> Jun 27 21:11:33 su1 kernel:  [<c01c52ef>] kobject_get+0xf/0x13
+> Jun 27 21:11:33 su1 kernel:  [<c0228885>] get_driver+0xe/0x14
+> Jun 27 21:11:33 su1 kernel:  [<c0228896>] driver_remove_file+0xb/0x25
+> Jun 27 21:11:33 su1 kernel:  [<c0227efd>] bus_remove_driver+0x17/0x75
+> Jun 27 21:11:33 su1 kernel:  [<c6a9f018>] asus_acpi_exit+0x18/0x28 [asus_acpi]
+> Jun 27 21:11:33 su1 kernel:  [<c013cebc>] sys_delete_module+0x1a0/0x1c8
+> Jun 27 21:11:33 su1 kernel:  [<c01494bd>] audit_syscall_entry+0x10d/0x137
+> Jun 27 21:11:33 su1 kernel:  [<c0107c18>] do_syscall_trace+0x13d/0x181
+> Jun 27 21:11:33 su1 kernel:  [<c0104d40>] syscall_call+0x7/0xb
+> Jun 27 21:11:33 su1 kernel:  =======================
+> Jun 27 21:11:33 su1 kernel: WARNING: at /ws/linux-2.6.22/lib/kref.c:33 kref_get()
+> Jun 27 21:11:33 su1 kernel:  [<c01c5e75>] kref_get+0x34/0x3f
+> Jun 27 21:11:33 su1 kernel:  [<c01c52ef>] kobject_get+0xf/0x13
+> Jun 27 21:11:33 su1 kernel:  [<c0228885>] get_driver+0xe/0x14
+> Jun 27 21:11:33 su1 kernel:  [<c0228896>] driver_remove_file+0xb/0x25
+> Jun 27 21:11:33 su1 kernel:  [<c0227f09>] bus_remove_driver+0x23/0x75
+> Jun 27 21:11:33 su1 kernel:  [<c6a9f018>] asus_acpi_exit+0x18/0x28 [asus_acpi]
+> Jun 27 21:11:33 su1 kernel:  [<c013cebc>] sys_delete_module+0x1a0/0x1c8
+> Jun 27 21:11:33 su1 kernel:  [<c01494bd>] audit_syscall_entry+0x10d/0x137
+> Jun 27 21:11:33 su1 kernel:  [<c0107c18>] do_syscall_trace+0x13d/0x181
+> Jun 27 21:11:33 su1 kernel:  [<c0104d40>] syscall_call+0x7/0xb
+> Jun 27 21:11:33 su1 kernel:  =======================
+> Jun 27 21:11:33 su1 kernel: BUG: unable to handle kernel NULL pointer dereference at virtual address 00000010
+> Jun 27 21:11:33 su1 kernel:  printing eip:
+> Jun 27 21:11:33 su1 kernel: c02ab74b
+> Jun 27 21:11:33 su1 kernel: *pde = 00000000
+> Jun 27 21:11:33 su1 kernel: Oops: 0000 [#1]
+> Jun 27 21:11:33 su1 kernel: SMP 
+> Jun 27 21:11:33 su1 kernel: Modules linked in: asus_acpi ipv6 nfs lockd nfs_acl sunrpc dock button battery ac dm_crypt loop dm_mod xt_hashlimit ip6_tables xt_u32 xt_conntrack xt_connlimit nf_conntrack nfnetlink x_tables rtc_cmos rtc_core rtc_lib pcnet32 mii i2c_piix4 i2c_core mptctl generic piix ide_core shpchp pci_hotplug intel_agp agpgart sg parport_pc lp parport sd_mod edd xfs fan mptspi mptscsih mptbase scsi_transport_spi ata_piix libata scsi_mod thermal processor
+> Jun 27 21:11:33 su1 kernel: CPU:    0
+> Jun 27 21:11:33 su1 kernel: EIP:    0060:[<c02ab74b>]    Not tainted VLI
+> Jun 27 21:11:33 su1 kernel: EFLAGS: 00010246   (2.6.22-rc6+ccj #11)
+> Jun 27 21:11:33 su1 kernel: EIP is at klist_del+0x9/0x31
+> Jun 27 21:11:33 su1 kernel: eax: 00000000   ebx: 00000000   ecx: c02fdc20   edx: 00000001
+> Jun 27 21:11:33 su1 kernel: esi: 00000000   edi: c6aa262c   ebp: c139c000   esp: c139df30
+> Jun 27 21:11:33 su1 kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Jun 27 21:11:33 su1 kernel: Process rmmod (pid: 3004, ti=c139c000 task=c5da0030 task.ti=c139c000)
+> Jun 27 21:11:33 su1 kernel: Stack: c6aa262c 00000000 c0341100 c02ab7c3 c6aa25d0 c0227f36 c6aa2d80 00000000 
+> Jun 27 21:11:33 su1 kernel:        00000880 c6a9f018 c013cebc 73757361 7063615f c2cf0069 00000000 c01494bd 
+> Jun 27 21:11:33 su1 kernel:        bfb59010 00000081 40000003 c5da0030 bfb5b858 00000880 00000000 c139dfb8 
+> Jun 27 21:11:33 su1 kernel: Call Trace:
+> Jun 27 21:11:33 su1 kernel:  [<c02ab7c3>] klist_remove+0x8/0x13
+> Jun 27 21:11:33 su1 kernel:  [<c0227f36>] bus_remove_driver+0x50/0x75
+> Jun 27 21:11:33 su1 kernel:  [<c6a9f018>] asus_acpi_exit+0x18/0x28 [asus_acpi]
+> Jun 27 21:11:33 su1 kernel:  [<c013cebc>] sys_delete_module+0x1a0/0x1c8
+> Jun 27 21:11:33 su1 kernel:  [<c01494bd>] audit_syscall_entry+0x10d/0x137
+> Jun 27 21:11:33 su1 kernel:  [<c0107c18>] do_syscall_trace+0x13d/0x181
+> Jun 27 21:11:33 su1 kernel:  [<c0104d40>] syscall_call+0x7/0xb
+> Jun 27 21:11:33 su1 kernel:  =======================
+> Jun 27 21:11:33 su1 kernel: Code: ff 8b 04 24 8b 16 89 46 08 b0 01 86 02 85 ed 74 08 85 ff 74 04 89 f8 ff d5 8b 04 24 5a 5b 5e 5f 5d c3 57 89 c7 56 53 8b 18 89 d8 <8b> 73 10 e8 d3 22 00 00 89 f8 e8 6f ff ff ff 83 f8 01 19 c0 f7 
+> Jun 27 21:11:33 su1 kernel: EIP: [<c02ab74b>] klist_del+0x9/0x31 SS:ESP 0068:c139df30
+> 
+> 
+> 	Jan
+> -- 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
