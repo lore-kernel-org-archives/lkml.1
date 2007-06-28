@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbXF1LN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762358AbXF1LTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761596AbXF1LN0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 07:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbXF1LNR
+	id S1762358AbXF1LTg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 07:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759841AbXF1LT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 07:13:17 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:58721 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757308AbXF1LNQ convert rfc822-to-8bit (ORCPT
+	Thu, 28 Jun 2007 07:19:29 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:33871 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758701AbXF1LT2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 07:13:16 -0400
-Content-class: urn:content-classes:message
+	Thu, 28 Jun 2007 07:19:28 -0400
+Message-ID: <46839864.8090002@gmail.com>
+Date: Thu, 28 Jun 2007 13:15:48 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] PXA27x UDC driver.
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Thu, 28 Jun 2007 19:15:06 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D834FA@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20070628103619.GW13886@enneenne.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] PXA27x UDC driver.
-Thread-Index: Ace5cHGebTyNz9UkT/mXWzRD59CirwABFiIQ
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Rodolfo Giometti" <giometti@enneenne.com>,
-       <linux-arm-kernel@lists.arm.linux.org.uk>
-Cc: <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
+To: Patrick Draper <pdraper@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <200706271825.17459.ahartmetz@gmail.com> <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com> <4682EEDD.4020501@gmail.com> <4682FE5C.5070004@gmail.com> <468315AF.1080105@gmail.com> <46831CD8.8000502@gmail.com>
+In-Reply-To: <46831CD8.8000502@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org
-> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Rodolfo
-Giometti
-> Sent: Thursday, June 28, 2007 6:36 PM
-> To: linux-arm-kernel@lists.arm.linux.org.uk
-> Cc: linux-kernel@vger.kernel.org; Andrew Morton
-> Subject: [PATCH] PXA27x UDC driver.
-> 
-> Hello,
-> 
-> attached you can find new version of my patch for PXA27x UDC driver
-> support against kernel 2.6.22-rc3 (but it applies also ro rc6).
-> 
-> I'd like to know what I have to do in order to prepare this patch for
-> kernel inclusion. It's time PXA27x has its UDC driver into linux! :)
-> 
-> Thanks for your suggestions,
+On 06/28/2007 04:28 AM, Rene Herman wrote:
 
-You should probably also cc: linux-usb-devel@lists.sourceforge.net and
-David Brownell for UDC matters.
+> On 06/28/2007 03:58 AM, Rene Herman wrote:
+> 
+>> to figure it out. If you need to specify an ALSA device somewhere, make
+>> sure it's not the old "hw:0" but "default" (or "default:0" for the
+>> first card, "default:1" for the second, ...). The "hw:N" devices don't
+>> do mixing.
+> 
+> Slight correction/expansion -- don't do _software_ mixing. Some cards 
+> can do hardware mixing and in that case, "hw:N" or, specifically 
+> "hw:N,0", "hw:N,1" and so on devices are available as hardware mixed 
+> devices.
 
-- Leo
+Correcting the correction (sorry, it was late) -- "hw:N" is card N, "hw:N,M" 
+is PCM interface M of card N and "hw:N,M,K" is (hardware mixed) subdevice K 
+on PCM interface M of card N. Normal cards have only one PCM interface 
+meaning that M is 0 in the above.
+
+That is, I meant that "hw:N,0,0", "hw:N,0,1" and so on are the hardware 
+mixed devices.
+
+Rene.
