@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764961AbXF1TiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765033AbXF1Twl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764961AbXF1TiG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 15:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbXF1Th4
+	id S1765033AbXF1Twl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 15:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759206AbXF1Twd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 15:37:56 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:41596 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757479AbXF1Thz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 15:37:55 -0400
-Message-ID: <46840D33.3010409@gmail.com>
-Date: Thu, 28 Jun 2007 21:34:11 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Thu, 28 Jun 2007 15:52:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35854 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760123AbXF1Twc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 15:52:32 -0400
+Message-ID: <46841175.8070901@redhat.com>
+Date: Thu, 28 Jun 2007 15:52:21 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: =?UTF-8?B?VG9tYXN6IEvFgm9jemtv?= <kloczek@rudy.mif.pg.gda.pl>
-CC: Anton Petrusevich <casus@casus.us>, linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <200706281442.05239.casus@casus.us> <4683CD9F.5030202@gmail.com> <200706281834.16564.casus@casus.us> <4684046F.70205@gmail.com> <Pine.BSO.4.63.0706282131300.25800@rudy.mif.pg.gda.pl>
-In-Reply-To: <Pine.BSO.4.63.0706282131300.25800@rudy.mif.pg.gda.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+To: Andi Kleen <ak@suse.de>
+CC: Loic Prylli <loic@myri.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MTRR: Fix race causing set_mtrr to go into infinite loop
+References: <468035BC.9080008@myri.com> <46803C1D.2040009@redhat.com> <200706260034.41940.ak@suse.de>
+In-Reply-To: <200706260034.41940.ak@suse.de>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/28/2007 09:33 PM, Tomasz Kłoczko wrote:
-
->> On 06/28/2007 06:34 PM, Anton Petrusevich wrote:
+On 06/25/2007 06:34 PM, Andi Kleen wrote:
+> On Tuesday 26 June 2007 00:05:17 Chuck Ebbert wrote:
+>> On 06/25/2007 05:38 PM, Loic Prylli wrote:
 >>
->>> Do you have an SPDIF out? If you don't then you don't need .asoundrc 
->>> of course.
+>> [cc: Andi]
 >>
->> I do on a number of cards, although being without sensible equipment 
->> (other than other soundcards) with an S/PDIF _in_ I don't actually use 
->> it for more than testing purposes.
+>>> Processors synchronization in set_mtrr requires the .gate field
+>>> to be set after .count field is properly initialized. Without an explicit
+>>> barrier, the compiler was reordering those memory stores. That was sometimes
+>>> causing a processor (in ipi_handler) to see the .gate change and
+>>> decrement .count before the latter is set by set_mtrr() (which
+>>> then hangs in a infinite loop with irqs disabled).
 > 
-> Sorry please keep all "I don't need" or "I don't count" words for 
-> themeselve. We are taking not about you but about *ALSA*.
+> Hmm, perhaps we should just put the smp_wmb into atomic_set().
+> Near all other atomic operations have memory barriers too. I think
+> that would be the better fix.
 
-Read the next lines. And then piss off, retard troll.
+Can we get something merged before 2.6.22-final?
 
-Rene.
-
-
+The original patch seems okay...
