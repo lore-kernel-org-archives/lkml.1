@@ -1,116 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765254AbXF1Uao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763814AbXF1Uei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765254AbXF1Uao (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 16:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761249AbXF1Uag
+	id S1763814AbXF1Uei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 16:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755669AbXF1Ue3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 16:30:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45668 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760899AbXF1Uaf (ORCPT
+	Thu, 28 Jun 2007 16:34:29 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:48906 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757192AbXF1Ue1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 16:30:35 -0400
-Date: Thu, 28 Jun 2007 13:29:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
-Message-Id: <20070628132947.e3378811.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706282044360.30789@anakin>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-	<20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
-	<20070628110644.a530cfef.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706282017450.30789@anakin>
-	<20070628113819.c24e592d.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706282044360.30789@anakin>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 28 Jun 2007 16:34:27 -0400
+Date: Thu, 28 Jun 2007 16:34:25 -0400
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, suparna@in.ibm.com, cmm@us.ibm.com,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 0/6][TAKE5] fallocate system call
+Message-ID: <20070628203425.GB5789@schatzie.adilger.int>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+References: <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070628025543.9467216f.akpm@linux-foundation.org> <20070628175757.GA1674@amitarora.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070628175757.GA1674@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007 20:47:33 +0200 (CEST)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-
-> > > Apart from many Kconfig dependencies on HAS_IOMEM, CONFIG_HAS_IOMEM is
-> > > further only used to control the build of lib/iomap_copy.c, which
-> > > doesn't use readb() and friends, but the __raw*() operations.
-> > > 
-> > 
-> > Well this is fun.
-> > 
-> > How to fix? Should we add a new CONFIG_HAS_IO?  (IOPORTS?)
+On Jun 28, 2007  23:27 +0530, Amit K. Arora wrote:
+> On Thu, Jun 28, 2007 at 02:55:43AM -0700, Andrew Morton wrote:
+> > Are we all supposed to re-review the entire patchset (or at least #4 and
+> > #7) again?
 > 
-> There already exists a CONFIG_HAS_IOPORT :-) (for ISA/PCI-style I/O port
-> access).
-> 
-> Just make check_signature() depend on ISA || PCI (and maybe || X86_32).
-> According to its comment, it's used to `find BIOS signatures', which is
-> a legacy PC thing. Please don't pollute non-legacy architectures with it ;-)
+> As I mentioned in the note above, only patches #4 and #7 were new and
+> thus these needed to be reviewed. Other patches are _not_ replacements
+> of any of the patches which are already part of -mm and/or in Ted's
+> patch queue. They were posted again as just "placeholders" so that the
+> two new patches (#4 & #7) could be reviewed. Sorry for any confusion.
 
-I merged the below and will await the next explosion.
+The new patches are definitely a big improvement over the previous API,
+and need to go in before fallocate() goes into mainline.  This last set
+of changes allows the behaviour of these syscalls to accomodate the various
+different semantics desired by XFS in a sensible manner instead of tying
+all of the individual behaviours (time update, size update, alloc/free, etc)
+into monolithic modes that will never make everyone happy.
 
+My understanding is that you only need to grab #4 and #7 to get your tree
+into get fallocate in sync with the ext4 patch queue (i.e. they are
+incremental over the previous set).
 
-From: Andrew Morton <akpm@linux-foundation.org>
-
-check_signature() needs readb() but with some setups (s390, m68k allmodconfig)
-there is no implementation of readb.  This causes build errors with
--Werror-implicit-function-declaration.
-
-So make check_signature.o dependent upon ISA||PCI.
-
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- lib/Kconfig  |    5 ++++-
- lib/Makefile |    3 ++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
-
-diff -puN lib/Kconfig~check_signature-needs-readb lib/Kconfig
---- a/lib/Kconfig~check_signature-needs-readb
-+++ a/lib/Kconfig
-@@ -110,11 +110,14 @@ config TEXTSEARCH_FSM
- 	tristate
- 
- #
--# plist support is select#ed if needed
-+# plist support is selected if needed
- #
- config PLIST
- 	boolean
- 
-+config CHECK_SIGNATURE
-+	def_bool ISA || PCI
-+
- config HAS_IOMEM
- 	boolean
- 	depends on !NO_IOMEM
-diff -puN lib/Makefile~check_signature-needs-readb lib/Makefile
---- a/lib/Makefile~check_signature-needs-readb
-+++ a/lib/Makefile
-@@ -13,7 +13,7 @@ lib-$(CONFIG_SMP) += cpumask.o
- lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
- 
- obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
--	 bust_spinlocks.o hexdump.o check_signature.o
-+	 bust_spinlocks.o hexdump.o
- 
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
-@@ -33,6 +33,7 @@ obj-$(CONFIG_LOCK_KERNEL) += kernel_lock
- obj-$(CONFIG_PLIST) += plist.o
- obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
- obj-$(CONFIG_DEBUG_LIST) += list_debug.o
-+obj-$(CONFIG_CHECK_SIGNATURE) += check_signature.o
- 
- ifneq ($(CONFIG_HAVE_DEC_LOCK),y)
-   lib-y += dec_and_lock.o
-_
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
