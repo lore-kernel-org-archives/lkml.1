@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbXF1FtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760355AbXF1GA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762736AbXF1FtO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 01:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbXF1FtH
+	id S1760355AbXF1GA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 02:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbXF1GAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 01:49:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46124 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752998AbXF1FtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 01:49:06 -0400
-Message-ID: <46834BB8.1020007@garzik.org>
-Date: Thu, 28 Jun 2007 01:48:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Thu, 28 Jun 2007 02:00:15 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:51866 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbXF1GAO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 02:00:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=t6H+1DHrVrrBl++Zwp4Scqy6m6xIIVLrQBewNAOnoTUP2xZdB1HKAS6Gcgq3XbRIAG6ddXspdxQSAQf9jDu/awHf4PCQZc1WJjrSRjQCpodMsK8vYzJdMczOADkTe1EON/sreiEu0YnQuyFTsunOI04aXLRn7efuED/wSdEudJk=
+Message-ID: <a8e1da0706272300q3aee30der5349e85055f62a8e@mail.gmail.com>
+Date: Thu, 28 Jun 2007 06:00:12 +0000
+From: "dave young" <hidave.darkstar@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
+Cc: "Chris Shoemaker" <c.shoemaker@cox.net>,
+       "Josh Triplett" <josht@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       josh@kernel.org
+In-Reply-To: <Pine.LNX.4.64.0706280015320.11120@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu>
-In-Reply-To: <20070622215953.GA22917@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
+	 <20070627180552.GA746@pe.Belkin>
+	 <Pine.LNX.4.64.0706280015320.11120@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> so how about the following, different approach: anyone who has a tasklet 
-> in any performance-sensitive codepath, please yell now. We'll also do a 
-> proactive search for such places. We can convert those places to 
-> softirqs, or move them back into hardirq context. Once this is done - 
-> and i doubt it will go beyond 1-2 places - we can just mass-convert the 
-> other 110 places to the lame but compatible solution of doing them in a 
-> global thread context.
+2007/6/27, Jan Engelhardt <jengelh@computergmbh.de>:
+>
+> On Jun 27 2007 14:05, Chris Shoemaker wrote:
+> >
+> >What I'd really like to see is, _why_ is trailing whitespace
+> >considered harmful?
+>
+> Consumes bytes you'll never see :)
+>
+> >Something about MUAs not preserving it or something?
+>
+> Well, there is format=flowed. text/plain mails with a trailing blank at the end
+> of line indicates the paragraph continues -- as a curtesy for mail readers with
+> non-fixed-font to display the paragraph coherently rather than breaking it at
+> 72/80 columns.
+>
+>
+>         Jan
+> --
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
+There's more potential to cause  lines end with whitespace. How about
+remove the "Some editors with ..."  like this :
 
-Color me unconvinced.
-
-Tasklets fill a niche not filled by either workqueues (slower, requiring 
-context switches, and possibly much latency is all wq's processes are 
-active) or softirqs (limited number of them, not flexible at all). 
-Sure, tasklets kick over to ksoftirqd, but not immediately, and therein 
-lies their value.
-
-And moving code -back- into hardirq is just the wrong thing to do, usually.
-
-This proposal is ENTIRELY derived from "not convenient to my project" 
-logic AFAICS, rather than the more sound "not needed in the kernel."
-
-	Jeff
-
-
-
++Do not leave trailing whitespace at the ends of lines.
++
++Git will warn you about patches that introduce trailing whitespace, and can
++optionally strip the trailing whitespace for you; however, if applying a series
++of patches, this may make later patches in the series fail by changing their
++context lines.
++
