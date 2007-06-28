@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765406AbXF1SPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764777AbXF1SQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765406AbXF1SPt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762154AbXF1SPn
+	id S1764777AbXF1SQK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765445AbXF1SPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:15:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60485 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761763AbXF1SPm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:15:42 -0400
-Date: Thu, 28 Jun 2007 11:15:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mmarek@suse.cz
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] Fix XFS_IOC_FSBULKSTAT{,_SINGLE} and
- XFS_IOC_FSINUMBERS in compat mode
-Message-Id: <20070628111530.829e7a06.akpm@linux-foundation.org>
-In-Reply-To: <20070619132726.893544847@suse.cz>
-References: <20070619132549.266927601@suse.cz>
-	<20070619132726.893544847@suse.cz>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 28 Jun 2007 14:15:54 -0400
+Received: from mail.suse.de ([195.135.220.2]:51553 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765427AbXF1SPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 14:15:53 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: James Morris <jmorris@namei.org>
+Subject: Re: [AppArmor 32/44] Enable LSM hooks to distinguish operations on file descriptors from operations on pathnames
+Date: Thu, 28 Jun 2007 20:15:51 +0200
+User-Agent: KMail/1.9.5
+Cc: John Johansen <jjohansen@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Miklos Szeredi <mszeredi@suse.cz>
+References: <20070626230756.519733902@suse.de> <20070626231124.098710828@suse.de> <Line.LNX.4.64.0706281206180.13250@localhost.localdomain>
+In-Reply-To: <Line.LNX.4.64.0706281206180.13250@localhost.localdomain>
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 2486
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706282015.51430.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007 15:25:52 +0200 mmarek@suse.cz wrote:
+On Thursday 28 June 2007 18:12, James Morris wrote:
+> Are you trying to cater for the case where you're holding an open fd for a 
+> file which has been deleted, and thus has no pathname?
 
-> * 32bit struct xfs_fsop_bulkreq has different size and layout of
->   members, no matter the alignment. Move the code out of the #else
->   branch (why was it there in the first place?). Define _32 variants of
->   the ioctl constants.
-> * 32bit struct xfs_bstat is different because of time_t and on
->   i386 becaus of different padding. Create a new formatter
->   xfs_bulkstat_one_compat() that takes care of this. To do this, we need
->   to make xfs_bulkstat_one_iget() and xfs_bulkstat_one_dinode()
->   non-static.
-> * i386 struct xfs_inogrp has different padding. Introduce a similar
->   "formatter" mechanism for xfs_inumbers: the native formatter is just a
->   copy_to_user, the compat formatter takes care of the different layout
+Yes, see the AA_CHECK_FD flag in security/apparmor/main.c:aa_perm_dentry(). We 
+want to distinguish between the following two cases:
 
-test.kernel.org build failed:
+ - process performs an operation on an open file descriptor,
 
-  CC      fs/xfs/linux-2.6/xfs_ioctl32.o
-fs/xfs/linux-2.6/xfs_ioctl32.c: In function ‘xfs_ioc_bulkstat_compat’:
-fs/xfs/linux-2.6/xfs_ioctl32.c:334: error: ‘xfs_inumbers_fmt_compat’ undeclared (first use in this function)
-fs/xfs/linux-2.6/xfs_ioctl32.c:334: error: (Each undeclared identifier is reported only once
-fs/xfs/linux-2.6/xfs_ioctl32.c:334: error: for each function it appears in.)
+ - process performs an operation on a pathname, and between the dentry
+   lookup and the LSM permission check, the file gets deleted.
 
+In the former case, we obviously want to continue giving the process access to 
+his fd (the classical pattern: open temporary file; delete it so that it will 
+self-recycle, continue using the open file descriptor).
 
-http://test.kernel.org/abat/96972/debug/test.log.0
-http://test.kernel.org/abat/96972/build/dotconfig
+In the latter case, The file still existed at the time of the lookup but not 
+anymore at the time of the permission check. The file obviously doesn't have 
+a filename anymore, so we cannot check permissions. If we granted access in 
+that case, processes could bypass their profile permissions in that race 
+window. We close the race by returning -ENOENT in that case, the same result 
+as if the file had already been deleted before the lookup.
+
+Andreas
