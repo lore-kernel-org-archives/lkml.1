@@ -1,50 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764100AbXF1DmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764181AbXF1Doi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764100AbXF1DmG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 23:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759410AbXF1Dlz
+	id S1764181AbXF1Doi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 23:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761109AbXF1Dob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 23:41:55 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:48887 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757914AbXF1Dly (ORCPT
+	Wed, 27 Jun 2007 23:44:31 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3229 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759994AbXF1Doa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 23:41:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=SCywa8jIVmNm/sWPwgWVfcwyO/Oj7QMHBwwtYab9czmqORrr65EdCTPyNJvgVMBJCvccTW0NmRkZ+EokmmGBo8L5ic5IwvfY+UV3ihAG8P/ZsRKm1O2+slchXA8x7/g+vj3l1Cr1HLkgtpJxS3d5u7L36tjV4o95aMsh8kxvH08=
-Message-ID: <75b66ecd0706272041r2e33241djf2280d1749e8c809@mail.gmail.com>
-Date: Wed, 27 Jun 2007 23:41:54 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Andreas Hartmetz" <ahartmetz@gmail.com>
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200706262239.05070.ahartmetz@gmail.com>
+	Wed, 27 Jun 2007 23:44:30 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Date: Wed, 27 Jun 2007 20:44:21 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEELNEOAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706262239.05070.ahartmetz@gmail.com>
-X-Google-Sender-Auth: c1bb0accc9f6a26a
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <ory7i4zykp.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 20:44:19 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 20:44:23 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/26/07, Andreas Hartmetz <ahartmetz@gmail.com> wrote:
-> Why not put the whole sound system in userland? It has been done before. Sound
-> is just not performance critical at all and it's almost never mission
-> critical.
 
-There are dozens of companies selling Linux powered professional audio
-gear, multiple pro audio centric distros, and hundreds of serious free
-software audio apps.  I suspect these developers and their users would
-disagree.
+> Alexandre Oliva writes:
+>
+> >> Yes, but in the scenario I proposed, the source code *is* in the
+> >> preferred form for making modifications, it just so happens to be
+> >> behind a barrier you cannot trespass.  This is not different from
+> >> shipping binaries and sources in a CD inside a locked box that you
+> >> can't open.  You've received both, but how is the fact that you can't
+> >> reach the source code (or the binaries) a violation of the GPL in this
+> >> case?
+>
+> > Behind a barrier is not the preferred form for modification.
+>
+> Where does it state that there must not be a barrier?  I see it saying
+> the source must accompany the binary, under 3a.
+>
+> > Encrypted with a key you don't have is not the preferred form for
+> > modification.
+>
+> Indeed, but why does it matter?  In a CD is not the preferred form for
+> making modifications either.  In fact, in the CD, you can't modify it
+> at all.  What's *behind* encryption is the source code, along with the
+> binary it accompanies.
+>
+> >> And, if it's not a violation, what is it that makes the case of
+> >> shipping programs in a locked enclosure different from shipping them
+> >> in a locked computing device?
+>
+> > I honestly don't see what relevance this could possibly
+> > have. Getting access to the source is a fundamental GPL right.
+>
+> That's the spirit.  But where does the *letter* of the GPL state it?
 
-I agree with you about userland drivers but at minimum this would
-require merging the -rt kernel patches, otherwise the latency/jitter
-will be too high to do anything but toy desktop sounds, then you need
-a mergeable mechanism for doing DMA and interrupt handling in
-userspace.  It has been attempted before but never evolved to the
-point where you could drive a complex device like the emu10k1.
+I stand by my claim that any obstacle to obtaining and modifying any copy of
+the source code (and thus encumbering your ability to use it at all) would
+be a violation of both the letter and the spirit of the GPL. (As expressed
+in section 3.)
 
-Lee
+Until someplace you can't actually access the software is customarily used
+for software interchange, ...
+
+But I fear that your interpretation of section 7 is mostly correct. This is
+a defect in the GPL. At least as I understood it, the intent was to force
+distributors to remove any code for which there was a patent claim that
+might threaten redistribution. Section 7 fails to do that.
+
+While you are granted rights under copyright, section 7 does not prevent
+people from using other laws (so long as they don't impose the restrictions
+or agree to them) to hamer your right to redistribute (or for those who
+receive a distribution from you to lawfully use the work).
+
+It is quite difficult to actually arrange this. You would need something
+like a third party to indemnify your customers without your having to agree
+to such indemnification.
+
+DS
+
+
