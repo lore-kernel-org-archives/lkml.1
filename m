@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764181AbXF1Doi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764202AbXF1DuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764181AbXF1Doi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 23:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761109AbXF1Dob
+	id S1764202AbXF1DuT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 23:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761826AbXF1DuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 23:44:31 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:3229 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759994AbXF1Doa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 23:44:30 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Date: Wed, 27 Jun 2007 20:44:21 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKEELNEOAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <ory7i4zykp.fsf@oliva.athome.lsd.ic.unicamp.br>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 20:44:19 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 20:44:23 -0700
+	Wed, 27 Jun 2007 23:50:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46962 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759575AbXF1DuG (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 23:50:06 -0400
+Date: Thu, 28 Jun 2007 13:49:57 +1000
+From: David Chinner <dgc@sgi.com>
+To: mmarek@suse.cz
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] Fix XFS_IOC_FSBULKSTAT{,_SINGLE} and XFS_IOC_FSINUMBERS in compat mode
+Message-ID: <20070628034957.GE989688@sgi.com>
+References: <20070619132549.266927601@suse.cz> <20070619132726.893544847@suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070619132726.893544847@suse.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 19, 2007 at 03:25:52PM +0200, mmarek@suse.cz wrote:
+> * 32bit struct xfs_fsop_bulkreq has different size and layout of
+>   members, no matter the alignment. Move the code out of the #else
+>   branch (why was it there in the first place?). Define _32 variants of
+>   the ioctl constants.
+> * 32bit struct xfs_bstat is different because of time_t and on
+>   i386 becaus of different padding. Create a new formatter
+>   xfs_bulkstat_one_compat() that takes care of this. To do this, we need
+>   to make xfs_bulkstat_one_iget() and xfs_bulkstat_one_dinode()
+>   non-static.
+> * i386 struct xfs_inogrp has different padding. Introduce a similar
+>   "formatter" mechanism for xfs_inumbers: the native formatter is just a
+>   copy_to_user, the compat formatter takes care of the different layout
 
-> Alexandre Oliva writes:
->
-> >> Yes, but in the scenario I proposed, the source code *is* in the
-> >> preferred form for making modifications, it just so happens to be
-> >> behind a barrier you cannot trespass.  This is not different from
-> >> shipping binaries and sources in a CD inside a locked box that you
-> >> can't open.  You've received both, but how is the fact that you can't
-> >> reach the source code (or the binaries) a violation of the GPL in this
-> >> case?
->
-> > Behind a barrier is not the preferred form for modification.
->
-> Where does it state that there must not be a barrier?  I see it saying
-> the source must accompany the binary, under 3a.
->
-> > Encrypted with a key you don't have is not the preferred form for
-> > modification.
->
-> Indeed, but why does it matter?  In a CD is not the preferred form for
-> making modifications either.  In fact, in the CD, you can't modify it
-> at all.  What's *behind* encryption is the source code, along with the
-> binary it accompanies.
->
-> >> And, if it's not a violation, what is it that makes the case of
-> >> shipping programs in a locked enclosure different from shipping them
-> >> in a locked computing device?
->
-> > I honestly don't see what relevance this could possibly
-> > have. Getting access to the source is a fundamental GPL right.
->
-> That's the spirit.  But where does the *letter* of the GPL state it?
+Oh, wow, that is so much nicer than the first version, Michal. ;)
 
-I stand by my claim that any obstacle to obtaining and modifying any copy of
-the source code (and thus encumbering your ability to use it at all) would
-be a violation of both the letter and the spirit of the GPL. (As expressed
-in section 3.)
+Still, I think there's possibly one further revision:
 
-Until someplace you can't actually access the software is customarily used
-for software interchange, ...
+> +static int xfs_bulkstat_one_compat(
+> +	xfs_mount_t	*mp,		/* mount point for filesystem */
+> +	xfs_ino_t	ino,		/* inode number to get data for */
+> +	void		__user *buffer,	/* buffer to place output in */
+> +	int		ubsize,		/* size of buffer */
+> +	void		*private_data,	/* my private data */
+> +	xfs_daddr_t	bno,		/* starting bno of inode cluster */
+> +	int		*ubused,	/* bytes used by me */
+> +	void		*dibuff,	/* on-disk inode buffer */
+> +	int		*stat)		/* BULKSTAT_RV_... */
 
-But I fear that your interpretation of section 7 is mostly correct. This is
-a defect in the GPL. At least as I understood it, the intent was to force
-distributors to remove any code for which there was a patent claim that
-might threaten redistribution. Section 7 fails to do that.
+Hmmm - this is almost all duplicated code. It's pretty much what I
+described, but maybe not /quite/ what I had in mind here. It's a
+*big* improvement on the first version, but it seems now that the
+only real difference xfs_bulkstat_one() and
+xfs_bulkstat_one_compat() is copy_to_user() vs the discrete put_user
+calls.
 
-While you are granted rights under copyright, section 7 does not prevent
-people from using other laws (so long as they don't impose the restrictions
-or agree to them) to hamer your right to redistribute (or for those who
-receive a distribution from you to lawfully use the work).
+I think we can remove xfs_bulkstat_one_compat() completely by using
+the same method you used with the xfs_inumber_fmt functions. That
+would mean the only duplicated code is the initial ioctl handling
+(which we can't really avoid). It would also mean that there is no
+need to make xfs_bulkstat_one_iget() and xfs_bulkstat_one_dinode()
+non-static. Your thoughts?
 
-It is quite difficult to actually arrange this. You would need something
-like a third party to indemnify your customers without your having to agree
-to such indemnification.
+Other than that possible improvement, this looks really good.
 
-DS
+Cheers,
 
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
