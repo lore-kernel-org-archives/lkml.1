@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765557AbXF1UJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765699AbXF1UJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765557AbXF1UJQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 16:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760720AbXF1UJE
+	id S1765699AbXF1UJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 16:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762925AbXF1UJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 16:09:04 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:14570 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758926AbXF1UJC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 16:09:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mywvXZq2JPO3DF8qgKbquhIFs+O72ryW9P0cyu0V3tAUYn/JQxsMYy9Pd7fW2CN/s9smMTEeQOvIoo89QJxDmUM80XOZYZYd+88bsuhYF2uOOTQRuAUZzOJTmTzhyK+hFv3Eprc6BiQalhrJzdCmZAEYOH48+D7Fhwq1P5neCTM=
-Message-ID: <5486cca80706281309q473c6300l6bd221c361d3f5df@mail.gmail.com>
-Date: Thu, 28 Jun 2007 22:09:01 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: [Possible BUG] Logitech USB keyboard inconsistent led state
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706281923230.31463@twin.jikos.cz>
+	Thu, 28 Jun 2007 16:09:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49307 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758926AbXF1UJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 16:09:40 -0400
+Date: Thu, 28 Jun 2007 22:07:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070628200753.GA25330@elte.hu>
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu> <20070628111959.f7413d0e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5486cca80706270758x540f75a9vfdd4aa5b6a7d8e4f@mail.gmail.com>
-	 <Pine.LNX.4.64.0706272144280.9610@twin.jikos.cz>
-	 <5486cca80706280059pabcaa59u7f44440134490590@mail.gmail.com>
-	 <Pine.LNX.4.64.0706281923230.31463@twin.jikos.cz>
+In-Reply-To: <20070628111959.f7413d0e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/6/28, Jiri Kosina <jikos@jikos.cz>:
-> On Thu, 28 Jun 2007, Antonino Ingargiola wrote:
->
-> > $ cat /sys/bus/usb/devices/1-1.2/idVendor
-> > 046d
-> > $ cat /sys/bus/usb/devices/1-1.2/idProduct
-> > c311
->
-> Please try the patch below (against any post-2.6.22-rc1 kernel)
 
-Tried on 2.6.22-rc6-cfs18 and it works, thanks :)
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Now the led is off by default on boot but the state is consistent.
+> On Thu, 28 Jun 2007 18:00:01 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> >  with 1.2 usecs and 10,000 
+> > irqs/sec the cost is 1.2 msecs/sec, or 0.1%.
+> 
+> off-by-10 error.
 
-Can we have this patch in 2.6.22?
+yeah, indeed - 12 msecs and 1.2% :-/
 
-(Feel free to add a Tested off with my name is this make any sense in
-this case).
-
-
-Best Regards,
-
-    ~ Antonio
+	Ingo
