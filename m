@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932610AbXF1Wvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXF1WxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932610AbXF1Wvc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 18:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765495AbXF1WvS
+	id S932458AbXF1WxY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 18:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763913AbXF1WxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 18:51:18 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1823 "EHLO scrub.xs4all.nl"
+	Thu, 28 Jun 2007 18:53:16 -0400
+Received: from mail.tmr.com ([64.65.253.246]:44912 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765395AbXF1WvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 18:51:17 -0400
-Date: Fri, 29 Jun 2007 00:51:31 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
-In-Reply-To: <20070628232537.02ced21c@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0706290048290.1817@scrub.home>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
- <20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
- <20070628110644.a530cfef.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282017450.30789@anakin>
- <20070628113819.c24e592d.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282044360.30789@anakin>
- <20070628132947.e3378811.akpm@linux-foundation.org> <20070628232537.02ced21c@the-village.bc.nu>
+	id S1757619AbXF1WxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 18:53:16 -0400
+Message-ID: <46843C4E.2020405@tmr.com>
+Date: Thu, 28 Jun 2007 18:55:10 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Shaohua Li <shaohua.li@intel.com>, jamagallon@ono.com,
+       tigran@aivazian.fsnet.co.uk,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: New format Intel microcode...
+References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com> <1174610594.6598.3.camel@sli10-conroe.sh.intel.com> <6278d2220706261442u9b137c5xb6225b3f56605554@mail.gmail.com> <p731wfy5m74.fsf@bingen.suse.de> <4683BD56.7070707@tmr.com> <20070628152747.GA14519@one.firstfloor.org> <4683D762.7070609@redhat.com>
+In-Reply-To: <4683D762.7070609@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, 28 Jun 2007, Alan Cox wrote:
-
-> > check_signature() needs readb() but with some setups (s390, m68k allmodconfig)
-> > there is no implementation of readb.  This causes build errors with
-> > -Werror-implicit-function-declaration.
+Chuck Ebbert wrote:
+> On 06/28/2007 11:27 AM, Andi Kleen wrote:
+>> But the problem is very obscure and you can likely ignore it too. If your 
+>> machine crashes it's very likely something else.
 > 
-> This completely bogus. readb() should be present on M68K, fix the
-> platform to implement readb() for MMIO, even if your MMIO readb is a
-> moveb instruction.
+> What about deliberate exploits of these bugs from userspace? Theo thinks
+> they are possible...
 > 
-> check_signature is relevant for anything with MMIO space (for example you
-> can legitimately want to check_signature a MAC68K Nubus ROM).
+Do you have any details? One of the folks in a chat was saying something 
+similar, but thought that causing as crash was the extent of it, rather 
+than any access violation. Obviously I don't know the extent of that 
+claim, so more information would be good.
 
-A generic check_signature() is a little difficult if we have separate io 
-functions for every bus.
-
-bye, Roman
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
