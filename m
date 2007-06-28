@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763295AbXF1Oxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXF1O62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763295AbXF1Oxb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbXF1OxT
+	id S1762171AbXF1O62 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 10:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbXF1O6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:53:19 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3711 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755969AbXF1OxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:53:18 -0400
-Date: Thu, 28 Jun 2007 14:53:08 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that through other means
-Message-ID: <20070628145308.GD5339@ucw.cz>
-References: <467994BD.6000403@zytor.com> <20070620210343.GQ21478@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070620210343.GQ21478@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.9i
+	Thu, 28 Jun 2007 10:58:21 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59027 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755418AbXF1O6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 10:58:20 -0400
+X-Authenticated: #1474915
+X-Provags-ID: V01U2FsdGVkX19IsCtPJtpIrKQGSQ7Pk3mmaZn+NMGDpcEL2UHvCQ
+	YkPlylyeawExdl
+Message-ID: <4683CC89.80406@gmx.de>
+Date: Thu, 28 Jun 2007 16:58:17 +0200
+From: Thomas Sattler <tsattler@gmx.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.22-rc6 spurious hangs
+References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru>
+In-Reply-To: <20070628144741.GA437@tv-sign.ru>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > ... or, alternatively, add a subfield to the first field (which would
-> > entail escaping whatever separator we choose):
-> > 
-> > /dev/md6 /export ext3 rw,data=ordered 0 0
-> > /dev/md6:/users/foo /home/foo ext3 rw,data=ordered 0 0
-> > /dev/md6:/users/bar /home/bar ext3 rw,data=ordered 0 0
+>> As Ingo told me I run 'echo t > /proc/sysrq-trigger' this time. The
+>> corresponding part of my syslogs is attached, as well as my kernel config.
 > 
-> Hell, no.  The first field is in principle impossible to parse unless
-> you know the fs type.
-> 
-> How about making a new file with sane format?  From the very
+> Could you try the patch below? It dumps some info when flush_workqueue()
+> hangs.
 
-Well, what about /sysfs, with its one value per file rule?
+I'm compiling a patched kernel right now. As I wrote in my former mail the
+whole thing not easy to trigger. So it can take some time to get the info.
 
-							Pavel
+Thanks so far,
+Thomas
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+keep mailinglists in english, feel free to send PM in german
