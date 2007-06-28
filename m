@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbXF1Wm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932144AbXF1Wpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbXF1Wm2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 18:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764917AbXF1WmV
+	id S932144AbXF1Wpk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 18:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763129AbXF1Wpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 18:42:21 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47090 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755669AbXF1WmU (ORCPT
+	Thu, 28 Jun 2007 18:45:33 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:49365 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1759771AbXF1Wpc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 18:42:20 -0400
-Date: Thu, 28 Jun 2007 23:48:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: William D Waddington <william.waddington@beezmo.com>,
-       Helge Hafting <helge.hafting@aitel.hist.no>,
-       linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: Please release a stable kernel Linux 3.0
-Message-ID: <20070628234807.4c446062@the-village.bc.nu>
-In-Reply-To: <46842F7B.1010105@gmail.com>
-References: <fa.ZV8hYZHQHqzfx1dgOFeEVFRogSg@ifi.uio.no>
-	<oor483d2nqn6ae728com1v7v56g0ksotov@4ax.com>
-	<4683983E.5020103@aitel.hist.no>
-	<4683D3B0.1040708@beezmo.com>
-	<20070628173051.4a3422c0@the-village.bc.nu>
-	<46842F7B.1010105@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 28 Jun 2007 18:45:32 -0400
+Date: Thu, 28 Jun 2007 18:45:11 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
+Message-ID: <20070628224511.GA12447@c2.user-mode-linux.org>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <20070628133715.GA4343@osiris.boeblingen.de.ibm.com> <20070628110644.a530cfef.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282017450.30789@anakin> <20070628113819.c24e592d.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282044360.30789@anakin> <20070628132947.e3378811.akpm@linux-foundation.org> <20070628232537.02ced21c@the-village.bc.nu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070628232537.02ced21c@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jun 2007 00:00:27 +0200
-Rene Herman <rene.herman@gmail.com> wrote:
-
-> On 06/28/2007 06:30 PM, Alan Cox wrote:
+On Thu, Jun 28, 2007 at 11:25:37PM +0100, Alan Cox wrote:
+> This completely bogus. readb() should be present on M68K, fix the
+> platform to implement readb() for MMIO, even if your MMIO readb is a
+> moveb instruction.
 > 
-> > Public domain is GPL compatible.
+> check_signature is relevant for anything with MMIO space (for example you
+> can legitimately want to check_signature a MAC68K Nubus ROM).
 > 
-> Would you happen to have an opinion on the attached? I don't so much need it 
+> S/390 is a bit of a special case as no S/390 usage of check_signature
+> appears sane but equally it isn't used so you can stub it out.
 
-The answer is "NO!!!!"
+This is a problem for UML too.
 
-Public domain also means "I don't have to give you the source".
-If its merged with the kernel the resulting work is GPL anyway
+I have a patch in my tree, which basically stubs readb, waiting to see
+how this is fixed for the other arches.
 
-> Stating that code which one intends to be in the public domain has "GPL and 
-> additional rights" is a bit of a travesty though.
+				Jeff
 
-Indeed if its public domain you may have almost no rights at all
-depending what you were given. Once you get the source code you can do
-stuff but I don't have to give you that. If its public domain I can find
-security holes in it, and refuse to provide the fixed module in source
-form even.
-
-(And public domain is a pretty 'brave' choice of licence as in many
-countries it does not imply any of the no warranty stuf the GPL does).
-
-So essentially, if its public domain and you put a copy in the kernel GPL
-the kernel copy. It doesn't mean the PD version ceased to be PD. If you
-want to keep it PD then also ask that anyone contributing to the GPL
-version also sends you a PD version of any changes. (They may not but
-then right now they dont have to anyway)
-
-Alan
+-- 
+Work email - jdike at linux dot intel dot com
