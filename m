@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXF1WJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXF1WOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932207AbXF1WJh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 18:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763876AbXF1WJ2
+	id S932097AbXF1WOA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 18:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763343AbXF1WNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 18:09:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56768 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763453AbXF1WJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 18:09:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-Date: Fri, 29 Jun 2007 00:16:44 +0200
-User-Agent: KMail/1.9.5
-Cc: David Chinner <dgc@sgi.com>, linux-pm <linux-pm@lists.osdl.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, LinuxRaid <linux-raid@vger.kernel.org>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       David Robinson <zxvdr.au@gmail.com>, David Greaves <david@dgreaves.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-References: <46744065.6060605@dgreaves.com> <200706281727.35430.rjw@sisk.pl> <20070628220045.GA4521@elf.ucw.cz>
-In-Reply-To: <20070628220045.GA4521@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 28 Jun 2007 18:13:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50685 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757145AbXF1WNx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 18:13:53 -0400
+Date: Thu, 28 Jun 2007 15:12:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] frv: fix fallout from "remove sched.h from mm.h" patch
+Message-Id: <20070628151257.7a03e81b.akpm@linux-foundation.org>
+In-Reply-To: <20070628140921.GA9753@localhost.sw.ru>
+References: <20070628140921.GA9753@localhost.sw.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706290016.45719.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 29 June 2007 00:00, Pavel Machek wrote:
-> On Thu 2007-06-28 17:27:34, Rafael J. Wysocki wrote:
-> > On Wednesday, 27 June 2007 22:49, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > FWIW, I'm on record stating that "sync" is not sufficient to quiesce an XFS
-> > > > filesystem for a suspend/resume to work safely and have argued that the only
-> > > 
-> > > Hmm, so XFS writes to disk even when its threads are frozen?
-> > > 
-> > > > safe thing to do is freeze the filesystem before suspend and thaw it after
-> > > > resume. This is why I originally asked you to test that with the other problem
-> > > 
-> > > Could you add that to the XFS threads if it is really required? They
-> > > do know that they are being frozen for suspend.
-> > 
-> > Well, do you remember the workqueues?  They are still nonfreezable.
+On Thu, 28 Jun 2007 18:09:21 +0400
+Alexey Dobriyan <adobriyan@sw.ru> wrote:
+
+> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+> ---
 > 
-> Oops, that would explain it :-(. Can we make XFS stop using them?
+>  include/asm-frv/pgtable.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/include/asm-frv/pgtable.h
+> +++ b/include/asm-frv/pgtable.h
+> @@ -25,7 +25,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/list.h>
+>  #include <linux/spinlock.h>
+> -struct mm_struct;
+> +#include <linux/sched.h>
+>  struct vm_area_struct;
+>  #endif
+>  
 
-I'm afraid that we can't.
+Please provide changelogs.
 
-There are two solutions possible, IMO.  One would be to make these workqueues
-freezable, which is possible, but hacky and Oleg didn't like that very much.
-The second would be to freeze XFS from within the hibernation code path,
-using freeze_bdev().
+I assume this patch fixes some build error or something.
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
