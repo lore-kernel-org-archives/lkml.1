@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbXF1LnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763677AbXF1Lob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762071AbXF1LnW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 07:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbXF1LnN
+	id S1763677AbXF1Lob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 07:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXF1LoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 07:43:13 -0400
-Received: from smtpout.mac.com ([17.250.248.184]:56646 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757308AbXF1LnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 07:43:12 -0400
-In-Reply-To: <200706280230.42515.ak@suse.de>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de> <20070627173240.GR1094@stusta.de> <B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com> <200706280230.42515.ak@suse.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <88515A48-E155-48A7-8EAE-095B080EAFE4@mac.com>
-Cc: Adrian Bunk <bunk@stusta.de>, LKML Kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, david@lang.hm,
-       linux-arch@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Userspace compiler support of "long long"
-Date: Thu, 28 Jun 2007 07:42:46 -0400
-To: Andi Kleen <ak@suse.de>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Thu, 28 Jun 2007 07:44:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55980 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757300AbXF1LoX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 07:44:23 -0400
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070628084003.GQ13886@enneenne.com>
+References: <20070627101449.GH13886@enneenne.com>
+	 <1182939510.6409.17.camel@pmac.infradead.org>
+	 <20070627125802.GI13886@enneenne.com>
+	 <1182960660.1170.12.camel@pmac.infradead.org>
+	 <20070627174537.GM13886@enneenne.com>
+	 <1182966588.1170.28.camel@pmac.infradead.org>
+	 <20070627224623.GO13886@enneenne.com>
+	 <1183018133.1170.46.camel@pmac.infradead.org>
+	 <20070628081538.GP13886@enneenne.com>
+	 <1183019474.1170.66.camel@pmac.infradead.org>
+	 <20070628084003.GQ13886@enneenne.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 28 Jun 2007 12:44:20 +0100
+Message-Id: <1183031060.1170.145.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 27, 2007, at 20:30:42, Andi Kleen wrote:
-> On Thursday 28 June 2007 00:30:52 Kyle Moffett wrote:
->> The only trick is if you care about building 32-bit compat code  
->> using 64-bit linux kernel headers.  In that case we should  
->> probably just make all archs use "long long" for their 64-bit  
->> integers, unless there's some platform I'm not remembering where  
->> "long long" is 128-bits or bigger.  The other benefit is that  
->> people could then just use the printf format "%llu" for 64-bit  
->> integers instead of having to conditionalize it all over the place.
->>
->> I'm working on a patch now.
->
-> Changing this will give you a zillion warnings for printk formats.
+On Thu, 2007-06-28 at 10:40 +0200, Rodolfo Giometti wrote:
+> On Thu, Jun 28, 2007 at 09:31:14AM +0100, David Woodhouse wrote:
+> > On Thu, 2007-06-28 at 10:15 +0200, Rodolfo Giometti wrote:
+> > > Do you think I should add these functions into my patch, even if I
+> > > cannot test it, or it's enought providing just the
+> > > compat_sys_time_pps_fetch() function? 
+> > 
+> > Probably best to put them in. That way, you make it easier for people to
+> 
+> Mmm... so I should provide new syscalls for _all_
+> architectures... gulp! :)
 
-Why?  If this were a problem then we'd be getting a zillion warnings  
-*now* from all the 32-bit archs (which already use "long long" for 64- 
-bit.  This would actually make it _easier_ to get the printk formats  
-right, as you could always use %ull for 64-bit types without having  
-to cast for 64-bit platforms.
+It's nice if you can do so, but I wouldn't suggest that you _have_ to.
+I have to admit that I rarely bother actually wiring new system calls up
+on anything but PowerPC to start with.
 
-This is another way to get around the "build 32-bit-compat userspace  
-on 64-bit kernel headers" problem:  It tells GCC to use the  
-"smallest" available type of the given size, which ends up being  
-exactly the types we use now.  On the other hand, it only works for  
-GCC which sort of ruins most of the reason for changing the types in  
-the first place.
+The important thing is that you've _considered_ the other architectures,
+and the 32/64 compatibility implications. As long as the API of your new
+system call is sensible and takes that kind of thing into account, it
+should be fine.
 
-typedef   signed __s8  __attribute__((__mode__(__QI__)));
-typedef unsigned __u8  __attribute__((__mode__(__QI__)));
-typedef   signed __s16 __attribute__((__mode__(__HI__)));
-typedef unsigned __u16 __attribute__((__mode__(__HI__)));
-typedef   signed __s32 __attribute__((__mode__(__SI__)));
-typedef unsigned __u32 __attribute__((__mode__(__SI__)));
-typedef   signed __s64 __attribute__((__mode__(__DI__)));
-typedef unsigned __u64 __attribute__((__mode__(__DI__)));
+Had you considered changing the API so that you don't need the
+compatibility wrapper at all? Could you take an integer number of µS or
+ms instead of a struct timespec?
 
-Cheers,
-Kyle Moffett
+-- 
+dwmw2
 
