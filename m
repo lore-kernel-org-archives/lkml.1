@@ -1,139 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932143AbXF1Vsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932143AbXF1Vxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932143AbXF1Vsc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 17:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761166AbXF1VsX
+	id S932143AbXF1Vxe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 17:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761868AbXF1Vx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 17:48:23 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4049 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762154AbXF1VsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 17:48:21 -0400
-Date: Thu, 28 Jun 2007 23:48:28 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>,
+	Thu, 28 Jun 2007 17:53:26 -0400
+Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:42611 "HELO
+	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760948AbXF1Vx0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 17:53:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=cWudFtX6VmX4VNFrvu3Md/13o+lzYRexQL5fx6Iuycio+2GzTten+IdIYQZGQAmEwbNlg4m1UtMh5HME3b9Y2TI7tuGF9Bg4MPKe2B+LeulqZPxOEFwJFoCCxacYmCojLD2yVfht9ZNVgLwrF1WrRaNGT3SFlH8YUXY7ob5noyE=  ;
+X-YMail-OSG: BvqrP20VM1muGkoPeRdqMg3p3nnN_h729bTN4UAfOCMWi0zjsGQjhHJbqQiOJQSao.ynbfaosT55Igw3k4_VUs4m1RuCJ1zkDnVRepvIL_waImG9yLg-
+From: David Brownell <david-b@pacbell.net>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Subject: Re: [PATCH] PXA27x UDC driver.
+Date: Thu, 28 Jun 2007 14:53:22 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-usb-devel@lists.sourceforge.net,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Arch <linux-arch@vger.kernel.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] cross-architecture ELF clean up
-In-Reply-To: <4683D78E.6080309@goop.org>
-Message-ID: <Pine.LNX.4.64.0706282319350.1817@scrub.home>
-References: <20070620230854.246399397@goop.org> <20070620230902.387008536@goop.org>
- <Pine.LNX.4.64.0706251531110.4386@scrub.home> <468168FD.1080200@goop.org>
- <Pine.LNX.4.64.0706280027100.4890@scrub.home> <4683D78E.6080309@goop.org>
+       Li Yang-r58472 <LeoLi@freescale.com>
+References: <20070628103619.GW13886@enneenne.com> <989B956029373F45A0B8AF0297081890D834FA@zch01exm26.fsl.freescale.net> <20070628141205.GA13886@enneenne.com>
+In-Reply-To: <20070628141205.GA13886@enneenne.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706281453.23414.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thursday 28 June 2007, Rodolfo Giometti wrote:
 
-On Thu, 28 Jun 2007, Jeremy Fitzhardinge wrote:
-
-> Roman Zippel wrote:
-> > This could be avoided by reordering things within elf.h, but is it really
-> > necessary since there is no user of this right now?
-> >   
+> As suggest by Leo let me propose to you my new patch for PXA27x UDC
+> support.
 > 
-> Well, yes, I don't have much need to include ELF headers in asm now, but I
-> still think its worth separating the arch-specific definitions from asm/elf.h
-> and all the other stuff they pull in.  Specifically, the structure forward
-> declarations and constants have very few external dependencies, but the
-> structure definitions - particularly the arch-specific ones - have very wide
-> dependencies, which is what I'm trying to solve.  Very few pieces of code care
-> about the arch-specific structures.
+> Please, let me know what I have to do for kernel inclusion. :)
 
-The problem I have is that you want to separate _all_ constants, which 
-doesn't really make sense to me, because many of them are useless without 
-the correspending structures.
+Let's start with *JUST* a driver, not trying to update everything
+else in the USB Gadget stack so that it looks like it's designed
+specifically to handle all of Intel's design botches related to
+endpoint config ... and work worse for essentially everything else.
 
-> > module.h does indeed pull in way too much, but instead of hacking headers
-> > into little pieces, IMO it would be better to solve the real problem.
-> >   
-> 
-> No, that's not the real problem; its a side-effect of the real problem.  The
-> real problem is that linux/elf.h ends up bringing in too much.
+(Unlike pretty much every other vendor, Intel wanted hardware config
+management.  It was unusably buggy in pxa21x/25x/26x, and not much
+better in pxa27x.)
 
-Please define the problem more specific. :)
 
->  arch/powerpc,
-> for example, has its own stripped down copy of elf.h for bootloader stuff in
-> order to avoid this extra crud.  The fix is to make it possible to get just
-> the appropriate ELF definitions without getting everything else.
+So in technical terms, and to repeat what I've said before:  just
+configure it to act more like a PXA 25x chip (no altsettings) and
+get it so it passes all the tests [1], modulo errata which have no
+workarounds ... then submit that.  No epautoconfig updates, no
+patches to every gadget driver to cope with updated autoconfig.
 
-The bootloader is no kernel code and thus the elf header pull in a lot 
-less:
+Once there's a basic working no-frills version merged, then we can
+talk about whether things in the rest of the stack should change
+to accomodate the bizarre concepts of this controller.
 
-$ gcc -c foo.c -Iusr/include --trace-includes
-. usr/include/linux/elf.h
-.. usr/include/linux/types.h
-... usr/include/linux/posix_types.h
-.... usr/include/linux/stddef.h
-.... usr/include/asm/posix_types.h
-... usr/include/asm/types.h
-.. usr/include/linux/auxvec.h
-... usr/include/asm/auxvec.h
-.. usr/include/linux/elf-em.h
-.. usr/include/asm/elf.h
-... usr/include/asm/ptrace.h
-.... usr/include/asm/ptrace-abi.h
-... usr/include/asm/user.h
-.... usr/include/asm/page.h
+- Dave
 
-One could remove ptrace.h but otherwise the result looks quite reasonable.
 
-> There's the secondary problem that lots of ELF stuff is copy'n'paste
-> duplicated across all the architectures, but all they really care about is one
-> of two sets of parallel definitions (32 or 64 ELF structures).  That was the
-> secondary
-
-Some of it you could put into linux/elf, e.g.:
-
-#if ELF_CLASS == ELFCLASS32
-
-typedef Elf32_Ehdr     Elf_Ehdr;
-typedef Elf32_Phdr     Elf_Phdr;
-typedef Elf32_Shdr     Elf_Shdr;
-typedef Elf32_Sym      Elf_Sym;
-typedef Elf32_Dyn      Elf_Dyn;
-typedef Elf32_Rel      Elf_Rel;
-typedef Elf32_Rela     Elf_Rela;
-
-typedef Elf32_Addr     Elf_Addr;
-
-#elif ELF_CLASS == ELFCLASS64
-
-typedef Elf64_Ehdr     Elf_Ehdr;
-typedef Elf64_Phdr     Elf_Phdr;
-typedef Elf64_Shdr     Elf_Shdr;
-typedef Elf64_Sym      Elf_Sym;
-typedef Elf64_Dyn      Elf_Dyn;
-typedef Elf64_Rel      Elf_Rel;
-typedef Elf64_Rela     Elf_Rela;
-
-typedef Elf64_Addr     Elf_Addr;
-
-#else
-#error
-#endif
-
-> > I played with it a little and the patch below moves a lot stuff out of
-> > module.h, so this would drastically reduce the header dependencies.
-> > Unless there are major objections, I can test the patch a little more and
-> > convert the other archs.
-> >   
-> 
-> Well, it seems like a large fiddly patch which only solves part of the problem
-> I want to solve; actually it doesn't help me at all, but it achieves one of
-> the side-effects of my patch. The arch changes make it look pretty awkward to
-> merge.
-
-The patch does help you quite a bit, you don't have to cleanup elf.h so 
-it's usable by the whole kernel. Only few parts now really need it and 
-depend on it, which makes the extensive splitup unnecessary only to 
-reduce header dependencies.
-
-bye, Roman
+[1] http://www.linux-usb.org/usbtest/
