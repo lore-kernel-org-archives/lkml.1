@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763801AbXF0X5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763006AbXF1ASM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763801AbXF0X5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 19:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763187AbXF0X5L
+	id S1763006AbXF1ASM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 20:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbXF1AR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 19:57:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59410 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761839AbXF0X5L (ORCPT
+	Wed, 27 Jun 2007 20:17:58 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2422 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbXF1AR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 19:57:11 -0400
-Date: Wed, 27 Jun 2007 16:56:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mel@skynet.ie (Mel Gorman)
-Cc: alexn@telia.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow PAGE_OWNER to be set on any architecture
-Message-Id: <20070627165651.1ffb72d7.akpm@linux-foundation.org>
-In-Reply-To: <20070608125349.GA8444@skynet.ie>
-References: <20070608125349.GA8444@skynet.ie>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 20:17:57 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 27 Jun 2007 17:17:54 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Nicholas Miell <nmiell@comcast.net>
+cc: Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@gmail.com>,
+       blaisorblade@yahoo.it,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
+In-Reply-To: <1182982309.2737.9.camel@entropy>
+Message-ID: <Pine.LNX.4.64.0706271642340.3879@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
+ <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
+ <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
+ <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
+ <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com> 
+ <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com> 
+ <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com> 
+ <Pine.LNX.4.64.0706271111040.32731@alien.or.mcafeemobile.com> 
+ <Pine.LNX.4.64.0706271921280.29060@blonde.wat.veritas.com> 
+ <Pine.LNX.4.64.0706271135560.32731@alien.or.mcafeemobile.com>
+ <1182982309.2737.9.camel@entropy>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007 13:53:49 +0100
-mel@skynet.ie (Mel Gorman) wrote:
+On Wed, 27 Jun 2007, Nicholas Miell wrote:
 
-> Currently PAGE_OWNER depends on CONFIG_X86. This appears to be due to
-> pfn_to_page() being called in an inappropriate for many memory models
-> and the presense of memory holes. This patch ensures that pfn_valid()
-> and pfn_valid_within() is called at the appropriate places and the offsets
-> correctly updated so that PAGE_OWNER is safe on any architecture.
-> 
-> In situations where CONFIG_HOLES_IN_ZONES is set (IA64 with VIRTUAL_MEM_MAP),
-> there may be cases where pages allocated within a MAX_ORDER_NR_PAGES block
-> of pages may not be displayed in /proc/page_owner if the hole is at the
-> start of the block. Addressing this would be quite complex, perform slowly
-> and is of no clear benefit.
-> 
-> Once PAGE_OWNER is allowed on all architectures, the statistics for grouping
-> pages by mobility that declare how many pageblocks contain mixed page types
-> becomes optionally available on all arches.
-> 
-> This patch was tested successfully on x86, x86_64, ppc64 and IA64 machines.
+> 1) euid is not sufficient, you need to store away arbitrary LSM
+> information and call LSM hooks to decide security equivalence. The same
+> applies to VServer or whatever other container system you use.
 
-I'm kinda mystified about how you successfully tested this on ppc64 and
-ia64.  They don't assemble and execute i386 opcodes?
+The EUID that is used now, can easily be any cookie. It can be an LSM 
+cookie (if LSM is active in the system). We don't do complex checks, like 
+group permission & Co.  We assume that if a UID-cookie had such data 
+available (or it generated it), it can have it back uncleared.
 
 
---- a/mm/page_alloc.c~allow-page_owner-to-be-set-on-any-architecture-fix
-+++ a/mm/page_alloc.c
-@@ -1498,13 +1498,15 @@ static inline void __stack_trace(struct 
- #endif
- }
- 
--static inline void set_page_owner(struct page *page,
--			unsigned int order, unsigned int gfp_mask)
-+static void set_page_owner(struct page *page, unsigned int order,
-+			unsigned int gfp_mask)
- {
--	unsigned long address, bp;
-+	unsigned long address;
-+	unsigned long bp = 0;
- #ifdef CONFIG_X86_64
- 	asm ("movq %%rbp, %0" : "=r" (bp) : );
--#else
-+#endif
-+#ifdef CONFIG_X86_32
- 	asm ("movl %%ebp, %0" : "=r" (bp) : );
- #endif
- 	page->order = (int) order;
-_
 
-that'll make it build, but it won't work...
+> 2) Two processes, A and B, are in separate VFS namespaces but have
+> equivalent security identity according to LSM. Process A reads data from
+> file F which is not visible in process's B's namespace. You have to
+> prevent process B from ever getting a page that once contained data from
+> file F.
+
+They have the *same* security identity. It means that at any time such 
+security identity can access resources on both VFS (if it is allowed to 
+access such resources - according to security rules in place, LSM or not).
+Data is either generated by the security identity, or it is faulted in 
+(and it means that the security identity had the GO from the security 
+provisioning to access such resource).
+
+
+
+> 3) mlock() is often used by programs like GPG to prevent decrypted
+> secret keys from ever getting swapped out. You need to zero all
+> once-mlocked pages before they get reused to prevent that page from
+> getting swapped to disk or application bugs from leaking the key.
+
+GPG and other security software do also memclear on top of mlock, to 
+prevent such memory staying alive at all. Just for example, you don't want 
+in any case that after an munlock you app core and data goes down.
+
+
+
+- Davide
+
+
