@@ -1,84 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765229AbXF1R45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765222AbXF1R6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765229AbXF1R45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 13:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759676AbXF1R4t
+	id S1765222AbXF1R6I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 13:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762828AbXF1R5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 13:56:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39638 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755430AbXF1R4s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 13:56:48 -0400
-Date: Thu, 28 Jun 2007 10:56:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Morris <jmorris@namei.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/7] ICH Force HPET: Make generic time capable of
- switching broadcast timer
-Message-Id: <20070628105624.8ab42a17.akpm@linux-foundation.org>
-In-Reply-To: <Line.LNX.4.64.0706280808140.11719@localhost.localdomain>
-References: <20070622203822.GA22807@linux-os.sc.intel.com>
-	<20070628001221.364438ce.akpm@linux-foundation.org>
-	<20070628012749.caf450f6.akpm@linux-foundation.org>
-	<Line.LNX.4.64.0706280808140.11719@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 28 Jun 2007 13:57:55 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:48895 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755430AbXF1R5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 13:57:53 -0400
+Date: Thu, 28 Jun 2007 23:27:57 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Andreas Dilger <adilger@clusterfs.com>, suparna@in.ibm.com,
+       cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 0/6][TAKE5] fallocate system call
+Message-ID: <20070628175757.GA1674@amitarora.in.ibm.com>
+References: <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070628025543.9467216f.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070628025543.9467216f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007 08:12:48 -0400 (EDT) James Morris <jmorris@namei.org> wrote:
-
-> > My fix:
+On Thu, Jun 28, 2007 at 02:55:43AM -0700, Andrew Morton wrote:
+> On Mon, 25 Jun 2007 18:58:10 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
 > 
-> This should work.
+> > N O T E: 
+> > -------
+> > 1) Only Patches 4/7 and 7/7 are NEW. Rest of them are _already_ part
+> >    of ext4 patch queue git tree hosted by Ted.
 > 
+> Why the heck are replacements for these things being sent out again when
+> they're already in -mm and they're already in Ted's queue (from which I
+> need to diligently drop them each time I remerge)?
+> 
+> Are we all supposed to re-review the entire patchset (or at least #4 and
+> #7) again?
 
-uh, OK, surprised.
+As I mentioned in the note above, only patches #4 and #7 were new and
+thus these needed to be reviewed. Other patches are _not_ replacements
+of any of the patches which are already part of -mm and/or in Ted's
+patch queue. They were posted again as just "placeholders" so that the
+two new patches (#4 & #7) could be reviewed. Sorry for any confusion.
+ 
+> Please drop the non-ext4 patches from the ext4 tree and send incremental
+> patches against the (non-ext4) fallocate patches in -mm.
 
-Completer version:
+Please let us know what you think of Mingming's suggestion of posting
+all the fallocate patches including the ext4 ones as incremental ones
+against the -mm.
 
---- a/security/selinux/hooks.c~git-selinux-disable-mmap_min_addr-by-default
-+++ a/security/selinux/hooks.c
-@@ -112,9 +112,6 @@ int selinux_enabled = 1;
- /* Original (dummy) security module. */
- static struct security_operations *original_ops = NULL;
- 
--/* Did we enable minimum mmap address checking? */
--static int enabled_mmap_min_addr;
--
- /* Minimal support for a secondary security module,
-    just to allow the use of the dummy or capability modules.
-    The owlsm module can alternatively be used as a secondary
-@@ -4917,15 +4914,6 @@ static __init int selinux_init(void)
- 					    sizeof(struct inode_security_struct),
- 					    0, SLAB_PANIC, NULL, NULL);
- 
--	/*
--	 * Tasks cannot mmap below this without the mmap_zero permission.
--	 * If not enabled already, do so by setting it to 64KB.
--	 */
--	if (mmap_min_addr == 0) {
--		enabled_mmap_min_addr = 1;
--		mmap_min_addr = 65536;
--	}
--
- 	avc_init();
- 
- 	original_ops = secondary_ops = security_ops;
-@@ -5076,10 +5064,6 @@ int selinux_disable(void)
- 	selinux_disabled = 1;
- 	selinux_enabled = 0;
- 
--	/* Disable minimum mmap address check only if we enabled it */
--	if (enabled_mmap_min_addr)
--		mmap_min_addr = 0;
--
- 	/* Reset security_ops to the secondary module, dummy or capability. */
- 	security_ops = secondary_ops;
- 
-_
-
+--
+Regards,
+Amit Arora
