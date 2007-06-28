@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763399AbXF1Oto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763631AbXF1Ot7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763399AbXF1Oto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbXF1Osz
+	id S1763631AbXF1Ot7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 10:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762792AbXF1OtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:48:55 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2984 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761657AbXF1Osx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:48:53 -0400
-Date: Thu, 28 Jun 2007 14:25:32 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rjw@sisk.pl>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
-Message-ID: <20070628142532.GC5339@ucw.cz>
-References: <200706192118.23706.nigel@nigel.suspend2.net>
+	Thu, 28 Jun 2007 10:49:23 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43596 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761970AbXF1OtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 10:49:22 -0400
+Subject: [PATCH 2.6.22-rc6-mm1] compile error when CONFIG_DM_NETLINK is not
+	defined
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Mike Anderson <andmike@us.ibm.com>,
+       Alasdair G Kergon <agk@redhat.com>
+In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 28 Jun 2007 09:49:17 -0500
+Message-Id: <1183042157.9880.9.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706192118.23706.nigel@nigel.suspend2.net>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 2007-06-28 at 03:43 -0700, Andrew Morton wrote:
+> -agk-dm-dm-use-singlethread-workqueues.patch
+> +agk-dm-dm-use-singlethread-workqueues.patch
+> +agk-dm-dm-snapshot-fix-invalidation-deadlock.patch
+> +agk-dm-dm-snapshot-permit-invalid-activation.patch
+> +agk-dm-dm-raid1-clear-region-outside-spinlock.patch
+> +agk-dm-dm-netlink.patch
+> +agk-dm-dm-netlink-add-to-core.patch
+> +agk-dm-dm-netlink-mpath.patch
+> +agk-dm-dm-mpath-rdac.patch
+> 
+>  device mapper tree updates 
 
-> Hi all
-> 
-> Here's what I have after today's work.
-> 
-> I haven't yet been able to test on x86, but can confirm that it works okay on x86_64. I'm currently working towards testing it on my old Omnibook. My P4 desktop won't resume from suspend to ram at all, and hasn't produced any beeps.
-> 
-> I needed to move the BEEP invocation to after the data segment is reloaded, so that the test could access the variable. That was pretty tricky to find - no oops or anything bad prior, it just didn't beep when expected.
-> 
-> A couple of notes:
-> 
-> - I'd like to put the BEEP macro somewhere that can be shared by x86 32 and 64. If that's a good idea, any suggestions on where? Nothing occurs to me straight off.
-> - I've just switched from Evo to Kmail. Please let me know if there's any mangling of the patch.
-> 
-> Regards,
-> 
-> Nigel
-> 
->  arch/i386/kernel/acpi/wakeup.S   |   29 ++++++++++++++++++++++++++++-
->  arch/x86_64/kernel/acpi/wakeup.S |   25 +++++++++++++++++++++++++
->  include/linux/acpi.h             |    1 +
->  kernel/power/main.c              |   23 +++++++++++++++++++++++
->  4 files changed, 77 insertions(+), 1 deletion(-)
-> diff -ruNp 970-str-beep.patch-old/arch/i386/kernel/acpi/wakeup.S 970-str-beep.patch-new/arch/i386/kernel/acpi/wakeup.S
-> --- 970-str-beep.patch-old/arch/i386/kernel/acpi/wakeup.S	2007-06-19 12:15:25.000000000 +1000
-> +++ 970-str-beep.patch-new/arch/i386/kernel/acpi/wakeup.S	2007-06-19 21:14:49.000000000 +1000
-> @@ -11,7 +11,22 @@
->  #
->  # If physical address of wakeup_code is 0x12345, BIOS should call us with
->  # cs = 0x1234, eip = 0x05
-> -# 
-> +#
-> +
-> +#define BEEP \
-> +	inb	$97, %al; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$3, %al; 	\
-> +	outb	%al, $97; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$-74, %al; 	\
-> +	outb	%al, $67; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$-119, %al; 	\
-> +	outb	%al, $66; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$15, %al; 	\
-> +	outb	%al, $66;
->  
->  ALIGN
->  	.align	4096
-> @@ -31,6 +46,11 @@ wakeup_code:
->  	movw	%cs, %ax
->  	movw	%ax, %ds					# Make ds:0 point to wakeup_start
->  	movw	%ax, %ss
-> +
-> +	testl   $1, beep_flags - wakeup_code
-> +	jz      1f
-> +	BEEP
-> +1:
+I got this compile error:
 
-Can we rename/reuse existing flag variable?
+  LD      drivers/md/built-in.o
+drivers/md/dm-multipath.o: In function `dm_path_event':
+drivers/md/dm-netlink.h:56: multiple definition of `dm_path_event'
+drivers/md/dm-mod.o:drivers/md/dm-netlink.h:56: first defined here
+drivers/md/dm-multipath.o: In function `dm_netlink_send_events':
+drivers/md/dm-netlink.h:51: multiple definition of `dm_netlink_send_events'
+drivers/md/dm-mod.o:drivers/md/dm-netlink.h:51: first defined here
+make[2]: *** [drivers/md/built-in.o] Error 1
+
+I was able to fix it by making the dummy inline functions static.
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+diff -Nurp linux-2.6.22-rc6-mm1/drivers/md/dm-netlink.h linux/drivers/md/dm-netlink.h
+--- linux-2.6.22-rc6-mm1/drivers/md/dm-netlink.h	2007-06-28 05:50:38.000000000 -0500
++++ linux/drivers/md/dm-netlink.h	2007-06-28 09:10:15.000000000 -0500
+@@ -47,10 +47,10 @@ static inline int __init dm_netlink_init
+ static inline void dm_netlink_exit(void)
+ {
+ }
+-void inline dm_netlink_send_events(struct list_head *events)
++static void inline dm_netlink_send_events(struct list_head *events)
+ {
+ }
+-void inline dm_path_event(enum dm_netlink_event_type evt_type,
++static void inline dm_path_event(enum dm_netlink_event_type evt_type,
+ 			  struct dm_table *t, const char *path,
+ 			  int nr_valid_paths)
+ {
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+David Kleikamp
+IBM Linux Technology Center
+
