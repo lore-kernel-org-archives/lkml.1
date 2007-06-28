@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764782AbXF1RZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbXF1R1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764782AbXF1RZp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 13:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbXF1RZi
+	id S1764859AbXF1R1O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 13:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbXF1R1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 13:25:38 -0400
-Received: from ns2.suse.de ([195.135.220.15]:35424 "EHLO mx2.suse.de"
+	Thu, 28 Jun 2007 13:27:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50635 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756936AbXF1RZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 13:25:37 -0400
-Date: Thu, 28 Jun 2007 19:25:14 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       linux-kernel@vger.kernel.org, suspend-devel@lists.sourceforge.net,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC] get rid of CONFIG_DISABLE_CONSOLE_SUSPEND
-Message-ID: <20070628172514.GA12770@suse.de>
-References: <20070628135108.GA1810@elf.ucw.cz> <200706281734.54642.rjw@sisk.pl>
+	id S1758220AbXF1R07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 13:26:59 -0400
+Message-ID: <4683EF50.30108@garzik.org>
+Date: Thu, 28 Jun 2007 13:26:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706281734.54642.rjw@sisk.pl>
-X-Operating-System: openSUSE 10.3 (i586) Alpha5, Kernel 2.6.22-rc4-git6-2-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+CC: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu>
+In-Reply-To: <20070628160001.GA15495@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CC'ing Linus, since disabling consoles during suspend was his idea IIRC)
+Ingo Molnar wrote:
+> my argument was: workqueues are more scalable than tasklets in general.
 
-On Thu, Jun 28, 2007 at 05:34:54PM +0200, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Thursday, 28 June 2007 15:51, Pavel Machek wrote:
-> > Hi!
-> > 
-> > What about this? (Only compile tested, but looks pretty obvious to
-> > me). Something like this should get us rid of ugly option, and still
-> > solve debugging problems... Hmmm?
-> > 								Pavel
-> > 
-> > Kill CONFIG_DISABLE_CONSOLE_SUSPEND; it should not be configurable at
-> > all, instead, we should automatically keep console alive when
-> > possible.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> > 
-> > diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-> > index 62051f8..8267ff8 100644
-> > --- a/drivers/char/lp.c
-> > +++ b/drivers/char/lp.c
-> > @@ -144,7 +144,7 @@ static unsigned int lp_count = 0;
-> >  static struct class *lp_class;
-> >  
-> >  #ifdef CONFIG_LP_CONSOLE
-> > -static struct parport *console_registered; // initially NULL
-> > +static struct parport *console_registered;
-> >  #endif /* CONFIG_LP_CONSOLE */
-> 
-> Could you please avoid fixing things like this, white space etc. in this patch?
-> It would be easier to read ...
+Here is my argument:  that is totally irrelevant to $subject, when it 
+comes to dealing with managing existing [network driver] behavior and 
+performance.
 
-Yes.
+My overall objection is the attempt to replace apples with oranges.
 
-> I generally agree with the idea, but the patch needs a clean up, IMHO.
+Network drivers use tasklets TODAY.  Each driver -- in particular 
+acenic, ns83820, and the 10Gbps drivers -- has been carefully tuned to 
+use tasklets, hardirqs, and perhaps NAPI too.  Changing to workqueue 
+WILL affect network driver hot paths, yet I see no analysis or 
+measurement at all of the behavior differences.
 
-However, we don't know which consoles are safe to stay alive during suspend.
-Generally, defaulting to suspending them all is not a bad idea IMHO.
-And IIRC it is plain luck if a serial console survives the suspend (or was
-the serial code fixed recently?)
+If hackers are willing to revisit each network driver, rework the 
+tasklet code to something more sane [in your opinion], and TEST it, I 
+will review the patches and happily ACK away.
 
-So i do not care too much, but my / Frank's patch was shorter :-) and safer.
--- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+Given that I feel that course of action is unlikely (the preferred 
+alternative apparently being "I don't use these drivers, but surely my 
+changes are OK anyway"), I do not see how this effort can proceed as is.
 
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Lots of time went into tuning these network drivers for the specific 
+thread model they use.  Maybe that thread model is no longer in style. 
+Maybe modern machine behavior dictates a different approach.  The point 
+is... you don't know.
+
+	Jeff
+
+
