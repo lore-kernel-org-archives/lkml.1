@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763502AbXF1Mjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764294AbXF1Mmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763502AbXF1Mjt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 08:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbXF1Mjl
+	id S1764294AbXF1Mmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 08:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbXF1Mmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 08:39:41 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:38066 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757146AbXF1Mjk (ORCPT
+	Thu, 28 Jun 2007 08:42:46 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:50835 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760240AbXF1Mmq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 08:39:40 -0400
-Date: Thu, 28 Jun 2007 08:37:23 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Dan Williams <dan.j.williams@intel.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-In-Reply-To: <e9c3a7c20706251912i77ac75a0o60981590a08c34e6@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0706280823020.19012@gandalf.stny.rr.com>
-References: <20070622040014.234651401@goodmis.org> 
- <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> 
- <20070622204058.GA11777@elte.hu>  <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
-  <20070622215953.GA22917@elte.hu>  <e9c3a7c20706251846v17347ab2n4a1d314734528c95@mail.gmail.com>
-  <1182823276.5493.240.camel@localhost.localdomain>
- <e9c3a7c20706251912i77ac75a0o60981590a08c34e6@mail.gmail.com>
+	Thu, 28 Jun 2007 08:42:46 -0400
+Message-ID: <4683ABE7.3020109@gmail.com>
+Date: Thu, 28 Jun 2007 14:39:03 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Patrick Draper <pdraper@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <200706271825.17459.ahartmetz@gmail.com> <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com> <4682EEDD.4020501@gmail.com> <4682FE5C.5070004@gmail.com> <468315AF.1080105@gmail.com> <4683252B.9010205@gmail.com>
+In-Reply-To: <4683252B.9010205@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/28/2007 05:04 AM, Patrick Draper wrote:
 
-Hi Dan,
+> Rene Herman wrote:
 
-On Mon, 25 Jun 2007, Dan Williams wrote:
+>> So -- the fact that mixing actually works for you when using libaoss 
+>> means software mixing is working correctly for your ALSA setup. The 
+>> only thing you should do is _use_ ALSA (natively) and not its OSS 
+>> emulation so you can drop the library preload.
+> 
+> Cool. How do I go about figuring out what every app uses? For example, 
+> you mentioned that the flash 9 plugin, which I also use, is an ALSA 
+> aware application. How do you know?
 
-> Yes you are right, ARM does not flush L1 when prev==next in switch_mm.
->
-> > Perhaps something else is at fault here.
-> >
-> I'll try and dig a bit deeper...
+Various methods. If all's well, the application has a config menu where you 
+can look at and change the settings.
 
-BTW:
+Or, running ldd on the binary to see if it's linked to libasound, "grep 
+/proc/<pid>/maps libasound" (also catches dlopen), "strace" or usually 
+easiest and what I tended to do -- "lsmod" to see if starting the app 
+triggered the automatic loading of snd-pcm-oss and snd-mixer-oss which I 
+don't normally have loaded.
 
- static int __init iop_adma_init (void)
- {
-+       iop_adma_workqueue = create_workqueue("iop-adma");
-+       if (!iop_adma_workqueue)
-+               return -ENODEV;
-+
+This is the "[things are still not great] partly _due_ to people maintaining 
+OSS is somehow a valid choice on Linux" that I stated early in this thread. 
+I actually believe the kernel space OSS emulation has been fairly counter 
+productive -- it's allowed applications to stay with an obsolete interface 
+since the users didn't even have to _know_ due to it all just working. At 
+least with the userspace emulation, people know they are using an OSS 
+emulation if they are starting the application with an library preload.
 
-Could you also try upping the prio of all the "iop-adma" threads?
+The kernel space emulation is a bit more bullet-proof in the sense that the 
+userspace emulation would not for example help with applications that use 
+direct syscalls to open device nodes and I guess that was important.
 
-You should see thread names such as (on SMP) "iop-adma/0", "iop-adma/1"
-... "iop-adma/N" where N = # of CPUs - 1.
+When OSS/Free was replaced with ALSA inside the Linux kernel this was a big 
+change in an area most users use and any such change inevitably opens up big 
+cans of change resistant wankers who understand the old interface and have 
+no need for the new one and will tell you that you did it all wrong, it was 
+all for nothing and you suck period. They'll keep it up for years and years 
+generally. The kernel-space OSS emulation _does_ mostly just work, which is 
+the kind of thing that you need in this environment to be allowed to tell 
+these people to go sexually entertain themselves.
 
-do a "chrt -p -f 98 <pid>"  once for each of the thread's PIDs.  The
-chrt can be found in the package "util-linux" on Red Hat / Fedora, and in
-schedutils on Debian.
+Perhaps it's now finally coming to the time where the kernel space emulation 
+can be deprecated and eventually removed. Or not...
 
-It just dawned on me that workqueues don't run at a high priority by
-default.  So it's funny that I'm running all my current tasklets as a low
-priority work queues :-)
+> I need the check out everything that I use which needs sound (vmware,
+> skype, kmplayer, etc.) I don't have source code for at least two of
+> those.
 
-But that can certainly be a cause of high latency.  I need to update my
-patches to make the workqueue thread a higher priority. All benchmarks on
-this patch have been using a low priority work queue.
+I don't know if vmware by now supports native ALSA but it didn't use to. The 
+current version of skype (1.4, still called a beta it seems) does.
 
-I also don't see any nice API to have the priority set for a workqueue
-thread from within the kernel. Looks like one needs to be added,
-otherwise, I need to have the wrapper dig into the workqueue structs to
-find the thread that handles the workqueue.
+kmplayer seems to be a frontend for various mediaplayer solutions. Don't you 
+just love that mess? Its backends include MPlayer and Xine, and both these 
+can talk native ALSA fine at least. For mplayer, use a "ao=alsa" line in the 
+.mplayer/config file (or just start it with -ao alsa) and for xine, look in 
+its setup menu (audio tab, having set the interface level to beter than 
+"beginner").
 
-Thanks,
+Rene.
 
--- Steve
