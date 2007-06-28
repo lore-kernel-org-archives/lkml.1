@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932296AbXF1XJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766009AbXF1XJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932296AbXF1XJY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 19:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764858AbXF1XJR
+	id S1766009AbXF1XJw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 19:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765187AbXF1XJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 19:09:17 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43335 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763876AbXF1XJQ (ORCPT
+	Thu, 28 Jun 2007 19:09:43 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:61953 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932380AbXF1XJm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 19:09:16 -0400
-Date: Fri, 29 Jun 2007 01:09:14 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Shaohua Li <shaohua.li@intel.com>, jamagallon@ono.com,
-       tigran@aivazian.fsnet.co.uk,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: New format Intel microcode...
-Message-ID: <20070628230914.GB14519@one.firstfloor.org>
-References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com> <1174610594.6598.3.camel@sli10-conroe.sh.intel.com> <6278d2220706261442u9b137c5xb6225b3f56605554@mail.gmail.com> <p731wfy5m74.fsf@bingen.suse.de> <4683BD56.7070707@tmr.com> <20070628152747.GA14519@one.firstfloor.org> <468434DE.103@tmr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 28 Jun 2007 19:09:42 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=rJKt7NSvWitiHLP22VFaGKDdYruZCcGPigfiaoLy7WU7ReHFy46RYnIdu4oYf5d8S
+	ri7YeTf1szOnOVwmCg8iQ==
+Message-ID: <6599ad830706281609jebd82sdc1fb3ccc2d2df7b@mail.gmail.com>
+Date: Thu, 28 Jun 2007 19:09:05 -0400
+From: "Paul Menage" <menage@google.com>
+To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fix for bad lock balance in Containers
+Cc: "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
+       "Balbir Singh" <balbir@in.ibm.com>, svaidy@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       bharata@linux.vnet.ibm.com
+In-Reply-To: <20070626050011.GA12584@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <468434DE.103@tmr.com>
-User-Agent: Mutt/1.4.2.1i
+References: <20070626050011.GA12584@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I was mainly concerned with this being a new issue, and curious if 
-> Microsoft was calling an O/S bug a "microcode fix," given that the 
-> average Windows user doesn't know microcode from nanotech anyway. The 
-> non-answer from Arjan didn't answer either, and started by calling the 
-> report FUD, implying that Slashdot was wrong (not about this), and 
-> issuing so little answer and so much obfuscation that I thought he might 
-> be running for President. ;-)
+On 6/26/07, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+>
+> There are a few questions I had with respect to the current code,
+>
+> Why is the increment of s_active dependent on the return value of
+> simple_set_mnt?
 
-Well you can read the Intel documentation if you want the whole story.
-You can hardly expect a full introduction in the basics and then
-subtle issues of TLB flushing in a quick email.  You asked about opinions 
-and summaries and those you got.
+I think it's because, as you observed, grab_super() is static and
+hence not reachable from container.c. But I thought that the only side
+effect of it that we needed (since we had a safe pointer to the
+superblock not obtained via the superblock list) was the increment of
+sb_active. (As it turns out I was wrong and we needed the s_umount
+lock too).
 
-> I'd like the microcode update, 
+Incrementing the sb_active count (if simple_set_mnt() failed) seemed
+as though it would be wrong.
 
-It's called the "placebo effect" in the literature I believe.
+>
+> What should be the correct approach to get the locking balance? As far
+> as I can see, the correct method would be to call sget which would then
+> correctly handle everything. But that would require a test function. I
+> saw functionality similar to a test function in the beginning of
+> container_get_sb(). Should that be seperated and put in a seperate test
+> function so that sget can be called?
 
-> some people elsewhere speculate that user 
-> level code could effect reliability if not security. 
+I don't quite remember why I did it this way originally, now. I've got
+no objection to the code being cleaned up to fit the more common
+approach if it's practical to do so, but it seems to me that your
+current patch fix seems enough at least for now.
 
-speculate is the key word.
+Thanks,
 
-> I worry that an old 
-> 2.4 kernel would be an issue, even in kvm, if that were the case.
-
-TLB flushing in virtualization works completely different. I doubt
-it would be affected.
-
--Andi
-
+Paul
