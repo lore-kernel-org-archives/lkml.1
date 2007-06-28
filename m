@@ -1,56 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbXF1PVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762832AbXF1PXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762067AbXF1PVv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 11:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbXF1PVm
+	id S1762832AbXF1PXv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 11:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbXF1PXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 11:21:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55270 "EHLO ogre.sisk.pl"
+	Thu, 28 Jun 2007 11:23:44 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49662 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755363AbXF1PVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 11:21:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-Date: Thu, 28 Jun 2007 17:27:34 +0200
-User-Agent: KMail/1.9.5
-Cc: David Chinner <dgc@sgi.com>, David Greaves <david@dgreaves.com>,
-       David Robinson <zxvdr.au@gmail.com>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>
-References: <46744065.6060605@dgreaves.com> <20070618145007.GE85884050@sgi.com> <20070627204924.GA4777@ucw.cz>
-In-Reply-To: <20070627204924.GA4777@ucw.cz>
+	id S1756419AbXF1PXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 11:23:43 -0400
+Message-ID: <4683D26C.2080701@garzik.org>
+Date: Thu, 28 Jun 2007 11:23:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru>
+In-Reply-To: <20070628143850.GA11780@ms2.inr.ac.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706281727.35430.rjw@sisk.pl>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 27 June 2007 22:49, Pavel Machek wrote:
-> Hi!
+Alexey Kuznetsov wrote:
+> Hello!
 > 
-> > FWIW, I'm on record stating that "sync" is not sufficient to quiesce an XFS
-> > filesystem for a suspend/resume to work safely and have argued that the only
+>> the context-switch argument i'll believe if i see numbers. You'll 
+>> probably need in excess of tens of thousands of irqs/sec to even be able 
+>> to measure its overhead. (workqueues are driven by nice kernel threads 
+>> so there's no TLB overhead, etc.)
 > 
-> Hmm, so XFS writes to disk even when its threads are frozen?
+> It was authors of the patch who were supposed to give some numbers,
+> at least one or two, just to prove the concept. :-)
 > 
-> > safe thing to do is freeze the filesystem before suspend and thaw it after
-> > resume. This is why I originally asked you to test that with the other problem
-> 
-> Could you add that to the XFS threads if it is really required? They
-> do know that they are being frozen for suspend.
+> According to my measurements (maybe, wrong) on 2.5GHz P4 tasklet
+> schedule and execution eats ~300ns, workqueue eats ~4usec.
+> On my 1.8GHz PM notebook (UP kernel), the numbers are 170ns and 1.2usec.
 
-Well, do you remember the workqueues?  They are still nonfreezable.
-
-Greetings,
-Rafael
+Thanks :)
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+> Anyway, all the uses of tasklet should be verified:
+> 
+> The most dubios place is popular Neterion 10Gbit driver, which uses
+> tasklet like acenic. But at 10Gbit, multiply acenic numbers and panic. :-)
+> 
+> Also, there exists some hardware which uses tasklets even harder,
+> but I have no idea what real frequencies are: f.e. sundance.
+> 
+> The case with acenic/s2io is quite special: normally network drivers
+> refill queues in irq handlers. It was Jes Sorensen observation
+> that offloading refilling from irq improves performance, I do not
+> remember numbers. Probably, switching to workqueues will not affect
+> performance at all, probably it will just collapse, no idea.
+
+CPUs have gotten so fast now that its quite possible to run the tasklet 
+in parallel with the next invocation of the interrupt handler.
+
+But given the amount of tasklet use in network drivers, I do not think 
+tasklets can just be magically equated to workqueues, without 
+case-by-case analysis.
+
+
+> Tasklet is single thread by definition and purpose. Those a few places
+
+Indeed!
+
+
+>> the only remaining argument is latency:
+> 
+> You could set realtime prioriry by default, not a poor nice -5.
+> If some network adapters were killed just because I run some task
+> with nice --22, it would be just ridiculous.
+
+Indeed.
+
+	Jeff
+
+
