@@ -1,100 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764365AbXF1QES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760982AbXF1QMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764365AbXF1QES (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 12:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbXF1QEL
+	id S1760982AbXF1QMZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 12:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbXF1QMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 12:04:11 -0400
-Received: from mga02.intel.com ([134.134.136.20]:24644 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756745AbXF1QEK convert rfc822-to-8bit (ORCPT
+	Thu, 28 Jun 2007 12:12:12 -0400
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:56020 "EHLO
+	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786AbXF1QMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 12:04:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,471,1175497200"; 
-   d="scan'208";a="259977501"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 28 Jun 2007 12:12:10 -0400
+Date: Thu, 28 Jun 2007 12:12:07 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: John Johansen <jjohansen@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andreas Gruenbacher <agruen@suse.de>, Miklos Szeredi <mszeredi@suse.cz>
+Subject: Re: [AppArmor 32/44] Enable LSM hooks to distinguish operations on
+ file descriptors from operations on pathnames
+In-Reply-To: <20070626231124.098710828@suse.de>
+Message-ID: <Line.LNX.4.64.0706281206180.13250@localhost.localdomain>
+References: <20070626230756.519733902@suse.de> <20070626231124.098710828@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch -mm] s390: struct bin_attribute changes
-Date: Fri, 29 Jun 2007 00:04:04 +0800
-Message-ID: <823A93EED437D048963A3697DB0E35DE16B700@pdsmsx414.ccr.corp.intel.com>
-In-Reply-To: <20070628133904.GB4343@osiris.boeblingen.de.ibm.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch -mm] s390: struct bin_attribute changes
-Thread-Index: Ace5ibTFejOQ7eHQQzq7hiZQB6VeVAAEud0w
-From: "Zhang, Rui" <rui.zhang@intel.com>
-To: "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>,
-       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
-       "Greg KH" <greg@kroah.com>, "Brown, Len" <len.brown@intel.com>
-X-OriginalArrivalTime: 28 Jun 2007 16:04:07.0407 (UTC) FILETIME=[F4F54FF0:01C7B99D]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops. Sorry.
-Thanks for fixing it.
+On Tue, 26 Jun 2007, jjohansen@suse.de wrote:
 
-Best regards,
-Rui
+> Struct iattr already contains ia_file since commit cc4e69de from 
+> Miklos (which is related to commit befc649c). Use this to pass
+> struct file down the setattr hooks. This allows LSMs to distinguish
+> operations on file descriptors from operations on paths.
 
------Original Message-----
-From: Heiko Carstens [mailto:heiko.carstens@de.ibm.com] 
-Sent: 2007Äê6ÔÂ28ÈÕ 21:39
-To: Andrew Morton
-Cc: linux-kernel@vger.kernel.org; Martin Schwidefsky; Zhang, Rui; Greg KH; Brown, Len
-Subject: [patch -mm] s390: struct bin_attribute changes
+I'm not quite sure I understand this.
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Why would you distinguish operations based on whether you have a pathname 
+or an inode for an object ?
 
-git-acpi contains a patch that adds 'struct bin_attribute *' to
-the read method of struct bin_attribute. This breaks s390:
+Are you trying to cater for the case where you're holding an open fd for a 
+file which has been deleted, and thus has no pathname?
 
-  CC      arch/s390/kernel/ipl.o
-arch/s390/kernel/ipl.c:317:
- warning: initialization from incompatible pointer type
-arch/s390/kernel/ipl.c:340:
-  warning: initialization from incompatible pointer type
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Greg KH <greg@kroah.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- arch/s390/kernel/ipl.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
 
-Index: linux-2.6.22-rc6-mm1/arch/s390/kernel/ipl.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/arch/s390/kernel/ipl.c
-+++ linux-2.6.22-rc6-mm1/arch/s390/kernel/ipl.c
-@@ -295,8 +295,9 @@ static ssize_t sys_ipl_device_show(struc
- static struct subsys_attribute sys_ipl_device_attr =
- 	__ATTR(device, S_IRUGO, sys_ipl_device_show, NULL);
- 
--static ssize_t ipl_parameter_read(struct kobject *kobj, char *buf, loff_t off,
--				  size_t count)
-+static ssize_t ipl_parameter_read(struct kobject *kobj,
-+				  struct bin_attribute *attr,
-+				  char *buf, loff_t off, size_t count)
- {
- 	unsigned int size = IPL_PARMBLOCK_SIZE;
- 
-@@ -317,8 +318,9 @@ static struct bin_attribute ipl_paramete
- 	.read = &ipl_parameter_read,
- };
- 
--static ssize_t ipl_scp_data_read(struct kobject *kobj, char *buf, loff_t off,
--	size_t count)
-+static ssize_t ipl_scp_data_read(struct kobject *kobj,
-+				 struct bin_attribute *attr,
-+				 char *buf, loff_t off, size_t count)
- {
- 	unsigned int size = IPL_PARMBLOCK_START->ipl_info.fcp.scp_data_len;
- 	void *scp_data = &IPL_PARMBLOCK_START->ipl_info.fcp.scp_data;
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
