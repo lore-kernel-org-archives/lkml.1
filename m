@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbXF1ETj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759093AbXF1Epk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759212AbXF1ETj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 00:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbXF1ETb
+	id S1759093AbXF1Epk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 00:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbXF1Epb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 00:19:31 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:49863 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbXF1ETa (ORCPT
+	Thu, 28 Jun 2007 00:45:31 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:35612 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751949AbXF1Epb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 00:19:30 -0400
-Message-ID: <46833311.4000209@zytor.com>
-Date: Thu, 28 Jun 2007 00:03:29 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 28 Jun 2007 00:45:31 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: davids@webmaster.com, linux-kernel@vger.kernel.org
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <MDEHLPKNGKAHNMBLJOLKOELFEOAC.davids@webmaster.com>
+	<orsl8cztvt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706272251.48884.dhazelton@enter.net>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Thu, 28 Jun 2007 01:45:18 -0300
+In-Reply-To: <200706272251.48884.dhazelton@enter.net> (Daniel Hazelton's message of "Wed\, 27 Jun 2007 22\:51\:48 -0400")
+Message-ID: <or1wfwznz5.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Kyle Moffett <mrmacman_g4@mac.com>
-CC: Adrian Bunk <bunk@stusta.de>, LKML Kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, david@lang.hm,
-       linux-arch@vger.kernel.org
-Subject: Re: Userspace compiler support of "long long"
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de> <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm> <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de> <1182483527.10524.31.camel@shinybook.infradead.org> <20070622150038.GN23017@stusta.de> <E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com> <20070627154046.GN1094@stusta.de> <468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de> <20070627173240.GR1094@stusta.de> <B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com>
-In-Reply-To: <B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
->> 
-> The only trick is if you care about building 32-bit compat code using 
-> 64-bit linux kernel headers.  In that case we should probably just make 
-> all archs use "long long" for their 64-bit integers, unless there's some 
-> platform I'm not remembering where "long long" is 128-bits or bigger.  
-> The other benefit is that people could then just use the printf format 
-> "%llu" for 64-bit integers instead of having to conditionalize it all 
-> over the place.
-> 
+On Jun 27, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-No, you really don't want to do that, because then u64 != uint64_t on 
-those platforms.
+> Section 3 doesn't apply to this situation. However, other sections
+> do. They are distributing in line with the distribution requirement,
+> but not the "modification and copying" requirements. These are
+> granted early in the license and covered by the "no further
+> restrictions" clause.
 
-	-hpa
+> You have to be able to copy and modify the source code for it to
+> comply with the GPL.
 
+Let's hope courts see it this way.
+
+But then, why is it that I can't use hardware to stop someone from
+copying or modifying the source code, but I can use hardware to stop
+someone from copying or modifying the binary?  Or is that not so?
+
+Remember, section 2 talks about modifying *your* *copies* of the
+Program, without any reference whatsoever as to whether they're in
+source or object form.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
