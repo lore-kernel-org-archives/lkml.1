@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764372AbXF1JGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764651AbXF1JIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764372AbXF1JGy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 05:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760140AbXF1JGr
+	id S1764651AbXF1JIp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 05:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761138AbXF1JIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 05:06:47 -0400
-Received: from poseidon.rz.tu-clausthal.de ([139.174.2.21]:64381 "EHLO
-	poseidon.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759654AbXF1JGq convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 05:06:46 -0400
-From: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: libata-bug in 2.6.21.5 on amd64 with ali chipset
-Date: Thu, 28 Jun 2007 11:06:42 +0200
-User-Agent: KMail/1.9.7
-References: <200706271216.34879.volker.armin.hemmann@tu-clausthal.de>
-In-Reply-To: <200706271216.34879.volker.armin.hemmann@tu-clausthal.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200706281106.42188.volker.armin.hemmann@tu-clausthal.de>
+	Thu, 28 Jun 2007 05:08:37 -0400
+Received: from mail-in-08.arcor-online.net ([151.189.21.48]:46127 "EHLO
+	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760140AbXF1JIg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 05:08:36 -0400
+In-Reply-To: <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk> <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f5dda736b43865bb40583992bafe7a6b@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: Neil Booth <neil@daikokuya.co.uk>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>, Josh Triplett <josh@freedesktop.org>,
+       linux-sparse@vger.kernel.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Date: Thu, 28 Jun 2007 11:08:25 +0200
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mittwoch, 27. Juni 2007, you wrote:
+>> Here are three independently invalid non-ICEs that sparse doesn't
+>> diagnose.
+>>
+>> extern int f(void);
+>> enum { cast_to_ptr = (int) (void *) 0 };
+>> enum { cast_to_float = (int) (double) 1 };
+>
+> Those two *really* shouldn't fail. I don't care if the C standard says 
+> so,
+> that is *fine*.
 
-> It has worked in the past. I will try different kernels in the next
-> 24hours.
+GCC doesn't guarantee you this, either.
 
-I tried this kernels:
-2.6.20
-2.6.20.1
-2.6.21
-2.6.21.1
-2.6.21.3
-2.6.21.5
+> In particular, "offsetof()" should be portably able to basically be the
+> standard #define, which involves an integer cast from a constant 
+> pointer.
+> That had *better* be a valid constant integer expression, because it's
+> very useful.
 
-2.6.21.5 with and without cfs. Every other kernel without cfs. Patched with 
-reiser4, nvidia not loaded nor used. All of them locked up. I tried two 
-different cdrtools 2.01.01_alpha27 and alpha25. No change.
+Yes it's useful.  That's why GCC gives you __builtin_offsetof()
+for this purpose.
 
-The strange thing: 2.6.21.1 has worked in the past. At the 21.May I tried 
-(successfully) to burn a dvd. The only real change I could find since then: I 
-recompiled the whole system to remove 'ricer' cflags. 
+> And I think standards can go screw themselves, and you can make it an
+> error with some "--standard-pedantic" switch or similar.
+>
+> Standards are just random pieces of paper, for crying out loud! They 
+> have
+> zero relevance in the end.
 
-Glück Auf
-Volker
+Sure, as long as you don't care about compatibility across
+compilers, what matters is what the compilers you _do_ use
+actually implement.  And note that GCC doesn't guarantee
+you much over what the C standard does.  Almost everything
+it allows extra is just an implementation side effect.
+
+
+Segher
+
