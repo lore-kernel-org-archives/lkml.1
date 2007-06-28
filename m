@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932264AbXF1WEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbXF1WFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932264AbXF1WEW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 18:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763343AbXF1WEN
+	id S932299AbXF1WFI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 18:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763202AbXF1WE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 18:04:13 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36835 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761387AbXF1WEM (ORCPT
+	Thu, 28 Jun 2007 18:04:57 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49677 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763343AbXF1WEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 18:04:12 -0400
-Message-ID: <46842F7B.1010105@gmail.com>
-Date: Fri, 29 Jun 2007 00:00:27 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: William D Waddington <william.waddington@beezmo.com>,
-       Helge Hafting <helge.hafting@aitel.hist.no>,
-       linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: Please release a stable kernel Linux 3.0
-References: <fa.ZV8hYZHQHqzfx1dgOFeEVFRogSg@ifi.uio.no>	<oor483d2nqn6ae728com1v7v56g0ksotov@4ax.com>	<4683983E.5020103@aitel.hist.no>	<4683D3B0.1040708@beezmo.com> <20070628173051.4a3422c0@the-village.bc.nu>
-In-Reply-To: <20070628173051.4a3422c0@the-village.bc.nu>
-Content-Type: multipart/mixed;
- boundary="------------060406030205040301060207"
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Thu, 28 Jun 2007 18:04:55 -0400
+Date: Fri, 29 Jun 2007 03:43:22 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: "William Lee Irwin III" <wli@holomorphy.com>, vatsa@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
+       xemul@sw.ru, dev@sw.ru, rohitseth@google.com, pj@sgi.com,
+       devel@openvz.org, ebiederm@xmission.com, mbligh@google.com,
+       containers@lists.osdl.org, serue@us.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, svaidy@linux.vnet.ibm.com,
+       cpw@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process Containers
+Message-ID: <20070628221322.GA3146@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070529130104.461765000@menage.corp.google.com> <20070530001455.45cf1dc5.akpm@linux-foundation.org> <20070530073959.GC6909@holomorphy.com> <6599ad830706281427m36f5b0eft7a677cf0feada663@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830706281427m36f5b0eft7a677cf0feada663@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060406030205040301060207
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, Jun 28, 2007 at 05:27:25PM -0400, Paul Menage wrote:
+> So maybe this would be better handled in userspace? Have a daemon
+> listing on a process connector socket, and move processes between
+> containers based on notifications from the connector and user-defined
+> rules.
+> 
+> We'd probably also want to add some new connector events, such as
+> PROC_EVENT_PGRP, and PROC_EVENT_SID
 
-On 06/28/2007 06:30 PM, Alan Cox wrote:
+Yep, this is what I did to test fair-user scheduling on top of my
+patches.
 
-> Public domain is GPL compatible.
+Dhaval has a working program, which listens for UID change events and
+moves the task to approp. container. I will review that and have it
+posted soon.
 
-Would you happen to have an opinion on the attached? I don't so much need it 
-or anything but I thought about submitting this once when I was working on 
-some stuff locally. I didn't since I was expecting arguments that public 
-domain is not so much a license, and how it becomes GPL anyway, ...
-
-Stating that code which one intends to be in the public domain has "GPL and 
-additional rights" is a bit of a travesty though.
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
-
-Rene.
-
---------------060406030205040301060207
-Content-Type: text/plain;
- name="public_domain.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="public_domain.diff"
-
-diff --git a/include/linux/license.h b/include/linux/license.h
-index decdbf4..1176471 100644
---- a/include/linux/license.h
-+++ b/include/linux/license.h
-@@ -8,7 +8,8 @@ static inline int license_is_gpl_compatible(const char *license)
- 		|| strcmp(license, "GPL and additional rights") == 0
- 		|| strcmp(license, "Dual BSD/GPL") == 0
- 		|| strcmp(license, "Dual MIT/GPL") == 0
--		|| strcmp(license, "Dual MPL/GPL") == 0);
-+		|| strcmp(license, "Dual MPL/GPL") == 0
-+		|| strcmp(license, "Public Domain") == 0);
- }
- 
- #endif
-diff --git a/include/linux/module.h b/include/linux/module.h
-index e6e0f86..2ecacf8 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -107,6 +107,7 @@ extern struct module __this_module;
-  *					 or MIT license choice]
-  *	"Dual MPL/GPL"			[GNU Public License v2
-  *					 or Mozilla license choice]
-+ *	"Public Domain"			[Public domain products]
-  *
-  * The following other idents are available
-  *
-
---------------060406030205040301060207--
+-- 
+Regards,
+vatsa
