@@ -1,95 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762832AbXF1PXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761208AbXF1P15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762832AbXF1PXv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 11:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbXF1PXo
+	id S1761208AbXF1P15 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 11:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbXF1P1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 11:23:44 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49662 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756419AbXF1PXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 11:23:43 -0400
-Message-ID: <4683D26C.2080701@garzik.org>
-Date: Thu, 28 Jun 2007 11:23:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru>
-In-Reply-To: <20070628143850.GA11780@ms2.inr.ac.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	Thu, 28 Jun 2007 11:27:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40548 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756745AbXF1P1u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 11:27:50 -0400
+Date: Thu, 28 Jun 2007 17:27:47 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Shaohua Li <shaohua.li@intel.com>, jamagallon@ono.com,
+       tigran@aivazian.fsnet.co.uk,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: New format Intel microcode...
+Message-ID: <20070628152747.GA14519@one.firstfloor.org>
+References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com> <1174610594.6598.3.camel@sli10-conroe.sh.intel.com> <6278d2220706261442u9b137c5xb6225b3f56605554@mail.gmail.com> <p731wfy5m74.fsf@bingen.suse.de> <4683BD56.7070707@tmr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4683BD56.7070707@tmr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Kuznetsov wrote:
-> Hello!
-> 
->> the context-switch argument i'll believe if i see numbers. You'll 
->> probably need in excess of tens of thousands of irqs/sec to even be able 
->> to measure its overhead. (workqueues are driven by nice kernel threads 
->> so there's no TLB overhead, etc.)
-> 
-> It was authors of the patch who were supposed to give some numbers,
-> at least one or two, just to prove the concept. :-)
-> 
-> According to my measurements (maybe, wrong) on 2.5GHz P4 tasklet
-> schedule and execution eats ~300ns, workqueue eats ~4usec.
-> On my 1.8GHz PM notebook (UP kernel), the numbers are 170ns and 1.2usec.
+> Slashdot carried an article this morning saying that an error in Intel 
+> microcode was being fixed. However, it listed only Windows related sites 
 
-Thanks :)
+That's a little misleading. Always dangerous getting your information
+from slashdot. Let's say Intel clarified some corner 
+cases in TLB flushing that have changed with Core2 and not everybody
+got that right. I wouldn't say it was a Intel bug though.
 
+> for the "fix" download. Is this the same TLB issue? And are these really 
 
-> Anyway, all the uses of tasklet should be verified:
-> 
-> The most dubios place is popular Neterion 10Gbit driver, which uses
-> tasklet like acenic. But at 10Gbit, multiply acenic numbers and panic. :-)
-> 
-> Also, there exists some hardware which uses tasklets even harder,
-> but I have no idea what real frequencies are: f.e. sundance.
-> 
-> The case with acenic/s2io is quite special: normally network drivers
-> refill queues in irq handlers. It was Jes Sorensen observation
-> that offloading refilling from irq improves performance, I do not
-> remember numbers. Probably, switching to workqueues will not affect
-> performance at all, probably it will just collapse, no idea.
+I think so.
 
-CPUs have gotten so fast now that its quite possible to run the tasklet 
-in parallel with the next invocation of the interrupt handler.
+> fixes for Windows to flush the TLB properly the way Linux does?
 
-But given the amount of tasklet use in network drivers, I do not think 
-tasklets can just be magically equated to workqueues, without 
-case-by-case analysis.
+On newer Linux 2.6 yes. On 2.4/x86-64 you would need in theory the microcode 
+update too.  (it'll probably show up at some point at the usual place 
+http://urbanmyth.org/microcode/).  Linux/i386 is always fine.
 
+But the problem is very obscure and you can likely ignore it too. If your 
+machine crashes it's very likely something else.
 
-> Tasklet is single thread by definition and purpose. Those a few places
-
-Indeed!
-
-
->> the only remaining argument is latency:
-> 
-> You could set realtime prioriry by default, not a poor nice -5.
-> If some network adapters were killed just because I run some task
-> with nice --22, it would be just ridiculous.
-
-Indeed.
-
-	Jeff
-
-
+-Andi
