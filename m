@@ -1,37 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764151AbXF1C5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764214AbXF1C6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764151AbXF1C5v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 22:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760060AbXF1C5o
+	id S1764214AbXF1C6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 22:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760060AbXF1C6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 22:57:44 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:57923 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759235AbXF1C5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 22:57:43 -0400
-Date: Wed, 27 Jun 2007 22:57:39 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 007 of 8] knfsd: nfsd4: vary maximum delegation limit based on RAM size
-Message-ID: <20070628025739.GD20605@fieldses.org>
-References: <20070621142604.727.patches@notabene> <1070621043112.1144@suse.de> <20070625205244.bbf0976a.akpm@linux-foundation.org> <20070628021551.GB20605@fieldses.org> <20070627193613.746dfbf3.akpm@linux-foundation.org>
+	Wed, 27 Jun 2007 22:58:13 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1109 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763338AbXF1C6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 22:58:13 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 27 Jun 2007 19:58:09 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Nicholas Miell <nmiell@comcast.net>
+cc: Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@gmail.com>,
+       blaisorblade@yahoo.it,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
+In-Reply-To: <Pine.LNX.4.64.0706271642340.3879@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0706271954030.5213@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
+ <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
+ <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
+ <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
+ <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com> 
+ <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com> 
+ <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com> 
+ <Pine.LNX.4.64.0706271111040.32731@alien.or.mcafeemobile.com> 
+ <Pine.LNX.4.64.0706271921280.29060@blonde.wat.veritas.com> 
+ <Pine.LNX.4.64.0706271135560.32731@alien.or.mcafeemobile.com>
+ <1182982309.2737.9.camel@entropy> <Pine.LNX.4.64.0706271642340.3879@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070627193613.746dfbf3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 07:36:13PM -0700, Andrew Morton wrote:
-> How's this?
+On Wed, 27 Jun 2007, Davide Libenzi wrote:
 
-Makes sense to me, thanks.  I guess fs/nsfd/nfssvc:nfsd_create_serv()
-should be similarly modified?  It calculates the size of per-nfsd-thread
-buffers used to hold requests, which will eventually be allocated with
-an alloc_page(GFP_KERNEL), and it bases the calculation on the same
-.totalram field from struct sysinfo.
+> On Wed, 27 Jun 2007, Nicholas Miell wrote:
+> 
+> > 1) euid is not sufficient, you need to store away arbitrary LSM
+> > information and call LSM hooks to decide security equivalence. The same
+> > applies to VServer or whatever other container system you use.
+> 
+> The EUID that is used now, can easily be any cookie. It can be an LSM 
+> cookie (if LSM is active in the system). We don't do complex checks, like 
+> group permission & Co.  We assume that if a UID-cookie had such data 
+> available (or it generated it), it can have it back uncleared.
 
---b.
+(looking through the LSM/SeLinux jungle)
+Also, LSM/SeLinux could disable completely the feature, at request. Just 
+assign a known-to-be-invalid UID to mm->owner_uid (passign through 
+an(other) hook), and pages will never be recycled.
+
+
+
+- Davide
+
+
