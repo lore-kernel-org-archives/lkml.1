@@ -1,102 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbXF1OkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbXF1Orb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755743AbXF1OkZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbXF1OkQ
+	id S1760110AbXF1Orb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 10:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbXF1OrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:40:16 -0400
-Received: from minus.inr.ac.ru ([194.67.69.97]:45797 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1755053AbXF1OkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:40:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=p8SsQ53hc7UFq/MFpRFRE7fxXwEVGRfmx0wUXGVBAdRHxFo/Bbt3uLSGIZdTLjl/809GVVUW+oXjP3EjwOuUCQ54gsbvlzmRNXPAJjipO7u/5BmpCgqnHjDmJDtCdUOLxcICZyCJghNU3BsHMeoHZTuOh7qu7KUvUiFdQGdG/tg=;
-Date: Thu, 28 Jun 2007 18:38:50 +0400
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070628143850.GA11780@ms2.inr.ac.ru>
-References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu>
+	Thu, 28 Jun 2007 10:47:24 -0400
+Received: from mail.screens.ru ([213.234.233.54]:35488 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752289AbXF1OrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 10:47:23 -0400
+Date: Thu, 28 Jun 2007 18:47:41 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Sattler <tsattler@gmx.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.22-rc6 spurious hangs
+Message-ID: <20070628144741.GA437@tv-sign.ru>
+References: <4683BF16.40905@gmx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070628092340.GB23566@elte.hu>
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <4683BF16.40905@gmx.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On 06/28, Thomas Sattler wrote:
+>
+> As Ingo told me I run 'echo t > /proc/sysrq-trigger' this time. The
+> corresponding part of my syslogs is attached, as well as my kernel config.
 
-> the context-switch argument i'll believe if i see numbers. You'll 
-> probably need in excess of tens of thousands of irqs/sec to even be able 
-> to measure its overhead. (workqueues are driven by nice kernel threads 
-> so there's no TLB overhead, etc.)
+xs_connect() and release_dev() are blocked on flush_workqueue(). Perhaps
+this is OK, but may be not.
 
-It was authors of the patch who were supposed to give some numbers,
-at least one or two, just to prove the concept. :-)
+Could you try the patch below? It dumps some info when flush_workqueue()
+hangs.
 
-According to my measurements (maybe, wrong) on 2.5GHz P4 tasklet
-schedule and execution eats ~300ns, workqueue eats ~4usec.
-On my 1.8GHz PM notebook (UP kernel), the numbers are 170ns and 1.2usec.
+Oleg.
 
-Formally looking awful, this result is positive: tasklets are almost
-never used in hot paths. I am sure only about one such place: acenic
-driver uses tasklet to refill rx queue. This generates not more than
-3000 tasklet schedules per second. Even on P4 it pure workqueue schedule
-will eat ~1% of bare cpu ticks.
-
-Anyway, all the uses of tasklet should be verified:
-
-The most dubios place is popular Neterion 10Gbit driver, which uses
-tasklet like acenic. But at 10Gbit, multiply acenic numbers and panic. :-)
-
-Also, there exists some hardware which uses tasklets even harder,
-but I have no idea what real frequencies are: f.e. sundance.
-
-The case with acenic/s2io is quite special: normally network drivers
-refill queues in irq handlers. It was Jes Sorensen observation
-that offloading refilling from irq improves performance, I do not
-remember numbers. Probably, switching to workqueues will not affect
-performance at all, probably it will just collapse, no idea.
-
-
-> ... workqueues are also possibly much more scalable
-
-I cannot figure out - scale in what direction? :-)
+--- OLD/kernel/sched.c~TST	2007-04-05 12:20:35.000000000 +0400
++++ OLD/kernel/sched.c	2007-06-02 15:41:53.000000000 +0400
+@@ -4177,6 +4177,20 @@ struct task_struct *idle_task(int cpu)
+ 	return cpu_rq(cpu)->idle;
+ }
  
++struct task_struct *get_cpu_curr(int cpu)
++{
++	unsigned long flags;
++	struct task_struct *curr;
++	struct rq *rq = cpu_rq(cpu);
++
++	spin_lock_irqsave(&rq->lock, flags);
++	curr = rq->curr;
++	get_task_struct(curr);
++	spin_unlock_irqrestore(&rq->lock, flags);
++
++	return curr;
++}
++
+ /**
+  * find_process_by_pid - find a process with a matching PID value.
+  * @pid: the pid in question.
+--- OLD/kernel/workqueue.c~TST	2007-06-02 13:34:57.000000000 +0400
++++ OLD/kernel/workqueue.c	2007-06-03 11:28:54.000000000 +0400
+@@ -49,6 +49,7 @@ struct cpu_workqueue_struct {
+ 	struct task_struct *thread;
+ 
+ 	int run_depth;		/* Detect run_workqueue() recursion depth */
++	int jobs;
+ } ____cacheline_aligned;
+ 
+ /*
+@@ -253,6 +254,7 @@ static void run_workqueue(struct cpu_wor
+ 
+ 		cwq->current_work = work;
+ 		list_del_init(cwq->worklist.next);
++		cwq->jobs++;
+ 		spin_unlock_irq(&cwq->lock);
+ 
+ 		BUG_ON(get_wq_data(work) != cwq);
+@@ -328,6 +330,47 @@ static void insert_wq_barrier(struct cpu
+ 	insert_work(cwq, &barr->work, tail);
+ }
+ 
++extern struct task_struct *get_cpu_curr(int cpu);
++
++static void flush_wait(struct cpu_workqueue_struct *cwq, struct completion *done)
++{
++	const int cpu = task_cpu(cwq->thread);
++	struct task_struct *curr;
++	struct work_struct *work;
++	int old_pid, state, jobs;
++
++again:
++	state = cwq->thread->state;
++	work = cwq->current_work;
++	jobs = cwq->jobs;
++
++	curr = get_cpu_curr(cpu);
++	old_pid = curr->pid;
++	put_task_struct(curr);
++
++	if (wait_for_completion_timeout(done, HZ * 30))
++		return;
++
++	printk(KERN_ERR "ERR!! %s flush hang: %p %p %d %d %d %d\n", cwq->thread->comm,
++			work, cwq->current_work, jobs, cwq->jobs,
++			state, (int)cwq->thread->state);
++
++	curr = get_cpu_curr(cpu);
++	printk(KERN_ERR "CURR: %d %d %s %ld %ld\n", old_pid, curr->pid,
++			curr->comm, curr->nivcsw, curr->nvcsw);
++	put_task_struct(curr);
++
++	spin_lock_irq(&cwq->lock);
++	list_for_each_entry(work, &cwq->worklist, entry)
++		print_symbol("    %s\n", (unsigned long) work->func);
++	printk("    ----\n");
++	if (cwq->current_work)
++		print_symbol("    %s\n", (unsigned long) cwq->current_work->func);
++	spin_unlock_irq(&cwq->lock);
++
++	goto again;
++}
++
+ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+ {
+ 	int active;
+@@ -351,7 +394,7 @@ static int flush_cpu_workqueue(struct cp
+ 		spin_unlock_irq(&cwq->lock);
+ 
+ 		if (active)
+-			wait_for_completion(&barr.done);
++			flush_wait(cwq, &barr.done);
+ 	}
+ 
+ 	return active;
 
->						 (percpu workqueues 
-> are easy without changing anything in your code but the call where you 
-> create the workqueue).
-
-I do not see how it is related to scalability. And the statement
-does not even make sense. The patch already uses per-cpu workqueue
-for tasklets, otherwise it would be a disaster: guaranteed cpu non-locality.
-
-Tasklet is single thread by definition and purpose. Those a few places
-where people used tasklets to do per-cpu jobs (RCU f.e.) exist just because
-they had troubles with allocating new softirq. Workqueues do not make
-any difference: tasklet is not workqueue, it is work_struct, and you
-still will have to allocate array of per-cpu work structs, everything
-remains the same.
-
-
-> the only remaining argument is latency:
-
-You could set realtime prioriry by default, not a poor nice -5.
-If some network adapters were killed just because I run some task
-with nice --22, it would be just ridiculous.
-
-Alexey
