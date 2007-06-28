@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764380AbXF1LyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764164AbXF1L6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764380AbXF1LyV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 07:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759564AbXF1LyN
+	id S1764164AbXF1L6I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 07:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbXF1L55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 07:54:13 -0400
-Received: from smtpout.mac.com ([17.250.248.183]:56776 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758581AbXF1LyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 07:54:12 -0400
-In-Reply-To: <20070628035754.GB22063@parisc-linux.org>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de> <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm> <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de> <1182483527.10524.31.camel@shinybook.infradead.org> <20070622150038.GN23017@stusta.de> <E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com> <20070627154046.GN1094@stusta.de> <468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de> <20070627173240.GR1094@stusta.de> <B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com> <20070628035754.GB22063@parisc-linux.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6B8385EC-8CD4-4E8B-94EF-293A02A62189@mac.com>
-Cc: Adrian Bunk <bunk@stusta.de>, LKML Kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, david@lang.hm,
-       Andi Kleen <ak@suse.de>, linux-arch@vger.kernel.org
+	Thu, 28 Jun 2007 07:57:57 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:26848 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758250AbXF1L54 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 07:57:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=g8wNJkzHDbD4soLIyvOL4Liz00T6iAQC2Xb0EbefiKe/h/D1cj0QrEEfYh3l8vCQxV/vaO40SIl/fOGY8TBwXa4Rz2FUxJ7AjjGB8dHwXLuGUYvU0dlkLjBN94KPNMq3uU0TKDmicb5JXTMmhYclWc3ImPSkD3vBTbGaFEjVSuc=
+Message-ID: <a781481a0706280457r4abb5046wc82cff9d49b7975e@mail.gmail.com>
+Date: Thu, 28 Jun 2007 17:27:55 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Mike Frysinger" <vapier@gentoo.org>
+Subject: sh section mismatches [was Re: 2.6.22-rc6 on Dreamcast (SH4)]
+Cc: linuxsh-dev@lists.sourceforge.net,
+       "Adrian McMenamin" <adrian@newgolddream.dyndns.info>,
+       LKML <linux-kernel@vger.kernel.org>, "Sam Ravnborg" <sam@ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Userspace compiler support of "long long"
-Date: Thu, 28 Jun 2007 07:53:51 -0400
-To: Matthew Wilcox <matthew@wil.cx>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 27, 2007, at 23:57:54, Matthew Wilcox wrote:
-> On Wed, Jun 27, 2007 at 06:30:52PM -0400, Kyle Moffett wrote:
->> Then all 64-bit archs have:
->> typedef   signed long      __s64;
->> typedef unsigned long      __u64;
->>
->> While all 32-bit archs have:
->> typedef   signed long long __s64;
->> typedef unsigned long long __u64;
->
-> include/asm-parisc/types.h:typedef unsigned long long __u64;
->
-> For both 32 and 64-bit.
->
-> include/asm-sh64/types.h:typedef unsigned long long __u64;
-> include/asm-x86_64/types.h:typedef unsigned long long  __u64;
->
-> So that's three architectures that violate your first assertion.
+Hi,
 
-Oh, ok, that makes it even easier to say this with certainty:   
-Changing the other 64-bit archs to use "long long" for their 64-bit  
-numbers will not cause additional warnings.  I'm also almost certain  
-there are no architectures which use "long long" for 128-bit  
-integers. (Moreover, I can't find hardly anything which does 128-bit  
-integers at all).
+> On Monday 25 June 2007, Adrian McMenamin wrote:
+> > Still getting this:
+> >
+> >  MODPOST vmlinux
+> > WARNING: arch/sh/boards/dreamcast/built-in.o(.data+0x0): Section
+> > mismatch: reference to .init.text: (between 'mv_dreamcast' and
+> > 'systemasic_int')
 
-Cheers,
-Kyle Moffett
+I had sent a patch for this earlier ... Adrian, did you try (build + boot +
+testrun) with it? Does this one go away (and system executes fine)?
 
+[ http://lkml.org/lkml/diff/2007/6/23/116/1 ]
+
+[ This has to do with __init functions calling __initmv functions in a
+zillion files in arch/sh/boards/.../setup.c which is problematic when
+__initmv is not __init itself (!SH_GENERIC && !SH_UNKNOWN) ]
+
+> > WARNING: drivers/built-in.o(.text+0x168e0): Section mismatch: reference
+> > to .init.data: (between 'pvr2fb_check_var' and 'pvr2fb_interrupt')
+> > WARNING: drivers/built-in.o(.text+0x1701c): Section mismatch: reference
+> > to .init.data: (between 'pvr2fb_pci_probe' and 'read_mem')
+> > WARNING: drivers/built-in.o(.text+0x17024): Section mismatch: reference
+> > to .init.text: (between 'pvr2fb_pci_probe' and 'read_mem')
+> > WARNING: drivers/built-in.o(.data+0x738): Section mismatch: reference
+> > to .init.text: (between 'board_list' and 'pvr2fb_pci_driver')
+> > WARNING: drivers/built-in.o(.data+0x750): Section mismatch: reference
+> > to .init.text: (between 'board_list' and 'pvr2fb_pci_driver')
+
+drivers/video/pvr2fb.c is a mess with __init, __initdata, __devinit and
+__devinitdata (__exit and __devexit variants for good measure) all being
+used and referencing each other freely ... I have no idea what function
+should actually be what. Sam normally knows about such things,
+adding him to Cc: list.
+
+On 6/28/07, Mike Frysinger <vapier@gentoo.org> wrote:
+> it means there is code that is not marked as init making references
+> function/data that is marked as init ...
+
+These warnings are most likely bogus (still good to get rid of them,
+of course).
+
+BTW, in include/asm-sh/machvec_init.h, __initmv is:
+
+__attribute__((__section__(".machvec.init")))	/* .machvec.init */
+
+But from arch/sh/kernel/vmlinux.ld.S the name of the section is:
+
+__machvec_start = .;
+.init.machvec : { *(.init.machvec) }		/* .init.machvec */
+__machvec_end = .;
+
+Am I obtuse, or is there something weird about this?
+
+Satyam
