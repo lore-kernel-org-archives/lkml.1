@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764719AbXF1QZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763493AbXF1Q1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764719AbXF1QZG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 12:25:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760085AbXF1QY4
+	id S1763493AbXF1Q1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 12:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXF1Q1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 12:24:56 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44154 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760042AbXF1QYz (ORCPT
+	Thu, 28 Jun 2007 12:27:42 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:54232 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757366AbXF1Q1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 12:24:55 -0400
-Date: Thu, 28 Jun 2007 17:30:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: William D Waddington <william.waddington@beezmo.com>
-Cc: Helge Hafting <helge.hafting@aitel.hist.no>, linux-kernel@vger.kernel.org,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Please release a stable kernel Linux 3.0
-Message-ID: <20070628173051.4a3422c0@the-village.bc.nu>
-In-Reply-To: <4683D3B0.1040708@beezmo.com>
-References: <fa.ZV8hYZHQHqzfx1dgOFeEVFRogSg@ifi.uio.no>
-	<oor483d2nqn6ae728com1v7v56g0ksotov@4ax.com>
-	<4683983E.5020103@aitel.hist.no>
-	<4683D3B0.1040708@beezmo.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Jun 2007 12:27:41 -0400
+Message-ID: <4683E17A.3060706@kernel.org>
+Date: Thu, 28 Jun 2007 09:27:38 -0700
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
+       casey@schaufler-ca.com, Andrew Morton <akpm@google.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, KaiGai Kohei <kaigai@kaigai.gr.jp>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] file capabilities: get_file_caps cleanups
+References: <20070628002041.GA10429@sergelap.austin.ibm.com> <468350D1.9010902@kernel.org> <20070628134702.GB29641@sergelap.austin.ibm.com>
+In-Reply-To: <20070628134702.GB29641@sergelap.austin.ibm.com>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Fair enough:
-> http://www.tahomatech.com/downloads/drivers/linux_2.6/pci/x86/compressed_tarfiles/
-> or for your browsing pleasure:
-> http://www.tahomatech.com/downloads/drivers/linux_2.6/pci/x86/files/
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Serge E. Hallyn wrote:
+>>>>  		kfree(dcaps);
+> Move this two lines down (rc defaults to 0 in goto above):
+> from here-->
+>>>> +clear_caps:
+>>>> +	if (rc) {
+> to here-->
 > 
-> But I really don't see much hope :(  Coding style, masses of ioctls,
-> build and install technique,  limited user base, etc, etc, etc...  Most
-> of the above to keep API compatibility with other OS/older drivers -
-> back to SunOS 4.1.3.  (BTW, it does seem to work...)
+>> Hmm?  But if we succeeded we still want to free dcaps if we
+>> kmalloc()'d it.
 
-Its small, its relatively sanely structured and its not that bad
-stylewise. Nothing a few seds, an indent and a polish wouldn't cure. As
-to the ioctls - its a specialised driver for specialised purposes so the
-ioctls are not IMHO an issue beyond worrying about compat_ and if you
-want compat_ interfaces for them or not.
+I wasn't clear enough... Let me try again with different words.
 
-> And I probably have the license wrong.  The code has always been in
-> the public domain.  (Advice welcome...)
+If you look at your patch, you will see that the only use of the label
+'clear_caps:' is as a jump target from a location in which rc=0. As
+such, you will *not* clear the bprm->cap_* sets... This is the reverse
+of what you intended to do.
 
-Public domain is GPL compatible. 
+You need to put the jump target 'inside' the 'if (rc) { <-here ... }'.
 
-> My (mild) beef is more like what I take to be Al's point: it feels like
-> there is a kind of hostility toward out-of-tree maintainers.  Why not
+Cheers
 
-Some of that comes about because a lot of them are out of tree
-maintaining non-free stuff, shipping binary products - often entirely
-binary without a Linux or GPL label - until the man in black catches them
-and sues them in Germany.
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-> encourage _all_ of us who are beavering away at open-source code?  My
-> stuff doesn't belong in mainline, but it _is_ open, and in some minor
-> way allows more folks to run Linux.
-
-Quite honestly your stuff is *less* obscure than some of the hardware we
-have in-tree drivers for, and rather cleaner.
-
-> A cleaned-up, consistent, and out-of-tree friendly way of handling API
-> changes might help us all.
-
-The problem is that its very impractical. If I change a kernel API I fix
-up the in tree users and test those I can, that's "accepted practice" -
-you make mess doing a job you clean it up. I can't do that for out of
-tree code because its out of tree.
+iD8DBQFGg+F6+bHCR3gb8jsRAm2AAJ9v0fz/S/+HvGWOhU6UBPbB4iY+MACggZqA
++yCrxg2UVKdDKOh6kPfh0QI=
+=Qksf
+-----END PGP SIGNATURE-----
