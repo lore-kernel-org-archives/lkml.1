@@ -1,117 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763535AbXF1SDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765325AbXF1SDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763535AbXF1SDD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759676AbXF1SCz
+	id S1765325AbXF1SDj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760386AbXF1SDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:02:55 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:29035 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755294AbXF1SCy (ORCPT
+	Thu, 28 Jun 2007 14:03:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45553 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760836AbXF1SDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:02:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ZW0Evyis2EbeVay8bRMjsHwNp0xSFnZA5i7g3ANmiIF6E78NsBRlnW4NBCPVsiCYC8e4XRkH+V6pu9FfPJYu6I/VD/KkV1er/aIgGszwLgU774pEMBQiPyN61NhUyLOelAkRCQssoVEf7vl/NhxUR+giCQ2NHBAUlOS5jgnrDAc=
-Message-ID: <e9c3a7c20706281102l5db2e91alf465e7983d68f284@mail.gmail.com>
-Date: Thu, 28 Jun 2007 11:02:53 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "john stultz" <johnstul@us.ibm.com>, "Oleg Nesterov" <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Dipankar Sarma" <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru,
-       "Jeff Garzik" <jeff@garzik.org>
-In-Reply-To: <Pine.LNX.4.58.0706280823020.19012@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 28 Jun 2007 14:03:30 -0400
+Date: Thu, 28 Jun 2007 11:02:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/7] ICH Force HPET: Make generic time capable of
+ switching broadcast timer
+Message-Id: <20070628110254.3957c927.akpm@linux-foundation.org>
+In-Reply-To: <1183034748.3504.3.camel@localhost.localdomain>
+References: <20070622203822.GA22807@linux-os.sc.intel.com>
+	<20070628001221.364438ce.akpm@linux-foundation.org>
+	<20070628012749.caf450f6.akpm@linux-foundation.org>
+	<1183034748.3504.3.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070622040014.234651401@goodmis.org>
-	 <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
-	 <20070622204058.GA11777@elte.hu>
-	 <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
-	 <20070622215953.GA22917@elte.hu>
-	 <e9c3a7c20706251846v17347ab2n4a1d314734528c95@mail.gmail.com>
-	 <1182823276.5493.240.camel@localhost.localdomain>
-	 <e9c3a7c20706251912i77ac75a0o60981590a08c34e6@mail.gmail.com>
-	 <Pine.LNX.4.58.0706280823020.19012@gandalf.stny.rr.com>
-X-Google-Sender-Auth: 8f2f311bed2f80a6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/28/07, Steven Rostedt <rostedt@goodmis.org> wrote:
->
-> Hi Dan,
->
-> On Mon, 25 Jun 2007, Dan Williams wrote:
->
-> > Yes you are right, ARM does not flush L1 when prev==next in switch_mm.
-> >
-> > > Perhaps something else is at fault here.
-> > >
-> > I'll try and dig a bit deeper...
->
-> BTW:
->
->  static int __init iop_adma_init (void)
->  {
-> +       iop_adma_workqueue = create_workqueue("iop-adma");
-> +       if (!iop_adma_workqueue)
-> +               return -ENODEV;
-> +
->
-> Could you also try upping the prio of all the "iop-adma" threads?
->
-Unfortunately setting the thread to real time priority makes
-throughput slightly worse.  Instead of floating around 35MB/s the
-resync speed is stuck around 30MB/s:
+On Thu, 28 Jun 2007 08:45:48 -0400 Eric Paris <eparis@redhat.com> wrote:
 
-[ iop-adma: hi-prio workqueue based callbacks ]
-iq81340mc:~# cat /proc/mdstat
-Personalities : [raid0] [raid1] [raid10] [raid6] [raid5] [raid4]
-md0 : active raid5 sdd[4] sdc[2] sdb[1] sda[0]
-      468872448 blocks level 5, 64k chunk, algorithm 2 [4/3] [UUU_]
-      [>....................]  recovery =  3.9% (6107424/156290816)
-finish=84.9min speed=29448K/sec
+> On Thu, 2007-06-28 at 01:27 -0700, Andrew Morton wrote:
+> > On Thu, 28 Jun 2007 00:12:21 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > I can't start the X server any more, but that's probably unrelated ;)
+> > > 
+> > > <goes back to yet another bisection search.  sigh.  you guys have
+> > > me hopelessly outnumbered>
+> > 
+> > And the winner of the u-o-akpm-1-hour-of-his-life-back award (and the bonus
+> > u-delayed-next-mm-by-a-day award!) is ....  git-selinux.patch!
+> > 
+> > (II) Loading /usr/lib/xorg/modules/libvgahw.so
+> > (II) Module vgahw: vendor="X.Org Foundation"
+> >         compiled for 7.0.0, module version = 0.1.0
+> >         ABI class: X.Org Video Driver, version 0.8
+> > (**) I810(0): Depth 24, (--) framebuffer bpp 32
+> > (==) I810(0): RGB weight 888
+> > (==) I810(0): Default visual is TrueColor
+> > (II) Loading sub module "int10"
+> > (II) LoadModule: "int10"
+> > (II) Reloading /usr/lib/xorg/modules/libint10.so
+> > (II) I810(0): initializing int10
+> > (EE) I810(0): Cannot shmat() low memory
+> > (EE) I810(0): shmat(low_mem) error: Invalid argument
+> > (EE) I810(0): VBE initialization failed.
+> 
+> It has been found and the policy people already know about it.
 
-The iop-adma tasklet cleans up any completed descriptors and in the
-process calls any attached callbacks.  For the raid5 resync case the
-callback is simply:
+So I spent slightly over an hour hunting down an already-known-about bug.
 
-static void ops_complete_check(void *stripe_head_ref)
-{
-        struct stripe_head *sh = stripe_head_ref;
-        int pd_idx = sh->pd_idx;
+>  I'm not
+> sure what the upstream status of the fixed policy is should appear soon.
 
-        pr_debug("%s: stripe %llu\n", __FUNCTION__,
-                (unsigned long long)sh->sector);
+We cannot merge a kernel change which requires a userspace upgrade to get
+the X server working again.
 
-        if (test_and_clear_bit(STRIPE_OP_MOD_DMA_CHECK, &sh->ops.pending) &&
-                sh->ops.zero_sum_result == 0)
-                set_bit(R5_UPTODATE, &sh->dev[pd_idx].flags);
+You can do it the other way: make the X server work by default (my patch)
+then, in your upgraded userspace, set /proc/sys/kernel/mmap_min_addr to
+65536.  
 
-        set_bit(STRIPE_OP_CHECK, &sh->ops.complete);
-        set_bit(STRIPE_HANDLE, &sh->state);
-        release_stripe(sh);
-}
-
-
-[ iop-adma: tasklet based callbacks ]
-iq81340mc:~# cat /proc/mdstat
-Personalities : [raid0] [raid1] [raid10] [raid6] [raid5] [raid4]
-md0 : active raid5 sdd[4] sdc[2] sdb[1] sda[0]
-      468872448 blocks level 5, 64k chunk, algorithm 2 [4/3] [UUU_]
-      [=>...................]  recovery =  5.1% (8024248/156290816)
-finish=47.9min speed=51486K/sec
-
---
-Dan
+Repeat: I think you should have used /proc/sys/vm/ for that tunable.
