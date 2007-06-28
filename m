@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765325AbXF1SDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765024AbXF1SHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765325AbXF1SDj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760386AbXF1SDb
+	id S1765024AbXF1SHZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbXF1SHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:03:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45553 "EHLO
+	Thu, 28 Jun 2007 14:07:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48800 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760836AbXF1SDa (ORCPT
+	by vger.kernel.org with ESMTP id S1753731AbXF1SHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:03:30 -0400
-Date: Thu, 28 Jun 2007 11:02:54 -0700
+	Thu, 28 Jun 2007 14:07:13 -0400
+Date: Thu, 28 Jun 2007 11:06:44 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/7] ICH Force HPET: Make generic time capable of
- switching broadcast timer
-Message-Id: <20070628110254.3957c927.akpm@linux-foundation.org>
-In-Reply-To: <1183034748.3504.3.camel@localhost.localdomain>
-References: <20070622203822.GA22807@linux-os.sc.intel.com>
-	<20070628001221.364438ce.akpm@linux-foundation.org>
-	<20070628012749.caf450f6.akpm@linux-foundation.org>
-	<1183034748.3504.3.camel@localhost.localdomain>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
+Message-Id: <20070628110644.a530cfef.akpm@linux-foundation.org>
+In-Reply-To: <20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+	<20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,46 +28,52 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007 08:45:48 -0400 Eric Paris <eparis@redhat.com> wrote:
+On Thu, 28 Jun 2007 15:37:15 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-> On Thu, 2007-06-28 at 01:27 -0700, Andrew Morton wrote:
-> > On Thu, 28 Jun 2007 00:12:21 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > I can't start the X server any more, but that's probably unrelated ;)
-> > > 
-> > > <goes back to yet another bisection search.  sigh.  you guys have
-> > > me hopelessly outnumbered>
-> > 
-> > And the winner of the u-o-akpm-1-hour-of-his-life-back award (and the bonus
-> > u-delayed-next-mm-by-a-day award!) is ....  git-selinux.patch!
-> > 
-> > (II) Loading /usr/lib/xorg/modules/libvgahw.so
-> > (II) Module vgahw: vendor="X.Org Foundation"
-> >         compiled for 7.0.0, module version = 0.1.0
-> >         ABI class: X.Org Video Driver, version 0.8
-> > (**) I810(0): Depth 24, (--) framebuffer bpp 32
-> > (==) I810(0): RGB weight 888
-> > (==) I810(0): Default visual is TrueColor
-> > (II) Loading sub module "int10"
-> > (II) LoadModule: "int10"
-> > (II) Reloading /usr/lib/xorg/modules/libint10.so
-> > (II) I810(0): initializing int10
-> > (EE) I810(0): Cannot shmat() low memory
-> > (EE) I810(0): shmat(low_mem) error: Invalid argument
-> > (EE) I810(0): VBE initialization failed.
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> It has been found and the policy people already know about it.
+> check_signature() uses readb() and therefore should only be build on
+> CONFIG_HAS_IOMEM.
+> 
+> Otherwise breaks s390:
+> lib/check_signature.c: In function `check_signature':
+> lib/check_signature.c:19: error: implicit declaration of function `readb'
+> 
 
-So I spent slightly over an hour hunting down an already-known-about bug.
+Ah, right, I've been discussing identical m68k breakage with Roman and Geert.
 
->  I'm not
-> sure what the upstream status of the fixed policy is should appear soon.
+> ---
+>  lib/Makefile |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.22-rc6-mm1/lib/Makefile
+> ===================================================================
+> --- linux-2.6.22-rc6-mm1.orig/lib/Makefile
+> +++ linux-2.6.22-rc6-mm1/lib/Makefile
+> @@ -5,8 +5,7 @@
+>  lib-y := ctype.o string.o vsprintf.o cmdline.o \
+>  	 rbtree.o radix-tree.o dump_stack.o \
+>  	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
+> -	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
+> -	 check_signature.o
+> +	 sha1.o irq_regs.o reciprocal_div.o argv_split.o
+>  
+>  lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
+>  lib-$(CONFIG_SMP) += cpumask.o
+> @@ -22,7 +21,7 @@ CFLAGS_kobject_uevent.o += -DDEBUG
+>  endif
+>  
+>  obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
+> -obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
+> +obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
+>  obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
+>  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
+>  lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
 
-We cannot merge a kernel change which requires a userspace upgrade to get
-the X server working again.
+We didn't think of that.
 
-You can do it the other way: make the X server work by default (my patch)
-then, in your upgraded userspace, set /proc/sys/kernel/mmap_min_addr to
-65536.  
+Alas, m68k `make allmodconfig' creates CONFIG_ISA=n, CONFIG_PCI=n,
+CONFIG_HAS_IOMEM=y, so it will still be busted.
 
-Repeat: I think you should have used /proc/sys/vm/ for that tunable.
+But this seems to be the correct fix.  Perhaps m68k config needs
+attention?
