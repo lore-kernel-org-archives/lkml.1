@@ -1,135 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763703AbXF1AsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763888AbXF1A4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763703AbXF1AsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 20:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXF1AsB
+	id S1763888AbXF1A4u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 20:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbXF1A4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 20:48:01 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60914 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759482AbXF1AsA (ORCPT
+	Wed, 27 Jun 2007 20:56:42 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:60444 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758944AbXF1A4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 20:48:00 -0400
-Date: Wed, 27 Jun 2007 17:46:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, Eric Dumazet <dada1@cosmosbay.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       chris@atlee.ca,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] long freezes on thinkpad t60
-In-Reply-To: <Pine.LNX.4.64.0706271545490.3879@alien.or.mcafeemobile.com>
-Message-ID: <alpine.LFD.0.98.0706271725050.8675@woody.linux-foundation.org>
-References: <20070620093612.GA1626@ff.dom.local>
- <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
- <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
- <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
- <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
- <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
- <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
- <4680D162.9050603@yahoo.com.au> <alpine.LFD.0.98.0706261016200.8675@woody.linux-foundation.org>
- <4681F448.3040201@yahoo.com.au> <alpine.LFD.0.98.0706262249590.8675@woody.linux-foundation.org>
- <alpine.LFD.0.98.0706271233300.8675@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706271310550.5219@alien.or.mcafeemobile.com>
- <alpine.LFD.0.98.0706271500260.8675@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706271545490.3879@alien.or.mcafeemobile.com>
+	Wed, 27 Jun 2007 20:56:41 -0400
+To: davids@webmaster.com
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <MDEHLPKNGKAHNMBLJOLKAELBEOAC.davids@webmaster.com>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Wed, 27 Jun 2007 21:56:22 -0300
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAELBEOAC.davids@webmaster.com> (David Schwartz's message of "Wed\, 27 Jun 2007 16\:53\:14 -0700")
+Message-ID: <ory7i4zykp.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 27, 2007, "David Schwartz" <davids@webmaster.com> wrote:
 
+> Alexandre Oliva writes:
 
-On Wed, 27 Jun 2007, Davide Libenzi wrote:
+>> Yes, but in the scenario I proposed, the source code *is* in the
+>> preferred form for making modifications, it just so happens to be
+>> behind a barrier you cannot trespass.  This is not different from
+>> shipping binaries and sources in a CD inside a locked box that you
+>> can't open.  You've received both, but how is the fact that you can't
+>> reach the source code (or the binaries) a violation of the GPL in this
+>> case?
 
-> On Wed, 27 Jun 2007, Linus Torvalds wrote:
-> > 
-> > Stores never "leak up". They only ever leak down (ie past subsequent loads 
-> > or stores), so you don't need to worry about them. That's actually already 
-> > documented (although not in those terms), and if it wasn't true, then we 
-> > couldn't do the spin unlock with just a regular store anyway.
-> 
-> Yes, Intel has never done that. They'll probably never do it since it'll 
-> break a lot of system software (unless they use a new mode-bit that 
-> allows system software to enable lose-ordering). Although I clearly 
-> remember to have read in one of their P4 optimization manuals to not 
-> assume this in the future.
+> Behind a barrier is not the preferred form for modification.
 
-That optimization manual was confused. 
+Where does it state that there must not be a barrier?  I see it saying
+the source must accompany the binary, under 3a.  
 
-The Intel memory ordering documentation *clearly* states that only reads 
-pass writes, not the other way around.
+> Encrypted with a key you don't have is not the preferred form for
+> modification.
 
-Some very confused people have thought that "pass" is a two-way thing. 
-It's not. "Passing" in the Intel memory ordering means "go _ahead_ of", 
-exactly the same way it means in traffic. You don't "pass" people by 
-falling behind them.
+Indeed, but why does it matter?  In a CD is not the preferred form for
+making modifications either.  In fact, in the CD, you can't modify it
+at all.  What's *behind* encryption is the source code, along with the
+binary it accompanies.
 
-It's also obvious from reading the manual, because any other reading would 
-be very strange: it says
+>> And, if it's not a violation, what is it that makes the case of
+>> shipping programs in a locked enclosure different from shipping them
+>> in a locked computing device?
 
- 1. Reads can be carried out speculatively and in any order
+> I honestly don't see what relevance this could possibly
+> have. Getting access to the source is a fundamental GPL right.
 
- 2. Reads can pass buffered writes, but the processor is self-consistent
+That's the spirit.  But where does the *letter* of the GPL state it?
 
- 3. Writes to memory are always carried out in program order [.. and then 
-    lists exceptions that are not interesting - it's clflush and the 
-    non-temporal stores, not any normal writes ]
+> By this argument, shipping a GPL'd work in ROM would violate the GPL
+> because you cannot easily modify that particular copy.
 
- 4. Writes can be buffered
+I've already explained that the inability to modify what's in the CD
+is not a restriction imposed by whoever recorded the bits in there as
+a means to stop you from making modifications.
 
- 5. Writes are not performed speculatively; they are only performed for 
-    instructions that have actually been retired.
+>> I ought to be entitled to modify any bit in the executable and
+>> expect that to have the same effect as modifying that bit on that
+>> executable on any other computer.
 
- 6. Data from buffered writes can be forwarded to waiting reads within the 
-    processor.
+> Nope, sorry. If this were true, you ought to be entitled to modify a bit in
+> the Linux kernel and have it have the same effect as modifying that Linux
+> kernel on my desktop.
 
- 7. Reads or writes cannot pass (be carried out ahead of) I/O 
-    instructions, locked instructions or serializing instructions.
+If your desktop is sufficiently similar, and the kernel binaries are
+identical, why should I not expect the same result to arise?
 
- 8. Reads cannot pass LFENCE and MFENCE instructions.
+> Again, nonsense view leads to nonsense conclusions.  The fix is to
+> reject the nonsense view. There are no special GPL rights to
+> particular copies of works or particular hardware.
 
- 9. Writes cannot pass SFENCE or MFENCE instructions.
+  2. You may modify your copy or copies of the Program or any portion
+     of it          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The thing to note is:
+>> The fact that it stops
+>> working as a result of TiVo's design to prohibit modification, rather
+>> than by any other differences in the computer (e.g., the absence of
+>> the signature checks), just goes to show that there is intent to
+>> impose further restrictions on modification of the software.
 
- a) in (1), Intel says that reads can occur in any order, but (2) makes it 
-    clear that that is only relevant wrt other _reads_
+> Intent is not the issue.
 
- b) in (2), they say "pass", but then they actually explain that "pass" 
-    means "be carried out ahead of" in (7). 
+Imposing further restrictions is the issue.
 
-    HOWEVER, it should be obvious in (2) even _without_ the explicit 
-    clarification in (7) that "pass" is a one-way thing, because otherwise 
-    (2) is totally _meaningless_. It would be meaningless for two reasons:
+> If modifying software in this way is a GPL right, then anything that
+> prevents you from modifying software in this way is a GPL violation.
 
-     - (1) already said that reads can be done in any order, so if that 
-       was a "any order wrt writes", then (2) would be pointless. So (2) 
-       must mean something *else* than "any order", and the only sane 
-       reading of it that isn't "any order" is that "pass" is a one-way 
-       thing: you pass somebody when you go ahead of them, you do *not* 
-       pass somebody when you fall behind them!
+If it is imposed by the licensee, yes, it is indeed.
 
-     - if (2) really meant that reads and writes can just be re-ordered, 
-       then the choice of words makes no sense. It would be much more 
-       sensible to say that "reads can be carried out in any order wrt 
-       writes", instead of talking explicitly about "passing buffered 
-       writes"
+> If you can't distribute so as to give all GPL rights, you can't
+> distribute at all.
 
-Anyway, I'm pretty damn sure my reading is correct. And no, it's not a "it 
-happens to work". It's _architecturally_required_ to work, and nobody has 
-ever complained about the use of a simple store to unlock a spinlock 
-(which would only work if the "reads can pass" only means "*later* reads 
-can pass *earlier* writes").
+Exactly.
 
-And it turns out that I think #1 is going away. Yes, the uarch will 
-internally re-order reads, wrt each other, but if it isn't architecturally 
-visible, then from an architectural standpoint #1 simply doesn't happen.
+> If the GPL says I can modify my distributed copy, then distributing
+> on CDROM is a GPL violation.
 
-I can't guarantee that will happen, of course, but from talking to both 
-AMD and Intel people, I think that they'll just document the stricter 
-rules as the de-facto rules.
+It doesn't state "you must distribute sources in modifyable media", it
+says "you may modify your copies, and the distributor must not have
+imposed restrictions on your exercise of this right"
 
-		Linus
+If you can't modify your copies because others get in the way, too
+bad.  If you can't just because the distributor stops you, there's a
+GPL violation.
+
+> It is mind-bogglingly obvious that any sort of "right to modify one
+> particular copy" is *not* a GPL right.
+
+Please read the license instead of assuming you know what it says.
+You clearly don't.  See above.
+
+> You are wasting an awful lot of time and effort analyzing things that have
+> *NO* GPL consequence at all.
+
+Let's just say I honestly hope you are right and I'm wrong.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
