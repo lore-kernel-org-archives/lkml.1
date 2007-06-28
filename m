@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763493AbXF1Q1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbXF1Qdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763493AbXF1Q1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 12:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXF1Q1m
+	id S1760922AbXF1Qdb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 12:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbXF1QdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 12:27:42 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:54232 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757366AbXF1Q1l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 12:27:41 -0400
-Message-ID: <4683E17A.3060706@kernel.org>
-Date: Thu, 28 Jun 2007 09:27:38 -0700
-From: Andrew Morgan <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+	Thu, 28 Jun 2007 12:33:24 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:51762 "EHLO relay4.usu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755257AbXF1QdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 12:33:23 -0400
+Message-ID: <4683E2CB.8090100@ums.usu.ru>
+Date: Thu, 28 Jun 2007 22:33:15 +0600
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
-       casey@schaufler-ca.com, Andrew Morton <akpm@google.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, KaiGai Kohei <kaigai@kaigai.gr.jp>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] file capabilities: get_file_caps cleanups
-References: <20070628002041.GA10429@sergelap.austin.ibm.com> <468350D1.9010902@kernel.org> <20070628134702.GB29641@sergelap.austin.ibm.com>
-In-Reply-To: <20070628134702.GB29641@sergelap.austin.ibm.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: man-pages-2.59 and man-pages-2.60 are released
+References: <467F8FCF.4080009@gmx.net> <4683BC76.8070805@ums.usu.ru> <20070628161720.298550@gmx.net>
+In-Reply-To: <20070628161720.298550@gmx.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Michael Kerrisk wrote:
+> How about a link in /pub/linux/docs/manpages/ of the form 
+> "LATEST-IS-m.xy"?  Rob Landley was wanting something like this,
+> and I guess it would be easy for LFS to build a simple
+> script that looks for that link and deduces "man-pages-m.xy" 
+> from it.  (I've just now created such a link in the directory,
+> as an example.)
 
-Serge E. Hallyn wrote:
->>>>  		kfree(dcaps);
-> Move this two lines down (rc defaults to 0 in goto above):
-> from here-->
->>>> +clear_caps:
->>>> +	if (rc) {
-> to here-->
-> 
->> Hmm?  But if we succeeded we still want to free dcaps if we
->> kmalloc()'d it.
+We don't care about the latest version, so the link neither helps nor hurts 
+us. What's needed is that the URL and the MD5 sum for a version in the book 
+don't change, and that LFS developers have a reasonable time (say, two 
+weeks) to react to version updates. We don't want every other SVN commit to 
+the book source to be a version update of man-pages :)
 
-I wasn't clear enough... Let me try again with different words.
+E.g., currently, the book at 
+http://www.linuxfromscratch.org/lfs/view/development/chapter03/packages.html 
+says:
 
-If you look at your patch, you will see that the only use of the label
-'clear_caps:' is as a jump target from a location in which rc=0. As
-such, you will *not* clear the bprm->cap_* sets... This is the reverse
-of what you intended to do.
+  Man-pages (2.56) - 1,764 KB:
+     Download: 
+http://www.kernel.org/pub/linux/docs/manpages/man-pages-2.56.tar.bz2
+     MD5 sum: 4144874a924b0a8d1f67e19f70d13f08
 
-You need to put the jump target 'inside' the 'if (rc) { <-here ... }'.
+The script parses this information out of the XML source of the book, 
+downloads the package and installs it according to the instructions found 
+elsewhere in the book.
 
-Cheers
+The script (jhalfs) and the book can be downloaded from svn:
 
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+svn co svn://svn.linuxfromscratch.org/ALFS/jhalfs/trunk jhalfs
+svn co svn://svn.linuxfromscratch.org/LFS/trunk/BOOK lfs
 
-iD8DBQFGg+F6+bHCR3gb8jsRAm2AAJ9v0fz/S/+HvGWOhU6UBPbB4iY+MACggZqA
-+yCrxg2UVKdDKOh6kPfh0QI=
-=Qksf
------END PGP SIGNATURE-----
+-- 
+Alexander E. Patrakov
