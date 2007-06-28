@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765797AbXF1Uqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765644AbXF1UuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765797AbXF1Uqp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 16:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759655AbXF1Uqi
+	id S1765644AbXF1UuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 16:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbXF1UuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 16:46:38 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:42803 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbXF1Uqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 16:46:37 -0400
-Date: Thu, 28 Jun 2007 16:46:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Dan Williams <dan.j.williams@intel.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-In-Reply-To: <e9c3a7c20706281102l5db2e91alf465e7983d68f284@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0706281632510.27157@gandalf.stny.rr.com>
-References: <20070622040014.234651401@goodmis.org> 
- <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> 
- <20070622204058.GA11777@elte.hu>  <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
-  <20070622215953.GA22917@elte.hu>  <e9c3a7c20706251846v17347ab2n4a1d314734528c95@mail.gmail.com>
-  <1182823276.5493.240.camel@localhost.localdomain> 
- <e9c3a7c20706251912i77ac75a0o60981590a08c34e6@mail.gmail.com> 
- <Pine.LNX.4.58.0706280823020.19012@gandalf.stny.rr.com>
- <e9c3a7c20706281102l5db2e91alf465e7983d68f284@mail.gmail.com>
+	Thu, 28 Jun 2007 16:50:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:47077 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760123AbXF1UuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 16:50:08 -0400
+Message-ID: <46841EC4.7080805@goop.org>
+Date: Thu, 28 Jun 2007 16:49:08 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
+       chrisw@sous-sol.org, xen-devel@lists.xensource.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc6-mm1: Xen: WARNING: Absolute relocations present
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <20070628204001.GA6087@stusta.de>
+In-Reply-To: <20070628204001.GA6087@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, Dan Williams wrote:
-> >
-> Unfortunately setting the thread to real time priority makes
-> throughput slightly worse.  Instead of floating around 35MB/s the
-> resync speed is stuck around 30MB/s:
+Adrian Bunk wrote:
+> <--  snip  -->
+>
+> ...
+>   RELOCS  arch/i386/boot/compressed/vmlinux.relocs
+> WARNING: Absolute relocations present
+> Offset     Info     Type     Sym.Value Sym.Name
+> c0101f80 020c6501   R_386_32 00000000  xen_irq_disable_direct_reloc
+> c0101f9a 0221ea01   R_386_32 00000000  xen_save_fl_direct_reloc
+> ...
+>
+> <--  snip  -->
+>   
 
-That is really strange. If you higher the prio of the work queue it
-gets worst?  Something really strange is happening here?  Are you using
-CONFIG_PREEMPT?
+Hm.  Those are false alarms.  I guess I could do something to hide them, 
+but there's nothing inherently wrong with correctly used abs symbols.  
+Is there someway to whitelist them?
 
--- Steve
+    J
 
