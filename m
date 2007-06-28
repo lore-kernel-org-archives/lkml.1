@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbXF1Ota@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763399AbXF1Oto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762862AbXF1Ota (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762191AbXF1Osy
+	id S1763399AbXF1Oto (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 10:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbXF1Osz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:48:54 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2982 "EHLO spitz.ucw.cz"
+	Thu, 28 Jun 2007 10:48:55 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2984 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761433AbXF1Osu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:48:50 -0400
-Date: Thu, 28 Jun 2007 14:08:15 +0000
+	id S1761657AbXF1Osx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 10:48:53 -0400
+Date: Thu, 28 Jun 2007 14:25:32 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Christian Leber <christian@leber.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: beeping patch for debugging acpi sleep
-Message-ID: <20070628140815.GA5339@ucw.cz>
-References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz> <20070602182014.GB29546@core> <20070609130817.GI27793@elf.ucw.cz> <20070616194634.GA15953@core> <20070624204629.GA28049@core>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rjw@sisk.pl>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
+Message-ID: <20070628142532.GC5339@ucw.cz>
+References: <200706192118.23706.nigel@nigel.suspend2.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070624204629.GA28049@core>
+In-Reply-To: <200706192118.23706.nigel@nigel.suspend2.net>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > The results are a bit unclear, I took a 2.6.22-rc4 with beep.
-> > Logged into KDE.
-> > (hardware: Dell Latitude D810)
-> > 
-> > S = successfull resume
-> > D = had to resume 2 times, that means when pressing the power button the
-> > LED goes from blinking to on and after a few seconds it goes back to
-> > blinking, but without a beep in between; after pressing the power button
-> > a second time resume is successfull
-> > F = resume failes, NO beep
-> > 
-> > -run 1: D D F
-> > -run 2: D D D(some X garbadge) F
-> > -run 3: S S S S S S F
-> > -run 4: S S F
-> > -run 5: D F
+> Hi all
 > 
-> I tracked the problem halfway down, with 2.6.20-rc1-ubuntu1 [1] it works
-> and with 2.6.20-rc2-ubuntu2 [2] not.
+> Here's what I have after today's work.
 > 
-> The diff is here, unfortunately the acpi changes are about 100kb.
-> http://debian.christian-leber.de/2.2-3.4.patch
+> I haven't yet been able to test on x86, but can confirm that it works okay on x86_64. I'm currently working towards testing it on my old Omnibook. My P4 desktop won't resume from suspend to ram at all, and hasn't produced any beeps.
 > 
-> (the problem is a bit different, it suspends, when trying to resume it
-> goes back to suspend and when i try again it's dead)
+> I needed to move the BEEP invocation to after the data segment is reloaded, so that the test could access the variable. That was pretty tricky to find - no oops or anything bad prior, it just didn't beep when expected.
+> 
+> A couple of notes:
+> 
+> - I'd like to put the BEEP macro somewhere that can be shared by x86 32 and 64. If that's a good idea, any suggestions on where? Nothing occurs to me straight off.
+> - I've just switched from Evo to Kmail. Please let me know if there's any mangling of the patch.
+> 
+> Regards,
+> 
+> Nigel
+> 
+>  arch/i386/kernel/acpi/wakeup.S   |   29 ++++++++++++++++++++++++++++-
+>  arch/x86_64/kernel/acpi/wakeup.S |   25 +++++++++++++++++++++++++
+>  include/linux/acpi.h             |    1 +
+>  kernel/power/main.c              |   23 +++++++++++++++++++++++
+>  4 files changed, 77 insertions(+), 1 deletion(-)
+> diff -ruNp 970-str-beep.patch-old/arch/i386/kernel/acpi/wakeup.S 970-str-beep.patch-new/arch/i386/kernel/acpi/wakeup.S
+> --- 970-str-beep.patch-old/arch/i386/kernel/acpi/wakeup.S	2007-06-19 12:15:25.000000000 +1000
+> +++ 970-str-beep.patch-new/arch/i386/kernel/acpi/wakeup.S	2007-06-19 21:14:49.000000000 +1000
+> @@ -11,7 +11,22 @@
+>  #
+>  # If physical address of wakeup_code is 0x12345, BIOS should call us with
+>  # cs = 0x1234, eip = 0x05
+> -# 
+> +#
+> +
+> +#define BEEP \
+> +	inb	$97, %al; 	\
+> +	outb	%al, $0x80; 	\
+> +	movb	$3, %al; 	\
+> +	outb	%al, $97; 	\
+> +	outb	%al, $0x80; 	\
+> +	movb	$-74, %al; 	\
+> +	outb	%al, $67; 	\
+> +	outb	%al, $0x80; 	\
+> +	movb	$-119, %al; 	\
+> +	outb	%al, $66; 	\
+> +	outb	%al, $0x80; 	\
+> +	movb	$15, %al; 	\
+> +	outb	%al, $66;
+>  
+>  ALIGN
+>  	.align	4096
+> @@ -31,6 +46,11 @@ wakeup_code:
+>  	movw	%cs, %ax
+>  	movw	%ax, %ds					# Make ds:0 point to wakeup_start
+>  	movw	%ax, %ss
+> +
+> +	testl   $1, beep_flags - wakeup_code
+> +	jz      1f
+> +	BEEP
+> +1:
 
-It may well be different problem :-(. 100KB diff and I'm not an acpi
-expert :-(.
+Can we rename/reuse existing flag variable?
 
-I just discovered I have problems with s2ram, too, but it looks like
-usermodehelper is responsible.
-
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
