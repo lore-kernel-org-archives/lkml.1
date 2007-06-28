@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765609AbXF1Srm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765652AbXF1Stf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765609AbXF1Srm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760208AbXF1Srg
+	id S1765652AbXF1Stf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760208AbXF1St1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:47:36 -0400
-Received: from europa.telenet-ops.be ([195.130.137.75]:57272 "EHLO
-	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756077AbXF1Srf (ORCPT
+	Thu, 28 Jun 2007 14:49:27 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4276 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758668AbXF1St1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:47:35 -0400
-Date: Thu, 28 Jun 2007 20:47:33 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
-In-Reply-To: <20070628113819.c24e592d.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706282044360.30789@anakin>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
- <20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
- <20070628110644.a530cfef.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282017450.30789@anakin>
- <20070628113819.c24e592d.akpm@linux-foundation.org>
+	Thu, 28 Jun 2007 14:49:27 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Rik van Riel <riel@redhat.com>, Andy Isaacson <adi@hexapodia.org>
+Date: Thu, 28 Jun 2007 11:49:24 -0700
+Subject: [patch 0/4] MAP_NOZERO v2 - VM_NOZERO/MAP_NOZERO early summer madness
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.5792.1183056564.0>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, Andrew Morton wrote:
-> On Thu, 28 Jun 2007 20:27:22 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > >  endif
-> > > >  
-> > > >  obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
-> > > > -obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
-> > > > +obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
-> > > >  obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
-> > > >  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
-> > > >  lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
-> > > 
-> > > We didn't think of that.
-> > > 
-> > > Alas, m68k `make allmodconfig' creates CONFIG_ISA=n, CONFIG_PCI=n,
-> > > CONFIG_HAS_IOMEM=y, so it will still be busted.
-> > > 
-> > > But this seems to be the correct fix.  Perhaps m68k config needs
-> > > attention?
-> > 
-> > Euh, I don't think this is the correct fix.
-> > 
-> > CONFIG_HAS_IOMEM is apparently used in two meanings:
-> >   1. The architecture has support for memory mapped I/O (s390 obviously
-> >      hasn't)
-> >   2. The architecture has ISA/PCI-style memory mapped I/O (readb() and
-> >      friends)
-> > 
-> > check_signature() falls under the second category.
-> > 
-> > Setting NO_IOMEM on m68k will make us loose some drivers (e.g.
-> > drivers/video/Kconfig depends on HAS_IOMEM).
-> >  
-> > Apart from many Kconfig dependencies on HAS_IOMEM, CONFIG_HAS_IOMEM is
-> > further only used to control the build of lib/iomap_copy.c, which
-> > doesn't use readb() and friends, but the __raw*() operations.
-> > 
-> 
-> Well this is fun.
-> 
-> How to fix? Should we add a new CONFIG_HAS_IO?  (IOPORTS?)
+I was using oprofile to sample some userspace code I am working on,
+and I was continuosly noticing  clear_page  in the top three entries
+of the oprofile logs.
+Also, a simple kernel build, in my Dual Opteron with 8GB of RAM,
+shows  clear_page  as the first kernel entry, second only to the
+userspace the  cc1  and  as.
+Most of the userspace code uses malloc() (and anonymous mappings) in
+such a way that the memory returned via kernel->glibc is immediately
+written soon after. The POSIX malloc() definition itself also, does
+not require the returned memory to be zeroed (as calloc() does).
+So I implemented a rather quick hack that introduces a new mmap() flag
+MAP_NOZERO (only valid for anonymous mappings) and the  vma  counter-part
+VM_NOZERO. Also, a new sys_brk2() has been introduced to accept a new
+flags  parameter. A brief description of the patches follows in the next
+emails.
+I first hacked Val's ebizzy to accept a new '-N' flag to make use of
+MAP_NOZERO:
 
-There already exists a CONFIG_HAS_IOPORT :-) (for ISA/PCI-style I/O port
-access).
+http://infohost.nmt.edu/~val/patches/ebizzy.tar.gz
+http://www.xmailserver.org/ebizzy-nzmmap-0.3.diff
 
-Just make check_signature() depend on ISA || PCI (and maybe || X86_32).
-According to its comment, it's used to `find BIOS signatures', which is
-a legacy PC thing. Please don't pollute non-legacy architectures with it ;-)
+On my box,  ebizzy  performance jumped up from 10% to 15%.
+The userspace code I am working on (uses malloc() quite heavily), saw
+a performance jump of around 14%.
+In both cases,  clear_page  dropped way down in the oprofile logs.
+I then coded quick (and rather ugly) hacks for  glibc  and  gcc  to
+make them use the new features (MAP_NOZERO and sys_brk2()):
 
-Gr{oetje,eeting}s,
+http://www.xmailserver.org/glibc-nzmalloc-tweaks
+http://www.xmailserver.org/gcc-nozero-hack
 
-						Geert
+I then tried a 2.6.22-rc5 kernel build using the newly built  glibc
+and  gcc  (with and w/out no-zero enabling options/env-vars), and
+when using the no-zero mode,  clear_page  went way down in the oprofile
+logs and build time dropped of about 2.5% to 3%.
+I did not have time (and will) to tweak  as  and  ld  also.
+These are some test utilities to verify the no-zero behaviour of MAP_NOZERO
+(and sys_brk2()):
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+http://www.xmailserver.org/nzmmap-test.c
+http://www.xmailserver.org/nzmalloc-test.c
+http://www.xmailserver.org/smiffy.c
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+To run  nzmalloc-test  you need a patched glibc (using  glibc-nzmalloc-tweaks).
+The  smiffy  one, should be run under a user that has no other processes
+running and that owns no files on the system, and it verifies that all the
+pages it gets from the kernel are zeroed (otherwise "Houston, we have a problem ...").
+It is running on my system w/out barfing by more than two days.
+How crazy is that?
+
+
+
+- Davide
+
+
+
+ChangeLog:
+
+* Version 2
+
+o Reusing _mapcount instead of adding a new field in the page struct
+o Added a fix for a setuid+exec/ptrace race (Andy spotted)
+
+
