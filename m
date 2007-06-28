@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761472AbXF1O3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbXF1OhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761472AbXF1O3k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbXF1O3c
+	id S1759761AbXF1OhO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 10:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756343AbXF1OhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:29:32 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:51540 "EHLO aun.it.uu.se"
+	Thu, 28 Jun 2007 10:37:00 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:38160 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756169AbXF1O3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:29:32 -0400
-Date: Thu, 28 Jun 2007 16:29:16 +0200 (MEST)
-Message-Id: <200706281429.l5SETGND008605@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: akpm@linux-foundation.org, htejun@gmail.com, jeff@garzik.org,
-       torvalds@linux-foundation.org
-Subject: Re: [git patches] libata fixes
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+	id S1754309AbXF1Og6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 10:36:58 -0400
+Subject: Re: [PATCH 0/6][TAKE5] fallocate system call
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
+       suparna@in.ibm.com, xfs@oss.sgi.com
+In-Reply-To: <20070628025543.9467216f.akpm@linux-foundation.org>
+References: <20070510005926.GT85884050@sgi.com>
+	 <20070510115620.GB21400@amitarora.in.ibm.com>
+	 <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com>
+	 <20070512080157.GF85884050@sgi.com>
+	 <20070612061652.GA6320@amitarora.in.ibm.com>
+	 <20070613235217.GS86004887@sgi.com>
+	 <20070614091458.GH5181@schatzie.adilger.int>
+	 <20070614120413.GD86004887@sgi.com>
+	 <20070614193347.GN5181@schatzie.adilger.int>
+	 <20070625132810.GA1951@amitarora.in.ibm.com>
+	 <20070628025543.9467216f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Thu, 28 Jun 2007 10:36:47 -0700
+Message-Id: <1183052207.4420.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 03:35:26 -0400, Jeff Garzik wrote:
->Tejun Heo (9):
->      libata: kill the infamous abnormal status message
->      libata: kill non-sense warning message
->      libata: be less verbose about hpa
->      libata: remove unused variable from ata_eh_reset()
->      libata: fix ata_dev_disable()
->      libata: fix infinite EH waiting bug
->      libata: call ata_check_atapi_dma() with qc better prepared
->      libata: use PIO for non-16 byte aligned ATAPI commands
->      libata: kill ATA_HORKAGE_DMA_RW_ONLY
+On Thu, 2007-06-28 at 02:55 -0700, Andrew Morton wrote:
 
-These changes fixed the CDROM IDENTIFY failures one of
-my older test machines used to get with libata. I now
-get much nicer results on that machine:
+> Please drop the non-ext4 patches from the ext4 tree and send incremental
+> patches against the (non-ext4) fallocate patches in -mm.
+> 
+The ext4 fallocate() patches are dependent on the core fallocate()
+patches, so ext4 patch-queue and git tree won't compile (it's not based
+on mm tree) without the core changes.
 
-ata_piix 0000:00:1f.1: version 2.11
-PCI: Setting latency timer of device 0000:00:1f.1 to 64
-scsi0 : ata_piix
-scsi1 : ata_piix
-ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x0001f000 irq 14
-ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x0001f008 irq 15
-ata1.00: ATA-5: IC35L080AVVA07-0, VA4OA52A, max UDMA/100
-ata1.00: 160836480 sectors, multi 16: LBA 
-ata1.00: configured for UDMA/100
-ata2.00: ATAPI: CRD-8320B, 1.12, max MWDMA2
-ata2.01: ATAPI: Hewlett-Packard CD-Writer Plus 9100, 1.0c, max UDMA/33
-ata2.00: configured for MWDMA2
-ata2.01: configured for UDMA/33
-scsi 0:0:0:0: Direct-Access     ATA      IC35L080AVVA07-0 VA4O PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 160836480 512-byte hardware sectors (82348 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 0:0:0:0: [sda] 160836480 512-byte hardware sectors (82348 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sda: sda1 sda2 sda3 sda4 < sda5 sda6 >
-sd 0:0:0:0: [sda] Attached SCSI disk
-scsi 1:0:0:0: CD-ROM            GoldStar CD-ROM CRD-8320B 1.12 PQ: 0 ANSI: 5
-scsi 1:0:1:0: CD-ROM            HP       CD-Writer+ 9100  1.0c PQ: 0 ANSI: 5
+We can send ext4 fallocate patches (incremental patches against mm tree)
+and drop the full fallocate patches(ext4 and non ext4 part) from ext4
+patch queue if you prefer this way.
 
-It's the CRD-8320B that used to time out and fail IDENTIFY.
+> And try to get the code finished?  Time is pressing.
+> 
+I looked at the mm tree, there are other ext4 features/changes that are
+currently in ext4-patch-queue(not ext4 git tree) that not in part of
+ext4 series yet. Ted, can you merge those patches to your git tree?
+Thanks!
 
-Tested-by: Mikael Pettersson <mikpe@it.uu.se>
+
+Thanks for your patience.
+
+Mingming.
+
