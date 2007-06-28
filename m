@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763694AbXF1GTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762709AbXF1GaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763694AbXF1GTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 02:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbXF1GTb
+	id S1762709AbXF1GaM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 02:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758415AbXF1G37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 02:19:31 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:37601 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756163AbXF1GTa (ORCPT
+	Thu, 28 Jun 2007 02:29:59 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:24684 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758190AbXF1G37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 02:19:30 -0400
-Message-ID: <468352EC.2080704@kernel.org>
-Date: Wed, 27 Jun 2007 23:19:24 -0700
-From: Andrew Morgan <morgan@kernel.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070531)
+	Thu, 28 Jun 2007 02:29:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YxqpJ0D5OAti3kU2RwlvNW77Td06VcbUgcpG4LlMYRC9fEkWuQLFJGdGrnDbbdJuTUHEr0m14oXsmQE7pv4Yzp7vrbEUIo1FdaShvxHlV0xVRbwaF8S75GHz0HX/EAyYjEJV5DFYAHylydZhXQwAa3zr0+k+0xDCN8YTZ7oqh8g=
+Message-ID: <a8e1da0706272329j42997c3eh49a1b20df5892a0e@mail.gmail.com>
+Date: Thu, 28 Jun 2007 06:29:54 +0000
+From: "dave young" <hidave.darkstar@gmail.com>
+To: "Josh Triplett" <josh@kernel.org>
+Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Chris Shoemaker" <c.shoemaker@cox.net>,
+       "Josh Triplett" <josht@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <46835047.8080600@kernel.org>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: "Serge E. Hallyn" <serge@hallyn.com>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: implement-file-posix-capabilities.patch
-References: <afff21250706110926l244ddc28i44289cb08a6721e2@mail.gmail.com> <20070617135239.GA17689@sergelap> <4676007F.7060503@kernel.org> <20070618044017.GW3723@sequoia.sous-sol.org> <20070620171037.GA28670@sergelap.ibm.com> <20070620174613.GF3723@sequoia.sous-sol.org> <20070621160011.GB9913@sergelap.austin.ibm.com> <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com> <4681EED8.6050005@kernel.org> <20070627131654.GA2679@sergelap>
-In-Reply-To: <20070627131654.GA2679@sergelap>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
+	 <20070627180552.GA746@pe.Belkin>
+	 <Pine.LNX.4.64.0706280015320.11120@fbirervta.pbzchgretzou.qr>
+	 <a8e1da0706272300q3aee30der5349e85055f62a8e@mail.gmail.com>
+	 <46835047.8080600@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+>2007/6/28, Josh Triplett <josh@kernel.org>:
+> dave young wrote:
+> > 2007/6/27, Jan Engelhardt <jengelh@computergmbh.de>:
+> >> On Jun 27 2007 14:05, Chris Shoemaker wrote:
+> >>> What I'd really like to see is, _why_ is trailing whitespace
+> >>> considered harmful?
+> >> Consumes bytes you'll never see :)
+> >>
+> >>> Something about MUAs not preserving it or something?
+> >> Well, there is format=flowed. text/plain mails with a trailing blank at the end
+> >> of line indicates the paragraph continues -- as a curtesy for mail readers with
+> >> non-fixed-font to display the paragraph coherently rather than breaking it at
+> >> 72/80 columns.
+> >>
+> >>
+> >>         Jan
+> >> --
+> >> -
+> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >> Please read the FAQ at  http://www.tux.org/lkml/
+> >>
+> >
+> > There's more potential to cause  lines end with whitespace. How about
+> > remove the "Some editors with ..."  like this :
+> >
+> > +Do not leave trailing whitespace at the ends of lines.
+> > +
+> [...]
+>
+> Many other causes for trailing whitespace exist.  However, I wanted to mention
+> one of the common causes.  If you have other common causes in mind, and even
+> better if you have ways to avoid them, we should add those too.
+>
+> It might make sense to put a paragraph break after the first sentence, though,
+> and split the information about editors into its own paragraph, adding more
+> paragraphs if people suggest other possibilities.
+>
 
-Serge E. Hallyn wrote:
->> Does that explain it?
-> 
-> Yes, thanks, but then it still could come in handy to have fE be a full
-> bitset, so the application gets some eff caps automatically, while
-> others it has to manually set...
+IMHO, another  cause of trailing whitespace is human error, for
+example long lines breaking will easy to cause the first line with one
+traling whitespace (original space between the last two words).
 
-[We touched on this a number of emails back.]
-
-If an application is capability aware, it can manipulate its own
-capabilities and should have fE=0.
-
-If an application is not capability aware, it needs to have *all* of its
-capabilities enabled at exec() time. Otherwise, it won't work.
-
-The only reason for having an fE bitmap is to allow a capability-aware
-program (you really trust to do its privileged operations carefully) to
-be lazy and get some of its capabilities raised for free. Perhaps you
-can clarify why this is a desirable thing? :-)
-
-Cheers
-
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
-
-iD8DBQFGg1LqQheEq9QabfIRAo3BAKCO8QrfcKBNqhfnn2BHp8O/qDkgXgCgleEl
-xP7LZPU9Qn6AjqI3ZM3FZ+4=
-=urmz
------END PGP SIGNATURE-----
+Regards
+dave
