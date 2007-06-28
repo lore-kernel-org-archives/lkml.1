@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbXF1KZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbXF1KaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbXF1KZe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 06:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXF1KZJ
+	id S1759200AbXF1KaA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 06:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbXF1K3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 06:25:09 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35784 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754718AbXF1KZF (ORCPT
+	Thu, 28 Jun 2007 06:29:53 -0400
+Received: from mailgw1.fraunhofer.de ([153.96.1.18]:40418 "EHLO
+	mailgw1.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755500AbXF1K3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 06:25:05 -0400
-Date: Thu, 28 Jun 2007 11:23:24 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: casey@schaufler-ca.com
-Cc: David Miller <davem@davemloft.net>, crispin@novell.com,
-       seanlkml@sympatico.ca, bunk@stusta.de, akpm@linux-foundation.org,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 00/44] AppArmor security module overview
-Message-ID: <20070628112324.4621b650@the-village.bc.nu>
-In-Reply-To: <350078.43404.qm@web36601.mail.mud.yahoo.com>
-References: <20070627.160535.71552808.davem@davemloft.net>
-	<350078.43404.qm@web36601.mail.mud.yahoo.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Jun 2007 06:29:52 -0400
+Date: Thu, 28 Jun 2007 12:27:34 +0200
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: dwmw2@infradead.org
+Cc: schilling@fokus.fraunhofer.de, linux-kernel@vger.kernel.org,
+       harald@skogtun.org, david@lang.hm
+Subject: Re: Linux Kernel include files
+Message-ID: <46838d16.ut8KQOMKsZ9HqPYT%Joerg.Schilling@fokus.fraunhofer.de>
+References: <46826d62.lTsuVo9cC7wGjcjf%Joerg.Schilling@fokus.fraunhofer.de>
+ <1182960282.1170.4.camel@pmac.infradead.org>
+In-Reply-To: <1182960282.1170.4.camel@pmac.infradead.org>
+User-Agent: nail 11.22 3/20/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 28 Jun 2007 10:29:32.0752 (UTC) FILETIME=[37880D00:01C7B96F]
+X-Fraunhofer-Email-Policy: accepted
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Anyone can apply the apparmour patch to their tree, they get the
-> > choice that way.  Nobody is currently prevented from using apparmour
-> > if they want to, any such suggestion is pure rubbish.
-> 
-> The exact same argument was made prior to SELinux going upstream.
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-Its made for every thing before it goes upstream. It shouldn't be going
-uptream until it works, is reliable and does something useful. Then if it
-ever makes that grade it can go and sit in -mm for a bit to shake down .
+> On Wed, 2007-06-27 at 16:00 +0200, Joerg Schilling wrote:
+> > Warning: *** linux/ext2_fs.h is not usable at all ***
+> > Warning: *** This makes it impossible to support Linux file flags ***
+> > You may try to compile using 'make COPTX=-DTRY_EXT2_FS'
+>
+> Again, can you be _specific_? Amusing though your consistent 'Lunix is
+> broken' chants are, the only reason I'm bothering to participate in this
+> thread is on the off-chance that something _productive_ will come of it.
 
-> > Frankly I think AppArmour is a joke,
-> 
-> "SELinux, AppArmor, and Hilary Clinton walk into a bar ..."
-
-
-SELinux orders a beer object
-AppArmor order a /beer
-Hilary says "You are both under 21 you can't"
-SELinux orders a shandy object
-AppArmor orders a /shandy
-
-SELinux is refused because the shandy mixer opened a beer object and
-	shandy inherited beer typing
-AppArmor gets drunk because /shandy and /beer are clearly different
+I have been forced to add this test as too many people reported that they
+have no been able to compile star on their Linux distribution. 
 
 
+> By the way, your mailer seems to be sometimes omitting In-Reply-To: and
+> References: headers, which RFC2822 says you SHOULD include in replies. 
+
+Sending such accusation without knowing the reason is not polite.
+
+Jörg
+
+-- 
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
