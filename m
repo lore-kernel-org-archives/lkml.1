@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764489AbXF1HOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764149AbXF1HUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764489AbXF1HOj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 03:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbXF1HOc
+	id S1764149AbXF1HUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 03:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbXF1HU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 03:14:32 -0400
-Received: from mail.cc.com.au ([202.125.40.176]:58033 "EHLO mail.cc.com.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761267AbXF1HOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 03:14:31 -0400
-X-Greylist: delayed 1572 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jun 2007 03:14:31 EDT
-Subject: linux.conf.au 2008 - call for proposals
-From: Peter Lieverdink <peter@mel8ourne.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: linux.conf.au 2008
-Date: Thu, 28 Jun 2007 16:52:21 +1000
-Message-Id: <1183013541.27713.33.camel@cachaca>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 28 Jun 2007 03:20:26 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:5031 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752820AbXF1HUZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 03:20:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O1j7Rq24xfTI3Y9aoFTujzL5eAYFI+agdqD1IUhRi5yOt6wPwXo/yGsP2Xejr5snUtY5ddl03dD2CwdrOr6iaQ1ZibDV37HKIjrMCjlpB03q8FxFo2ggLyWWKfpi2bbJhFiGL0nHJZUItN1DArr7R5KFmtuxYRXGdB4opvHZboI=
+Message-ID: <a8e1da0706280020ocf81ce7u98de87f16d674706@mail.gmail.com>
+Date: Thu, 28 Jun 2007 07:20:24 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
+Cc: "Josh Triplett" <josh@kernel.org>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Chris Shoemaker" <c.shoemaker@cox.net>,
+       "Josh Triplett" <josht@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <a8e1da0706280010m1e787bc2jae999084438982da@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46835C16.9020700@kernel.org>
+	 <989B956029373F45A0B8AF0297081890D834BE@zch01exm26.fsl.freescale.net>
+	 <a8e1da0706280010m1e787bc2jae999084438982da@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I hope this is of some interest to some of you. :-)
-
-We can't run LCA without your participation and we hope you'll help us
-make it a great conference again.
-
-
-== linux.conf.au 2008 Call For Presentations ==
-
-linux.conf.au isn't just a Linux conference. It is a technical 
-conference about Free Software, held annually in Australasia.
-We invite submissions on any Free Software related subject; from 
-Linux and the BSDs to OpenOffice.org, from networking to 
-audio-visual magic, from deep hacks to free content.
-
-== Important dates ==
-
- * Submissions open: Friday, June 1 2007
- * Submission deadline: Friday, July 20, 2007
- * Email notifications from review committee: early September
- * Conference begins: Monday, January 28 2008
-
-== Presentations being accepted ==
-
-You can submit a 50 minute talk proposal, or a 2 or 4 hour tutorial
-proposal: tutorials are interactive and involve more audience
-participation.  All presentations must be related to Free and Open
-Source Software.
-
-== How to submit ==
-
-Please see http://linux.conf.au/presentations for more information on
-the types of presentations we're looking for and full details of how to
-submit a proposal. You can even submit a video pitch!
-
-== About linux.conf.au ==
-
-linux.conf.au (http://linux.conf.au/) is Australia's annual technical
-conference about Free Software. Fun, informal and seriously technical,
-linux.conf.au draws together Free and Open Source Software developers 
-from across the world. It will be held from January 28th to February 
-2nd, 2008 at The University of Melbourne.
-
-== About Linux Australia ==
-
-Linux Australia (http://www.linux.org.au/) is the peak body for 
-Linux User Groups (LUGs) around Australia, and as such represents
-approximately 5000 Australian Linux users and developers. Linux
-Australia facilitates the organisation of this international 
-Free Software conference in a different Australasian city each year.
-
-Cheers,
-- Peter.
--- 
-peter lieverdink                    
-secretary                           MEL8OURNE2008 
-linux.conf.au                       must.be.there
-9662 1CB5 8E54 450D 2E12 9D7E 580E 2519 969F 3F57
-
+>On 6/28/07, Dave Young <hidave.darkstar@gmail.com> wrote:
+> >On 6/28/07, Li Yang-r58472 <LeoLi@freescale.com> wrote:
+> > > -----Original Message-----
+> > > From: linux-kernel-owner@vger.kernel.org
+> > > [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Josh Triplett
+> > > Sent: Thursday, June 28, 2007 2:59 PM
+> > > To: Jan Engelhardt
+> > > Cc: dave young; Chris Shoemaker; Josh Triplett;
+> > linux-kernel@vger.kernel.org;
+> > > akpm@linux-foundation.org
+> > > Subject: Re: [PATCH] CodingStyle: Add information about trailing
+> > whitespace.
+> > >
+> > > Jan Engelhardt wrote:
+> > > > On Jun 28 2007 06:29, dave young wrote:
+> > > >> IMHO, another  cause of trailing whitespace is human error, for
+> > > >> example long lines breaking will easy to cause the first line with
+> > one
+> > > >> traling whitespace (original space between the last two words).
+> > > >
+> > > > Most common errors (to me) are:
+> > > >
+> > > >  - hit return+tab too quickly that it interchanges, hence producing
+> > > >    the unwanted \t\n
+> > > >  - hit return+return to start a new paragraph of code;
+> > > >    the intermediate line remains indented if autoindent is on.
+> > >
+> > > Interestingly, emacs gets that case right: when you hit enter it
+> > places the
+> > > cursor at the properly indented insertion point, but if you leave the
+> > line
+> > > without typing anything it does not leave the indentation.  I thought
+> > I
+> > > remembered vim doing the same thing, but I just tested and it appears
+> > not.  It
+> > > seems to avoid leaving subsequent lines indented, but not the first
+> > one.
+> >
+> > No, vim works just fine here without leaving any indentation.  Maybe the
+> > version of vim or the options matter.
+> >
+> Yes, vim autoindent doesn't leave tabs in blank line for me.
+>
+And for vim trailing space, there's a tip in vim.org:
+http://www.vim.org/tips/tip.php?tip_id=878
