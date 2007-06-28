@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765548AbXF1Sp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765609AbXF1Srm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765548AbXF1Sp0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 14:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764366AbXF1SpN
+	id S1765609AbXF1Srm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 14:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760208AbXF1Srg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 14:45:13 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:41905 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756936AbXF1SpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 14:45:10 -0400
-Subject: Re: [PATCH 0/6][TAKE5] fallocate system call
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+	Thu, 28 Jun 2007 14:47:36 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:57272 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756077AbXF1Srf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 14:47:35 -0400
+Date: Thu, 28 Jun 2007 20:47:33 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-In-Reply-To: <20070628113342.c9c0f49c.akpm@linux-foundation.org>
-References: <20070510223950.GD86004887@sgi.com>
-	 <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com>
-	 <20070612061652.GA6320@amitarora.in.ibm.com>
-	 <20070613235217.GS86004887@sgi.com>
-	 <20070614091458.GH5181@schatzie.adilger.int>
-	 <20070614120413.GD86004887@sgi.com>
-	 <20070614193347.GN5181@schatzie.adilger.int>
-	 <20070625132810.GA1951@amitarora.in.ibm.com>
-	 <20070628025543.9467216f.akpm@linux-foundation.org>
-	 <20070628175757.GA1674@amitarora.in.ibm.com>
-	 <20070628113342.c9c0f49c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 28 Jun 2007 13:45:02 -0500
-Message-Id: <1183056302.9880.28.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
+In-Reply-To: <20070628113819.c24e592d.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706282044360.30789@anakin>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+ <20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
+ <20070628110644.a530cfef.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282017450.30789@anakin>
+ <20070628113819.c24e592d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-28 at 11:33 -0700, Andrew Morton wrote:
-> On Thu, 28 Jun 2007 23:27:57 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> 
-> > > Please drop the non-ext4 patches from the ext4 tree and send incremental
-> > > patches against the (non-ext4) fallocate patches in -mm.
+On Thu, 28 Jun 2007, Andrew Morton wrote:
+> On Thu, 28 Jun 2007 20:27:22 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > >  endif
+> > > >  
+> > > >  obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
+> > > > -obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
+> > > > +obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
+> > > >  obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
+> > > >  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
+> > > >  lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
+> > > 
+> > > We didn't think of that.
+> > > 
+> > > Alas, m68k `make allmodconfig' creates CONFIG_ISA=n, CONFIG_PCI=n,
+> > > CONFIG_HAS_IOMEM=y, so it will still be busted.
+> > > 
+> > > But this seems to be the correct fix.  Perhaps m68k config needs
+> > > attention?
 > > 
-> > Please let us know what you think of Mingming's suggestion of posting
-> > all the fallocate patches including the ext4 ones as incremental ones
-> > against the -mm.
+> > Euh, I don't think this is the correct fix.
+> > 
+> > CONFIG_HAS_IOMEM is apparently used in two meanings:
+> >   1. The architecture has support for memory mapped I/O (s390 obviously
+> >      hasn't)
+> >   2. The architecture has ISA/PCI-style memory mapped I/O (readb() and
+> >      friends)
+> > 
+> > check_signature() falls under the second category.
+> > 
+> > Setting NO_IOMEM on m68k will make us loose some drivers (e.g.
+> > drivers/video/Kconfig depends on HAS_IOMEM).
+> >  
+> > Apart from many Kconfig dependencies on HAS_IOMEM, CONFIG_HAS_IOMEM is
+> > further only used to control the build of lib/iomap_copy.c, which
+> > doesn't use readb() and friends, but the __raw*() operations.
+> > 
 > 
-> I think Mingming was asking that Ted move the current quilt tree into git,
-> presumably because she's working off git.
-
-I moved the fallocate patches to the very end of the series in the quilt
-tree.  This way the patches will be in the quilt tree for testing, but
-Ted can easily leave them out of the git tree so you and Linus won't
-pull them with the ext4 patches.
-
-Fortunately, the ext4-specific fallocate patches don't conflict with the
-other patches in the queue, so they can (at least for now) be handled
-independently in the -mm tree.
-
-> I'm not sure what to do, really.  The core kernel patches need to be in
-> Ted's tree for testing but that'll create a mess for me.
+> Well this is fun.
 > 
-> ug.
-> 
-> Options might be
-> 
-> a) I drop the fallocate patches from -mm and from the ext4 tree, hack up
->    any needed build fixes, then just wait for it all to mature and then
->    think about it again
-> 
-> b) We do what we normally don't do and reserve the syscall slots in mainline.
+> How to fix? Should we add a new CONFIG_HAS_IO?  (IOPORTS?)
 
--- 
-David Kleikamp
-IBM Linux Technology Center
+There already exists a CONFIG_HAS_IOPORT :-) (for ISA/PCI-style I/O port
+access).
 
+Just make check_signature() depend on ISA || PCI (and maybe || X86_32).
+According to its comment, it's used to `find BIOS signatures', which is
+a legacy PC thing. Please don't pollute non-legacy architectures with it ;-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
