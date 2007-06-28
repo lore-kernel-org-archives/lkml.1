@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765612AbXF1TQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761980AbXF1TWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765612AbXF1TQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 15:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763913AbXF1TQq
+	id S1761980AbXF1TWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 15:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763995AbXF1TWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 15:16:46 -0400
-Received: from web52508.mail.re2.yahoo.com ([206.190.48.191]:24323 "HELO
-	web52508.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762319AbXF1TQp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 15:16:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=y++sgl00mkbRW3lb1PfsHzEX87+eoPByf+DA5Jy82a0N/BQ37xo/OINhx1hxua18Z16GsoHnzdtz0Z72QbRHX6bt+DPDeMr0GILYuAYwub4O8yITl0OJZ1zUCuKpGsXwi+l1lWFGKWrp4Mjd7nUeJNwfjhwGSlO21vq2xLRQlKo=;
-X-YMail-OSG: gx16TwMVM1lraIP0Jq8kt3Mkhjr37cwIMNN8zAAy1LOmhDoRcncPvEXkIVWvT3qzlCLK5uks0l_akM22TJHu93mg3gkfSZ_rq4Sd
-Date: Thu, 28 Jun 2007 12:16:44 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: NVidia Driver Support - 1680x1050 mode
-To: Carlo Wood <carlo@alinoe.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070627212407.GA26615@alinoe.com>
+	Thu, 28 Jun 2007 15:22:18 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:37968 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763520AbXF1TWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 15:22:17 -0400
+Message-ID: <46840A66.1010901@drzeus.cx>
+Date: Thu, 28 Jun 2007 21:22:14 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <524743.6171.qm@web52508.mail.re2.yahoo.com>
+To: Midhun Agnihotram <agnimidhun@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Mounting MMC card
+References: <4dde4acb0706261146s5906d8f3vb787d5aecb429116@mail.gmail.com>	 <4dde4acb0706281000p180d0066s11a21afe17336fb4@mail.gmail.com> <4dde4acb0706281008h2241f4c4nef18dc130bfe6fdd@mail.gmail.com>
+In-Reply-To: <4dde4acb0706281008h2241f4c4nef18dc130bfe6fdd@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Carlo Wood <carlo@alinoe.com> wrote:
-
-> Or use the same hardware as me (and debian)-- and
-> read on my home page how
-> I got things working :p
+Midhun Agnihotram wrote:
 > 
-> hikaru:/usr/lib>dpkg -l | grep nvidia
-> ii  nvidia-glx									 100.14.11-0          NVIDIA
-> binary Xorg driver
-> ii  nvidia-glx-dev								 100.14.11-0         
-> NVIDIA binary Xorg driver development files
-> ii  nvidia-kernel-2.6-amd64							 100.14.11+beta   
->    NVIDIA binary kernel module for 2.6 series c
-> ii  nvidia-kernel-2.6.18-4-amd64						
-> 100.14.11+beta       NVIDIA binary kernel module for
-> Linux 2.6.18
-> ii 
->
-nvidia-kernel-2.6.22-rc5-agp1-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64
-> 100.14.11+beta       NVIDIA binary kernel module for
-> Linux 2.6.22
+>    How do I access the MMC card data now? If I try to mount it,
+> busybox doesnot mount it.
 > 
-> -- 
-> Carlo Wood <carlo@alinoe.com>
-> 
-> PS I use two of my Samsung SyncMaster 205BW
-> (1650x1050) as dual head
->    on an ASUS EN8600 GTS (dual-head). You need
-> nvidia's beta drivers
->    (>= 100.14.06) for that to work though.
-> 
+> # mount /dev/mmcblk0p0 /mnt/mmc
+> mount: mounting /dev/mmcblk0p0 on /mnt/mmc failed
 > 
 
-Yes - I downloaded the drivers from nVidia and
-everything works now. Thanks to everyone for your
-help.
+Have you checked that your device nodes are correct? Since you use busybox I
+assume the system is too lightweight to run udev.
 
+-- 
+     -- Pierre Ossman
 
-
-
-       
-____________________________________________________________________________________
-Choose the right car based on your needs.  Check out Yahoo! Autos new Car Finder tool.
-http://autos.yahoo.com/carfinder/
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
