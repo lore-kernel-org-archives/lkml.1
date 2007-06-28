@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763814AbXF1Uei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764814AbXF1UjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763814AbXF1Uei (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 16:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755669AbXF1Ue3
+	id S1764814AbXF1UjJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 16:39:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757192AbXF1Ui5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 16:34:29 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:48906 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757192AbXF1Ue1 (ORCPT
+	Thu, 28 Jun 2007 16:38:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41984 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752413AbXF1Ui5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 16:34:27 -0400
-Date: Thu, 28 Jun 2007 16:34:25 -0400
-From: Andreas Dilger <adilger@clusterfs.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, suparna@in.ibm.com, cmm@us.ibm.com,
-       xfs@oss.sgi.com
-Subject: Re: [PATCH 0/6][TAKE5] fallocate system call
-Message-ID: <20070628203425.GB5789@schatzie.adilger.int>
-Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-References: <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070628025543.9467216f.akpm@linux-foundation.org> <20070628175757.GA1674@amitarora.in.ibm.com>
+	Thu, 28 Jun 2007 16:38:57 -0400
+Date: Thu, 28 Jun 2007 13:37:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Len Brown <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PM: Introduce set_target method in pm_ops
+Message-Id: <20070628133724.31cc9ace.akpm@linux-foundation.org>
+In-Reply-To: <200706272356.29475.rjw@sisk.pl>
+References: <200706272356.29475.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070628175757.GA1674@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 28, 2007  23:27 +0530, Amit K. Arora wrote:
-> On Thu, Jun 28, 2007 at 02:55:43AM -0700, Andrew Morton wrote:
-> > Are we all supposed to re-review the entire patchset (or at least #4 and
-> > #7) again?
+On Wed, 27 Jun 2007 23:56:28 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> [Please consider as 2.6.22 material.]
+
+The patch tries to patch the function suspend_devices_and_enter() which is
+introduced by pm-reduce-code-duplication-between-mainc-and-userc.patch,
+which won't be in 2.6.22.
+
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> As I mentioned in the note above, only patches #4 and #7 were new and
-> thus these needed to be reviewed. Other patches are _not_ replacements
-> of any of the patches which are already part of -mm and/or in Ted's
-> patch queue. They were posted again as just "placeholders" so that the
-> two new patches (#4 & #7) could be reviewed. Sorry for any confusion.
-
-The new patches are definitely a big improvement over the previous API,
-and need to go in before fallocate() goes into mainline.  This last set
-of changes allows the behaviour of these syscalls to accomodate the various
-different semantics desired by XFS in a sensible manner instead of tying
-all of the individual behaviours (time update, size update, alloc/free, etc)
-into monolithic modes that will never make everyone happy.
-
-My understanding is that you only need to grab #4 and #7 to get your tree
-into get fallocate in sync with the ext4 patch queue (i.e. they are
-incremental over the previous set).
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+> Commit 52ade9b3b97fd3bea42842a056fe0786c28d0555 changed the suspend code
+> ordering to execute pm_ops->prepare() after the device model per-device
+> .suspend() calls in order to fix some ACPI-related issues.  Unfortunately, it
+> broke the at91 platform which assumed that pm_ops->prepare() would be called
+> before suspending devices.
+> 
+> at91 used pm_ops->prepare() to get notified of the target system sleep state, so
+> that it could use this information while suspending devices.  However, with the
+> current suspend code ordering pm_ops->prepare() is called too late for this
+> purpose.  Thus, at91 needs an additional method in 'struct pm_ops' that will
+> be used for notifying the platform of the target system sleep state.  Moreover,
+> in the future such a method will also be needed by ACPI.
+> 
+> This patch adds the .set_target() method to 'struct pm_ops' and makes the
+> suspend code call it, if implemented, before executing the device model
+> per-device .suspend() calls.  It also modifies the at91 code to implement
+> pm_ops->set_target() instead of pm_ops->prepare().
+> 
 
