@@ -1,47 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764015AbXF1Ccc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764056AbXF1Cgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764015AbXF1Ccc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 22:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbXF1CcX
+	id S1764056AbXF1Cgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 22:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761649AbXF1Cgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 22:32:23 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:42129 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758170AbXF1CcX (ORCPT
+	Wed, 27 Jun 2007 22:36:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57132 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761487AbXF1Cgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 22:32:23 -0400
-Message-ID: <46831CD8.8000502@gmail.com>
-Date: Thu, 28 Jun 2007 04:28:40 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Patrick Draper <pdraper@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <200706271825.17459.ahartmetz@gmail.com> <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com> <4682EEDD.4020501@gmail.com> <4682FE5C.5070004@gmail.com> <468315AF.1080105@gmail.com>
-In-Reply-To: <468315AF.1080105@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 27 Jun 2007 22:36:37 -0400
+Date: Wed, 27 Jun 2007 19:36:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 007 of 8] knfsd: nfsd4: vary maximum delegation limit
+ based on RAM size
+Message-Id: <20070627193613.746dfbf3.akpm@linux-foundation.org>
+In-Reply-To: <20070628021551.GB20605@fieldses.org>
+References: <20070621142604.727.patches@notabene>
+	<1070621043112.1144@suse.de>
+	<20070625205244.bbf0976a.akpm@linux-foundation.org>
+	<20070628021551.GB20605@fieldses.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/28/2007 03:58 AM, Rene Herman wrote:
+On Wed, 27 Jun 2007 22:15:52 -0400 "J. Bruce Fields" <bfields@fieldses.org> wrote:
 
-> to figure it out. If you need to specify an ALSA device somewhere, make 
-> sure it's not the old "hw:0" but "default" (or "default:0" for the first
-> card, "default:1" for the second, ...). The "hw:N" devices don't do
-> mixing.
+> +	/*
+> +	 * Allow at most 4 delegations per megabyte of RAM.  Quick
+> +	 * estimates suggest that in the worst case (where every delegation
+> +	 * is for a different inode), a delegation could take about 1.5K,
+> +	 * giving a worst case usage of about 6% of memory.
+> +	 */
+>  	sys.totalram >>= (18 - PAGE_SHIFT);
 
-Slight correction/expansion -- don't do _software_ mixing. Some cards can do 
-hardware mixing and in that case, "hw:N" or, specifically "hw:N,0", "hw:N,1" 
-and so on devices are available as hardware mixed devices.
+6% of 32GB is 2GB is too much for a large highmem machine.  We should base
+this on the amount of kernel-addressable memory (aka lowmem).
 
-Try a cat /proc/asound/card0/pcm0p/info and check the "subdevices_count" for 
-the number of hardware mixed playback devices you have available. If it's 1, 
-your card should've been configured (by ALSA itself) to use software mixing 
-by default and if it's higher than 1, it should not have been and will use 
-hardware mixing...
+How's this?
 
-Rene.
+static void
+set_max_delegations(void)
+{
+	/*
+	 * Allow at most 4 delegations per megabyte of RAM.  Quick
+	 * estimates suggest that in the worst case (where every delegation
+	 * is for a different inode), a delegation could take about 1.5K,
+	 * giving a worst case usage of about 6% of memory.
+	 */
+	max_delegations = nr_free_buffer_pages() >> (20 - 2 - PAGE_SHIFT);
+}
+
+
+ fs/nfsd/nfs4state.c |    7 ++-----
+ mm/page_alloc.c     |    1 +
+
+diff -puN fs/nfsd/nfs4state.c~knfsd-nfsd4-vary-maximum-delegation-limit-based-on-ram-size-fix-fix-fix-fix fs/nfsd/nfs4state.c
+--- a/fs/nfsd/nfs4state.c~knfsd-nfsd4-vary-maximum-delegation-limit-based-on-ram-size-fix-fix-fix-fix
++++ a/fs/nfsd/nfs4state.c
+@@ -49,6 +49,7 @@
+ #include <linux/nfsd/state.h>
+ #include <linux/nfsd/xdr4.h>
+ #include <linux/namei.h>
++#include <linux/swap.h>
+ #include <linux/mutex.h>
+ #include <linux/lockd/bind.h>
+ #include <linux/module.h>
+@@ -3210,17 +3211,13 @@ get_nfs4_grace_period(void)
+ static void
+ set_max_delegations(void)
+ {
+-	struct sysinfo sys;
+-
+-	si_meminfo(&sys);
+ 	/*
+ 	 * Allow at most 4 delegations per megabyte of RAM.  Quick
+ 	 * estimates suggest that in the worst case (where every delegation
+ 	 * is for a different inode), a delegation could take about 1.5K,
+ 	 * giving a worst case usage of about 6% of memory.
+ 	 */
+-	sys.totalram >>= (18 - PAGE_SHIFT);
+-	max_delegations = (unsigned int) sys.totalram;
++	max_delegations = nr_free_buffer_pages() >> (20 - 2 - PAGE_SHIFT);
+ }
+ 
+ /* initialization to perform when the nfsd service is started: */
+diff -puN mm/page_alloc.c~knfsd-nfsd4-vary-maximum-delegation-limit-based-on-ram-size-fix-fix-fix-fix mm/page_alloc.c
+--- a/mm/page_alloc.c~knfsd-nfsd4-vary-maximum-delegation-limit-based-on-ram-size-fix-fix-fix-fix
++++ a/mm/page_alloc.c
+@@ -1729,6 +1729,7 @@ unsigned int nr_free_buffer_pages(void)
+ {
+ 	return nr_free_zone_pages(gfp_zone(GFP_USER));
+ }
++EXPORT_SYMBOL_GPL(nr_free_buffer_pages);
+ 
+ /*
+  * Amount of free RAM allocatable within all zones
+_
+
