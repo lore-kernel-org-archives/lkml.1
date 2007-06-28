@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763622AbXF1AbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbXF1AeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763622AbXF1AbS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 20:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbXF1AbJ
+	id S1763732AbXF1AeJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 20:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbXF1Ad6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 20:31:09 -0400
-Received: from ns.suse.de ([195.135.220.2]:51307 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753540AbXF1AbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 20:31:08 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Userspace compiler support of "long long"
-Date: Thu, 28 Jun 2007 02:30:42 +0200
-User-Agent: KMail/1.9.6
-Cc: Adrian Bunk <bunk@stusta.de>, LKML Kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, david@lang.hm,
-       linux-arch@vger.kernel.org
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de> <20070627173240.GR1094@stusta.de> <B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com>
-In-Reply-To: <B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 27 Jun 2007 20:33:58 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47331
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754503AbXF1Ad5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 20:33:57 -0400
+Date: Wed, 27 Jun 2007 17:34:16 -0700 (PDT)
+Message-Id: <20070627.173416.10133360.davem@davemloft.net>
+To: casey@schaufler-ca.com
+Cc: crispin@novell.com, seanlkml@sympatico.ca, bunk@stusta.de,
+       akpm@linux-foundation.org, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <350078.43404.qm@web36601.mail.mud.yahoo.com>
+References: <20070627.160535.71552808.davem@davemloft.net>
+	<350078.43404.qm@web36601.mail.mud.yahoo.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706280230.42515.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 June 2007 00:30:52 Kyle Moffett wrote:
-> On Jun 27, 2007, at 13:32:40, Adrian Bunk wrote:
-> > AFAIR the Intel compiler claims to be gcc.
-> >
-> > But these are by far not the only C compilers under Linux, and the  
-> > more important points are:
-> >
-> > Is there any userspace Linux compiler that does not support "long  
-> > long"?
+From: Casey Schaufler <casey@schaufler-ca.com>
+Date: Wed, 27 Jun 2007 17:27:17 -0700 (PDT)
+
+> --- David Miller <davem@davemloft.net> wrote:
 > 
-> Don't know, but I'd guess not.
-
-Tendra C and probably lcc. I would guess tinycc too.
-
-> The only trick is if you care about building 32-bit compat code using  
-> 64-bit linux kernel headers.  In that case we should probably just  
-> make all archs use "long long" for their 64-bit integers, unless  
-> there's some platform I'm not remembering where "long long" is 128- 
-> bits or bigger.  The other benefit is that people could then just use  
-> the printf format "%llu" for 64-bit integers instead of having to  
-> conditionalize it all over the place.
+> > Neither of those are reasons why something should go into the tree.
 > 
-> I'm working on a patch now.
+> They reflect the corporate reality of the open source community.
+> If you're going to go down the "open source isn't for money"
+> rathole please take it elsewhere. I've heard the arguments so many
+> times I can sing them to the tune of "Lady Madonna".
 
-Changing this will give you a zillion warnings for printk formats.
-
--Andi
- 
+That's a wonderful technical reason for apparmour to go into the tree.
+Thanks for sharing and making it even clearer what is really behind
+this submission.
