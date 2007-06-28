@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762358AbXF1LTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbXF1L1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762358AbXF1LTg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 07:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759841AbXF1LT3
+	id S1762775AbXF1L1p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 07:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760051AbXF1L1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 07:19:29 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:33871 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758701AbXF1LT2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 07:19:28 -0400
-Message-ID: <46839864.8090002@gmail.com>
-Date: Thu, 28 Jun 2007 13:15:48 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Thu, 28 Jun 2007 07:27:37 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:48093 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757327AbXF1L1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 07:27:36 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Richard Hughes <hughsient@gmail.com>
+Subject: Re: Add INPUT support to toshiba_acpi
+Date: Thu, 28 Jun 2007 13:27:21 +0200
+User-Agent: KMail/1.9.7
+Cc: John Belmonte <john@neggie.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Bastien Nocera <hadess@hadess.net>
+References: <1180614979.2693.26.camel@localhost.localdomain> <200706260703.22994.eike-kernel@sf-tec.de> <1182848195.2335.0.camel@work>
+In-Reply-To: <1182848195.2335.0.camel@work>
 MIME-Version: 1.0
-To: Patrick Draper <pdraper@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <200706271825.17459.ahartmetz@gmail.com> <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com> <4682EEDD.4020501@gmail.com> <4682FE5C.5070004@gmail.com> <468315AF.1080105@gmail.com> <46831CD8.8000502@gmail.com>
-In-Reply-To: <46831CD8.8000502@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1303352.hcWxgIIjnn";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Message-Id: <200706281327.29962.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/28/2007 04:28 AM, Rene Herman wrote:
+--nextPart1303352.hcWxgIIjnn
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On 06/28/2007 03:58 AM, Rene Herman wrote:
-> 
->> to figure it out. If you need to specify an ALSA device somewhere, make
->> sure it's not the old "hw:0" but "default" (or "default:0" for the
->> first card, "default:1" for the second, ...). The "hw:N" devices don't
->> do mixing.
-> 
-> Slight correction/expansion -- don't do _software_ mixing. Some cards 
-> can do hardware mixing and in that case, "hw:N" or, specifically 
-> "hw:N,0", "hw:N,1" and so on devices are available as hardware mixed 
-> devices.
+Richard Hughes wrote:
+> On Tue, 2007-06-26 at 07:03 +0200, Rolf Eike Beer wrote:
+>> Richard Hughes wrote:
+>>> On Sat, 2007-06-23 at 16:56 +0200, Rolf Eike Beer wrote:
+>>>> None of the above keys generated a key event. Neither does
+>>>> "Brightness down", but it still works. "Brightness up" generates an ev=
+ent
+>>>> and works.
+>>
+>>>> Kpowersave tells me it can't do brightness switching in software
+>>>> (which works in WinXtraPain).
+>>
+>> Yes, I need a special process running for this. Would it be of some
+>> use if I take a look with IRPtracker on it or is that all you need to
+>> know?
+>
+> Yes, although this is out of my area or expertise, sorry.
 
-Correcting the correction (sorry, it was late) -- "hw:N" is card N, "hw:N,M" 
-is PCM interface M of card N and "hw:N,M,K" is (hardware mixed) subdevice K 
-on PCM interface M of card N. Normal cards have only one PCM interface 
-meaning that M is 0 in the above.
+I've looked a bit but can't find any driver interaction of those programs. =
+Any=20
+further ideas welcome.
 
-That is, I meant that "hw:N,0,0", "hw:N,0,1" and so on are the hardware 
-mixed devices.
+Eike
 
-Rene.
+--nextPart1303352.hcWxgIIjnn
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGg5shXKSJPmm5/E4RAhAjAKCLxeHcxmfOxAe9Gp+/4LpiDWKBtgCcCNUP
+lkB5X4zHPHcnuqI3uPZpwyQ=
+=avti
+-----END PGP SIGNATURE-----
+
+--nextPart1303352.hcWxgIIjnn--
