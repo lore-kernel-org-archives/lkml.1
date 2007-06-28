@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932100AbXF1Vlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932109AbXF1VoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932100AbXF1Vlr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 17:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763655AbXF1Vlk
+	id S932109AbXF1VoB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 17:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762391AbXF1Vny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 17:41:40 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:54416 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763574AbXF1Vlj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 17:41:39 -0400
-Message-ID: <46842A2D.4060201@gmail.com>
-Date: Thu, 28 Jun 2007 23:37:49 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Nix <nix@esperi.org.uk>, Olivier Galibert <galibert@pobox.com>,
-       Takashi Iwai <tiwai@suse.de>,
-       Tomasz K?oczko <kloczek@rudy.mif.pg.gda.pl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl> <20070624215724.025a5de5@the-village.bc.nu> <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl> <s5h3b0gi9mp.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl> <s5hzm2ogqr7.wl%tiwai@suse.de> <20070625124442.GA44019@dspnet.fr.eu.org> <20070625132107.GD1094@stusta.de> <87tzssextf.fsf@hades.wkstn.nix> <20070628210614.GC6087@stusta.de>
-In-Reply-To: <20070628210614.GC6087@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Thu, 28 Jun 2007 17:43:54 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:50959 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760384AbXF1Vnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 17:43:53 -0400
+Date: Thu, 28 Jun 2007 23:43:51 +0200
+From: DervishD <lkml@dervishd.net>
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: USB card reader and HAL
+Message-ID: <20070628214351.GA9632@DervishD>
+Mail-Followup-To: Linux-kernel <linux-kernel@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/28/2007 11:06 PM, Adrian Bunk wrote:
+    Hi all :)
 
-> The interesting point is that what you call "internal implementation 
-> details" is much _more_ exposed with the OSS emulation in the kernel 
-> _enabled_.
-> 
-> Why?
-> 
-> Linux software not supporting ALSA has becoming quite esoteric.
-> 
-> But software like mplayer supporting both and trying OSS first and 
-> software supporting both and letting the user choose is today much more 
-> common. And that's exactly the case where users run into the results of 
-> the "internal implementation detail" that their application used the 
-> in-kernel OSS emulation instead of ALSA resulting in exactly these 
-> problems.
-> 
-> There is also a userspace OSS emulation for ALSA not suffering from these
-> problems.
-> 
-> It's not my decision whether or not to remove the in-kernel OSS
-> emulation, all I'm saying is that removing it might actually result in
-> less users having problems.
+    I have a new card reader (internal) but I've tested with my old one
+too: the same happens. I have a do-it-yourself linux box, self compiled
+kernel 2.6.19.5 (by now).
 
-For what it's worth -- I do agree with this...
+    When I insert a card in the reader, it is not detected, no udev
+event is generated and I have to do things like "hdparm -z /dev/sda" to
+"probe" the card. Moreover, I have to do the same when removing the card
+or the /dev/sdaX nodes are not deleted.
 
-Rene.
+    Is HAL the only way of making it work? Is there any CONFIG_ thing
+I've forgotten in my kernel?
 
+    I've tested with Ubuntu and it works perfectly, and that's why I
+think this may be HAL related (I don't have HAL installed, Ubuntu has).
+
+    Thanks in advance :)
+
+    Raúl Núñez de Arenas Coronado
+
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
