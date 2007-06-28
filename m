@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763312AbXF1H7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764133AbXF1IHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763312AbXF1H7d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 03:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761518AbXF1H7Z
+	id S1764133AbXF1IHY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 04:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbXF1IHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 03:59:25 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:35175 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760434AbXF1H7X (ORCPT
+	Thu, 28 Jun 2007 04:07:10 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35389 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759676AbXF1IHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 03:59:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kCndVZXngyKYzbcc8ql9hfD65yUVhUXcSgw+3dE0BvHfDebANRS1x5foswrvonbxc7KtAe7mMoVGYE3UOeBaefkaDzVjp8qBxudd8A/oXxSaNALsr8DhuoZDv1SHFaU7MAAqnzLcO+Yt2A0qgGk7dmsfFEGmZyaSlTLyfmEFGkg=
-Message-ID: <5486cca80706280059pabcaa59u7f44440134490590@mail.gmail.com>
-Date: Thu, 28 Jun 2007 09:59:22 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: [Possible BUG] Logitech USB keyboard inconsistent led state
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706272144280.9610@twin.jikos.cz>
+	Thu, 28 Jun 2007 04:07:08 -0400
+X-Sasl-enc: 6vV7VJ2nuoBSD/UoZ/BvDKp1KokewbwB7l9j53ykhMKP 1183018027
+Date: Thu, 28 Jun 2007 05:07:00 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC #2] hwrng: Add type categories
+Message-ID: <20070628080700.GB13258@khazad-dum.debian.net>
+References: <200706262021.51410.mb@bu3sch.de> <200706271505.33970.mb@bu3sch.de> <20070627170331.GB6508@khazad-dum.debian.net> <200706271954.16963.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5486cca80706270758x540f75a9vfdd4aa5b6a7d8e4f@mail.gmail.com>
-	 <Pine.LNX.4.64.0706272144280.9610@twin.jikos.cz>
+In-Reply-To: <200706271954.16963.mb@bu3sch.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/6/27, Jiri Kosina <jikos@jikos.cz>:
-> On Wed, 27 Jun 2007, Antonino Ingargiola wrote:
->
-> > I'm using a logitech USB keyboard, I think it's one of the most cheap
-> > and diffuse logitech keyboard models.
-> > I have an inconsistent led state. During boot the NumLock led blinks
-> > several times and is on as boot finishes. However the numeric keypad
-> > works as it was off (no numbers, keypad '.' works as Canc, '0' as Ins
-> > and so on).
->
-> Could you please send me vendor and product ids of the keyboard? I will
-> send you a patch to test.
+On Wed, 27 Jun 2007, Michael Buesch wrote:
+> Ok, all very good ideas. Patches are welcome ;)
 
-Sure, here it is:
+Not from me, sorry. I really don't have the time, or the drive, to do it
+right now.  thinkpad-acpi is taking all my "kernel code" time, which is not
+much.
 
-$ cat /sys/bus/usb/devices/1-1.2/idVendor
-046d
-$ cat /sys/bus/usb/devices/1-1.2/idProduct
-c311
+> > I don't much like sysfs over IOCTLs for this, as you will probably need to
+> > be able to set and get things in an atomic way.  A sysfs binary attribute
+> > would also work.  A sysfs one-value-per-attribute bunch of them is
+> > completely useless from a security point of view.
+> 
+> hm? Why?
 
+Because you cannot risk anyone changing one of them behind your back while
+you are trying to set them all before you lock them.  And I am not even
+considering an attack scenario, I am considering two apps trying to set it
+up concurrently.
 
-Best regards,
+You need some sort of locking for this sort of device, and exclusive open +
+ioctl solves the problem completely.  Sysfs is not made for this kind of
+thing.
 
-    ~ Antonio
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
