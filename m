@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764470AbXF1RYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764782AbXF1RZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764470AbXF1RYS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 13:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbXF1RYJ
+	id S1764782AbXF1RZp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 13:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbXF1RZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 13:24:09 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:58100 "EHLO twin.jikos.cz"
+	Thu, 28 Jun 2007 13:25:38 -0400
+Received: from ns2.suse.de ([195.135.220.15]:35424 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758220AbXF1RYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 13:24:08 -0400
-Date: Thu, 28 Jun 2007 19:24:04 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Antonino Ingargiola <tritemio@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [Possible BUG] Logitech USB keyboard inconsistent led state
-In-Reply-To: <5486cca80706280059pabcaa59u7f44440134490590@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706281923230.31463@twin.jikos.cz>
-References: <5486cca80706270758x540f75a9vfdd4aa5b6a7d8e4f@mail.gmail.com> 
- <Pine.LNX.4.64.0706272144280.9610@twin.jikos.cz>
- <5486cca80706280059pabcaa59u7f44440134490590@mail.gmail.com>
+	id S1756936AbXF1RZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 13:25:37 -0400
+Date: Thu, 28 Jun 2007 19:25:14 +0200
+From: Stefan Seyfried <seife@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       linux-kernel@vger.kernel.org, suspend-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC] get rid of CONFIG_DISABLE_CONSOLE_SUSPEND
+Message-ID: <20070628172514.GA12770@suse.de>
+References: <20070628135108.GA1810@elf.ucw.cz> <200706281734.54642.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706281734.54642.rjw@sisk.pl>
+X-Operating-System: openSUSE 10.3 (i586) Alpha5, Kernel 2.6.22-rc4-git6-2-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, Antonino Ingargiola wrote:
+(CC'ing Linus, since disabling consoles during suspend was his idea IIRC)
 
-> $ cat /sys/bus/usb/devices/1-1.2/idVendor
-> 046d
-> $ cat /sys/bus/usb/devices/1-1.2/idProduct
-> c311
+On Thu, Jun 28, 2007 at 05:34:54PM +0200, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> On Thursday, 28 June 2007 15:51, Pavel Machek wrote:
+> > Hi!
+> > 
+> > What about this? (Only compile tested, but looks pretty obvious to
+> > me). Something like this should get us rid of ugly option, and still
+> > solve debugging problems... Hmmm?
+> > 								Pavel
+> > 
+> > Kill CONFIG_DISABLE_CONSOLE_SUSPEND; it should not be configurable at
+> > all, instead, we should automatically keep console alive when
+> > possible.
+> > 
+> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> > 
+> > diff --git a/drivers/char/lp.c b/drivers/char/lp.c
+> > index 62051f8..8267ff8 100644
+> > --- a/drivers/char/lp.c
+> > +++ b/drivers/char/lp.c
+> > @@ -144,7 +144,7 @@ static unsigned int lp_count = 0;
+> >  static struct class *lp_class;
+> >  
+> >  #ifdef CONFIG_LP_CONSOLE
+> > -static struct parport *console_registered; // initially NULL
+> > +static struct parport *console_registered;
+> >  #endif /* CONFIG_LP_CONSOLE */
+> 
+> Could you please avoid fixing things like this, white space etc. in this patch?
+> It would be easier to read ...
 
-Please try the patch below (against any post-2.6.22-rc1 kernel)
+Yes.
 
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index f6c4145..adc3752 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -196,6 +196,7 @@
- #define USB_VENDOR_ID_LOGITECH		0x046d
- #define USB_DEVICE_ID_LOGITECH_RECEIVER	0xc101
- #define USB_DEVICE_ID_LOGITECH_WHEEL	0xc294
-+#define USB_DEVICE_ID_LOGITECH_KBD	0xc311
- #define USB_DEVICE_ID_S510_RECEIVER	0xc50c
- #define USB_DEVICE_ID_S510_RECEIVER_2	0xc517
- #define USB_DEVICE_ID_MX3000_RECEIVER	0xc513
-@@ -448,6 +449,7 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY, HID_QUIRK_POWERBOOK_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
- 
- 	{ USB_VENDOR_ID_DELL, USB_DEVICE_ID_DELL_W7658, HID_QUIRK_RESET_LEDS },
-+	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_KBD, HID_QUIRK_RESET_LEDS },
- 
- 	{ USB_VENDOR_ID_CYPRESS, USB_DEVICE_ID_CYPRESS_BARCODE_1, HID_QUIRK_SWAPPED_MIN_MAX },
- 	{ USB_VENDOR_ID_CYPRESS, USB_DEVICE_ID_CYPRESS_BARCODE_2, HID_QUIRK_SWAPPED_MIN_MAX },
+> I generally agree with the idea, but the patch needs a clean up, IMHO.
 
+However, we don't know which consoles are safe to stay alive during suspend.
+Generally, defaulting to suspending them all is not a bad idea IMHO.
+And IIRC it is plain luck if a serial console survives the suspend (or was
+the serial code fixed recently?)
+
+So i do not care too much, but my / Frank's patch was shorter :-) and safer.
 -- 
-Jiri Kosina
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
