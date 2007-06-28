@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764220AbXF1GwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764174AbXF1G5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764220AbXF1GwR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 02:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbXF1GwF
+	id S1764174AbXF1G5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 02:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbXF1G5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 02:52:05 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:19058 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759062AbXF1GwF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 02:52:05 -0400
-Date: Thu, 28 Jun 2007 08:52:04 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: dave young <hidave.darkstar@gmail.com>
-cc: Josh Triplett <josh@kernel.org>, Chris Shoemaker <c.shoemaker@cox.net>,
-       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
-In-Reply-To: <a8e1da0706272329j42997c3eh49a1b20df5892a0e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706280850470.22579@fbirervta.pbzchgretzou.qr>
-References: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com> 
- <20070627180552.GA746@pe.Belkin>  <Pine.LNX.4.64.0706280015320.11120@fbirervta.pbzchgretzou.qr>
-  <a8e1da0706272300q3aee30der5349e85055f62a8e@mail.gmail.com> 
- <46835047.8080600@kernel.org> <a8e1da0706272329j42997c3eh49a1b20df5892a0e@mail.gmail.com>
+	Thu, 28 Jun 2007 02:57:33 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46604 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759451AbXF1G5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 02:57:33 -0400
+Message-ID: <46835BD5.8070904@garzik.org>
+Date: Thu, 28 Jun 2007 02:57:25 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, hch@infradead.org,
+       johnstul@us.ibm.com, oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com,
+       dipankar@in.ibm.com, davem@davemloft.net, kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 5/5 v2] Convert tasklets to work queues
+References: <20070622182051.859570787@goodmis.org> <20070622182315.571740041@goodmis.org> <20070623095359.4667514e.akpm@linux-foundation.org> <alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> So do cleanups _separately_ from movement.
 
-On Jun 28 2007 06:29, dave young wrote:
->
-> IMHO, another  cause of trailing whitespace is human error, for
-> example long lines breaking will easy to cause the first line with one
-> traling whitespace (original space between the last two words).
-
-Most common errors (to me) are:
-
- - hit return+tab too quickly that it interchanges, hence producing
-   the unwanted \t\n
- - hit return+return to start a new paragraph of code;
-   the intermediate line remains indented if autoindent is on.
+Definitely.  Anything else makes review more difficult, by obscuring 
+changes with movement.
 
 
-	Jan
--- 
+> Quite frankly, I personally am considering removing "checkpatch.pl". That 
+> thing is just a nazi dream. That hard-coded 80-character limit etc is just 
+> bad taste. 
+> 
+> Dammit, code cleanliness is not about "automated and mindless slavish 
+> following of rules". A process that is too inflexible is a *bad* process. 
+> I'd much rather have a few 80+ character lines than stupid and unreadable 
+> line wrapping just because the line hit 87 characters in length.
+
+I don't think checkpatch should be removed, but the 80-column complaint 
+is -way- too obnoxious and stupid-simple.
+
+This bugs me like the myriad recent Documentation/CodingStyle proposed 
+patches...  It's STYLE dammit.  Sometimes it's best to /not/ lock down 
+everything into a rule.  There is such a thing as specifying too much.
+
+	Jeff
+
+
+
