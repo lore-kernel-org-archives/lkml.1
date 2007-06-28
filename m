@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764928AbXF1Ra7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764204AbXF1RdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764928AbXF1Ra7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 13:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758536AbXF1Raw
+	id S1764204AbXF1RdS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 13:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbXF1RdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 13:30:52 -0400
-Received: from mga09.intel.com ([134.134.136.24]:36164 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756936AbXF1Raw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 13:30:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,471,1175497200"; 
-   d="scan'208";a="101115309"
-Message-ID: <4683EFE2.3040409@linux.intel.com>
-Date: Thu, 28 Jun 2007 10:29:06 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: New format Intel microcode...
-References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com>	 <1174610594.6598.3.camel@sli10-conroe.sh.intel.com>	 <6278d2220706261442u9b137c5xb6225b3f56605554@mail.gmail.com>	 <p731wfy5m74.fsf@bingen.suse.de>  <4683BD56.7070707@tmr.com> <1183039975.14676.12.camel@laptopd505.fenrus.org> <4683EF87.1050303@redhat.com>
-In-Reply-To: <4683EF87.1050303@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Jun 2007 13:33:07 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:57454 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbXF1RdG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 13:33:06 -0400
+Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <1183048429.4089.1.camel@johannes.berg>
+References: <1182969638.4769.56.camel@johannes.berg>
+	 <1183048429.4089.1.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-hKxaA+x3qOVrHv+4Lq6Z"
+Date: Thu, 28 Jun 2007 19:33:21 +0200
+Message-Id: <1183052001.4089.2.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 06/28/2007 10:12 AM, Arjan van de Ven wrote:
->> (while I work for Intel this is not an official Intel statement, but
->> there is so much FUD going around now that I feel I need to at least
->> point out a few things others "forget")
->>> Slashdot carried an article this morning saying that an error in Intel 
->>> microcode was being fixed.
->> don't just always believe everything you read on slashdot please
->>
->>>  However, it listed only Windows related sites 
->>> for the "fix" download. Is this the same TLB issue? And are these really 
->>> fixes for Windows to flush the TLB properly the way Linux does?
->> First of all, Linux has microcode updates as well. Some of the more
->> hypish news-bulletins just conveniently "forgot" about this. Basically
->> all distributions ship them, so users who use the distro update tools
->> get these automatically. And the update mentioned has been shipping for
->> a while (in version 1.17).
->>
-> 
-> Fedora 6 has version 1.13
-> Fedora 7 also has 1.13
 
-that's a fedora bug; we asked them to update it long ago in their 
-bugzilla. Maybe they updated the datafile, maybe they didn't. Be 
-careful with just looking at package version numbers, they don't per 
-se corresponds with versions of the data file.
+--=-hKxaA+x3qOVrHv+4Lq6Z
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, 2007-06-28 at 18:33 +0200, Johannes Berg wrote:
 
-> RHEL 5 has 1.15
+> I think I misunderstood how lockdep works because the output was
+> actually wrong, should the key be part of the workqueue_struct as well?
 
-be careful, it has the 1.17 datafile in the updates afaik.
-but RH doesn't update the package version number.
+No, that's not right either, but Arjan just helped me a bit with how
+lockdep works and I think I have the right idea now. Ignore this for
+now, I'll send a new patch in a few days.
 
+johannes
 
-same may or may not be true for the others, but if you only look at 
-package versions you don't get the datafile versions.
+--=-hKxaA+x3qOVrHv+4Lq6Z
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGg/Dh/ETPhpq3jKURAjddAJ9YQtTPMEbFM5zKxN9YWs+3gpuPYQCgodvk
+/2MzgMCk7jqPK1XcFKe7aew=
+=kBZb
+-----END PGP SIGNATURE-----
+
+--=-hKxaA+x3qOVrHv+4Lq6Z--
+
