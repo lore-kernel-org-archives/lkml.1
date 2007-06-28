@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764289AbXF1Qe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763669AbXF1Qhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764289AbXF1Qe3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 12:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759332AbXF1QeV
+	id S1763669AbXF1Qhy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 12:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758220AbXF1Qhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 12:34:21 -0400
-Received: from mg.nix.la ([75.126.232.227]:43407 "EHLO mg.nix.la"
+	Thu, 28 Jun 2007 12:37:47 -0400
+Received: from mail.screens.ru ([213.234.233.54]:57168 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759308AbXF1QeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 12:34:20 -0400
-From: Anton Petrusevich <casus@casus.us>
-To: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Date: Thu, 28 Jun 2007 18:34:16 +0200
-User-Agent: KMail/1.9.7
-References: <200706281442.05239.casus@casus.us> <4683CD9F.5030202@gmail.com>
-In-Reply-To: <4683CD9F.5030202@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1757824AbXF1Qhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 12:37:46 -0400
+Date: Thu, 28 Jun 2007 20:37:36 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Dan Williams <dan.j.williams@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070628163736.GA525@tv-sign.ru>
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <e9c3a7c20706251846v17347ab2n4a1d314734528c95@mail.gmail.com> <1182823276.5493.240.camel@localhost.localdomain> <e9c3a7c20706251912i77ac75a0o60981590a08c34e6@mail.gmail.com> <Pine.LNX.4.58.0706280823020.19012@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706281834.16564.casus@casus.us>
+In-Reply-To: <Pine.LNX.4.58.0706280823020.19012@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 June 2007 17:02:55 you wrote:
-> Please always use Reply-to-All on this list -- subscribers here like to
-> also get personal copies.
+On 06/28, Steven Rostedt wrote:
+> 
+> I also don't see any nice API to have the priority set for a workqueue
+> thread from within the kernel. Looks like one needs to be added,
+> otherwise, I need to have the wrapper dig into the workqueue structs to
+> find the thread that handles the workqueue.
 
-I am not subscribed to linux-kernel, I am reading it on the web.
+It is not so trivial to implement properly. Note that CPU_UP creates a new
+cwq->thread, so somehow workqueue should "remember" its priority. This means
+we should record it in workqueue_struct. The most simple way is to add yet
+another parameter to __create_workqueue(), but this is nasty.
 
-> > I have ICE1724, a very good sound card to my taste, works like a charm.
-> > But with ALSA I had a really hard time to configure it properly, wanna
-> > see my .asoundrc?
-> Not particularly. I don't count as a great fan of the config file syntax
-> and don't use any configuration myself. 
+So, perhaps we should add "long nice" to "struct workqueue_struct", and then
 
-Do you have an SPDIF out? If you don't then you don't need .asoundrc of 
-course.
+	void set_workqueue_nice(struct workqueue_struct *wq, long nice)
+	{
+		const cpumask_t *cpu_map = wq_cpu_map(wq);
+		struct cpu_workqueue_struct *cwq;
+		int cpu;
 
-> The first thing I don't know is why you need an .asoundrc at all. 
+		wq->nice = nice;
 
-Because I want to route it differently, sometimes to spdif, sometimes to 
-headphones, sometimes to mix sounds from different apps. Well, my config may 
-be a bit ancient as it was written when dmix was not default.
+		mutex_lock(&workqueue_mutex);
 
-> I've CCed 
-> the alsa-user list -- some subscribers to it probably have experience with
-> ice1724 and might be able to get you specific advice if you want.
+		for_each_cpu_mask(cpu, *cpu_map) {
+			cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+			if (cwq->thread)
+				set_user_nice(cwq->thread, nice);
+		}
 
-I have read some advices for ice1724 already. The main reason I wrote to  
-lkml -- I hate .asounrc and reading docs about it. I hate "flexebility" that 
-requires restarting apps after changing sound routes.
+		mutex_unlock(&workqueue_mutex);
+	}
 
-> > Is there a tool which can be used to configure .asoundrc?
-> vi.
+We could use for_each_cpu_online() instead, but then we should check
+is_single_threaded().
 
-I perfectly know this one. I would like to use some really user-friendly tool.
+Oleg.
 
->
-> > I want to be able to hear sound from flashplayer on my reciever or in my
-> > headphones -- how?
->
-> Not sure? Is your receiver on an analog output and are your headphones
-
-My receiver is on spdif out.
-
-> connected directly to a card output as well? In that case, "or" would seem
-> to be just a mixer issue, and "and" would be dependent on hardware
-> abilities and needs someone who knows your specific card and setup.
->
-> > It's not quite clear to me how to get full duplex working with my
-> > .asoundrc.
->
-> It's not working without an .asoundrc?
-
-Looks like it's not working with. As skype is not so informative.
-
-> But -- I'll personally not continue this very specific subthread simply due
-> to not having the hardware, nor great generic experience with an .asounrc
-> due to not needing it myself. When I do use one, I alway start by googling
-> up a few examples and take it from there. Perhaps someone from alsa-user
-> will step in.
-
-I am not about ice1724 or .asounrc here. I am trying to talk about 
-user-friendliness of ALSA. It's very unfriendly.
-
--- 
-Anton Petrusevich
