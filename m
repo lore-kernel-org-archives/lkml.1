@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXF2FKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933034AbXF2FOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933024AbXF2FKR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 01:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbXF2FKA
+	id S933034AbXF2FOb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 01:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbXF2FOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 01:10:00 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:15129 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbXF2FJ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 01:09:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tedTx4d+Vtjz7diFivK+FhRgKBthmoWTn2rzvlXuppcP3fPDkZficOQY00xhiJXm9GkQ0OeSEUNuZ91XAkRbE1mP6ws8hq/AvFMzIs5vyc7ZcUjLzzh9ml3AwN7NCw/a0isMvnhhzPSmi9Ips/B20ZZpYx0oPfH/nokm6Q+LQdw=
-Message-ID: <a36005b50706282209p52cd3251l7ce2d90ca700cd99@mail.gmail.com>
-Date: Thu, 28 Jun 2007 22:09:58 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: [patch 0/4] MAP_NOZERO v2 - VM_NOZERO/MAP_NOZERO early summer madness
-Cc: "Kyle Moffett" <mrmacman_g4@mac.com>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andy Isaacson" <adi@hexapodia.org>
-In-Reply-To: <468476AA.6090905@redhat.com>
+	Fri, 29 Jun 2007 01:14:20 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52567 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751455AbXF2FOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 01:14:20 -0400
+Date: Fri, 29 Jun 2007 00:13:46 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Linus Torvalds <torvalds@osdl.org>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, acme@redhat.com
+Subject: Please pull from 'from_linus' branch
+Message-ID: <Pine.LNX.4.64.0706290012430.15686@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <send-serie.davidel@xmailserver.org.5792.1183056564.0>
-	 <EC4CE052-5514-465E-92D2-9D50DA970DDC@mac.com>
-	 <468476AA.6090905@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/28/07, Rik van Riel <riel@redhat.com> wrote:
-> That wants MAP_PRIVATE so that the kernel can also decide to not
-> swap these pages out to an unencrypted swap area.
+Please pull from 'for_linus' branch of
 
-That's not what MAP_PRIVATE means.  MAP_PRIVATE is the opposite of
-MAP_SHARED.  It's meaningless for anonymous memory (which is what
-ssh-agent etc would use) and for file-backed data it definitely allows
-swapping unless you use mlock().
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_linus
+
+to receive the following updates:
+
+ drivers/net/gianfar.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Kumar Gala (1):
+      gianfar: Fix typo bug introduced by move to udp_hdr()
+
+commit 8da32de5c845b711a500f89342baf10c662e2ecb
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Fri Jun 29 00:12:04 2007 -0500
+
+    gianfar: Fix typo bug introduced by move to udp_hdr()
+
+    In commit 4bedb45203eab92a87b4c863fe2d0cded633427f both the udp and tcp
+    cases where changed to use udp_hdr() instead of leaving the tcp case
+    alone and fixing with tcp_hdr().
+
+    This ended up causing random behavior with TCP connections because
+    of looking for tcp_hdr()->check in the wrong place.
+
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 6822bf1..1b854bf 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -944,7 +944,7 @@ static inline void gfar_tx_checksum(struct sk_buff *skb, struct txfcb *fcb)
+ 		flags |= TXFCB_UDP;
+ 		fcb->phcs = udp_hdr(skb)->check;
+ 	} else
+-		fcb->phcs = udp_hdr(skb)->check;
++		fcb->phcs = tcp_hdr(skb)->check;
+
+ 	/* l3os is the distance between the start of the
+ 	 * frame (skb->data) and the start of the IP hdr.
