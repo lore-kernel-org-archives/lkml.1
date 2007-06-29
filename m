@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933774AbXF2SLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbXF2SLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933774AbXF2SLT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 14:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760754AbXF2SLB
+	id S1754755AbXF2SLh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 14:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932300AbXF2SLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 14:11:01 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45768 "EHLO pasmtpB.tele.dk"
+	Fri, 29 Jun 2007 14:11:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59060 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757027AbXF2SLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 14:11:00 -0400
-Date: Fri, 29 Jun 2007 20:12:05 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>,
+	id S1760119AbXF2SLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 14:11:02 -0400
+Message-ID: <46854B29.80906@garzik.org>
+Date: Fri, 29 Jun 2007 14:10:49 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Chuck Ebbert <cebbert@redhat.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Arch <linux-arch@vger.kernel.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] cross-architecture ELF clean up
-Message-ID: <20070629181205.GA16724@uranus.ravnborg.org>
-References: <20070620230854.246399397@goop.org> <20070620230902.387008536@goop.org> <Pine.LNX.4.64.0706251531110.4386@scrub.home> <468168FD.1080200@goop.org> <Pine.LNX.4.64.0706280027100.4890@scrub.home> <4683D78E.6080309@goop.org> <Pine.LNX.4.64.0706282319350.1817@scrub.home> <46851CF3.2070608@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46851CF3.2070608@goop.org>
-User-Agent: Mutt/1.4.2.1i
+       LKML <linux-kernel@vger.kernel.org>,
+       Rodrigo Luiz <troops.of.doom@gmail.com>, alsa-devel@alsa-project.org,
+       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
+       Ben Collins <bcollins@ubuntu.com>, reiserfs-devel@vger.kernel.org,
+       "Vladimir V. Saveliev" <vs@namesys.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-ide@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       Rodney Gordon II <meff@spherevision.org>
+Subject: Re: [1/2] 2.6.22-rc6: known regressions v2
+References: <46852187.3080504@googlemail.com>	<20070629175920.6af0c62b@the-village.bc.nu>	<468543CE.6080401@redhat.com> <20070629190602.4ef6a0cb@the-village.bc.nu>
+In-Reply-To: <20070629190602.4ef6a0cb@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 29, 2007 at 10:53:39AM -0400, Jeremy Fitzhardinge wrote:
-> Roman Zippel wrote:
-> >The problem I have is that you want to separate _all_ constants, which 
-> >doesn't really make sense to me, because many of them are useless without 
-> >the correspending structures.
-> >  
+Alan Cox wrote:
+>>> I'm not even sure this report is IT8212 related rather than just an IRQ
+>>> storm
+>> Why does the driver report "irq 0"?
+>>
+>> ata7: PATA max UDMA/133 cmd <blah> ctl <blah> bmdma <blah> irq 0  <====
+>>
+>> Above that, the ACPI layer says it assigned IRQ 20
 > 
-> It seems cleanest to just put all the constants in one place rather than 
-> scatter them around based on how they happen to be used.
+> Because the libata core code in 2.6.22rc6 reports all the ports and IRQ
+> values wrongly ?
 
-Grouping related things together is always a good approach. But the right
-factor should be used for the grouping. For the ELF file is would from a usage
-perspective be natural to have constants close to the definition that
-they are used to describe. Having constants grouped with other constants just
-_because_ they are constants does not cut here.
+AFAIK that was fixed, for IRQ.  Please point out examples where it 
+remains broken...
 
-	Sam
+	Jeff
+
+
+
