@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbXF2BER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932573AbXF2BOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932611AbXF2BER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 21:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764868AbXF2BD7
+	id S932573AbXF2BOY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 21:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764917AbXF2BOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 21:03:59 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33854 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754525AbXF2BD6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 21:03:58 -0400
-Date: Fri, 29 Jun 2007 11:03:25 +1000
-From: David Chinner <dgc@sgi.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: David Chinner <dgc@sgi.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070629010325.GG31489@sgi.com>
-References: <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070626153413.GC6652@schatzie.adilger.int> <20070626231803.GQ31489@sgi.com> <20070628181913.GC1674@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070628181913.GC1674@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 28 Jun 2007 21:14:17 -0400
+Received: from styx.suse.cz ([82.119.242.94]:43694 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764390AbXF2BOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 21:14:17 -0400
+Date: Fri, 29 Jun 2007 03:17:19 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] [TRIVIAL] [RESEND] X86_64: fix wrong comment regarding
+ set_fixmap()
+Message-ID: <Pine.LNX.4.64.0706290312050.11634@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 11:49:13PM +0530, Amit K. Arora wrote:
-> On Wed, Jun 27, 2007 at 09:18:04AM +1000, David Chinner wrote:
-> > On Tue, Jun 26, 2007 at 11:34:13AM -0400, Andreas Dilger wrote:
-> > > On Jun 26, 2007  16:02 +0530, Amit K. Arora wrote:
-> > > > On Mon, Jun 25, 2007 at 03:46:26PM -0600, Andreas Dilger wrote:
-> > > > > Can you clarify - what is the current behaviour when ENOSPC (or some other
-> > > > > error) is hit?  Does it keep the current fallocate() or does it free it?
-> > > > 
-> > > > Currently it is left on the file system implementation. In ext4, we do
-> > > > not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
-> > > > end up with partial (pre)allocation. This is inline with dd and
-> > > > posix_fallocate, which also do not free the partially allocated space.
-> > > 
-> > > Since I believe the XFS allocation ioctls do it the opposite way (free
-> > > preallocated space on error) this should be encoded into the flags.
-> > > Having it "filesystem dependent" just means that nobody will be happy.
-> > 
-> > No, XFs does not free preallocated space on error. it is up to the
-> > application to clean up.
-> 
-> Since XFS also does not free preallocated space on error and this
-> behavior is inline with dd, posix_fallocate() and the current ext4
-> implementation, do we still need FA_FL_FREE_ENOSPC flag ?
+[ resend, it seems to have been lost in time, lost in space ]
 
-Not at the moment.
 
-> > > What I mean is that any data read from the file should have the "appearance"
-> > > of being zeroed (whether zeroes are actually written to disk or not).  What
-> > > I _think_ David is proposing is to allow fallocate() to return without
-> > > marking the blocks even "uninitialized" and subsequent reads would return
-> > > the old data from the disk.
-> > 
-> > Correct, but for swap files that's not an issue - no user should be able
-> > too read them, and FA_MKSWAP would really need root privileges to execute.
-> 
-> Will the FA_MKSWAP mode still be required with your suggested change of
-> teaching do_mpage_readpage() about unwritten extents being in place ?
-> Or, will you still like to have FA_MKSWAP mode ?
+From: Jiri Kosina <jkosina@suse.cz>
 
-budgie:/mnt/test # xfs_io -f -c "resvsp 0 1048576" -c "truncate 1048576" swap_file
-budgie:/mnt/test # mkswap swap_file
-Setting up swapspace version 1, size = 1032 kB
-budgie:/mnt/test # swapon -v swap_file
-swapon on swap_file
-budgie:/mnt/test # swapon -s
-Filename                                Type            Size    Used    Priority
-/dev/sda2                               partition       9437152 0       -1
-/mnt/test/swap_file                     file            992     0       -2
-budgie:/mnt/test # xfs_bmap -vvp swap_file
-swap_file:
- EXT: FILE-OFFSET      BLOCK-RANGE      AG AG-OFFSET        TOTAL FLAGS
-   0: [0..31]:         96..127           0 (96..127)           32
-   1: [32..2047]:      128..2143         0 (128..2143)       2016 10000
- FLAG Values:
-    010000 Unwritten preallocated extent
-    001000 Doesn't begin on stripe unit
-    000100 Doesn't end   on stripe unit
-    000010 Doesn't begin on stripe width
-    000001 Doesn't end   on stripe width
+X86_64: fix wrong comment regarding set_fixmap()
+    
+The function name is set_fixmap(), not fixmap_set() as stated in the comment.
+    
+Also fix a typo, punctuation and lower/uppercase a bit.
+    
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-Looks like the changes work, so FA_MKSWAP is not necessary for XFS.
-We can drop that for the moment unless anyone else sees a need for it.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+diff --git a/include/asm-x86_64/fixmap.h b/include/asm-x86_64/fixmap.h
+index e90e167..c3574e5 100644
+--- a/include/asm-x86_64/fixmap.h
++++ b/include/asm-x86_64/fixmap.h
+@@ -22,9 +22,9 @@
+  * compile time, but to set the physical address only
+  * in the boot process.
+  *
+- * these 'compile-time allocated' memory buffers are
+- * fixed-size 4k pages. (or larger if used with an increment
+- * highger than 1) use fixmap_set(idx,phys) to associate
++ * These 'compile-time allocated' memory buffers are
++ * fixed-size 4k pages (or larger if used with an increment
++ * higher than 1). Use set_fixmap(idx,phys) to associate
+  * physical memory with fixmap indices.
+  *
+  * TLB entries of such buffers will not be flushed across
