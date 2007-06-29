@@ -1,53 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932573AbXF2BOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbXF2BOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932573AbXF2BOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 21:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764917AbXF2BOR
+	id S932706AbXF2BOs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 21:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765235AbXF2BOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 21:14:17 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43694 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764390AbXF2BOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 21:14:17 -0400
-Date: Fri, 29 Jun 2007 03:17:19 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] [TRIVIAL] [RESEND] X86_64: fix wrong comment regarding
- set_fixmap()
-Message-ID: <Pine.LNX.4.64.0706290312050.11634@jikos.suse.cz>
+	Thu, 28 Jun 2007 21:14:39 -0400
+Received: from mga03.intel.com ([143.182.124.21]:35967 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764917AbXF2BOi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 21:14:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,473,1175497200"; 
+   d="scan'208";a="244613635"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
+Date: Fri, 29 Jun 2007 09:14:27 +0800
+Message-ID: <FC1D1B23302A22499C60C967336B2AE0016F7529@pdsmsx411.ccr.corp.intel.com>
+In-Reply-To: <46845943.7050005@shaw.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
+Thread-Index: Ace56KhYRSb8QrWVTRmuZyWjq4LNnwAAegGA
+From: "Li, Shaohua" <shaohua.li@intel.com>
+To: "Robert Hancock" <hancockr@shaw.ca>, "Zan Lynx" <zlynx@acm.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "Raj, Ashok" <ashok.raj@intel.com>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+X-OriginalArrivalTime: 29 Jun 2007 01:14:36.0272 (UTC) FILETIME=[DBB22700:01C7B9EA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ resend, it seems to have been lost in time, lost in space ]
 
 
-From: Jiri Kosina <jkosina@suse.cz>
+>-----Original Message-----
+>From: Robert Hancock [mailto:hancockr@shaw.ca]
+>Sent: Friday, June 29, 2007 8:59 AM
+>To: Zan Lynx
+>Cc: Andrew Morton; linux-kernel@vger.kernel.org; Raj, Ashok; Li,
+Shaohua;
+>Keshavamurthy, Anil S
+>Subject: Re: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
+>
+>Zan Lynx wrote:
+>> On Thu, 2007-06-28 at 03:43 -0700, Andrew Morton wrote:
+>>>
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-
+>rc6/2.6.22-rc6-mm1/
+>>
+>>> +intel-iommu-dmar-detection-and-parsing-logic.patch
+>>> +intel-iommu-pci-generic-helper-function.patch
+>>> +intel-iommu-pci-generic-helper-function-fix.patch
+>>> +intel-iommu-clflush_cache_range-now-takes-size-param.patch
+>>> +intel-iommu-iova-allocation-and-management-routines.patch
+>>> +intel-iommu-iova-allocation-and-management-routines-fix.patch
+>>> +intel-iommu-iova-allocation-and-management-routines-fix-2.patch
+>>> +intel-iommu-intel-iommu-driver.patch
+>>> +intel-iommu-intel-iommu-driver-fix.patch
+>>> +intel-iommu-intel-iommu-driver-fix-2.patch
+>>>
++intel-iommu-avoid-memory-allocation-failures-in-dma-map-api-calls.patch
+>>> +intel-iommu-intel-iommu-cmdline-option-forcedac.patch
+>>> +intel-iommu-dmar-fault-handling-support.patch
+>>> +intel-iommu-iommu-gfx-workaround.patch
+>>> +intel-iommu-iommu-floppy-workaround.patch
+>>> +intel-iommu-iommu-floppy-workaround-fix.patch
+>>> +intel-iommu-iommu-floppy-workaround-fix-fix.patch
+>>>
+>>>  Intel IOMMU support
+>>
+>> I believe the above patch set is causing the problem.  On my first
+try
+>> with rc6-mm1 I said Yes to the CONFIG_DMAR options. (I'm nearly as
+good
+>> as random option selection :-)
+>>
+>> The system panicked during boot, I believe it was trying to detect an
+>> Intel IOMMU.  Later when I have a camera, I will try to post a
+>> screenshot of the backtrace. (I can't seem to get netconsole to work
+on
+>> boot, only in a module).
+>>
+>> When I recompiled without DMAR set, things seem to be working great.
+I
+>> seem to be getting better disk read throughput than rc3-mm1, by the
+way.
+>>
+>> This laptop is an AMD Athlon64 on a NForce3 running a 64-bit Gentoo
+>> build.
+>>
+>> I'll provide more details on request, and when I get the chance.
+This
+>> is a heads-up on the BUG in case someone has an "ah ha!" moment.
+>
+>I took a picture of it, looks like the backtrace is:
+>
+>NULL pointer dereference at 024
+>EIP:dmar_table_init+0x11
+>intel_iommu_init+0x30
+>pci_iommu_init+0xe
+>kernel_init+0x16e
+>
+>Presumably something is NULL in dmar_table_init that wasn't expected to
+>be.. I would guess it likely crashes on any system without an Intel
+>IOMMU in it.
+How about something like below?
 
-X86_64: fix wrong comment regarding set_fixmap()
-    
-The function name is set_fixmap(), not fixmap_set() as stated in the comment.
-    
-Also fix a typo, punctuation and lower/uppercase a bit.
-    
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-diff --git a/include/asm-x86_64/fixmap.h b/include/asm-x86_64/fixmap.h
-index e90e167..c3574e5 100644
---- a/include/asm-x86_64/fixmap.h
-+++ b/include/asm-x86_64/fixmap.h
-@@ -22,9 +22,9 @@
-  * compile time, but to set the physical address only
-  * in the boot process.
-  *
-- * these 'compile-time allocated' memory buffers are
-- * fixed-size 4k pages. (or larger if used with an increment
-- * highger than 1) use fixmap_set(idx,phys) to associate
-+ * These 'compile-time allocated' memory buffers are
-+ * fixed-size 4k pages (or larger if used with an increment
-+ * higher than 1). Use set_fixmap(idx,phys) to associate
-  * physical memory with fixmap indices.
-  *
-  * TLB entries of such buffers will not be flushed across
+int __init dmar_table_init(void)
+{
++	if (!dmar_tbl)
++		return -ENODEV;
+	parse_dmar_table();
+	if (list_empty(&dmar_drhd_units)) {
+		printk(KERN_ERR PREFIX "No DMAR devices found\n");
+		return -ENODEV;
+	}
+	return 0;
+}
