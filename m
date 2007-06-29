@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbXF2JQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbXF2JUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760243AbXF2JQQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 05:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXF2JQD
+	id S1760944AbXF2JUQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 05:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbXF2JUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 05:16:03 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:55483 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754064AbXF2JQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 05:16:01 -0400
-Message-ID: <4684CDCC.9030202@drzeus.cx>
-Date: Fri, 29 Jun 2007 11:15:56 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Fri, 29 Jun 2007 05:20:03 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44742 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754506AbXF2JUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 05:20:00 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18BRk5E6pgBfs7ZFQpLzDHX7ePOfcVnXhftcMRyye
+	z8NMeyvCGWD0a6
+Date: Fri, 29 Jun 2007 11:21:21 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Josh Triplett <josh@kernel.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Li Yang-r58472 <LeoLi@freescale.com>,
+       Chris Shoemaker <c.shoemaker@cox.net>,
+       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [OT] Vim highlighting for trailing spaces
+Message-ID: <20070629092121.GA6487@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Josh Triplett <josh@kernel.org>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Kyle Moffett <mrmacman_g4@mac.com>,
+	Dave Young <hidave.darkstar@gmail.com>,
+	Li Yang-r58472 <LeoLi@freescale.com>,
+	Chris Shoemaker <c.shoemaker@cox.net>,
+	Josh Triplett <josht@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <46835C16.9020700@kernel.org> <989B956029373F45A0B8AF0297081890D834BE@zch01exm26.fsl.freescale.net> <a8e1da0706280010m1e787bc2jae999084438982da@mail.gmail.com> <a8e1da0706280020ocf81ce7u98de87f16d674706@mail.gmail.com> <7958FF64-140B-435A-8B69-A503C5C18D79@mac.com> <Pine.LNX.4.64.0706290938460.22579@fbirervta.pbzchgretzou.qr> <4684BA77.7090804@kernel.org> <Pine.LNX.4.64.0706291001320.22579@fbirervta.pbzchgretzou.qr> <4684C5EE.9000606@kernel.org>
 MIME-Version: 1.0
-To: Midhun Agnihotram <agnimidhun@gmail.com>
-CC: "=?ISO-8859-1?Q?Hans-J=FCrgen_Koch?=" <hjk@linutronix.de>, jdi@l4x.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fwd: Mounting MMC card
-References: <4dde4acb0706261146s5906d8f3vb787d5aecb429116@mail.gmail.com>	 <200706282210.23770.hjk@linutronix.de>	 <4dde4acb0706290040p4f90b0b5q630b8e0bd5982908@mail.gmail.com>	 <200706291038.58358.hjk@linutronix.de> <4dde4acb0706290209n40d5e0adve6a3713513a6a724@mail.gmail.com>
-In-Reply-To: <4dde4acb0706290209n40d5e0adve6a3713513a6a724@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4684C5EE.9000606@kernel.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Midhun Agnihotram wrote:
+On 2007.06.29 01:42:22 -0700, Josh Triplett wrote:
+> Jan Engelhardt wrote:
+> > On Jun 29 2007 00:53, Josh Triplett wrote:
+> >> And if you really want highlighting, you can always use grep --color. :)
+> > 
+> > Been there, done that, have GREP_COLOR env variable defined!
 > 
->     The kernel version is 2.6.16. So I guess there should not be a
-> problem. Any more things that I need to check??
-> 
+> Same here.  Now I just need to convince git-grep to use it.
 
-Let's try something a lot less complex than mounting. Try running:
-	dd if=/dev/mmcblk0 of=/dev/null count=100
+You need to convince grep. When piping its output to less, it won't
+colorize unless forced. Always forcing color via GREP_OPTIONS might
+break certain use-cases, and git-grep doesn't allow to pass options. So
+for me, a bash alias it is:
 
-If that fails, then you should either have some revealing output in dmesg or
-your device nodes must be wrong somehow.
+alias gg='GREP_OPTIONS=--color=always git-grep'
 
-If it succeeds, then there is some problem reading the filesystem off the card.
-Have you tried mounting the card in some other system?
+You might need to set LESS=-R in addition to that, to stop less from
+stripping the color codes.
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Björn
