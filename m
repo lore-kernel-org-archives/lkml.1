@@ -1,86 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbXF2O7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbXF2O77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932379AbXF2O7V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 10:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbXF2O7O
+	id S932950AbXF2O77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 10:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760243AbXF2O7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 10:59:14 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:27260 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759563AbXF2O7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 10:59:13 -0400
-Date: Fri, 29 Jun 2007 18:58:22 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] frv: fix fallout from "remove sched.h from mm.h" patch
-Message-ID: <20070629145821.GA7003@localhost.sw.ru>
-References: <20070628140921.GA9753@localhost.sw.ru> <20070628151257.7a03e81b.akpm@linux-foundation.org> <Pine.LNX.4.64.0706290904420.13877@localhost.localdomain>
+	Fri, 29 Jun 2007 10:59:47 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:38936 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759556AbXF2O7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 10:59:45 -0400
+Date: Fri, 29 Jun 2007 17:07:59 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070629150759.GC2771@ff.dom.local>
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706290904420.13877@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 29, 2007 at 09:10:52AM -0400, Robert P. J. Day wrote:
-> On Thu, 28 Jun 2007, Andrew Morton wrote:
-> > On Thu, 28 Jun 2007 18:09:21 +0400
-> > Alexey Dobriyan <adobriyan@sw.ru> wrote:
-> >
-> > > Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-> > > ---
-> > >
-> > >  include/asm-frv/pgtable.h |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >
-> > > --- a/include/asm-frv/pgtable.h
-> > > +++ b/include/asm-frv/pgtable.h
-> > > @@ -25,7 +25,7 @@
-> > >  #include <linux/slab.h>
-> > >  #include <linux/list.h>
-> > >  #include <linux/spinlock.h>
-> > > -struct mm_struct;
-> > > +#include <linux/sched.h>
-> > >  struct vm_area_struct;
-> > >  #endif
-> > >
-> >
-> > Please provide changelogs.
-> >
-> > I assume this patch fixes some build error or something.
->
->   i actually asked about this on either the janitors or newbies list
-> the other day -- one of the early examples from the LDD3 device
-> drivers book which built fine all this time suddenly stopped building,
-> until i explicitly included <linux/sched.h> to be able to dereference
-> a pointer to "task_struct":
->
-> /home/rpjday/AMD/k/topics/0_hi/hi1.c:15: error: dereferencing pointer to incomplete type
-> /home/rpjday/AMD/k/topics/0_hi/hi1.c:16: error: dereferencing pointer to incomplete type
->
->   clearly, until now, that header file was being picked up
-> *somewhere*,
+On Fri, Jun 29, 2007 at 10:50:20AM +0200, Jean-Baptiste Vignaud wrote:
+> Update...
+> I did 2 tests :
+> 
+> 1)  booted with option acpi=off
+> It booted correctly, i managed to get some load on one of the card
+> and after a while (10 minutes i guess) the Timeout occurs. Side effect,
+> at the same moment the sata contolers lost control of the disks somehow
+> and the raid 5 array on the system crashed hard. I have no traces as i
+> was unable to rebuild it (and i tried a lot of extreme  voodoo methods).
 
-from include/linux/mm.h , yes
+I think the main option: acpi=on is usually needed.
 
-> but not now.
+If you, guys, are not exhausted yet, I think you could try to
+turn off (or change for somethig else) most of the options from
+"Processors type and features", and maybe something below PCI
+support. But there are many new options which couldn't be turned
+off so easy, so there is no much hope...
 
-dammit!
+> 
+> 2) changed the 3com cards
+> i replaced by two cards,
+> 01:06.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II] (rev 42)
+> 01:07.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8029(AS)
+> 
+> reinstalled and stressed the network (small download from a laptop) and :
+> 
+> Jun 29 09:34:10 loki kernel: NETDEV WATCHDOG: eth0: transmit timed out
+> Jun 29 09:34:51 loki last message repeated 14 times
+> Jun 29 09:35:18 loki last message repeated 8 times
+> 
+> so it seems to be a more generic problem.
 
-> so i'm guessing there's going to be code
-> all over the place that suddenly needs to add that inclusion of
-> sched.h.
+I wonder if you tried to change the place - I've read this
+advice many times. And maybe it would be better to try with
+one card at first?
 
-this is the last known to me bit of compile breakage that was caused by
-commit e8edc6e03a5c8562dc70a6d969f732bdb355a7e7 aka
-"[PATCH] Detach sched.h from mm.h"
+It seems there are some patches with dev->tx_timeout but it
+looks like fixing results only. Let's wait...
 
-And after you'll check diffstat and build current kernel for different archs
-yourself, I hope you'll take that "all over the place" back.
+Cheers,
+Jarek P.
 
-P.S.: Al may know more because he is building different set of configs, but I
-      was larted about frv only.
-
+PS: Marcin - your last message wasn't plain text - so probably
+dumped by kernel lists. 
