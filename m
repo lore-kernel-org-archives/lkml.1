@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932300AbXF2Gc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765612AbXF2Guj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932300AbXF2Gc1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 02:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbXF2GcT
+	id S1765612AbXF2Guj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 02:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbXF2Gua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 02:32:19 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:55091 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbXF2GcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 02:32:19 -0400
-Date: Fri, 29 Jun 2007 08:32:14 +0200 (CEST)
-From: Eberhard Moenkeberg <emoenke@gwdg.de>
-To: Surya Prabhakar N <surya.prabhakar@wipro.com>
-cc: linux-kernel@vger.kernel.org, Jesper Juhl <jesper.juhl@gmail.com>
-Subject: Re: updated sbpcd.c
-In-Reply-To: <1183085233.3037.19.camel@bluegenie>
-Message-ID: <Pine.LNX.4.64.0706290830290.27162@gwdu05.gwdg.de>
-References: <1183085233.3037.19.camel@bluegenie>
+	Fri, 29 Jun 2007 02:50:30 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46268 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750732AbXF2Gu3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 02:50:29 -0400
+Date: Thu, 28 Jun 2007 23:50:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, hugh@veritas.com, James.Bottomley@steeleye.com,
+       rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Containment measures for slab objects on scatter gather
+ lists
+In-Reply-To: <20070628.223734.21928089.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0706282346560.12146@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0706282128570.11739@schroedinger.engr.sgi.com>
+ <20070628.220606.112621271.davem@davemloft.net> <20070628222424.4cbae90c.akpm@linux-foundation.org>
+ <20070628.223734.21928089.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1283851528-1314646327-1183098723=:27162"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 28 Jun 2007, David Miller wrote:
 
---1283851528-1314646327-1183098723=:27162
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Thu, 28 Jun 2007 22:24:24 -0700
+> 
+> > So what happens when two quite different threads of control are doing
+> > IO against two hunks of kmalloced memory which happen to come from the same
+> > page?  Either some (kernel-wide) locking is needed, or that pageframe needs
+> > to be treated as readonly?
+> 
+> Or you put an atomic_t at the beginning or tail of every SLAB
+> object.  It's a space cost not a runtime cost for the common
+> case which is:
 
-Hi,
+Hmmm... We could do something like
 
-On Fri, 29 Jun 2007, Surya Prabhakar N wrote:
+kmem_cache_get(slab, object)
 
->=20
-> Hi emoenke,
->    Can this patch be verified and pulled into your tree.
->=20
-> thanks.
-> Surya.
+and
 
-Jesper Juhl should ack it (if), and Jens Axboe would be the right person=20
-to pull it into the tree.
+kmem_cache_put(slab, object)
+
+kmem_cache_get would disable allocations from the slab and increment a 
+refcount.
+
+kmem_cache_put would enable allocations again if the refcount reaches 
+one.
+
+The problem is that freeing an object may cause writes to the object. F.e.
+poisoning will overwrite the object on free. SLUB will put its free 
+pointer in the first words etc.
 
 
-Viele Gr=FC=DFe
-Eberhard M=F6nkeberg (emoenke@gwdg.de, em@kki.org)
---1283851528-1314646327-1183098723=:27162--
+
