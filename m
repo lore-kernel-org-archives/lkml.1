@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932928AbXF2MjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766004AbXF2Mk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932928AbXF2MjZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 08:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXF2MjR
+	id S1766004AbXF2Mk3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 08:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXF2MkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 08:39:17 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:58393 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753058AbXF2MjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 08:39:16 -0400
-Date: Fri, 29 Jun 2007 14:39:09 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       Kyle McMartin <kyle@parisc-linux.org>,
-       Paul Mackerras <paulus@samba.org>, Paul Mundt <lethal@linux-sh.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] generic bug: use show_regs() instead of dump_stack()
-Message-ID: <20070629143909.763925e5@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20070629121959.GA16581@osiris.boeblingen.de.ibm.com>
-References: <20070629121959.GA16581@osiris.boeblingen.de.ibm.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Jun 2007 08:40:17 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:21445 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754239AbXF2MkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 08:40:15 -0400
+Message-ID: <4684FDAC.7000800@msgid.tls.msk.ru>
+Date: Fri, 29 Jun 2007 16:40:12 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Dave Young <hidave.darkstar@gmail.com>,
+       Li Yang-r58472 <LeoLi@freescale.com>, Josh Triplett <josh@kernel.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Chris Shoemaker <c.shoemaker@cox.net>,
+       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [OT] Vim highlighting for trailing spaces
+References: <46835C16.9020700@kernel.org> <989B956029373F45A0B8AF0297081890D834BE@zch01exm26.fsl.freescale.net> <a8e1da0706280010m1e787bc2jae999084438982da@mail.gmail.com> <a8e1da0706280020ocf81ce7u98de87f16d674706@mail.gmail.com> <7958FF64-140B-435A-8B69-A503C5C18D79@mac.com>
+In-Reply-To: <7958FF64-140B-435A-8B69-A503C5C18D79@mac.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jun 2007 14:19:59 +0200
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-
-> [patch] generic bug: use show_regs() instead of dump_stack()
+Kyle Moffett wrote:
+> On Jun 28, 2007, at 03:20:24, Dave Young wrote:
+>> And for vim trailing space, there's a tip in vim.org:
+>> http://www.vim.org/tips/tip.php?tip_id=878
 > 
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> I actually prefer this (in .vimrc):
 > 
-> The current generic bug implementation has a call to dump_stack() in
-> case a WARN_ON(whatever) gets hit. Since report_bug(), which calls
-> dump_stack(), gets called from an exception handler we can do better:
-> just pass the pt_regs structure to report_bug() and pass it to
-> show_regs() in case of a warning. This will give more debug informations
-> like register contents, etc... In addition this avoids some pointless
-> lines that dump_stack() emits, since it includes a stack backtrace of
-> the exception handler which is of no interest in case of a warning.
-> E.g. on s390 the following lines are currently always present in a stack
-> backtrace if dump_stack() gets called from report_bug():
+> " Show trailing whitespace and spaces before tabs
+> hi link localWhitespaceError Error
+> au Syntax * syn match localWhitespaceError /\(\zs\%#\|\s\)\+$/ display
+> au Syntax * syn match localWhitespaceError / \+\ze\t/ display
 > 
->  [<000000000001517a>] show_trace+0x92/0xe8)
->  [<0000000000015270>] show_stack+0xa0/0xd0
->  [<00000000000152ce>] dump_stack+0x2e/0x3c
->  [<0000000000195450>] report_bug+0x98/0xf8
->  [<0000000000016cc8>] illegal_op+0x1fc/0x21c
->  [<00000000000227d6>] sysc_return+0x0/0x10
+> It always displays trailing whitespace and spaces-before tabs... except
+> if your cursor is at the end of the whitespace.  The updating is
+> occasionally a bit laggy (EG: Put spaces on a line and then move the
+> cursor off it without pressing <ENTER>), but when you hit Ctrl-L, enter,
+> or edit an adjacent line then it updates.
 
-I've seen those extra lines on avr32 as well and I agree they are
-confusing. Register contents is nice to have too.
+Stolen from an old message in LKML - I don't remember who's the author:
 
-Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+highlight WhitespaceEOL ctermbg=red guibg=red
+match WhitespaceEOL /\s\+$/
+
+Works without any glitches here (not "laggy").  But I don't use
+syntax coloring - never tried if it works with coloring or not.
+
+/mjt
