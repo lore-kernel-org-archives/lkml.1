@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760417AbXF2I5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbXF2JA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760417AbXF2I5F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 04:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbXF2I4z
+	id S1760358AbXF2JA2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 05:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbXF2JAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 04:56:55 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:55014 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753893AbXF2I4y (ORCPT
+	Fri, 29 Jun 2007 05:00:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:17868 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754303AbXF2JAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 04:56:54 -0400
-Date: Fri, 29 Jun 2007 10:58:01 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-usb-devel@lists.sourceforge.net,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Li Yang-r58472 <LeoLi@freescale.com>
-Message-ID: <20070629085801.GH13886@enneenne.com>
-References: <20070628103619.GW13886@enneenne.com> <989B956029373F45A0B8AF0297081890D834FA@zch01exm26.fsl.freescale.net> <20070628141205.GA13886@enneenne.com> <200706281453.23414.david-b@pacbell.net>
+	Fri, 29 Jun 2007 05:00:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MAw/fbU5HKlOj8YRg/XYxagPTWri5EBk1+D5AlwnpEdoUav1KorTz2Pd9WeSi66/B2rRJMPh3rBJRfTFxjPn/PjNnH8UvKnVb8KiGz8RKIYGg2HE5ftUqaH2pTvsMgDqYitZ7YM13rf1TSUjE2tJf87nXTJ7sVM6D+wmRQ7eZ8A=
+Message-ID: <a8e1da0706290200x156a80ci2365646f67b279e9@mail.gmail.com>
+Date: Fri, 29 Jun 2007 09:00:17 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: i386 boot fail, EIP in __change_page_attr:166
+Cc: "Chuck Ebbert" <cebbert@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <468273FC.5080905@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200706281453.23414.david-b@pacbell.net>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] PXA27x UDC driver.
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+References: <a8e1da0706242043w56ed75f0h208ee9646ae7b7d0@mail.gmail.com>
+	 <467FF37D.5000304@redhat.com>
+	 <a8e1da0706251811k636b7b8dmc21e5bfc26b09e06@mail.gmail.com>
+	 <46814D85.5070406@redhat.com>
+	 <a8e1da0706261815sc25dd1t6bf0dc809923e859@mail.gmail.com>
+	 <468273FC.5080905@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 02:53:22PM -0700, David Brownell wrote:
-> 
-> Let's start with *JUST* a driver, not trying to update everything
-> else in the USB Gadget stack so that it looks like it's designed
-> specifically to handle all of Intel's design botches related to
-> endpoint config ... and work worse for essentially everything else.
-> 
-> (Unlike pretty much every other vendor, Intel wanted hardware config
-> management.  It was unusably buggy in pxa21x/25x/26x, and not much
-> better in pxa27x.)
-> 
-> 
-> So in technical terms, and to repeat what I've said before:  just
-> configure it to act more like a PXA 25x chip (no altsettings) and
-> get it so it passes all the tests [1], modulo errata which have no
-> workarounds ... then submit that.  No epautoconfig updates, no
-> patches to every gadget driver to cope with updated autoconfig.
-
-This looks interesting... as you alredy told this driver derives from
-an older one, I just maintained it till now.
-
-If I well understand I should remove usb_ep_autoconfig() and program
-into the controller only one (the default) configuration. Is that
-right?
-
-Currently I tested the driver only with ether gadget, but if I do as
-above, should I get the driver working with all gadgets automagically?
-:)
-
-Thanks a lot,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+>On 6/27/07, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> dave young wrote:
+> > 2007/6/26, Chuck Ebbert <cebbert@redhat.com>:
+> >> On 06/25/2007 09:11 PM, dave young wrote:
+> >> > Hi,
+> >> >
+> >> > 2007/6/25, Chuck Ebbert <cebbert@redhat.com>:
+> >> >> On 06/24/2007 11:43 PM, dave young wrote:
+> >> >> > Hi,
+> >> >> > I reconfig my kernel, boot and oops, EIP in
+> >> __change_page_attr:166, I
+> >> >> > tried 2.6.22-rc4-mm2 and 2.6.22-rc5 , same result.
+> >> >> >
+> >> >> > Anyone has some clues?
+> >> >> >
+> >> >> > here is my config file:
+> >> >>
+> >> >> Where are the oops messages?
+> >> > Attached please find the screenshots. sorry for my phone camera
+> >> resolution.
+> >> > screen1.png : vga=ask select mode 6
+> >> > screen2.png : normal 80x25 console
+> >>
+> >> That's 2.6.22-rc4-mm2 which I don't have.
+> >>
+> >> netsc520 is doing iounmap() of an area it did
+> >> ioremap_nocache() on earlier, because it has now failed to
+> >> find a device. Why it went BUG() I have no idea.
+> >>
+> >
+> > Hi, maybe some config option cause this issue, here is my current
+> > working-ok config file:
+>
+> What are the differences from the non-working config?
+>
+>     J
+>
+The diffrences is net520c item.
