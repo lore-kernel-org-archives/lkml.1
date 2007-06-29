@@ -1,76 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763591AbXF2LZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764004AbXF2L1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763591AbXF2LZR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 07:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758556AbXF2LZG
+	id S1764004AbXF2L1J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 07:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbXF2L06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 07:25:06 -0400
-Received: from hermes.domdv.de ([193.102.202.1]:3815 "EHLO hermes.domdv.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758173AbXF2LZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 07:25:05 -0400
-X-Greylist: delayed 956 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jun 2007 07:25:05 EDT
-Message-ID: <4684E853.20900@domdv.de>
-Date: Fri, 29 Jun 2007 13:09:07 +0200
-From: Andreas Steinmetz <ast@domdv.de>
-User-Agent: Mail/News 1.5.0.7 (X11/20060915)
+	Fri, 29 Jun 2007 07:26:58 -0400
+Received: from emh02.mail.saunalahti.fi ([62.142.5.108]:60077 "EHLO
+	emh02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758138AbXF2L04 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 07:26:56 -0400
+X-Greylist: delayed 669 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jun 2007 07:26:56 EDT
+Message-ID: <31585.194.237.142.7.1183115734.squirrel@ncircle.nullnet.fi>
+In-Reply-To: <4683BF16.40905@gmx.de>
+References: <4683BF16.40905@gmx.de>
+Date: Fri, 29 Jun 2007 14:15:34 +0300 (EEST)
+Subject: Re: 2.6.22-rc6 spurious hangs
+From: "Tomi Orava" <Tomi.Orava@ncircle.nullnet.fi>
+To: "Thomas Sattler" <tsattler@gmx.de>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>, "Ingo Molnar" <mingo@elte.hu>
+User-Agent: SquirrelMail/1.4.10a-1.fc7
 MIME-Version: 1.0
-To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       netfilter-devel@lists.netfilter.org
-Subject: mss to pmtu clamping partially broken?
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=utf-8
+X-Priority: 3 (Normal)
+Importance: Normal
+Content-Transfer-Encoding: 8BIT
+X-Antivirus: VAMS
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There seems to be a problem with mss to pmtu clamping for incoming syn
-packets on reply to an outgoing connection on a ppp interface. The mss
-of the outgoing syn packets is always always clamped to the pmtu, I did
-check this with a target host I do have access to. The incoming syn
-reply to such a packet, however, is mss clamped only sometimes and this
-seems to depend on the DSL line used.
 
-The kernels tested were 2.6.20.1, 2.6.20.3 and 2.6.22rc6.
+Hello,
 
-Test setup: Two DSL lines, otherwise identical setup (same masquerading
-linux gateway, same DSL account, same DSL modem, same DSL line provider,
-same target host, request from and tcpdump on the same client).
+> I'm observing seldom hangs with linux 2.6. I can't tell when exactly it
+> happened the first time, I think somewhere around 2.6.16 or 2.6.17. I
+> see it about once or twice a month. With absolutely nothing in the logs.
+> So far I asked for help:
 
-Linux Client<->Masquerading Linux Gateway<->DSL Modem<->DSL Line<->...
+<snip>
 
-DSL line 1, working:
+> The box I talk about is an IBM T41p with 1.7GHz Pentium M and 512MB RAM.
+> The distribution in use is gentoo, quite up to date. Attached to the box
+> is an USB2.0 DVB-T receiver (Cinergy T², Terratec).
+>
+> In rare cases the keyboard stops working when the T² stops streaming DVB
+> to the box. It happens when I record the stream to disk as well as when
+> I stream it to mplayer.
 
-22:26:39.319281 IP (tos 0x0, ttl  64, id 22377, offset 0, flags [DF],
-length: 48
-) 192.168.0.253.1164 > 64.34.165.170.80: S [tcp sum ok]
-1465827859:1465827859(0)
- win 5840 <mss 1460,nop,nop,sackOK>
-22:26:39.459314 IP (tos 0x0, ttl  51, id 0, offset 0, flags [DF],
-length: 48) 64
-.34.165.170.80 > 192.168.0.253.1164: S [tcp sum ok]
-3667852791:3667852791(0) ack
- 1465827860 win 5840 <mss 1452,nop,nop,sackOK>
+I just wanted you to know that you are not alone with this problem.
+I've seen the same symptoms on my parents machine during the last 1-2 months
+--> ie. keyboard hangs completely, mouse works and the host either hangs
+completely sooner or later with only the following usb debug messages in
+the logs (pasted below).
 
-The tcpdump on the client shows that the mss of the incoming syn reply
-packet is clamped to the ppp interface mtu.
+I believe that there is certainly some sort of bug in cinergyT2-driver
+as I've not seen the hang happen whenever the cinergyT2 usb-receiver
+has been disconnected from the machine.
 
-DSL line 2, not working:
+Host configuration is:
+2.6.22-rc4-git4 kernel + latest DVB drivers from v4l-dvb tree
+(previously also tested with FC6 kernels with same symptoms)
+MythTV-software (from devel SVN)
 
-22:03:57.725998 IP (tos 0x0, ttl  64, id 55984, offset 0, flags [DF],
-length: 48
-) 192.168.0.253.1600 > 64.34.165.170.80: S [tcp sum ok]
-36968258:36968258(0) win
- 5840 <mss 1460,nop,nop,sackOK>
-22:03:57.866966 IP (tos 0x0, ttl  51, id 0, offset 0, flags [DF],
-length: 48) 64
-.34.165.170.80 > 192.168.0.253.1600: S [tcp sum ok]
-2226854208:2226854208(0) ack
- 36968259 win 5840 <mss 1460,nop,nop,sackOK>
+Asus P4P800-E motherboard (ich5 & PDC20378 sata-controllers)
+1GB ram
+Intel P4 2.8MHz
+Terratec Cinergy T2 dvb-t receiver
 
-The tcpdump on the client shows that the mss of the incoming syn reply
-packet is *NOT* clamped to the ppp interface mtu.
+Regards,
+Tomi Orava
 
+
+--------------------------------------------------
+ehci_hcd 0000:00:1d.7: devpath 1 ep2in 3strikes
+hub 1-0:1.0: state 7 ports 8 chg 0000 evt 0002
+ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001002 POWER sig=se0 CSC
+hub 1-0:1.0: port 1, status 0100, change 0001, 12 Mb/s
+usb 1-1: USB disconnect, address 2
+usb 1-1: unregistering device
+usb 1-1: usb_disable_device nuking all URBs
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a3c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a340 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a2c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a240 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f71a6c40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f7e7f0c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c37dc0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c37e40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f71a6d40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9af40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f71a61c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9ae40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9adc0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9ad40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9acc0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9ac40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9abc0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9ab40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9aac0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9aa40 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a9c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a940 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a8c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a840 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a7c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a740 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a6c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a640 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a5c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a540 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a4c0 pipe c0010280 ep2in-bulk
+ehci_hcd 0000:00:1d.7: shutdown urb f6c9a440 pipe c0010280 ep2in-bulk
+cinergyT2: cinergyt2_submit_stream_urb(): urb submission failed (err = -19)!
+last message repeated 31 times
+---------------------------------------------------------------------
 -- 
-Andreas Steinmetz                       SPAMmers use robotrap@domdv.de
+
 
