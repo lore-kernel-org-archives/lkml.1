@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbXF2EjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbXF2Es0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932289AbXF2EjP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 00:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbXF2EjF
+	id S932783AbXF2Es0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 00:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbXF2EsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 00:39:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41129 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750914AbXF2EjE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 00:39:04 -0400
-Date: Thu, 28 Jun 2007 21:39:01 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: hugh@veritas.com, James.Bottomley@steeleye.com, rmk+lkml@arm.linux.org.uk,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Containment measures for slab objects on scatter gather
- lists
-In-Reply-To: <20070628.212825.78710369.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0706282128570.11739@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706282047160.10035@schroedinger.engr.sgi.com>
- <20070628.211013.74747656.davem@davemloft.net>
- <Pine.LNX.4.64.0706282119330.11676@schroedinger.engr.sgi.com>
- <20070628.212825.78710369.davem@davemloft.net>
+	Fri, 29 Jun 2007 00:48:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:53421 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751053AbXF2EsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 00:48:15 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18052.36612.846937.794756@cargo.ozlabs.ibm.com>
+Date: Fri, 29 Jun 2007 14:48:04 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Arch <linux-arch@vger.kernel.org>,
+       Richard Henderson <rth@twiddle.net>, Ian Molton <spyro@f2s.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Aubrey Li <aubrey.li@analog.com>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Matthew Wilcox <matthew@wil.cx>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+       Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH] cross-architecture ELF clean up
+In-Reply-To: <20070620230902.387008536@goop.org>
+References: <20070620230854.246399397@goop.org>
+	<20070620230902.387008536@goop.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, David Miller wrote:
+Jeremy Fitzhardinge writes:
 
-> > You can get such a reference and then the slab page will be in limbo if 
-> > all objects are freed until that reference is given up. The reference 
-> > method is also use by kmem_cache_vacate() (but that is slab internal).
-> 
-> What about if someone kfree()'s that object meanwhile?
+> ===================================================================
+> --- a/arch/powerpc/platforms/cell/io-workarounds.c
+> +++ b/arch/powerpc/platforms/cell/io-workarounds.c
+> @@ -9,6 +9,7 @@
+>  #undef DEBUG
+>  
+>  #include <linux/kernel.h>
+> +#include <linux/sched.h>
 
-If that is the last object in the slab then the page is deslabified and 
-it will stick around as a regular page until its refcount reaches zero.
+Why is this needed?  You've added #include <linux/sched.h> to 7 files
+without explanation - and I can't see that you have removed a
+corresponding #include from any header, have you?
 
-There is slab functionality in SLUB that uses this trick to insure that 
-the slab does not go away.
-
-> Can we bump the SLAB object count just like we can a page?
-
-You can bump the slab page count. But you have to use virt_to_head_page() 
-instead of virt_to_page() since slab pages may be compound pages (in both 
-SLAB and SLUB). Incrementing the refcount of a tail page will cause an oops on
-free.
-
-> That's basically what's happening in the stuff Jens is
-> working on, he needs to grab a reference to a SLAB
-> object just like one can a page.  Even if there is an
-> intervening kfree (like a put_page()) the SLAB object is
-> still live until all the references are put, and thus it
-> can't get reallocated and given to another client by SLAB.
-
-If you kfree the object then all slab allocators will feel free to 
-immediately alloc the object for other purposes.
-
-If you want to prohibit further allocations from a slab then I can likely 
-give you a function call that removes a slab from the partial lists so 
-that the slab will not be allocated from. But this will only work with 
-SLUB.
-
-At some point the slab will then need to be returned to the partial slab 
-lists.
-
-Hmmmm... Maybe we are creating more of a mess with this. Isnt there some 
-other way to handle these object.
-
+Paul.
 
 
