@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764832AbXF2Lk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbXF2Lto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764832AbXF2Lk4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 07:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759643AbXF2Lkt
+	id S1763454AbXF2Lto (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 07:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758786AbXF2Ltg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 07:40:49 -0400
-Received: from mg.nix.la ([75.126.232.227]:39405 "EHLO mg.nix.la"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757721AbXF2Lkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 07:40:49 -0400
-From: Anton Petrusevich <casus@casus.us>
-To: Florian Schmidt <mista.tapas@gmx.net>
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Date: Fri, 29 Jun 2007 13:40:42 +0200
-User-Agent: KMail/1.9.7
-Cc: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org,
-       alsa-devel@lists.sourceforge.net
-References: <200706281442.05239.casus@casus.us> <200706281834.16564.casus@casus.us> <200706291230.54175.mista.tapas@gmx.net>
-In-Reply-To: <200706291230.54175.mista.tapas@gmx.net>
+	Fri, 29 Jun 2007 07:49:36 -0400
+Received: from messidor.freesurf.fr ([212.43.206.29]:40362 "EHLO
+	smtp-out.freesurf.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758138AbXF2Ltf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 07:49:35 -0400
+X-Greylist: delayed 1477 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jun 2007 07:49:35 EDT
+Message-ID: <48440.194.254.4.171.1183116296.squirrel@jose.freesurf.fr>
+Date: Fri, 29 Jun 2007 13:24:56 +0200 (CEST)
+Subject: 2.6.21-rt9 problem : xruns
+From: <skyball000@freesurf.fr>
+To: <linux-kernel@vger.kernel.org>
+X-Priority: 3
+Importance: Normal
+X-MSMail-Priority: Normal
+X-Mailer: SquirrelMail (version 1.2.5)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706291340.43251.casus@casus.us>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 June 2007 12:30:54 Florian Schmidt wrote:
-> Sadly it seems pretty much everyone, especially closed source apps get this
-> wrong (but to be fair: loads of open source software gets it wrong, too,
-> ekiga for example).
+Hi,
 
-Isn't that because there's a perferct documentation for programming ALSA but 
-authors of those apps can't read?
+I've recently compiled a "vanilla" 2.6.21 kernel, patched with Ingo Molnar's
+rt-8 patch, as I was unable to compile with rt-7.
 
-> Well, like i said, the application in question should allow you to enter
-> any pcm name you want. If it doesn't it's broken.
+I needed it because I'm using audio applications (tests were made with
+FrugalWare, but I don't think it's a distro issue).
 
-But in real life I have to use flashplayer, for example.
+Everything was allright until I changed my motherboard for an  Asrock
+4coreDual-Vsta (I formerly used a Nforce4 one), with VIA PT880 Ultra chipset.
 
-> I don't know of any. But any text editor will do.
+I've justed switched the hardware, as Linux is neat enough to boot without
+having to reinstall the whole OS.
 
-I am with Linux since 1997, I know bunch of them. I used to use XEmacs, but 
-now I prefer VIM. But I am not a .asoundrc programmer, I want to be just a 
-user.
+Since, I get tons of xruns when using RT applications, and the only solution
+I've found to "fix" it was to disable ACPI at boot time.
+Moreover, I get this message at boot time :
+PCI: BIOS bug: MCFG area@e0000000 is not E820 reserved
+PCI: not using MMCONFIG
 
-> The flashplayer has been another one of these badly coded apps ;) Maybe
-> that has changed in recent releases.
-[...]
-> But skype is a piece of crap anyways. It also doesn't get any sounds out of
-> my other [non ice1712] card. Neither in OSS nor in ALSA mode. Not a beep.
-> And yeah, the device is available [and even has hardware multiplexing]..
+I've also tested this hardware setup with a UbuntoStudio kernel (2.6.19),
+and everything works flawlessy (no XRUNS, no kernel messages) !
 
-> But 99.9% of problems people have with ALSA are due to badly coded apps..
+So here is my question (I'd like to understand what's happening) :
+   - is it a kernel (or patch) issue ?
+   - is it a bad chipset support in the latest kernel versions ?
+   - could this be related to BIOS issues only (I've tried all available
+versions without any change) ?
+   - should I use special settings in the ".config" in order to avoid these
+problems ?
 
-"Those apps are crap and ALSA is perfect". I hoped some ALSA-developers would 
-think of improving usability of ALSA, or I would not talk here.
+I wasn't able to detect what causes these XRUNS, so if anyone has clues ...
 
-> I agree. ALSA is not very userfriendly. Especially the missing proper
-> device enumeration support is a problem.
+Regards
+skb
 
-It's good that people are not thinking that ALSA is already perfect, it leaves 
-us (me) a hope it will be improved.
--- 
-Anton Petrusevich
+
+
+
+
