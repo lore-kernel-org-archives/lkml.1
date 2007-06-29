@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934039AbXF2S1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934129AbXF2S27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934039AbXF2S1Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 14:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXF2S1D
+	id S934129AbXF2S27 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 14:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbXF2S2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 14:27:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34581 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754755AbXF2S1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 14:27:01 -0400
-Date: Fri, 29 Jun 2007 20:26:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [patch] saa7134 fix
-Message-ID: <20070629182651.GA12811@elte.hu>
+	Fri, 29 Jun 2007 14:28:52 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:36615 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbXF2S2v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 14:28:51 -0400
+Message-ID: <46854F2D.9080604@zytor.com>
+Date: Fri, 29 Jun 2007 14:27:57 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "H. J. Lu" <hjl@lucon.org>
+CC: joerg.roedel@amd.com, linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH: Fix SVM MSR indexes for 32bit kernel
+References: <20070629153815.GA18297@lucon.org>
+In-Reply-To: <20070629153815.GA18297@lucon.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the fix in this commit:
+H. J. Lu wrote:
+> }
+> [hjl@gnu-5 tmp]$ gcc -m32 -S foo.c
+> foo.c: In function â_disabledâfoo.c:7: error: impossible register
+> constraint in âmâoo.c:12: confused by earlier errors, bailing out
+> [hjl@gnu-5 tmp]$
+> 
+> on 32bit. This patch removes the ULL suffix in SVM MSR indexes.
+> 
+> 
+> H.J.
+> --- linux-2.6.21.i686/drivers/kvm/svm.h.msr	2007-06-28 22:42:12.000000000 -0700
+> +++ linux-2.6.21.i686/drivers/kvm/svm.h	2007-06-29 08:03:09.000000000 -0700
+> @@ -175,8 +175,8 @@ struct __attribute__ ((__packed__)) vmcb
+>  #define SVM_CPUID_FUNC 0x8000000a
+>  
+>  #define MSR_EFER_SVME_MASK (1ULL << 12)
+> -#define MSR_VM_CR       0xc0010114ULL
+> -#define MSR_VM_HSAVE_PA 0xc0010117ULL
+> +#define MSR_VM_CR       0xc0010114
+> +#define MSR_VM_HSAVE_PA 0xc0010117
+>  
 
-| commit 58e78475ec706f93e0cc049449ffd11fbfdadb3e
-| Author: Jeff Mahoney <jeffm@suse.com>
-| Date:   Wed Jun 27 14:09:58 2007 -0700
-|
-|    saa7134: fix thread shutdown handling
-|
-|    This patch changes the test for the thread pid from >= 0 to > 0.
+Please take the MSR indicies out of this file and move them to 
+include/asm-i386/msr-index.h.
 
-might be incomplete - there's another place where this driver has a
-pid >= 0 check. Should this be 'pid > 0' too?
+	-hpa
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/media/video/saa7134/saa7134-tvaudio.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: v/drivers/media/video/saa7134/saa7134-tvaudio.c
-===================================================================
---- v.orig/drivers/media/video/saa7134/saa7134-tvaudio.c
-+++ v/drivers/media/video/saa7134/saa7134-tvaudio.c
-@@ -1020,7 +1020,7 @@ int saa7134_tvaudio_do_scan(struct saa71
- 		dprintk("sound IF not in use, skipping scan\n");
- 		dev->automute = 0;
- 		saa7134_tvaudio_setmute(dev);
--	} else if (dev->thread.pid >= 0) {
-+	} else if (dev->thread.pid > 0) {
- 		dev->thread.mode = UNSET;
- 		dev->thread.scan2++;
- 		wake_up_interruptible(&dev->thread.wq);
