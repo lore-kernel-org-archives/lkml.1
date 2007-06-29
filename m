@@ -1,86 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932729AbXF2CPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932654AbXF2Cda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932729AbXF2CPu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 22:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765080AbXF2CPl
+	id S932654AbXF2Cda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 22:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764806AbXF2CdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 22:15:41 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:45114 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765064AbXF2CPl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 22:15:41 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=pwlouuFTMa5BdXA4xkUsglGMD5dJ7IyPX5atn+EBG9Adsu+XVGfK4RAZu+S+SchIF
-	3nY75bLpKomZ5Jy2tRy/Q==
-Date: Thu, 28 Jun 2007 19:15:14 -0700 (PDT)
-From: Joshua Wise <jwise@google.com>
-X-X-Sender: jwise@internets.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Kyle McMartin <kyle@mcmartin.ca>, linux-kernel@vger.kernel.org,
-       thockin@google.com, mikew@google.com, masouds@google.com
-Subject: Re: [PATCH] [revised -- version 2] Info dump on Oops or panic()
-In-Reply-To: <20070628164855.012344cd.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706281850490.617@internets.corp.google.com>
-References: <Pine.LNX.4.64.0706281502350.617@internets.corp.google.com>
- <20070628221835.GI2784@fattire.cabal.ca> <Pine.LNX.4.64.0706281603590.617@internets.corp.google.com>
- <20070628164855.012344cd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 28 Jun 2007 22:33:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49226 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764886AbXF2CdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 22:33:18 -0400
+Date: Fri, 29 Jun 2007 04:33:17 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: David Chinner <dgc@sgi.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC] fsblock
+Message-ID: <20070629023316.GC6091@wotan.suse.de>
+References: <20070624014528.GA17609@wotan.suse.de> <20070626030640.GM989688@sgi.com> <46808E1F.1000509@yahoo.com.au> <20070626092309.GF31489@sgi.com> <20070626123449.GM14224@think.oraclecorp.com> <20070627053245.GA6033@wotan.suse.de> <20070627115056.GW14224@think.oraclecorp.com> <20070627223548.GS989688@sgi.com> <20070628024443.GB6038@wotan.suse.de> <20070628122031.GF5313@think.oraclecorp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070628122031.GF5313@think.oraclecorp.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, Andrew Morton wrote:
-> Your email client is doing space-stuffing.  It's easy enough to fix at this
-> end, but even easier if you fix it ;)
+On Thu, Jun 28, 2007 at 08:20:31AM -0400, Chris Mason wrote:
+> On Thu, Jun 28, 2007 at 04:44:43AM +0200, Nick Piggin wrote:
+> > 
+> > That's true but I don't think an extent data structure means we can
+> > become too far divorced from the pagecache or the native block size
+> > -- what will end up happening is that often we'll need "stuff" to map
+> > between all those as well, even if it is only at IO-time.
+> 
+> I think the fundamental difference is that fsblock still does:
+> mapping_info = page->something, where something is attached on a per
+> page basis.  What we really want is mapping_info = lookup_mapping(page),
+> where that function goes and finds something stored on a per extent
+> basis, with extra bits for tracking dirty and locked state.
+> 
+> Ideally, in at least some of the cases the dirty and locked state could
+> be at an extent granularity (streaming IO) instead of the block
+> granularity (random IO).
+> 
+> In my little brain, even block based filesystems should be able to take
+> advantage of this...but such things are always easier to believe in
+> before the coding starts.
 
-Aw darn :( Stupid PINE. I'll fix it for the next patch.
+Now I wouldn't for a minute deny that at least some of the block
+information would be well to store in extent/tree format (if XFS 
+does it it must be good!).
 
->> +	atomic_notifier_call_chain(&info_dumper_list, 0, NULL);
-[...]
-> So...  Please consider abandoning the notifier-chain and just go for a
-> simple function call.
+And yes, I'm sure filesystems with even basic block based allocation
+could get a reasonable ratio of blocks to extents.
+
+However I think it is fundamentally another layer or at least
+more complexity... fsblocks uses the existing pagecache mapping as
+(much of) the data structure and uses the existing pagecache locking
+for the locking. And it fundamentally just provides a block access
+and IO layer into the pagecache for the filesystem, which I think will
+often be needed anyway.
+
+But that said, I would like to see a generic extent mapping layer
+sitting between fsblock and the filesystem (I might even have a crack
+at it myself)... and I could be proven completely wrong and it may be
+that fsblock isn't required at all after such a layer goes in. So I
+will try to keep all the APIs extent based.
+
+The first thing I actually looked at for "get_blocks" was for the
+filesystem to build up a tree of mappings itself, completely unconnected
+from the pagecache. It just ended up being a little more work and
+locking but the idea isn't insane :)
 
 
-As we discovered some minutes ago, there appears to be infrastructure for this
-already -- the die_chain. For thsoe of you who don't know, the die_chain
-gets called from notify_die. It exists on almost all architectures. On i386,
-it gets called from die() on arch/i386/kernel/traps.c:417 -- before
-registers are scrolled by. So, if we want our own specific output there,
-like utsname or uptime, then we can get it.
+> > One issue I have with the current nobh and mpage stuff is that it
+> > requires multiple calls into get_block (first to prepare write, then
+> > to writepage), it doesn't allow filesystems to attach resources
+> > required for writeout at prepare_write time, and it doesn't play nicely
+> > with buffers in general. (not to mention that nobh error handling is
+> > buggy).
+> > 
+> > I haven't done any mpage-like code for fsblocks yet, but I think they
+> > wouldn't be too much trouble, and wouldn't have any of the above
+> > problems...
+> 
+> Could be, but the fundamental issue of sometimes pages have mappings
+> attached and sometimes they don't is still there.  The window is
+> smaller, but non-zero.
 
-There exists a DIE_PANIC type on some architectures, but it's never actually
-... used. So, I will probably write a patch to add it on all architectures,
-and use it in the panic routines.
+The aim for fsblocks is that any page under IO will always have fsblocks,
+which I hope is going to make this easy. In the fsblocks patch I sent out
+there is a window (with mmapped pages), however that's a bug wich can be
+fixed rather than a fundamental problem. So writepages will be less problem.
 
->> +ATOMIC_NOTIFIER_HEAD(info_dumper_list);
->> +EXPORT_SYMBOL(info_dumper_list);
->
-> That export isn't needed.
+Readpages may indeed be more efficient and block mapping with extents than
+individual fsblocks (or it could be, if it were an extent based API itself).
 
-If I want someone else to access it, like a module, it is... But, I guess
-if I wanted to act as per canon, I should just do register functions, and
-export those. On the die_chain, those are EXPORT_SYMBOL_GPL, FWIW
-
-> Again, a deref of current->nsproxy->uts_ns->name at oops-time has risks.
->
-> This string could be precalculated, no?
-
-Yes, and will be.
-
-> I don't know what to do here.  It will be hard to find a read-the-time
-> function which is a) lockless and b) available on all architectures and
-> configs.
->
-> If you can find a way to use plain old jiffies, that'd be good.
-
-jiffies sounds good enough to me.
-
-There seems to be some opposition to the utsname and uptime patches. I'll
-take a look at those here and see what I can do to make those a little more
-pleasing to non-Google users. Expect a patch for DIE_PANIC tomorrow...
-
-joshua
+Well I don't know. Extents are always going to have benefits, but I don't
+know if it means the fsblock part could go away completely. I'll keep
+it in mind though.
 
