@@ -1,35 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbXF2POH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933397AbXF2POe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762905AbXF2POH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 11:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764936AbXF2PNm
+	id S933397AbXF2POe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 11:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932702AbXF2PNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 11:13:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:49160 "EHLO
+	Fri, 29 Jun 2007 11:13:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:48683 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763797AbXF2PNk (ORCPT
+	with ESMTP id S932365AbXF2PNs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 11:13:40 -0400
+	Fri, 29 Jun 2007 11:13:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=M/m9hpCjq9J2ZO3qFOYjEN5fytK/u7CM5EFEMNrXZzIciBSO6xQXuzup2m97DWlJ5tNF7CD+ivd59PuIGwBlHEEkYpitZF4bm++k2GgLkn0pCW8LQlQPOfy8nUZf7ud5MLkgAXDq92fGzMCQ7oYRX1n8yDBMhuExG1LtkcqfE2Y=
-Message-ID: <46852191.2080506@googlemail.com>
-Date: Fri, 29 Jun 2007 17:13:21 +0200
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=lTzaALy9gax3aFEIrpEox/fOtIXgys+Wa71lN2cw7YRomwFZQE4phBuyN+CnRGh3qA7sE/MmFaEThIRm0V7Sm+zCH1dsq54RR7Aut1qmiyDeJ9bvVVB33yxxZ4V4IOkJ9wiIqdyqBuJyPvPkPxvIn1uUtfiX6Wqc7EVdxVeuTt8=
+Message-ID: <46852199.1040406@googlemail.com>
+Date: Fri, 29 Jun 2007 17:13:29 +0200
 User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
-       Mark Fortescue <mark@mtfhpc.demon.co.uk>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, linux@horizon.com, Andi Kleen <ak@suse.de>,
-       discuss@x86-64.org, Ioan Ionita <opslynx@gmail.com>
-Subject: Re: [2/2] 2.6.22-rc6: known regressions v2
-References: <46852033.5020708@googlemail.com>
-In-Reply-To: <46852033.5020708@googlemail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Stephane Eranian <eranian@hpl.hp.com>,
+       =?ISO-8859-2?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>
+Subject: 2.6.22-rc6: known regressions with patches v2
 X-Enigmail-Version: 0.95.1
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 8bit
@@ -39,7 +33,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi all,
 
-Here is a list of some known regressions in 2.6.22-rc6.
+Here is a list of some known regressions in 2.6.22-rc6
+with patches available.
 
 Feel free to add new regressions/remove fixed etc.
 http://kernelnewbies.org/known_regressions
@@ -59,36 +54,16 @@ Ville Syrjälä                          1
 
 
 
-Sparc64
+Unclassified
 
-Subject    : random invalid instruction occourances on sparc32 (sun4c)
-References : http://lkml.org/lkml/2007/6/17/111
-Submitter  : Mark Fortescue <mark@mtfhpc.demon.co.uk>
-Status     : problem is being debugged
-
-Subject    : 2.6.22-rc broke X on Ultra5
-References : http://lkml.org/lkml/2007/5/22/78
-Submitter  : Mikael Pettersson <mikpe@it.uu.se>
-Handled-By : David Miller <davem@davemloft.net>
-Status     : problem is being debugged
-
-
-
-Suspend
-
-Subject    : Transmeta/APM regression - problems with resume
-References : http://lkml.org/lkml/2007/6/27/168
-Submitter  : linux@horizon.com
-Status     : unknown
-
-
-
-x86-64
-
-Subject    : x86-64 2.6.22-rc2 random segfaults
-References : http://lkml.org/lkml/2007/5/24/275
-Submitter  : Ioan Ionita <opslynx@gmail.com>
-Status     : Unknown
+Subject    : OProfile issues
+References : http://lkml.org/lkml/2007/6/12/207
+Submitter  : Stephane Eranian <eranian@hpl.hp.com>
+Handled-By : Björn Steinbrink <B.Steinbrink@gmx.de>
+Patch      : http://lkml.org/lkml/2007/6/12/392
+             http://lkml.org/lkml/2007/6/20/275
+             http://lkml.org/lkml/2007/6/20/276
+Status     : patches were suggested
 
 
 
