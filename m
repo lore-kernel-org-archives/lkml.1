@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932737AbXF2N0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932551AbXF2Nag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932737AbXF2N0e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 09:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762546AbXF2N01
+	id S932551AbXF2Nag (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 09:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763610AbXF2Na2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 09:26:27 -0400
-Received: from minus.inr.ac.ru ([194.67.69.97]:40175 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1763452AbXF2N01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 09:26:27 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=Fe1Tr17s9pH4OQCFDbndauA9hcaSwrLU5Co2uDTo6KQHc1oLJKuLFu8E6z4WGrvGc3v/sKUOuN/CuooqD0Q/Pjj5djRXM+zR9TGHgGA9QjbTCpmFHkUfHolt+uYqXZ7VbqHv+iuqhir9Wm6Gval8usnUXqqIJuxWztH2/dTEJxU=;
-Date: Fri, 29 Jun 2007 17:25:14 +0400
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070629132514.GA19021@ms2.inr.ac.ru>
-References: <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu> <20070629113423.GA9042@ms2.inr.ac.ru> <20070629122906.GA13035@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070629122906.GA13035@elte.hu>
-User-Agent: Mutt/1.5.6i
+	Fri, 29 Jun 2007 09:30:28 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:37152 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753678AbXF2Na0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 09:30:26 -0400
+Message-ID: <4685096B.9000400@dgreaves.com>
+Date: Fri, 29 Jun 2007 14:30:19 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Chinner <dgc@sgi.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm <linux-pm@lists.osdl.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, LinuxRaid <linux-raid@vger.kernel.org>,
+       LVM general discussion and development 
+	<linux-lvm@redhat.com>,
+       David Robinson <zxvdr.au@gmail.com>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [linux-pm] Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
+References: <46744065.6060605@dgreaves.com> <20070629074322.GT31489@sgi.com> <4684BAA4.4010905@dgreaves.com> <200706291518.18072.rjw@sisk.pl>
+In-Reply-To: <200706291518.18072.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
-
-> > The difference between softirqs and hardirqs lays not in their 
-> > "heavyness". It is in reentrancy protection, which has to be done with 
-> > local_irq_disable(), unless networking is not isolated from hardirqs. 
+Rafael J. Wysocki wrote:
+> On Friday, 29 June 2007 09:54, David Greaves wrote:
+>> David Chinner wrote:
+>>> On Fri, Jun 29, 2007 at 08:40:00AM +0100, David Greaves wrote:
+>>>> What happens if a filesystem is frozen and I hibernate?
+>>>> Will it be thawed when I resume?
+>>> If you froze it yourself, then you'll have to thaw it yourself.
+>> So hibernate will not attempt to re-freeze a frozen fs and, during resume, it 
+>> will only thaw filesystems that were frozen by the suspend?
 > 
-> i know that pretty well ;)
-
-You forgot about this again in the next sentence. :-)
-
-
-> as i said above (see the underlined sentence), hardirq contexts already 
-> run just fine with hardirqs enabled.
-
-RENTRANCY PROTECTION! If does not matter _how_ they run, it matters what
-context they preempt and what that context has to make to prevent that
-preemption. If you still do not get the point, make
-	sed -e 's/local_bh_/local_irq_/'
-over net/* and kill softirqs. Everything will work just fine.
-Moreover, if you deal only with a single TCP connection
-(and sysctl tcp_low_latency is not set), even hardirq latency will not suck,
-all real work is done at process context.
+> Right now it doesn't freeze (or thaw) any filesystems.  It just sync()s them
+> before creating the hibernation image.
+Thanks. Yes I realise that :)
+I wasn't clear, I should have said:
+So hibernate should not attempt to re-freeze a frozen fs and, during resume, it
+should only thaw filesystems that were frozen by the suspend.
 
 
-> also, network softirq locking dependencies arent all that magic or 
-> complex either: they do not operate on sockets that are already locked 
-> by a user context, they are per CPU and they are not preempted by 
-> 'themselves', nor are they preempted by certain other softirqs (such as 
-> they are not preempted by the timer softirq). Am i missing some point of 
-> yours?
+> However, the fact that you've seen corruption with the XFS filesystems frozen
+> before the hibernation indicates that the problem occurs on a lower level.
+And that was why I chimed in - I don't think freezing fixes the problem (though 
+it may make sense for other reasons).
 
-I would not say I understood what you wanted to say. :-)
-
-Does my statement about sed match your view? :-)
+David
 
 
-What I know is that there is no hairy locking dependencies at all
-and there is no magic there. Especially, on level of sockets.
-The things, which are troublesome are various shared trees/hash tables
-(e.g. socket hash tables), which are modified both by incoming network
-packets and process contexts.
-
-I have some obscure suspicion that naive dream of "realtime" folks is
-to move all those "bad" things to some kernel threads and to talk
-to those threads passing some messages. I hope this suspicion is wrong,
-otherwise I would say: go to Mach, pals. :-(
-
-Alexey
