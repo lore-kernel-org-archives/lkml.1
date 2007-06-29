@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbXF2VSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbXF2VWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbXF2VSb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 17:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbXF2VSY
+	id S1756809AbXF2VWT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 17:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbXF2VWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 17:18:24 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:43206 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754880AbXF2VSX (ORCPT
+	Fri, 29 Jun 2007 17:22:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40363 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754160AbXF2VWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 17:18:23 -0400
-Date: Fri, 29 Jun 2007 17:18:15 -0400
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: Robert Hancock <hancockr@shaw.ca>, Zan Lynx <zlynx@acm.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Raj, Ashok" <ashok.raj@intel.com>
-Subject: Re: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
-Message-ID: <20070629211815.GA23988@rhun.ibm.com>
-References: <46845943.7050005@shaw.ca> <FC1D1B23302A22499C60C967336B2AE0016F7529@pdsmsx411.ccr.corp.intel.com> <20070629152858.GA27995@linux-os.sc.intel.com> <20070629162343.GD27698@rhun.ibm.com> <20070629192353.GA12413@linux-os.sc.intel.com>
+	Fri, 29 Jun 2007 17:22:09 -0400
+Subject: Re: 2.6.22-rc6 spurious hangs
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Sattler <tsattler@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Mack <daniel@qanu.de>,
+       Holger Waechtler <holger@qanu.de>
+In-Reply-To: <20070629135848.GA332@tv-sign.ru>
+References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru>
+	 <4683CC89.80406@gmx.de> <20070628150826.GA487@tv-sign.ru>
+	 <4683F145.2060705@gmx.de> <4683F48F.9010603@gmx.de>
+	 <20070628181044.GA613@tv-sign.ru> <4684B132.2070405@gmx.de>
+	 <20070629130955.GA284@tv-sign.ru> <20070629131605.GA25964@elte.hu>
+	 <20070629135848.GA332@tv-sign.ru>
+Content-Type: text/plain
+Date: Fri, 29 Jun 2007 18:21:30 -0300
+Message-Id: <1183152090.7089.183.camel@gaivota>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070629192353.GA12413@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 29, 2007 at 12:23:53PM -0700, Keshavamurthy, Anil S wrote:
+> Still we can't do this under cinergyt2->sem, because cinergyt2_query()
+> takes it too. This all looks very wrong to me, I hope maintaners can
+> explain.
 
-> Since this is IOMMU is built into the kernel and it is good idea to
-> report that the device is not present.
+AFAIK, the driver authors are not working anymore with CinergyT2. The
+last patch we have on development tree from Holger is dated as Dec, 3
+2004. Since them, only internal kernel API changes and a few sparse
+fixes from other contributors were applied.
 
-Yes - as a debug message.
+Also, none of the current DVB maintainers seem to have any hardware for
+testing.
 
-> The above is printed only once and is consistent with other IOMMU
-> implementation. Atleast it is useful when people report bugs we can
-> makeout whether IOMMU is being detected or not.
-
-If it was printed that it was detected it was - otherwise, it wasn't.
-
-> Here is what I see on my box.
-> [..]
-> "PCI-GART: No AMD northbridge found."
-
-You're right, that should be a debug message as well.
-
-> [..]
-> Calgary: detecting Calgary via BIOS EBDA area
-> Calgary: Unable to locate Rio Grande table in EBDA - bailing!
-
-These are KERN_DEBUG messages.
 
 Cheers,
-Muli
+Mauro
+
