@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbXF2JOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbXF2JQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761393AbXF2JOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 05:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXF2JOJ
+	id S1760243AbXF2JQQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 05:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXF2JQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 05:14:09 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:22236 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754064AbXF2JOH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 05:14:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BhcKaO78/6EoObFcmvkANF+RMTDQPYwleXPYGxunNgkoZcFWZwu/agnPfWql56igfMrrxLAmjef15RZJSNqYe7qzlBY0MwbOKWM9hVFsutnzyThrPrzgspTLoq7BrcfGwNUAit4OswLReWYxlhEmwu1WtombgOAFYuGd+jRs/ig=
-Message-ID: <9a8748490706290214g4651b3adm6d238c3f494107d4@mail.gmail.com>
-Date: Fri, 29 Jun 2007 11:14:06 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Eberhard Moenkeberg" <emoenke@gwdg.de>
-Subject: Re: updated sbpcd.c
-Cc: "Surya Prabhakar N" <surya.prabhakar@wipro.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706290830290.27162@gwdu05.gwdg.de>
+	Fri, 29 Jun 2007 05:16:03 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:55483 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754064AbXF2JQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 05:16:01 -0400
+Message-ID: <4684CDCC.9030202@drzeus.cx>
+Date: Fri, 29 Jun 2007 11:15:56 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Midhun Agnihotram <agnimidhun@gmail.com>
+CC: "=?ISO-8859-1?Q?Hans-J=FCrgen_Koch?=" <hjk@linutronix.de>, jdi@l4x.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fwd: Mounting MMC card
+References: <4dde4acb0706261146s5906d8f3vb787d5aecb429116@mail.gmail.com>	 <200706282210.23770.hjk@linutronix.de>	 <4dde4acb0706290040p4f90b0b5q630b8e0bd5982908@mail.gmail.com>	 <200706291038.58358.hjk@linutronix.de> <4dde4acb0706290209n40d5e0adve6a3713513a6a724@mail.gmail.com>
+In-Reply-To: <4dde4acb0706290209n40d5e0adve6a3713513a6a724@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1183085233.3037.19.camel@bluegenie>
-	 <Pine.LNX.4.64.0706290830290.27162@gwdu05.gwdg.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29/06/07, Eberhard Moenkeberg <emoenke@gwdg.de> wrote:
-> Hi,
->
-> On Fri, 29 Jun 2007, Surya Prabhakar N wrote:
->
-> >
-> > Hi emoenke,
-> >    Can this patch be verified and pulled into your tree.
-> >
-> > thanks.
-> > Surya.
->
-> Jesper Juhl should ack it (if), and Jens Axboe would be the right person
-> to pull it into the tree.
->
-Consider Surya's patch to be
-Acked-by: Jesper Juhl <jesper.juhl@gmail.com>
+Midhun Agnihotram wrote:
+> 
+>     The kernel version is 2.6.16. So I guess there should not be a
+> problem. Any more things that I need to check??
+> 
 
+Let's try something a lot less complex than mounting. Try running:
+	dd if=/dev/mmcblk0 of=/dev/null count=100
+
+If that fails, then you should either have some revealing output in dmesg or
+your device nodes must be wrong somehow.
+
+If it succeeds, then there is some problem reading the filesystem off the card.
+Have you tried mounting the card in some other system?
+
+Rgds
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
