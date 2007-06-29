@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbXF2IjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759137AbXF2Imd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbXF2IjR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 04:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbXF2IjB
+	id S1759137AbXF2Imd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 04:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758AbXF2ImZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 04:39:01 -0400
-Received: from www.osadl.org ([213.239.205.134]:52173 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752798AbXF2IjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 04:39:00 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-To: "Midhun Agnihotram" <agnimidhun@gmail.com>
-Subject: Re: Fwd: Mounting MMC card
-Date: Fri, 29 Jun 2007 10:38:58 +0200
-User-Agent: KMail/1.9.5
-Cc: jdi@l4x.org, drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org
-References: <4dde4acb0706261146s5906d8f3vb787d5aecb429116@mail.gmail.com> <200706282210.23770.hjk@linutronix.de> <4dde4acb0706290040p4f90b0b5q630b8e0bd5982908@mail.gmail.com>
-In-Reply-To: <4dde4acb0706290040p4f90b0b5q630b8e0bd5982908@mail.gmail.com>
-Organization: Linutronix
+	Fri, 29 Jun 2007 04:42:25 -0400
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:55724 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbXF2ImY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 04:42:24 -0400
+Message-ID: <4684C5EE.9000606@kernel.org>
+Date: Fri, 29 Jun 2007 01:42:22 -0700
+From: Josh Triplett <josh@kernel.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Kyle Moffett <mrmacman_g4@mac.com>, Dave Young <hidave.darkstar@gmail.com>,
+       Li Yang-r58472 <LeoLi@freescale.com>,
+       Chris Shoemaker <c.shoemaker@cox.net>,
+       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [OT] Vim highlighting for trailing spaces
+References: <46835C16.9020700@kernel.org> <989B956029373F45A0B8AF0297081890D834BE@zch01exm26.fsl.freescale.net> <a8e1da0706280010m1e787bc2jae999084438982da@mail.gmail.com> <a8e1da0706280020ocf81ce7u98de87f16d674706@mail.gmail.com> <7958FF64-140B-435A-8B69-A503C5C18D79@mac.com> <Pine.LNX.4.64.0706290938460.22579@fbirervta.pbzchgretzou.qr> <4684BA77.7090804@kernel.org> <Pine.LNX.4.64.0706291001320.22579@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0706291001320.22579@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706291038.58358.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 29 Juni 2007 09:40 schrieb Midhun Agnihotram:
-
+Jan Engelhardt wrote:
+> On Jun 29 2007 00:53, Josh Triplett wrote:
+>>>> I actually prefer this (in .vimrc):
+>>>>
+>>>> " Show trailing whitespace and spaces before tabs
+>>>> hi link localWhitespaceError Error
+>>>> au Syntax * syn match localWhitespaceError /\(\zs\%#\|\s\)\+$/ display
+>>>> au Syntax * syn match localWhitespaceError / \+\ze\t/ display
+>>> I prefer this:
+>>>
+>>> find . -type f -print0 | xargs -0 grep -Pn '[\t ]+$'
+>>>
+>>> It is editor agnostic, and I do not have to look through all source files for
+>>> highlighted whitespace :-)
+>> And if you really want highlighting, you can always use grep --color. :)
 > 
-> >* Is support for the file system on the MMC in your kernel?
-> 
->   Yes. There is support for MMC card in my kernel. 
+> Been there, done that, have GREP_COLOR env variable defined!
 
-I was talking about the file system on the card. Usually, you've
-got vfat on such a card. How about that?
+Same here.  Now I just need to convince git-grep to use it.
 
-BTW, You mounted proc on /proc and sysfs on /sys, I hope?
-
-> 
->    I have checked the log and it is attached to the end of the mail.
-> The log contains debug messages for removing and inserting the MMC
-> card. But nothing specific relating to mount. Can you interpret
-> anything more from it?
-
-No. You don't have jffs2 on your MMC, do you?
-
-> 
-> >Have you checked that your device nodes are correct? Since you use busybox I
-> >assume the system is too lightweight to run udev.
-> 
->     Yes. I have checked the device nodes. They are fine for MMC. (I
-> have made them form what I got on the internet. BTW can anybody tell
-> me how can I find the corresponding major and minor number for my
-> device driver? This MMC driver is from Microcross. I have put the
-> device nodes as 254,0 - which are generic.).
-
-Here's what I have (nodes created by udev):
-
-# ls -l /dev/mmc*
-brw-rw----    1 root     root     254,   0 Jun 29 08:41 /dev/mmcblk0
-brw-rw----    1 root     root     254,   1 Jun 29 08:41 /dev/mmcblk0p1
-
-> 
-> >I run udev on an arm system, it costs you about 200kBytes,
-> >and saves you all the trouble with creating device files.
-> >Note that you don't need any rules files. If you want to write
-> >rules, you can even implement a poor-man's hotplug without HAL.
-> >If you can afford 200k, use udev.
-> 
->    I have seen the udev page. But I am a bit skeptic about
-> implementing it with my kernelas this kernel is from Microcross -
-> customized for CSB535FS board. 
-
-As long as it's a reasonable recent kernel (>=2.6.15), it shouldn't
-be a problem. 
-
-> I want to try udev only as my last 
-> option.
-
-Your choice.
-
-Hans
-
-
-
+- Josh Triplett
 
