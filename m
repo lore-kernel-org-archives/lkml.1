@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933802AbXF2Qh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933942AbXF2Qid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933802AbXF2Qh6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 12:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbXF2Qhu
+	id S933942AbXF2Qid (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 12:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760198AbXF2QiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 12:37:50 -0400
-Received: from mtl.rackplans.net ([69.90.0.18]:34985 "EHLO mtl.rackplans.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760139AbXF2Qht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 12:37:49 -0400
-Date: Fri, 29 Jun 2007 12:37:47 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: =?iso-8859-15?q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Please release a stable kernel Linux 3.0
-In-Reply-To: <200706271118.36985.zoltan.hubert@zzaero.com>
-Message-ID: <Pine.LNX.4.64.0706291227040.1395@mtl.rackplans.net>
-References: <200706212349.54983.zoltan.hubert@zzaero.com>
- <200706261637.22820.zoltan.hubert@zzaero.com>
- <6FD45914-1793-45D5-B0A1-F5D32ED38017@e18.physik.tu-muenchen.de>
- <200706271118.36985.zoltan.hubert@zzaero.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="658624935-1208726249-1183135067=:1395"
+	Fri, 29 Jun 2007 12:38:24 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:37208 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755105AbXF2QiY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 12:38:24 -0400
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070629163631.GQ13886@enneenne.com>
+References: <20070628084003.GQ13886@enneenne.com>
+	 <1183031060.1170.145.camel@pmac.infradead.org>
+	 <20070628161450.GD13886@enneenne.com>
+	 <1183117082.1170.308.camel@pmac.infradead.org>
+	 <20070629150813.GM13886@enneenne.com>
+	 <1183130716.1170.347.camel@pmac.infradead.org>
+	 <20070629153835.GN13886@enneenne.com>
+	 <1183131694.1170.350.camel@pmac.infradead.org>
+	 <20070629162346.GO13886@enneenne.com>
+	 <1183134208.1170.366.camel@pmac.infradead.org>
+	 <20070629163631.GQ13886@enneenne.com>
+Content-Type: text/plain
+Date: Fri, 29 Jun 2007 17:38:54 +0100
+Message-Id: <1183135135.17622.3.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 2007-06-29 at 18:36 +0200, Rodolfo Giometti wrote:
+> On Fri, Jun 29, 2007 at 05:23:28PM +0100, David Woodhouse wrote:
+> > 
+> > You'll need to put it in an #else case, not in #ifndef __KERNEL__.
+> 
+> Sorry. :)
 
---658624935-1208726249-1183135067=:1395
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+That matches what I built with earlier.
 
-On Wed, 27 Jun 2007, Zolt=E1n HUBERT wrote:
+-- 
+dwmw2
 
-> I don't remember how it was during 2.4 and before, but I=20
-> find it very suspicious that SuSE and RedHat only provide=20
-> 2.6.10 and 2.6.9 for their OS. It looks as if THEY didn't=20
-> trust 2.6.x to be a replacement to 2.6.y
->=20
-> And as I understand it, this is (was ?) the whole point of=20
-> stable/development kernels. "We" can trust a newer stable=20
-> kernel to be a drop-in replacement for an older stable=20
-> kernel (from the same series), while development kernels=20
-> need time to stabilize with the new whizz-bang-pfouit stuff=20
-> that you all so nicely add.=20
->=20
-> Are the good ol' days lost in nostalgia ?
-
-Lost? maybe.  Improved on, defiantly so it's loss isn't a bad thing.
-
-The 2.4/2.5 split was, as far as I recall, a mess.  2.5 had too many=20
-changes to stabilize in any reasonable amount of time and 2.4 then needed=
-=20
-new drivers and features to keep it from becoming obsolete.  Back porting=
-=20
-drivers without the needed infrastructure resulted in instabilities in=20
-the 2.4 branch.
-
-I recall one time where I needed a certain raid device working and not a=20
-single kernel had that driver working properly.  2.4.x oopsed in the=20
-driver after random intervals and the 2.5 kernel crashed in other places.
-
-Now development is broken into smaller stages that are easier to debug and=
-=20
-made stable in shorter time.  If I just need to update a kernel and don't=
-=20
-need any new features and drivers I can just update to the next point=20
-release and I know it won't break anything.  If I want new features I can=
-=20
-update to the latest stable branch or the latest pre release but either=20
-way my stuff is more likely to work than I did back in the 2.5 days.
-
-I think people who keep demanding a return to the old development system=20
-forget how badly it sucked in the first place.
-
-=09Gerhard
-
-
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
---658624935-1208726249-1183135067=:1395--
