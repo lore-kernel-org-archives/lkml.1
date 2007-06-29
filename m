@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932630AbXF2ACy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932365AbXF2AGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932630AbXF2ACy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 20:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763876AbXF2ACr
+	id S932365AbXF2AGd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 20:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760105AbXF2AG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 20:02:47 -0400
-Received: from mail.app.aconex.com ([203.89.192.138]:55355 "EHLO
-	postoffice.aconex.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760948AbXF2ACr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 20:02:47 -0400
-X-Greylist: delayed 1324 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jun 2007 20:02:46 EDT
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-From: Nathan Scott <nscott@aconex.com>
-Reply-To: nscott@aconex.com
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: David Chinner <dgc@sgi.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-In-Reply-To: <20070628181913.GC1674@amitarora.in.ibm.com>
-References: <20070614091458.GH5181@schatzie.adilger.int>
-	 <20070614120413.GD86004887@sgi.com>
-	 <20070614193347.GN5181@schatzie.adilger.int>
-	 <20070625132810.GA1951@amitarora.in.ibm.com>
-	 <20070625134500.GE1951@amitarora.in.ibm.com>
-	 <20070625150320.GA8686@amitarora.in.ibm.com>
-	 <20070625214626.GJ5181@schatzie.adilger.int>
-	 <20070626103247.GA19870@amitarora.in.ibm.com>
-	 <20070626153413.GC6652@schatzie.adilger.int>
-	 <20070626231803.GQ31489@sgi.com>
-	 <20070628181913.GC1674@amitarora.in.ibm.com>
-Content-Type: text/plain
-Organization: Aconex
-Date: Fri, 29 Jun 2007 09:39:40 +1000
-Message-Id: <1183073980.15488.134.camel@edge.yarra.acx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Jun 2007 20:06:26 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4898 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754946AbXF2AGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 20:06:25 -0400
+Date: Fri, 29 Jun 2007 02:06:36 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
+In-Reply-To: <20070629001244.3ce09917@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0706290202480.1817@scrub.home>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+ <20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
+ <20070628110644.a530cfef.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282017450.30789@anakin>
+ <20070628113819.c24e592d.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282044360.30789@anakin>
+ <20070628132947.e3378811.akpm@linux-foundation.org> <20070628232537.02ced21c@the-village.bc.nu>
+ <Pine.LNX.4.64.0706290048290.1817@scrub.home> <20070629001244.3ce09917@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-28 at 23:49 +0530, Amit K. Arora wrote:
+Hi,
+
+On Fri, 29 Jun 2007, Alan Cox wrote:
+
+> > > check_signature is relevant for anything with MMIO space (for example you
+> > > can legitimately want to check_signature a MAC68K Nubus ROM).
+> > 
+> > A generic check_signature() is a little difficult if we have separate io 
+> > functions for every bus.
 > 
-> > Correct, but for swap files that's not an issue - no user should be
-> able
-> > too read them, and FA_MKSWAP would really need root privileges to
-> execute.
-> 
-> Will the FA_MKSWAP mode still be required with your suggested change
-> of
-> teaching do_mpage_readpage() about unwritten extents being in place ?
-> Or, will you still like to have FA_MKSWAP mode ? 
+> Does M68K implement iomap() and pci_iomap and friends yet ?
 
-There's no need for a MKSWAP flag.
+How is that related?
 
-cheers.
+> check_signature has fairly few users so moving to be iomap based wouldn't
+> be hard if that was a problem. The other option would seem to be
+> bus->check_signature() ?
 
---
-Nathan
+IMO the first question would be whether that function is really this 
+important. We can also just leave it as a PCI/ISA template and other bus 
+specific header can implement when necessary.
 
+bye, Roman
