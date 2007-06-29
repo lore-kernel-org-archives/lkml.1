@@ -1,68 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbXF2AUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXF2Ajr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932433AbXF2AUR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 20:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763655AbXF2AUH
+	id S932203AbXF2Ajr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 20:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763647AbXF2Ajj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 20:20:07 -0400
-Received: from ns2.suse.de ([195.135.220.15]:55968 "EHLO mx2.suse.de"
+	Thu, 28 Jun 2007 20:39:39 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:50290 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763876AbXF2AUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 20:20:06 -0400
+	id S1763876AbXF2Ajj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 20:39:39 -0400
+Date: Fri, 29 Jun 2007 02:39:33 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
 To: Joshua Wise <jwise@google.com>
-Cc: linux-kernel@vger.kernel.org, akpm@google.com, thockin@google.com,
+cc: linux-kernel@vger.kernel.org, akpm@google.com, thockin@google.com,
        mikew@google.com, masouds@google.com
 Subject: Re: [PATCH] Info dump on Oops or panic()
-References: <Pine.LNX.4.64.0706281502350.617@internets.corp.google.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 29 Jun 2007 03:15:47 +0200
 In-Reply-To: <Pine.LNX.4.64.0706281502350.617@internets.corp.google.com>
-Message-ID: <p73r6nv4l30.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+Message-ID: <Pine.LNX.4.64.0706290237390.31463@twin.jikos.cz>
+References: <Pine.LNX.4.64.0706281502350.617@internets.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joshua Wise <jwise@google.com> writes:
+On Thu, 28 Jun 2007, Joshua Wise wrote:
 
-You are aware that oops screen estate is very precious on standard
-systems without serial console?
+>  This patch adds a call chain to be invoked when the system oopses or
+>  panics. 
 
-> +/*
-> + * Dump out UTS info on oops / panic.
-> + */
-> + +static int dump_utsname(struct notifier_block *self, unsigned long
-> v, void *p)
-> +{
-> +	printk ("%s %s %s %s %s %s\n",
-> +		utsname()->sysname,
-> +		utsname()->nodename,
-> +		utsname()->release,
-> +		utsname()->version,
+That seems really fragile, processing a callchain when the system goes to 
+panic is not guaranteed to work. Wouldn't simple function call have higher 
+chances of survival?
 
-release / version is already printed for oopses. I frankly don't see
-the point of the rest of the UTS information because that should be
-implicit in the log files (you surely know to which machine the log
-belongs)
-
-> +static int dump_uptime(struct notifier_block *self, unsigned long v, void *p)
-> +{
-> +	struct timespec uptime;
-> +	/* The logic below is very much like how kernel +	 *
-> prepares /proc/uptime. +	 */
-> +	do_posix_clock_monotonic_gettime(&uptime);
-> +	printk("Uptime(seconds): %lu.%02lu\n",
-> +		(unsigned long) uptime.tv_sec,
-> +		(uptime.tv_nsec / (NSEC_PER_SEC / 100)));
-
-Wouldn't it be better to just print the time at boot up? If you 
-have full log files you surely got the boot messages too and
-then you can get it from there. Ok it might be tricky if you
-don't know when the oops got logged, but surely that is a simple
-exercise in text processing to handle this on the console server?
-
-It can be already done with CONFIG_PRINTK_TIME BTW which
-will event print it for every line.
-
--Andi
+-- 
+Jiri Kosina
