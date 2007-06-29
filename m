@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933660AbXF2PvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbXF2Pyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933660AbXF2PvK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 11:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765163AbXF2Puz
+	id S933551AbXF2Pyl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 11:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758920AbXF2Pye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 11:50:55 -0400
-Received: from mail.screens.ru ([213.234.233.54]:32783 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760139AbXF2Puy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 11:50:54 -0400
-Date: Fri, 29 Jun 2007 19:51:16 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070629155116.GA422@tv-sign.ru>
-References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu> <20070629113423.GA9042@ms2.inr.ac.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070629113423.GA9042@ms2.inr.ac.ru>
-User-Agent: Mutt/1.5.11
+	Fri, 29 Jun 2007 11:54:34 -0400
+Received: from www.vanteon.com ([64.129.125.130]:4036 "EHLO RDC03.vanteon.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757475AbXF2Pyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 11:54:33 -0400
+X-Greylist: delayed 906 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jun 2007 11:54:33 EDT
+Message-ID: <468527A2.40909@vanteon.com>
+Date: Fri, 29 Jun 2007 11:39:14 -0400
+From: Greg Huber <ghuber@vanteon.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Assistance debugging a Micrel network driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/29, Alexey Kuznetsov wrote:
->
-> > Just look at the tasklet_disable() logic.
-> 
-> Do not count this.
+Hello,
+I hope this is the right place to request some assistance, my apologizes 
+if its not.
 
-A slightly off-topic question, tasklet_kill(t) doesn't try to steal
-t from tasklet_head.list if t was scheduled, but waits until t completes.
+I'm currently developing a network driver for a new controller chip. The 
+driver is mostly complete and appears to be working,
+with the exception that messages received and sent up the stack appear 
+to get dropped by a higher layer. Specifically we
+are seeing ARP "who is" requests go out, and the response come back 
+(only 2 nodes on this network), the skb is configured
+and the frame is sent up with netif_rx (we haven't started supporting 
+NAPI yet). The response seems to get dropped somewhere
+as another ARP "who is" request is sent. I am using the 2.6.21.5 kernel 
+(compilied with network debugging turned on) and we
+have also tested with the 2.6.17 kernel, all acted the same.
 
-If I understand correctly, this is because tasklet_head.list is protected
-by local_irq_save(), and t could be scheduled on another CPU, so we just
-can't steal it, yes?
+The upper layers obviously work so I'm sure it's something in my driver.
 
-If we use worqueues, we can change the semantics of tasklet_kill() so
-that it really cancels an already scheduled tasklet.
+I have turned on as much debugging in the kernel as I could find, but I 
+get no messages. Could someone please let me know if
+there is additional debugging I should consider or if there is a dynamic 
+way to turn on debugging in L2 and/or L3.
 
-The question is: would it be the wrong/good change?
+Additionally, if anyone has any idea what might be happening, I would 
+greatly appreciate any information.
 
-Oleg.
+Thank You
+
+Greg
+
+-- 
+
+Greg Huber
+Principal Engineer
+Vanteon Corporation
+255 Woodcliff Drive, Suite 200
+Fairport, NY 14450
+Office: (585) 419-9564
+Fax: (585) 248-0537
+www.vanteon.com <http://www.vanteon.com>  - Embedded for Your Future
 
