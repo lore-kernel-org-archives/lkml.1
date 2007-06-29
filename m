@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765735AbXF2M7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbXF2NFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765735AbXF2M7j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 08:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbXF2M7c
+	id S932322AbXF2NFI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 09:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761304AbXF2NE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 08:59:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56359 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbXF2M7b (ORCPT
+	Fri, 29 Jun 2007 09:04:57 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:16853 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754628AbXF2NE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 08:59:31 -0400
-Subject: Re: Linux Kernel include files
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>,
-       arjan@infradead.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       schilling@fokus.fraunhofer.de, Ulrich Drepper <drepper@gmail.com>
-In-Reply-To: <Pine.LNX.4.64.0706281546340.22579@fbirervta.pbzchgretzou.qr>
-References: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
-	 <20070627171812.GA31705@uranus.ravnborg.org>
-	 <Pine.LNX.4.64.0706281546340.22579@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Fri, 29 Jun 2007 13:59:26 +0100
-Message-Id: <1183121966.1170.324.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 29 Jun 2007 09:04:57 -0400
+Date: Fri, 29 Jun 2007 14:04:15 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: James Bottomley <James.Bottomley@steeleye.com>,
+       David Miller <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Containment measures for slab objects on scatter gather
+ lists
+In-Reply-To: <Pine.LNX.4.64.0706282047160.10035@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0706291339160.10769@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0706282047160.10035@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcASmFtZXMuQm90dG9tbGV5QHN0ZWVsZXllLmNvbQBjbGFtZXRlckBzZ2kuY29tAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAZGF2ZW1AZGF2ZW1sb2Z0Lm5ldABybWsrbGttbEBhcm0ubGludXgub3JnLnVrAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-28 at 15:49 +0200, Jan Engelhardt wrote:
-> I'll have to chime in here.
-> Test program:
-> #include <sys/socket.h>
-> #include <sys/stat.h>
-> #include <sys/types.h>
-> #include <arpa/inet.h>
-> #include <netinet/in.h>
-> #include <errno.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <unistd.h>
-> #include <linux/in.h> /* get IP_FREEBIND */
+On Thu, 28 Jun 2007, Christoph Lameter wrote:
+
+> I had a talk with James Bottomley last night and it seems that there is an 
+> established way of using the page structs of slab objects in the block 
+> layer. Drivers may use the DMA interfaces to issue control commands. In 
+> that case they may allocate a short structure via the slab allocator and 
+> put the control commands into that slab object.
 > 
-> Creates a lot of error messages.
-> (Lots of redefinitions.)
-> 
-> $ rpm -q linux-kernel-headers glibc
-> linux-kernel-headers-2.6.21-7
-> glibc-2.6-5
-> (suse 10.3 factory)
-> 
-> So looks like there's still something to do.
+> The driver will then perform a sg_init_one() on the slab object. 
+> sg_init_one() calls sg_set_buf() which determines the page struct of a 
+> page. In this case sg_set_buf() will determine the page struct of a slab 
+> object. The dma layer may then perform operations on the "slab page". The 
+> block layer folks seem to have spend some time to make this work right.
 
-Hm, yes. But what? Is it reasonable for people to include <linux/in.h>
-and <netinet/in.h> at the same time? 
+Yes, I don't see why this comes as such a surprise and horror to you,
+so much in need of dire WARNINGs.  kmalloc memory is not a different
+kind of memory from what you get from the page allocators.
 
-It's suboptimal that they have to include <linux/in.h> for certain
-definitions, but that file also provides conflicting definitions of
-stuff which exists elsewhere.
+I stand by my page_mapping patch, and the remark I made before,
+that page_mapping(page) is the correct place to check this.  What is
+page_mapping(page) for?  Precisely to return the struct address_space*
+from page->mapping when that's what's in there, and not when that field
+has been reused for something else.
 
-Should we split <linux/in.h> into two parts?
+So lines like
+> +	mapping = PageSlab(page) ? NULL : page_mapping(page);
+seem to miss the point.
 
--- 
-dwmw2
+I agree that the only clash found yet has been in flush_dcache_page,
+so some bytes and branches can indeed be saved by just doing the
+test in there.  Oh, but your VM_BUG_ON cancels out that saving.
+And if we were to try to save bytes and branches there, it's the
+synthetic swapper_space business (only required in a couple of
+places) I'd be wanting to cut out.
 
+To me this all seems like a big fuss to excuse your surprise:
+so please don't expect an Ack from me; but if others prefer
+this, I won't be Nacking.  (Though I'll probably whine about
+it into eternity ;)
+
+Hugh
