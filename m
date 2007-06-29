@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbXGDRCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbXGGW1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758810AbXGDRCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 13:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbXGDRCX
+	id S1754312AbXGGW1q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 18:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXGGW1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 13:02:23 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1607 "EHLO spitz.ucw.cz"
+	Sat, 7 Jul 2007 18:27:37 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4570 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753621AbXGDRCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 13:02:22 -0400
-Date: Fri, 29 Jun 2007 18:06:58 +0000
+	id S1751688AbXGGW1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 18:27:37 -0400
+Date: Fri, 29 Jun 2007 18:31:04 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 00/44] AppArmor security module overview
-Message-ID: <20070629180658.GA3895@ucw.cz>
-References: <20070626230756.519733902@suse.de> <20070626165202.bfe8e6df.akpm@linux-foundation.org> <20070627022403.GB14656@suse.de> <20070626194700.5b0ff477.akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Hannu Savolainen <hannu@opensound.com>, Takashi Iwai <tiwai@suse.de>,
+       linux-kernel@vger.kernel.org,
+       Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
+Subject: OSS vs ALSA API (was Re: Is it time for remove (crap) ALSA from kernel tree ?)
+Message-ID: <20070629183103.GA3861@ucw.cz>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <s5h4pkwi9u0.wl%tiwai@suse.de> <4680310D.6060206@opensound.com> <4680FCF8.4090403@garzik.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070626194700.5b0ff477.akpm@linux-foundation.org>
+In-Reply-To: <4680FCF8.4090403@garzik.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > > so...  where do we stand with this?  Fundamental, irreconcilable
-> > > differences over the use of pathname-based security?
-> > > 
-> > There certainly seems to be some differences of opinion over the use
-> > of pathname-based-security.
+> >Today both OSS and ALSA teams have to spend significant 
+> >amounts of time in emulating the "alien" APIs. Making 
+> >OSS and ALSA to co-exist will require some work in both 
+> >sides but that should be nothing when compared to the 
+> >effort required for emulation.
 > 
-> I was refreshed to have not been cc'ed on a lkml thread for once.  I guess
-> it couldn't last.
+...
+> In Linux we typically do not do two APIs and codebases 
+> for the same purpose.  If we do, like sys_mmap and 
+> sys_mmap2, it's an older legacy interface that never 
+> changes, that we are moving people AWAY from, and a 
+> newer interface.
 > 
-> Do you agree with the "irreconcilable" part?  I think I do.
-> 
-> I suspect that we're at the stage of having to decide between
-> 
-> a) set aside the technical issues and grudgingly merge this stuff as a
->    service to Suse and to their users (both of which entities are very
->    important to us) and leave it all as an object lesson in
->    how-not-to-develop-kernel-features.
+> I see no reason to change from the path at which 
+> upstream has arrived: OSS is a legacy API that's frozen 
+> in time, and ALSA provides the new stuff.
 
-If this is merged, suse is stuck with technically inferior solution
-forever. This may please parts of suse, but not our users.
+While I agree that ALSA is better than OSS... I don't actually think
+ALSA kernel<>user api is... at least for my purposes. I'm still using
+OSS emulation, because I could not get alsa proper to work... and the
+advanced stuff just does not work in emulation.
 
-If this is not merged, suse will [have to] work with selinux people to
-come up with friendlier userland tools/selinux improvements. (We
-already had discussions with vojtech about a way to add path-based
-aspects to selinux, and selinux people already offered to add 'new
-file label is function of directory label and new name' support, which
-addresses lots of reasons for AA).
+In OSS days, if you wanted to test kernel sound driver, you did:
 
-Actually, there's a middle way. Merging only 'pass vfsmounts down'
-parts will make AA self contained enough that suse will not go crazy
-while trying to maintain it, but will have good enough incentive to
-work with selinux people on something better.
+mknod /dev/dsp
+cat /bin/bash > /dev/dsp.
+
+With alsa+oss emulation, you need
+
+mknod /dev/mixer
+install aumix
+aumix
+mknod /dev/dsp
+cat /bin/bash > /dev/dsp.
+
+With alsa proper, it is
+
+install alsalib
+create about 5 device nodes
+install alsautils
+maybe do some config?
+aplay some.wav
+
+..provided you have .wav near you. I'm not sure if it is possible to
+produce sounds using normal shell scripting? (w/o alsautils)?
+
+I can even test kernel graphics drivers by cat /bin/bash > /dev/fb0...
+it would be nice to have equivalent for audio... OSS API seems to be
+the equivalent these days, but please don't deprecate it.
 
 							Pavel
-					(not speaking for suse,
-					as usual).
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
