@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbXF2UvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbXF2Uwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756250AbXF2UvY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 16:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXF2UvQ
+	id S1756511AbXF2Uwt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 16:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXF2Uwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 16:51:16 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:23119 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754871AbXF2UvP (ORCPT
+	Fri, 29 Jun 2007 16:52:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41419 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754871AbXF2Uwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 16:51:15 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jun 2007 16:51:15 EDT
-X-YMail-OSG: GvXYGWIVM1kDKucRVxBh6kWVj2_p1y2DYTfWTK3T5rFcM3LoVLwbH1zSCbuuo7eC5VOCUuc3RzPkKzzLfUlMTwh5ocS2e6_CwPg-
-Message-ID: <46856F24.5060407@andrei.myip.org>
-Date: Fri, 29 Jun 2007 13:44:20 -0700
-From: Florin Andrei <florin@andrei.myip.org>
-Reply-To: linux-kernel@vger.kernel.org
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: how to determine if the noexec stack is defined by an application
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 29 Jun 2007 16:52:39 -0400
+Date: Fri, 29 Jun 2007 13:51:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, dhowells@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] frv: fix fallout from "remove sched.h from mm.h" patch
+Message-Id: <20070629135130.cf977168.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706290904420.13877@localhost.localdomain>
+References: <20070628140921.GA9753@localhost.sw.ru>
+	<20070628151257.7a03e81b.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706290904420.13877@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm reading Ingo's NX quick start document:
+On Fri, 29 Jun 2007 09:10:52 -0400 (EDT)
+"Robert P. J. Day" <rpjday@mindspring.com> wrote:
 
-http://people.redhat.com/mingo/nx-patches/QuickStart-NX.txt
+> > Please provide changelogs.
+> >
+> > I assume this patch fixes some build error or something.
 
-Quote:
-"If an application defines a noexec stack then the kernel will enforce 
-this executability, and all attempts to execute on the stack will be 
-prevented by the hardware."
+I am still awaiting a description of what this patch does.
 
-My question is related to the conditional "if an application". So it 
-looks like it depends on the app.
-Now, the OS/hardware combination that I'm using (RHEL4 WS 32 bit on 
-AMD64 CPU - long story, don't ask) definitely enables NX:
+>   i actually asked about this on either the janitors or newbies list
+> the other day -- one of the early examples from the LDD3 device
+> drivers book which built fine all this time suddenly stopped building,
+> until i explicitly included <linux/sched.h> to be able to dereference
+> a pointer to "task_struct":
+> 
+> /home/rpjday/AMD/k/topics/0_hi/hi1.c:15: error: dereferencing pointer to incomplete type
+> /home/rpjday/AMD/k/topics/0_hi/hi1.c:16: error: dereferencing pointer to incomplete type
 
-# grep -i nx /var/log/dmesg
-NX (Execute Disable) protection: active
-
-But it's running a Web service which is a combination of C code and 
-Tomcat/Java. I have no clue how to determine which portions specify a 
-noexec stack and which don't.
-
-In case it turns out some portions do not specify a noexec stack, my 
-next question is how to get the application to create a noexec stack 
-(assume I can make that request to the developers).
-
-
-(please do NOT Cc me, I'm subscribed to the list)
-
--- 
-Florin Andrei
-
-http://florin.myip.org/
+I'll proceed, assuming that the patch fixes the above build errors.
