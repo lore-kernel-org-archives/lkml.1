@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbXF2T4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbXF2UCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbXF2T4L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 15:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXF2Tz6
+	id S1754386AbXF2UCx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 16:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbXF2UCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 15:55:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:41134 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbXF2Tz5 (ORCPT
+	Fri, 29 Jun 2007 16:02:44 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:40243 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1752659AbXF2UCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 15:55:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Lc9hz5jTnVMvxOtY7IVhzEKFRRfPmSftsT9pV1D00kGoKwVuwzCpU46BPVpScm3/NadqErgNAV76sBOhrERPypJNEPeWHLYRSu4rJmLRxGDQ/tJIBVoB/zPbJgVYQGwvcmEFEFr5bWSl630WehhzKZ8DtoWEQLznUz9iHkKfuuo=
-Message-ID: <6a1c323c0706291255l78d3081at2e0738a5c7cbf73b@mail.gmail.com>
-Date: Fri, 29 Jun 2007 15:55:49 -0400
-From: "LOL ER" <cryptococa@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Need help making sense of IRQ API
+	Fri, 29 Jun 2007 16:02:43 -0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+To: bzolnier@gmail.com, michal.kepien@poczta.onet.pl, linas@austin.ibm.com
+Subject: [PATCH pata-2.6 fix] hpt366: use correct enablebits for HPT36x
+Date: Sat, 30 Jun 2007 00:04:22 +0400
+User-Agent: KMail/1.5
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706300004.22274.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-  I've been trying to make sense of how the kernel (on an i386) calls
-__do_IRQ() from do_IRQ() for the past few days to no avail. After
-doing some research I found out that do_IRQ() calls the corresponding
-"highlevel irq-events handler", this lead me to believe that the
-kernel calls __do_IRQ through "desc->handle_irq(irq, desc);" (snippet
-from do_IRQ in arch/i386). Looking at the kernel I found a comment
-which reads, " * @handle_irq: highlevel irq-events handler [if NULL,
-__do_IRQ()]", instinctively I then grepped through the kernel to find
-any instances of where handle_IRQ is checked for being NULL. I then
-found an inlined function called generic_handle_irq that does just
-that. If indeed generic_handle_irq() is the default value of
-handle_irq(), why is its datatype not irq_flow_handler_t, and where in
-the kernel is it set as the default "highlevel irq-events handler?"
-Just to clarify what I mean, the handle_irq member in the irq_desc
-struct has its datatype as irq_flow_handler_t, which is a function
-pointer that takes 2 arguments,  "unsigned int irq, struct irq_desc
-*desc", however unsigned generic_handle_irq() takes one argument,
-which is just an int representing the IRQ number.
-Thank You,
-   Robert G.
+The HPT36x chips finally turned out to have the channel enable bits -- however,
+badly implemented.  Make use of them despite it's probably only going to burden
+the driver's code -- assuming both channels are always enabled by the HighPoint
+BIOS anyway...
+
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+---
+Michal, Linas, please verify the patch... :-)
+
+ drivers/ide/pci/hpt366.c |   20 +++++++++++++++-----
+ 1 files changed, 15 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/drivers/ide/pci/hpt366.c
+===================================================================
+--- linux-2.6.orig/drivers/ide/pci/hpt366.c
++++ linux-2.6/drivers/ide/pci/hpt366.c
+@@ -1,5 +1,5 @@
+ /*
+- * linux/drivers/ide/pci/hpt366.c		Version 1.05	Jun 26, 2007
++ * linux/drivers/ide/pci/hpt366.c		Version 1.06	Jun 27, 2007
+  *
+  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
+  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
+@@ -1514,18 +1514,28 @@ static int __devinit init_setup_hpt366(s
+ 		goto init_single;
+ 
+ 	/*
+-	 * HPT36x chips are single channel and
+-	 * do not seem to have the channel enable bit...
++	 * HPT36x chips have one channel per function and have
++	 * both channel enable bits located differently and visible
++	 * to both functions -- really stupid design decision... :-(
++	 * Bit 4 is for the primary channel, bit 5 for the secondary.
+ 	 */
+ 	d->channels = 1;
+-	d->enablebits[0].reg = 0;
++	d->enablebits[0].mask = d->enablebits[0].val = 0x10;
+ 
+ 	if ((dev2 = pci_get_slot(dev->bus, dev->devfn + 1)) != NULL) {
+-	  	u8  pin1 = 0, pin2 = 0;
++	  	u8  mcr1 = 0, pin1 = 0, pin2 = 0;
+ 		int ret;
+ 
+ 		pci_set_drvdata(dev2, info[rev]);
+ 
++		/*
++		 * Now we'll have to force both channels enabled if
++		 * at least one of them has been enabled by BIOS...
++		 */
++		pci_read_config_byte(dev, 0x50, &mcr1);
++		if (mcr1 & 0x30)
++			pci_write_config_byte(dev, 0x50, mcr1 | 0x30);
++
+ 		pci_read_config_byte(dev,  PCI_INTERRUPT_PIN, &pin1);
+ 		pci_read_config_byte(dev2, PCI_INTERRUPT_PIN, &pin2);
+ 		if (pin1 != pin2 && dev->irq == dev2->irq) {
+
