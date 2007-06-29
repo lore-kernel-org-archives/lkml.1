@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934108AbXF2SBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934096AbXF2SFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934108AbXF2SBA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 14:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbXF2SAv
+	id S934096AbXF2SFk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 14:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbXF2SFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 14:00:51 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47137 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754755AbXF2SAu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 14:00:50 -0400
-Date: Fri, 29 Jun 2007 19:06:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rodrigo Luiz <troops.of.doom@gmail.com>, alsa-devel@alsa-project.org,
-       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
-       Ben Collins <bcollins@ubuntu.com>, reiserfs-devel@vger.kernel.org,
-       "Vladimir V. Saveliev" <vs@namesys.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-ide@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, Jeff Garzik <jeff@garzik.org>,
-       Tejun Heo <htejun@gmail.com>, Rodney Gordon II <meff@spherevision.org>
-Subject: Re: [1/2] 2.6.22-rc6: known regressions v2
-Message-ID: <20070629190602.4ef6a0cb@the-village.bc.nu>
-In-Reply-To: <468543CE.6080401@redhat.com>
-References: <46852187.3080504@googlemail.com>
-	<20070629175920.6af0c62b@the-village.bc.nu>
-	<468543CE.6080401@redhat.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Jun 2007 14:05:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45567 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755728AbXF2SFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 14:05:33 -0400
+Date: Fri, 29 Jun 2007 20:03:44 +0200
+From: Stefan Seyfried <seife@suse.de>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Rafael Wysocki <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
+Message-ID: <20070629180344.GA17907@suse.de>
+References: <200706192118.23706.nigel@nigel.suspend2.net> <20070628142532.GC5339@ucw.cz> <200706290827.13024.nigel@nigel.suspend2.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706290827.13024.nigel@nigel.suspend2.net>
+X-Operating-System: openSUSE 10.3 (i586) Alpha5, Kernel 2.6.22-rc4-git6-2-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'm not even sure this report is IT8212 related rather than just an IRQ
-> > storm
+On Fri, Jun 29, 2007 at 08:27:12AM +1000, Nigel Cunningham wrote:
+> > Can we rename/reuse existing flag variable?
 > 
-> Why does the driver report "irq 0"?
+> Sorry, but I can't resist the opportunity to say "Send a patch!" :)
 > 
-> ata7: PATA max UDMA/133 cmd <blah> ctl <blah> bmdma <blah> irq 0  <====
-> 
-> Above that, the ACPI layer says it assigned IRQ 20
+> Seriously, though, I'd prefer not to. If we rename that acpi video flags 
+> variable (I assume this is what you're thinking of), we only create cause for 
+> confusion. A variable should for debugging or for controlling quirks, not for 
+> both at the same time.
 
-Because the libata core code in 2.6.22rc6 reports all the ports and IRQ
-values wrongly ?
+I agree. And video_flags is something totally different :-)
+I just used that one in my ad-hoc hack (which actually was only to illustrate
+the idea) because a) it was enough to show the intent and b) i did not know
+how to do it better ;-)
+-- 
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
 
-Alan
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
