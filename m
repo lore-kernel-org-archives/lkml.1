@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760125AbXF2O0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932802AbXF2O1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760125AbXF2O0Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 10:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbXF2OZ4
+	id S932802AbXF2O1T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 10:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760475AbXF2O1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 10:25:56 -0400
-Received: from mail.screens.ru ([213.234.233.54]:40200 "EHLO mail.screens.ru"
+	Fri, 29 Jun 2007 10:27:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57736 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759008AbXF2OZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 10:25:55 -0400
-Date: Fri, 29 Jun 2007 18:26:17 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070629142617.GA341@tv-sign.ru>
-References: <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu> <20070629113423.GA9042@ms2.inr.ac.ru> <Pine.LNX.4.58.0706290919350.8866@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0706290919350.8866@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.11
+	id S1759077AbXF2O1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 10:27:07 -0400
+Message-ID: <468516B9.1080300@garzik.org>
+Date: Fri, 29 Jun 2007 10:27:05 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Regression: 2.6.22-rcX: hda: lost interrupt
+References: <20070629124248.GJ989688@sgi.com>
+In-Reply-To: <20070629124248.GJ989688@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/29, Steven Rostedt wrote:
+David Chinner wrote:
+> Folks,
 > 
-> On Fri, 29 Jun 2007, Alexey Kuznetsov wrote:
-> >
-> > static void measure_workqueue(void)
-> > {
-> > 	int i;
-> > 	int cnt = 0;
-> > 	unsigned long start;
-> > 	DECLARE_WORK(test, do_test_wq, 0);
-> > 	struct workqueue_struct * wq;
-> >
-> > 	start = jiffies;
-> >
-> > 	wq = create_workqueue("testq");
+> After updating an x86_64 machine from 2.6.21 to 2.6.22-rc6 and
+> fighting off the where-the-fuck-did-my-serial-console-go blues
+> (legacy_serial.force), I finally discovered why the damn thing
+> wasn't booting - the machine was sitting there in a loop outputting
+> "hda: lost interrupt" over and over again during hardware
+> discovery (hda = dvd drive).
+> 
+> It doesn't happen on every boot - more boots hung than failed,
+> though, while I was trying to work out where my serial port
+> went and get some work done.
+> 
+> Since I've had the console operative, the boot hangs are
+> basically like:
+> 
+> ESB2: IDE controller at PCI slot 0000:00:1f.1
+> ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 20 (level, low) -> IRQ20
+> ESB2: chipset revision 9
+> ESB2: not 100% native mode: will probe irqs later
+>     ide0: DM-DMA at 0x50a0-0x50a7, BIOS settings: hda:DMA, hdb:pio
+>     ide1: DM-DMA at 0x50a8-0x50af, BIOS settings: hda:pio, hdb:pio
+> Probing IDE interface ide0...
+> hda: probing with STATUS(0xa0) instead of ALTSTATUS(0x58)
+> hda: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+> hdb: probing with STATUS(0xb0) instead of ALTSTATUS(0x00)
+> hdb: probing with STATUS(0xa1) instead of ALTSTATUS(0x51)
+> hdb: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+> hda: set_drive_speed_status: status=0x58 { DriveReady SeekComplete DataRequest }
+> hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
+> hda: set_drive_speed_status: error=0x04 { AbortedCommand }
+> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
 
-Also, create_workqueue() is very costly. The last 2 lines should be
-reverted.
+What is the behavior under libata?
 
-Oleg.
+If you see timeouts/etc. there too, it might be an interrupt routing or 
+hardware problem.
+
+	Jeff
+
+
 
