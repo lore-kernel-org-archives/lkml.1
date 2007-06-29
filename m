@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933381AbXF2PZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXF2PcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933381AbXF2PZa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 11:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760607AbXF2PZU
+	id S933080AbXF2PcE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 11:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbXF2Pby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 11:25:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57984 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755825AbXF2PZT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 11:25:19 -0400
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-From: David Woodhouse <dwmw2@infradead.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070629150813.GM13886@enneenne.com>
-References: <20070627174537.GM13886@enneenne.com>
-	 <1182966588.1170.28.camel@pmac.infradead.org>
-	 <20070627224623.GO13886@enneenne.com>
-	 <1183018133.1170.46.camel@pmac.infradead.org>
-	 <20070628081538.GP13886@enneenne.com>
-	 <1183019474.1170.66.camel@pmac.infradead.org>
-	 <20070628084003.GQ13886@enneenne.com>
-	 <1183031060.1170.145.camel@pmac.infradead.org>
-	 <20070628161450.GD13886@enneenne.com>
-	 <1183117082.1170.308.camel@pmac.infradead.org>
-	 <20070629150813.GM13886@enneenne.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 29 Jun 2007 16:25:16 +0100
-Message-Id: <1183130716.1170.347.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 29 Jun 2007 11:31:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35997 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758652AbXF2Pbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 11:31:53 -0400
+Message-ID: <468525C8.2010407@redhat.com>
+Date: Fri, 29 Jun 2007 11:31:20 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Con Kolivas <kernel@kolivas.org>
+CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: Wrong cache size reported on Q6600
+References: <200706290931.45355.kernel@kolivas.org> <20070628233312.GB30594@linux-os.sc.intel.com> <200706290957.08128.kernel@kolivas.org>
+In-Reply-To: <200706290957.08128.kernel@kolivas.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-29 at 17:08 +0200, Rodolfo Giometti wrote:
-> On Fri, Jun 29, 2007 at 12:38:02PM +0100, David Woodhouse wrote:
-> > 
-> > It doesn't apply to the current git tree, which has already had some new
-> > system calls added.
+On 06/28/2007 07:57 PM, Con Kolivas wrote:
+> On Friday 29 June 2007 09:33, Siddha, Suresh B wrote:
+>> On Fri, Jun 29, 2007 at 09:31:44AM +1000, Con Kolivas wrote:
+>>> This is a Q6600 which has cache size of 8 MB. Unless it's reporting each
+>>> half's effective L2, I think it should be reporting 8192 instead of 4096.
+>> There are two L2's, each of 4MB. Each L2 shared by two cores.
 > 
-> Ok, here the patch against latest git commit.
+> That was what I wasn't sure of as I said above; thanks for clarifying.
+> 
 
-  CC      fs/fcntl.o
-In file included from include/linux/syscalls.h:69,
-                 from fs/fcntl.c:8:
-include/linux/pps.h:51: error: field ‘tspec’ has incomplete type
-make[1]: *** [fs/fcntl.o] Error 1
-
--- 
-dwmw2
+You really need to look in /sys/devices/system/cpu/cpuX/cache/ to get
+any kind of useful information.
 
