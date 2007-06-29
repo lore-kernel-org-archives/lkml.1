@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbXF2VGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbXF2VPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbXF2VGR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 17:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbXF2VGE
+	id S1756547AbXF2VPW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 17:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbXF2VPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 17:06:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:60035 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754173AbXF2VGB (ORCPT
+	Fri, 29 Jun 2007 17:15:10 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3235 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755073AbXF2VPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 17:06:01 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Please release a stable kernel Linux 3.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rene Herman <rene.herman@gmail.com>,
-       William D Waddington <william.waddington@beezmo.com>,
-       Helge Hafting <helge.hafting@aitel.hist.no>,
-       linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Reply-To: 7eggert@gmx.de
-Date: Fri, 29 Jun 2007 23:05:46 +0200
-References: <8AH0j-3Qc-11@gated-at.bofh.it> <8AH0j-3Qc-9@gated-at.bofh.it> <8B0vZ-r6-5@gated-at.bofh.it> <8B46G-69z-15@gated-at.bofh.it> <8B52G-7C9-5@gated-at.bofh.it> <8BalK-7Ic-39@gated-at.bofh.it> <8BaYr-8tJ-17@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1I4Nf0-00016f-9A@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/mDr3tkFLnjtX2JhCRwiHvqEOka6Sxyt4h3hr
- blmdQ5CDo5t2Kcq0vw+QB4dIFjcGFeNlp5G8dKPox2yvIrC9Vv
- 979Ow++nBEpOsErRxkaUA==
+	Fri, 29 Jun 2007 17:15:09 -0400
+Date: Fri, 29 Jun 2007 22:14:34 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
+       clameter@sgi.com, hugh@veritas.com, James.Bottomley@steeleye.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Containment measures for slab objects on scatter gather lists
+Message-ID: <20070629211434.GA21187@flint.arm.linux.org.uk>
+References: <Pine.LNX.4.64.0706282128570.11739@schroedinger.engr.sgi.com> <20070628.220606.112621271.davem@davemloft.net> <20070628222424.4cbae90c.akpm@linux-foundation.org> <20070628.223734.21928089.davem@davemloft.net> <20070628224519.1a3319c3.akpm@linux-foundation.org> <20070629131657.5ecc3baa@the-village.bc.nu> <20070629134529.3e12a131.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070629134529.3e12a131.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Fri, 29 Jun 2007 00:00:27 +0200
-> Rene Herman <rene.herman@gmail.com> wrote:
->> On 06/28/2007 06:30 PM, Alan Cox wrote:
+On Fri, Jun 29, 2007 at 01:45:29PM -0700, Andrew Morton wrote:
+> On Fri, 29 Jun 2007 13:16:57 +0100
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > > If those operations involve modifying that slab page's pageframe then what
+> > > stops concurrent dma'ers from stomping on each other's changes?  As in:
+> > > why aren't we already buggy?
+> > 
+> > Or DMA operations falling out with CPU operations in the same memory
+> > area. Not all platforms have hardware consistency and some will blat the
+> > entire page out of cache.
+> 
+> Is that just a performance problem, or can data be lost here?  It depends
+> on the meaning of "blat": writeback?  invalidate?  More details, please.
+> 
+> 
+> I'm dyin here and nobody will talk to me.  If the kernel is already doing
+> these things, why aren't we already buggy?  Is it because we don't actually
+> modify the pageframes of these dma-to-from-kmalloced pages?  But we were
+> thinking of doing so in the future?
 
->> > Public domain is GPL compatible.
->> 
->> Would you happen to have an opinion on the attached? I don't so much need it
-> 
-> The answer is "NO!!!!"
-> 
-> Public domain also means "I don't have to give you the source".
-> If its merged with the kernel the resulting work is GPL anyway
-> 
->> Stating that code which one intends to be in the public domain has "GPL and
->> additional rights" is a bit of a travesty though.
-> 
-> Indeed if its public domain you may have almost no rights at all
-> depending what you were given. Once you get the source code you can do
-> stuff but I don't have to give you that. If its public domain I can find
-> security holes in it, and refuse to provide the fixed module in source
-> form even.
+I think people are getting too het up about this.
 
-The GPL forces nobody to not release his module under PD, therefore it can't
-protect you from that. Even minor changes - like adjusting the module to use
-to the current API - won't change that, at least in Germany they'd have to
-qualify as a work of their own in order to create a GPL-only derived work,
-because anything not qualifying for that could also be integrated into the
-PD version, and both would remain identical.
+DMA to or from memory should be done via the DMA mapping API.  If we're
+DMAing to/from a limited range within a page, either we should be using
+dma_map_single(), or dma_map_page() with an appropriate offset and size.
+
+Other cache flushing functions should not be called for DMA operations;
+any cache handling required by non-coherent architectures should be done
+by the DMA API only.
+
+However, with non-coherent aliasing architectures (such as those with
+aliasing VIPT or VIVT caches) there is an additional requirement on PIO
+to page cache.  If the page we're writing data has some cache lines
+allocated to it, we potentially hit those cache lines and the data
+doesn't hit the underlying page.  Later on, when we come to map the
+page into userspace, the data may still be sitting in the cache lines
+corresponding with the kernel's mapping.  Therefore, there is a
+requirement to ensure that the cache state WRT the kernel's mapping is
+the same irrespective of the method by which data ends up in the page.
+
+That means that for these caches, the data PIO'd into the page must be
+written back to the underlying page before the page is handed to
+userspace.
+
+The two are completely separate; it seems to me from the above discussion
+that people are confusing the two scenarios, and mixing DMA with the PIO
+cache handling.  Please don't, you'll only get more and more confused.
+
+(Note: with the dma_map_* API, architectures have to be sensible when
+they're passed offests and sizes which aren't cacheline aligned.
+Technically, it's buggy to ask for non-L1 line aligned offsets and
+sizes, but they do happen.  We handle this on ARM by writing back
+the overlapped lines and invalidating the rest before the DMA operation
+commences, and hope that the overlapped lines aren't touched for the
+duration of the DMA.)
+
 -- 
-"Cluster bombing from B-52s is very, very accurate. The bombs are
-guaranteed to always hit the ground."
--U.S.A.F. Ammo Troop
-Friﬂ, Spammer: 8wfPvrtu@j0o.7eggert.dyndns.org r@2ypKo.7eggert.dyndns.org
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
