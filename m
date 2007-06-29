@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbXF2EKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932194AbXF2EOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758546AbXF2EKK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 00:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbXF2EJ4
+	id S932194AbXF2EOI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 00:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbXF2EN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 00:09:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56110
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750736AbXF2EJx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 00:09:53 -0400
-Date: Thu, 28 Jun 2007 21:10:13 -0700 (PDT)
-Message-Id: <20070628.211013.74747656.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: hugh@veritas.com, James.Bottomley@steeleye.com, rmk+lkml@arm.linux.org.uk,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Containment measures for slab objects on scatter
- gather lists
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0706282047160.10035@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706282047160.10035@schroedinger.engr.sgi.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 29 Jun 2007 00:13:56 -0400
+Received: from ozlabs.org ([203.10.76.45]:33730 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750742AbXF2ENz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 00:13:55 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18052.34556.48421.672836@cargo.ozlabs.ibm.com>
+Date: Fri, 29 Jun 2007 14:13:48 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Arch <linux-arch@vger.kernel.org>,
+       Richard Henderson <rth@twiddle.net>, Ian Molton <spyro@f2s.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Aubrey Li <aubrey.li@analog.com>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Matthew Wilcox <matthew@wil.cx>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+       Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH] cross-architecture ELF clean up
+In-Reply-To: <20070620230902.387008536@goop.org>
+References: <20070620230854.246399397@goop.org>
+	<20070620230902.387008536@goop.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
-Date: Thu, 28 Jun 2007 21:01:36 -0700 (PDT)
+Jeremy Fitzhardinge writes:
 
-> Modify the functions in the affected arches to check for PageSlab() and 
-> use a NULL mapping if such a page is encountered. This may only be 
-> necessary for parisc and arm since sparc64 and xtensa do not scan over 
-> processes mapping a page but I have modified those two arches also for 
-> correctnesses sake since they use page_mapping() in flush_dcache_page().
-> 
-> Still a better solution would be to not use the slab allocator at all for 
-> the objects that are used to send commands to the devices. These are not 
-> permanent and grabbing a page from the pcp lists and putting it back is 
-> likely as fast as performing a kmalloc.
+>   powerpc also appears to have its own duplicate copy of elf.h in
+>   arch/powerpc/boot/elf.h; presumably because the standard elf.h
+>   brings in too much.  Update it to just linux/elf-defn.h, which
+>   should be fine.
 
-Jens Axboe wants to get references to the page structs behind
-kmalloc() allocated pages in his networking splice work.
+No, it's because the bootwrapper is not part of the kernel and does
+not use kernel headers.  The aim is that the bootwrapper can be built
+and used outside the kernel source tree, so it needs its own copies of
+any headers that aren't in /usr/include.
 
-We pass scatterlists around, but networking buffers are
-composed of a kmalloc()'d data header area for packet headers
-and some of the initial packet data, then a true scatterlist
-of page/offset/len triplets.
-
-Splice wants to work with pages everwhere.
-
-This is a reocurring theme, we should provide some kind of
-solution to these issues instead of wishing they would go
-away.
-
-We could make a special allocator in the networking that carves
-chunks out of pages but I'm sure you'll find that about as stupid
-and wasteful as I do :-)
-
+Paul.
