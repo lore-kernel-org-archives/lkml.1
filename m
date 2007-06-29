@@ -1,90 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbXF2Vvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758993AbXF2VwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757611AbXF2Vvq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 17:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757800AbXF2VuG
+	id S1758993AbXF2VwH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 17:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbXF2VuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 17:50:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60799 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757671AbXF2VuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 17:50:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Subject: Re: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
-Date: Fri, 29 Jun 2007 23:56:48 +0200
-User-Agent: KMail/1.9.5
-Cc: "Li, Shaohua" <shaohua.li@intel.com>, Robert Hancock <hancockr@shaw.ca>,
-       Zan Lynx <zlynx@acm.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Raj, Ashok" <ashok.raj@intel.com>
-References: <46845943.7050005@shaw.ca> <FC1D1B23302A22499C60C967336B2AE0016F7529@pdsmsx411.ccr.corp.intel.com> <20070629152858.GA27995@linux-os.sc.intel.com>
-In-Reply-To: <20070629152858.GA27995@linux-os.sc.intel.com>
+	Fri, 29 Jun 2007 17:50:07 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2559 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757703AbXF2VuD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 17:50:03 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Date: Fri, 29 Jun 2007 14:48:52 -0700
+Subject: [patch 6/6] sys_indirect RFC - example usage from kernel POV
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706292356.49825.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.28360.1183153739.6>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 29 June 2007 17:28, Keshavamurthy, Anil S wrote:
-> On Thu, Jun 28, 2007 at 06:14:27PM -0700, Li, Shaohua wrote:
-> > 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-
-> > >rc6/2.6.22-rc6-mm1/
-> > >>
-> > >>> +intel-iommu-dmar-detection-and-parsing-logic.patch
-> [..]
-> > >
-> > >I took a picture of it, looks like the backtrace is:
-> > >
-> > >NULL pointer dereference at 024
-> > >EIP:dmar_table_init+0x11
-> > >intel_iommu_init+0x30
-> > >pci_iommu_init+0xe
-> > >kernel_init+0x16e
-> > >
-> > >Presumably something is NULL in dmar_table_init that wasn't expected to
-> > >be.. I would guess it likely crashes on any system without an Intel
-> > >IOMMU in it.
-> Yup, that is correct.
-> 
-> > How about something like below?
-> > 
-> > 
-> > int __init dmar_table_init(void)
-> > {
-> > +	if (!dmar_tbl)
-> > +		return -ENODEV;
-> > 	parse_dmar_table();
-> why not check for NULL in the function where it touched?
-> Also when there are no DMAR devices we need the below
-> printk on the console.
-> 
-> > 	if (list_empty(&dmar_drhd_units)) {
-> > 		printk(KERN_ERR PREFIX "No DMAR devices found\n");
-> > 		return -ENODEV;
-> > 	}
-> > 	return 0;
-> > }
-> 
-> Here is the revised patch of the above.
-> Andrew, please add this fix to
-> +intel-iommu-dmar-detection-and-parsing-logic.patch
-> ------------------------------------------------
-> 
-> Check for dmar_tbl pointer as this can be NULL on 
-> systems with no Intel VT-d support.
-> 
-> Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+This is an example of how to add a context set/unset wrapper inside
+the kernel, for something like open flags:
 
-For the record, this patch fixes the boot crash on my AMD64-based test box.
+1) Alloc a new SYSIND_CTX_* sequential index inside linux/indirect.h
 
-Thanks,
-Rafael
+2) Define a new "struct sysind_ctx_*" to be used by userspace
+
+3) Define proper set/unset functions inside kernel/sys_indirect.c
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+- Davide
+
+
+
+---
+ include/linux/indirect.h |    7 +++++++
+ kernel/sys_indirect.c    |   32 +++++++++++++++++++++++++++++++-
+ 2 files changed, 38 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.mod/include/linux/indirect.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/indirect.h	2007-06-29 12:58:11.000000000 -0700
++++ linux-2.6.mod/include/linux/indirect.h	2007-06-29 12:58:11.000000000 -0700
+@@ -8,10 +8,17 @@
+ #ifndef _LINUX_INDIRECT_H
+ #define _LINUX_INDIRECT_H
+ 
++#define SYSIND_CTX_OPENFLAGS	0
++
+ struct indirect_ctx {
+ 	__u32 ctx;
+ };
+ 
++struct sysind_ctx_OPENFLAGS {
++	__u32 ctx;
++	__u32 flags;
++};
++
+ #ifdef __KERNEL__
+ 
+ #include <linux/fsalloc.h>
+Index: linux-2.6.mod/kernel/sys_indirect.c
+===================================================================
+--- linux-2.6.mod.orig/kernel/sys_indirect.c	2007-06-29 12:58:11.000000000 -0700
++++ linux-2.6.mod/kernel/sys_indirect.c	2007-06-29 12:58:11.000000000 -0700
+@@ -24,9 +24,39 @@
+ 	void (*unset)(struct indirect_op *);
+ };
+ 
++struct indirect_op_OPENFLAGS {
++	struct indirect_op op;
++	unsigned long flags;
++};
++
++static int set_OPENFLAGS(struct fsa_context *ator,
++			 const struct indirect_ctx __user *uctx,
++			 struct indirect_op **pnew)
++{
++	struct indirect_op_OPENFLAGS *iop;
++	struct sysind_ctx_OPENFLAGS kctx;
++
++	if (copy_from_user(&kctx, uctx, sizeof(*uctx)))
++		return -EFAULT;
++	iop = fsa_alloc(ator, sizeof(struct indirect_op_OPENFLAGS));
++	if (unlikely(!iop))
++		return -ENOMEM;
++	iop->op.ctx = kctx.ctx;
++	/* iop->flags = current->def_open_flags; */
++	/* current->def_open_flags = kctx.flags; */
++	*pnew = (struct indirect_op *) iop;
++
++	return 0;
++}
++
++static void unset_OPENFLAGS(struct indirect_op *iop)
++{
++	/* current->def_open_flags = ((struct indirect_op_OPENFLAGS *) iop)->flags; */
++}
++
+ static const struct indirect_procs inprocs[] =
+ {
+-	{ NULL, NULL },
++	[SYSIND_CTX_OPENFLAGS] =	{ set_OPENFLAGS, unset_OPENFLAGS },
+ };
+ 
+ /**
+
