@@ -1,87 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbXF2U1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbXF2U3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090AbXF2U1A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 16:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXF2U0x
+	id S1755400AbXF2U3J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 16:29:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXF2U2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 16:26:53 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42357 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753481AbXF2U0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 16:26:52 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/WNX0S8S3WwWclrDJz7MWGW9Z7V42FCndVk/XeIJ
-	dFsWrPfC2HryKM
-Date: Fri, 29 Jun 2007 22:26:51 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: skyball000@freesurf.fr
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rt9 problem : xruns
-In-Reply-To: <48440.194.254.4.171.1183116296.squirrel@jose.freesurf.fr>
-Message-ID: <Pine.LNX.4.60.0706292225400.4227@poirot.grange>
-References: <48440.194.254.4.171.1183116296.squirrel@jose.freesurf.fr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Fri, 29 Jun 2007 16:28:53 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58145 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754689AbXF2U2w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 16:28:52 -0400
+Date: Fri, 29 Jun 2007 13:30:36 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Greg KH <greg@kroah.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200706291330.37070.yinghai.lu@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jun 2007 skyball000@freesurf.fr wrote:
+[PATCH 2/2] net: make net and forcedeth to use kmalloc_node
 
-> Hi,
-> 
-> I've recently compiled a "vanilla" 2.6.21 kernel, patched with Ingo Molnar's
-> rt-8 patch, as I was unable to compile with rt-7.
-> 
-> I needed it because I'm using audio applications (tests were made with
-> FrugalWare, but I don't think it's a distro issue).
-> 
-> Everything was allright until I changed my motherboard for an  Asrock
-> 4coreDual-Vsta (I formerly used a Nforce4 one), with VIA PT880 Ultra chipset.
-> 
-> I've justed switched the hardware, as Linux is neat enough to boot without
-> having to reinstall the whole OS.
-> 
-> Since, I get tons of xruns when using RT applications, and the only solution
-> I've found to "fix" it was to disable ACPI at boot time.
-
-Interestingly, this looks very similar to a problem I had... Could you, 
-please, verify if acpid is running (with ACPI configured on), and if yes - 
-stop it and retest for xruns?
-
-Thanks
-Guennadi
-
-> Moreover, I get this message at boot time :
-> PCI: BIOS bug: MCFG area@e0000000 is not E820 reserved
-> PCI: not using MMCONFIG
-> 
-> I've also tested this hardware setup with a UbuntoStudio kernel (2.6.19),
-> and everything works flawlessy (no XRUNS, no kernel messages) !
-> 
-> So here is my question (I'd like to understand what's happening) :
->    - is it a kernel (or patch) issue ?
->    - is it a bad chipset support in the latest kernel versions ?
->    - could this be related to BIOS issues only (I've tried all available
-> versions without any change) ?
->    - should I use special settings in the ".config" in order to avoid these
-> problems ?
-> 
-> I wasn't able to detect what causes these XRUNS, so if anyone has clues ...
-> 
-> Regards
-> skb
-> 
-> 
-> 
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
----
-Guennadi Liakhovetski
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+index 42ba1c0..6d53b52 100644
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -1383,7 +1383,7 @@ static int nv_alloc_rx(struct net_device *dev)
+ 		less_rx = np->last_rx.orig;
+ 
+ 	while (np->put_rx.orig != less_rx) {
+-		struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
++		struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
+ 		if (skb) {
+ 			np->put_rx_ctx->skb = skb;
+ 			np->put_rx_ctx->dma = pci_map_single(np->pci_dev,
+@@ -1415,7 +1415,7 @@ static int nv_alloc_rx_optimized(struct net_device *dev)
+ 		less_rx = np->last_rx.ex;
+ 
+ 	while (np->put_rx.ex != less_rx) {
+-		struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
++		struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
+ 		if (skb) {
+ 			np->put_rx_ctx->skb = skb;
+ 			np->put_rx_ctx->dma = pci_map_single(np->pci_dev,
+@@ -3976,8 +3976,8 @@ static int nv_set_ringparam(struct net_device *dev, struct ethtool_ringparam* ri
+ 					    sizeof(struct ring_desc_ex) * (ring->rx_pending + ring->tx_pending),
+ 					    &ring_addr);
+ 	}
+-	rx_skbuff = kmalloc(sizeof(struct nv_skb_map) * ring->rx_pending, GFP_KERNEL);
+-	tx_skbuff = kmalloc(sizeof(struct nv_skb_map) * ring->tx_pending, GFP_KERNEL);
++	rx_skbuff = kmalloc_node(sizeof(struct nv_skb_map) * ring->rx_pending, GFP_KERNEL, dev_to_node(&dev->dev));
++	tx_skbuff = kmalloc_node(sizeof(struct nv_skb_map) * ring->tx_pending, GFP_KERNEL, dev_to_node(&dev->dev));
+ 	if (!rxtx_ring || !rx_skbuff || !tx_skbuff) {
+ 		/* fall back to old rings */
+ 		if (np->desc_ver == DESC_VER_1 || np->desc_ver == DESC_VER_2) {
+@@ -4372,7 +4372,7 @@ static int nv_loopback_test(struct net_device *dev)
+ 
+ 	/* setup packet for tx */
+ 	pkt_len = ETH_DATA_LEN;
+-	tx_skb = dev_alloc_skb(pkt_len);
++	tx_skb = dev_alloc_skb_node(pkt_len, dev_to_node(&dev->dev));
+ 	if (!tx_skb) {
+ 		printk(KERN_ERR "dev_alloc_skb() failed during loopback test"
+ 			 " of %s\n", dev->name);
+@@ -4976,6 +4976,7 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
+ 	dev->base_addr = (unsigned long)np->base;
+ 
+ 	dev->irq = pci_dev->irq;
++	printk(KERN_INFO "nv_probe: numa_node : %02d\n", dev_to_node(&pci_dev->dev));
+ 
+ 	np->rx_ring_size = RX_RING_DEFAULT;
+ 	np->tx_ring_size = TX_RING_DEFAULT;
+@@ -4995,8 +4996,9 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
+ 			goto out_unmap;
+ 		np->tx_ring.ex = &np->rx_ring.ex[np->rx_ring_size];
+ 	}
+-	np->rx_skb = kmalloc(sizeof(struct nv_skb_map) * np->rx_ring_size, GFP_KERNEL);
+-	np->tx_skb = kmalloc(sizeof(struct nv_skb_map) * np->tx_ring_size, GFP_KERNEL);
++	np->rx_skb = kmalloc_node(sizeof(struct nv_skb_map) * np->rx_ring_size, GFP_KERNEL, dev_to_node(&pci_dev->dev));
++	np->tx_skb = kmalloc_node(sizeof(struct nv_skb_map) * np->tx_ring_size, GFP_KERNEL, dev_to_node(&pci_dev->dev));
++
+ 	if (!np->rx_skb || !np->tx_skb)
+ 		goto out_freering;
+ 	memset(np->rx_skb, 0, sizeof(struct nv_skb_map) * np->rx_ring_size);
+@@ -5204,6 +5206,13 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
+ 	np->autoneg = 1;
+ 
+ 	err = register_netdev(dev);
++
++	/*
++	 * store numa_node in dev->dev, so we don't need to use
++	 * netdev_priv(dev)->pci_dev->dev
++	 */
++	set_dev_node(&dev->dev, dev_to_node(&pci_dev->dev));
++
+ 	if (err) {
+ 		printk(KERN_INFO "forcedeth: unable to register netdev: %d\n", err);
+ 		goto out_error;
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index 6f0b2f7..747588c 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -333,11 +333,22 @@ static inline struct sk_buff *alloc_skb(unsigned int size,
+ 	return __alloc_skb(size, priority, 0, -1);
+ }
+ 
++static inline struct sk_buff *alloc_skb_node(unsigned int size,
++					gfp_t priority, int node)
++{
++	return __alloc_skb(size, priority, 0, node);
++}
++
+ static inline struct sk_buff *alloc_skb_fclone(unsigned int size,
+ 					       gfp_t priority)
+ {
+ 	return __alloc_skb(size, priority, 1, -1);
+ }
++static inline struct sk_buff *alloc_skb_fclone_node(unsigned int size,
++					       gfp_t priority, int node)
++{
++	return __alloc_skb(size, priority, 1, node);
++}
+ 
+ extern void	       kfree_skbmem(struct sk_buff *skb);
+ extern struct sk_buff *skb_clone(struct sk_buff *skb,
+@@ -1282,6 +1293,16 @@ static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
+ 	return skb;
+ }
+ 
++static inline struct sk_buff *__dev_alloc_skb_node(unsigned int length,
++					      gfp_t gfp_mask, int node)
++{
++	struct sk_buff *skb = alloc_skb_node(length + NET_SKB_PAD, gfp_mask, node);
++	if (likely(skb))
++		skb_reserve(skb, NET_SKB_PAD);
++	return skb;
++}
++
++
+ /**
+  *	dev_alloc_skb - allocate an skbuff for receiving
+  *	@length: length to allocate
+@@ -1299,6 +1320,11 @@ static inline struct sk_buff *dev_alloc_skb(unsigned int length)
+ 	return __dev_alloc_skb(length, GFP_ATOMIC);
+ }
+ 
++static inline struct sk_buff *dev_alloc_skb_node(unsigned int length, int node)
++{
++	return __dev_alloc_skb_node(length, GFP_ATOMIC, node);
++}
++
+ extern struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
+ 		unsigned int length, gfp_t gfp_mask);
+ 
