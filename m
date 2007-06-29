@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbXF2NFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932473AbXF2NJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932322AbXF2NFI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 09:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761304AbXF2NE5
+	id S932473AbXF2NJI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 09:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761063AbXF2NI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 09:04:57 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:16853 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754628AbXF2NE5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 09:04:57 -0400
-Date: Fri, 29 Jun 2007 14:04:15 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: James Bottomley <James.Bottomley@steeleye.com>,
-       David Miller <davem@davemloft.net>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Containment measures for slab objects on scatter gather
- lists
-In-Reply-To: <Pine.LNX.4.64.0706282047160.10035@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0706291339160.10769@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0706282047160.10035@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcASmFtZXMuQm90dG9tbGV5QHN0ZWVsZXllLmNvbQBjbGFtZXRlckBzZ2kuY29tAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAZGF2ZW1AZGF2ZW1sb2Z0Lm5ldABybWsrbGttbEBhcm0ubGludXgub3JnLnVrAA==
-X-Brightmail-Tracker: AAAAAA==
+	Fri, 29 Jun 2007 09:08:57 -0400
+Received: from mail.screens.ru ([213.234.233.54]:45443 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750830AbXF2NI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 09:08:56 -0400
+Date: Fri, 29 Jun 2007 17:09:55 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Sattler <tsattler@gmx.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Mack <daniel@qanu.de>, Holger Waechtler <holger@qanu.de>
+Subject: Re: 2.6.22-rc6 spurious hangs
+Message-ID: <20070629130955.GA284@tv-sign.ru>
+References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru> <4683CC89.80406@gmx.de> <20070628150826.GA487@tv-sign.ru> <4683F145.2060705@gmx.de> <4683F48F.9010603@gmx.de> <20070628181044.GA613@tv-sign.ru> <4684B132.2070405@gmx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4684B132.2070405@gmx.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, Christoph Lameter wrote:
-
-> I had a talk with James Bottomley last night and it seems that there is an 
-> established way of using the page structs of slab objects in the block 
-> layer. Drivers may use the DMA interfaces to issue control commands. In 
-> that case they may allocate a short structure via the slab allocator and 
-> put the control commands into that slab object.
+On 06/29, Thomas Sattler wrote:
+>
+> >> Jun 28 19:23:03 pearl cinergyt2_query_rc+0x0/0x2e9 [cinergyT2]
+> > 
+> > cinergyt2_query_rc() hangs. I'll try to look tomorrov, but I know nothing
+> > about drivers/media/dvb/.
 > 
-> The driver will then perform a sg_init_one() on the slab object. 
-> sg_init_one() calls sg_set_buf() which determines the page struct of a 
-> page. In this case sg_set_buf() will determine the page struct of a slab 
-> object. The dma layer may then perform operations on the "slab page". The 
-> block layer folks seem to have spend some time to make this work right.
+> Does this mean the problem is in the cinergyt2 driver? I'm having similar
+> problems with another box but with different hardware. While my laptop is
+> used as a test system the other one is used as a 'productive' TV-recorder.
+> I hoped we could trace the bug on the test system and fix the productive
+> one at the same time. :-/
 
-Yes, I don't see why this comes as such a surprise and horror to you,
-so much in need of dire WARNINGs.  kmalloc memory is not a different
-kind of memory from what you get from the page allocators.
+Yes, I think cinergyt2 is buggy.
 
-I stand by my page_mapping patch, and the remark I made before,
-that page_mapping(page) is the correct place to check this.  What is
-page_mapping(page) for?  Precisely to return the struct address_space*
-from page->mapping when that's what's in there, and not when that field
-has been reused for something else.
+> Jun 28 23:02:42 pearl events/0      S 00000280     0     5      2 (L-TLB)
+> Jun 28 23:02:42 pearl c1d4ded0 00000096 55136d42 00000280 c0302fa1 c1d4ad10 55136d42 00000280
+> Jun 28 23:02:42 pearl c1d5c170 f737cd40 c1d4deec f56eca50 00000246 c1d4df0c c0303b81 00000000
+> Jun 28 23:02:42 pearl 00000002 c0303c94 00000280 c1d4ab80 f56eca7c f56eca7c c1d4ab80 f56eca50
+> Jun 28 23:02:42 pearl Call Trace:
+> Jun 28 23:02:42 pearl [<c0303b81>] __mutex_lock_interruptible_slowpath+0x192/0x293
+> Jun 28 23:02:42 pearl [<c0303c94>] mutex_lock_interruptible+0x12/0x15
+> Jun 28 23:02:42 pearl [<f96ae120>] cinergyt2_query_rc+0x2d/0x2e9 [cinergyT2]
+> Jun 28 23:02:42 pearl [<c012a79b>] run_workqueue+0x7f/0x130
+> Jun 28 23:02:42 pearl [<c012b036>] worker_thread+0xb7/0xc5
+> Jun 28 23:02:42 pearl [<c012d577>] kthread+0x39/0x5e
+> Jun 28 23:02:42 pearl [<c010485b>] kernel_thread_helper+0x7/0x10
 
-So lines like
-> +	mapping = PageSlab(page) ? NULL : page_mapping(page);
-seem to miss the point.
 
-I agree that the only clash found yet has been in flush_dcache_page,
-so some bytes and branches can indeed be saved by just doing the
-test in there.  Oh, but your VM_BUG_ON cancels out that saving.
-And if we were to try to save bytes and branches there, it's the
-synthetic swapper_space business (only required in a couple of
-places) I'd be wanting to cut out.
+> Jun 28 23:02:42 pearl dvbd          D 00000281     0  5643      1 (NOTLB)
+> Jun 28 23:02:42 pearl f6fd1e28 00000086 0a067524 00000281 c0543800 c1d5c300 0a067524 00000281
+> Jun 28 23:02:42 pearl 00000000 f737cd40 f6fd1e38 00c3fba6 f6fd1e90 f6fd1e70 c0303704 f6fd1f00
+> Jun 28 23:02:42 pearl 000458ee f702cf28 c05442a8 00c3fba6 c0124e58 c1d5c170 c0543800 c03036ff
+> Jun 28 23:02:42 pearl Call Trace:
+> Jun 28 23:02:42 pearl [<c0303704>] schedule_timeout+0x6e/0x8c
+> Jun 28 23:02:42 pearl [<c03032b7>] wait_for_completion_timeout+0x72/0xcf
+> Jun 28 23:02:42 pearl [<c012a9a4>] flush_cpu_workqueue+0x9d/0x19a
+> Jun 28 23:02:42 pearl [<c012ad6e>] flush_workqueue+0x12/0x15
+> Jun 28 23:02:42 pearl [<c012ad7e>] flush_scheduled_work+0xd/0xf
+> Jun 28 23:02:42 pearl [<f96ae011>] cinergyt2_release+0x4c/0xa4 [cinergyT2]
+> Jun 28 23:02:42 pearl [<c0160159>] __fput+0xaf/0x14b
+> Jun 28 23:02:42 pearl [<c016020b>] fput+0x16/0x18
+> Jun 28 23:02:42 pearl [<c015ddf3>] filp_close+0x54/0x5c
+> Jun 28 23:02:42 pearl [<c015edcb>] sys_close+0x6e/0xa6
+> Jun 28 23:02:42 pearl [<c0103c4e>] sysenter_past_esp+0x5f/0x99
 
-To me this all seems like a big fuss to excuse your surprise:
-so please don't expect an Ack from me; but if others prefer
-this, I won't be Nacking.  (Though I'll probably whine about
-it into eternity ;)
+cinergyt2_release() does flush_scheduled_work() under cinergyt2->sem.
+flush_scheduled_work() hangs because cinergyt2_query_rc() waits for
+the same cinergyt2->sem.
 
-Hugh
+->disconnect_pending is used without any locks/barriers, perhaps this
+is the reason.
+
+I'll try to look further tomorrow. In any case, cinergyT2 should not
+use flush_scheduled_work() at all.
+
+Oleg.
+
