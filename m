@@ -1,51 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932558AbXF2BB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbXF2BER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932558AbXF2BB1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 21:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762807AbXF2BBU
+	id S932611AbXF2BER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 21:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764868AbXF2BD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 21:01:20 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:50971 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764741AbXF2BBT (ORCPT
+	Thu, 28 Jun 2007 21:03:59 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33854 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754525AbXF2BD6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 21:01:19 -0400
-Date: Thu, 28 Jun 2007 14:08:09 -0700
-From: Greg KH <greg@kroah.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>
-Subject: Re: [patch -mm] s390: struct bin_attribute changes
-Message-ID: <20070628210809.GA20253@kroah.com>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <20070628133904.GB4343@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
+	Thu, 28 Jun 2007 21:03:58 -0400
+Date: Fri, 29 Jun 2007 11:03:25 +1000
+From: David Chinner <dgc@sgi.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: David Chinner <dgc@sgi.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070629010325.GG31489@sgi.com>
+References: <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070626153413.GC6652@schatzie.adilger.int> <20070626231803.GQ31489@sgi.com> <20070628181913.GC1674@amitarora.in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070628133904.GB4343@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070628181913.GC1674@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 03:39:04PM +0200, Heiko Carstens wrote:
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Thu, Jun 28, 2007 at 11:49:13PM +0530, Amit K. Arora wrote:
+> On Wed, Jun 27, 2007 at 09:18:04AM +1000, David Chinner wrote:
+> > On Tue, Jun 26, 2007 at 11:34:13AM -0400, Andreas Dilger wrote:
+> > > On Jun 26, 2007  16:02 +0530, Amit K. Arora wrote:
+> > > > On Mon, Jun 25, 2007 at 03:46:26PM -0600, Andreas Dilger wrote:
+> > > > > Can you clarify - what is the current behaviour when ENOSPC (or some other
+> > > > > error) is hit?  Does it keep the current fallocate() or does it free it?
+> > > > 
+> > > > Currently it is left on the file system implementation. In ext4, we do
+> > > > not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
+> > > > end up with partial (pre)allocation. This is inline with dd and
+> > > > posix_fallocate, which also do not free the partially allocated space.
+> > > 
+> > > Since I believe the XFS allocation ioctls do it the opposite way (free
+> > > preallocated space on error) this should be encoded into the flags.
+> > > Having it "filesystem dependent" just means that nobody will be happy.
+> > 
+> > No, XFs does not free preallocated space on error. it is up to the
+> > application to clean up.
 > 
-> git-acpi contains a patch that adds 'struct bin_attribute *' to
-> the read method of struct bin_attribute. This breaks s390:
-> 
->   CC      arch/s390/kernel/ipl.o
-> arch/s390/kernel/ipl.c:317:
->  warning: initialization from incompatible pointer type
-> arch/s390/kernel/ipl.c:340:
->   warning: initialization from incompatible pointer type
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Greg KH <greg@kroah.com>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Since XFS also does not free preallocated space on error and this
+> behavior is inline with dd, posix_fallocate() and the current ext4
+> implementation, do we still need FA_FL_FREE_ENOSPC flag ?
 
-Thanks, I've merged this with the original patch so that nothing breaks
-when applied to Linus's tree.
+Not at the moment.
 
-greg k-h
+> > > What I mean is that any data read from the file should have the "appearance"
+> > > of being zeroed (whether zeroes are actually written to disk or not).  What
+> > > I _think_ David is proposing is to allow fallocate() to return without
+> > > marking the blocks even "uninitialized" and subsequent reads would return
+> > > the old data from the disk.
+> > 
+> > Correct, but for swap files that's not an issue - no user should be able
+> > too read them, and FA_MKSWAP would really need root privileges to execute.
+> 
+> Will the FA_MKSWAP mode still be required with your suggested change of
+> teaching do_mpage_readpage() about unwritten extents being in place ?
+> Or, will you still like to have FA_MKSWAP mode ?
+
+budgie:/mnt/test # xfs_io -f -c "resvsp 0 1048576" -c "truncate 1048576" swap_file
+budgie:/mnt/test # mkswap swap_file
+Setting up swapspace version 1, size = 1032 kB
+budgie:/mnt/test # swapon -v swap_file
+swapon on swap_file
+budgie:/mnt/test # swapon -s
+Filename                                Type            Size    Used    Priority
+/dev/sda2                               partition       9437152 0       -1
+/mnt/test/swap_file                     file            992     0       -2
+budgie:/mnt/test # xfs_bmap -vvp swap_file
+swap_file:
+ EXT: FILE-OFFSET      BLOCK-RANGE      AG AG-OFFSET        TOTAL FLAGS
+   0: [0..31]:         96..127           0 (96..127)           32
+   1: [32..2047]:      128..2143         0 (128..2143)       2016 10000
+ FLAG Values:
+    010000 Unwritten preallocated extent
+    001000 Doesn't begin on stripe unit
+    000100 Doesn't end   on stripe unit
+    000010 Doesn't begin on stripe width
+    000001 Doesn't end   on stripe width
+
+Looks like the changes work, so FA_MKSWAP is not necessary for XFS.
+We can drop that for the moment unless anyone else sees a need for it.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
