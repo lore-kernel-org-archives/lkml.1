@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933034AbXF2FOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbXF2FVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933034AbXF2FOb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 01:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbXF2FOU
+	id S933026AbXF2FVA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 01:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbXF2FUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 01:14:20 -0400
-Received: from gate.crashing.org ([63.228.1.57]:52567 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751455AbXF2FOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 01:14:20 -0400
-Date: Fri, 29 Jun 2007 00:13:46 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: Linus Torvalds <torvalds@osdl.org>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, acme@redhat.com
-Subject: Please pull from 'from_linus' branch
-Message-ID: <Pine.LNX.4.64.0706290012430.15686@blarg.am.freescale.net>
+	Fri, 29 Jun 2007 01:20:51 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3745 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbXF2FUv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 01:20:51 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 28 Jun 2007 22:20:34 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Kyle Moffett <mrmacman_g4@mac.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>, Andy Isaacson <adi@hexapodia.org>
+Subject: Re: [patch 0/4] MAP_NOZERO v2 - VM_NOZERO/MAP_NOZERO early summer
+ madness
+In-Reply-To: <EC4CE052-5514-465E-92D2-9D50DA970DDC@mac.com>
+Message-ID: <Pine.LNX.4.64.0706282215050.22076@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.5792.1183056564.0>
+ <EC4CE052-5514-465E-92D2-9D50DA970DDC@mac.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from 'for_linus' branch of
+On Thu, 28 Jun 2007, Kyle Moffett wrote:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_linus
+> On Jun 28, 2007, at 14:49:24, Davide Libenzi wrote:
+> > I was using oprofile to sample some userspace code I am working on, and I
+> > was continuosly noticing  clear_page  in the top three entries of the
+> > oprofile logs.
+> > 
+> > Also, a simple kernel build, in my Dual Opteron with 8GB of RAM, shows
+> > clear_page  as the first kernel entry, second only to the userspace the  cc1
+> > and  as. Most of the userspace code uses malloc() (and anonymous  mappings)
+> > in such a way that the memory returned via kernel->glibc is immediately
+> > written soon after. The POSIX malloc() definition itself also, does not
+> > require the returned memory to be zeroed (as calloc() does).
+> > 
+> > So I implemented a rather quick hack that introduces a new mmap() flag
+> > MAP_NOZERO (only valid for anonymous mappings) and the  vma  counter-part
+> > VM_NOZERO. Also, a new sys_brk2() has been introduced to accept a new flags
+> > parameter. A brief description of the patches follows in the next emails.
+> 
+> Hmm, sounds like this would also need a "MAP_NOREUSE" flag of some kind for
+> security sensitive applications.  Basically, I wouldn't want my ssh-agent
+> pages holding private SSH keys to be reused by my web browser which then gets
+> exploited :-D
 
-to receive the following updates:
+Well, if your web browser and your ssh session are running under the same 
+user, and your web browser gets hacked, someone is basically logged in in 
+your system under your user. It can ptrace-attach your ssh-agent and take 
+it from there. It can also read your .ssh directory for what it matter and 
+more simply ;)
 
- drivers/net/gianfar.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Kumar Gala (1):
-      gianfar: Fix typo bug introduced by move to udp_hdr()
 
-commit 8da32de5c845b711a500f89342baf10c662e2ecb
-Author: Kumar Gala <galak@kernel.crashing.org>
-Date:   Fri Jun 29 00:12:04 2007 -0500
+> It would also be a massive information leak under SELinux.  To
+> fix it properly according to the SELinux model you would need to tag each page
+> with a label immediately after it's freed and then do an access-vector-check
+> against the old page and the new process before allowing reuse.  On the other
+> hand, that would probably be at least as expensive as zeroing the page.
 
-    gianfar: Fix typo bug introduced by move to udp_hdr()
+SeLinux could use a simple hook and disable the feature per-task and 
+globally. Just assign an invalid UID to mm->owner_uid and pages will never 
+be used. It could also hook mmap and clear off MAP_NOZERO.
 
-    In commit 4bedb45203eab92a87b4c863fe2d0cded633427f both the udp and tcp
-    cases where changed to use udp_hdr() instead of leaving the tcp case
-    alone and fixing with tcp_hdr().
 
-    This ended up causing random behavior with TCP connections because
-    of looking for tcp_hdr()->check in the wrong place.
 
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+- Davide
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 6822bf1..1b854bf 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -944,7 +944,7 @@ static inline void gfar_tx_checksum(struct sk_buff *skb, struct txfcb *fcb)
- 		flags |= TXFCB_UDP;
- 		fcb->phcs = udp_hdr(skb)->check;
- 	} else
--		fcb->phcs = udp_hdr(skb)->check;
-+		fcb->phcs = tcp_hdr(skb)->check;
 
- 	/* l3os is the distance between the start of the
- 	 * frame (skb->data) and the start of the IP hdr.
