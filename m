@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933648AbXF2ORc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765538AbXF2OZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933648AbXF2ORc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 10:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932639AbXF2ORW
+	id S1765538AbXF2OZf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 10:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbXF2OZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 10:17:22 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1370 "EHLO scrub.xs4all.nl"
+	Fri, 29 Jun 2007 10:25:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57696 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932389AbXF2ORV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 10:17:21 -0400
-Date: Fri, 29 Jun 2007 16:17:38 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc6-mm1
-In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706291613040.1818@scrub.home>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+	id S1752313AbXF2OZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 10:25:25 -0400
+Message-ID: <46851635.2070201@garzik.org>
+Date: Fri, 29 Jun 2007 10:24:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu> <20070629113423.GA9042@ms2.inr.ac.ru> <Pine.LNX.4.58.0706290919350.8866@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0706290919350.8866@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Steven Rostedt wrote:
+> I had very little hope for this magic switch to get into mainline. (maybe
+> get it into -mm)  But the thing was is that tasklets IMHO are over used.
+> As Ingo said, there are probably only 2 or 3 places in the kernel that a
+> a switch to work queue conversion couldn't solve.
 
-On Thu, 28 Jun 2007, Andrew Morton wrote:
+This is purely a guess, backed by zero evidence.
 
->   So save yourself some hassle and check your .config carefully before
->   building this kernel.  Make sure that everything you need is still enabled.
-> 
->   I found that manually adding "CONFIG_BLK_DEV=y" to the .config before
->   running oldconfig saved a large number of config items from getting lost.
-
-This patch should help for this, so that this isn't done when Kconfig or 
-.config has been changed and they are not in sync.
-
-bye, Roman
+These network drivers were hand-tuned to use tasklets.  Sure it will 
+WORK as a workqueue, but that says nothing equivalence.
 
 
-Reset generates values only if Kconfig and .config agree.
+> Those places could then
+> probably be solved by a different design (yes that would take work).
 
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+Network driver patches welcome :)
 
----
- scripts/kconfig/confdata.c |   37 ++++++++++++++++++++++++++-----------
- 1 file changed, 26 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/scripts/kconfig/confdata.c
-===================================================================
---- linux-2.6.orig/scripts/kconfig/confdata.c
-+++ linux-2.6/scripts/kconfig/confdata.c
-@@ -341,27 +341,42 @@ int conf_read(const char *name)
- 		conf_unsaved++;
- 		/* maybe print value in verbose mode... */
- 	sym_ok:
-+		if (!sym_is_choice(sym))
-+			continue;
-+		/* The choice symbol only has a set value (and thus is not new)
-+		 * if all its visible childs have values.
-+		 */
-+		prop = sym_get_choice_prop(sym);
-+		flags = sym->flags;
-+		for (e = prop->expr; e; e = e->left.expr)
-+			if (e->right.sym->visible != no)
-+				flags &= e->right.sym->flags;
-+		sym->flags &= flags | ~SYMBOL_DEF_USER;
-+	}
-+
-+	for_all_symbols(i, sym) {
- 		if (sym_has_value(sym) && !sym_is_choice_value(sym)) {
--			if (sym->visible == no)
-+			/* Reset values of generates values, so they'll appear
-+			 * as new, if they should become visible, but that
-+			 * doesn't quite work if the Kconfig and the saved
-+			 * configuration disagree.
-+			 */
-+			if (sym->visible == no && !conf_unsaved)
- 				sym->flags &= ~SYMBOL_DEF_USER;
- 			switch (sym->type) {
- 			case S_STRING:
- 			case S_INT:
- 			case S_HEX:
--				if (!sym_string_within_range(sym, sym->def[S_DEF_USER].val))
--					sym->flags &= ~(SYMBOL_VALID|SYMBOL_DEF_USER);
-+				/* Reset a string value if it's out of range */
-+				if (sym_string_within_range(sym, sym->def[S_DEF_USER].val))
-+					break;
-+				sym->flags &= ~(SYMBOL_VALID|SYMBOL_DEF_USER);
-+				conf_unsaved++;
-+				break;
- 			default:
- 				break;
- 			}
- 		}
--		if (!sym_is_choice(sym))
--			continue;
--		prop = sym_get_choice_prop(sym);
--		flags = sym->flags;
--		for (e = prop->expr; e; e = e->left.expr)
--			if (e->right.sym->visible != no)
--				flags &= e->right.sym->flags;
--		sym->flags &= flags | ~SYMBOL_DEF_USER;
- 	}
- 
- 	sym_add_change_count(conf_warnings || conf_unsaved);
+> Tasklets are there because there
+> wasn't work queues or kthreads at the time of solving the solution that
+> tasklets solved.
+
+Completely false, at least in network driver land.  Threads existed and 
+were used (proof: 8139too, among others).
+
+Kernel threads were not used for hot path network packet shovelling 
+because they were too damn slow.  Tasklets were single-threaded, fast, 
+simple and immediate.  Workqueues today are simple and almost-fast.
+
+	Jeff
+
+
