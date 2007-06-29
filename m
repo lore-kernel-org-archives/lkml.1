@@ -1,202 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbXF2PmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933466AbXF2PpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933551AbXF2PmX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 11:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763529AbXF2PmJ
+	id S933466AbXF2PpJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 11:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757769AbXF2Po5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 11:42:09 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47806 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762436AbXF2PmH convert rfc822-to-8bit (ORCPT
+	Fri, 29 Jun 2007 11:44:57 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:29933 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757733AbXF2Po4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 11:42:07 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 29 Jun 2007 17:41:48 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] ieee1394 fixes
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.feae9f37e6769ed7@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: INLINE
+	Fri, 29 Jun 2007 11:44:56 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jun 2007 11:44:56 EDT
+X-YMail-OSG: HoRzGMkVM1kX_.oyKm_IbQ6bhtX9LnQBlLmJ7fsg7xBtBTsvdawuva_udKvF4ztlpFPDsek5hA--
+Date: Fri, 29 Jun 2007 08:38:15 -0700
+From: "H. J. Lu" <hjl@lucon.org>
+To: joerg.roedel@amd.com
+Cc: linux kernel <linux-kernel@vger.kernel.org>
+Subject: PATCH: Fix SVM MSR indexes for 32bit kernel
+Message-ID: <20070629153815.GA18297@lucon.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+Hi,
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+MSR index is 32bit not 64bit. All other MSR indexes are defined
+without the ULL suffix. Otherwise, you will get
 
-to receive the following updates.
+[hjl@gnu-5 tmp]$ cat foo.c
+typedef unsigned long long u64;
 
-Stefan Richter (2):
-      firewire: fix async reception on big endian machines
-      firewire: add Kconfig help on building both stacks
+int is_disabled(void)
+{
+ u64 vm_cr;
+
+ do { unsigned long l__,h__; __asm__ __volatile__("rdmsr" : "=a" (l__),
+"=d" (h__) : "c" (0xc0010114ULL)); vm_cr = l__; vm_cr |=
+((u64)h__<<32); } while(0);
+ if (vm_cr & (1 << 4))
+  return 1;
+
+ return 0;
+}
+[hjl@gnu-5 tmp]$ gcc -m32 -S foo.c
+foo.c: In function â_disabledâfoo.c:7: error: impossible register
+constraint in âmâoo.c:12: confused by earlier errors, bailing out
+[hjl@gnu-5 tmp]$
+
+on 32bit. This patch removes the ULL suffix in SVM MSR indexes.
 
 
- drivers/firewire/Kconfig   |   65 +++++++++++++++++++++++------------
- drivers/firewire/fw-ohci.c |    6 ++--
- 2 files changed, 46 insertions(+), 25 deletions(-)
-
-
-commit 0a9972baa7454c747fd5f67ce864420dff99d383
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Sat Jun 23 20:28:17 2007 +0200
-
-    firewire: fix async reception on big endian machines
-    
-    descriptor.data_address is little endian
-    
-    Tested-by: Olaf Hering <olh@suse.de>
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-    Signed-off-by: Kristian Høgsberg <krh@redhat.com>
----
-
-diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
-index b72a5c1..96c8ac5 100644
---- a/drivers/firewire/fw-ohci.c
-+++ b/drivers/firewire/fw-ohci.c
-@@ -373,8 +373,8 @@ static void ar_context_tasklet(unsigned long data)
+H.J.
+--- linux-2.6.21.i686/drivers/kvm/svm.h.msr	2007-06-28 22:42:12.000000000 -0700
++++ linux-2.6.21.i686/drivers/kvm/svm.h	2007-06-29 08:03:09.000000000 -0700
+@@ -175,8 +175,8 @@ struct __attribute__ ((__packed__)) vmcb
+ #define SVM_CPUID_FUNC 0x8000000a
  
- 		offset = offsetof(struct ar_buffer, data);
- 		dma_unmap_single(ohci->card.device,
--				 ab->descriptor.data_address - offset,
--				 PAGE_SIZE, DMA_BIDIRECTIONAL);
-+			le32_to_cpu(ab->descriptor.data_address) - offset,
-+			PAGE_SIZE, DMA_BIDIRECTIONAL);
+ #define MSR_EFER_SVME_MASK (1ULL << 12)
+-#define MSR_VM_CR       0xc0010114ULL
+-#define MSR_VM_HSAVE_PA 0xc0010117ULL
++#define MSR_VM_CR       0xc0010114
++#define MSR_VM_HSAVE_PA 0xc0010117
  
- 		buffer = ab;
- 		ab = ab->next;
-@@ -427,7 +427,7 @@ static void ar_context_run(struct ar_context *ctx)
- 	size_t offset;
+ #define SVM_VM_CR_SVM_DISABLE 4
  
- 	offset = offsetof(struct ar_buffer, data);
--	ab_bus = ab->descriptor.data_address - offset;
-+	ab_bus = le32_to_cpu(ab->descriptor.data_address) - offset;
- 
- 	reg_write(ctx->ohci, COMMAND_PTR(ctx->regs), ab_bus | 1);
- 	reg_write(ctx->ohci, CONTROL_SET(ctx->regs), CONTEXT_RUN);
-
-
-commit fe77d4f283e840879f0e23b86a5d6a486823fdef
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Mon Jun 25 22:18:40 2007 +0200
-
-    firewire: add Kconfig help on building both stacks
-    
-    Alas that won't work so good, because nobody reads help texts.
-    
-    I thought about adding some crude multiple choice selection (build the
-    old stack, build the new stack, build both stacks).  It's possible, but
-    it would introduce awkward dummy config variables.
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
-
-diff --git a/drivers/firewire/Kconfig b/drivers/firewire/Kconfig
-index 396dade..d011a76 100644
---- a/drivers/firewire/Kconfig
-+++ b/drivers/firewire/Kconfig
-@@ -4,27 +4,44 @@ comment "An alternative FireWire stack is available with EXPERIMENTAL=y"
- 	depends on EXPERIMENTAL=n
- 
- config FIREWIRE
--	tristate "IEEE 1394 (FireWire) support (JUJU alternative stack, experimental)"
-+	tristate "IEEE 1394 (FireWire) support - alternative stack, EXPERIMENTAL"
- 	depends on EXPERIMENTAL
- 	select CRC_ITU_T
- 	help
--	  IEEE 1394 describes a high performance serial bus, which is also
--	  known as FireWire(tm) or i.Link(tm) and is used for connecting all
--	  sorts of devices (most notably digital video cameras) to your
--	  computer.
--
--	  If you have FireWire hardware and want to use it, say Y here.  This
--	  is the core support only, you will also need to select a driver for
--	  your IEEE 1394 adapter.
--
--	  To compile this driver as a module, say M here: the module will be
--	  called firewire-core.
--
--	  This is the "JUJU" FireWire stack, an alternative implementation
-+	  This is the "Juju" FireWire stack, a new alternative implementation
- 	  designed for robustness and simplicity.  You can build either this
- 	  stack, or the classic stack (the ieee1394 driver, ohci1394 etc.)
- 	  or both.
- 
-+	  To compile this driver as a module, say M here: the module will be
-+	  called firewire-core.  It functionally replaces ieee1394, raw1394,
-+	  and video1394.
-+
-+          NOTE:
-+
-+	  You should only build ONE of the stacks, unless you REALLY know what
-+	  you are doing.  If you install both, you should configure them only as
-+	  modules rather than link them statically, and you should blacklist one
-+	  of the concurrent low-level drivers in /etc/modprobe.conf.  Add either
-+
-+	      blacklist firewire-ohci
-+	  or
-+	      blacklist ohci1394
-+
-+	  there depending on which driver you DON'T want to have auto-loaded.
-+	  You can optionally do the same with the other IEEE 1394/ FireWire
-+	  drivers.
-+
-+	  If you have an old modprobe which doesn't implement the blacklist
-+	  directive, use either
-+
-+	       install firewire-ohci /bin/true
-+	  or
-+	       install ohci1394 /bin/true
-+
-+	  and so on, depending on which modules you DON't want to have
-+	  auto-loaded.
-+
- config FIREWIRE_OHCI
- 	tristate "Support for OHCI FireWire host controllers"
- 	depends on PCI && FIREWIRE
-@@ -34,11 +51,13 @@ config FIREWIRE_OHCI
- 	  is the only chipset in use, so say Y here.
- 
- 	  To compile this driver as a module, say M here:  The module will be
--	  called firewire-ohci.
-+	  called firewire-ohci.  It replaces ohci1394 of the classic IEEE 1394
-+	  stack.
-+
-+          NOTE:
- 
--	  If you also build ohci1394 of the classic IEEE 1394 driver stack,
--	  blacklist either ohci1394 or firewire-ohci to let hotplug load the
--	  desired driver.
-+	  If you also build ohci1394 of the classic stack, blacklist either
-+	  ohci1394 or firewire-ohci to let hotplug load only the desired driver.
- 
- config FIREWIRE_SBP2
- 	tristate "Support for storage devices (SBP-2 protocol driver)"
-@@ -50,12 +69,14 @@ config FIREWIRE_SBP2
- 	  like scanners.
- 
- 	  To compile this driver as a module, say M here:  The module will be
--	  called firewire-sbp2.
-+	  called firewire-sbp2.  It replaces sbp2 of the classic IEEE 1394
-+	  stack.
- 
- 	  You should also enable support for disks, CD-ROMs, etc. in the SCSI
- 	  configuration section.
- 
--	  If you also build sbp2 of the classic IEEE 1394 driver stack,
--	  blacklist either sbp2 or firewire-sbp2 to let hotplug load the
--	  desired driver.
-+          NOTE:
-+
-+	  If you also build sbp2 of the classic stack, blacklist either sbp2
-+	  or firewire-sbp2 to let hotplug load only the desired driver.
- 
-
--- 
-Stefan Richter
--=====-=-=== -==- ===-=
-http://arcgraph.de/sr/
-
