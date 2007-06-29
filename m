@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764013AbXF2McN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933034AbXF2MdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764013AbXF2McN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 08:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbXF2Maf
+	id S933034AbXF2MdB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 08:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764222AbXF2Mcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 08:30:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43213 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932376AbXF2Mad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 08:30:33 -0400
-Date: Fri, 29 Jun 2007 14:29:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070629122906.GA13035@elte.hu>
-References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu> <20070629113423.GA9042@ms2.inr.ac.ru>
+	Fri, 29 Jun 2007 08:32:50 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1435 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763327AbXF2Mct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 08:32:49 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+       xfs-masters@oss.sgi.com
+Subject: Re: 2.6.22-rc6-mm1
+Date: Fri, 29 Jun 2007 14:32:09 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, xfs@oss.sgi.com
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070629113423.GA9042@ms2.inr.ac.ru>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200706291432.10128.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Alexey Kuznetsov <kuznet@ms2.inr.ac.ru> wrote:
+	allmodconfig on powerpc (iMac g3) fails due to
+git-kgdb.patch. allmodconfig defaults should be changed?
 
-> > also, the "be afraid of the hardirq or the process context" mantra 
-> > is overblown as well. If something is too heavy for a hardirq, _it's 
-> > too heavy for a tasklet too_. Most hardirqs are (or should be) 
-                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > running with interrupts enabled, which makes their difference to 
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > softirqs miniscule.
-    ^^^^^^^^^^^^^^^^^^
-> 
-> Incorrect.
-> 
-> The difference between softirqs and hardirqs lays not in their 
-> "heavyness". It is in reentrancy protection, which has to be done with 
-> local_irq_disable(), unless networking is not isolated from hardirqs. 
+  CC      arch/powerpc/kernel/kgdb.o
+arch/powerpc/kernel/kgdb.c:485:2: error: #error Both XMON and KGDB selected 
+in .config. Unselect one of them.
+make[1]: *** [arch/powerpc/kernel/kgdb.o] Blad 1
+make: *** [arch/powerpc/kernel] Blad 2
 
-i know that pretty well ;)
+anyway after unselecting XMON we can see:
 
-> That's all. Networking is too hairy to allow to be executed with 
-> disabled hardirqs. And moving this hairyiness to process context 
-> requires <irony mode> a little </> more efforts than conversion 
-> tasklets to work queues.
+  CC [M]  fs/xfs/linux-2.6/xfs_ioctl32.o
+fs/xfs/linux-2.6/xfs_ioctl32.c: In function 'xfs_ioc_bulkstat_compat':
+fs/xfs/linux-2.6/xfs_ioctl32.c:334: error: 'xfs_inumbers_fmt_compat' 
+undeclared (first use in this function)
+fs/xfs/linux-2.6/xfs_ioctl32.c:334: error: (Each undeclared identifier is 
+reported only once
+fs/xfs/linux-2.6/xfs_ioctl32.c:334: error: for each function it appears in.)
+make[2]: *** [fs/xfs/linux-2.6/xfs_ioctl32.o] Blad 1
+make[1]: *** [fs/xfs] Blad 2
 
-as i said above (see the underlined sentence), hardirq contexts already 
-run just fine with hardirqs enabled. So your dismissal of executing that 
-'hairy' bit in hardirq context is not that automatically true as you 
-seem to assume i think.
+This is just allmodconfig - not a .config that's used daily by users but I'm 
+used to compiling the kernel using it anyway 8)
 
-also, network softirq locking dependencies arent all that magic or 
-complex either: they do not operate on sockets that are already locked 
-by a user context, they are per CPU and they are not preempted by 
-'themselves', nor are they preempted by certain other softirqs (such as 
-they are not preempted by the timer softirq). Am i missing some point of 
-yours?
+Regards,
 
-	Ingo
+	Mariusz
