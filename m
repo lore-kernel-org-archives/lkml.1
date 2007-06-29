@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbXF2U3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbXF2U31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbXF2U3J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 16:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXF2U2x
+	id S1755822AbXF2U31 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 16:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbXF2U3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 16:28:53 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58145 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754689AbXF2U2w (ORCPT
+	Fri, 29 Jun 2007 16:29:00 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46159 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754833AbXF2U25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 16:28:52 -0400
-Date: Fri, 29 Jun 2007 13:30:36 -0700
+	Fri, 29 Jun 2007 16:28:57 -0400
+Date: Fri, 29 Jun 2007 13:26:43 -0700
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+Subject: [PATCH 1/2] x86_64: get mp_bus_to_node as early
+To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
        Greg KH <greg@kroah.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200706291330.37070.yinghai.lu@sun.com>
+Message-id: <200706291326.43563.yinghai.lu@sun.com>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-transfer-encoding: 7BIT
@@ -26,138 +26,362 @@ User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 2/2] net: make net and forcedeth to use kmalloc_node
+[PATCH 1/2] x86_64: get mp_bus_to_node as early
+
+In struct device, we already have numa_node member. and we can use dev_to_node()
+/set_dev_node() to get and set numa_node in the device.
+set_dev_node is called in pci_device_add() with pcibus_to_node(bus). and
+pci_bus_to_node use bus->sysdata for nodeid.
+the problem is when pci_add_device is called, bus->sysdata is not assigned
+correct nodeid yet. the result will be numa_node always is 0.
+pcibios_scan_root and pci_scan_root could take sysdata. So we need to get
+mp_bus_to_node mapping before these two are called. and get_mp_bus_to_node
+could get correct node for sysdata in root bus.
+in scanning of root bus, all child bus will take parent bus sysdata. So all
+pci_device->dev.numa_node will be assigned correctly automatically.
+later we could use dev_to_node(&pci_dev->dev) to numa_node, and we could also
+could make other bus specific device get the correct numa_node too.
+and in different driver we could use kmalloc_node instead of kmalloc for
+skbuff/net or urb/usb etc. That could help improve performance with usb or net or sata for AMD K8 two sockets beyond system.
+
+For example:
+two way opteron system and only one HT chain on node 0. USB controller on SB 
+will be on node0. some dma accessing is used with kmalloc/dma_map_single. and 
+these address will be on node1 instead of node0. and even worse, when node1 ram
+ is above 4G, we may need to iommu mapping for usb operation.
+two way system with one HT chain on different node, we will need to 
+kmalloc/dma_map_single to use ram on corresonding node too.  esp for nvidia 
+mcp55/io55 system. the second io55 could have nic/sata/pcie devices.
 
 Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-index 42ba1c0..6d53b52 100644
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -1383,7 +1383,7 @@ static int nv_alloc_rx(struct net_device *dev)
- 		less_rx = np->last_rx.orig;
+
+diff --git a/arch/i386/pci/Makefile b/arch/i386/pci/Makefile
+index 44650e0..600d0e7 100644
+--- a/arch/i386/pci/Makefile
++++ b/arch/i386/pci/Makefile
+@@ -10,5 +10,6 @@ pci-y				+= legacy.o irq.o
  
- 	while (np->put_rx.orig != less_rx) {
--		struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
-+		struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
- 		if (skb) {
- 			np->put_rx_ctx->skb = skb;
- 			np->put_rx_ctx->dma = pci_map_single(np->pci_dev,
-@@ -1415,7 +1415,7 @@ static int nv_alloc_rx_optimized(struct net_device *dev)
- 		less_rx = np->last_rx.ex;
+ pci-$(CONFIG_X86_VISWS)		:= visws.o fixup.o
+ pci-$(CONFIG_X86_NUMAQ)		:= numa.o irq.o
++pci-$(CONFIG_NUMA)		+= mp_bus_to_node.o
  
- 	while (np->put_rx.ex != less_rx) {
--		struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
-+		struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
- 		if (skb) {
- 			np->put_rx_ctx->skb = skb;
- 			np->put_rx_ctx->dma = pci_map_single(np->pci_dev,
-@@ -3976,8 +3976,8 @@ static int nv_set_ringparam(struct net_device *dev, struct ethtool_ringparam* ri
- 					    sizeof(struct ring_desc_ex) * (ring->rx_pending + ring->tx_pending),
- 					    &ring_addr);
- 	}
--	rx_skbuff = kmalloc(sizeof(struct nv_skb_map) * ring->rx_pending, GFP_KERNEL);
--	tx_skbuff = kmalloc(sizeof(struct nv_skb_map) * ring->tx_pending, GFP_KERNEL);
-+	rx_skbuff = kmalloc_node(sizeof(struct nv_skb_map) * ring->rx_pending, GFP_KERNEL, dev_to_node(&dev->dev));
-+	tx_skbuff = kmalloc_node(sizeof(struct nv_skb_map) * ring->tx_pending, GFP_KERNEL, dev_to_node(&dev->dev));
- 	if (!rxtx_ring || !rx_skbuff || !tx_skbuff) {
- 		/* fall back to old rings */
- 		if (np->desc_ver == DESC_VER_1 || np->desc_ver == DESC_VER_2) {
-@@ -4372,7 +4372,7 @@ static int nv_loopback_test(struct net_device *dev)
- 
- 	/* setup packet for tx */
- 	pkt_len = ETH_DATA_LEN;
--	tx_skb = dev_alloc_skb(pkt_len);
-+	tx_skb = dev_alloc_skb_node(pkt_len, dev_to_node(&dev->dev));
- 	if (!tx_skb) {
- 		printk(KERN_ERR "dev_alloc_skb() failed during loopback test"
- 			 " of %s\n", dev->name);
-@@ -4976,6 +4976,7 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
- 	dev->base_addr = (unsigned long)np->base;
- 
- 	dev->irq = pci_dev->irq;
-+	printk(KERN_INFO "nv_probe: numa_node : %02d\n", dev_to_node(&pci_dev->dev));
- 
- 	np->rx_ring_size = RX_RING_DEFAULT;
- 	np->tx_ring_size = TX_RING_DEFAULT;
-@@ -4995,8 +4996,9 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
- 			goto out_unmap;
- 		np->tx_ring.ex = &np->rx_ring.ex[np->rx_ring_size];
- 	}
--	np->rx_skb = kmalloc(sizeof(struct nv_skb_map) * np->rx_ring_size, GFP_KERNEL);
--	np->tx_skb = kmalloc(sizeof(struct nv_skb_map) * np->tx_ring_size, GFP_KERNEL);
-+	np->rx_skb = kmalloc_node(sizeof(struct nv_skb_map) * np->rx_ring_size, GFP_KERNEL, dev_to_node(&pci_dev->dev));
-+	np->tx_skb = kmalloc_node(sizeof(struct nv_skb_map) * np->tx_ring_size, GFP_KERNEL, dev_to_node(&pci_dev->dev));
-+
- 	if (!np->rx_skb || !np->tx_skb)
- 		goto out_freering;
- 	memset(np->rx_skb, 0, sizeof(struct nv_skb_map) * np->rx_ring_size);
-@@ -5204,6 +5206,13 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
- 	np->autoneg = 1;
- 
- 	err = register_netdev(dev);
-+
-+	/*
-+	 * store numa_node in dev->dev, so we don't need to use
-+	 * netdev_priv(dev)->pci_dev->dev
-+	 */
-+	set_dev_node(&dev->dev, dev_to_node(&pci_dev->dev));
-+
- 	if (err) {
- 		printk(KERN_INFO "forcedeth: unable to register netdev: %d\n", err);
- 		goto out_error;
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index 6f0b2f7..747588c 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -333,11 +333,22 @@ static inline struct sk_buff *alloc_skb(unsigned int size,
- 	return __alloc_skb(size, priority, 0, -1);
- }
- 
-+static inline struct sk_buff *alloc_skb_node(unsigned int size,
-+					gfp_t priority, int node)
-+{
-+	return __alloc_skb(size, priority, 0, node);
-+}
-+
- static inline struct sk_buff *alloc_skb_fclone(unsigned int size,
- 					       gfp_t priority)
+ obj-y				+= $(pci-y) common.o early.o
+diff --git a/arch/i386/pci/acpi.c b/arch/i386/pci/acpi.c
+index b33aea8..5f8859f 100644
+--- a/arch/i386/pci/acpi.c
++++ b/arch/i386/pci/acpi.c
+@@ -8,24 +8,27 @@
+ struct pci_bus * __devinit pci_acpi_scan_root(struct acpi_device *device, int domain, int busnum)
  {
- 	return __alloc_skb(size, priority, 1, -1);
- }
-+static inline struct sk_buff *alloc_skb_fclone_node(unsigned int size,
-+					       gfp_t priority, int node)
-+{
-+	return __alloc_skb(size, priority, 1, node);
-+}
+ 	struct pci_bus *bus;
++#ifdef CONFIG_ACPI_NUMA
++	int pxm;
++	int node;
++#endif
  
- extern void	       kfree_skbmem(struct sk_buff *skb);
- extern struct sk_buff *skb_clone(struct sk_buff *skb,
-@@ -1282,6 +1293,16 @@ static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
- 	return skb;
+ 	if (domain != 0) {
+ 		printk(KERN_WARNING "PCI: Multiple domains not supported\n");
+ 		return NULL;
+ 	}
+ 
+-	bus = pcibios_scan_root(busnum);
+ #ifdef CONFIG_ACPI_NUMA
+-	if (bus != NULL) {
+-		int pxm = acpi_get_pxm(device->handle);
+-		if (pxm >= 0) {
+-			bus->sysdata = (void *)(unsigned long)pxm_to_node(pxm);
+-			printk("bus %d -> pxm %d -> node %ld\n",
+-				busnum, pxm, (long)(bus->sysdata));
+-		}
++	pxm = acpi_get_pxm(device->handle);
++	if (pxm >= 0) {
++		node  = pxm_to_node(pxm);
++		printk("bus %02x -> pxm %d -> node %02x\n", busnum, pxm, node);
++		set_mp_bus_to_node(busnum, node);
+ 	}
+ #endif
+-	
++
++	bus = pcibios_scan_root(busnum);
++
+ 	return bus;
  }
  
-+static inline struct sk_buff *__dev_alloc_skb_node(unsigned int length,
-+					      gfp_t gfp_mask, int node)
+diff --git a/arch/i386/pci/common.c b/arch/i386/pci/common.c
+index 3f78d4d..d47f0a0 100644
+--- a/arch/i386/pci/common.c
++++ b/arch/i386/pci/common.c
+@@ -293,6 +293,7 @@ static struct dmi_system_id __devinitdata pciprobe_dmi_table[] = {
+ struct pci_bus * __devinit pcibios_scan_root(int busnum)
+ {
+ 	struct pci_bus *bus = NULL;
++	long node;
+ 
+ 	dmi_check_system(pciprobe_dmi_table);
+ 
+@@ -303,9 +304,15 @@ struct pci_bus * __devinit pcibios_scan_root(int busnum)
+ 		}
+ 	}
+ 
++	node = get_mp_bus_to_node(busnum);
++
++#ifdef CONFIG_NUMA
++	printk(KERN_DEBUG "PCI: Probing PCI hardware (bus %02x) with (node %02lx)\n", busnum, node);
++#else
+ 	printk(KERN_DEBUG "PCI: Probing PCI hardware (bus %02x)\n", busnum);
++#endif
+ 
+-	return pci_scan_bus_parented(NULL, busnum, &pci_root_ops, NULL);
++	return pci_scan_bus_parented(NULL, busnum, &pci_root_ops, (void *)node);
+ }
+ 
+ extern u8 pci_cache_line_size;
+diff --git a/arch/i386/pci/irq.c b/arch/i386/pci/irq.c
+index f2cb942..50df769 100644
+--- a/arch/i386/pci/irq.c
++++ b/arch/i386/pci/irq.c
+@@ -136,9 +136,11 @@ static void __init pirq_peer_trick(void)
+ 		busmap[e->bus] = 1;
+ 	}
+ 	for(i = 1; i < 256; i++) {
++		long node;
+ 		if (!busmap[i] || pci_find_bus(0, i))
+ 			continue;
+-		if (pci_scan_bus(i, &pci_root_ops, NULL))
++		node = get_mp_bus_to_node(i);
++		if (pci_scan_bus(i, &pci_root_ops, (void *)node))
+ 			printk(KERN_INFO "PCI: Discovered primary peer bus %02x [IRQ]\n", i);
+ 	}
+ 	pcibios_last_bus = -1;
+diff --git a/arch/i386/pci/legacy.c b/arch/i386/pci/legacy.c
+index 149a958..72e1b27 100644
+--- a/arch/i386/pci/legacy.c
++++ b/arch/i386/pci/legacy.c
+@@ -12,6 +12,7 @@
+ static void __devinit pcibios_fixup_peer_bridges(void)
+ {
+ 	int n, devfn;
++	long node;
+ 
+ 	if (pcibios_last_bus <= 0 || pcibios_last_bus >= 0xff)
+ 		return;
+@@ -21,12 +22,13 @@ static void __devinit pcibios_fixup_peer_bridges(void)
+ 		u32 l;
+ 		if (pci_find_bus(0, n))
+ 			continue;
++		node = get_mp_bus_to_node(n);
+ 		for (devfn = 0; devfn < 256; devfn += 8) {
+ 			if (!raw_pci_ops->read(0, n, devfn, PCI_VENDOR_ID, 2, &l) &&
+ 			    l != 0x0000 && l != 0xffff) {
+ 				DBG("Found device at %02x:%02x [%04x]\n", n, devfn, l);
+ 				printk(KERN_INFO "PCI: Discovered peer bus %02x\n", n);
+-				pci_scan_bus(n, &pci_root_ops, NULL);
++				pci_scan_bus(n, &pci_root_ops, (void *)node);
+ 				break;
+ 			}
+ 		}
+diff --git a/arch/x86_64/pci/k8-bus.c b/arch/x86_64/pci/k8-bus.c
+index 3acf60d..e03b533 100644
+--- a/arch/x86_64/pci/k8-bus.c
++++ b/arch/x86_64/pci/k8-bus.c
+@@ -1,7 +1,9 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
++#include <asm/pci-direct.h>
+ #include <asm/mpspec.h>
+ #include <linux/cpumask.h>
++#include <asm/topology.h>
+ 
+ /*
+  * This discovers the pcibus <-> node mapping on AMD K8.
+@@ -20,60 +22,93 @@
+ #define SUBORDINATE_LDT_BUS_NUMBER(dword) ((dword >> 16) & 0xFF)
+ #define PCI_DEVICE_ID_K8HTCONFIG 0x1100
+ 
++#define BUS_NR 256
++
++static unsigned char mp_bus_to_node[BUS_NR];
++
++void set_mp_bus_to_node(int busnum, int node)
 +{
-+	struct sk_buff *skb = alloc_skb_node(length + NET_SKB_PAD, gfp_mask, node);
-+	if (likely(skb))
-+		skb_reserve(skb, NET_SKB_PAD);
-+	return skb;
++	if (busnum >= 0 &&  busnum < BUS_NR)
++		mp_bus_to_node[busnum] = (unsigned char) node;
 +}
 +
++int get_mp_bus_to_node(int busnum)
++{
++	int node;
++
++	if (busnum < 0 || busnum > (BUS_NR - 1) )
++		return 0;
++
++	node = mp_bus_to_node[busnum];
++
++	/* Algorithm a bit dumb, but it shouldn't matter here.
++	   even there is no ram installed for node0*/
++	if (!node_online(node))
++		node = 0;
++
++	return node;
++}
 +
  /**
-  *	dev_alloc_skb - allocate an skbuff for receiving
-  *	@length: length to allocate
-@@ -1299,6 +1320,11 @@ static inline struct sk_buff *dev_alloc_skb(unsigned int length)
- 	return __dev_alloc_skb(length, GFP_ATOMIC);
+- * fill_mp_bus_to_cpumask()
++ * early_fill_mp_bus_to_node()
++ * called before pcibios_scan_root and pci_scan_bus
+  * fills the mp_bus_to_cpumask array based according to the LDT Bus Number
+  * Registers found in the K8 northbridge
+  */
+ __init static int
+-fill_mp_bus_to_cpumask(void)
++early_fill_mp_bus_to_node(void)
+ {
+-	struct pci_dev *nb_dev = NULL;
+ 	int i, j;
++	unsigned slot;
+ 	u32 ldtbus, nid;
++	u32 id;
+ 	static int lbnr[3] = {
+ 		LDT_BUS_NUMBER_REGISTER_0,
+ 		LDT_BUS_NUMBER_REGISTER_1,
+ 		LDT_BUS_NUMBER_REGISTER_2
+ 	};
+ 
+-	while ((nb_dev = pci_get_device(PCI_VENDOR_ID_AMD,
+-			PCI_DEVICE_ID_K8HTCONFIG, nb_dev))) {
+-		pci_read_config_dword(nb_dev, NODE_ID_REGISTER, &nid);
++	memset(mp_bus_to_node, 0, BUS_NR);
++
++	if (!early_pci_allowed())
++		return -1;
++
++	for (slot = 0x18; slot < 0x20; slot++) {
++		id = read_pci_config(0, slot, 0, PCI_VENDOR_ID);
++		if (id != (PCI_VENDOR_ID_AMD | (PCI_DEVICE_ID_K8HTCONFIG<<16)))
++			break;
++		nid = read_pci_config(0, slot, 0, NODE_ID_REGISTER);
+ 
+ 		for (i = 0; i < NR_LDT_BUS_NUMBER_REGISTERS; i++) {
+-			pci_read_config_dword(nb_dev, lbnr[i], &ldtbus);
++			ldtbus = read_pci_config(0, slot, 0, lbnr[i]);
+ 			/*
+ 			 * if there are no busses hanging off of the current
+ 			 * ldt link then both the secondary and subordinate
+ 			 * bus number fields are set to 0.
+-			 * 
++			 *
+ 			 * RED-PEN
+ 			 * This is slightly broken because it assumes
+- 			 * HT node IDs == Linux node ids, which is not always
++			 * HT node IDs == Linux node ids, which is not always
+ 			 * true. However it is probably mostly true.
+ 			 */
+ 			if (!(SECONDARY_LDT_BUS_NUMBER(ldtbus) == 0
+ 				&& SUBORDINATE_LDT_BUS_NUMBER(ldtbus) == 0)) {
+ 				for (j = SECONDARY_LDT_BUS_NUMBER(ldtbus);
+ 				     j <= SUBORDINATE_LDT_BUS_NUMBER(ldtbus);
+-				     j++) { 
+-					struct pci_bus *bus;
+-					long node = NODE_ID(nid);
+-					/* Algorithm a bit dumb, but
+- 					   it shouldn't matter here */
+-					bus = pci_find_bus(0, j);
+-					if (!bus)
+-						continue;
+-					if (!node_online(node))
+-						node = 0;
+-					bus->sysdata = (void *)node;
+-				}		
++				     j++) {
++					int node = NODE_ID(nid);
++					mp_bus_to_node[j] = (unsigned char) node;
++				}
+ 			}
+ 		}
+ 	}
+ 
++	for (i=0; i<BUS_NR; i++) {
++		int node = mp_bus_to_node[i];
++		if (node)
++			printk(KERN_DEBUG "bus: %02x to node: %02x\n", i, node);
++	}
+ 	return 0;
  }
  
-+static inline struct sk_buff *dev_alloc_skb_node(unsigned int length, int node)
+-fs_initcall(fill_mp_bus_to_cpumask);
++postcore_initcall(early_fill_mp_bus_to_node);
+diff --git a/include/asm-i386/topology.h b/include/asm-i386/topology.h
+index 7fc512d..b2f8ca9 100644
+--- a/include/asm-i386/topology.h
++++ b/include/asm-i386/topology.h
+@@ -101,7 +101,17 @@ extern unsigned long node_remap_size[];
+ 
+ #define node_has_online_mem(nid) (node_start_pfn[nid] != node_end_pfn[nid])
+ 
++int get_mp_bus_to_node(int busnum);
++void set_mp_bus_to_node(int busnum, int node);
++
+ #else /* !CONFIG_NUMA */
++static inline int get_mp_bus_to_node(int busnum)
 +{
-+	return __dev_alloc_skb_node(length, GFP_ATOMIC, node);
++	return 0;
++}
++static inline void set_mp_bus_to_node(int busnum, int node)
++{
++}
+ /*
+  * Other i386 platforms should define their own version of the 
+  * above macros here.
+diff --git a/include/asm-x86_64/topology.h b/include/asm-x86_64/topology.h
+index 4fd6fb2..3d820d5 100644
+--- a/include/asm-x86_64/topology.h
++++ b/include/asm-x86_64/topology.h
+@@ -53,6 +53,19 @@ extern int __node_distance(int, int);
+ 	.nr_balance_failed	= 0,			\
+ }
+ 
++int get_mp_bus_to_node(int busnum);
++void set_mp_bus_to_node(int busnum, int node);
++
++#else
++
++static inline int get_mp_bus_to_node(int busnum)
++{
++	return 0;
++}
++static inline void set_mp_bus_to_node(int busnum, int node)
++{
 +}
 +
- extern struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
- 		unsigned int length, gfp_t gfp_mask);
+ #endif
  
+ #ifdef CONFIG_SMP
+diff --git a/arch/i386/pci/mp_bus_to_node.c b/arch/i386/pci/mp_bus_to_node.c
+new file mode 100644
+index 0000000..bf4e2e9
+--- /dev/null
++++ b/arch/i386/pci/mp_bus_to_node.c
+@@ -0,0 +1,23 @@
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <asm/topology.h>
++
++#define BUS_NR 256
++
++static unsigned char mp_bus_to_node[BUS_NR];
++
++void set_mp_bus_to_node(int busnum, int node)
++{
++	if (busnum >= 0 &&  busnum < BUS_NR)
++	mp_bus_to_node[busnum] = (unsigned char) node;
++}
++
++int get_mp_bus_to_node(int busnum)
++{
++	int node;
++
++	if (busnum < 0 || busnum > (BUS_NR - 1) )
++		return 0;
++	node = mp_bus_to_node[busnum];
++	return node;
++}
