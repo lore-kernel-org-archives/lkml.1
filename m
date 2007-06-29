@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbXF2VRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbXF2VSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756927AbXF2VRu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 17:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbXF2VRn
+	id S1757224AbXF2VSb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 17:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbXF2VSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 17:17:43 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:43200 "EHLO
+	Fri, 29 Jun 2007 17:18:24 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:43206 "EHLO
 	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755405AbXF2VRn (ORCPT
+	with ESMTP id S1754880AbXF2VSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 17:17:43 -0400
-Subject: Re: [patch 1/5] avoid tlb gather restarts.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Hugh Dickins <hugh@veritas.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0706291927260.1509@blonde.wat.veritas.com>
-References: <20070629135530.912094590@de.ibm.com>
-	 <20070629141527.557443600@de.ibm.com>
-	 <Pine.LNX.4.64.0706291927260.1509@blonde.wat.veritas.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 29 Jun 2007 23:19:44 +0200
-Message-Id: <1183151984.13635.16.camel@localhost>
+	Fri, 29 Jun 2007 17:18:23 -0400
+Date: Fri, 29 Jun 2007 17:18:15 -0400
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: Robert Hancock <hancockr@shaw.ca>, Zan Lynx <zlynx@acm.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Raj, Ashok" <ashok.raj@intel.com>
+Subject: Re: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
+Message-ID: <20070629211815.GA23988@rhun.ibm.com>
+References: <46845943.7050005@shaw.ca> <FC1D1B23302A22499C60C967336B2AE0016F7529@pdsmsx411.ccr.corp.intel.com> <20070629152858.GA27995@linux-os.sc.intel.com> <20070629162343.GD27698@rhun.ibm.com> <20070629192353.GA12413@linux-os.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070629192353.GA12413@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-29 at 19:56 +0100, Hugh Dickins wrote:
-> I don't dare comment on your page_mkclean_one patch (5/5),
-> that dirty page business has grown too subtle for me.
+On Fri, Jun 29, 2007 at 12:23:53PM -0700, Keshavamurthy, Anil S wrote:
 
-Oh yes, the dirty handling is tricky. I had to fix a really nasty bug
-with it lately. As for page_mkclean_one the difference is that it
-doesn't claim a page is dirty if only the write protect bit has not been
-set. If we manage to lose dirty bits from ptes and have to rely on the
-write protect bit to take over the job, then we have a different problem
-altogether, no ?
+> Since this is IOMMU is built into the kernel and it is good idea to
+> report that the device is not present.
 
-> Your cleanups 2-4 look good, especially the mm_types.h one (how
-> confident are you that everything builds?), and I'm glad we can
-> now lay ptep_establish to rest.  Though I think you may have 
-> missed removing a __HAVE_ARCH_PTEP... from frv at least?
+Yes - as a debug message.
 
-Ok, thanks for the review. I take a look at frv to see if I missed
-something.
+> The above is printed only once and is consistent with other IOMMU
+> implementation. Atleast it is useful when people report bugs we can
+> makeout whether IOMMU is being detected or not.
 
-> But this one...
-> 
-> On Fri, 29 Jun 2007, Martin Schwidefsky wrote:
-> 
-> > If need_resched() is false it is unnecessary to call tlb_finish_mmu()
-> > and tlb_gather_mmu() for each vma in unmap_vmas(). Moving the tlb gather
-> > restart under the if that contains the cond_resched() will avoid
-> > unnecessary tlb flush operations that are triggered by tlb_finish_mmu() 
-> > and tlb_gather_mmu().
-> > 
-> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> Sorry, no.  It looks reasonable, but unmap_vmas is treading a delicate
-> and uncomfortable line between hi-performance and lo-latency: you've
-> chosen to improve performance at the expense of latency.
+If it was printed that it was detected it was - otherwise, it wasn't.
 
-That it true, my only concern had been performance. You likely have a
-point here.
+> Here is what I see on my box.
+> [..]
+> "PCI-GART: No AMD northbridge found."
 
-> You think you're just moving the finish/gather to where they're
-> actually necessary; but the thing is, that per-cpu struct mmu_gather
-> is liable to accumulate a lot of unpreemptible work for the future
-> tlb_finish_mmu, particularly when anon pages are associated with swap.
+You're right, that should be a debug message as well.
 
-Hmm, ok, so you are saying that we should do a flush at the end of each
-vma.
+> [..]
+> Calgary: detecting Calgary via BIOS EBDA area
+> Calgary: Unable to locate Rio Grande table in EBDA - bailing!
 
-> So although there may be no need to resched right now, if we keep on
-> gathering more and more without flushing, we'll be very unresponsive
-> when a resched is needed later on.  Hence Ingo's ZAP_BLOCK_SIZE to
-> split it up, small when CONFIG_PREEMPT, more reasonable but still
-> limited when not.
+These are KERN_DEBUG messages.
 
-Would it be acceptable to call tlb_flush_mmu instead of the
-tlb_finish_mmu / tlb_gather_mmu pair if the condition around
-cond_resched evaluates to false?
-The background for this change is that I'm working on another patch that
-will change the tlb flushing for s390 quite a bit. We won't have
-anything to flush with tlb_finish_mmu because we will either flush all
-tlbs with tlb_gather_mmu or each pte seperatly. The pages will always be
-freed immediatly. If we are forced to restart the tlb gather then we'll
-do multiple flush_tlb_mm because the information that we already flushed
-everything is lost with tlb_finish_mmu.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Cheers,
+Muli
