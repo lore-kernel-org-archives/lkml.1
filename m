@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932429AbXF2GZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932300AbXF2Gc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932429AbXF2GZN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 02:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbXF2GZA
+	id S932300AbXF2Gc1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 02:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbXF2GcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 02:25:00 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:36628 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbXF2GY7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 02:24:59 -0400
-Message-ID: <4684A523.5090600@linux.vnet.ibm.com>
-Date: Fri, 29 Jun 2007 11:52:27 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Fri, 29 Jun 2007 02:32:19 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:55091 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750732AbXF2GcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 02:32:19 -0400
+Date: Fri, 29 Jun 2007 08:32:14 +0200 (CEST)
+From: Eberhard Moenkeberg <emoenke@gwdg.de>
+To: Surya Prabhakar N <surya.prabhakar@wipro.com>
+cc: linux-kernel@vger.kernel.org, Jesper Juhl <jesper.juhl@gmail.com>
+Subject: Re: updated sbpcd.c
+In-Reply-To: <1183085233.3037.19.camel@bluegenie>
+Message-ID: <Pine.LNX.4.64.0706290830290.27162@gwdu05.gwdg.de>
+References: <1183085233.3037.19.camel@bluegenie>
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-mm <linux-mm@kvack.org>
-CC: Balbir Singh <balbir@in.ibm.com>, Pavel Emelianov <xemul@sw.ru>,
-       Paul Menage <menage@google.com>, Kirill Korotaev <dev@sw.ru>,
-       devel@openvz.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
-       Aubrey Li <aubreylee@gmail.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: [RFC][PATCH 3/3] Pagecache reclaim
-References: <4684A3F3.40001@linux.vnet.ibm.com>
-In-Reply-To: <4684A3F3.40001@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="1283851528-1314646327-1183098723=:27162"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pagecache controller reclaim changes
-------------------------------------
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Reclaim path needs performance improvement.
-For now it is minor changes to include unmapped
-pages in our list of page_container.
+--1283851528-1314646327-1183098723=:27162
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- mm/rss_container.c |    3 ---
- 1 file changed, 3 deletions(-)
+Hi,
 
---- linux-2.6.22-rc2-mm1.orig/mm/rss_container.c
-+++ linux-2.6.22-rc2-mm1/mm/rss_container.c
-@@ -243,9 +243,6 @@ void container_rss_move_lists(struct pag
- 	struct rss_container *rss;
- 	struct page_container *pc;
+On Fri, 29 Jun 2007, Surya Prabhakar N wrote:
 
--	if (!page_mapped(pg))
--		return;
--
- 	pc = page_container(pg);
- 	if (pc == NULL)
- 		return;
+>=20
+> Hi emoenke,
+>    Can this patch be verified and pulled into your tree.
+>=20
+> thanks.
+> Surya.
+
+Jesper Juhl should ack it (if), and Jens Axboe would be the right person=20
+to pull it into the tree.
+
+
+Viele Gr=FC=DFe
+Eberhard M=F6nkeberg (emoenke@gwdg.de, em@kki.org)
+--1283851528-1314646327-1183098723=:27162--
