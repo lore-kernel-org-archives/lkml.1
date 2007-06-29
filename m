@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759387AbXF2Vwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbXF2Vzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759387AbXF2Vwe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 17:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757837AbXF2VvM
+	id S1758840AbXF2Vzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 17:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbXF2VzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 17:51:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42024 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758236AbXF2VvJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 17:51:09 -0400
-Subject: Re: how to determine if the noexec stack is defined by an
-	application
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <46856F24.5060407@andrei.myip.org>
-References: <46856F24.5060407@andrei.myip.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 29 Jun 2007 14:49:18 -0700
-Message-Id: <1183153758.2894.1.camel@laptopd505.fenrus.org>
+	Fri, 29 Jun 2007 17:55:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54666 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755270AbXF2VzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 17:55:23 -0400
+Date: Fri, 29 Jun 2007 22:54:16 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Turbo Fredriksson <turbo@bayour.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Moving MD/LVM from PPC to x86
+Message-ID: <20070629215416.GA12786@agk.fab.redhat.com>
+Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
+	Turbo Fredriksson <turbo@bayour.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <87wsxneqs0.fsf@pumba.bayour.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87wsxneqs0.fsf@pumba.bayour.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 28, 2007 at 11:02:39PM +0200, Turbo Fredriksson wrote:
+>   2. How do I move a VG/PV/LV from PPC to x86?
 
-> But it's running a Web service which is a combination of C code and 
-> Tomcat/Java. I have no clue how to determine which portions specify a 
-> noexec stack and which don't.
-> 
-> In case it turns out some portions do not specify a noexec stack, my 
-> next question is how to get the application to create a noexec stack 
-> (assume I can make that request to the developers).
+The on-disk LVM2 metadata should be accessible from both
+architectures.
 
-
-like this:
-
-$ eu-readelf -l /bin/true  | grep STACK
-  GNU_STACK      0x000000 0x00000000 0x00000000 0x000000 0x000000 RW 0x4
-
-
-(replace /bin/true with the binary or library you want to check)
-
-if it says "RW" like here, it'll have non-executable stack. If it says
-"RWX" or if this line is absent entirely, the stack will be executable.
-
-
-
+Alasdair
+-- 
+agk@redhat.com
