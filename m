@@ -1,74 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbXF2O77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbXF2PBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932950AbXF2O77 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 10:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760243AbXF2O7r
+	id S933092AbXF2PBt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 11:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759699AbXF2PBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 10:59:47 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:38936 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759556AbXF2O7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 10:59:45 -0400
-Date: Fri, 29 Jun 2007 17:07:59 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070629150759.GC2771@ff.dom.local>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 29 Jun 2007 11:01:42 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:47423 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759077AbXF2PBl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 11:01:41 -0400
+To: mista.tapas@gmx.net
+CC: bunk@stusta.de, nix@esperi.org.uk, galibert@pobox.com, tiwai@suse.de,
+       kloczek@rudy.mif.pg.gda.pl, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+In-reply-to: <200706291352.42833.mista.tapas@gmx.net> (message from Florian
+	Schmidt on Fri, 29 Jun 2007 13:52:42 +0200)
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <20070624200837.16e11305@the-village.bc.nu> <87tzssextf.fsf@hades.wkstn.nix> <20070628210614.GC6087@stusta.de> <200706291352.42833.mista.tapas@gmx.net>
+Message-Id: <E1I4HtE-0003A5-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 29 Jun 2007 16:56:05 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 29, 2007 at 10:50:20AM +0200, Jean-Baptiste Vignaud wrote:
-> Update...
-> I did 2 tests :
-> 
-> 1)  booted with option acpi=off
-> It booted correctly, i managed to get some load on one of the card
-> and after a while (10 minutes i guess) the Timeout occurs. Side effect,
-> at the same moment the sata contolers lost control of the disks somehow
-> and the raid 5 array on the system crashed hard. I have no traces as i
-> was unable to rebuild it (and i tried a lot of extreme  voodoo methods).
+> I suppose the best way to provide OSS emu is to use something like
+> FUSD [similar to the OSS2JACK package] [1] to provide the OSS device
+> files and then redirect to user space, so all ALSA pcm devices can
+> be used.. Sadly FUSD doesn't really get actively developed anymore
+> it seems. And FUSE can't handle ioctls.
 
-I think the main option: acpi=on is usually needed.
+Not as if it would be hard to add ioctl support to fuse.  What fuse
+can't handle is the data argument of ioctl(), so the most it could do
+is give the filesystem a pid (tid) and a virtual address.  The
+userspace fs could then get/put the data through /proc/<pid>/mem.
 
-If you, guys, are not exhausted yet, I think you could try to
-turn off (or change for somethig else) most of the options from
-"Processors type and features", and maybe something below PCI
-support. But there are many new options which couldn't be turned
-off so easy, so there is no much hope...
-
-> 
-> 2) changed the 3com cards
-> i replaced by two cards,
-> 01:06.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II] (rev 42)
-> 01:07.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8029(AS)
-> 
-> reinstalled and stressed the network (small download from a laptop) and :
-> 
-> Jun 29 09:34:10 loki kernel: NETDEV WATCHDOG: eth0: transmit timed out
-> Jun 29 09:34:51 loki last message repeated 14 times
-> Jun 29 09:35:18 loki last message repeated 8 times
-> 
-> so it seems to be a more generic problem.
-
-I wonder if you tried to change the place - I've read this
-advice many times. And maybe it would be better to try with
-one card at first?
-
-It seems there are some patches with dev->tx_timeout but it
-looks like fixing results only. Let's wait...
-
-Cheers,
-Jarek P.
-
-PS: Marcin - your last message wasn't plain text - so probably
-dumped by kernel lists. 
+Miklos
