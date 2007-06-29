@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbXF2FVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933097AbXF2FWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933026AbXF2FVA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 01:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbXF2FUv
+	id S933097AbXF2FWx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 01:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbXF2FWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 01:20:51 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3745 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbXF2FUv (ORCPT
+	Fri, 29 Jun 2007 01:22:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:40416 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbXF2FWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 01:20:51 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 28 Jun 2007 22:20:34 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Kyle Moffett <mrmacman_g4@mac.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rik van Riel <riel@redhat.com>, Andy Isaacson <adi@hexapodia.org>
-Subject: Re: [patch 0/4] MAP_NOZERO v2 - VM_NOZERO/MAP_NOZERO early summer
- madness
-In-Reply-To: <EC4CE052-5514-465E-92D2-9D50DA970DDC@mac.com>
-Message-ID: <Pine.LNX.4.64.0706282215050.22076@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.5792.1183056564.0>
- <EC4CE052-5514-465E-92D2-9D50DA970DDC@mac.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Fri, 29 Jun 2007 01:22:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=rfwdA8bTgx1R9zZppXNpAPPtkmpxvQpviFpajjLqBWvDgUlQ1IrH2awHb49MK2qqdST89PSW5c0jzh8NQxa9sidLtx2FGcr/dKEPXHVViX0sTepsFD494areqjjlQ8gCtg2RYKHl30itPo3hbsqGiuMyZksCASy4JHW8JhPhbK4=
+Message-ID: <3ae72650706282222u6e5094ffp8e77c0735f39e43d@mail.gmail.com>
+Date: Fri, 29 Jun 2007 07:22:44 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: USB card reader and HAL
+In-Reply-To: <20070628214351.GA9632@DervishD>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070628214351.GA9632@DervishD>
+X-Google-Sender-Auth: 71b72828ec68cafc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, Kyle Moffett wrote:
+On 6/28/07, DervishD <lkml@dervishd.net> wrote:
+>     I have a new card reader (internal) but I've tested with my old one
+> too: the same happens. I have a do-it-yourself linux box, self compiled
+> kernel 2.6.19.5 (by now).
+>
+>     When I insert a card in the reader, it is not detected, no udev
+> event is generated and I have to do things like "hdparm -z /dev/sda" to
+> "probe" the card. Moreover, I have to do the same when removing the card
+> or the /dev/sdaX nodes are not deleted.
+>
+>     Is HAL the only way of making it work? Is there any CONFIG_ thing
+> I've forgotten in my kernel?
+>
+>     I've tested with Ubuntu and it works perfectly, and that's why I
+> think this may be HAL related (I don't have HAL installed, Ubuntu has).
 
-> On Jun 28, 2007, at 14:49:24, Davide Libenzi wrote:
-> > I was using oprofile to sample some userspace code I am working on, and I
-> > was continuosly noticing  clear_page  in the top three entries of the
-> > oprofile logs.
-> > 
-> > Also, a simple kernel build, in my Dual Opteron with 8GB of RAM, shows
-> > clear_page  as the first kernel entry, second only to the userspace the  cc1
-> > and  as. Most of the userspace code uses malloc() (and anonymous  mappings)
-> > in such a way that the memory returned via kernel->glibc is immediately
-> > written soon after. The POSIX malloc() definition itself also, does not
-> > require the returned memory to be zeroed (as calloc() does).
-> > 
-> > So I implemented a rather quick hack that introduces a new mmap() flag
-> > MAP_NOZERO (only valid for anonymous mappings) and the  vma  counter-part
-> > VM_NOZERO. Also, a new sys_brk2() has been introduced to accept a new flags
-> > parameter. A brief description of the patches follows in the next emails.
-> 
-> Hmm, sounds like this would also need a "MAP_NOREUSE" flag of some kind for
-> security sensitive applications.  Basically, I wouldn't want my ssh-agent
-> pages holding private SSH keys to be reused by my web browser which then gets
-> exploited :-D
+You have to open() the device node to trigger events from the kernel,
+the kernel itself will not do that for you. HAL polls the device every
+few seconds.
 
-Well, if your web browser and your ssh session are running under the same 
-user, and your web browser gets hacked, someone is basically logged in in 
-your system under your user. It can ptrace-attach your ssh-agent and take 
-it from there. It can also read your .ssh directory for what it matter and 
-more simply ;)
-
-
-
-> It would also be a massive information leak under SELinux.  To
-> fix it properly according to the SELinux model you would need to tag each page
-> with a label immediately after it's freed and then do an access-vector-check
-> against the old page and the new process before allowing reuse.  On the other
-> hand, that would probably be at least as expensive as zeroing the page.
-
-SeLinux could use a simple hook and disable the feature per-task and 
-globally. Just assign an invalid UID to mm->owner_uid and pages will never 
-be used. It could also hook mmap and clear off MAP_NOZERO.
-
-
-
-- Davide
-
-
+Kay
