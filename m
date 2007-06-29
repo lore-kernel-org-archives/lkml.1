@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933233AbXF2O3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbXF2Oec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933233AbXF2O3i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 10:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760368AbXF2O32
+	id S932701AbXF2Oec (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 10:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbXF2OeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 10:29:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57772 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759739AbXF2O31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 10:29:27 -0400
-Message-ID: <46851741.3030707@garzik.org>
-Date: Fri, 29 Jun 2007 10:29:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Fri, 29 Jun 2007 10:34:25 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51776
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758332AbXF2OeY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 10:34:24 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Michael Kerrisk" <mtk-manpages@gmx.net>
+Subject: Re: man-pages-2.59 and man-pages-2.60 are released
+Date: Fri, 29 Jun 2007 10:33:10 -0400
+User-Agent: KMail/1.9.6
+Cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org,
+       patrakov@ums.usu.ru
+References: <467F8FCF.4080009@gmx.net> <46843B9B.2080700@tmr.com> <20070629083021.58530@gmx.net>
+In-Reply-To: <20070629083021.58530@gmx.net>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Andreas Dilger <adilger@clusterfs.com>, suparna@in.ibm.com,
-       cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 0/6][TAKE5] fallocate system call
-References: <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070628025543.9467216f.akpm@linux-foundation.org> <20070628175757.GA1674@amitarora.in.ibm.com> <20070628113342.c9c0f49c.akpm@linux-foundation.org> <20070629135612.GH29279@thunk.org>
-In-Reply-To: <20070629135612.GH29279@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200706291033.11221.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> I don't think we have a problem here.  What we have now is fine, and
+On Friday 29 June 2007 04:30:21 Michael Kerrisk wrote:
+> > You could have a link in
+> > "Old" as requested, and any other links as well.
+>
+> Well, I think all that LFS seems to want is links that are
+> stable "for a while" (since I don't suppose that they want
+> to use really old tarballs in any case).
 
-It's fine for ext4, but not the wider world.  This is a common problem 
-created by parallel development when code dependencies exist.
+What I did in busybox is uploaded it into "old" at the same time I uploaded it 
+into the directory above that, and then deleted it out of the upper directory 
+when I no longer recommended anybody use it.  But old provided a stable link 
+from day 1.
 
-
-> In any case, the plan is to push all of the core bits into Linus tree
-> for 2.6.22 once it opens up, which should be Real Soon Now, it looks
-> like.
-
-Presumably you mean 2.6.23.
-
-	Jeff
-
-
-
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
