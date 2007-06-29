@@ -1,109 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbXF2Iad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbXF2IjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756095AbXF2Iad (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 04:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbXF2IaY
+	id S1758533AbXF2IjR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 04:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbXF2IjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 04:30:24 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58853 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754325AbXF2IaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 04:30:22 -0400
-Cc: rob@landley.net, linux-kernel@vger.kernel.org, patrakov@ums.usu.ru
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 29 Jun 2007 10:30:21 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-In-Reply-To: <46843B9B.2080700@tmr.com>
-Message-ID: <20070629083021.58530@gmx.net>
+	Fri, 29 Jun 2007 04:39:01 -0400
+Received: from www.osadl.org ([213.239.205.134]:52173 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752798AbXF2IjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 04:39:00 -0400
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+To: "Midhun Agnihotram" <agnimidhun@gmail.com>
+Subject: Re: Fwd: Mounting MMC card
+Date: Fri, 29 Jun 2007 10:38:58 +0200
+User-Agent: KMail/1.9.5
+Cc: jdi@l4x.org, drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org
+References: <4dde4acb0706261146s5906d8f3vb787d5aecb429116@mail.gmail.com> <200706282210.23770.hjk@linutronix.de> <4dde4acb0706290040p4f90b0b5q630b8e0bd5982908@mail.gmail.com>
+In-Reply-To: <4dde4acb0706290040p4f90b0b5q630b8e0bd5982908@mail.gmail.com>
+Organization: Linutronix
 MIME-Version: 1.0
-References: <467F8FCF.4080009@gmx.net> <4683BC76.8070805@ums.usu.ru>
- <20070628161720.298550@gmx.net> <46843B9B.2080700@tmr.com>
-Subject: Re: man-pages-2.59 and man-pages-2.60 are released
-To: Bill Davidsen <davidsen@tmr.com>
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX19UJ4B2YGdUx4gWOvCHYsJWv++2XoJlOZY/cMyNYh
- IVgC3Iex9NLkM9Fhl/PRNMryjqZknOgy1thQ== 
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-GMX-UID: VYXiLLVgaHItVNzNXSQlXXBiamdhZASL
+Content-Disposition: inline
+Message-Id: <200706291038.58358.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill,
- 
-> >> There is one little problem with this: there is no stable URL for a
-> >> given version. 
-> > 
-> > Well, there never really was.  To date, most old tarballs have
-> > had only a limited life on kernel.org.
-> > 
-> Why? I'm not questioning the policy, it's just that if HUGE kernel 
-> versions are kept available forever, a tiny man page tar would not seem 
-> to be a disk space issue.
+Am Freitag 29 Juni 2007 09:40 schrieb Midhun Agnihotram:
 
-It's not a space issue -- it's just a question of
-clutter.  Even though I've been the maintainer for coming up
-for 2.5 years now, Andries was still doing the uploads onto
-kernel.org until about a year or so ago.  I think Andries used
-to clear down old versions periodically just so it was easier to
-see which version was the latest.  Since I started doing
-the uploads, I hadn't cleared away any old versions, but 
-yesterday I noticed that the list of files in the directory
-is getting long, so that it's hard to see what version is latest.
-So I created the directory "old" and moved all the old stuff in 
-there.  Alexander notes that this causes some problem for the LFS
-folk, since their scripts expect the tarballs to be in stable
-locations for longer periods.  (I was of course unaware of this.)
+> 
+> >* Is support for the file system on the MMC in your kernel?
+> 
+>   Yes. There is support for MMC card in my kernel. 
 
-> >> This hurts, e.g., automated Linux From Scratch rebuilds (the 
-> >> official script grabs the URL from the book, but it becomes 
-> >> invalid too soon).
-[...]
-> > How about a link in /pub/linux/docs/manpages/ of the form 
-> > "LATEST-IS-m.xy"?  Rob Landley was wanting something like this,
-> > and I guess it would be easy for LFS to build a simple
-> > script that looks for that link and deduces "man-pages-m.xy" 
-> > from it.  (I've just now created such a link in the directory,
-> > as an example.)
-> > 
-> Why not just a link with a fixed name (LATEST?) which could be updated? 
-> I assume installing a new version is automated 
+I was talking about the file system on the card. Usually, you've
+got vfat on such a card. How about that?
 
-There is no automation on my part.  Each time I do a release, I
-use scp to upload the .tar.gz and .lsm files, and some kernel.org 
-scripts automagically create the .bz2 and .sign files.
+BTW, You mounted proc on /proc and sysfs on /sys, I hope?
 
-To maintain any sort of link will either require me to
-write some script, or manually create the links.
+> 
+>    I have checked the log and it is attached to the end of the mail.
+> The log contains debug messages for removing and inserting the MMC
+> card. But nothing specific relating to mount. Can you interpret
+> anything more from it?
 
-> to create and install the 
-> tar, any needed links, the push to mirrors, etc. So it would just be a 
-> single step added to an automated procedure. 
+No. You don't have jffs2 on your MMC, do you?
 
-Yes, I'll write a script to create suitable links.
+> 
+> >Have you checked that your device nodes are correct? Since you use busybox I
+> >assume the system is too lightweight to run udev.
+> 
+>     Yes. I have checked the device nodes. They are fine for MMC. (I
+> have made them form what I got on the internet. BTW can anybody tell
+> me how can I find the corresponding major and minor number for my
+> device driver? This MMC driver is from Microcross. I have put the
+> device nodes as 254,0 - which are generic.).
 
-> You could have a link in 
-> "Old" as requested, and any other links as well.
+Here's what I have (nodes created by udev):
 
-Well, I think all that LFS seems to want is links that are
-stable "for a while" (since I don't suppose that they want
-to use really old tarballs in any case). So, for 
-the benefit of LFS, I'll just be less aggressive about
-moving tarballs into "Old" (I'll leave them sitting in http://www.kernel.org/pub/linux/docs/manpages/
-for a few months at least.)
+# ls -l /dev/mmc*
+brw-rw----    1 root     root     254,   0 Jun 29 08:41 /dev/mmcblk0
+brw-rw----    1 root     root     254,   1 Jun 29 08:41 /dev/mmcblk0p1
 
-Cheers,
+> 
+> >I run udev on an arm system, it costs you about 200kBytes,
+> >and saves you all the trouble with creating device files.
+> >Note that you don't need any rules files. If you want to write
+> >rules, you can even implement a poor-man's hotplug without HAL.
+> >If you can afford 200k, use udev.
+> 
+>    I have seen the udev page. But I am a bit skeptic about
+> implementing it with my kernelas this kernel is from Microcross -
+> customized for CSB535FS board. 
 
-Michael
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+As long as it's a reasonable recent kernel (>=2.6.15), it shouldn't
+be a problem. 
 
-Want to help with man page maintenance?  
-Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages , 
-read the HOWTOHELP file and grep the source 
-files for 'FIXME'.
+> I want to try udev only as my last 
+> option.
+
+Your choice.
+
+Hans
+
+
+
 
