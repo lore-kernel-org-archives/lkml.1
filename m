@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765421AbXF2HJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXF2HOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765421AbXF2HJT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 03:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbXF2HJI
+	id S932078AbXF2HOP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 03:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbXF2HN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 03:09:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:33156 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbXF2HJH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 03:09:07 -0400
-Subject: Tasklet usage in the DRM
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: linux-kernel@vger.kernel.org
-Cc: dri-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Organization: Tungsten Graphics
-Date: Fri, 29 Jun 2007 09:09:02 +0200
-Message-Id: <1183100942.3289.296.camel@thor.sulgenrain.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 8bit
+	Fri, 29 Jun 2007 03:13:59 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58009 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751255AbXF2HN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 03:13:57 -0400
+X-Authenticated: #1474915
+X-Provags-ID: V01U2FsdGVkX1/dnvxO7uTd+rVlbJYSXlRjcWUHXtn4lKy0oJcjYq
+	3vYTFOIljQllRK
+Message-ID: <4684B132.2070405@gmx.de>
+Date: Fri, 29 Jun 2007 09:13:54 +0200
+From: Thomas Sattler <tsattler@gmx.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.22-rc6 spurious hangs
+References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru> <4683CC89.80406@gmx.de> <20070628150826.GA487@tv-sign.ru> <4683F145.2060705@gmx.de> <4683F48F.9010603@gmx.de> <20070628181044.GA613@tv-sign.ru>
+In-Reply-To: <20070628181044.GA613@tv-sign.ru>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> Jun 28 19:23:03 pearl cinergyt2_query_rc+0x0/0x2e9 [cinergyT2]
+> 
+> cinergyt2_query_rc() hangs. I'll try to look tomorrov, but I know nothing
+> about drivers/media/dvb/.
 
-I just read an article on LWN's kernel page about plans to remove
-tasklets, and I thought I'd explain what the DRM is using tasklets for.
-Maybe there's other ways to satisfy the requirements equally well or
-even better.
+Does this mean the problem is in the cinergyt2 driver? I'm having similar
+problems with another box but with different hardware. While my laptop is
+used as a test system the other one is used as a 'productive' TV-recorder.
+I hoped we could trace the bug on the test system and fix the productive
+one at the same time. :-/
 
+The other box ("silver") is a desktop, which has two Hauppauge Nova-T DVB-T
+PCI cards and one (analog) Hauppauge WinTV PVR-350. Silver only hangs if
+the (digital) recording process has to much priority: (silver is running
+2.6.21.5-cfs-v17 +squashfs +ivtv)
 
-The i915 driver uses a tasklet to make sure a GL buffer swap blit or
-flip takes effect (or at least starts in the case of a blit) during the
-vertical blank period, to avoid tearing. I chose a tasklet for this
-purpose because:
+As I wanted to give as much priority to the recording process as possible
+I firstly run dvbd as SCHED_RR. This hung the box quite often, sometimes
+after an uptime of several minutes, sometimes after two weeks.
 
-      * The traditional method of the vertical blank interrupt waking up
-        the user process, which would then emit the buffer swap
-        commands, didn't even come close to avoiding tearing. So I
-        suspect a workqueue wouldn't cut it either.
-      * The processing of scheduled buffer swaps could potentially take
-        a long time, so doing it in hardirq context could cause high IRQ
-        latency.
-      * It requires holding the DRM lock, so the 'each tasklet can only
-        run once at a time' restriction is fine.
+I switched to -ck and run dvbd as SCHED_ISO which worked without *any*
+problem for about 18 months. As -ck is discontinued I switched to CFS and
+the box hung again (twice until I understood why) when dvbd was running as
+nice -15.
 
+ATM dvbd runs with nice -12 but yesterday, during a rsync-transfer of
+several >4G files, a recording was broken. 29 seconds of the recorded
+stream are lost because the system load was at 5 for about three hours.
 
-I'm looking forward to any suggestions what to do with this in case
-tasklets disappear, and I'll gladly provide further clarification on the
-requirements.
+Perhaps the 29 missing seconds are caused not by to less CPU time but by
+the havy IO of rsync. But on the other hand dvbd is also running at IO
+realtime prio 4 (ionice) while rsync run as IO normal.
 
+Any hints?
+Thomas
 
 -- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
-
+keep mailinglists in english, feel free to send PM in german
