@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbXF2QwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933671AbXF2Qyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933447AbXF2QwZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 12:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbXF2QwQ
+	id S933671AbXF2Qyu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 12:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbXF2Qym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 12:52:16 -0400
-Received: from mail.screens.ru ([213.234.233.54]:36554 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbXF2QwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 12:52:16 -0400
-Date: Fri, 29 Jun 2007 20:52:47 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Fri, 29 Jun 2007 12:54:42 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:55668 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758103AbXF2Qyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 12:54:40 -0400
+Date: Fri, 29 Jun 2007 17:59:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070629165247.GA457@tv-sign.ru>
-References: <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu> <20070629113423.GA9042@ms2.inr.ac.ru> <20070629155116.GA422@tv-sign.ru> <20070629162144.GA17709@ms2.inr.ac.ru>
+       LKML <linux-kernel@vger.kernel.org>,
+       Rodrigo Luiz <troops.of.doom@gmail.com>, alsa-devel@alsa-project.org,
+       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
+       Ben Collins <bcollins@ubuntu.com>, reiserfs-devel@vger.kernel.org,
+       "Vladimir V. Saveliev" <vs@namesys.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-ide@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>, Rodney Gordon II <meff@spherevision.org>
+Subject: Re: [1/2] 2.6.22-rc6: known regressions v2
+Message-ID: <20070629175920.6af0c62b@the-village.bc.nu>
+In-Reply-To: <46852187.3080504@googlemail.com>
+References: <46852187.3080504@googlemail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070629162144.GA17709@ms2.inr.ac.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/29, Alexey Kuznetsov wrote:
+> SATA/PATA
 > 
-> > If I understand correctly, this is because tasklet_head.list is protected
-> > by local_irq_save(), and t could be scheduled on another CPU, so we just
-> > can't steal it, yes?
-> 
-> Yes. All that code is written to avoid synchronization as much as possible.
+> Subject    : libata IT821X driver still fails! Hard-freezes system
+> References : http://lkml.org/lkml/2007/6/14/82
+> Submitter  : Rodney Gordon II <meff@spherevision.org>
+> Status     : unknown
 
-Thanks!
+Not a regression as it seems this user's box has always been broken. I've
+been running heavy testing with 2.6.22rc6 and IT8212 and its working
+reliably for the "dumb" mode in question.
 
-> 
-> > If we use worqueues, we can change the semantics of tasklet_kill() so
-> > that it really cancels an already scheduled tasklet.
-> > 
-> > The question is: would it be the wrong/good change?
-> 
-> If it does not add another usec to tasklet_schedule(), it would be good.
+The hardware mode needs a fix Tejun has queued somewhere (probably in
+Jeff's vast backlog) and then works too.
 
-No, it won't slowdown tasklet_schedule(). Instead it will speedup tasklet_kill.
-
-
-Steven, unless you have some objections, could you change tasklet_kill() ?
-
-> +static inline void tasklet_kill(struct tasklet_struct *t)
->  {
-> -       return test_bit(TASKLET_STATE_SCHED, &t->state);
-> +       flush_workqueue(ktaskletd_wq);
->  }
-
-Just change flush_workqueue(ktaskletd_wq) to cancel_work_sync(t-work).
-
-Oleg.
-
+I'm not even sure this report is IT8212 related rather than just an IRQ
+storm
