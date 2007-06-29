@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933658AbXF2QW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933764AbXF2QWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933658AbXF2QW1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 12:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765749AbXF2QWS
+	id S933764AbXF2QWm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 12:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933627AbXF2QW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 12:22:18 -0400
-Received: from minus.inr.ac.ru ([194.67.69.97]:43285 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1763426AbXF2QWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 12:22:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=VZJmF0UIcfATPEkPmY1EDGsWQK9RBJtE9eBwSHpQd6aQ7jnW67tSEmUtkccNKdp4n8Jy2cOub2wxNFqxJ0nImrttJsgxEscLjNym6SQTLcllSaRSDZa9Nzp7qTMp1o4L7XKFH3k9kghQUkkIXh2+jMfRfjVrEqdeu2oChItAWdc=;
-Date: Fri, 29 Jun 2007 20:21:44 +0400
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070629162144.GA17709@ms2.inr.ac.ru>
-References: <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu> <20070629113423.GA9042@ms2.inr.ac.ru> <20070629155116.GA422@tv-sign.ru>
-Mime-Version: 1.0
+	Fri, 29 Jun 2007 12:22:26 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:59917 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933490AbXF2QWY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 12:22:24 -0400
+Date: Fri, 29 Jun 2007 18:23:47 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070629162346.GO13886@enneenne.com>
+References: <20070628081538.GP13886@enneenne.com> <1183019474.1170.66.camel@pmac.infradead.org> <20070628084003.GQ13886@enneenne.com> <1183031060.1170.145.camel@pmac.infradead.org> <20070628161450.GD13886@enneenne.com> <1183117082.1170.308.camel@pmac.infradead.org> <20070629150813.GM13886@enneenne.com> <1183130716.1170.347.camel@pmac.infradead.org> <20070629153835.GN13886@enneenne.com> <1183131694.1170.350.camel@pmac.infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070629155116.GA422@tv-sign.ru>
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <1183131694.1170.350.camel@pmac.infradead.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
-
-> If I understand correctly, this is because tasklet_head.list is protected
-> by local_irq_save(), and t could be scheduled on another CPU, so we just
-> can't steal it, yes?
-
-Yes. All that code is written to avoid synchronization as much as possible.
-
-
-> If we use worqueues, we can change the semantics of tasklet_kill() so
-> that it really cancels an already scheduled tasklet.
+On Fri, Jun 29, 2007 at 04:41:33PM +0100, David Woodhouse wrote:
 > 
-> The question is: would it be the wrong/good change?
+> <asm-i386/signal.h> includes <linux/time.h>, for some reason.
+> <asm-powerpc/signal.h> doesn't.
+> 
+> You shouldn't rely on <linux/time.h> being pulled in like that -- you
+> either need a forward declaration of struct timespec, or to include
+> <linux/time.h> for yourself from <linux/pps.h>
 
-If it does not add another usec to tasklet_schedule(), it would be good.
+Can you please check if this patch resolve your problem?
 
-Alexey
+diff --git a/include/linux/pps.h b/include/linux/pps.h
+index 6b53864..fe8c645 100644
+--- a/include/linux/pps.h
++++ b/include/linux/pps.h
+@@ -33,6 +33,7 @@
+ 
+ #ifndef __KERNEL__
+ #include <asm/types.h>
++#include <linux/time.h>
+ #include <sys/time.h>
+ #endif
+
+Thanks,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
