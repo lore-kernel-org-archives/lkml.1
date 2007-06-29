@@ -1,382 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932923AbXF2DH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbXF2DML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932923AbXF2DH0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 23:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764983AbXF2DHQ
+	id S932794AbXF2DML (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 23:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764983AbXF2DL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 23:07:16 -0400
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:14035 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762915AbXF2DHO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 23:07:14 -0400
-Date: Fri, 29 Jun 2007 12:07:12 +0900 (JST)
-Message-Id: <20070629.120712.78706287.nemoto@toshiba-tops.co.jp>
-To: a.zummo@towertech.it
-Cc: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com, ab@mycable.de,
-       mgreer@mvista.com, khali@linux-fr.org, david-b@pacbell.net,
+	Thu, 28 Jun 2007 23:11:57 -0400
+Received: from smtpout.mac.com ([17.250.248.172]:56852 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762915AbXF2DL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 23:11:57 -0400
+In-Reply-To: <a8e1da0706280020ocf81ce7u98de87f16d674706@mail.gmail.com>
+References: <46835C16.9020700@kernel.org> <989B956029373F45A0B8AF0297081890D834BE@zch01exm26.fsl.freescale.net> <a8e1da0706280010m1e787bc2jae999084438982da@mail.gmail.com> <a8e1da0706280020ocf81ce7u98de87f16d674706@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7958FF64-140B-435A-8B69-A503C5C18D79@mac.com>
+Cc: Li Yang-r58472 <LeoLi@freescale.com>, Josh Triplett <josh@kernel.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Chris Shoemaker <c.shoemaker@cox.net>,
+       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH 2/2] rtc: watchdog support for rtc-m41t80 driver (take 3)
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: [OT] Vim highlighting for trailing spaces
+Date: Thu, 28 Jun 2007 23:11:51 -0400
+To: Dave Young <hidave.darkstar@gmail.com>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add a watchdog driver interface to rtc-m41t80 driver.  This
-is derived from works by Alexander Bigga <ab@mycable.de>
+On Jun 28, 2007, at 03:20:24, Dave Young wrote:
+> And for vim trailing space, there's a tip in vim.org:
+> http://www.vim.org/tips/tip.php?tip_id=878
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Signed-off-by: Alexander Bigga <ab@mycable.de>
-Acked-by: Alessandro Zummo <a.zummo@towertech.it>
----
-Changes from previous version (take 2):
+I actually prefer this (in .vimrc):
 
-* Move a Kconfig entry into "I2C RTC drivers" section
+" Show trailing whitespace and spaces before tabs
+hi link localWhitespaceError Error
+au Syntax * syn match localWhitespaceError /\(\zs\%#\|\s\)\+$/ display
+au Syntax * syn match localWhitespaceError / \+\ze\t/ display
 
- drivers/rtc/Kconfig      |    7 +
- drivers/rtc/rtc-m41t80.c |  288 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 295 insertions(+), 0 deletions(-)
+It always displays trailing whitespace and spaces-before tabs...  
+except if your cursor is at the end of the whitespace.  The updating  
+is occasionally a bit laggy (EG: Put spaces on a line and then move  
+the cursor off it without pressing <ENTER>), but when you hit Ctrl-L,  
+enter, or edit an adjacent line then it updates.
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 661386f..6ea1f43 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -225,6 +225,13 @@ config RTC_DRV_M41T80
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-m41t80.
- 
-+config RTC_DRV_M41T80_WDT
-+	bool "ST M41T80 series RTC watchdog timer"
-+	depends on RTC_DRV_M41T80
-+	help
-+	  If you say Y here you will get support for the
-+	  watchdog timer in ST M41T80 RTC chips series.
-+
- comment "SPI RTC drivers"
- 	depends on RTC_CLASS
- 
-diff --git a/drivers/rtc/rtc-m41t80.c b/drivers/rtc/rtc-m41t80.c
-index 4875a44..80c4a84 100644
---- a/drivers/rtc/rtc-m41t80.c
-+++ b/drivers/rtc/rtc-m41t80.c
-@@ -20,6 +20,13 @@
- #include <linux/i2c.h>
- #include <linux/rtc.h>
- #include <linux/bcd.h>
-+#ifdef CONFIG_RTC_DRV_M41T80_WDT
-+#include <linux/miscdevice.h>
-+#include <linux/watchdog.h>
-+#include <linux/reboot.h>
-+#include <linux/fs.h>
-+#include <linux/ioctl.h>
-+#endif
- 
- #define M41T80_REG_SSEC	0
- #define M41T80_REG_SEC	1
-@@ -480,6 +487,268 @@ static int m41t80_sysfs_register(struct device *dev)
- }
- #endif
- 
-+#ifdef CONFIG_RTC_DRV_M41T80_WDT
-+/*
-+ *****************************************************************************
-+ *
-+ * Watchdog Driver
-+ *
-+ *****************************************************************************
-+ */
-+static struct i2c_client *save_client;
-+
-+/* Default margin */
-+#define WD_TIMO 60		/* 1..31 seconds */
-+
-+static int wdt_margin = WD_TIMO;
-+module_param(wdt_margin, int, 0);
-+MODULE_PARM_DESC(wdt_margin, "Watchdog timeout in seconds (default 60s)");
-+
-+static unsigned long wdt_is_open;
-+static int boot_flag;
-+
-+/**
-+ *	wdt_ping:
-+ *
-+ *	Reload counter one with the watchdog timeout. We don't bother reloading
-+ *	the cascade counter.
-+ */
-+static void wdt_ping(void)
-+{
-+	unsigned char i2c_data[2];
-+	struct i2c_msg msgs1[1] = {
-+		{
-+			.addr	= save_client->addr,
-+			.flags	= 0,
-+			.len	= 2,
-+			.buf	= i2c_data,
-+		},
-+	};
-+	i2c_data[0] = 0x09;		/* watchdog register */
-+
-+	if (wdt_margin > 31)
-+		i2c_data[1] = (wdt_margin & 0xFC) | 0x83; /* resolution = 4s */
-+	else
-+		/*
-+		 * WDS = 1 (0x80), mulitplier = WD_TIMO, resolution = 1s (0x02)
-+		 */
-+		i2c_data[1] = wdt_margin<<2 | 0x82;
-+
-+	i2c_transfer(save_client->adapter, msgs1, 1);
-+}
-+
-+/**
-+ *	wdt_disable:
-+ *
-+ *	disables watchdog.
-+ */
-+static void wdt_disable(void)
-+{
-+	unsigned char i2c_data[2], i2c_buf[0x10];
-+	struct i2c_msg msgs0[2] = {
-+		{
-+			.addr	= save_client->addr,
-+			.flags	= 0,
-+			.len	= 1,
-+			.buf	= i2c_data,
-+		},
-+		{
-+			.addr	= save_client->addr,
-+			.flags	= I2C_M_RD,
-+			.len	= 1,
-+			.buf	= i2c_buf,
-+		},
-+	};
-+	struct i2c_msg msgs1[1] = {
-+		{
-+			.addr	= save_client->addr,
-+			.flags	= 0,
-+			.len	= 2,
-+			.buf	= i2c_data,
-+		},
-+	};
-+
-+	i2c_data[0] = 0x09;
-+	i2c_transfer(save_client->adapter, msgs0, 2);
-+
-+	i2c_data[0] = 0x09;
-+	i2c_data[1] = 0x00;
-+	i2c_transfer(save_client->adapter, msgs1, 1);
-+}
-+
-+/**
-+ *	wdt_write:
-+ *	@file: file handle to the watchdog
-+ *	@buf: buffer to write (unused as data does not matter here
-+ *	@count: count of bytes
-+ *	@ppos: pointer to the position to write. No seeks allowed
-+ *
-+ *	A write to a watchdog device is defined as a keepalive signal. Any
-+ *	write of data will do, as we we don't define content meaning.
-+ */
-+static ssize_t wdt_write(struct file *file, const char __user *buf,
-+			 size_t count, loff_t *ppos)
-+{
-+	/*  Can't seek (pwrite) on this device
-+	if (ppos != &file->f_pos)
-+	return -ESPIPE;
-+	*/
-+	if (count) {
-+		wdt_ping();
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static ssize_t wdt_read(struct file *file, char __user *buf,
-+			size_t count, loff_t *ppos)
-+{
-+	return 0;
-+}
-+
-+/**
-+ *	wdt_ioctl:
-+ *	@inode: inode of the device
-+ *	@file: file handle to the device
-+ *	@cmd: watchdog command
-+ *	@arg: argument pointer
-+ *
-+ *	The watchdog API defines a common set of functions for all watchdogs
-+ *	according to their available features. We only actually usefully support
-+ *	querying capabilities and current status.
-+ */
-+static int wdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+		     unsigned long arg)
-+{
-+	int new_margin, rv;
-+	static struct watchdog_info ident = {
-+		.options = WDIOF_POWERUNDER | WDIOF_KEEPALIVEPING |
-+			WDIOF_SETTIMEOUT,
-+		.firmware_version = 1,
-+		.identity = "M41T80 WTD"
-+	};
-+
-+	switch (cmd) {
-+	case WDIOC_GETSUPPORT:
-+		return copy_to_user((struct watchdog_info __user *)arg, &ident,
-+				    sizeof(ident)) ? -EFAULT : 0;
-+
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		return put_user(boot_flag, (int __user *)arg);
-+	case WDIOC_KEEPALIVE:
-+		wdt_ping();
-+		return 0;
-+	case WDIOC_SETTIMEOUT:
-+		if (get_user(new_margin, (int __user *)arg))
-+			return -EFAULT;
-+		/* Arbitrary, can't find the card's limits */
-+		if (new_margin < 1 || new_margin > 124)
-+			return -EINVAL;
-+		wdt_margin = new_margin;
-+		wdt_ping();
-+		/* Fall */
-+	case WDIOC_GETTIMEOUT:
-+		return put_user(wdt_margin, (int __user *)arg);
-+
-+	case WDIOC_SETOPTIONS:
-+		if (copy_from_user(&rv, (int __user *)arg, sizeof(int)))
-+			return -EFAULT;
-+
-+		if (rv & WDIOS_DISABLECARD) {
-+			printk(KERN_INFO
-+			       "rtc-m41t80: disable watchdog\n");
-+			wdt_disable();
-+		}
-+
-+		if (rv & WDIOS_ENABLECARD) {
-+			printk(KERN_INFO
-+			       "rtc-m41t80: enable watchdog\n");
-+			wdt_ping();
-+		}
-+
-+		return -EINVAL;
-+	}
-+	return -ENOTTY;
-+}
-+
-+/**
-+ *	wdt_open:
-+ *	@inode: inode of device
-+ *	@file: file handle to device
-+ *
-+ */
-+static int wdt_open(struct inode *inode, struct file *file)
-+{
-+	if (MINOR(inode->i_rdev) == WATCHDOG_MINOR) {
-+		if (test_and_set_bit(0, &wdt_is_open))
-+			return -EBUSY;
-+		/*
-+		 *	Activate
-+		 */
-+		wdt_is_open = 1;
-+		return 0;
-+	}
-+	return -ENODEV;
-+}
-+
-+/**
-+ *	wdt_close:
-+ *	@inode: inode to board
-+ *	@file: file handle to board
-+ *
-+ */
-+static int wdt_release(struct inode *inode, struct file *file)
-+{
-+	if (MINOR(inode->i_rdev) == WATCHDOG_MINOR)
-+		clear_bit(0, &wdt_is_open);
-+	return 0;
-+}
-+
-+/**
-+ *	notify_sys:
-+ *	@this: our notifier block
-+ *	@code: the event being reported
-+ *	@unused: unused
-+ *
-+ *	Our notifier is called on system shutdowns. We want to turn the card
-+ *	off at reboot otherwise the machine will reboot again during memory
-+ *	test or worse yet during the following fsck. This would suck, in fact
-+ *	trust me - if it happens it does suck.
-+ */
-+static int wdt_notify_sys(struct notifier_block *this, unsigned long code,
-+			  void *unused)
-+{
-+	if (code == SYS_DOWN || code == SYS_HALT)
-+		/* Disable Watchdog */
-+		wdt_disable();
-+	return NOTIFY_DONE;
-+}
-+
-+static const struct file_operations wdt_fops = {
-+	.owner	= THIS_MODULE,
-+	.read	= wdt_read,
-+	.ioctl	= wdt_ioctl,
-+	.write	= wdt_write,
-+	.open	= wdt_open,
-+	.release = wdt_release,
-+};
-+
-+static struct miscdevice wdt_dev = {
-+	.minor = WATCHDOG_MINOR,
-+	.name = "watchdog",
-+	.fops = &wdt_fops,
-+};
-+
-+/*
-+ *	The WDT card needs to learn about soft shutdowns in order to
-+ *	turn the timebomb registers off.
-+ */
-+static struct notifier_block wdt_notifier = {
-+	.notifier_call = wdt_notify_sys,
-+};
-+#endif /* CONFIG_RTC_DRV_M41T80_WDT */
-+
- /*
-  *****************************************************************************
-  *
-@@ -572,6 +841,19 @@ static int m41t80_probe(struct i2c_client *client)
- 	if (rc)
- 		goto exit;
- 
-+#ifdef CONFIG_RTC_DRV_M41T80_WDT
-+	if (chip->features & M41T80_FEATURE_HT) {
-+		rc = misc_register(&wdt_dev);
-+		if (rc)
-+			goto exit;
-+		rc = register_reboot_notifier(&wdt_notifier);
-+		if (rc) {
-+			misc_deregister(&wdt_dev);
-+			goto exit;
-+		}
-+		save_client = client;
-+	}
-+#endif
- 	return 0;
- 
- st_err:
-@@ -595,6 +877,12 @@ static int m41t80_remove(struct i2c_client *client)
- 	struct m41t80_data *clientdata = i2c_get_clientdata(client);
- 	struct rtc_device *rtc = clientdata->rtc;
- 
-+#ifdef CONFIG_RTC_DRV_M41T80_WDT
-+	if (clientdata->chip->features & M41T80_FEATURE_HT) {
-+		misc_deregister(&wdt_dev);
-+		unregister_reboot_notifier(&wdt_notifier);
-+	}
-+#endif
- 	if (rtc)
- 		rtc_device_unregister(rtc);
- 	kfree(clientdata);
+The script mentioned there *is* good for removing said whitespace,  
+though
+
+Cheers,
+Kyle Moffett
+
