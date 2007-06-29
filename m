@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXF2WKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbXF2WPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbXF2WKU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 18:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbXF2WKI
+	id S1757832AbXF2WPq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 18:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbXF2WPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 18:10:08 -0400
-Received: from main.gmane.org ([80.91.229.2]:51349 "EHLO ciao.gmane.org"
+	Fri, 29 Jun 2007 18:15:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59872 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755389AbXF2WKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 18:10:06 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Rene Herman <rene.herman@gmail.com>
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Date: Fri, 29 Jun 2007 22:04:22 +0000 (UTC)
-Message-ID: <loom.20070630T000258-512@post.gmane.org>
-References: <fa.C+RaPJT9DzfOowG03yiRkB6ItF8@ifi.uio.no> <fa.eZW1VxypFFwQqmC93xQaStxDK0Q@ifi.uio.no> <fa.n+OzEywqHGabZtz5NxmlX4rEY0A@ifi.uio.no> <46845D77.3030908@shaw.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 82.73.12.33 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4)
+	id S1754348AbXF2WPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 18:15:38 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how to determine if the noexec stack is defined by an application
+References: <46856F24.5060407@andrei.myip.org>
+	<1183153758.2894.1.camel@laptopd505.fenrus.org>
+X-Yow: Why was I BORN?
+Date: Sat, 30 Jun 2007 00:15:19 +0200
+In-Reply-To: <1183153758.2894.1.camel@laptopd505.fenrus.org> (Arjan van de
+	Ven's message of "Fri\, 29 Jun 2007 14\:49\:18 -0700")
+Message-ID: <jefy4aflvs.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.97 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock <hancockr <at> shaw.ca> writes:
+Arjan van de Ven <arjan@infradead.org> writes:
 
-> In the case of S/PDIF output on ice1724 (and probably other cards), it 
-> would be nice if ALSA defaulted to routing default audio to both the 
-> S/PDIF and analog ports, as this is what most users would normally 
-> expect.. The Windows drivers work like that, but on Linux you have to 
-> pick one or the other (at least without a bunch of mucking with the 
-> config file).
+> like this:
+>
+> $ eu-readelf -l /bin/true  | grep STACK
+>   GNU_STACK      0x000000 0x00000000 0x00000000 0x000000 0x000000 RW 0x4
+>
+>
+> (replace /bin/true with the binary or library you want to check)
+>
+> if it says "RW" like here, it'll have non-executable stack. If it says
+> "RWX" or if this line is absent entirely, the stack will be executable.
 
-I believe some cards can't do this in fact which might be argument due to
-consistency. Otherwise I don't so much have an opinion on whether or not this
-should be default though...
+The last part is not true.  Some architectures (especially newer ones)
+default to non-exec stack.  The absense of a GNU_STACK header represents
+the default.
 
-Rene
+Andreas.
 
-
-
-
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
