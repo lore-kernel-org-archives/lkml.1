@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934059AbXF2SpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933663AbXF2SvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934059AbXF2SpI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 14:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760754AbXF2So4
+	id S933663AbXF2SvU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 14:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760316AbXF2SvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 14:44:56 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34822 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754755AbXF2Soz (ORCPT
+	Fri, 29 Jun 2007 14:51:11 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:15523 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755734AbXF2SvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 14:44:55 -0400
-Date: Fri, 29 Jun 2007 19:50:48 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-ide@vger.kernel.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_hpt3x3: support this chip properly including
- alternative BAR layout
-Message-ID: <20070629195048.02e7d18a@the-village.bc.nu>
-In-Reply-To: <20070629191703.5d9cf602@the-village.bc.nu>
-References: <20070629191703.5d9cf602@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Jun 2007 14:51:10 -0400
+Message-ID: <46855505.1070702@ru.mvista.com>
+Date: Fri, 29 Jun 2007 22:52:53 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Linas Vepstas <linas@austin.ibm.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+References: <20070618175713.GD5836@austin.ibm.com> <467BED34.4080004@ru.mvista.com>
+In-Reply-To: <467BED34.4080004@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jun 2007 19:17:03 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Hello, I wrote:
 
-> In some cases we cannot use BAR0-BAR3 on this chip due to errata. The
-> relevant interfaces are available via BAR4 and we set the chip up to use
-> those instead.
-> 
-> This plus testing means it can move from experimental to production spec
-> 
-> Signed-off-by: Alan Cox <alan@redhat.com>
+>> I've got a hard lockup in the ide subsystem, probably
+>> due to some irq spew or something like that.
 
-Argh NAK that, just when I thought it was all stable its not
+>> I've just bought a brand new Maxtor 320GB disk driver for the insane 
+>> price of $70 US to replace another failing drive. It works well under 
+>> light load;
+>> I was able to copy about 60GB to it. However, under heavy load, such 
+>> as reconstruction of an MD RAID-1 array, it'll lock up the kernel.  
+>> Which means
+>> that my system won't boot :-(
+
+>> I'm running 2.6.21.1, although the problem seems to occur in 2.6.19 
+>> and 2.6.18 too; its been there a while; I vageuly
+>> remember similar problems in 2.6.5 or 2.6.10.
+
+>    Ah... so you're saying that the old disk works OK, yet you've already 
+> observed alike behavior on other disks... That speaks against 
+> blacklisting the drive.
+
+    I'm going to shortly post the patches blacklisting the drive and using the 
+proper HPT36x enablebits (as much as this stupid design may be fixed :-)...
+Please test.
+
+>> I can get the system to boot by sneaking in an "hdparm -d0 /dev/hdc" 
+>> early in the boot process, to turn off 
+
+>    Could probably do the same trick and specify the lower DMA speed by 
+> using -X n option (where n ranges from 64 to 70 for UltraDMA modes 0 to 
+> 6) and see if it changes anything...
+
+    Note that for the hpt366.c driver, this is also achievable by setting 
+HPT366_ALLOW_ATA66_[34] to 0 and recompiling. It will limit its UltraDMA 
+capabilities to modes 2 or 3.
+
+MBR, Sergei
