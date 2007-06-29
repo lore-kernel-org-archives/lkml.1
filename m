@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXF2HOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbXF2HUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932078AbXF2HOP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 03:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbXF2HN7
+	id S932378AbXF2HUY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 03:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXF2HUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 03:13:59 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58009 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751255AbXF2HN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 03:13:57 -0400
-X-Authenticated: #1474915
-X-Provags-ID: V01U2FsdGVkX1/dnvxO7uTd+rVlbJYSXlRjcWUHXtn4lKy0oJcjYq
-	3vYTFOIljQllRK
-Message-ID: <4684B132.2070405@gmx.de>
-Date: Fri, 29 Jun 2007 09:13:54 +0200
-From: Thomas Sattler <tsattler@gmx.de>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.22-rc6 spurious hangs
-References: <4683BF16.40905@gmx.de> <20070628144741.GA437@tv-sign.ru> <4683CC89.80406@gmx.de> <20070628150826.GA487@tv-sign.ru> <4683F145.2060705@gmx.de> <4683F48F.9010603@gmx.de> <20070628181044.GA613@tv-sign.ru>
-In-Reply-To: <20070628181044.GA613@tv-sign.ru>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Fri, 29 Jun 2007 03:20:13 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:59020 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750732AbXF2HUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 03:20:12 -0400
+Date: Fri, 29 Jun 2007 09:20:16 +0200
+From: DervishD <lkml@dervishd.net>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: USB card reader and HAL
+Message-ID: <20070629072016.GA22715@DervishD>
+Mail-Followup-To: Kay Sievers <kay.sievers@vrfy.org>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070628214351.GA9632@DervishD> <3ae72650706282222u6e5094ffp8e77c0735f39e43d@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3ae72650706282222u6e5094ffp8e77c0735f39e43d@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Jun 28 19:23:03 pearl cinergyt2_query_rc+0x0/0x2e9 [cinergyT2]
+    Hi Kay :)
+
+ * Kay Sievers <kay.sievers@vrfy.org> dixit:
+> On 6/28/07, DervishD <lkml@dervishd.net> wrote:
+> >    When I insert a card in the reader, it is not detected, no udev
+> >event is generated and I have to do things like "hdparm -z /dev/sda" to
+> >"probe" the card. Moreover, I have to do the same when removing the card
+> >or the /dev/sdaX nodes are not deleted.
+> >
+> >    Is HAL the only way of making it work? Is there any CONFIG_ thing
+> >I've forgotten in my kernel?
 > 
-> cinergyt2_query_rc() hangs. I'll try to look tomorrov, but I know nothing
-> about drivers/media/dvb/.
+> You have to open() the device node to trigger events from the kernel,
+> the kernel itself will not do that for you. HAL polls the device every
+> few seconds.
 
-Does this mean the problem is in the cinergyt2 driver? I'm having similar
-problems with another box but with different hardware. While my laptop is
-used as a test system the other one is used as a 'productive' TV-recorder.
-I hoped we could trace the bug on the test system and fix the productive
-one at the same time. :-/
+    So, opening the node and checking for ENOMEDIUM is the only
+solution... Polling looks like a waste of time, and given that I use the
+reader once a month or so, HAL will be a waste of resources. I'll resort
+to manually do "hdparm -z" (or something similar) when I need to insert
+or remove a card.
 
-The other box ("silver") is a desktop, which has two Hauppauge Nova-T DVB-T
-PCI cards and one (analog) Hauppauge WinTV PVR-350. Silver only hangs if
-the (digital) recording process has to much priority: (silver is running
-2.6.21.5-cfs-v17 +squashfs +ivtv)
+    Thanks for confirming, Kay :))
 
-As I wanted to give as much priority to the recording process as possible
-I firstly run dvbd as SCHED_RR. This hung the box quite often, sometimes
-after an uptime of several minutes, sometimes after two weeks.
-
-I switched to -ck and run dvbd as SCHED_ISO which worked without *any*
-problem for about 18 months. As -ck is discontinued I switched to CFS and
-the box hung again (twice until I understood why) when dvbd was running as
-nice -15.
-
-ATM dvbd runs with nice -12 but yesterday, during a rsync-transfer of
-several >4G files, a recording was broken. 29 seconds of the recorded
-stream are lost because the system load was at 5 for about three hours.
-
-Perhaps the 29 missing seconds are caused not by to less CPU time but by
-the havy IO of rsync. But on the other hand dvbd is also running at IO
-realtime prio 4 (ionice) while rsync run as IO normal.
-
-Any hints?
-Thomas
+    Raúl Núñez de Arenas Coronado
 
 -- 
-keep mailinglists in english, feel free to send PM in german
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
