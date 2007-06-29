@@ -1,61 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933914AbXF2Qfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933802AbXF2Qh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933914AbXF2Qfj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 12:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933410AbXF2QfR
+	id S933802AbXF2Qh6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 12:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbXF2Qhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 12:35:17 -0400
-Received: from minus.inr.ac.ru ([194.67.69.97]:43800 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S933073AbXF2QfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 12:35:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=T7yun7uuxNVK8xMuhlHw1f8h8Y8CDOONVo+aKDxi2oq4BbKHUp9V3R/aGLOCbnSrZpboJIj3T29wOcepPY4v5Yj2/kMJd/MzA14yIonGuHC9/exq930c0g0B6Rmnk7xwk8803hkx8/A7ihTYluhau6mnW4FG+W4g4vYV2bt+kO0=;
-Date: Fri, 29 Jun 2007 20:34:09 +0400
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: Duncan Sands <duncan.sands@math.u-psud.fr>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070629163409.GB17709@ms2.inr.ac.ru>
-References: <20070622040014.234651401@goodmis.org> <200706291348.21193.duncan.sands@math.u-psud.fr> <20070629133658.GB19021@ms2.inr.ac.ru> <200706291601.41680.duncan.sands@math.u-psud.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706291601.41680.duncan.sands@math.u-psud.fr>
-User-Agent: Mutt/1.5.6i
+	Fri, 29 Jun 2007 12:37:50 -0400
+Received: from mtl.rackplans.net ([69.90.0.18]:34985 "EHLO mtl.rackplans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760139AbXF2Qht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 12:37:49 -0400
+Date: Fri, 29 Jun 2007 12:37:47 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: =?iso-8859-15?q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Please release a stable kernel Linux 3.0
+In-Reply-To: <200706271118.36985.zoltan.hubert@zzaero.com>
+Message-ID: <Pine.LNX.4.64.0706291227040.1395@mtl.rackplans.net>
+References: <200706212349.54983.zoltan.hubert@zzaero.com>
+ <200706261637.22820.zoltan.hubert@zzaero.com>
+ <6FD45914-1793-45D5-B0A1-F5D32ED38017@e18.physik.tu-muenchen.de>
+ <200706271118.36985.zoltan.hubert@zzaero.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="658624935-1208726249-1183135067=:1395"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> What changed? 
+--658624935-1208726249-1183135067=:1395
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-softirq remains raised for such tasklet. Old times softirq was processed
-once per invocation, in schedule and on syscall exit and this was relatively
-harmless. Since softirqs are very weakly moderated, it results in strong
-cpu hogging. 
+On Wed, 27 Jun 2007, Zolt=E1n HUBERT wrote:
+
+> I don't remember how it was during 2.4 and before, but I=20
+> find it very suspicious that SuSE and RedHat only provide=20
+> 2.6.10 and 2.6.9 for their OS. It looks as if THEY didn't=20
+> trust 2.6.x to be a replacement to 2.6.y
+>=20
+> And as I understand it, this is (was ?) the whole point of=20
+> stable/development kernels. "We" can trust a newer stable=20
+> kernel to be a drop-in replacement for an older stable=20
+> kernel (from the same series), while development kernels=20
+> need time to stabilize with the new whizz-bang-pfouit stuff=20
+> that you all so nicely add.=20
+>=20
+> Are the good ol' days lost in nostalgia ?
+
+Lost? maybe.  Improved on, defiantly so it's loss isn't a bad thing.
+
+The 2.4/2.5 split was, as far as I recall, a mess.  2.5 had too many=20
+changes to stabilize in any reasonable amount of time and 2.4 then needed=
+=20
+new drivers and features to keep it from becoming obsolete.  Back porting=
+=20
+drivers without the needed infrastructure resulted in instabilities in=20
+the 2.4 branch.
+
+I recall one time where I needed a certain raid device working and not a=20
+single kernel had that driver working properly.  2.4.x oopsed in the=20
+driver after random intervals and the 2.5 kernel crashed in other places.
+
+Now development is broken into smaller stages that are easier to debug and=
+=20
+made stable in shorter time.  If I just need to update a kernel and don't=
+=20
+need any new features and drivers I can just update to the next point=20
+release and I know it won't break anything.  If I want new features I can=
+=20
+update to the latest stable branch or the latest pre release but either=20
+way my stuff is more likely to work than I did back in the 2.5 days.
+
+I think people who keep demanding a return to the old development system=20
+forget how badly it sucked in the first place.
+
+=09Gerhard
 
 
-> And can it be fixed?
 
-With current tasklets this can be fixed only introducing additional
-synchronization cost to tasklet schedule. Not good. Better to fix
-caller.
+--
+Gerhard Mack
 
-If Ingo knows about this, I guess it is already fixed in -rt tasklet
-or can be fixed. They are really flexible and extensible:
--rt tasklet cost is so high, that even another thousand of cycles
-will remain unnnoticed. :-)
+gmack@innerfire.net
 
-Alexey
+<>< As a computer I find your faith in technology amusing.
+--658624935-1208726249-1183135067=:1395--
