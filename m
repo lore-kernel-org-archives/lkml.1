@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbXF2Es0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932960AbXF2E4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932783AbXF2Es0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 00:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbXF2EsQ
+	id S932960AbXF2E4o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 00:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbXF2E4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 00:48:16 -0400
-Received: from ozlabs.org ([203.10.76.45]:53421 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbXF2EsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 00:48:15 -0400
-MIME-Version: 1.0
+	Fri, 29 Jun 2007 00:56:35 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41757 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750706AbXF2E4e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 00:56:34 -0400
+Date: Fri, 29 Jun 2007 14:55:53 +1000
+From: David Chinner <dgc@sgi.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Chinner <dgc@sgi.com>, David Greaves <david@dgreaves.com>,
+       David Robinson <zxvdr.au@gmail.com>,
+       LVM general discussion and development 
+	<linux-lvm@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>
+Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
+Message-ID: <20070629045553.GN31489@sgi.com>
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <20070627204924.GA4777@ucw.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18052.36612.846937.794756@cargo.ozlabs.ibm.com>
-Date: Fri, 29 Jun 2007 14:48:04 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Arch <linux-arch@vger.kernel.org>,
-       Richard Henderson <rth@twiddle.net>, Ian Molton <spyro@f2s.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Aubrey Li <aubrey.li@analog.com>, Mikael Starvik <starvik@axis.com>,
-       David Howells <dhowells@redhat.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>, Andi Kleen <ak@suse.de>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Matthew Wilcox <matthew@wil.cx>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-       Chris Zankel <chris@zankel.net>
-Subject: Re: [PATCH] cross-architecture ELF clean up
-In-Reply-To: <20070620230902.387008536@goop.org>
-References: <20070620230854.246399397@goop.org>
-	<20070620230902.387008536@goop.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <20070627204924.GA4777@ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge writes:
+On Wed, Jun 27, 2007 at 08:49:24PM +0000, Pavel Machek wrote:
+> Hi!
+> 
+> > FWIW, I'm on record stating that "sync" is not sufficient to quiesce an XFS
+> > filesystem for a suspend/resume to work safely and have argued that the only
+> 
+> Hmm, so XFS writes to disk even when its threads are frozen?
 
-> ===================================================================
-> --- a/arch/powerpc/platforms/cell/io-workarounds.c
-> +++ b/arch/powerpc/platforms/cell/io-workarounds.c
-> @@ -9,6 +9,7 @@
->  #undef DEBUG
->  
->  #include <linux/kernel.h>
-> +#include <linux/sched.h>
+They issue async I/O before they sleep and expects
+processing to be done on I/O completion via workqueues.
 
-Why is this needed?  You've added #include <linux/sched.h> to 7 files
-without explanation - and I can't see that you have removed a
-corresponding #include from any header, have you?
+> > safe thing to do is freeze the filesystem before suspend and thaw it after
+> > resume. This is why I originally asked you to test that with the other problem
+> 
+> Could you add that to the XFS threads if it is really required? They
+> do know that they are being frozen for suspend.
 
-Paul.
+We don't suspend the threads on a filesystem freeze - they continue
+run. A filesystem freeze guarantees the filesystem clean and that
+the in memory state matches what is on disk. It is not possible for
+the filesytem to issue I/O or have outstanding I/O when it is in the
+frozen state, so the state of the threads and/or workqueues does not
+matter because they will be idle.
 
+Cheers,
 
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
