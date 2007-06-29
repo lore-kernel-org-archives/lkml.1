@@ -1,186 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbXF2Dg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932818AbXF2DvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932847AbXF2Dg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 23:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765283AbXF2Dgr
+	id S932818AbXF2DvU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 23:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765058AbXF2DvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 23:36:47 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:1649 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1765087AbXF2Dgq (ORCPT
+	Thu, 28 Jun 2007 23:51:11 -0400
+Received: from nabe-new.tequila.jp ([211.14.136.194]:37070 "EHLO
+	nabe-new.tequila.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764917AbXF2DvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 23:36:46 -0400
-Date: Thu, 28 Jun 2007 23:36:45 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Roland McGrath <roland@redhat.com>
-cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
-In-Reply-To: <20070628023100.E46AB4D05E6@magilla.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0706282300280.27792-100000@netrider.rowland.org>
+	Thu, 28 Jun 2007 23:51:10 -0400
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jun 2007 23:51:09 EDT
+Message-ID: <46847397.70503@tequila.co.jp>
+Date: Fri, 29 Jun 2007 11:51:03 +0900
+From: Clemens Schwaighofer <cs@tequila.co.jp>
+Organization: TEQUILA\Japan
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Oops and Panics in 2.6.21.1, 2.6.20.6 and 2.6.19.2
+References: <464A4F56.6080108@tequila.co.jp>
+In-Reply-To: <464A4F56.6080108@tequila.co.jp>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig116ADC7DFB64A3762E3C23C5"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Roland McGrath wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig116ADC7DFB64A3762E3C23C5
+Content-Type: multipart/mixed;
+ boundary="------------040609070301080401050600"
 
-> I did the first crack at a powerpc port.  I'd appreciate your comments on
-> this patch.  It should not be incorporated, isn't finished, probably breaks
-> ptrace, etc.  I'm posting it now just to get any thoughts you have raised
-> by seeing the second machine share the intended arch-independent code.
+This is a multi-part message in MIME format.
+--------------040609070301080401050600
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 
-I'll go over it in detail and get back to you later.
+On 05/16/2007 09:24 AM, Clemens Schwaighofer wrote:
+> Hi,
 
-> I just translated your implementation to powerpc terms without thinking
-> about it much.  If you see anything that you aren't sure is right, please
-> tell me and don't presume there is some powerpc-specific reason it's
-> different.  More likely I just didn't think it through.
-> 
-> In the first battle just to make it compile, the only issue was that you
-> assume every machine has TIF_DEBUG, which is in fact an implementation
-> detail chosen lately by i386 and x86_64.  AFAIK the only reason for it
-> there is just to make a cheap test of multiple bits in the hot path
-> deciding to call __switch_to_xtra.  Do you rely on it meaning something
-> more precise than just being a shorthand for hw_breakpoint_info!=NULL?
+I had my system running up for about one month without any issues, and
+then it happened again, same kernel oops, panic, end.
 
-I don't.  I used TIF_DEBUG because it was already there and it was 
-atomic.  But setting hw_breakpoint_info is equally atomic, so there's 
-no reason to keep TIF_DEBUG.
+So I have upgraded to 2.6.22-rc4-mm2 in hope it might fix it, but I just
+got another oops (uptime 4d) [see attached file]
 
-> Incidentally, I think it would be nice if kernel/hw_breakpoint.c itself had
-> all the #include's for everything it uses directly.  arch hw_breakpoint.c
-> files probably only need <asm/hw_breakpoint.h> and one or two others to
-> define what they need before #include "../../../kernel/hw_breakpoint.c".
+my config hasn't changed in any way to the previous kernels.
 
-Okay.
+-- 
+[ Clemens Schwaighofer                      -----=====:::::~ ]
+[ TEQUILA\ Japan IT Group                                    ]
+[                6-17-2 Ginza Chuo-ku, Tokyo 104-8167, JAPAN ]
+[ Tel: +81-(0)3-3545-7703            Fax: +81-(0)3-3545-7343 ]
+[ http://www.tequila.co.jp                                   ]
 
-> The num_installed/num_kbps stuff feels a little hokey when it's really a
-> flag because the maximum number is one.  It seems like I could make it
-> tighter with some more finesse in the arch-specific hook options, so that
-> chbi and thbi each just store dabr, dabr!=0 means "mine gets installed",
-> and the switch in is just chbi->dabr?:thbi->dabr or something like that.
+--------------040609070301080401050600
+Content-Type: text/x-log;
+ name="2.6.22-rc4-mm2.20070629.oops.log"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="2.6.22-rc4-mm2.20070629.oops.log"
 
-You certainly can do that in the hook routines.  But the generic code
-still needs to use num_installed (which doesn't get used very much) and
-num_kbps.
+Jun 29 11:25:08 saturn kernel: [348308.690154] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000001
+Jun 29 11:25:08 saturn kernel: [348308.690160]  printing eip:
+Jun 29 11:25:08 saturn kernel: [348308.690162] c108887c
+Jun 29 11:25:08 saturn kernel: [348308.690163] *pde = 00000000
+Jun 29 11:25:08 saturn kernel: [348308.690166] Oops: 0000 [#2]
+Jun 29 11:25:08 saturn kernel: [348308.690167] PREEMPT
+Jun 29 11:25:08 saturn kernel: [348308.690169] Modules linked in: eeprom pcspkr i2c_viapro k8temp hwmon i2c_core
+Jun 29 11:25:08 saturn kernel: [348308.690177] CPU:    0
+Jun 29 11:25:08 saturn kernel: [348308.690177] EIP:    0060:[__d_lookup+108/336]    Not tainted VLI
+Jun 29 11:25:08 saturn kernel: [348308.690179] EFLAGS: 00010202   (2.6.22-rc4-mm2 #1)
+Jun 29 11:25:08 saturn kernel: [348308.690185] EIP is at __d_lookup+0x6c/0x150
+Jun 29 11:25:08 saturn kernel: [348308.690187] eax: 00000001   ebx: 00000001   ecx: 00000001   edx: 089c1579
+Jun 29 11:25:08 saturn kernel: [348308.690190] esi: c6840ee8   edi: c301d734   ebp: f786f080   esp: c6840e84
+Jun 29 11:25:08 saturn kernel: [348308.690193] ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Jun 29 11:25:08 saturn kernel: [348308.690196] Process nfsd (pid: 30536, ti=c6840000 task=c62bce90 task.ti=c6840000)
+Jun 29 11:25:08 saturn kernel: [348308.690198] Stack: c301d734 089c1579 c6840edb 00000002 c6840ee8 ffffffff 00000005 c6840edb
+Jun 29 11:25:08 saturn kernel: [348308.690205]        0000f9ec c6840ee8 c301d734 c471ba84 c1088976 c7bbb090 c7bbb090 00000000
+Jun 29 11:25:08 saturn kernel: [348308.690211]        c10b49fc c6840edb 0000000d c14914fb 00007793 332bce90 31313630 c5469900
+Jun 29 11:25:08 saturn kernel: [348308.690217] Call Trace:
+Jun 29 11:25:08 saturn kernel: [348308.690220]  [d_lookup+22/64] d_lookup+0x16/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690224]  [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
+Jun 29 11:25:08 saturn kernel: [348308.690229]  [release_task+612/880] release_task+0x264/0x370
+Jun 29 11:25:08 saturn kernel: [348308.690234]  [do_wait+1850/3072] do_wait+0x73a/0xc00
+Jun 29 11:25:08 saturn kernel: [348308.690239]  [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690243]  [default_wake_function+0/16] default_wake_function+0x0/0x10
+Jun 29 11:25:08 saturn kernel: [348308.690247]  [sys_wait4+49/64] sys_wait4+0x31/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690251]  [sys_waitpid+39/48] sys_waitpid+0x27/0x30
+Jun 29 11:25:08 saturn kernel: [348308.690255]  [syscall_call+7/11] syscall_call+0x7/0xb
+Jun 29 11:25:08 saturn kernel: [348308.690259]  =======================
+Jun 29 11:25:08 saturn kernel: [348308.690260] INFO: lockdep is turned off.
+Jun 29 11:25:08 saturn kernel: [348308.690262] Code: d3 e8 31 c3 23 1d b4 d8 51 c1 b8 01 00 00 00 c1 e3 02 03 1d bc d8 51 c1 e8 e2 24 f9 ff 8b 1b 85 db 75 08 eb 44 85 c0 89 c3 74 3e <8b> 03 0f 18 00 90 8d 6b d8 8b 54 24 04 3b 55 34 75 e8 8b 34 24
+Jun 29 11:25:08 saturn kernel: [348308.690289] EIP: [__d_lookup+108/336] __d_lookup+0x6c/0x150 SS:ESP 0068:c6840e84
+Jun 29 11:25:08 saturn kernel: [348308.690296] note: nfsd[30536] exited with preempt_count 1
+Jun 29 11:25:08 saturn kernel: [348308.690303] BUG: scheduling while atomic: nfsd/0x10000002/30536
+Jun 29 11:25:08 saturn kernel: [348308.690305] INFO: lockdep is turned off.
+Jun 29 11:25:08 saturn kernel: [348308.690307]  [schedule+1490/1744] schedule+0x5d2/0x6d0
+Jun 29 11:25:08 saturn kernel: [348308.690311]  [vt_console_print+106/688] vt_console_print+0x6a/0x2b0
+Jun 29 11:25:08 saturn kernel: [348308.690316]  [__cond_resched+18/48] __cond_resched+0x12/0x30
+Jun 29 11:25:08 saturn kernel: [348308.690319]  [cond_resched+42/64] cond_resched+0x2a/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690322]  [unmap_vmas+1116/1184] unmap_vmas+0x45c/0x4a0
+Jun 29 11:25:08 saturn kernel: [348308.690327]  [exit_mmap+105/256] exit_mmap+0x69/0x100
+Jun 29 11:25:08 saturn kernel: [348308.690331]  [mmput+68/256] mmput+0x44/0x100
+Jun 29 11:25:08 saturn kernel: [348308.690335]  [do_exit+301/2224] do_exit+0x12d/0x8b0
+Jun 29 11:25:08 saturn kernel: [348308.690339]  [__wake_up+56/80] __wake_up+0x38/0x50
+Jun 29 11:25:08 saturn kernel: [348308.690342]  [die+574/576] die+0x23e/0x240
+Jun 29 11:25:08 saturn kernel: [348308.690346]  [do_page_fault+724/1520] do_page_fault+0x2d4/0x5f0
+Jun 29 11:25:08 saturn kernel: [348308.690349]  [tcp_ack+2742/6960] tcp_ack+0xab6/0x1b30
+Jun 29 11:25:08 saturn kernel: [348308.690354]  [do_page_fault+0/1520] do_page_fault+0x0/0x5f0
+Jun 29 11:25:08 saturn kernel: [348308.690357]  [error_code+106/112] error_code+0x6a/0x70
+Jun 29 11:25:08 saturn kernel: [348308.690360]  [__d_lookup+108/336] __d_lookup+0x6c/0x150
+Jun 29 11:25:08 saturn kernel: [348308.690364]  [d_lookup+22/64] d_lookup+0x16/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690367]  [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
+Jun 29 11:25:08 saturn kernel: [348308.690372]  [release_task+612/880] release_task+0x264/0x370
+Jun 29 11:25:08 saturn kernel: [348308.690376]  [do_wait+1850/3072] do_wait+0x73a/0xc00
+Jun 29 11:25:08 saturn kernel: [348308.690380]  [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690383]  [default_wake_function+0/16] default_wake_function+0x0/0x10
+Jun 29 11:25:08 saturn kernel: [348308.690387]  [sys_wait4+49/64] sys_wait4+0x31/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690390]  [sys_waitpid+39/48] sys_waitpid+0x27/0x30
+Jun 29 11:25:08 saturn kernel: [348308.690394]  [syscall_call+7/11] syscall_call+0x7/0xb
+Jun 29 11:25:08 saturn kernel: [348308.690398]  =======================
+Jun 29 11:25:08 saturn kernel: [348308.690472] BUG: scheduling while atomic: nfsd/0x10000002/30536
+Jun 29 11:25:08 saturn kernel: [348308.690474] INFO: lockdep is turned off.
+Jun 29 11:25:08 saturn kernel: [348308.690476]  [schedule+1490/1744] schedule+0x5d2/0x6d0
+Jun 29 11:25:08 saturn kernel: [348308.690480]  [_atomic_dec_and_lock+22/96] _atomic_dec_and_lock+0x16/0x60
+Jun 29 11:25:08 saturn kernel: [348308.690485]  [_atomic_dec_and_lock+49/96] _atomic_dec_and_lock+0x31/0x60
+Jun 29 11:25:08 saturn kernel: [348308.690489]  [__cond_resched+18/48] __cond_resched+0x12/0x30
+Jun 29 11:25:08 saturn kernel: [348308.690492]  [cond_resched+42/64] cond_resched+0x2a/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690495]  [put_files_struct+166/208] put_files_struct+0xa6/0xd0
+Jun 29 11:25:08 saturn kernel: [348308.690499]  [do_exit+363/2224] do_exit+0x16b/0x8b0
+Jun 29 11:25:08 saturn kernel: [348308.690503]  [__wake_up+56/80] __wake_up+0x38/0x50
+Jun 29 11:25:08 saturn kernel: [348308.690506]  [die+574/576] die+0x23e/0x240
+Jun 29 11:25:08 saturn kernel: [348308.690510]  [do_page_fault+724/1520] do_page_fault+0x2d4/0x5f0
+Jun 29 11:25:08 saturn kernel: [348308.690513]  [tcp_ack+2742/6960] tcp_ack+0xab6/0x1b30
+Jun 29 11:25:08 saturn kernel: [348308.690517]  [do_page_fault+0/1520] do_page_fault+0x0/0x5f0
+Jun 29 11:25:08 saturn kernel: [348308.690520]  [error_code+106/112] error_code+0x6a/0x70
+Jun 29 11:25:08 saturn kernel: [348308.690524]  [__d_lookup+108/336] __d_lookup+0x6c/0x150
+Jun 29 11:25:08 saturn kernel: [348308.690528]  [d_lookup+22/64] d_lookup+0x16/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690531]  [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
+Jun 29 11:25:08 saturn kernel: [348308.690535]  [release_task+612/880] release_task+0x264/0x370
+Jun 29 11:25:08 saturn kernel: [348308.690539]  [do_wait+1850/3072] do_wait+0x73a/0xc00
+Jun 29 11:25:08 saturn kernel: [348308.690543]  [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690547]  [default_wake_function+0/16] default_wake_function+0x0/0x10
+Jun 29 11:25:08 saturn kernel: [348308.690551]  [sys_wait4+49/64] sys_wait4+0x31/0x40
+Jun 29 11:25:08 saturn kernel: [348308.690554]  [sys_waitpid+39/48] sys_waitpid+0x27/0x30
+Jun 29 11:25:08 saturn kernel: [348308.690558]  [syscall_call+7/11] syscall_call+0x7/0xb
+Jun 29 11:25:08 saturn kernel: [348308.690561]  =======================
 
-> As we get more machines, more cleanups along these lines will probably make
-> sense.  (Also, before the next person not me or you tries a port, we could
-> use for the generic hw_breakpoint.c to get some comments at the top making
-> explicit what the arch file is expected to define in its types, etc.)
+--------------040609070301080401050600--
 
-Good idea.  Splitting the code into two pieces made it considerably 
-more opaque.
+--------------enig116ADC7DFB64A3762E3C23C5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-> With just the included change to the generic code for the TIF_DEBUG, this
-> kind of works.  That is, it doesn't break everything else and I can use
-> bptest, sort of.  I didn't even try ptrace, I probably broke that.
-> 
-> It works enough to make clear the main new wrinkle.  On powerpc, the data
-> breakpoint exception is a fault before the instruction executes, not a trap
-> after it.  The load/store will not complete until the breakpoint is cleared.
-> With this patch, you can use bptest to generate a tight loop of bp0 triggers.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-A nice new way to hang your machine!  :-)
+iD8DBQFGhHOZjBz/yQjBxz8RAh3fAJ0f6R8MdQfheyV+0JOrfLPn4a6ovACfc/g5
+a7gCIKnFoCAIGlviymn4c7M=
+=IgNy
+-----END PGP SIGNATURE-----
 
-> For ptrace compatibility, userland already expects to deal with this.  gdb
-> has it as per-machine implementation options how ptrace watchpoints behave,
-> and for powerpc it knows to remove the watchpoint, step, and reinsert it.
-> 
-> One approach for hw_breakpoint is just to expose in asm/hw_breakpoint.h
-> some standard macros saying how things behave, and caveat emptor.  But I
-> don't like that much.  I think things will just wind up being confused and
-> inadvertently unportable if the important semantics vary too much between
-> machines.  The point of the whole facility is to make watchpoints easy to
-> use, after all.
-
-Agreed.
-
-> Some uses might be happy with trigger-before, but I don't see much benefit.
-
-Other than ptrace backward-compatibility.
-
-> For writing, the trigger function can look at the memory before it's
-> changed.  But you could just as well have recorded the old value before
-> setting the breakpoint, as you have to for trigger-after--and to see both
-> old and new values you then need to single-step to get the new value, which
-> trigger-after handles with a single exception.  For reading, the trigger
-> function can change the memory before it's read.  But likewise, you could
-> just as well have changed it before setting the breakpoint--you know noone
-> will have read the new value until your trigger anyway.  (I have never used
-> a read-triggered breakpoint, so I'm rather vague on those use scenarios.)
-
-I never have either.  Possibly you might want to change the value just 
-before the read, based on the address of the code doing the reading.  
-But I've never heard of anyone doing that.
-
-> The third machine whose manual I have handy is ia64.  It has instruction
-> and data breakpoints that are both trigger-before.  It has processor flags
-> similar to x86's RF for both, to ignore one or both breakpoint flavor for
-> one instruction.  That makes it cheap to continue past the breakpoint since
-> you don't have to clear and reset it.  But for getting new values from
-> data-write breakpoints, it still requires a single-step and second stop,
-> like powerpc.  (Incidentally ia64 has another interesting feature, which I
-> think the generic code accomodates nicely as an upward-compatible addition
-> just by changing the len arg in the register and arch_* calls to unsigned long,
-> and adding an arch_validate_len that can short-circuit the generic length
-> and alignment check.)
-> 
-> So, I'd like your thoughts on the whole situation.  The starting point we
-> can do without anything else is:
-> 
-> 	int hw_breakpoint_triggers_before(struct hw_breakpoint *);
-> 	int hw_breakpoint_can_resume(struct hw_breakpoint *);
-> 
-> or perhaps taking (unsigned int type) instead, in <asm-cpu/hw_breakpoint.h>.
-> i.e. for x86:
-> 
-> #define hw_breakpoint_triggers_before(type) ((type) == HW_BREAKPOINT_EXECUTE)
-> #define hw_breakpoint_can_resume(type) 	    1
-> 
-> and powerpc:
-> 
-> #define hw_breakpoint_triggers_before(any)	1
-> #define hw_breakpoint_can_resume(any)		0
-
-I prefer the second alternative.  For the first, you'd have to register 
-the breakpoint before knowing how it will behave!
-
-> For powerpc at least (and I figure for ia64 too) it seems easy enough to
-> implement disable-step-enable to turn it into trigger-after.  But it is
-> costly and hairy if one doesn't care.  So now I'm thinking to somewhat
-> follow the kprobes model, and have pre and post trigger handler options.
-> i.e.
-> 
-> 	int hw_breakpoint_pre_handle_type(unsigned type);
-> 	int hw_breakpoint_post_handle_type(unsigned type);
-> 
-> and in struct hw_breakpoint (replacing trigger):
-> 
-> 	int	(*pre_handler)(struct hw_breakpoint *, struct pt_regs *);
-> 	void	(*post_handler)(struct hw_breakpoint *, struct pt_regs *);
-> 
-> The pre_handler returns zero if it wants the post_handler to run.  On x86,
-> register would return -EINVAL if pre_handler is not NULL and type is not
-> EXECUTE (i.e. pre_handle_type returns false).  It also fails if
-> post_handler is not NULL and post_handle_type returns false, meaning the
-> arch code doesn't want to deal with step-over-and-trigger.
-
-In general that sounds good.  But do we really want the register call
-to fail if extra handlers are defined?  That approach makes portable
-drivers harder to write.  Maybe it would be better to fail only if all
-of the arch-supported handler alternatives are NULL.
-
-> We'd still want hw_breakpoint_can_resume to tell whether you can return
-> from a pre_handler and continue with no a post_handler, without needing to
-> unregister the breakpoint.  That's true on ia64, while on powerpc you
-> either have to clear the breakpoint or request the post_handler stepping logic.
-
-Unregistering the breakpoint isn't good on SMP systems, since it would
-be unregistered on all CPUs.  I think it would better to require all
-arch's to support the stepping logic.
-
-Alan Stern
-
+--------------enig116ADC7DFB64A3762E3C23C5--
