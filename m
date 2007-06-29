@@ -1,121 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764004AbXF2L1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762863AbXF2LfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764004AbXF2L1J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 07:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbXF2L06
+	id S1762863AbXF2LfN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 07:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbXF2Le7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 07:26:58 -0400
-Received: from emh02.mail.saunalahti.fi ([62.142.5.108]:60077 "EHLO
-	emh02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758138AbXF2L04 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 07:26:56 -0400
-X-Greylist: delayed 669 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jun 2007 07:26:56 EDT
-Message-ID: <31585.194.237.142.7.1183115734.squirrel@ncircle.nullnet.fi>
-In-Reply-To: <4683BF16.40905@gmx.de>
-References: <4683BF16.40905@gmx.de>
-Date: Fri, 29 Jun 2007 14:15:34 +0300 (EEST)
-Subject: Re: 2.6.22-rc6 spurious hangs
-From: "Tomi Orava" <Tomi.Orava@ncircle.nullnet.fi>
-To: "Thomas Sattler" <tsattler@gmx.de>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, "Ingo Molnar" <mingo@elte.hu>
-User-Agent: SquirrelMail/1.4.10a-1.fc7
-MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-X-Priority: 3 (Normal)
-Importance: Normal
-Content-Transfer-Encoding: 8BIT
-X-Antivirus: VAMS
+	Fri, 29 Jun 2007 07:34:59 -0400
+Received: from minus.inr.ac.ru ([194.67.69.97]:36857 "HELO ms2.inr.ac.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1756434AbXF2Le6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 07:34:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ms2.inr.ac.ru;
+  b=mZo6+cwbBsnd+G0XHcO9LBGsfujMIv3YUIxSBHaQD6lvzZG4zzB+EViod8cgyXoY2e1a0AeVUP/2Uyn+DTROFhD9bWZteQ1pTauCWW4WfVQ8hHGBS6jEH0id/G/0NDj+xPq875n1QRPFbBdYH/FtPq8IlpoHhBVCKJdX7Rr2Ons=;
+Date: Fri, 29 Jun 2007 15:34:23 +0400
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070629113423.GA9042@ms2.inr.ac.ru>
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu> <46834BB8.1020007@garzik.org> <20070628092340.GB23566@elte.hu> <20070628143850.GA11780@ms2.inr.ac.ru> <20070628160001.GA15495@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070628160001.GA15495@elte.hu>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello!
 
-Hello,
+> I find the 4usecs cost on a P4 interesting and a bit too high - how did 
+> you measure it?
 
-> I'm observing seldom hangs with linux 2.6. I can't tell when exactly it
-> happened the first time, I think somewhere around 2.6.16 or 2.6.17. I
-> see it about once or twice a month. With absolutely nothing in the logs.
-> So far I asked for help:
+Simple and stupid:
 
-<snip>
+int flag;
 
-> The box I talk about is an IBM T41p with 1.7GHz Pentium M and 512MB RAM.
-> The distribution in use is gentoo, quite up to date. Attached to the box
-> is an USB2.0 DVB-T receiver (Cinergy T², Terratec).
->
-> In rare cases the keyboard stops working when the T² stops streaming DVB
-> to the box. It happens when I record the stream to disk as well as when
-> I stream it to mplayer.
+static void do_test(unsigned long dummy)
+{
+	flag = 1;
+}
 
-I just wanted you to know that you are not alone with this problem.
-I've seen the same symptoms on my parents machine during the last 1-2 months
---> ie. keyboard hangs completely, mouse works and the host either hangs
-completely sooner or later with only the following usb debug messages in
-the logs (pasted below).
+static void do_test_wq(void *dummy)
+{
+	flag = 1;
+}
 
-I believe that there is certainly some sort of bug in cinergyT2-driver
-as I've not seen the hang happen whenever the cinergyT2 usb-receiver
-has been disconnected from the machine.
+static void measure_tasklet0(void)
+{
+	int i;
+	int cnt = 0;
+	DECLARE_TASKLET(test, do_test, 0);
+	unsigned long start = jiffies;
 
-Host configuration is:
-2.6.22-rc4-git4 kernel + latest DVB drivers from v4l-dvb tree
-(previously also tested with FC6 kernels with same symptoms)
-MythTV-software (from devel SVN)
+	for (i=0; i<1000000; i++) {
+		flag = 0;
+		local_bh_disable();
+		tasklet_schedule(&test);
+		local_bh_enable();
+		while (flag == 0) {
+			schedule();
+			cnt++;
+		} /*while (flag == 0)*/;
+	}
+	printk("tasklet0: %lu %d\n", jiffies - start, cnt);
+}
 
-Asus P4P800-E motherboard (ich5 & PDC20378 sata-controllers)
-1GB ram
-Intel P4 2.8MHz
-Terratec Cinergy T2 dvb-t receiver
+static void measure_tasklet1(void)
+{
+	int i;
+	int cnt = 0;
+	DECLARE_TASKLET(test, do_test, 0);
+	unsigned long start = jiffies;
 
-Regards,
-Tomi Orava
+	for (i=0; i<1000000; i++) {
+		flag = 0;
+		local_bh_disable();
+		tasklet_schedule(&test);
+		local_bh_enable();
+		do {
+			schedule();
+			cnt++;
+		} while (flag == 0);
+	}
+	printk("tasklet1: %lu %d\n", jiffies - start, cnt);
+}
+
+static void measure_workqueue(void)
+{
+	int i;
+	int cnt = 0;
+	unsigned long start;
+	DECLARE_WORK(test, do_test_wq, 0);
+	struct workqueue_struct * wq;
+
+	start = jiffies;
+
+	wq = create_workqueue("testq");
+
+	for (i=0; i<1000000; i++) {
+		flag = 0;
+		queue_work(wq, &test);
+		do {
+			schedule();
+			cnt++;
+		} while (flag == 0);
+	}
+	printk("wq: %lu %d\n", jiffies - start, cnt);
+	destroy_workqueue(wq);
+}
 
 
---------------------------------------------------
-ehci_hcd 0000:00:1d.7: devpath 1 ep2in 3strikes
-hub 1-0:1.0: state 7 ports 8 chg 0000 evt 0002
-ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001002 POWER sig=se0 CSC
-hub 1-0:1.0: port 1, status 0100, change 0001, 12 Mb/s
-usb 1-1: USB disconnect, address 2
-usb 1-1: unregistering device
-usb 1-1: usb_disable_device nuking all URBs
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a3c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a340 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a2c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a240 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f71a6c40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f7e7f0c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c37dc0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c37e40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f71a6d40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9af40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f71a61c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9ae40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9adc0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9ad40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9acc0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9ac40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9abc0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9ab40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9aac0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9aa40 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a9c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a940 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a8c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a840 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a7c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a740 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a6c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a640 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a5c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a540 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a4c0 pipe c0010280 ep2in-bulk
-ehci_hcd 0000:00:1d.7: shutdown urb f6c9a440 pipe c0010280 ep2in-bulk
-cinergyT2: cinergyt2_submit_stream_urb(): urb submission failed (err = -19)!
-last message repeated 31 times
----------------------------------------------------------------------
--- 
 
+> tasklet as an intermediary towards a softirq - what's the technological 
+> point in such a splitup?
+
+"... work_struct as intermediary towards a workqueue - what's the technological
+point in such a splitup?" Non-sense? Yes, but it is exactly what you said. :-)
+
+softirq is just a context and engine to run something. Exactly like
+workqueue task. struct tasklet is work_struct, it is just a thing to run.
+
+
+> workqueues can be per-cpu - for tasklets to be per-cpu you have to 
+> open-code them into per-cpu like rcu-tasklets did
+
+I feel I have to repeat: tasklet==work_struct, workqueue==softirq. 
+
+Essentially, you said that workqueues "scale" in direction of increasing
+amount of softirqs. This is _correct_, but the word is different: "flexible"
+is the word. What's about performance,scalability blah-blah, workqueues
+are definitely worse. And this is OK, you do not need to conceal this.
+
+ This is the price, which we pay for flexibility and to niceness to realtime.
+
+That's what should be said in adverticement notes instead of propaganda.
+
+
+
+> Just look at the tasklet_disable() logic.
+
+Do not count this.
+
+Done this way because nobody needed that thing, except for _one_ place
+in keyboard/console driver, which was very difficult to fix that time,
+when vt code was utterly messy and not smp safe at all.
+
+start_bh_atomic() was successfully killed, but we had to preserve analogue
+of disable_bh() with the same semantics for some time.
+It is deliberately implemented in a way, which does not impact hot paths
+and is easy to remove.
+
+It is sad that some usb drivers started to use this creepy and
+useless thing.
+
+
+> also, the "be afraid of the hardirq or the process context" mantra is 
+> overblown as well. If something is too heavy for a hardirq, _it's too 
+> heavy for a tasklet too_. Most hardirqs are (or should be) running with 
+> interrupts enabled, which makes their difference to softirqs miniscule.
+
+Incorrect.
+
+The difference between softirqs and hardirqs lays not in their "heavyness".
+It is in reentrancy protection, which has to be done with local_irq_disable(),
+unless networking is not isolated from hardirqs. That's all.
+Networking is too hairy to allow to be executed with disabled hardirqs.
+And moving this hairyiness to process context requires
+<irony mode> a little </> more efforts than conversion tasklets to work queues.
+
+
+> The most scalable workloads dont involve any (or many) softirq middlemen 
+> at all: you queue work straight from the hardirq context to the target 
+> process context.
+
+Do you really see something common between this Holy Grail Quest and
+tasklets/workqeueus? Come on. :-)
+
+Actually, this is step backwards. Instead of execution in correct
+context, you create a new dummy context.  This is the place, where goals
+of realtime and Holy Grail Quest split.
+
+
+> true just as much: tasklets from a totally uninteresting network adapter 
+> can kill your latency-sensitive application too.
+
+If I started nice --22 running process I signed to killing latency
+of nice 0 processes. But I did not sign for killing network/scsi adapters.
+"latency-sensitive application" use real time priority as well,
+so that they will compete with tasklets fairly.
 
