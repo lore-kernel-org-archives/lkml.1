@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXF2HAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765421AbXF2HJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751366AbXF2HAt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 03:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXF2HAk
+	id S1765421AbXF2HJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 03:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbXF2HJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 03:00:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46773 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751455AbXF2HAk (ORCPT
+	Fri, 29 Jun 2007 03:09:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:33156 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbXF2HJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 03:00:40 -0400
-Date: Fri, 29 Jun 2007 00:00:39 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: hugh@veritas.com, James.Bottomley@steeleye.com, rmk+lkml@arm.linux.org.uk,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Containment measures for slab objects on scatter gather
- lists
-In-Reply-To: <20070628.220606.112621271.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0706282357540.12146@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706282119330.11676@schroedinger.engr.sgi.com>
- <20070628.212825.78710369.davem@davemloft.net>
- <Pine.LNX.4.64.0706282128570.11739@schroedinger.engr.sgi.com>
- <20070628.220606.112621271.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 29 Jun 2007 03:09:07 -0400
+Subject: Tasklet usage in the DRM
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: linux-kernel@vger.kernel.org
+Cc: dri-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=UTF-8
+Organization: Tungsten Graphics
+Date: Fri, 29 Jun 2007 09:09:02 +0200
+Message-Id: <1183100942.3289.296.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jun 2007, David Miller wrote:
 
-> Really, it would be great if we could treat kmalloc() objects
-> just like real pages.  Everything wants to do I/O on pages
-> but sometimes (like the networking) you have a kmalloc
-> chunk which is technically just a part of a page.
-> 
-> The fact that there is no easy way to make this work is
-> frustrating :-)
+I just read an article on LWN's kernel page about plans to remove
+tasklets, and I thought I'd explain what the DRM is using tasklets for.
+Maybe there's other ways to satisfy the requirements equally well or
+even better.
 
-There is easy way: Allocate a page and just use the first N bytes. You can 
-specify the bytes to be used when putting the memory onto the scatter 
-gather list. This wastes memory but it works. You have real refcounting 
-since you got a real page.
 
-How frequent are these objects?
+The i915 driver uses a tasklet to make sure a GL buffer swap blit or
+flip takes effect (or at least starts in the case of a blit) during the
+vertical blank period, to avoid tearing. I chose a tasklet for this
+purpose because:
+
+      * The traditional method of the vertical blank interrupt waking up
+        the user process, which would then emit the buffer swap
+        commands, didn't even come close to avoiding tearing. So I
+        suspect a workqueue wouldn't cut it either.
+      * The processing of scheduled buffer swaps could potentially take
+        a long time, so doing it in hardirq context could cause high IRQ
+        latency.
+      * It requires holding the DRM lock, so the 'each tasklet can only
+        run once at a time' restriction is fine.
+
+
+I'm looking forward to any suggestions what to do with this in case
+tasklets disappear, and I'll gladly provide further clarification on the
+requirements.
+
+
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
 
