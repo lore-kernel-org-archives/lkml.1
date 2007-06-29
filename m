@@ -1,55 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933310AbXF2QQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933508AbXF2QVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933310AbXF2QQX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 12:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758920AbXF2QQO
+	id S933508AbXF2QVQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 12:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761616AbXF2QVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 12:16:14 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:32955 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbXF2QQN (ORCPT
+	Fri, 29 Jun 2007 12:21:02 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49972 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760758AbXF2QVA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 12:16:13 -0400
-To: alan@lxorguk.ukuu.org.uk
-CC: mista.tapas@gmx.net, bunk@stusta.de, nix@esperi.org.uk, galibert@pobox.com,
-       tiwai@suse.de, kloczek@rudy.mif.pg.gda.pl, linux-kernel@vger.kernel.org
-In-reply-to: <E1I4IoZ-0003Hm-00@dorka.pomaz.szeredi.hu> (message from Miklos
-	Szeredi on Fri, 29 Jun 2007 17:55:19 +0200)
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <20070624200837.16e11305@the-village.bc.nu>
-	<87tzssextf.fsf@hades.wkstn.nix>
-	<20070628210614.GC6087@stusta.de>
-	<200706291352.42833.mista.tapas@gmx.net>
-	<E1I4HtE-0003A5-00@dorka.pomaz.szeredi.hu> <20070629164945.26891025@the-village.bc.nu> <E1I4IoZ-0003Hm-00@dorka.pomaz.szeredi.hu>
-Message-Id: <E1I4J76-0003MW-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 29 Jun 2007 18:14:28 +0200
+	Fri, 29 Jun 2007 12:21:00 -0400
+From: John Keller <jpk@sgi.com>
+To: linux-ia64@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, John Keller <jpk@sgi.com>
+Date: Fri, 29 Jun 2007 11:20:58 -0500
+Message-Id: <20070629162058.24692.18526.sendpatchset@attica.americas.sgi.com>
+Subject: [PATCH] - SN: Correct ROM resource length for BIOS copy
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Not as if it would be hard to add ioctl support to fuse.  What fuse
-> > > can't handle is the data argument of ioctl(), so the most it could do
-> > > is give the filesystem a pid (tid) and a virtual address.  The
-> > > userspace fs could then get/put the data through /proc/<pid>/mem.
-> > 
-> > Hork...
-> > 
-> > Identify the generic ioctls that are relevant to a FUSE file system and
-> > have real meaning *and* are useful.
-> 
-> I don't think there are any such.
-> 
-> The point in this thread was I think about emulating an OSS sound
-> device through a fuse fs.  In that case fuse would need _generic_
-> ioctl support, which simply can't be done without weird userspace
-> hacks.
+On SN systems, when setting the IORESOURCE_ROM_BIOS_COPY resource flag,
+the resource length should be set to the actual size of the ROM image
+so that a call to pci_map_rom() returns the correct size.
 
-Well, had a look at what FUSD does.  It assumes that the ioctl
-argument is stuctured according to the command.  If all OSS ioctls are
-like that, then fine, fuse can support it properly.
+Signed-off-by: John Keller <jpk@sgi.com>
+---
 
-The drawback of this is that ioctls which aren't structured properly
-could cause weird failures due to wrong data being accessed by the
-poor unknowing kernel.
+To avoid duplicate code, the image size calculation loop in
+pci_map_rom() has been put into a separate function that both
+pci_map_rom() and the SN specific code now call.
 
-Miklos
+ arch/ia64/sn/kernel/io_acpi_init.c |   17 ++----
+ arch/ia64/sn/kernel/io_init.c      |   20 ++++++-
+ drivers/pci/rom.c                  |   73 ++++++++++++++++-----------
+ include/linux/pci.h                |    1 
+ 4 files changed, 70 insertions(+), 41 deletions(-)
+
+
+Index: linux-2.6/arch/ia64/sn/kernel/io_acpi_init.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/sn/kernel/io_acpi_init.c	2007-06-28 10:35:59.144045279 -0500
++++ linux-2.6/arch/ia64/sn/kernel/io_acpi_init.c	2007-06-28 10:44:38.034721316 -0500
+@@ -418,7 +418,7 @@ sn_acpi_slot_fixup(struct pci_dev *dev)
+ 	void __iomem *addr;
+ 	struct pcidev_info *pcidev_info = NULL;
+ 	struct sn_irq_info *sn_irq_info = NULL;
+-	size_t size;
++	size_t image_size, size;
+ 
+ 	if (sn_acpi_get_pcidev_info(dev, &pcidev_info, &sn_irq_info)) {
+ 		panic("%s:  Failure obtaining pcidev_info for %s\n",
+@@ -428,17 +428,16 @@ sn_acpi_slot_fixup(struct pci_dev *dev)
+ 	if (pcidev_info->pdi_pio_mapped_addr[PCI_ROM_RESOURCE]) {
+ 		/*
+ 		 * A valid ROM image exists and has been shadowed by the
+-		 * PROM. Setup the pci_dev ROM resource to point to
+-		 * the shadowed copy.
++		 * PROM. Setup the pci_dev ROM resource with the address
++		 * of the shadowed copy, and the actual length of the ROM image.
+ 		 */
+-		size = dev->resource[PCI_ROM_RESOURCE].end -
+-				dev->resource[PCI_ROM_RESOURCE].start;
+-		addr =
+-		     ioremap(pcidev_info->pdi_pio_mapped_addr[PCI_ROM_RESOURCE],
+-			     size);
++		size = pci_resource_len(dev, PCI_ROM_RESOURCE);
++		addr = ioremap(pcidev_info->pdi_pio_mapped_addr[PCI_ROM_RESOURCE],
++			       size);
++		image_size = pci_get_rom_size(addr, size);
+ 		dev->resource[PCI_ROM_RESOURCE].start = (unsigned long) addr;
+ 		dev->resource[PCI_ROM_RESOURCE].end =
+-						(unsigned long) addr + size;
++					(unsigned long) addr + image_size - 1;
+ 		dev->resource[PCI_ROM_RESOURCE].flags |= IORESOURCE_ROM_BIOS_COPY;
+ 	}
+ 	sn_pci_fixup_slot(dev, pcidev_info, sn_irq_info);
+Index: linux-2.6/arch/ia64/sn/kernel/io_init.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/sn/kernel/io_init.c	2007-06-28 10:35:59.144045279 -0500
++++ linux-2.6/arch/ia64/sn/kernel/io_init.c	2007-06-28 10:44:51.712380223 -0500
+@@ -259,9 +259,23 @@ sn_io_slot_fixup(struct pci_dev *dev)
+ 			insert_resource(&ioport_resource, &dev->resource[idx]);
+ 		else
+ 			insert_resource(&iomem_resource, &dev->resource[idx]);
+-		/* If ROM, mark as shadowed in PROM */
+-		if (idx == PCI_ROM_RESOURCE)
+-			dev->resource[idx].flags |= IORESOURCE_ROM_BIOS_COPY;
++		/*
++		 * If ROM, set the actual ROM image size, and mark as
++		 * shadowed in PROM.
++		 */
++		if (idx == PCI_ROM_RESOURCE) {
++			size_t image_size;
++			void __iomem *rom;
++
++			rom = ioremap(pci_resource_start(dev, PCI_ROM_RESOURCE),
++				      size + 1);
++			image_size = pci_get_rom_size(rom, size + 1);
++			dev->resource[PCI_ROM_RESOURCE].end =
++				dev->resource[PCI_ROM_RESOURCE].start +
++				image_size - 1;
++			dev->resource[PCI_ROM_RESOURCE].flags |=
++						 IORESOURCE_ROM_BIOS_COPY;
++		}
+ 	}
+ 	/* Create a pci_window in the pci_controller struct for
+ 	 * each device resource.
+Index: linux-2.6/drivers/pci/rom.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/rom.c	2007-06-28 10:36:02.956505069 -0500
++++ linux-2.6/drivers/pci/rom.c	2007-06-28 10:45:18.475626403 -0500
+@@ -54,6 +54,49 @@ static void pci_disable_rom(struct pci_d
+ }
+ 
+ /**
++ * pci_get_rom_size - obtain the actual size of the ROM image
++ * @rom: kernel virtual pointer to image of ROM
++ *  size: size of PCI window
++ *  return: size of actual ROM image
++ *
++ * Determine the actual length of the ROM image.
++ * The PCI window size could be much larger than the
++ * actual image size.
++ */
++size_t pci_get_rom_size(void __iomem *rom, size_t size)
++{
++	void __iomem *image;
++	int last_image;
++
++	image = rom;
++	do {
++		void __iomem *pds;
++		/* Standard PCI ROMs start out with these bytes 55 AA */
++		if (readb(image) != 0x55)
++			break;
++		if (readb(image + 1) != 0xAA)
++			break;
++		/* get the PCI data structure and check its signature */
++		pds = image + readw(image + 24);
++		if (readb(pds) != 'P')
++			break;
++		if (readb(pds + 1) != 'C')
++			break;
++		if (readb(pds + 2) != 'I')
++			break;
++		if (readb(pds + 3) != 'R')
++			break;
++		last_image = readb(pds + 21) & 0x80;
++		/* this length is reliable */
++		image += readw(pds + 16) * 512;
++	} while (!last_image);
++
++	/* never return a size larger than the PCI resource window */
++	/* there are known ROMs that get the size wrong */
++	return min((size_t)(image - rom), size);
++}
++
++/**
+  * pci_map_rom - map a PCI ROM to kernel space
+  * @pdev: pointer to pci device struct
+  * @size: pointer to receive size of pci window over ROM
+@@ -68,8 +111,6 @@ void __iomem *pci_map_rom(struct pci_dev
+ 	struct resource *res = &pdev->resource[PCI_ROM_RESOURCE];
+ 	loff_t start;
+ 	void __iomem *rom;
+-	void __iomem *image;
+-	int last_image;
+ 
+ 	/*
+ 	 * IORESOURCE_ROM_SHADOW set on x86, x86_64 and IA64 supports legacy
+@@ -117,33 +158,7 @@ void __iomem *pci_map_rom(struct pci_dev
+ 	 * size is much larger than the actual size of the ROM.
+ 	 * True size is important if the ROM is going to be copied.
+ 	 */
+-	image = rom;
+-	do {
+-		void __iomem *pds;
+-		/* Standard PCI ROMs start out with these bytes 55 AA */
+-		if (readb(image) != 0x55)
+-			break;
+-		if (readb(image + 1) != 0xAA)
+-			break;
+-		/* get the PCI data structure and check its signature */
+-		pds = image + readw(image + 24);
+-		if (readb(pds) != 'P')
+-			break;
+-		if (readb(pds + 1) != 'C')
+-			break;
+-		if (readb(pds + 2) != 'I')
+-			break;
+-		if (readb(pds + 3) != 'R')
+-			break;
+-		last_image = readb(pds + 21) & 0x80;
+-		/* this length is reliable */
+-		image += readw(pds + 16) * 512;
+-	} while (!last_image);
+-
+-	/* never return a size larger than the PCI resource window */
+-	/* there are known ROMs that get the size wrong */
+-	*size = min((size_t)(image - rom), *size);
+-
++	*size = pci_get_rom_size(rom, *size);
+ 	return rom;
+ }
+ 
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h	2007-06-28 10:36:06.224899250 -0500
++++ linux-2.6/include/linux/pci.h	2007-06-28 10:37:24.226308077 -0500
+@@ -560,6 +560,7 @@ void __iomem __must_check *pci_map_rom(s
+ void __iomem __must_check *pci_map_rom_copy(struct pci_dev *pdev, size_t *size);
+ void pci_unmap_rom(struct pci_dev *pdev, void __iomem *rom);
+ void pci_remove_rom(struct pci_dev *pdev);
++size_t pci_get_rom_size(void __iomem *rom, size_t size);
+ 
+ /* Power management related routines */
+ int pci_save_state(struct pci_dev *dev);
