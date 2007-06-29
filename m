@@ -1,48 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbXF2UZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbXF2U1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbXF2UZW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 16:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbXF2UZI
+	id S1755090AbXF2U1A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 16:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXF2U0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 16:25:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55317 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753425AbXF2UZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 16:25:07 -0400
-Subject: Re: call request_irq before or after hardware initialization?
-From: Arjan van de Ven <arjan@infradead.org>
-To: Li Juen Hwang <lwen@ampex.com>
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <46855F19.5080900@ampex.com>
-References: <tkrat.78aa27c59575fdc3@s5r6.in-berlin.de>
-	 <46855F19.5080900@ampex.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 29 Jun 2007 13:23:07 -0700
-Message-Id: <1183148587.2642.5.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 29 Jun 2007 16:26:53 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42357 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753481AbXF2U0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 16:26:52 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/WNX0S8S3WwWclrDJz7MWGW9Z7V42FCndVk/XeIJ
+	dFsWrPfC2HryKM
+Date: Fri, 29 Jun 2007 22:26:51 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: skyball000@freesurf.fr
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rt9 problem : xruns
+In-Reply-To: <48440.194.254.4.171.1183116296.squirrel@jose.freesurf.fr>
+Message-ID: <Pine.LNX.4.60.0706292225400.4227@poirot.grange>
+References: <48440.194.254.4.171.1183116296.squirrel@jose.freesurf.fr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-29 at 12:35 -0700, Li Juen Hwang wrote:
-> 
+On Fri, 29 Jun 2007 skyball000@freesurf.fr wrote:
+
 > Hi,
 > 
->     Most 1394 drivers on Linux, ohci1394 for instance, calls 
-> request_irq() before
->     initializing/enabling hardware chip. I'd like to reverse the order 
-> so that driver
->     can exit the kernel without calling free_irq() if hardware failed. 
-> Is that ok?
->     will it cause side effect? Thanks.
+> I've recently compiled a "vanilla" 2.6.21 kernel, patched with Ingo Molnar's
+> rt-8 patch, as I was unable to compile with rt-7.
+> 
+> I needed it because I'm using audio applications (tests were made with
+> FrugalWare, but I don't think it's a distro issue).
+> 
+> Everything was allright until I changed my motherboard for an  Asrock
+> 4coreDual-Vsta (I formerly used a Nforce4 one), with VIA PT880 Ultra chipset.
+> 
+> I've justed switched the hardware, as Linux is neat enough to boot without
+> having to reinstall the whole OS.
+> 
+> Since, I get tons of xruns when using RT applications, and the only solution
+> I've found to "fix" it was to disable ACPI at boot time.
 
-well you have to be able to handle interrupts the moment the hardware
-will generate them... so the request_irq has to happen before that
-point.
+Interestingly, this looks very similar to a problem I had... Could you, 
+please, verify if acpid is running (with ACPI configured on), and if yes - 
+stop it and retest for xruns?
 
+Thanks
+Guennadi
 
+> Moreover, I get this message at boot time :
+> PCI: BIOS bug: MCFG area@e0000000 is not E820 reserved
+> PCI: not using MMCONFIG
+> 
+> I've also tested this hardware setup with a UbuntoStudio kernel (2.6.19),
+> and everything works flawlessy (no XRUNS, no kernel messages) !
+> 
+> So here is my question (I'd like to understand what's happening) :
+>    - is it a kernel (or patch) issue ?
+>    - is it a bad chipset support in the latest kernel versions ?
+>    - could this be related to BIOS issues only (I've tried all available
+> versions without any change) ?
+>    - should I use special settings in the ".config" in order to avoid these
+> problems ?
+> 
+> I wasn't able to detect what causes these XRUNS, so if anyone has clues ...
+> 
+> Regards
+> skb
+> 
+> 
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+---
+Guennadi Liakhovetski
