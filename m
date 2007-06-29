@@ -1,169 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932818AbXF2DvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbXF2EBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932818AbXF2DvU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 23:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765058AbXF2DvL
+	id S1752632AbXF2EBu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 00:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750703AbXF2EBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 23:51:11 -0400
-Received: from nabe-new.tequila.jp ([211.14.136.194]:37070 "EHLO
-	nabe-new.tequila.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764917AbXF2DvK (ORCPT
+	Fri, 29 Jun 2007 00:01:40 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39800 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750702AbXF2EBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 23:51:10 -0400
-X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jun 2007 23:51:09 EDT
-Message-ID: <46847397.70503@tequila.co.jp>
-Date: Fri, 29 Jun 2007 11:51:03 +0900
-From: Clemens Schwaighofer <cs@tequila.co.jp>
-Organization: TEQUILA\Japan
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	Fri, 29 Jun 2007 00:01:40 -0400
+Date: Thu, 28 Jun 2007 21:01:36 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: James Bottomley <James.Bottomley@steeleye.com>,
+       David Miller <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Containment measures for slab objects on scatter gather
+ lists
+Message-ID: <Pine.LNX.4.64.0706282047160.10035@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Oops and Panics in 2.6.21.1, 2.6.20.6 and 2.6.19.2
-References: <464A4F56.6080108@tequila.co.jp>
-In-Reply-To: <464A4F56.6080108@tequila.co.jp>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig116ADC7DFB64A3762E3C23C5"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig116ADC7DFB64A3762E3C23C5
-Content-Type: multipart/mixed;
- boundary="------------040609070301080401050600"
+I had a talk with James Bottomley last night and it seems that there is an 
+established way of using the page structs of slab objects in the block 
+layer. Drivers may use the DMA interfaces to issue control commands. In 
+that case they may allocate a short structure via the slab allocator and 
+put the control commands into that slab object.
 
-This is a multi-part message in MIME format.
---------------040609070301080401050600
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+The driver will then perform a sg_init_one() on the slab object. 
+sg_init_one() calls sg_set_buf() which determines the page struct of a 
+page. In this case sg_set_buf() will determine the page struct of a slab 
+object. The dma layer may then perform operations on the "slab page". The 
+block layer folks seem to have spend some time to make this work right.
 
-On 05/16/2007 09:24 AM, Clemens Schwaighofer wrote:
-> Hi,
+That usage is made a bit dangerous by the issue that the fields of the 
+page struct are used to varying degrees by slab allocators for their own 
+purposes. A particular problem arises with SLUB since SLUB needs to 
+maximizes the usage of the page struct fields to avoid having to put 
+control structures in the page itself and be able to completely fill up a 
+page with slab objects.
 
-I had my system running up for about one month without any issues, and
-then it happened again, same kernel oops, panic, end.
+What is new in SLUB is the overloading of the mapping, index and mapcount 
+fields. The other slab allocators only overload the lru and private fields 
+(The version of SLOB in mm also overloads the index field like SLUB).
 
-So I have upgraded to 2.6.22-rc4-mm2 in hope it might fix it, but I just
-got another oops (uptime 4d) [see attached file]
+So it is in general not possible to call arbitrary page cache functions on 
+slab pages because fields are used in ways not conforming to page cache 
+use. The use of slab page structs on scatter gather lists currently only 
+works because a select number of page cache functions are called on them 
+that make restricted use of fields in the page structs.
 
-my config hasn't changed in any way to the previous kernels.
+The called functions are:
 
--- 
-[ Clemens Schwaighofer                      -----=====:::::~ ]
-[ TEQUILA\ Japan IT Group                                    ]
-[                6-17-2 Ginza Chuo-ku, Tokyo 104-8167, JAPAN ]
-[ Tel: +81-(0)3-3545-7703            Fax: +81-(0)3-3545-7343 ]
-[ http://www.tequila.co.jp                                   ]
+kmap / kunmap
 
---------------040609070301080401050600
-Content-Type: text/x-log;
- name="2.6.22-rc4-mm2.20070629.oops.log"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2.6.22-rc4-mm2.20070629.oops.log"
+	This is not a problem since slab pages are never highmem
+	pages. The effect of kmap if used on the page struct of a slab page
+	is to determine the address of the page.
 
-Jun 29 11:25:08 saturn kernel: [348308.690154] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000001
-Jun 29 11:25:08 saturn kernel: [348308.690160]  printing eip:
-Jun 29 11:25:08 saturn kernel: [348308.690162] c108887c
-Jun 29 11:25:08 saturn kernel: [348308.690163] *pde = 00000000
-Jun 29 11:25:08 saturn kernel: [348308.690166] Oops: 0000 [#2]
-Jun 29 11:25:08 saturn kernel: [348308.690167] PREEMPT
-Jun 29 11:25:08 saturn kernel: [348308.690169] Modules linked in: eeprom pcspkr i2c_viapro k8temp hwmon i2c_core
-Jun 29 11:25:08 saturn kernel: [348308.690177] CPU:    0
-Jun 29 11:25:08 saturn kernel: [348308.690177] EIP:    0060:[__d_lookup+108/336]    Not tainted VLI
-Jun 29 11:25:08 saturn kernel: [348308.690179] EFLAGS: 00010202   (2.6.22-rc4-mm2 #1)
-Jun 29 11:25:08 saturn kernel: [348308.690185] EIP is at __d_lookup+0x6c/0x150
-Jun 29 11:25:08 saturn kernel: [348308.690187] eax: 00000001   ebx: 00000001   ecx: 00000001   edx: 089c1579
-Jun 29 11:25:08 saturn kernel: [348308.690190] esi: c6840ee8   edi: c301d734   ebp: f786f080   esp: c6840e84
-Jun 29 11:25:08 saturn kernel: [348308.690193] ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-Jun 29 11:25:08 saturn kernel: [348308.690196] Process nfsd (pid: 30536, ti=c6840000 task=c62bce90 task.ti=c6840000)
-Jun 29 11:25:08 saturn kernel: [348308.690198] Stack: c301d734 089c1579 c6840edb 00000002 c6840ee8 ffffffff 00000005 c6840edb
-Jun 29 11:25:08 saturn kernel: [348308.690205]        0000f9ec c6840ee8 c301d734 c471ba84 c1088976 c7bbb090 c7bbb090 00000000
-Jun 29 11:25:08 saturn kernel: [348308.690211]        c10b49fc c6840edb 0000000d c14914fb 00007793 332bce90 31313630 c5469900
-Jun 29 11:25:08 saturn kernel: [348308.690217] Call Trace:
-Jun 29 11:25:08 saturn kernel: [348308.690220]  [d_lookup+22/64] d_lookup+0x16/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690224]  [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
-Jun 29 11:25:08 saturn kernel: [348308.690229]  [release_task+612/880] release_task+0x264/0x370
-Jun 29 11:25:08 saturn kernel: [348308.690234]  [do_wait+1850/3072] do_wait+0x73a/0xc00
-Jun 29 11:25:08 saturn kernel: [348308.690239]  [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690243]  [default_wake_function+0/16] default_wake_function+0x0/0x10
-Jun 29 11:25:08 saturn kernel: [348308.690247]  [sys_wait4+49/64] sys_wait4+0x31/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690251]  [sys_waitpid+39/48] sys_waitpid+0x27/0x30
-Jun 29 11:25:08 saturn kernel: [348308.690255]  [syscall_call+7/11] syscall_call+0x7/0xb
-Jun 29 11:25:08 saturn kernel: [348308.690259]  =======================
-Jun 29 11:25:08 saturn kernel: [348308.690260] INFO: lockdep is turned off.
-Jun 29 11:25:08 saturn kernel: [348308.690262] Code: d3 e8 31 c3 23 1d b4 d8 51 c1 b8 01 00 00 00 c1 e3 02 03 1d bc d8 51 c1 e8 e2 24 f9 ff 8b 1b 85 db 75 08 eb 44 85 c0 89 c3 74 3e <8b> 03 0f 18 00 90 8d 6b d8 8b 54 24 04 3b 55 34 75 e8 8b 34 24
-Jun 29 11:25:08 saturn kernel: [348308.690289] EIP: [__d_lookup+108/336] __d_lookup+0x6c/0x150 SS:ESP 0068:c6840e84
-Jun 29 11:25:08 saturn kernel: [348308.690296] note: nfsd[30536] exited with preempt_count 1
-Jun 29 11:25:08 saturn kernel: [348308.690303] BUG: scheduling while atomic: nfsd/0x10000002/30536
-Jun 29 11:25:08 saturn kernel: [348308.690305] INFO: lockdep is turned off.
-Jun 29 11:25:08 saturn kernel: [348308.690307]  [schedule+1490/1744] schedule+0x5d2/0x6d0
-Jun 29 11:25:08 saturn kernel: [348308.690311]  [vt_console_print+106/688] vt_console_print+0x6a/0x2b0
-Jun 29 11:25:08 saturn kernel: [348308.690316]  [__cond_resched+18/48] __cond_resched+0x12/0x30
-Jun 29 11:25:08 saturn kernel: [348308.690319]  [cond_resched+42/64] cond_resched+0x2a/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690322]  [unmap_vmas+1116/1184] unmap_vmas+0x45c/0x4a0
-Jun 29 11:25:08 saturn kernel: [348308.690327]  [exit_mmap+105/256] exit_mmap+0x69/0x100
-Jun 29 11:25:08 saturn kernel: [348308.690331]  [mmput+68/256] mmput+0x44/0x100
-Jun 29 11:25:08 saturn kernel: [348308.690335]  [do_exit+301/2224] do_exit+0x12d/0x8b0
-Jun 29 11:25:08 saturn kernel: [348308.690339]  [__wake_up+56/80] __wake_up+0x38/0x50
-Jun 29 11:25:08 saturn kernel: [348308.690342]  [die+574/576] die+0x23e/0x240
-Jun 29 11:25:08 saturn kernel: [348308.690346]  [do_page_fault+724/1520] do_page_fault+0x2d4/0x5f0
-Jun 29 11:25:08 saturn kernel: [348308.690349]  [tcp_ack+2742/6960] tcp_ack+0xab6/0x1b30
-Jun 29 11:25:08 saturn kernel: [348308.690354]  [do_page_fault+0/1520] do_page_fault+0x0/0x5f0
-Jun 29 11:25:08 saturn kernel: [348308.690357]  [error_code+106/112] error_code+0x6a/0x70
-Jun 29 11:25:08 saturn kernel: [348308.690360]  [__d_lookup+108/336] __d_lookup+0x6c/0x150
-Jun 29 11:25:08 saturn kernel: [348308.690364]  [d_lookup+22/64] d_lookup+0x16/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690367]  [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
-Jun 29 11:25:08 saturn kernel: [348308.690372]  [release_task+612/880] release_task+0x264/0x370
-Jun 29 11:25:08 saturn kernel: [348308.690376]  [do_wait+1850/3072] do_wait+0x73a/0xc00
-Jun 29 11:25:08 saturn kernel: [348308.690380]  [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690383]  [default_wake_function+0/16] default_wake_function+0x0/0x10
-Jun 29 11:25:08 saturn kernel: [348308.690387]  [sys_wait4+49/64] sys_wait4+0x31/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690390]  [sys_waitpid+39/48] sys_waitpid+0x27/0x30
-Jun 29 11:25:08 saturn kernel: [348308.690394]  [syscall_call+7/11] syscall_call+0x7/0xb
-Jun 29 11:25:08 saturn kernel: [348308.690398]  =======================
-Jun 29 11:25:08 saturn kernel: [348308.690472] BUG: scheduling while atomic: nfsd/0x10000002/30536
-Jun 29 11:25:08 saturn kernel: [348308.690474] INFO: lockdep is turned off.
-Jun 29 11:25:08 saturn kernel: [348308.690476]  [schedule+1490/1744] schedule+0x5d2/0x6d0
-Jun 29 11:25:08 saturn kernel: [348308.690480]  [_atomic_dec_and_lock+22/96] _atomic_dec_and_lock+0x16/0x60
-Jun 29 11:25:08 saturn kernel: [348308.690485]  [_atomic_dec_and_lock+49/96] _atomic_dec_and_lock+0x31/0x60
-Jun 29 11:25:08 saturn kernel: [348308.690489]  [__cond_resched+18/48] __cond_resched+0x12/0x30
-Jun 29 11:25:08 saturn kernel: [348308.690492]  [cond_resched+42/64] cond_resched+0x2a/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690495]  [put_files_struct+166/208] put_files_struct+0xa6/0xd0
-Jun 29 11:25:08 saturn kernel: [348308.690499]  [do_exit+363/2224] do_exit+0x16b/0x8b0
-Jun 29 11:25:08 saturn kernel: [348308.690503]  [__wake_up+56/80] __wake_up+0x38/0x50
-Jun 29 11:25:08 saturn kernel: [348308.690506]  [die+574/576] die+0x23e/0x240
-Jun 29 11:25:08 saturn kernel: [348308.690510]  [do_page_fault+724/1520] do_page_fault+0x2d4/0x5f0
-Jun 29 11:25:08 saturn kernel: [348308.690513]  [tcp_ack+2742/6960] tcp_ack+0xab6/0x1b30
-Jun 29 11:25:08 saturn kernel: [348308.690517]  [do_page_fault+0/1520] do_page_fault+0x0/0x5f0
-Jun 29 11:25:08 saturn kernel: [348308.690520]  [error_code+106/112] error_code+0x6a/0x70
-Jun 29 11:25:08 saturn kernel: [348308.690524]  [__d_lookup+108/336] __d_lookup+0x6c/0x150
-Jun 29 11:25:08 saturn kernel: [348308.690528]  [d_lookup+22/64] d_lookup+0x16/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690531]  [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
-Jun 29 11:25:08 saturn kernel: [348308.690535]  [release_task+612/880] release_task+0x264/0x370
-Jun 29 11:25:08 saturn kernel: [348308.690539]  [do_wait+1850/3072] do_wait+0x73a/0xc00
-Jun 29 11:25:08 saturn kernel: [348308.690543]  [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690547]  [default_wake_function+0/16] default_wake_function+0x0/0x10
-Jun 29 11:25:08 saturn kernel: [348308.690551]  [sys_wait4+49/64] sys_wait4+0x31/0x40
-Jun 29 11:25:08 saturn kernel: [348308.690554]  [sys_waitpid+39/48] sys_waitpid+0x27/0x30
-Jun 29 11:25:08 saturn kernel: [348308.690558]  [syscall_call+7/11] syscall_call+0x7/0xb
-Jun 29 11:25:08 saturn kernel: [348308.690561]  =======================
+flush_dcache_page
 
---------------040609070301080401050600--
+	This is a no op for most architectures. On architectures that
+	have a virtualized cache it is necessary to flush all the
+	page ranges in which this page is mapped. For that purpose
+	the mapping of a page must be determined. Since SLUB uses
+	the mapping for a pointer to the kmem_cache structure this
+	will result in using a kmem_cache address. If this address is
+	used like an address_space structure then the kernel will oops.
 
---------------enig116ADC7DFB64A3762E3C23C5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+	flush_dcache_page() must flush even for slab objects if
+	slab objects are put onto the scatter gather lists since the
+	dma engine must be able to read the information of the control
+	structure from memory. The block layer will take care of any objects
+	overlapping page boundaries and flush multiple pages if necessary.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+We have only recently encountered this issue which is due to the following:
 
-iD8DBQFGhHOZjBz/yQjBxz8RAh3fAJ0f6R8MdQfheyV+0JOrfLPn4a6ovACfc/g5
-a7gCIKnFoCAIGlviymn4c7M=
-=IgNy
------END PGP SIGNATURE-----
+1. Architectures that need to flush virtual caches are rare and so
+   flush_dcache_page() typically does nothing or nothing harmful since
+   page->mapping, page->mapcount and page->index are not used.
 
---------------enig116ADC7DFB64A3762E3C23C5--
+2. It is not too frequent for a driver to perform a kmalloc in order to
+   generate a control structure. As a result tests on sparc64 and arm
+   did not show any problems.
+
+Architectures affected seem to be only pa-risc and arm. Sparc64 may be 
+affected too but sparc64 does not use page_mapping to scan over uses of 
+the page (and xtensa has the virtual cache flushing commented out for some 
+reason). The issue is currently fixed in Linus' tree by Hugh's check for a 
+slab page in page_mapping.
+
+We have here an established use that is somewhat dicey. It may be best to 
+ensure that the sort of use is restricted to the functions listed above. 
+The issue only occurs in the flush_dcache_page() of the two or three 
+listed platforms.
+
+Make sure that no other page cache functions are called for such pages by 
+putting a VM_BUG_ON(PageSlab(page)) into the frequently used 
+page_mapping() inline function. It will trigger even on platforms that do 
+not implement a flush_dcache_page() function if page_mapping() is used on 
+any slab page so that we can detect potential issues early. This is useful 
+regardless of the slab allocator in use since in general a slab page 
+cannot be handled like a regular page cache page.
+
+Modify the functions in the affected arches to check for PageSlab() and 
+use a NULL mapping if such a page is encountered. This may only be 
+necessary for parisc and arm since sparc64 and xtensa do not scan over 
+processes mapping a page but I have modified those two arches also for 
+correctnesses sake since they use page_mapping() in flush_dcache_page().
+
+Still a better solution would be to not use the slab allocator at all for 
+the objects that are used to send commands to the devices. These are not 
+permanent and grabbing a page from the pcp lists and putting it back is 
+likely as fast as performing a kmalloc.
+
+I have no access to the platforms discussed here. Testing was restricted 
+to running it on my laptop.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6/arch/arm/mm/flush.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mm/flush.c	2007-06-28 18:57:18.000000000 -0700
++++ linux-2.6/arch/arm/mm/flush.c	2007-06-28 19:11:46.000000000 -0700
+@@ -188,7 +188,17 @@
+  */
+ void flush_dcache_page(struct page *page)
+ {
+-	struct address_space *mapping = page_mapping(page);
++	struct address_space *mapping;
++
++	/*
++	 * This function is special in that a page struct obtained via
++	 * virt_to_page from a slab object may be passed to it. However, slab
++	 * allocators may use the mapping field for their own purposes. As a
++	 * result mapping may be != NULL here although the page is not mapped.
++	 * Slab objects are never mapped into user space so use NULL for that
++	 * special case.
++	 */
++	mapping = PageSlab(page) ? NULL : page_mapping(page);
+ 
+ #ifndef CONFIG_SMP
+ 	if (mapping && !mapping_mapped(mapping))
+Index: linux-2.6/arch/parisc/kernel/cache.c
+===================================================================
+--- linux-2.6.orig/arch/parisc/kernel/cache.c	2007-06-28 18:57:18.000000000 -0700
++++ linux-2.6/arch/parisc/kernel/cache.c	2007-06-28 19:11:46.000000000 -0700
+@@ -339,7 +339,7 @@
+ 
+ void flush_dcache_page(struct page *page)
+ {
+-	struct address_space *mapping = page_mapping(page);
++	struct address_space *mapping;
+ 	struct vm_area_struct *mpnt;
+ 	struct prio_tree_iter iter;
+ 	unsigned long offset;
+@@ -347,6 +347,15 @@
+ 	pgoff_t pgoff;
+ 	unsigned long pfn = page_to_pfn(page);
+ 
++	/*
++	 * This function is special in that a page struct obtained via
++	 * virt_to_page from a slab object may be passed to it. However, slab
++	 * allocators may use the mapping field for their own purposes. As a
++	 * result mapping may be != NULL here although the page is not mapped.
++	 * Slab objects are never mapped into user space so use NULL for that
++	 * special case.
++	 */
++	mapping = PageSlab(page) ? NULL : page_mapping(page);
+ 
+ 	if (mapping && !mapping_mapped(mapping)) {
+ 		set_bit(PG_dcache_dirty, &page->flags);
+Index: linux-2.6/arch/sparc64/mm/init.c
+===================================================================
+--- linux-2.6.orig/arch/sparc64/mm/init.c	2007-06-28 18:57:18.000000000 -0700
++++ linux-2.6/arch/sparc64/mm/init.c	2007-06-28 19:11:46.000000000 -0700
+@@ -339,7 +339,15 @@
+ 
+ 	this_cpu = get_cpu();
+ 
+-	mapping = page_mapping(page);
++	/*
++	 * This function is special in that a page struct obtained via
++	 * virt_to_page from a slab object may be passed to it. However, slab
++	 * allocators may use the mapping field for their own purposes. As a
++	 * result mapping may be != NULL here although the page is not mapped.
++	 * Slab objects are never mapped into user space so use NULL for that
++	 * special case.
++	 */
++	mapping = PageSlab(page) ? NULL : page_mapping(page);
+ 	if (mapping && !mapping_mapped(mapping)) {
+ 		int dirty = test_bit(PG_dcache_dirty, &page->flags);
+ 		if (dirty) {
+Index: linux-2.6/arch/xtensa/mm/init.c
+===================================================================
+--- linux-2.6.orig/arch/xtensa/mm/init.c	2007-06-28 18:57:18.000000000 -0700
++++ linux-2.6/arch/xtensa/mm/init.c	2007-06-28 19:11:46.000000000 -0700
+@@ -433,7 +433,7 @@
+ void flush_dcache_page(struct page *page)
+ {
+ 	unsigned long addr = __pa(page_address(page));
+-	struct address_space *mapping = page_mapping(page);
++	struct address_space *mapping;
+ 
+ 	__flush_invalidate_dcache_page_phys(addr);
+ 
+@@ -442,6 +442,15 @@
+ 
+ 	/* If this page hasn't been mapped, yet, handle I$/D$ coherency later.*/
+ #if 0
++	/*
++	 * This function is special in that a page struct obtained via
++	 * virt_to_page from a slab object may be passed to it. However, slab
++	 * allocators may use the mapping field for their own purposes. As a
++	 * result mapping may be != NULL although the page is not mapped.
++	 * Slab objects are never mapped into user space so use NULL for that
++	 * special case.
++	 */
++	mapping = PageSlab(page) ? NULL : page_mapping(page);
+ 	if (mapping && !mapping_mapped(mapping))
+ 		clear_bit(PG_cache_clean, &page->flags);
+ 	else
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h	2007-06-28 18:57:18.000000000 -0700
++++ linux-2.6/include/linux/mm.h	2007-06-28 19:11:46.000000000 -0700
+@@ -601,12 +601,16 @@
+ {
+ 	struct address_space *mapping = page->mapping;
+ 
++	/*
++	 * The scatter gather layer currently may place the page struct
++	 * of slab objects onto the scatter gather lists. The VM_BUG_ON
++	 * here insures that we get notified if page cache functions are
++	 * called for such a page.
++	 */
++	VM_BUG_ON(PageSlab(page));
++
+ 	if (unlikely(PageSwapCache(page)))
+ 		mapping = &swapper_space;
+-#ifdef CONFIG_SLUB
+-	else if (unlikely(PageSlab(page)))
+-		mapping = NULL;
+-#endif
+ 	else if (unlikely((unsigned long)mapping & PAGE_MAPPING_ANON))
+ 		mapping = NULL;
+ 	return mapping;
+Index: linux-2.6/include/linux/highmem.h
+===================================================================
+--- linux-2.6.orig/include/linux/highmem.h	2007-06-28 19:11:48.000000000 -0700
++++ linux-2.6/include/linux/highmem.h	2007-06-28 19:25:36.000000000 -0700
+@@ -38,6 +38,11 @@
+ #ifndef ARCH_HAS_KMAP
+ static inline void *kmap(struct page *page)
+ {
++	/*
++	 * WARNING: page may be a slab page and kmap may be called for such
++	 * a page as a result of putting a slab object onto scatter gather
++	 * lists by a device driver.
++	 */
+ 	might_sleep();
+ 	return page_address(page);
+ }
+@@ -48,6 +53,11 @@
+ 
+ static inline void *kmap_atomic(struct page *page, enum km_type idx)
+ {
++	/*
++	 * WARNING: page may be a slab page and kmap_atomic may be called for
++	 * such a page as a result of putting a slab object onto scatter gather
++	 * lists by a device driver.
++	 */
+ 	pagefault_disable();
+ 	return page_address(page);
+ }
