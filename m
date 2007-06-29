@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbXF2Bam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbXF2CCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932594AbXF2Bam (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 21:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbXF2Bae
+	id S932468AbXF2CCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 22:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764132AbXF2CCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 21:30:34 -0400
-Received: from ozlabs.org ([203.10.76.45]:44587 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756077AbXF2Bae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 21:30:34 -0400
-Subject: [PATCH] lguest: fix TSC "divide error: 0000 [#1]" boot crash
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matt Mackall <mpm@selenic.com>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 29 Jun 2007 11:30:33 +1000
-Message-Id: <1183080633.7803.10.camel@localhost.localdomain>
+	Thu, 28 Jun 2007 22:02:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51778 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764893AbXF2CCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 22:02:09 -0400
+Date: Thu, 28 Jun 2007 19:01:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Joshua Wise <jwise@google.com>, linux-kernel@vger.kernel.org,
+       thockin@google.com, mikew@google.com, masouds@google.com
+Subject: Re: [PATCH] Info dump on Oops or panic()
+Message-Id: <20070628190146.64af724a.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706290237390.31463@twin.jikos.cz>
+References: <Pine.LNX.4.64.0706281502350.617@internets.corp.google.com>
+	<Pine.LNX.4.64.0706290237390.31463@twin.jikos.cz>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Configuring a guest with < CONFIG_M586TSC reveals an lguest bug: the
-TSC code expects to see the TSC capability bit, but we weren't setting
-up the capabilities until much later in check_bugs ->
-identify_boot_cpu -> identify_boot_cpu.
+On Fri, 29 Jun 2007 02:39:33 +0200 (CEST) Jiri Kosina <jikos@jikos.cz> wrote:
 
-Do the same thing as Xen and the head.S native code: populate the
-first capability word before start_kernel().
+> On Thu, 28 Jun 2007, Joshua Wise wrote:
+> 
+> >  This patch adds a call chain to be invoked when the system oopses or
+> >  panics. 
+> 
+> That seems really fragile, processing a callchain when the system goes to 
+> panic is not guaranteed to work. Wouldn't simple function call have higher 
+> chances of survival?
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+That was my complaint, but then we remembered die_chain, which is already
+doing that.
 
-diff -r 7743cd1639b7 drivers/lguest/lguest.c
---- a/drivers/lguest/lguest.c	Thu Jun 28 23:21:41 2007 +1000
-+++ b/drivers/lguest/lguest.c	Fri Jun 29 06:23:59 2007 +1000
-@@ -598,6 +598,9 @@ __init void lguest_init(void *boot)
- 	paravirt_disable_iospace();
- 
- 	cpu_detect(&new_cpu_data);
-+	/* head.S usually sets up the first capability word, so do it here. */
-+	new_cpu_data.x86_capability[0] = cpuid_edx(1);
-+	
- 	/* Math is always hard! */
- 	new_cpu_data.hard_math = 1;
- 
-
+Joshua will take a look at using die_chain instead of adding another one.
 
