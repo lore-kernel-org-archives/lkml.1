@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765418AbXF2MJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765602AbXF2MMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765418AbXF2MJn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 08:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761515AbXF2MJg
+	id S1765602AbXF2MMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 08:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762255AbXF2MMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 08:09:36 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:23934 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761063AbXF2MJg (ORCPT
+	Fri, 29 Jun 2007 08:12:09 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43038 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761423AbXF2MMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 08:09:36 -0400
-Subject: Re: Tasklet usage in the DRM
-From: Daniel Walker <dwalker@mvista.com>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <1183100942.3289.296.camel@thor.sulgenrain.local>
-References: <1183100942.3289.296.camel@thor.sulgenrain.local>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 29 Jun 2007 08:04:30 -0400
-Message-Id: <1183118671.4405.12.camel@imap.mvista.com>
+	Fri, 29 Jun 2007 08:12:08 -0400
+Date: Fri, 29 Jun 2007 13:16:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, clameter@sgi.com, hugh@veritas.com,
+       James.Bottomley@steeleye.com, rmk+lkml@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Containment measures for slab objects on scatter gather
+ lists
+Message-ID: <20070629131657.5ecc3baa@the-village.bc.nu>
+In-Reply-To: <20070628224519.1a3319c3.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0706282128570.11739@schroedinger.engr.sgi.com>
+	<20070628.220606.112621271.davem@davemloft.net>
+	<20070628222424.4cbae90c.akpm@linux-foundation.org>
+	<20070628.223734.21928089.davem@davemloft.net>
+	<20070628224519.1a3319c3.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-29 at 09:09 +0200, Michel Dänzer wrote:
-> I just read an article on LWN's kernel page about plans to remove
-> tasklets, and I thought I'd explain what the DRM is using tasklets for.
-> Maybe there's other ways to satisfy the requirements equally well or
-> even better.
-> 
-> 
-> The i915 driver uses a tasklet to make sure a GL buffer swap blit or
-> flip takes effect (or at least starts in the case of a blit) during the
-> vertical blank period, to avoid tearing. I chose a tasklet for this
-> purpose because:
-> 
->       * The traditional method of the vertical blank interrupt waking up
->         the user process, which would then emit the buffer swap
->         commands, didn't even come close to avoiding tearing. So I
->         suspect a workqueue wouldn't cut it either.
->       * The processing of scheduled buffer swaps could potentially take
->         a long time, so doing it in hardirq context could cause high IRQ
->         latency.
->       * It requires holding the DRM lock, so the 'each tasklet can only
->         run once at a time' restriction is fine.
-> 
-> 
-> I'm looking forward to any suggestions what to do with this in case
-> tasklets disappear, and I'll gladly provide further clarification on the
-> requirements.
+> If those operations involve modifying that slab page's pageframe then what
+> stops concurrent dma'ers from stomping on each other's changes?  As in:
+> why aren't we already buggy?
 
-If it hasn't been done someone with this hardware could test Steven's
-patches to see if they do satisfy the requirements..
-
-I think the most recent version was posted in this message,
-http://lkml.org/lkml/2007/6/27/289
-
-Subject was "[RFC PATCH 0/8] Convert all tasklets to workqueues V3" if
-people are subscribed to LKML ..
-
-(Added Steven to the CC list)
-
-Daniel
+Or DMA operations falling out with CPU operations in the same memory
+area. Not all platforms have hardware consistency and some will blat the
+entire page out of cache.
 
