@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbXF2JUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbXF2JUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760944AbXF2JUQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 05:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbXF2JUD
+	id S1761504AbXF2JUn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 05:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756560AbXF2JUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 05:20:03 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44742 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754506AbXF2JUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 05:20:00 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18BRk5E6pgBfs7ZFQpLzDHX7ePOfcVnXhftcMRyye
-	z8NMeyvCGWD0a6
-Date: Fri, 29 Jun 2007 11:21:21 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Josh Triplett <josh@kernel.org>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Li Yang-r58472 <LeoLi@freescale.com>,
-       Chris Shoemaker <c.shoemaker@cox.net>,
-       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [OT] Vim highlighting for trailing spaces
-Message-ID: <20070629092121.GA6487@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Josh Triplett <josh@kernel.org>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	Kyle Moffett <mrmacman_g4@mac.com>,
-	Dave Young <hidave.darkstar@gmail.com>,
-	Li Yang-r58472 <LeoLi@freescale.com>,
-	Chris Shoemaker <c.shoemaker@cox.net>,
-	Josh Triplett <josht@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <46835C16.9020700@kernel.org> <989B956029373F45A0B8AF0297081890D834BE@zch01exm26.fsl.freescale.net> <a8e1da0706280010m1e787bc2jae999084438982da@mail.gmail.com> <a8e1da0706280020ocf81ce7u98de87f16d674706@mail.gmail.com> <7958FF64-140B-435A-8B69-A503C5C18D79@mac.com> <Pine.LNX.4.64.0706290938460.22579@fbirervta.pbzchgretzou.qr> <4684BA77.7090804@kernel.org> <Pine.LNX.4.64.0706291001320.22579@fbirervta.pbzchgretzou.qr> <4684C5EE.9000606@kernel.org>
+	Fri, 29 Jun 2007 05:20:35 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:59334 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754507AbXF2JUe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 05:20:34 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4684C5EE.9000606@kernel.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/5 v2] Add the explanation and a sample of RapidIO DTS sector to the document of booting-without-of.txt file.
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Fri, 29 Jun 2007 17:20:27 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C6F3312@zch01exm26.fsl.freescale.net>
+In-Reply-To: <8ee77b5f79ee0c0c5ead1f0acbe95bda@kernel.crashing.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/5 v2] Add the explanation and a sample of RapidIO DTS sector to the document of booting-without-of.txt file.
+Thread-Index: Ace6LMBh98UCBupuQo2O02Yz74/WgQAAaXJQ
+References: <11829333481420-git-send-email-wei.zhang@freescale.com> <11829333481977-git-send-email-wei.zhang@freescale.com> <5f0438212493766009684d63e41c85cc@kernel.crashing.org> <46B96294322F7D458F9648B60E15112C6F3281@zch01exm26.fsl.freescale.net> <8ee77b5f79ee0c0c5ead1f0acbe95bda@kernel.crashing.org>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Segher Boessenkool" <segher@kernel.crashing.org>
+Cc: <linux-kernel@vger.kernel.org>, <mporter@kernel.crashing.org>,
+       <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.29 01:42:22 -0700, Josh Triplett wrote:
-> Jan Engelhardt wrote:
-> > On Jun 29 2007 00:53, Josh Triplett wrote:
-> >> And if you really want highlighting, you can always use grep --color. :)
-> > 
-> > Been there, done that, have GREP_COLOR env variable defined!
+Hi, Segher, 
+
+> DTS sector to the document of booting-without-of.txt file.
 > 
-> Same here.  Now I just need to convince git-grep to use it.
+> >>> +    - #address-cells : Address representation for
+> >> "rapidio" devices.
+> >>> +      This field represents the number of cells needed 
+> to represent
+> >>> +      the RapidIO address of the registers.  For
+> >> supporting more than
+> >>> +      32-bits RapidIO address, this field should be <2>.
+> >>> +      See 1) above for more details on defining #address-cells.
+> >>
+> >> What does the RapidIO standard say about number of address
+> >> bits?  You want to follow that, so all RapidIO devices can
+> >> use the same #address-cells, not just the FSL ones.  Also,
+> >> are there different kinds of address spaces on the bus, or
+> >> is it just one big memory-like space?
+> >
+> > I've checked the specification of RapidIO. The supporting of RapidIO
+> > extended address modes are 66, 50 and 34 bit.
+> 
+> These three are all two bits more than some "regular" size --
+> do those two extra bits have some special meaning perhaps,
+> like an address space identifier or something?
+> 
+> > The Freescale's silicons is only support 34 bit address now.
+> > Do you mean I should not use words -- 'should be <2>'?
+> > The #address-cells should be assigned according the address mode
+> > supported by silicon.
+> 
+> No.  The #address-cells is determined by the bus binding,
+> so that all RapidIO busses on the planet can be represented
+> in a similar way in the OF device tree.  Take for example
+> the PCI binding, which gives you three address cells -- one
+> to distinguish between different address spaces (configuration
+> space, legacy I/O space, memory mapped space) and to contain
+> some flags (prefetchable vs. non-prefetchable, etc.); the
+> other two 32-bit cells contain a 64-bit address, although
+> config and legacy I/O never are more than 32 bit, and many
+> PCI devices can't do 64-bit addressing at all.
+> 
+> Now, there is no OF binding for RapidIO yet of course, but
+> it would be good to start thinking about one while doing
+> the binding for your specific controller -- it will make
+> life easier down the line for everyone, including yourself.
+> 
+How about I add more words here for more clear expression?
+Such as "<2> for 34 and 50 bit address, <3> for 66 bit address".
 
-You need to convince grep. When piping its output to less, it won't
-colorize unless forced. Always forcing color via GREP_OPTIONS might
-break certain use-cases, and git-grep doesn't allow to pass options. So
-for me, a bash alias it is:
-
-alias gg='GREP_OPTIONS=--color=always git-grep'
-
-You might need to set LESS=-R in addition to that, to stop less from
-stripping the color codes.
-
-Björn
+Thanks!
+Wei.
