@@ -1,101 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932660AbXF2BSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbXF2Bam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932660AbXF2BSX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 21:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763919AbXF2BSQ
+	id S932594AbXF2Bam (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 21:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbXF2Bae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 21:18:16 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:49269 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764145AbXF2BSQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 21:18:16 -0400
-Date: Thu, 28 Jun 2007 19:16:39 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-In-reply-to: <fa.n+OzEywqHGabZtz5NxmlX4rEY0A@ifi.uio.no>
-To: Anton Petrusevich <casus@casus.us>
-Cc: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org
-Message-id: <46845D77.3030908@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.C+RaPJT9DzfOowG03yiRkB6ItF8@ifi.uio.no>
- <fa.eZW1VxypFFwQqmC93xQaStxDK0Q@ifi.uio.no>
- <fa.n+OzEywqHGabZtz5NxmlX4rEY0A@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Thu, 28 Jun 2007 21:30:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:44587 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756077AbXF2Bae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 21:30:34 -0400
+Subject: [PATCH] lguest: fix TSC "divide error: 0000 [#1]" boot crash
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Matt Mackall <mpm@selenic.com>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 29 Jun 2007 11:30:33 +1000
+Message-Id: <1183080633.7803.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Petrusevich wrote:
-> On Thursday 28 June 2007 17:02:55 you wrote:
->> Please always use Reply-to-All on this list -- subscribers here like to
->> also get personal copies.
-> 
-> I am not subscribed to linux-kernel, I am reading it on the web.
-> 
->>> I have ICE1724, a very good sound card to my taste, works like a charm.
->>> But with ALSA I had a really hard time to configure it properly, wanna
->>> see my .asoundrc?
->> Not particularly. I don't count as a great fan of the config file syntax
->> and don't use any configuration myself. 
-> 
-> Do you have an SPDIF out? If you don't then you don't need .asoundrc of 
-> course.
-> 
->> The first thing I don't know is why you need an .asoundrc at all. 
-> 
-> Because I want to route it differently, sometimes to spdif, sometimes to 
-> headphones, sometimes to mix sounds from different apps. Well, my config may 
-> be a bit ancient as it was written when dmix was not default.
-> 
->> I've CCed 
->> the alsa-user list -- some subscribers to it probably have experience with
->> ice1724 and might be able to get you specific advice if you want.
-> 
-> I have read some advices for ice1724 already. The main reason I wrote to  
-> lkml -- I hate .asounrc and reading docs about it. I hate "flexebility" that 
-> requires restarting apps after changing sound routes.
-> 
->>> Is there a tool which can be used to configure .asoundrc?
->> vi.
-> 
-> I perfectly know this one. I would like to use some really user-friendly tool.
-> 
->>> I want to be able to hear sound from flashplayer on my reciever or in my
->>> headphones -- how?
->> Not sure? Is your receiver on an analog output and are your headphones
-> 
-> My receiver is on spdif out.
-> 
->> connected directly to a card output as well? In that case, "or" would seem
->> to be just a mixer issue, and "and" would be dependent on hardware
->> abilities and needs someone who knows your specific card and setup.
->>
->>> It's not quite clear to me how to get full duplex working with my
->>> .asoundrc.
->> It's not working without an .asoundrc?
-> 
-> Looks like it's not working with. As skype is not so informative.
-> 
->> But -- I'll personally not continue this very specific subthread simply due
->> to not having the hardware, nor great generic experience with an .asounrc
->> due to not needing it myself. When I do use one, I alway start by googling
->> up a few examples and take it from there. Perhaps someone from alsa-user
->> will step in.
-> 
-> I am not about ice1724 or .asounrc here. I am trying to talk about 
-> user-friendliness of ALSA. It's very unfriendly.
+Configuring a guest with < CONFIG_M586TSC reveals an lguest bug: the
+TSC code expects to see the TSC capability bit, but we weren't setting
+up the capabilities until much later in check_bugs ->
+identify_boot_cpu -> identify_boot_cpu.
 
-In the case of S/PDIF output on ice1724 (and probably other cards), it 
-would be nice if ALSA defaulted to routing default audio to both the 
-S/PDIF and analog ports, as this is what most users would normally 
-expect.. The Windows drivers work like that, but on Linux you have to 
-pick one or the other (at least without a bunch of mucking with the 
-config file).
+Do the same thing as Xen and the head.S native code: populate the
+first capability word before start_kernel().
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r 7743cd1639b7 drivers/lguest/lguest.c
+--- a/drivers/lguest/lguest.c	Thu Jun 28 23:21:41 2007 +1000
++++ b/drivers/lguest/lguest.c	Fri Jun 29 06:23:59 2007 +1000
+@@ -598,6 +598,9 @@ __init void lguest_init(void *boot)
+ 	paravirt_disable_iospace();
+ 
+ 	cpu_detect(&new_cpu_data);
++	/* head.S usually sets up the first capability word, so do it here. */
++	new_cpu_data.x86_capability[0] = cpuid_edx(1);
++	
+ 	/* Math is always hard! */
+ 	new_cpu_data.hard_math = 1;
+ 
+
 
