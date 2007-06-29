@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933107AbXF2NLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933284AbXF2NNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933107AbXF2NLY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 09:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbXF2NLP
+	id S933284AbXF2NNI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 09:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764920AbXF2NM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 09:11:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59270 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830AbXF2NLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 09:11:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Greaves <david@dgreaves.com>
-Subject: Re: [linux-pm] Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-Date: Fri, 29 Jun 2007 15:18:16 +0200
-User-Agent: KMail/1.9.5
-Cc: David Chinner <dgc@sgi.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm <linux-pm@lists.osdl.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, LinuxRaid <linux-raid@vger.kernel.org>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       David Robinson <zxvdr.au@gmail.com>, Oleg Nesterov <oleg@tv-sign.ru>
-References: <46744065.6060605@dgreaves.com> <20070629074322.GT31489@sgi.com> <4684BAA4.4010905@dgreaves.com>
-In-Reply-To: <4684BAA4.4010905@dgreaves.com>
+	Fri, 29 Jun 2007 09:12:56 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:32818 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764897AbXF2NMy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 09:12:54 -0400
+X-Originating-Ip: 74.102.207.204
+Date: Fri, 29 Jun 2007 09:10:52 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Alexey Dobriyan <adobriyan@sw.ru>, dhowells@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] frv: fix fallout from "remove sched.h from mm.h" patch
+In-Reply-To: <20070628151257.7a03e81b.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706290904420.13877@localhost.localdomain>
+References: <20070628140921.GA9753@localhost.sw.ru>
+ <20070628151257.7a03e81b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706291518.18072.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 29 June 2007 09:54, David Greaves wrote:
-> David Chinner wrote:
-> > On Fri, Jun 29, 2007 at 08:40:00AM +0100, David Greaves wrote:
-> >> What happens if a filesystem is frozen and I hibernate?
-> >> Will it be thawed when I resume?
-> > 
-> > If you froze it yourself, then you'll have to thaw it yourself.
-> 
-> So hibernate will not attempt to re-freeze a frozen fs and, during resume, it 
-> will only thaw filesystems that were frozen by the suspend?
+On Thu, 28 Jun 2007, Andrew Morton wrote:
 
-Right now it doesn't freeze (or thaw) any filesystems.  It just sync()s them
-before creating the hibernation image.
+> On Thu, 28 Jun 2007 18:09:21 +0400
+> Alexey Dobriyan <adobriyan@sw.ru> wrote:
+>
+> > Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+> > ---
+> >
+> >  include/asm-frv/pgtable.h |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > --- a/include/asm-frv/pgtable.h
+> > +++ b/include/asm-frv/pgtable.h
+> > @@ -25,7 +25,7 @@
+> >  #include <linux/slab.h>
+> >  #include <linux/list.h>
+> >  #include <linux/spinlock.h>
+> > -struct mm_struct;
+> > +#include <linux/sched.h>
+> >  struct vm_area_struct;
+> >  #endif
+> >
+>
+> Please provide changelogs.
+>
+> I assume this patch fixes some build error or something.
 
-However, the fact that you've seen corruption with the XFS filesystems frozen
-before the hibernation indicates that the problem occurs on a lower level.
+  i actually asked about this on either the janitors or newbies list
+the other day -- one of the early examples from the LDD3 device
+drivers book which built fine all this time suddenly stopped building,
+until i explicitly included <linux/sched.h> to be able to dereference
+a pointer to "task_struct":
 
-Greetings,
-Rafael
+/home/rpjday/AMD/k/topics/0_hi/hi1.c:15: error: dereferencing pointer to incomplete type
+/home/rpjday/AMD/k/topics/0_hi/hi1.c:16: error: dereferencing pointer to incomplete type
 
+  clearly, until now, that header file was being picked up
+*somewhere*, but not now.  so i'm guessing there's going to be code
+all over the place that suddenly needs to add that inclusion of
+sched.h.
 
+rday
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
