@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbXF2Fc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbXF2FdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933167AbXF2Fc2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 01:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbXF2FcT
+	id S933220AbXF2FdK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 01:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbXF2Fcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 01:32:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:57468 "EHLO mail.goop.org"
+	Fri, 29 Jun 2007 01:32:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:57522 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754281AbXF2FcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 01:32:18 -0400
-Message-ID: <46849926.8050702@goop.org>
-Date: Fri, 29 Jun 2007 01:31:18 -0400
+	id S1755371AbXF2Fcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 01:32:51 -0400
+Message-ID: <46849948.7010907@goop.org>
+Date: Fri, 29 Jun 2007 01:31:52 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
@@ -34,34 +34,20 @@ CC: "Eric W. Biederman" <ebiederm@xmission.com>,
        Miles Bader <uclinux-v850@lsi.nec.co.jp>,
        Chris Zankel <chris@zankel.net>
 Subject: Re: [PATCH] cross-architecture ELF clean up
-References: <20070620230854.246399397@goop.org>	<20070620230902.387008536@goop.org> <18052.36612.846937.794756@cargo.ozlabs.ibm.com>
-In-Reply-To: <18052.36612.846937.794756@cargo.ozlabs.ibm.com>
+References: <20070620230854.246399397@goop.org>	<20070620230902.387008536@goop.org> <18052.34556.48421.672836@cargo.ozlabs.ibm.com>
+In-Reply-To: <18052.34556.48421.672836@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Paul Mackerras wrote:
->> ===================================================================
->> --- a/arch/powerpc/platforms/cell/io-workarounds.c
->> +++ b/arch/powerpc/platforms/cell/io-workarounds.c
->> @@ -9,6 +9,7 @@
->>  #undef DEBUG
->>  
->>  #include <linux/kernel.h>
->> +#include <linux/sched.h>
->>     
->
-> Why is this needed?  You've added #include <linux/sched.h> to 7 files
-> without explanation - and I can't see that you have removed a
-> corresponding #include from any header, have you?
+> No, it's because the bootwrapper is not part of the kernel and does
+> not use kernel headers.  The aim is that the bootwrapper can be built
+> and used outside the kernel source tree, so it needs its own copies of
+> any headers that aren't in /usr/include.
 >   
 
-asm-powerpc/elf.h included sched.h, and it in turn was being included by 
-something else.  With the cleanups in this patch, asm-powerpc/elf.h is 
-no longer being included, so io-workarounds.c needs kernel/sched.h for a 
-declaration of init_mm.
-
-Similarly with the others; they all failed to compile without linux/sched.h.
+Hm, I see.  But <elf.h> is generally available, isn't it?
 
     J
