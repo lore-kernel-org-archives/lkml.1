@@ -1,90 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759739AbXF2Iuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759691AbXF2Izp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759739AbXF2Iuj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 04:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbXF2Iu1
+	id S1759691AbXF2Izp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 04:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbXF2Izi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 04:50:27 -0400
-Received: from mail.xandmail.com ([212.155.184.97]:57526 "EHLO
-	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754450AbXF2IuZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 04:50:25 -0400
-Date: Fri, 29 Jun 2007 10:50:20 +0200
-Message-Id: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+	Fri, 29 Jun 2007 04:55:38 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:36300 "EHLO relay4.usu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753157AbXF2Izh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 04:55:37 -0400
+Message-ID: <4684C91B.5060203@ums.usu.ru>
+Date: Fri, 29 Jun 2007 14:55:55 +0600
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
-To: "jarkao2" <jarkao2@o2.pl>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
-       "shemminger" <shemminger@linux-foundation.org>,
-       "linux-net" <linux-net@vger.kernel.org>,
-       "netdev" <netdev@vger.kernel.org>
-X-XaM3-API-Version: 4.2(R3) (B21)
-X-type: 0
-X-SenderIP: 212.155.184.109
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: Bill Davidsen <davidsen@tmr.com>, rob@landley.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: man-pages-2.59 and man-pages-2.60 are released
+References: <467F8FCF.4080009@gmx.net> <4683BC76.8070805@ums.usu.ru> <20070628161720.298550@gmx.net> <46843B9B.2080700@tmr.com> <20070629083021.58530@gmx.net>
+In-Reply-To: <20070629083021.58530@gmx.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update...
-I did 2 tests :
+Michael Kerrisk wrote:
 
-1)  booted with option acpi=off
-It booted correctly, i managed to get some load on one of the card and after a while (10 minutes i guess) the Timeout occurs. Side effect, at the same moment the sata contolers lost control of the disks somehow and the raid 5 array on the system crashed hard. I have no traces as i was unable to rebuild it (and i tried a lot of extreme  voodoo methods).
+> Well, I think all that LFS seems to want is links that are
+> stable "for a while" (since I don't suppose that they want
+> to use really old tarballs in any case). So, for 
+> the benefit of LFS, I'll just be less aggressive about
+> moving tarballs into "Old" (I'll leave them sitting in http://www.kernel.org/pub/linux/docs/manpages/
+> for a few months at least.)
 
-2) changed the 3com cards
-i replaced by two cards,
-01:06.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II] (rev 42)
-01:07.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8029(AS)
+If this helps, here is the version information.
 
-reinstalled and stressed the network (small download from a laptop) and :
+Stable LFS (version 6.2, released on August 3, 2006) tells users to download 
+man-pages 2.34 (two releases old at that time). LFS-6.3 is expected to be 
+released in two months or so, thus a one-year period before moving tarballs 
+to "Old" should be enough even for stable LFS books (and if we agree on 
+that, I'll close http://wiki.linuxfromscratch.org/lfs/ticket/2037 as invalid).
 
-Jun 29 09:34:10 loki kernel: NETDEV WATCHDOG: eth0: transmit timed out
-Jun 29 09:34:51 loki last message repeated 14 times
-Jun 29 09:35:18 loki last message repeated 8 times
+Thanks for cooperation.
 
-so it seems to be a more generic problem.
-
-(i'v updated the fedora bugzilla aswell)
-
-did not test the  "[PATCH] 8139cp dev->tx_timeout" yet.
-
-JB
-
-
-> On Tue, Jun 26, 2007 at 04:24:07PM +0200, Jean-Baptiste Vignaud wrote:
-> > Hello, i have a very similar problem with 2.6.21 also;
-> > 
-> > 2 3com NICs and they are failling randomly.
-> > 
-> > The kernel is a basic fedora 7 kernel (2.6.21-1.3228.fc7)
-> > I found a bug report and added details here : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243960
-> > 
-> > I'm not subcribed on this list, so please cc me if there is any questions.
-> > 
-> > JB
-> > 
-> > > On Tue, Jun 26, 2007 at 08:10:17AM +0200, Marcin Ślusarz wrote:
-> > > ...
-> > > > I reproduced it on minimal config:
-> ...
-> > > We know your hardware should be OK - since it was fine with 2.6.20.
-> ...
-> 
-> It looks like there is something common in the air...
-> 
-> Marcin: ne2k_pci with 8390, Jean: 3com, and now I see
-> similar problem with 8139cp too (plus some ideas):
-> 
-> http://marc.info/?l=linux-netdev&m=118293314109648&w=2
-> 
-> So, you probably should wait a little & look for new patches here.
-> 
-> Cheers,
-> Jarek P.
-> 
-
+-- 
+Alexander E. Patrakov
