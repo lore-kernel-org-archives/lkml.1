@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932551AbXF2Nag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbXF2NfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932551AbXF2Nag (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 09:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763610AbXF2Na2
+	id S933063AbXF2NfX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 09:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764210AbXF2NfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 09:30:28 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:37152 "EHLO mail.ukfsn.org"
+	Fri, 29 Jun 2007 09:35:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59406 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753678AbXF2Na0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 09:30:26 -0400
-Message-ID: <4685096B.9000400@dgreaves.com>
-Date: Fri, 29 Jun 2007 14:30:19 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+	id S1765197AbXF2NfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 09:35:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Please release a stable kernel Linux 3.0
+Date: Fri, 29 Jun 2007 15:41:38 +0200
+User-Agent: KMail/1.9.5
+Cc: Arjan van de Ven <arjan@infradead.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Zolt?n HUBERT <zoltan.hubert@zzaero.com>, linux-kernel@vger.kernel.org,
+       seife@suse.de
+References: <200706212349.54983.zoltan.hubert@zzaero.com> <1182469541.2704.13.camel@laptopd505.fenrus.org> <20070628211522.GI5339@ucw.cz>
+In-Reply-To: <20070628211522.GI5339@ucw.cz>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Chinner <dgc@sgi.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm <linux-pm@lists.osdl.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, LinuxRaid <linux-raid@vger.kernel.org>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       David Robinson <zxvdr.au@gmail.com>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [linux-pm] Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-References: <46744065.6060605@dgreaves.com> <20070629074322.GT31489@sgi.com> <4684BAA4.4010905@dgreaves.com> <200706291518.18072.rjw@sisk.pl>
-In-Reply-To: <200706291518.18072.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706291541.40188.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Friday, 29 June 2007 09:54, David Greaves wrote:
->> David Chinner wrote:
->>> On Fri, Jun 29, 2007 at 08:40:00AM +0100, David Greaves wrote:
->>>> What happens if a filesystem is frozen and I hibernate?
->>>> Will it be thawed when I resume?
->>> If you froze it yourself, then you'll have to thaw it yourself.
->> So hibernate will not attempt to re-freeze a frozen fs and, during resume, it 
->> will only thaw filesystems that were frozen by the suspend?
+On Thursday, 28 June 2007 23:15, Pavel Machek wrote:
+> Hi!
 > 
-> Right now it doesn't freeze (or thaw) any filesystems.  It just sync()s them
-> before creating the hibernation image.
-Thanks. Yes I realise that :)
-I wasn't clear, I should have said:
-So hibernate should not attempt to re-freeze a frozen fs and, during resume, it
-should only thaw filesystems that were frozen by the suspend.
+> > > >> Even the good ones that get lots of fixes aren't all that good. The
+> > > >> biggest problem ATM is that suspend is badly broken and keeps getting
+> > > >> worse...
+> > > > 
+> > > > I wasn't under the impression suspend had really ever worked.  Such a
+> > > > messy problem to solve.
+> > > > 
+> > > 
+> > > It never worked reliably for everyone, but with each new release it
+> > > seems to get worse.
+> > 
+> > the thing is just fundamentally not designed right. Declaring it stable
+> > ain't gonna fix that. Having someone do a right design (which will
+> > obviously will go through some breakage period, even if it's an
+> > evolution of the current design) is a required step of getting s/r more
+> > reliable... but the current one doesn't get stable just by declaring it
+> > so.
+> 
+> Ok, I guess one more pair of eyes would help.
+> 
+> 
+> > > >> Even the good ones that get lots of fixes aren't all that good. The
+> > > >> biggest problem ATM is that suspend is badly broken and keeps getting
+> > > >> worse...
+> > > > 
+> > > > Can you please provide me with any links to suspend-related bug reports from
+> > > > you?
+> > > 
+> > > I get so many suspend/resume bug reports that I've given up trying
+> > > to get them fixed. And there are so many bugs that are even worse,
+> > > like crashes during normal use, data corruption, etc. that suspend
+> > > bugs don't get much attention. But here are the ones for Fedora 6;
+> > > the list would be much longer if I included Fedora 5 and 7:
+> 
+> (list of 20 bugs in redhat bugzilla).
+> 
+> ...well, it looks a bit better from my side. Number of suspend bugs in
+> suse bugzilla is certainly lower, and I guess it works a bit better,
+> too. (But we do not claim s2ram support for machines outside of s2ram
+> whitelist).
+> 
+> Now, perhaps redhat should get someone to work on suspend/hibernation
+> support (kernel level)? IIRC you had Nigel at one point, but he was
+> working on something else?
+> 
+> Rafael and me am trying to look after hibernation, but I believe noone
+> is really working on suspend :-(.
+
+I've been trying to for some time, but I still need to learn more.  Also, the
+issues in there are difficult to debug.
+
+Right now I'm collecting information and trying to help where I know what to
+do. :-)
+
+Greetings,
+Rafael
 
 
-> However, the fact that you've seen corruption with the XFS filesystems frozen
-> before the hibernation indicates that the problem occurs on a lower level.
-And that was why I chimed in - I don't think freezing fixes the problem (though 
-it may make sense for other reasons).
-
-David
-
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
