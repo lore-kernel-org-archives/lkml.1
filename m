@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbXF2IU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbXF2IWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbXF2IU7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 04:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbXF2IUt
+	id S1758138AbXF2IWf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 04:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbXF2IW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 04:20:49 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:41721 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751951AbXF2IUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 04:20:48 -0400
-Message-ID: <4684C0DD.4080702@dgreaves.com>
-Date: Fri, 29 Jun 2007 09:20:45 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+	Fri, 29 Jun 2007 04:22:27 -0400
+Received: from s131.mittwaldmedien.de ([62.216.178.31]:15458 "EHLO
+	s131.mittwaldmedien.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbXF2IW0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 04:22:26 -0400
+From: Holger Schurig <hs4233@mail.mn-solutions.de>
+To: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: 2.6.21.5: BUG: usbtouchscreen.c DMC TSC-10 wrong descriptor type / type->init() failed.
+Date: Fri, 29 Jun 2007 10:22:16 +0200
+User-Agent: KMail/1.9.5
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+       daniel.ritz@gmx.ch
+References: <468294E4.40801@anagramm.de> <d120d5000706271004u5e2304dekd4ad5315cdd4a55@mail.gmail.com> <4683D444.5030408@anagramm.de>
+In-Reply-To: <4683D444.5030408@anagramm.de>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>, David Chinner <dgc@sgi.com>
-Cc: David Robinson <zxvdr.au@gmail.com>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com> <4677E496.3080506@dgreaves.com> <4678DF56.1020903@gmail.com> <467ABE25.7060303@dgreaves.com>
-In-Reply-To: <467ABE25.7060303@dgreaves.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706291022.16888.hs4233@mail.mn-solutions.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
-> been away, back now...
-again...
+> The same is true if there is no EEPROM present but the EEPROM
+> is enabled. Anyway, I disabled my EEPROM by pulling the SEL4
+> pin high because I don't need/want it (yet).
 
-David Greaves wrote:
-> When I move the swap/resume partition to a different controller (ie when 
-> I broke the / mirror and used the freed space) the problem seems to go 
-> away.
-No, it's not gone away - but it's taking longer to show up.
-I can try and put together a test loop that does work, hibernates, resumes and 
-repeats but since I know it crashes at some point there doesn't seem much point 
-unless I'm looking for something.
-There's not much in the logs - is there any other instrumentation that people 
-could suggest?
-DaveC, given this is happening without (obvious) libata errors do you think it 
-may be something in the XFS/md/hibernate area?
+The same is done by my hardware guy. In my case, there is no 
+EEPROM attached ... but he didn't pull up this pin up, until I 
+found out what happend.
 
-If there's anything to be tried then I'll also move to 2.6.22-rc6.
+For the EEPROM: I actually don't care if the calibration data is 
+written somewhere in my filesystem or in some proprietary 
+EEPROM. If you create gadgets with unwritable filesystems, e.g. 
+cramfs, then you might care. But I didn't, and therefore didn't 
+bother implementing any support for calibration on the 
+driver-level. I'm doing that completely from userspace.
 
 
- > Tejun Heo wrote:
- >> It's really weird tho.  The PHY RDY status changed events are coming
- >> from the device which is NOT used while resuming
 
-There is an obvious problem there though Tejun (the errors even when sda isn't 
-involved in the OS boot) - can I start another thread about that issue/bug 
-later? I need to reshuffle partitions so I'd rather get the hibernate working 
-first and then go back to it if that's OK?
+> I started to do some more error handling, but it's propably
+> not worth doing so if the driver(s) has only limited
+> functionality (and no userspace app using it).
 
-David
+Who says that the driver has no user space app?  All touchscreen 
+events that you get are exported via /dev/input/eventX to user 
+space and there are plenty of apps that utilize this info.
 
+I wrote a (company inside) tool that reads /dev/input/eventXX, 
+calibrates them and injects those events into X11 via the XTest 
+extension. But for newer X.Org release you can also use 
+xserver-input-event driver. My approach has just the benefit 
+that I can "SIGHUP" my driver any time to re-calibrate, I don't 
+need to restart X for this, which is cumbersome.
+
+
+So, please add error handling and post your patch :-)
