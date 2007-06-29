@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXF2VvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbXF2Vv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbXF2VvK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 17:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbXF2Vtv
+	id S1758894AbXF2Vv3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 17:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbXF2Vtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 17:49:51 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2548 "EHLO
+	Fri, 29 Jun 2007 17:49:55 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2554 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756923AbXF2Vtq (ORCPT
+	with ESMTP id S1755600AbXF2Vty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 17:49:46 -0400
+	Fri, 29 Jun 2007 17:49:54 -0400
 X-AuthUser: davidel@xmailserver.org
 From: Davide Libenzi <davidel@xmailserver.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
@@ -17,17 +17,14 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>
 Date: Fri, 29 Jun 2007 14:48:52 -0700
-Subject: [patch 4/6] sys_indirect RFC - compat code for sys_indirect and compat_call_syscall for x86-64
+Subject: [patch 5/6] sys_indirect RFC - wire x86 sys_indirect
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.28360.1183153737.4>
+Message-ID: <send-serie.davidel@xmailserver.org.28360.1183153738.5>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the compat code necessary for sys_indirect(). Since the data
-structure passed down to sys_indirect() is compat-free, this is the
-only processing needed.
-A required compat_call_syscall() has been added to the x86-64 arch.
+Wires sys_indirect() to the x86 family arch.
 
 
 
@@ -37,111 +34,76 @@ Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 - Davide
 
 
-
 ---
- arch/x86_64/ia32/ia32entry.S |   18 +++++++++++++++++
- include/asm-x86_64/unistd.h  |    1 
- kernel/compat.c              |   44 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 63 insertions(+)
+ arch/i386/kernel/syscall_table.S |    1 +
+ arch/x86_64/ia32/ia32entry.S     |    1 +
+ include/asm-i386/unistd.h        |    4 +++-
+ include/asm-x86_64/unistd.h      |    3 +++
+ 4 files changed, 8 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.mod/kernel/compat.c
+Index: linux-2.6.mod/include/asm-i386/unistd.h
 ===================================================================
---- linux-2.6.mod.orig/kernel/compat.c	2007-06-29 12:12:41.000000000 -0700
-+++ linux-2.6.mod/kernel/compat.c	2007-06-29 12:13:46.000000000 -0700
-@@ -23,6 +23,8 @@
- #include <linux/timex.h>
- #include <linux/migrate.h>
- #include <linux/posix-timers.h>
-+#include <linux/fsalloc.h>
-+#include <linux/indirect.h>
+--- linux-2.6.mod.orig/include/asm-i386/unistd.h	2007-06-29 12:12:48.000000000 -0700
++++ linux-2.6.mod/include/asm-i386/unistd.h	2007-06-29 12:14:01.000000000 -0700
+@@ -329,10 +329,11 @@
+ #define __NR_signalfd		321
+ #define __NR_timerfd		322
+ #define __NR_eventfd		323
++#define __NR_indirect		324
  
- #include <asm/uaccess.h>
+ #ifdef __KERNEL__
  
-@@ -1082,3 +1084,45 @@
- 	return 0;
- }
+-#define NR_syscalls 324
++#define NR_syscalls 325
  
-+asmlinkage long compat_sys_indirect(unsigned int nr,
-+				    const __u32 __user *ctxs, unsigned int nctxs,
-+				    const __u32 __user *params)
-+{
-+	unsigned int i;
-+	long res;
-+	u32 tmp;
-+	struct indirect_op *iops;
-+	const struct indirect_ctx __user * __user *uctxs;
-+	unsigned long kparams[6];
-+	struct fsa_context ator;
-+	char ator_cache[128];
-+
-+	if (!indirect_call_ok(nr) || nctxs >= INT_MAX / sizeof(__u32))
-+		return -EINVAL;
-+	if (!access_ok(VERIFY_READ, params, 6 * sizeof(u32)) ||
-+	    !access_ok(VERIFY_READ, ctxs, nctxs * sizeof(u32)))
-+		return -EFAULT;
-+	uctxs = compat_alloc_user_space(nctxs * sizeof(void *));
-+	for (i = 0, res = 0; !res && i < nctxs; i++) {
-+		res |= __get_user(tmp, &ctxs[i]);
-+		res |= __put_user((unsigned long) tmp, &uctxs[i]);
-+	}
-+	if (res)
-+		return -EFAULT;
-+	for (i = 0, res = 0; i < 6; i++) {
-+		res |= __get_user(tmp, &params[i]);
-+		kparams[i] = tmp;
-+	}
-+	if (res)
-+		return -EFAULT;
-+	fsa_init(&ator, ator_cache, sizeof(ator_cache));
-+	res = indirect_set_context(&ator, uctxs, nctxs, &iops);
-+	if (likely(res == 0)) {
-+		res = compat_call_syscall(nr, kparams);
-+		indirect_unset_context(iops);
-+	}
-+	fsa_cleanup(&ator);
-+
-+	return res;
-+}
-+
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+@@ -379,6 +380,7 @@
+ 	case __NR_rt_sigsuspend:
+ 	case __NR_sigaltstack:
+ 	case __NR_iopl:
++	case __NR_indirect:
+ 		return 0;
+ 	}
+ 	return 1;
+Index: linux-2.6.mod/arch/i386/kernel/syscall_table.S
+===================================================================
+--- linux-2.6.mod.orig/arch/i386/kernel/syscall_table.S	2007-06-29 12:12:41.000000000 -0700
++++ linux-2.6.mod/arch/i386/kernel/syscall_table.S	2007-06-29 12:14:01.000000000 -0700
+@@ -323,3 +323,4 @@
+ 	.long sys_signalfd
+ 	.long sys_timerfd
+ 	.long sys_eventfd
++	.long sys_indirect
 Index: linux-2.6.mod/include/asm-x86_64/unistd.h
 ===================================================================
---- linux-2.6.mod.orig/include/asm-x86_64/unistd.h	2007-06-29 12:12:48.000000000 -0700
-+++ linux-2.6.mod/include/asm-x86_64/unistd.h	2007-06-29 12:57:58.000000000 -0700
-@@ -670,6 +670,7 @@
- 				struct sigaction __user *oact,
- 				size_t sigsetsize);
- extern long call_syscall(unsigned int nr, const unsigned long *params);
-+extern long compat_call_syscall(unsigned int nr, const unsigned long *params);
+--- linux-2.6.mod.orig/include/asm-x86_64/unistd.h	2007-06-29 12:13:34.000000000 -0700
++++ linux-2.6.mod/include/asm-x86_64/unistd.h	2007-06-29 12:14:01.000000000 -0700
+@@ -630,6 +630,8 @@
+ __SYSCALL(__NR_timerfd, sys_timerfd)
+ #define __NR_eventfd		284
+ __SYSCALL(__NR_eventfd, sys_eventfd)
++#define __NR_indirect		284
++__SYSCALL(__NR_indirect, sys_indirect)
  
- static inline int indirect_call_ok(unsigned int nr)
- {
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
+@@ -681,6 +683,7 @@
+ 	case __NR_rt_sigsuspend:
+ 	case __NR_sigaltstack:
+ 	case __NR_iopl:
++	case __NR_indirect:
+ 		return 0;
+ 	}
+ 	return 1;
 Index: linux-2.6.mod/arch/x86_64/ia32/ia32entry.S
 ===================================================================
---- linux-2.6.mod.orig/arch/x86_64/ia32/ia32entry.S	2007-06-29 12:12:41.000000000 -0700
-+++ linux-2.6.mod/arch/x86_64/ia32/ia32entry.S	2007-06-29 12:57:58.000000000 -0700
-@@ -392,6 +392,24 @@
- 	CFI_ENDPROC
- END(ia32_ptregs_common)
- 
-+ENTRY(compat_call_syscall)
-+	movq	$-ENOSYS, %rax
-+	cmpl	$(IA32_NR_syscalls-1), %edi
-+	ja	bad_sysc
-+	mov	%edi, %eax
-+	movq	%rsi, %r11
-+	movq	(%r11), %rdi
-+	movq	8(%r11), %rsi
-+	movq	16(%r11), %rdx
-+	movq	24(%r11), %rcx
-+	movq	32(%r11), %r8
-+	movq	40(%r11), %r9
-+	call	*ia32_sys_call_table(,%rax,8)
-+bad_sysc:
-+	ret
-+ENDPROC(compat_call_syscall)
-+
-+
- 	.section .rodata,"a"
- 	.align 8
- ia32_sys_call_table:
+--- linux-2.6.mod.orig/arch/x86_64/ia32/ia32entry.S	2007-06-29 12:13:34.000000000 -0700
++++ linux-2.6.mod/arch/x86_64/ia32/ia32entry.S	2007-06-29 12:14:01.000000000 -0700
+@@ -737,4 +737,5 @@
+ 	.quad compat_sys_signalfd
+ 	.quad compat_sys_timerfd
+ 	.quad sys_eventfd
++	.quad compat_sys_indirect
+ ia32_syscall_end:
 
