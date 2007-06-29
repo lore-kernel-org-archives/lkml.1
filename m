@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbXF2TY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbXF2T2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753564AbXF2TY0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 15:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbXF2TYR
+	id S1753840AbXF2T2l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 15:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXF2T2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 15:24:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:35169 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752275AbXF2TYQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 15:24:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=MJ4CX+JggPobBWw2l+PVoHRYBlve/3UkrTBTlULfwI5sYJZFE4k9aE39vOEIyyoNPjPT+nyBqzcCqefpLRT+zkVrOxEUxN+ODOE4Oa8V+BGv7nQ5XJqYuo3IrVOS/5Ht82EjJqPe/sscUgJJiqXDAjL5e+Tj0tO1lNH5oBqRak8=
-Date: Fri, 29 Jun 2007 23:22:09 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
-Subject: [PATCH] UDF: fix function name from udf_crc16 to udf_crc
-Message-ID: <20070629192209.GA6519@cvg>
-MIME-Version: 1.0
+	Fri, 29 Jun 2007 15:28:34 -0400
+Received: from mga02.intel.com ([134.134.136.20]:36151 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751466AbXF2T2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 15:28:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,476,1175497200"; 
+   d="scan'208";a="260503213"
+Date: Fri, 29 Jun 2007 12:23:53 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Robert Hancock <hancockr@shaw.ca>, Zan Lynx <zlynx@acm.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Raj, Ashok" <ashok.raj@intel.com>
+Subject: Re: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
+Message-ID: <20070629192353.GA12413@linux-os.sc.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <46845943.7050005@shaw.ca> <FC1D1B23302A22499C60C967336B2AE0016F7529@pdsmsx411.ccr.corp.intel.com> <20070629152858.GA27995@linux-os.sc.intel.com> <20070629162343.GD27698@rhun.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20070629162343.GD27698@rhun.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have to change udf_crc16() name to udf_crc()
-to be able to play with CRC test.
+On Fri, Jun 29, 2007 at 12:23:43PM -0400, Muli Ben-Yehuda wrote:
+> On Fri, Jun 29, 2007 at 08:28:58AM -0700, Keshavamurthy, Anil S wrote:
+> 
+> > +++ linux-2.6.22-rc4-mm2/drivers/pci/dmar.c	2007-06-29 07:46:25.000000000 -0700
+> > @@ -260,6 +260,8 @@
+> >  	int ret = 0;
+> >  
+> >  	dmar = (struct acpi_table_dmar *)dmar_tbl;
+> > +	if (!dmar)
+> > +		return -ENODEV;
+> >  
+> >  	if (!dmar->width) {
+> >  		printk (KERN_WARNING PREFIX "Zero: Invalid DMAR haw\n");
+> > @@ -301,7 +303,7 @@
+> >  
+> >  	parse_dmar_table();
+> >  	if (list_empty(&dmar_drhd_units)) {
+> > -		printk(KERN_ERR PREFIX "No DMAR devices found\n");
+> > +		printk(KERN_INFO PREFIX "No DMAR devices found\n");
+> >  		return -ENODEV;
+> >  	}
+> >  	return 0;
+> 
+> The convention is to print a KERN_DEBUG message if hardware is not
+> found when probing it, otherwise the boot messages become cluttered
+> with lots of "$FOO not found".
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+Since this is IOMMU is built into the kernel and it is
+good idea to report that the device is not present. The 
+above is printed only once and is consistent with other
+IOMMU implementation. Atleast it is useful when people 
+report bugs we can makeout whether IOMMU is being detected
+or not.
 
- fs/udf/crc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Here is what I see on my box.
+[..]
+"PCI-GART: No AMD northbridge found."
+[..]
+Calgary: detecting Calgary via BIOS EBDA area
+Calgary: Unable to locate Rio Grande table in EBDA - bailing!
+[..]
 
+As you can see I don;t have either GART or Calgary on my box.
 
-diff --git a/fs/udf/crc.c b/fs/udf/crc.c
-index 490aebe..85aaee5 100644
---- a/fs/udf/crc.c
-+++ b/fs/udf/crc.c
-@@ -105,8 +105,8 @@ int main(void)
- {
- 	unsigned short x;
- 
--	x = udf_crc16(bytes, sizeof bytes);
--	printf("udf_crc16: calculated = %4.4x, correct = %4.4x\n", x, 0x3299U);
-+	x = udf_crc(bytes, sizeof bytes);
-+	printf("udf_crc: calculated = %4.4x, correct = %4.4x\n", x, 0x3299U);
- 
- 	return 0;
- }
-
+-Thanks,
+Anil
