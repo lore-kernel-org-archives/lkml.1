@@ -1,275 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765174AbXF2GSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765570AbXF2GTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765174AbXF2GSX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 02:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbXF2GSO
+	id S1765570AbXF2GTl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 02:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXF2GTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 02:18:14 -0400
-Received: from nabe-new.tequila.jp ([211.14.136.194]:33480 "EHLO
-	nabe-new.tequila.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbXF2GSN (ORCPT
+	Fri, 29 Jun 2007 02:19:34 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:65294 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751622AbXF2GTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 02:18:13 -0400
-Message-ID: <4684A420.3010706@tequila.co.jp>
-Date: Fri, 29 Jun 2007 15:18:08 +0900
-From: Clemens Schwaighofer <cs@tequila.co.jp>
-Organization: TEQUILA\Japan
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	Fri, 29 Jun 2007 02:19:33 -0400
+Message-ID: <4684A3F3.40001@linux.vnet.ibm.com>
+Date: Fri, 29 Jun 2007 11:47:23 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Oops and Panics in 2.6.21.1, 2.6.20.6 and 2.6.19.2
-References: <464A4F56.6080108@tequila.co.jp> <46847397.70503@tequila.co.jp> <a781481a0706282312r5354d06di3e166d9b2e8bd63e@mail.gmail.com>
-In-Reply-To: <a781481a0706282312r5354d06di3e166d9b2e8bd63e@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9383FE9115C687109255AB11"
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-mm <linux-mm@kvack.org>
+CC: Balbir Singh <balbir@in.ibm.com>, Pavel Emelianov <xemul@sw.ru>,
+       Paul Menage <menage@google.com>, Kirill Korotaev <dev@sw.ru>,
+       devel@openvz.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
+       Aubrey Li <aubreylee@gmail.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: [RFC][PATCH 0/3] Containers: Integrated RSS and pagecache control
+ v5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9383FE9115C687109255AB11
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Containers: Integrated RSS and pagecache accounting and control v5
+------------------------------------------------------------------
 
-On 06/29/2007 03:12 PM, Satyam Sharma wrote:
-> Hi Clemens,
->=20
-> [ Cc:'ing Andrew, original thread at http://lkml.org/lkml/2007/5/15/354=
- ]
->=20
-> On 6/29/07, Clemens Schwaighofer <cs@tequila.co.jp> wrote:
->> On 05/16/2007 09:24 AM, Clemens Schwaighofer wrote:
->> > Hi,
->>
->> I had my system running up for about one month without any issues, and=
+Based on the discussions at OLS yesterday, the consensus was to try an
+integrated pagecache controller along with RSS controller under the
+same usage limit.
 
->> then it happened again, same kernel oops, panic, end.
->>
->> So I have upgraded to 2.6.22-rc4-mm2 in hope it might fix it, but I ju=
-st
->> got another oops (uptime 4d) [see attached file]
->=20
-> You "upgraded" from -stable series kernels (2.6.19.2 / 2.6.20.6 /
-> 2.6.21.1) to a -mm kernel, which is anything but :-)
+This patch extends the RSS controller to account and reclaim pagecache
+and swapcache pages.  The same 'rss_limit' now applies to both RSS pages
+and pagecache pages. When the limit is reached, both pagecache and RSS
+pages are reclaimed in LRU order as per the normal system wide reclaim
+policy.
 
-yeah, its sort of "last hope"
+This patch is based on RSS Controller V3.1 by Pavel and Balbir.  This patch
+depends on
 
-> On the one hand, I really like that we're getting testers for -mm
-> kernels, but on the other hand, my good and honest side would
-> recommend you to install stable kernels (2.6.x.y versions) on
-> production systems, if you really care about uptimes.
+1. Paul Menage's Containers(V10): Generic Process Containers
+http://lwn.net/Articles/236032/
+2. Pavel Emelianov's RSS controller based on process containers (v3.1)
+http://lwn.net/Articles/236817/
+3. Balbir's fixes for RSS controller as mentioned in
+http://lkml.org/lkml/2007/6/04/185
 
-thats fine. its just my workstation here. I would never ever do that on
-any production box. I am too old to be that experimental :)
+This is very much work-in-progress and it have been posted for comments
+after some basic testing with kernbench.
 
->> my config hasn't changed in any way to the previous kernels.
->=20
-> This doesn't look like the same oops you were getting persistently
-> with 2.6.21.1 ... you could try upgrading to 2.6.22-rc6 (without -mm)
-> too, if the oops in 2.6.21.1 was occurring too frequently in your setup=
-;
-> possibly it has been resolved in the 22-rc series.
+Comments, suggestions and criticisms are welcome.
 
-I will try that. thanks a lot for the tip (I upgraded to rc6-mm1, and I
-will see if I get the oops again, or the other one ...)
+--Vaidy
 
-> Satyam
->=20
-> [ Clemens' 2.6.22-rc4-mm2 oops below. ]
->=20
->=20
-> Jun 29 11:25:08 saturn kernel: [348308.690154] BUG: unable to handle
-> kernel NULL pointer dereference at virtual address 00000001
-> Jun 29 11:25:08 saturn kernel: [348308.690160]  printing eip:
-> Jun 29 11:25:08 saturn kernel: [348308.690162] c108887c
-> Jun 29 11:25:08 saturn kernel: [348308.690163] *pde =3D 00000000
-> Jun 29 11:25:08 saturn kernel: [348308.690166] Oops: 0000 [#2]
-> Jun 29 11:25:08 saturn kernel: [348308.690167] PREEMPT
-> Jun 29 11:25:08 saturn kernel: [348308.690169] Modules linked in:
-> eeprom pcspkr i2c_viapro k8temp hwmon i2c_core
-> Jun 29 11:25:08 saturn kernel: [348308.690177] CPU:    0
-> Jun 29 11:25:08 saturn kernel: [348308.690177] EIP:
-> 0060:[__d_lookup+108/336]    Not tainted VLI
-> Jun 29 11:25:08 saturn kernel: [348308.690179] EFLAGS: 00010202
-> (2.6.22-rc4-mm2 #1)
-> Jun 29 11:25:08 saturn kernel: [348308.690185] EIP is at
-> __d_lookup+0x6c/0x150
-> Jun 29 11:25:08 saturn kernel: [348308.690187] eax: 00000001   ebx:
-> 00000001   ecx: 00000001   edx: 089c1579
-> Jun 29 11:25:08 saturn kernel: [348308.690190] esi: c6840ee8   edi:
-> c301d734   ebp: f786f080   esp: c6840e84
-> Jun 29 11:25:08 saturn kernel: [348308.690193] ds: 007b   es: 007b
-> fs: 0000  gs: 0033  ss: 0068
-> Jun 29 11:25:08 saturn kernel: [348308.690196] Process nfsd (pid:
-> 30536, ti=3Dc6840000 task=3Dc62bce90 task.ti=3Dc6840000)
-> Jun 29 11:25:08 saturn kernel: [348308.690198] Stack: c301d734
-> 089c1579 c6840edb 00000002 c6840ee8 ffffffff 00000005 c6840edb
-> Jun 29 11:25:08 saturn kernel: [348308.690205]        0000f9ec
-> c6840ee8 c301d734 c471ba84 c1088976 c7bbb090 c7bbb090 00000000
-> Jun 29 11:25:08 saturn kernel: [348308.690211]        c10b49fc
-> c6840edb 0000000d c14914fb 00007793 332bce90 31313630 c5469900
-> Jun 29 11:25:08 saturn kernel: [348308.690217] Call Trace:
-> Jun 29 11:25:08 saturn kernel: [348308.690220]  [d_lookup+22/64]
-> d_lookup+0x16/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690224]
-> [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
-> Jun 29 11:25:08 saturn kernel: [348308.690229]  [release_task+612/880]
-> release_task+0x264/0x370
-> Jun 29 11:25:08 saturn kernel: [348308.690234]  [do_wait+1850/3072]
-> do_wait+0x73a/0xc00
-> Jun 29 11:25:08 saturn kernel: [348308.690239]
-> [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690243]
-> [default_wake_function+0/16] default_wake_function+0x0/0x10
-> Jun 29 11:25:08 saturn kernel: [348308.690247]  [sys_wait4+49/64]
-> sys_wait4+0x31/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690251]  [sys_waitpid+39/48]
-> sys_waitpid+0x27/0x30
-> Jun 29 11:25:08 saturn kernel: [348308.690255]  [syscall_call+7/11]
-> syscall_call+0x7/0xb
-> Jun 29 11:25:08 saturn kernel: [348308.690259]  =3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> Jun 29 11:25:08 saturn kernel: [348308.690260] INFO: lockdep is turned =
-off.
-> Jun 29 11:25:08 saturn kernel: [348308.690262] Code: d3 e8 31 c3 23 1d
-> b4 d8 51 c1 b8 01 00 00 00 c1 e3 02 03 1d bc d8 51 c1 e8 e2 24 f9 ff
-> 8b 1b 85 db 75 08 eb 44 85 c0 89 c3 74 3e <8b> 03 0f 18 00 90 8d 6b d8
-> 8b 54 24 04 3b 55 34 75 e8 8b 34 24
-> Jun 29 11:25:08 saturn kernel: [348308.690289] EIP:
-> [__d_lookup+108/336] __d_lookup+0x6c/0x150 SS:ESP 0068:c6840e84
-> Jun 29 11:25:08 saturn kernel: [348308.690296] note: nfsd[30536]
-> exited with preempt_count 1
-> Jun 29 11:25:08 saturn kernel: [348308.690303] BUG: scheduling while
-> atomic: nfsd/0x10000002/30536
-> Jun 29 11:25:08 saturn kernel: [348308.690305] INFO: lockdep is turned =
-off.
-> Jun 29 11:25:08 saturn kernel: [348308.690307]  [schedule+1490/1744]
-> schedule+0x5d2/0x6d0
-> Jun 29 11:25:08 saturn kernel: [348308.690311]
-> [vt_console_print+106/688] vt_console_print+0x6a/0x2b0
-> Jun 29 11:25:08 saturn kernel: [348308.690316]  [__cond_resched+18/48]
-> __cond_resched+0x12/0x30
-> Jun 29 11:25:08 saturn kernel: [348308.690319]  [cond_resched+42/64]
-> cond_resched+0x2a/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690322]  [unmap_vmas+1116/1184]
-> unmap_vmas+0x45c/0x4a0
-> Jun 29 11:25:08 saturn kernel: [348308.690327]  [exit_mmap+105/256]
-> exit_mmap+0x69/0x100
-> Jun 29 11:25:08 saturn kernel: [348308.690331]  [mmput+68/256]
-> mmput+0x44/0x100
-> Jun 29 11:25:08 saturn kernel: [348308.690335]  [do_exit+301/2224]
-> do_exit+0x12d/0x8b0
-> Jun 29 11:25:08 saturn kernel: [348308.690339]  [__wake_up+56/80]
-> __wake_up+0x38/0x50
-> Jun 29 11:25:08 saturn kernel: [348308.690342]  [die+574/576]
-> die+0x23e/0x240
-> Jun 29 11:25:08 saturn kernel: [348308.690346]
-> [do_page_fault+724/1520] do_page_fault+0x2d4/0x5f0
-> Jun 29 11:25:08 saturn kernel: [348308.690349]  [tcp_ack+2742/6960]
-> tcp_ack+0xab6/0x1b30
-> Jun 29 11:25:08 saturn kernel: [348308.690354]  [do_page_fault+0/1520]
-> do_page_fault+0x0/0x5f0
-> Jun 29 11:25:08 saturn kernel: [348308.690357]  [error_code+106/112]
-> error_code+0x6a/0x70
-> Jun 29 11:25:08 saturn kernel: [348308.690360]  [__d_lookup+108/336]
-> __d_lookup+0x6c/0x150
-> Jun 29 11:25:08 saturn kernel: [348308.690364]  [d_lookup+22/64]
-> d_lookup+0x16/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690367]
-> [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
-> Jun 29 11:25:08 saturn kernel: [348308.690372]  [release_task+612/880]
-> release_task+0x264/0x370
-> Jun 29 11:25:08 saturn kernel: [348308.690376]  [do_wait+1850/3072]
-> do_wait+0x73a/0xc00
-> Jun 29 11:25:08 saturn kernel: [348308.690380]
-> [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690383]
-> [default_wake_function+0/16] default_wake_function+0x0/0x10
-> Jun 29 11:25:08 saturn kernel: [348308.690387]  [sys_wait4+49/64]
-> sys_wait4+0x31/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690390]  [sys_waitpid+39/48]
-> sys_waitpid+0x27/0x30
-> Jun 29 11:25:08 saturn kernel: [348308.690394]  [syscall_call+7/11]
-> syscall_call+0x7/0xb
-> Jun 29 11:25:08 saturn kernel: [348308.690398]  =3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> Jun 29 11:25:08 saturn kernel: [348308.690472] BUG: scheduling while
-> atomic: nfsd/0x10000002/30536
-> Jun 29 11:25:08 saturn kernel: [348308.690474] INFO: lockdep is turned =
-off.
-> Jun 29 11:25:08 saturn kernel: [348308.690476]  [schedule+1490/1744]
-> schedule+0x5d2/0x6d0
-> Jun 29 11:25:08 saturn kernel: [348308.690480]
-> [_atomic_dec_and_lock+22/96] _atomic_dec_and_lock+0x16/0x60
-> Jun 29 11:25:08 saturn kernel: [348308.690485]
-> [_atomic_dec_and_lock+49/96] _atomic_dec_and_lock+0x31/0x60
-> Jun 29 11:25:08 saturn kernel: [348308.690489]  [__cond_resched+18/48]
-> __cond_resched+0x12/0x30
-> Jun 29 11:25:08 saturn kernel: [348308.690492]  [cond_resched+42/64]
-> cond_resched+0x2a/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690495]
-> [put_files_struct+166/208] put_files_struct+0xa6/0xd0
-> Jun 29 11:25:08 saturn kernel: [348308.690499]  [do_exit+363/2224]
-> do_exit+0x16b/0x8b0
-> Jun 29 11:25:08 saturn kernel: [348308.690503]  [__wake_up+56/80]
-> __wake_up+0x38/0x50
-> Jun 29 11:25:08 saturn kernel: [348308.690506]  [die+574/576]
-> die+0x23e/0x240
-> Jun 29 11:25:08 saturn kernel: [348308.690510]
-> [do_page_fault+724/1520] do_page_fault+0x2d4/0x5f0
-> Jun 29 11:25:08 saturn kernel: [348308.690513]  [tcp_ack+2742/6960]
-> tcp_ack+0xab6/0x1b30
-> Jun 29 11:25:08 saturn kernel: [348308.690517]  [do_page_fault+0/1520]
-> do_page_fault+0x0/0x5f0
-> Jun 29 11:25:08 saturn kernel: [348308.690520]  [error_code+106/112]
-> error_code+0x6a/0x70
-> Jun 29 11:25:08 saturn kernel: [348308.690524]  [__d_lookup+108/336]
-> __d_lookup+0x6c/0x150
-> Jun 29 11:25:08 saturn kernel: [348308.690528]  [d_lookup+22/64]
-> d_lookup+0x16/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690531]
-> [proc_flush_task+76/496] proc_flush_task+0x4c/0x1f0
-> Jun 29 11:25:08 saturn kernel: [348308.690535]  [release_task+612/880]
-> release_task+0x264/0x370
-> Jun 29 11:25:08 saturn kernel: [348308.690539]  [do_wait+1850/3072]
-> do_wait+0x73a/0xc00
-> Jun 29 11:25:08 saturn kernel: [348308.690543]
-> [_spin_unlock_irq+38/64] _spin_unlock_irq+0x26/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690547]
-> [default_wake_function+0/16] default_wake_function+0x0/0x10
-> Jun 29 11:25:08 saturn kernel: [348308.690551]  [sys_wait4+49/64]
-> sys_wait4+0x31/0x40
-> Jun 29 11:25:08 saturn kernel: [348308.690554]  [sys_waitpid+39/48]
-> sys_waitpid+0x27/0x30
-> Jun 29 11:25:08 saturn kernel: [348308.690558]  [syscall_call+7/11]
-> syscall_call+0x7/0xb
-> Jun 29 11:25:08 saturn kernel: [348308.690561]  =3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Features:
+--------
+* Single limit for both RSS and pagecache/swapcache pages
+* No new subsystem is added. The RSS controller subsystem is extended
+  since most of the code can be shared between pagecache control and
+  RSS control.
+* The accounting number include pages in swap cache and filesystem
+  buffer pages apart from pagecache, basically everything under
+  NR_FILE_PAGES is counted under rss_usage.
+* The usage limit set in rss_limit applies to sum of both RSS and
+  pagecache pages
+* Limits on pagecache can be set by echo -n 100000 > rss_limit on
+  the /container file system.  The unit is in pages or 4 kilobytes
+* If the pagecache+RSS utilisation exceed the limit, the container reclaim
+  code is invoked to recover pages from the container.
 
+Advantages:
+-----------
+* Minimal code changes to RSS controller to include pagecache pages
 
---=20
-[ Clemens Schwaighofer                      -----=3D=3D=3D=3D=3D:::::~ ]
-[ TEQUILA\ Japan IT Group                                    ]
-[                6-17-2 Ginza Chuo-ku, Tokyo 104-8167, JAPAN ]
-[ Tel: +81-(0)3-3545-7703            Fax: +81-(0)3-3545-7343 ]
-[ http://www.tequila.co.jp                                   ]
+Limitations:
+-----------
+* All limitation of RSS controller applies to this code as well
+* Per-container reclaim knobs like dirty ratio, vm_swappiness may
+  provide better control
 
+Usage:
+------
+* Add all dependent patches before including this patch
+* No new config settings apart from enabling CONFIG_RSS_CONTAINER
+* Boot new kernel
+* Mount container filesystem
+	mount -t container none /container
+	cd /container
+* Create new container
+	mkdir mybox
+	cd /container/mybox
+* Add current shell to container
+	echo $$ > tasks
+* In order to set limit, echo value in pages (4KB) to rss_limit
+	echo -n 100000 > rss_limit
+	#This would set 409MB limit on pagecache+rss usage
+* Trash the system from current shell using scp/cp/dd/tar etc
+* Watch rss_usage and /proc/meminfo to verify behavior
 
---------------enig9383FE9115C687109255AB11
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Tests:
+------
+* Simple dd/cat/cp test on pagecache limit/reclaim
+* rss_limit was tested with simple test application that would malloc
+  predefined size of memory and touch them to allocate pages.
+* kernbench was run under container with 400MB memory limit
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+ToDo:
+----
+* Optimise the reclaim.
+* Per-container VM stats and knobs
 
-iD8DBQFGhKQhjBz/yQjBxz8RAp4VAJ9mecwjBXUo5mra2y5l4nUpD1SrbwCgi9KP
-yFThldgbHnAoUS1DTrmMHDc=
-=dBuH
------END PGP SIGNATURE-----
+Patch Series:
+-------------
+pagecache-controller-v5-acct.patch
+pagecache-controller-v5-acct-hooks.patch
+pagecache-controller-v5-reclaim.patch
 
---------------enig9383FE9115C687109255AB11--
+ChangeLog:
+---------
+
+v5: Integrated pagecache + rss controller
+
+* No separate pagecache_limit
+* pagecache and rss pages accounted in rss_usage and governed by rss_limit
+* Each page counted only once in rss_usage.  Mapped or unmapped
+  pagecache pages are counted alike in rss_usage
+
+v4:
+* Patch remerged to Container v10 and RSS v3.1
+* Bug fixes
+* Tested with kernbench
+
+v3:
+* Patch merged with Containers v8 and RSS v2
+
