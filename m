@@ -1,78 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933083AbXF2Ml5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933095AbXF2MnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933083AbXF2Ml5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 08:41:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXF2Mlu
+	id S933095AbXF2MnK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 08:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760676AbXF2Mm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 08:41:50 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55192 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754299AbXF2Mlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 08:41:49 -0400
-Date: Fri, 29 Jun 2007 14:36:41 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       linux-kernel@vger.kernel.org, suspend-devel@lists.sourceforge.net,
-       Linus Torvalds <torvalds@linux-foundation.org>, fseidel@suse.de
-Subject: Re: [RFC] get rid of CONFIG_DISABLE_CONSOLE_SUSPEND
-Message-ID: <20070629123641.GA7887@suse.de>
-References: <20070628135108.GA1810@elf.ucw.cz> <200706281734.54642.rjw@sisk.pl> <20070628172514.GA12770@suse.de> <200706282112.45378.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 29 Jun 2007 08:42:57 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35184 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755016AbXF2Mm4 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 08:42:56 -0400
+Date: Fri, 29 Jun 2007 22:42:48 +1000
+From: David Chinner <dgc@sgi.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Regression: 2.6.22-rcX: hda: lost interrupt
+Message-ID: <20070629124248.GJ989688@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706282112.45378.rjw@sisk.pl>
-X-Operating-System: openSUSE 10.3 (i586) Alpha5, Kernel 2.6.22-rc4-git6-2-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 09:12:44PM +0200, Rafael J. Wysocki wrote:
-> On Thursday, 28 June 2007 19:25, Stefan Seyfried wrote:
-> > 
-> > However, we don't know which consoles are safe to stay alive during suspend.
-> > Generally, defaulting to suspending them all is not a bad idea IMHO.
-> > And IIRC it is plain luck if a serial console survives the suspend (or was
-> > the serial code fixed recently?)
-> 
-> Well, I don't think so, but I'm not sure.
-> 
-> The VGA/fb console also should be off during suspend (not necessarily during
-> hibernation, though).  IIRC, that's what caused Linus to introduce the
-> suspending of consoles after all.
-> 
-> > So i do not care too much, but my / Frank's patch was shorter :-) and safer.
-> 
-> I'm not sure which way to go.  On the one hand, I agree that we should rather
-> fix the consoles so that we know which one is suspend-safe and which is not
-> and disable the unsafe ones, but on the other hand we are not there yet and it
-> _sometimes_ is useful not to suspend a console even if we know that it will
-> break things.
+Folks,
 
-This is what my / Frank's patch was aimed at: give the user the ability to
-(painlessly, without rebuilding the kernel) debug suspend problems. Keep the
-default safe, like Linus likes it (consoles suspended), but give the user a
-switch to make it unsafe (consoles not suspended) for the sake of debugging.
+After updating an x86_64 machine from 2.6.21 to 2.6.22-rc6 and
+fighting off the where-the-fuck-did-my-serial-console-go blues
+(legacy_serial.force), I finally discovered why the damn thing
+wasn't booting - the machine was sitting there in a loop outputting
+"hda: lost interrupt" over and over again during hardware
+discovery (hda = dvd drive).
 
-Of course, fixing up all console drivers is an option that i'd very much like
-to see. It is however debatable if it is really worth the effort. If it works
-with consoles suspended, the user does not care. If it doesn't, he turns on
-debugging (knowing, or being told that this will break using netconsole).
+It doesn't happen on every boot - more boots hung than failed,
+though, while I was trying to work out where my serial port
+went and get some work done.
 
-I strongly oppose Pavel's approach to "declare all console drivers as
-nonbroken except netconsole". Even if he has not seen any failures apart
-from netconsole, in general i had the impression that suspending consoles
-did help. At least suspend works on many more machines than half a year ago,
-and i'd not be surprised if this was partly due to suspending the consoles.
+Since I've had the console operative, the boot hangs are
+basically like:
 
-Remember that wrt. suspend "i did not get a bugreport" very often just means
-"people tried it, it did not work, but they expected that and just turned
- away". It does not mean "it just works for everyone".
+ESB2: IDE controller at PCI slot 0000:00:1f.1
+ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 20 (level, low) -> IRQ20
+ESB2: chipset revision 9
+ESB2: not 100% native mode: will probe irqs later
+    ide0: DM-DMA at 0x50a0-0x50a7, BIOS settings: hda:DMA, hdb:pio
+    ide1: DM-DMA at 0x50a8-0x50af, BIOS settings: hda:pio, hdb:pio
+Probing IDE interface ide0...
+hda: probing with STATUS(0xa0) instead of ALTSTATUS(0x58)
+hda: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+hdb: probing with STATUS(0xb0) instead of ALTSTATUS(0x00)
+hdb: probing with STATUS(0xa1) instead of ALTSTATUS(0x51)
+hdb: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+hda: set_drive_speed_status: status=0x58 { DriveReady SeekComplete DataRequest }
+hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
+hda: set_drive_speed_status: error=0x04 { AbortedCommand }
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+......
+
+The success boots I've had (looking at the boot logs) have all
+failed to discover the dvd drive correctly except one. The
+one that dsicovered it still had errors, though. Errors
+look like:
+
+ESB2: IDE controller at PCI slot 0000:00:1f.1
+ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 20 (level, low) -> IRQ20
+ESB2: chipset revision 9
+ESB2: not 100% native mode: will probe irqs later
+    ide0: DM-DMA at 0x50a0-0x50a7, BIOS settings: hda:DMA, hdb:pio
+    ide1: DM-DMA at 0x50a8-0x50af, BIOS settings: hda:pio, hdb:pio
+Probing IDE interface ide0...
+hda: probing with STATUS(0xa0) instead of ALTSTATUS(0x58)
+hda: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+hdb: probing with STATUS(0xb0) instead of ALTSTATUS(0x00)
+hdb: probing with STATUS(0xa1) instead of ALTSTATUS(0x51)
+hdb: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+hda: set_drive_speed_status: status=0x58 { DriveReady SeekComplete DataRequest }
+hda: selected mode 0x0
+hda: set_drive_speed_status: status=0x58 { DriveReady SeekComplete DataRequest }
+hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
+hda: set_drive_speed_status: error=0x04 { AbortedCommand }
+hda: selected mode 0x0
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+
+Another failure mode:
+
+hda: probing with STATUS(0xa0) instead of ALTSTATUS(0x58)
+hda: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+hdb: probing with STATUS(0xb0) instead of ALTSTATUS(0x00)
+hdb: probing with STATUS(0xb0) instead of ALTSTATUS(0x00)
+hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
+hda: set_drive_speed_status: error=0x04 { AbortedCommand }
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: lost interrupt
+hda: task_in_intr: status=0x51 { DriveReady SeekComplete Error }
+hda: task_in_intr: error=0x04 { AbortedCommand }
+ide: failed opcode was: 0xa1
+
+And another:
+
+hda: host side 80-wire cable detection failed, limiting max speed to UDMA33
+hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
+hda: set_drive_speed_status: error=0x04 { AbortedCommand }
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: lost interrupt
+
+And other boots were a combination of the ones above.
+
+And the boot that really read the drive type properly but had
+scary warnings:
+
+ESB2: IDE controller at PCI slot 0000:00:1f.1
+ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 20 (level, low) -> IRQ20
+ESB2: chipset revision 9
+ESB2: not 100% native mode: will probe irqs later
+    ide0: DM-DMA at 0x50a0-0x50a7, BIOS settings: hda:DMA, hdb:pio
+    ide1: DM-DMA at 0x50a8-0x50af, BIOS settings: hda:pio, hdb:pio
+Probing IDE interface ide0...
+hda: DV-28E-R, ATAPI CD/DVD-ROM drive
+hda: selected mode 0x42
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: ATAPI 24X DVD-ROM drive, 256kB Cache, UDMA(33)
+Uniform CD-ROM driver Revision: 3.20
+hda: status error: status=0x50 { DriveReady SeekComplete }
+ide: failed opcode was: unknown
+hda: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+ide: failed opcode was: unknown
+hda: drive not ready for command
+hda: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+ide: failed opcode was: unknown
+hda: drive not ready for command
+<repeat another 10 times>
+
+I haven't seen any failures like this on 2.6.21 or earlier, so
+this is appears to be new to 2.6.22-rc.
+
+Cheers,
+
+Dave.
 -- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
-
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
