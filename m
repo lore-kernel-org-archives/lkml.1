@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbXF2VCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbXF2VGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651AbXF2VCP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 17:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbXF2VB5
+	id S1756664AbXF2VGR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 17:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbXF2VGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 17:01:57 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60175 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754389AbXF2VBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 17:01:55 -0400
-Message-ID: <4685733C.1090102@garzik.org>
-Date: Fri, 29 Jun 2007 17:01:48 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Fri, 29 Jun 2007 17:06:04 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:60035 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754173AbXF2VGB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 17:06:01 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Please release a stable kernel Linux 3.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rene Herman <rene.herman@gmail.com>,
+       William D Waddington <william.waddington@beezmo.com>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Reply-To: 7eggert@gmx.de
+Date: Fri, 29 Jun 2007 23:05:46 +0200
+References: <8AH0j-3Qc-11@gated-at.bofh.it> <8AH0j-3Qc-9@gated-at.bofh.it> <8B0vZ-r6-5@gated-at.bofh.it> <8B46G-69z-15@gated-at.bofh.it> <8B52G-7C9-5@gated-at.bofh.it> <8BalK-7Ic-39@gated-at.bofh.it> <8BaYr-8tJ-17@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Chuck Ebbert <cebbert@redhat.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rodrigo Luiz <troops.of.doom@gmail.com>, alsa-devel@alsa-project.org,
-       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
-       Ben Collins <bcollins@ubuntu.com>, reiserfs-devel@vger.kernel.org,
-       "Vladimir V. Saveliev" <vs@namesys.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-ide@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
-       Rodney Gordon II <meff@spherevision.org>
-Subject: Re: [1/2] 2.6.22-rc6: known regressions v2
-References: <46852187.3080504@googlemail.com>	<20070629175920.6af0c62b@the-village.bc.nu>	<468543CE.6080401@redhat.com>	<20070629190602.4ef6a0cb@the-village.bc.nu>	<46854B29.80906@garzik.org> <20070629192420.0d501a93@the-village.bc.nu>
-In-Reply-To: <20070629192420.0d501a93@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1I4Nf0-00016f-9A@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/mDr3tkFLnjtX2JhCRwiHvqEOka6Sxyt4h3hr
+ blmdQ5CDo5t2Kcq0vw+QB4dIFjcGFeNlp5G8dKPox2yvIrC9Vv
+ 979Ow++nBEpOsErRxkaUA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Fri, 29 Jun 2007 14:10:49 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Fri, 29 Jun 2007 00:00:27 +0200
+> Rene Herman <rene.herman@gmail.com> wrote:
+>> On 06/28/2007 06:30 PM, Alan Cox wrote:
+
+>> > Public domain is GPL compatible.
+>> 
+>> Would you happen to have an opinion on the attached? I don't so much need it
 > 
->> Alan Cox wrote:
->>>>> I'm not even sure this report is IT8212 related rather than just an IRQ
->>>>> storm
->>>> Why does the driver report "irq 0"?
->>>>
->>>> ata7: PATA max UDMA/133 cmd <blah> ctl <blah> bmdma <blah> irq 0  <====
->>>>
->>>> Above that, the ACPI layer says it assigned IRQ 20
->>> Because the libata core code in 2.6.22rc6 reports all the ports and IRQ
->>> values wrongly ?
->> AFAIK that was fixed, for IRQ.  Please point out examples where it 
->> remains broken...
+> The answer is "NO!!!!"
 > 
-> 2.6.22-rc6 it is broken, for all the systems I've looked at, as are the
-> port numbers. Tejun posted fixes for the IRQ but they do not seem to have
-> been applied, or if they were it was post -rc6 to a git tree.
+> Public domain also means "I don't have to give you the source".
+> If its merged with the kernel the resulting work is GPL anyway
+> 
+>> Stating that code which one intends to be in the public domain has "GPL and
+>> additional rights" is a bit of a travesty though.
+> 
+> Indeed if its public domain you may have almost no rights at all
+> depending what you were given. Once you get the source code you can do
+> stuff but I don't have to give you that. If its public domain I can find
+> security holes in it, and refuse to provide the fixed module in source
+> form even.
 
-
-I've seen the patch that eventually became 
-22888423b3b1b96573250671afb5b72ea4364902 from Olof Johansson but nothing 
-from Tejun on the subject.
-
-	Jeff
-
-
+The GPL forces nobody to not release his module under PD, therefore it can't
+protect you from that. Even minor changes - like adjusting the module to use
+to the current API - won't change that, at least in Germany they'd have to
+qualify as a work of their own in order to create a GPL-only derived work,
+because anything not qualifying for that could also be integrated into the
+PD version, and both would remain identical.
+-- 
+"Cluster bombing from B-52s is very, very accurate. The bombs are
+guaranteed to always hit the ground."
+-U.S.A.F. Ammo Troop
+Friﬂ, Spammer: 8wfPvrtu@j0o.7eggert.dyndns.org r@2ypKo.7eggert.dyndns.org
