@@ -1,57 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932365AbXF2AGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932175AbXF2ARs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932365AbXF2AGd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 20:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760105AbXF2AG0
+	id S932175AbXF2ARs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 20:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762270AbXF2ARk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 20:06:26 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4898 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754946AbXF2AGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 20:06:25 -0400
-Date: Fri, 29 Jun 2007 02:06:36 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch -mm] Make check_signature() depend on CONFIG_HAS_IOMEM
-In-Reply-To: <20070629001244.3ce09917@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0706290202480.1817@scrub.home>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
- <20070628133715.GA4343@osiris.boeblingen.de.ibm.com>
- <20070628110644.a530cfef.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282017450.30789@anakin>
- <20070628113819.c24e592d.akpm@linux-foundation.org> <Pine.LNX.4.64.0706282044360.30789@anakin>
- <20070628132947.e3378811.akpm@linux-foundation.org> <20070628232537.02ced21c@the-village.bc.nu>
- <Pine.LNX.4.64.0706290048290.1817@scrub.home> <20070629001244.3ce09917@the-village.bc.nu>
+	Thu, 28 Jun 2007 20:17:40 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2490 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761952AbXF2ARj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 20:17:39 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 28 Jun 2007 17:17:37 -0700
+Subject: [patch 1/1] compat_alloc_user
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.22229.1183076257.1>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I noticed that is not possible ATM to allocate two or more blocks
+of userspace memory. Would a compat_alloc_user() like the one below
+make sense (patch untested)?
 
-On Fri, 29 Jun 2007, Alan Cox wrote:
 
-> > > check_signature is relevant for anything with MMIO space (for example you
-> > > can legitimately want to check_signature a MAC68K Nubus ROM).
-> > 
-> > A generic check_signature() is a little difficult if we have separate io 
-> > functions for every bus.
-> 
-> Does M68K implement iomap() and pci_iomap and friends yet ?
 
-How is that related?
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-> check_signature has fairly few users so moving to be iomap based wouldn't
-> be hard if that was a problem. The other option would seem to be
-> bus->check_signature() ?
 
-IMO the first question would be whether that function is really this 
-important. We can also just leave it as a PCI/ISA template and other bus 
-specific header can implement when necessary.
+- Davide
 
-bye, Roman
+
+
+---
+ include/asm-ia64/compat.h    |    8 ++++++++
+ include/asm-mips/compat.h    |    8 ++++++++
+ include/asm-parisc/compat.h  |    8 ++++++++
+ include/asm-powerpc/compat.h |    8 ++++++++
+ include/asm-s390/compat.h    |    8 ++++++++
+ include/asm-sparc64/compat.h |    8 ++++++++
+ include/asm-x86_64/compat.h  |    8 ++++++++
+ 7 files changed, 56 insertions(+)
+
+Index: linux-2.6.mod/include/asm-x86_64/compat.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-x86_64/compat.h	2007-06-13 17:48:27.000000000 -0700
++++ linux-2.6.mod/include/asm-x86_64/compat.h	2007-06-13 17:48:32.000000000 -0700
+@@ -202,6 +202,14 @@
+ 	return (void __user *)regs->rsp - len; 
+ }
+ 
++static __inline__ void __user *compat_alloc_user(void __user **prev, long len)
++{
++	void __user *data;
++	data = *prev ? (*prev - len): compat_alloc_user_space(len);
++	*prev = (void __user *) ((unsigned long) data & ~0x7UL);
++	return *prev;
++}
++
+ static inline int is_compat_task(void)
+ {
+ 	return current_thread_info()->status & TS_COMPAT;
+Index: linux-2.6.mod/include/asm-sparc64/compat.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-sparc64/compat.h	2007-06-13 17:48:27.000000000 -0700
++++ linux-2.6.mod/include/asm-sparc64/compat.h	2007-06-13 17:48:32.000000000 -0700
+@@ -180,6 +180,14 @@
+ 	return (void __user *) usp;
+ }
+ 
++static inline void __user *compat_alloc_user(void __user **prev, long len)
++{
++	void __user *data;
++	data = *prev ? (*prev - len): compat_alloc_user_space(len);
++	*prev = (void __user *) ((unsigned long) data & ~0x7UL);
++	return *prev;
++}
++
+ struct compat_ipc64_perm {
+ 	compat_key_t key;
+ 	__compat_uid32_t uid;
+Index: linux-2.6.mod/include/asm-s390/compat.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-s390/compat.h	2007-06-13 17:48:27.000000000 -0700
++++ linux-2.6.mod/include/asm-s390/compat.h	2007-06-13 17:48:32.000000000 -0700
+@@ -171,6 +171,14 @@
+ 	return (void __user *) (stack - len);
+ }
+ 
++static inline void __user *compat_alloc_user(void __user **prev, long len)
++{
++	void __user *data;
++	data = *prev ? (*prev - len): compat_alloc_user_space(len);
++	*prev = (void __user *) ((unsigned long) data & ~0x7UL);
++	return *prev;
++}
++
+ struct compat_ipc64_perm {
+ 	compat_key_t key;
+ 	__compat_uid32_t uid;
+Index: linux-2.6.mod/include/asm-powerpc/compat.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-powerpc/compat.h	2007-06-13 17:48:27.000000000 -0700
++++ linux-2.6.mod/include/asm-powerpc/compat.h	2007-06-13 17:48:32.000000000 -0700
+@@ -146,6 +146,14 @@
+ 	return (void __user *) (usp - len);
+ }
+ 
++static inline void __user *compat_alloc_user(void __user **prev, long len)
++{
++	void __user *data;
++	data = *prev ? (*prev - len): compat_alloc_user_space(len);
++	*prev = (void __user *) ((unsigned long) data & ~0x7UL);
++	return *prev;
++}
++
+ /*
+  * ipc64_perm is actually 32/64bit clean but since the compat layer refers to
+  * it we may as well define it.
+Index: linux-2.6.mod/include/asm-parisc/compat.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-parisc/compat.h	2007-06-13 17:48:27.000000000 -0700
++++ linux-2.6.mod/include/asm-parisc/compat.h	2007-06-13 17:48:32.000000000 -0700
+@@ -150,6 +150,14 @@
+ 	return (void __user *)regs->gr[30];
+ }
+ 
++static __inline__ void __user *compat_alloc_user(void __user **prev, long len)
++{
++	void __user *data;
++	data = *prev ? : compat_alloc_user_space(len);
++	*prev = data + ((len + 0x7UL) & ~0x7UL);
++	return data;
++}
++
+ static inline int __is_compat_task(struct task_struct *t)
+ {
+ 	return test_ti_thread_flag(task_thread_info(t), TIF_32BIT);
+Index: linux-2.6.mod/include/asm-mips/compat.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-mips/compat.h	2007-06-13 17:48:27.000000000 -0700
++++ linux-2.6.mod/include/asm-mips/compat.h	2007-06-13 17:48:32.000000000 -0700
+@@ -148,6 +148,14 @@
+ 	return (void __user *) (regs->regs[29] - len);
+ }
+ 
++static inline void __user *compat_alloc_user(void __user **prev, long len)
++{
++	void __user *data;
++	data = *prev ? (*prev - len): compat_alloc_user_space(len);
++	*prev = (void __user *) ((unsigned long) data & ~0x7UL);
++	return *prev;
++}
++
+ struct compat_ipc64_perm {
+ 	compat_key_t key;
+ 	__compat_uid32_t uid;
+Index: linux-2.6.mod/include/asm-ia64/compat.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-ia64/compat.h	2007-06-13 17:48:27.000000000 -0700
++++ linux-2.6.mod/include/asm-ia64/compat.h	2007-06-13 17:48:32.000000000 -0700
+@@ -202,4 +202,12 @@
+ 	return (void __user *) (((regs->r12 & 0xffffffff) & -16) - len);
+ }
+ 
++static __inline__ void __user *compat_alloc_user(void __user **prev, long len)
++{
++	void __user *data;
++	data = *prev ? (*prev - len): compat_alloc_user_space(len);
++	*prev = (void __user *) ((unsigned long) data & ~0xfUL;
++	return *prev;
++}
++
+ #endif /* _ASM_IA64_COMPAT_H */
+
