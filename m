@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933681AbXF2P4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933708AbXF2P5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933681AbXF2P4B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 11:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765693AbXF2Pzu
+	id S933708AbXF2P5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 11:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765208AbXF2P5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 11:55:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48061 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758756AbXF2Pzu (ORCPT
+	Fri, 29 Jun 2007 11:57:03 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:57070 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760291AbXF2P5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 11:55:50 -0400
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-From: David Woodhouse <dwmw2@infradead.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070629150813.GM13886@enneenne.com>
-References: <20070627174537.GM13886@enneenne.com>
-	 <1182966588.1170.28.camel@pmac.infradead.org>
-	 <20070627224623.GO13886@enneenne.com>
-	 <1183018133.1170.46.camel@pmac.infradead.org>
-	 <20070628081538.GP13886@enneenne.com>
-	 <1183019474.1170.66.camel@pmac.infradead.org>
-	 <20070628084003.GQ13886@enneenne.com>
-	 <1183031060.1170.145.camel@pmac.infradead.org>
-	 <20070628161450.GD13886@enneenne.com>
-	 <1183117082.1170.308.camel@pmac.infradead.org>
-	 <20070629150813.GM13886@enneenne.com>
-Content-Type: text/plain
-Date: Fri, 29 Jun 2007 16:55:47 +0100
-Message-Id: <1183132548.1170.360.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 29 Jun 2007 11:57:01 -0400
+To: alan@lxorguk.ukuu.org.uk
+CC: mista.tapas@gmx.net, bunk@stusta.de, nix@esperi.org.uk, galibert@pobox.com,
+       tiwai@suse.de, kloczek@rudy.mif.pg.gda.pl, linux-kernel@vger.kernel.org
+In-reply-to: <20070629164945.26891025@the-village.bc.nu> (message from Alan
+	Cox on Fri, 29 Jun 2007 16:49:45 +0100)
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <20070624200837.16e11305@the-village.bc.nu>
+	<87tzssextf.fsf@hades.wkstn.nix>
+	<20070628210614.GC6087@stusta.de>
+	<200706291352.42833.mista.tapas@gmx.net>
+	<E1I4HtE-0003A5-00@dorka.pomaz.szeredi.hu> <20070629164945.26891025@the-village.bc.nu>
+Message-Id: <E1I4IoZ-0003Hm-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 29 Jun 2007 17:55:19 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-29 at 17:08 +0200, Rodolfo Giometti wrote:
+> Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > Not as if it would be hard to add ioctl support to fuse.  What fuse
+> > can't handle is the data argument of ioctl(), so the most it could do
+> > is give the filesystem a pid (tid) and a virtual address.  The
+> > userspace fs could then get/put the data through /proc/<pid>/mem.
 > 
-> +asmlinkage long sys_time_pps_fetch(int source, const int tsformat,
-> +                                       struct pps_info __user *info, 
-> +                                       const struct timespec __user *timeout)
-> +{
-> +       int ret;
-> +       struct timespec to;
-> +
-> +       if (timeout) {
-> +               ret = copy_from_user(&to, timeout, sizeof(struct timespec));
-> +               if (ret)
-> +                       return ret; 
+> Hork...
+> 
+> Identify the generic ioctls that are relevant to a FUSE file system and
+> have real meaning *and* are useful.
 
-You missed one. This should be -EFAULT too. And there's not a huge
-amount of point in keeping the access_ok() checks elsewhere, since
-copy_to_user() does that for itself.
+I don't think there are any such.
 
-Oh, and I think you do need compat magic for 'struct pps_info' and
-'struct pps_params' too -- there's a struct timespec hidden deep in
-there, as well as 'unsigned long longpad[3]'.
+The point in this thread was I think about emulating an OSS sound
+device through a fuse fs.  In that case fuse would need _generic_
+ioctl support, which simply can't be done without weird userspace
+hacks.  I'm definitely not adding specific ioctls to fuse.
 
-Can you explain the 'union pps_timeu'? It seems very odd. How do we know
-which member of the union should be used?
-
--- 
-dwmw2
-
+Miklos
