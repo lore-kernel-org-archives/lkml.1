@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759691AbXF2Izp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760417AbXF2I5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759691AbXF2Izp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 04:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbXF2Izi
+	id S1760417AbXF2I5F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 04:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbXF2I4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 04:55:38 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:36300 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbXF2Izh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 04:55:37 -0400
-Message-ID: <4684C91B.5060203@ums.usu.ru>
-Date: Fri, 29 Jun 2007 14:55:55 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
+	Fri, 29 Jun 2007 04:56:55 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:55014 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753893AbXF2I4y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 04:56:54 -0400
+Date: Fri, 29 Jun 2007 10:58:01 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-usb-devel@lists.sourceforge.net,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Li Yang-r58472 <LeoLi@freescale.com>
+Message-ID: <20070629085801.GH13886@enneenne.com>
+References: <20070628103619.GW13886@enneenne.com> <989B956029373F45A0B8AF0297081890D834FA@zch01exm26.fsl.freescale.net> <20070628141205.GA13886@enneenne.com> <200706281453.23414.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-Cc: Bill Davidsen <davidsen@tmr.com>, rob@landley.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: man-pages-2.59 and man-pages-2.60 are released
-References: <467F8FCF.4080009@gmx.net> <4683BC76.8070805@ums.usu.ru> <20070628161720.298550@gmx.net> <46843B9B.2080700@tmr.com> <20070629083021.58530@gmx.net>
-In-Reply-To: <20070629083021.58530@gmx.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706281453.23414.david-b@pacbell.net>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] PXA27x UDC driver.
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk wrote:
+On Thu, Jun 28, 2007 at 02:53:22PM -0700, David Brownell wrote:
+> 
+> Let's start with *JUST* a driver, not trying to update everything
+> else in the USB Gadget stack so that it looks like it's designed
+> specifically to handle all of Intel's design botches related to
+> endpoint config ... and work worse for essentially everything else.
+> 
+> (Unlike pretty much every other vendor, Intel wanted hardware config
+> management.  It was unusably buggy in pxa21x/25x/26x, and not much
+> better in pxa27x.)
+> 
+> 
+> So in technical terms, and to repeat what I've said before:  just
+> configure it to act more like a PXA 25x chip (no altsettings) and
+> get it so it passes all the tests [1], modulo errata which have no
+> workarounds ... then submit that.  No epautoconfig updates, no
+> patches to every gadget driver to cope with updated autoconfig.
 
-> Well, I think all that LFS seems to want is links that are
-> stable "for a while" (since I don't suppose that they want
-> to use really old tarballs in any case). So, for 
-> the benefit of LFS, I'll just be less aggressive about
-> moving tarballs into "Old" (I'll leave them sitting in http://www.kernel.org/pub/linux/docs/manpages/
-> for a few months at least.)
+This looks interesting... as you alredy told this driver derives from
+an older one, I just maintained it till now.
 
-If this helps, here is the version information.
+If I well understand I should remove usb_ep_autoconfig() and program
+into the controller only one (the default) configuration. Is that
+right?
 
-Stable LFS (version 6.2, released on August 3, 2006) tells users to download 
-man-pages 2.34 (two releases old at that time). LFS-6.3 is expected to be 
-released in two months or so, thus a one-year period before moving tarballs 
-to "Old" should be enough even for stable LFS books (and if we agree on 
-that, I'll close http://wiki.linuxfromscratch.org/lfs/ticket/2037 as invalid).
+Currently I tested the driver only with ether gadget, but if I do as
+above, should I get the driver working with all gadgets automagically?
+:)
 
-Thanks for cooperation.
+Thanks a lot,
+
+Rodolfo
 
 -- 
-Alexander E. Patrakov
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
