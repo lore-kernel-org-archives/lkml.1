@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755763AbXF2VuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbXF2Vub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755763AbXF2VuB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 17:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbXF2Vti
+	id S1758005AbXF2Vub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 17:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbXF2Vtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 17:49:38 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2532 "EHLO
+	Fri, 29 Jun 2007 17:49:39 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2536 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754533AbXF2Vtf (ORCPT
+	with ESMTP id S1755488AbXF2Vtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 17:49:35 -0400
+	Fri, 29 Jun 2007 17:49:36 -0400
 X-AuthUser: davidel@xmailserver.org
 From: Davide Libenzi <davidel@xmailserver.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
@@ -17,23 +17,15 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>
 Date: Fri, 29 Jun 2007 14:48:52 -0700
-Subject: [patch 1/6] sys_indirect RFC - fast sequential allocator
+Subject: [patch 2/6] sys_indirect RFC - add call_syscall helper to the x86 archs
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.28360.1183153733.1>
+Message-ID: <send-serie.davidel@xmailserver.org.28360.1183153735.2>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file implements a fast, sequential allocator. Chunks of memory
-are allocated in blocks of pages, and inside these blocks memory is
-allocated is a sequential fashion. All the allocated memory is released
-in one single sweep by freeing the backing pages. Indeed, there is not
-an fsa_free() function to deallocate a single block. The user can provide
-an initial allocation backing store, if needed, to avoid the alocator to
-call page allocation functions for the first "in cache" allocations.
-The FSA allocator provides no locking, so it is up to the caller serialize
-fsa_alloc() calls if ever needed.
-
+This patch introduces a new call_syscall() helper for the x86 family
+archs, to be used by sys_indirect().
 
 
 Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
@@ -43,168 +35,117 @@ Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
 ---
- include/linux/fsalloc.h |   34 ++++++++++++++++
- lib/Makefile            |    2 
- lib/fsalloc.c           |  102 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 137 insertions(+), 1 deletion(-)
+ arch/i386/kernel/entry.S    |   18 ++++++++++++++++++
+ arch/x86_64/kernel/entry.S  |   18 ++++++++++++++++++
+ include/asm-i386/unistd.h   |   16 ++++++++++++++++
+ include/asm-x86_64/unistd.h |   15 +++++++++++++++
+ 4 files changed, 67 insertions(+)
 
-Index: linux-2.6.mod/lib/Makefile
+Index: linux-2.6.mod/include/asm-x86_64/unistd.h
 ===================================================================
---- linux-2.6.mod.orig/lib/Makefile	2007-06-29 12:12:42.000000000 -0700
-+++ linux-2.6.mod/lib/Makefile	2007-06-29 12:12:45.000000000 -0700
-@@ -5,7 +5,7 @@
- lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 rbtree.o radix-tree.o dump_stack.o \
- 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
--	 sha1.o irq_regs.o reciprocal_div.o
-+	 sha1.o irq_regs.o reciprocal_div.o fsalloc.o
+--- linux-2.6.mod.orig/include/asm-x86_64/unistd.h	2007-06-29 12:12:42.000000000 -0700
++++ linux-2.6.mod/include/asm-x86_64/unistd.h	2007-06-29 12:57:59.000000000 -0700
+@@ -669,6 +669,21 @@
+ 				const struct sigaction __user *act,
+ 				struct sigaction __user *oact,
+ 				size_t sigsetsize);
++extern long call_syscall(unsigned int nr, const unsigned long *params);
++
++static inline int indirect_call_ok(unsigned int nr)
++{
++	switch (nr) {
++	case __NR_clone:
++	case __NR_fork:
++	case __NR_vfork:
++	case __NR_rt_sigsuspend:
++	case __NR_sigaltstack:
++	case __NR_iopl:
++		return 0;
++	}
++	return 1;
++}
  
- lib-$(CONFIG_MMU) += ioremap.o
- lib-$(CONFIG_SMP) += cpumask.o
-Index: linux-2.6.mod/include/linux/fsalloc.h
+ #endif  /* __ASSEMBLY__ */
+ #endif	/* __KERNEL__ */
+Index: linux-2.6.mod/arch/i386/kernel/entry.S
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.mod/include/linux/fsalloc.h	2007-06-29 12:12:45.000000000 -0700
-@@ -0,0 +1,34 @@
-+/*
-+ *  include/linux/fsalloc.h
-+ *
-+ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
-+ *
-+ */
+--- linux-2.6.mod.orig/arch/i386/kernel/entry.S	2007-06-29 12:12:42.000000000 -0700
++++ linux-2.6.mod/arch/i386/kernel/entry.S	2007-06-29 12:12:48.000000000 -0700
+@@ -1023,6 +1023,24 @@
+ 	CFI_ENDPROC
+ ENDPROC(kernel_thread_helper)
+ 
++ENTRY(call_syscall)
++	movl	$-ENOSYS, %eax
++	movl	4(%esp), %edx
++	cmpl	$(nr_syscalls), %edx
++	jae	bad_sysc
++	movl	8(%esp), %eax
++	pushl	20(%eax)
++	pushl	16(%eax)
++	pushl	12(%eax)
++	pushl	8(%eax)
++	pushl	4(%eax)
++	pushl	(%eax)
++	call	*sys_call_table(,%edx,4)
++	addl	$24, %esp
++bad_sysc:
++	ret
++ENDPROC(call_syscall)
 +
-+#ifndef _LINUX_FSALLOC_H
-+#define _LINUX_FSALLOC_H
-+
-+#ifdef __KERNEL__
-+
-+struct fsa_page {
-+	struct fsa_page *next;
-+	int order;
-+	unsigned long avail;
-+	void *data;
-+};
-+
-+struct fsa_context {
-+	struct fsa_page *first, *curr;
-+	struct fsa_page cached;
-+	int order;
-+};
-+
-+void fsa_init(struct fsa_context *ator, void *buffer,
-+	      unsigned long csize);
-+void fsa_cleanup(struct fsa_context *ator);
-+void *fsa_alloc(struct fsa_context *ator, unsigned long size);
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _LINUX_FSALLOC_H */
-+
-Index: linux-2.6.mod/lib/fsalloc.c
+ .section .rodata,"a"
+ #include "syscall_table.S"
+ 
+Index: linux-2.6.mod/include/asm-i386/unistd.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.mod/lib/fsalloc.c	2007-06-29 12:12:45.000000000 -0700
-@@ -0,0 +1,102 @@
-+/*
-+ *  lib/fsalloc.c
-+ *
-+ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
-+ *
-+ *  This file implements a fast, sequential allocator. Chunks of memory
-+ *  are allocated in blocks of pages, and inside these blocks memory is
-+ *  allocated is a sequential fashion. All the allocated memory is released
-+ *  in one single sweep by freeing the backing pages. Indeed, there is not
-+ *  an fsa_free() function to deallocate a single block. The user can provide
-+ *  an initial allocation backing store, if needed, to avoid the alocator to
-+ *  call page allocation functions for the first "in cache" allocations.
-+ *  The FSA allocator provides no locking, so it is up to the caller serialize
-+ *  fsa_alloc() calls if ever needed.
-+ */
+--- linux-2.6.mod.orig/include/asm-i386/unistd.h	2007-06-29 12:12:42.000000000 -0700
++++ linux-2.6.mod/include/asm-i386/unistd.h	2007-06-29 12:57:58.000000000 -0700
+@@ -368,5 +368,21 @@
+ #define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
+ #endif
+ 
++extern long call_syscall(unsigned int nr, const unsigned long *params);
 +
-+#include <linux/module.h>
-+#include <linux/mm.h>
-+#include <linux/mman.h>
-+#include <linux/kernel.h>
-+#include <linux/fsalloc.h>
-+
-+#define FSA_MEM_ALIGN	sizeof(unsigned long)
-+#define FSA_FIT_FACTOR	8
-+#define FSA_MIN_ORDER	1
-+#define FSA_MAX_ORDER	8
-+
-+/**
-+ * fsa_init - Initializes a grow-only allocator
-+ *
-+ * @ator:    [in] Pointer to the allocator structure
-+ * @buffer:  [in] Pointer to a buffer to be used as initial cached buffer
-+ *                for the allocator
-+ * @csize:   [in] Size of @buffer or 0 in case @buffer is NULL
-+ *
-+ */
-+void fsa_init(struct fsa_context *ator, void *buffer,
-+	      unsigned long csize)
++static inline int indirect_call_ok(unsigned int nr)
 +{
-+	ator->order = FSA_MIN_ORDER;
-+	ator->cached.next = NULL;
-+	ator->cached.order = -1;
-+	ator->cached.avail = csize;
-+	ator->cached.data = buffer;
-+	ator->first = ator->curr = &ator->cached;
-+}
-+
-+/**
-+ * fsa_cleanup - Cleanups all the memory allocated by the grow-only allocator
-+ *
-+ * @ator:    [in] Pointer to the allocator structure
-+ *
-+ */
-+void fsa_cleanup(struct fsa_context *ator)
-+{
-+	struct fsa_page *curr, *next;
-+
-+	for (next = ator->first; (curr = next) != NULL;) {
-+		next = curr->next;
-+		if (curr->order >= 0)
-+			free_pages((unsigned long) curr, curr->order);
++	switch (nr) {
++	case __NR_clone:
++	case __NR_fork:
++	case __NR_vfork:
++	case __NR_rt_sigsuspend:
++	case __NR_sigaltstack:
++	case __NR_iopl:
++		return 0;
 +	}
++	return 1;
 +}
 +
-+/**
-+ * fsa_alloc - Allocated a buffer inside the grow-only allocator
-+ *
-+ * @ator:    [in] Pointer to the allocator structure
-+ * @size:    [in] Size of the requested buffer
-+ *
-+ * Returns a pointer to the allocated buffer, or NULL in case of error.
-+ */
-+void *fsa_alloc(struct fsa_context *ator, unsigned long size)
-+{
-+	int order;
-+	struct fsa_page *new;
-+	void *data;
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_I386_UNISTD_H_ */
+Index: linux-2.6.mod/arch/x86_64/kernel/entry.S
+===================================================================
+--- linux-2.6.mod.orig/arch/x86_64/kernel/entry.S	2007-06-29 12:12:42.000000000 -0700
++++ linux-2.6.mod/arch/x86_64/kernel/entry.S	2007-06-29 12:12:48.000000000 -0700
+@@ -1170,3 +1170,21 @@
+ 	sysret
+ 	CFI_ENDPROC
+ ENDPROC(ignore_sysret)
 +
-+	size = roundup(size, FSA_MEM_ALIGN);
-+	if (unlikely(ator->curr->avail < size)) {
-+		if (size >= (PAGE_SIZE << FSA_MAX_ORDER) - sizeof(struct fsa_page))
-+			return NULL;
-+		order = get_order(FSA_FIT_FACTOR * size + sizeof(struct fsa_page));
-+		order = max(order, ator->order);
-+		order = min(order, FSA_MAX_ORDER);
-+		new = (struct fsa_page *) __get_free_pages(GFP_KERNEL, order);
-+		if (!new)
-+			return NULL;
-+		ator->order = order;
-+		new->order = order;
-+		new->avail = (PAGE_SIZE << order) - sizeof(struct fsa_page);
-+		new->data = (char *) new + sizeof(struct fsa_page);
-+		new->next = NULL;
-+		ator->curr->next = new;
-+		ator->curr = new;
-+	}
-+	data = ator->curr->data;
-+	ator->curr->data = data + size;
-+	ator->curr->avail -= size;
-+	return data;
-+}
++ENTRY(call_syscall)
++	movq	$-ENOSYS, %rax
++	cmpl	$__NR_syscall_max, %edi
++	ja	bad_sysc
++	mov	%edi, %eax
++	movq	%rsi, %r11
++	movq	(%r11), %rdi
++	movq	8(%r11), %rsi
++	movq	16(%r11), %rdx
++	movq	24(%r11), %rcx
++	movq	32(%r11), %r8
++	movq	40(%r11), %r9
++	call	*sys_call_table(,%rax,8)
++bad_sysc:
++	ret
++ENDPROC(call_syscall)
 +
 
