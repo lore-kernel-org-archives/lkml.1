@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766004AbXF2Mk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933083AbXF2Ml5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766004AbXF2Mk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 08:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXF2MkR
+	id S933083AbXF2Ml5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 08:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXF2Mlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 08:40:17 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:21445 "EHLO hobbit.corpit.ru"
+	Fri, 29 Jun 2007 08:41:50 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55192 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754239AbXF2MkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 08:40:15 -0400
-Message-ID: <4684FDAC.7000800@msgid.tls.msk.ru>
-Date: Fri, 29 Jun 2007 16:40:12 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	id S1754299AbXF2Mlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 08:41:49 -0400
+Date: Fri, 29 Jun 2007 14:36:41 +0200
+From: Stefan Seyfried <seife@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       linux-kernel@vger.kernel.org, suspend-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, fseidel@suse.de
+Subject: Re: [RFC] get rid of CONFIG_DISABLE_CONSOLE_SUSPEND
+Message-ID: <20070629123641.GA7887@suse.de>
+References: <20070628135108.GA1810@elf.ucw.cz> <200706281734.54642.rjw@sisk.pl> <20070628172514.GA12770@suse.de> <200706282112.45378.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Kyle Moffett <mrmacman_g4@mac.com>
-CC: Dave Young <hidave.darkstar@gmail.com>,
-       Li Yang-r58472 <LeoLi@freescale.com>, Josh Triplett <josh@kernel.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Chris Shoemaker <c.shoemaker@cox.net>,
-       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [OT] Vim highlighting for trailing spaces
-References: <46835C16.9020700@kernel.org> <989B956029373F45A0B8AF0297081890D834BE@zch01exm26.fsl.freescale.net> <a8e1da0706280010m1e787bc2jae999084438982da@mail.gmail.com> <a8e1da0706280020ocf81ce7u98de87f16d674706@mail.gmail.com> <7958FF64-140B-435A-8B69-A503C5C18D79@mac.com>
-In-Reply-To: <7958FF64-140B-435A-8B69-A503C5C18D79@mac.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706282112.45378.rjw@sisk.pl>
+X-Operating-System: openSUSE 10.3 (i586) Alpha5, Kernel 2.6.22-rc4-git6-2-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> On Jun 28, 2007, at 03:20:24, Dave Young wrote:
->> And for vim trailing space, there's a tip in vim.org:
->> http://www.vim.org/tips/tip.php?tip_id=878
+On Thu, Jun 28, 2007 at 09:12:44PM +0200, Rafael J. Wysocki wrote:
+> On Thursday, 28 June 2007 19:25, Stefan Seyfried wrote:
+> > 
+> > However, we don't know which consoles are safe to stay alive during suspend.
+> > Generally, defaulting to suspending them all is not a bad idea IMHO.
+> > And IIRC it is plain luck if a serial console survives the suspend (or was
+> > the serial code fixed recently?)
 > 
-> I actually prefer this (in .vimrc):
+> Well, I don't think so, but I'm not sure.
 > 
-> " Show trailing whitespace and spaces before tabs
-> hi link localWhitespaceError Error
-> au Syntax * syn match localWhitespaceError /\(\zs\%#\|\s\)\+$/ display
-> au Syntax * syn match localWhitespaceError / \+\ze\t/ display
+> The VGA/fb console also should be off during suspend (not necessarily during
+> hibernation, though).  IIRC, that's what caused Linus to introduce the
+> suspending of consoles after all.
 > 
-> It always displays trailing whitespace and spaces-before tabs... except
-> if your cursor is at the end of the whitespace.  The updating is
-> occasionally a bit laggy (EG: Put spaces on a line and then move the
-> cursor off it without pressing <ENTER>), but when you hit Ctrl-L, enter,
-> or edit an adjacent line then it updates.
+> > So i do not care too much, but my / Frank's patch was shorter :-) and safer.
+> 
+> I'm not sure which way to go.  On the one hand, I agree that we should rather
+> fix the consoles so that we know which one is suspend-safe and which is not
+> and disable the unsafe ones, but on the other hand we are not there yet and it
+> _sometimes_ is useful not to suspend a console even if we know that it will
+> break things.
 
-Stolen from an old message in LKML - I don't remember who's the author:
+This is what my / Frank's patch was aimed at: give the user the ability to
+(painlessly, without rebuilding the kernel) debug suspend problems. Keep the
+default safe, like Linus likes it (consoles suspended), but give the user a
+switch to make it unsafe (consoles not suspended) for the sake of debugging.
 
-highlight WhitespaceEOL ctermbg=red guibg=red
-match WhitespaceEOL /\s\+$/
+Of course, fixing up all console drivers is an option that i'd very much like
+to see. It is however debatable if it is really worth the effort. If it works
+with consoles suspended, the user does not care. If it doesn't, he turns on
+debugging (knowing, or being told that this will break using netconsole).
 
-Works without any glitches here (not "laggy").  But I don't use
-syntax coloring - never tried if it works with coloring or not.
+I strongly oppose Pavel's approach to "declare all console drivers as
+nonbroken except netconsole". Even if he has not seen any failures apart
+from netconsole, in general i had the impression that suspending consoles
+did help. At least suspend works on many more machines than half a year ago,
+and i'd not be surprised if this was partly due to suspending the consoles.
 
-/mjt
+Remember that wrt. suspend "i did not get a bugreport" very often just means
+"people tried it, it did not work, but they expected that and just turned
+ away". It does not mean "it just works for everyone".
+-- 
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
