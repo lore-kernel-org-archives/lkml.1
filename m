@@ -1,125 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbXF2BOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932660AbXF2BSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932706AbXF2BOs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 21:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765235AbXF2BOj
+	id S932660AbXF2BSX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 21:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763919AbXF2BSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 21:14:39 -0400
-Received: from mga03.intel.com ([143.182.124.21]:35967 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764917AbXF2BOi convert rfc822-to-8bit (ORCPT
+	Thu, 28 Jun 2007 21:18:16 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:49269 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764145AbXF2BSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 21:14:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,473,1175497200"; 
-   d="scan'208";a="244613635"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
-Date: Fri, 29 Jun 2007 09:14:27 +0800
-Message-ID: <FC1D1B23302A22499C60C967336B2AE0016F7529@pdsmsx411.ccr.corp.intel.com>
-In-Reply-To: <46845943.7050005@shaw.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
-Thread-Index: Ace56KhYRSb8QrWVTRmuZyWjq4LNnwAAegGA
-From: "Li, Shaohua" <shaohua.li@intel.com>
-To: "Robert Hancock" <hancockr@shaw.ca>, "Zan Lynx" <zlynx@acm.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, "Raj, Ashok" <ashok.raj@intel.com>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-X-OriginalArrivalTime: 29 Jun 2007 01:14:36.0272 (UTC) FILETIME=[DBB22700:01C7B9EA]
+	Thu, 28 Jun 2007 21:18:16 -0400
+Date: Thu, 28 Jun 2007 19:16:39 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+In-reply-to: <fa.n+OzEywqHGabZtz5NxmlX4rEY0A@ifi.uio.no>
+To: Anton Petrusevich <casus@casus.us>
+Cc: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org
+Message-id: <46845D77.3030908@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-15; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.C+RaPJT9DzfOowG03yiRkB6ItF8@ifi.uio.no>
+ <fa.eZW1VxypFFwQqmC93xQaStxDK0Q@ifi.uio.no>
+ <fa.n+OzEywqHGabZtz5NxmlX4rEY0A@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Anton Petrusevich wrote:
+> On Thursday 28 June 2007 17:02:55 you wrote:
+>> Please always use Reply-to-All on this list -- subscribers here like to
+>> also get personal copies.
+> 
+> I am not subscribed to linux-kernel, I am reading it on the web.
+> 
+>>> I have ICE1724, a very good sound card to my taste, works like a charm.
+>>> But with ALSA I had a really hard time to configure it properly, wanna
+>>> see my .asoundrc?
+>> Not particularly. I don't count as a great fan of the config file syntax
+>> and don't use any configuration myself. 
+> 
+> Do you have an SPDIF out? If you don't then you don't need .asoundrc of 
+> course.
+> 
+>> The first thing I don't know is why you need an .asoundrc at all. 
+> 
+> Because I want to route it differently, sometimes to spdif, sometimes to 
+> headphones, sometimes to mix sounds from different apps. Well, my config may 
+> be a bit ancient as it was written when dmix was not default.
+> 
+>> I've CCed 
+>> the alsa-user list -- some subscribers to it probably have experience with
+>> ice1724 and might be able to get you specific advice if you want.
+> 
+> I have read some advices for ice1724 already. The main reason I wrote to  
+> lkml -- I hate .asounrc and reading docs about it. I hate "flexebility" that 
+> requires restarting apps after changing sound routes.
+> 
+>>> Is there a tool which can be used to configure .asoundrc?
+>> vi.
+> 
+> I perfectly know this one. I would like to use some really user-friendly tool.
+> 
+>>> I want to be able to hear sound from flashplayer on my reciever or in my
+>>> headphones -- how?
+>> Not sure? Is your receiver on an analog output and are your headphones
+> 
+> My receiver is on spdif out.
+> 
+>> connected directly to a card output as well? In that case, "or" would seem
+>> to be just a mixer issue, and "and" would be dependent on hardware
+>> abilities and needs someone who knows your specific card and setup.
+>>
+>>> It's not quite clear to me how to get full duplex working with my
+>>> .asoundrc.
+>> It's not working without an .asoundrc?
+> 
+> Looks like it's not working with. As skype is not so informative.
+> 
+>> But -- I'll personally not continue this very specific subthread simply due
+>> to not having the hardware, nor great generic experience with an .asounrc
+>> due to not needing it myself. When I do use one, I alway start by googling
+>> up a few examples and take it from there. Perhaps someone from alsa-user
+>> will step in.
+> 
+> I am not about ice1724 or .asounrc here. I am trying to talk about 
+> user-friendliness of ALSA. It's very unfriendly.
 
+In the case of S/PDIF output on ice1724 (and probably other cards), it 
+would be nice if ALSA defaulted to routing default audio to both the 
+S/PDIF and analog ports, as this is what most users would normally 
+expect.. The Windows drivers work like that, but on Linux you have to 
+pick one or the other (at least without a bunch of mucking with the 
+config file).
 
->-----Original Message-----
->From: Robert Hancock [mailto:hancockr@shaw.ca]
->Sent: Friday, June 29, 2007 8:59 AM
->To: Zan Lynx
->Cc: Andrew Morton; linux-kernel@vger.kernel.org; Raj, Ashok; Li,
-Shaohua;
->Keshavamurthy, Anil S
->Subject: Re: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
->
->Zan Lynx wrote:
->> On Thu, 2007-06-28 at 03:43 -0700, Andrew Morton wrote:
->>>
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-
->rc6/2.6.22-rc6-mm1/
->>
->>> +intel-iommu-dmar-detection-and-parsing-logic.patch
->>> +intel-iommu-pci-generic-helper-function.patch
->>> +intel-iommu-pci-generic-helper-function-fix.patch
->>> +intel-iommu-clflush_cache_range-now-takes-size-param.patch
->>> +intel-iommu-iova-allocation-and-management-routines.patch
->>> +intel-iommu-iova-allocation-and-management-routines-fix.patch
->>> +intel-iommu-iova-allocation-and-management-routines-fix-2.patch
->>> +intel-iommu-intel-iommu-driver.patch
->>> +intel-iommu-intel-iommu-driver-fix.patch
->>> +intel-iommu-intel-iommu-driver-fix-2.patch
->>>
-+intel-iommu-avoid-memory-allocation-failures-in-dma-map-api-calls.patch
->>> +intel-iommu-intel-iommu-cmdline-option-forcedac.patch
->>> +intel-iommu-dmar-fault-handling-support.patch
->>> +intel-iommu-iommu-gfx-workaround.patch
->>> +intel-iommu-iommu-floppy-workaround.patch
->>> +intel-iommu-iommu-floppy-workaround-fix.patch
->>> +intel-iommu-iommu-floppy-workaround-fix-fix.patch
->>>
->>>  Intel IOMMU support
->>
->> I believe the above patch set is causing the problem.  On my first
-try
->> with rc6-mm1 I said Yes to the CONFIG_DMAR options. (I'm nearly as
-good
->> as random option selection :-)
->>
->> The system panicked during boot, I believe it was trying to detect an
->> Intel IOMMU.  Later when I have a camera, I will try to post a
->> screenshot of the backtrace. (I can't seem to get netconsole to work
-on
->> boot, only in a module).
->>
->> When I recompiled without DMAR set, things seem to be working great.
-I
->> seem to be getting better disk read throughput than rc3-mm1, by the
-way.
->>
->> This laptop is an AMD Athlon64 on a NForce3 running a 64-bit Gentoo
->> build.
->>
->> I'll provide more details on request, and when I get the chance.
-This
->> is a heads-up on the BUG in case someone has an "ah ha!" moment.
->
->I took a picture of it, looks like the backtrace is:
->
->NULL pointer dereference at 024
->EIP:dmar_table_init+0x11
->intel_iommu_init+0x30
->pci_iommu_init+0xe
->kernel_init+0x16e
->
->Presumably something is NULL in dmar_table_init that wasn't expected to
->be.. I would guess it likely crashes on any system without an Intel
->IOMMU in it.
-How about something like below?
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-
-int __init dmar_table_init(void)
-{
-+	if (!dmar_tbl)
-+		return -ENODEV;
-	parse_dmar_table();
-	if (list_empty(&dmar_drhd_units)) {
-		printk(KERN_ERR PREFIX "No DMAR devices found\n");
-		return -ENODEV;
-	}
-	return 0;
-}
