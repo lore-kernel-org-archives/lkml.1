@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbXF3BIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbXF3BVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752521AbXF3BIN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 21:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXF3BIB
+	id S1752689AbXF3BVf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 21:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXF3BV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 21:08:01 -0400
-Received: from z2.cat.iki.fi ([212.16.98.133]:49843 "EHLO z2.cat.iki.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbXF3BIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 21:08:00 -0400
-Date: Sat, 30 Jun 2007 04:08:22 +0300
-From: Matti Aarnio <matti.aarnio@zmailer.org>
-To: Frank Fiene <ffiene@veka.com>
-Cc: linux-kernel@vger.kernel.org, tytso@thunk.org
-Subject: Re: Kernel doesn't recognize complete memory
-Message-ID: <20070630010822.GP4504@mea-ext.zmailer.org>
-References: <200706292225.26503.ffiene@veka.com>
+	Fri, 29 Jun 2007 21:21:26 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:26142 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751317AbXF3BVZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 21:21:25 -0400
+X-YMail-OSG: Jm7Nb6IVM1k0cyFYofA6k2qGsyveEhKIovirDrNN1N6fTYxwZ59h6HjyT7PNCCSAAFqbJtb0a8PJBHgkxwbD_Zqn172tLdw_U3s-
+Message-ID: <4685B00E.3030700@andrei.myip.org>
+Date: Fri, 29 Jun 2007 18:21:18 -0700
+From: Florin Andrei <florin@andrei.myip.org>
+Reply-To: linux-kernel@vger.kernel.org
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706292225.26503.ffiene@veka.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: how to determine if the noexec stack is defined by an application
+References: <46856F24.5060407@andrei.myip.org> <1183153758.2894.1.camel@laptopd505.fenrus.org>
+In-Reply-To: <1183153758.2894.1.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 29, 2007 at 10:25:26PM +0200, Frank Fiene wrote:
-> Lenovo Z61p, Intel Core2 Duo T7200
+Arjan van de Ven wrote:
+>> But it's running a Web service which is a combination of C code and 
+>> Tomcat/Java. I have no clue how to determine which portions specify a 
+>> noexec stack and which don't.
 > 
-> I have 4GB RAM installed and BIOS recognize 4GB RAM.
-> Linux kernel (Ubuntu-7.04, 32bit-PAE and 64bit, openSUSE-10.2 32bit-PAE 
-> and 64bit) tells me: only 3GB of RAM are installed.
-
-With AMD's Athlon64 the answer would be "look into BIOS settings,
-(re)map 3-4 GB memory above 4 GB address mark"..
-
-The PCI-bus and all IO devices in it needs memory space within
-the first 4 GB of physical address space.  Some devices support
-64-bit addresses in which case they can access whole physical
-memory, most probably don't, meaning that they can access only
-memory in lowest 4 GB part of the space.
-
-Original 8088 PC had 20 bit address space, and "huge" megabyte
-of address space. Then came 286 AT era with 24 bit addresses
-and "whopping" 16 megabyte address space..  then came 386 and
-finally true 32-bit addresses -- but ISA-space VGA aperture had
-to be in there still..  and to gain access to of that memory
-located "under" that VGA aperture, there was mapping...
-
-Now the VGA aperture mapping is no more, but the PCI has similar
-requirements - albeit with bigger apertures.
-
-
-So, what does your BIOS have hidden in "advanced" menus (most likely) ?
-Something about "remap (PCI?) memory above 4 GB" ?
-
-
-> Any other user with a 4GB Thinkpad? tytso?
+> like this:
 > 
-> What can i do? Please help!
-> 
-> Regards
-> Frank
+> $ eu-readelf -l /bin/true  | grep STACK
+>   GNU_STACK      0x000000 0x00000000 0x00000000 0x000000 0x000000 RW 0x4
 
-Regards, Matti Aarnio
+Is Sun Java 1.5 a known exception - as an application that doesn't set a 
+noexec stack and reverts to default?
+
+# eu-readelf -l ./java | grep STACK | wc -l
+0
+
+But then, this bug report seems to indicate otherwise, if I'm reading it 
+correctly:
+
+http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5051381
+
+-- 
+Florin Andrei
+
+http://florin.myip.org/
