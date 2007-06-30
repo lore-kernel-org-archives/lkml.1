@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbXF3XTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755051AbXF3Xd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbXF3XTd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 19:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbXF3XSI
+	id S1755051AbXF3Xd5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 19:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbXF3Xdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 19:18:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:61012 "EHLO
+	Sat, 30 Jun 2007 19:33:47 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:6290 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755027AbXF3XSE (ORCPT
+	with ESMTP id S1751732AbXF3Xdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 19:18:04 -0400
+	Sat, 30 Jun 2007 19:33:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=AFYB9hSc2Sjhzd64uh7BJQ8yfoQWcWGhjRjMLqqN2FXuSWbv1iji4toaMfeiNOGxzrF+Iqtuytyu4JOkp4LGnR2Q/6odDuN5sYOF/5jyKaNn7QuT5yjTrYBDciWfdy0Aekw/Oqeryacv1806bf+VjDgkzJJ15/utm4e7VHiXXaA=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][XFS][resend] fix memory leak in xfs_inactive()
-Date: Sun, 1 Jul 2007 01:16:51 +0200
-User-Agent: KMail/1.9.7
-Cc: David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=uNGWepBwWas45Trl+52dxKz9U2jR0CeUHH48laqOSClP42HUyHKj77ZQknZTRB13ctqwrR+0CY6nRevdBQvmxoOKEJROdB/vdjpPpenhXwHhBYqQkDUJugvEhUAz+JT8vUg3+k4idmS22cMAJDsWODSW6/3XES6ANjs7hAYP3Vc=
+Message-ID: <4686E83A.4040301@googlemail.com>
+Date: Sun, 01 Jul 2007 01:33:14 +0200
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, michal.k.k.piotrowski@gmail.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs
+ on resume from hibernation
+References: <200706300859.47133.arvidjaar@mail.ru> <200706302237.50567.rjw@sisk.pl> <200707010134.30843.arvidjaar@mail.ru>
+In-Reply-To: <200707010134.30843.arvidjaar@mail.ru>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707010116.52012.jesper.juhl@gmail.com>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(this is back from May 16 2007, resending since it doesn't look like 
-the patch ever made it in anywhere)
+Andrey Borzenkov pisze:
+> On Sunday 01 July 2007, Rafael J. Wysocki wrote:
+>> On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
+>>> Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
+>>> suspend to disk :)
+>>>
+>>> Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + single
+>>> pata_ali patch to switch off DMA on CD-ROM), single root on reiserfs,
+>>> libata with pata_ali driver.
+>>>
+>>> Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
+>>> system hung at least once in every rcX. Up to rc6 those lockups were
+>>> absolutely silent (black screen without reaction to any key). In rc6 I
+>>> just got something different. After resume I got on screem:
+>>>
+>>> swsusp: Marking nosave pages: 000000000009f000-0000000000100000
+>>> swsusp: Basic memory bitmaps created
+>>> swsusp: Basic memory bitmaps freed
+>>>
+>>> After that it just sits there doing nothing. Ther was brief sound of HDD
+>>> but I suspect it was related more to power-on. System was responding to
+>>> power-on button press:
+>>>
+>>> ACPI Error (event-0305): No installed handler for fixed event [00000002
+>>> 20070125]
+>>>
+>>> And SysRq was functioning.
+>> That probably means that there's a deadlock somewhere in there.
+>>
+>>> Unfortunately I do not have serial console so I
+>>> copy manually stacks from several last screens of output; I have tried to
+>>> make a photo but right now my kbluetooth is refusing to work at all so I
+>>> cannot transfer them :( (but I suspect quality would be too bad anyway)
+>>>
+>>> laptop_mode D
+>>> 	io_schedule+0xe/0x20
+>> Looks suspicious to me.  Can you identify what line of code this points to?
+>>
+> 
+> If you could explain how to ...
 
+gdb vmlinux
 
-The Coverity checker found a memory leak in xfs_inactive().
+(gdb) l *io_schedule+0xe
 
-The offending code is this bit :
+Regards,
+Michal
 
-1671            tp = xfs_trans_alloc(mp, XFS_TRANS_INACTIVE);
-
-At conditional (1): "truncate != 0" taking true path
-
-1672            if (truncate) {
-1673                    /*
-1674                     * Do the xfs_itruncate_start() call before
-1675                     * reserving any log space because itruncate_start
-1676                     * will call into the buffer cache and we can't
-1677                     * do that within a transaction.
-1678                     */
-1679                    xfs_ilock(ip, XFS_IOLOCK_EXCL);
-1680
-1681                    error = xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE, 0);
-
-At conditional (2): "error != 0" taking true path
-
-1682                    if (error) {
-1683                            xfs_iunlock(ip, XFS_IOLOCK_EXCL);
-
-Event leaked_storage: Returned without freeing storage "tp"
-Also see events: [alloc_fn][var_assign]
-
-1684                            return VN_INACTIVE_CACHE;
-1685                    }
-
-So, the code allocates a transaction, but in the case where 'truncate' is !=0 and xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE, 0); happens to return an error, we'll just return from the function without dealing with the memory allocated byxfs_trans_alloc() and assigned to 'tp', thus it'll be orphaned/leaked - not good.
-
-The bug was introduced by this commit:
-http://git2.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d3cf209476b72c83907a412b6708c5e498410aa7
-
-The patch below is
-
-From: Dave Chinner <dgc@sgi.com>
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
- fs/xfs/xfs_vnodeops.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: 2.6.x-xfs-new/fs/xfs/xfs_vnodeops.c
-===================================================================
---- 2.6.x-xfs-new.orig/fs/xfs/xfs_vnodeops.c	2007-05-11 16:04:03.000000000 +1000
-+++ 2.6.x-xfs-new/fs/xfs/xfs_vnodeops.c	2007-05-17 12:37:25.671399078 +1000
-@@ -1710,6 +1710,7 @@ xfs_inactive(
- 
- 		error = xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE, 0);
- 		if (error) {
-+			xfs_trans_cancel(tp, 0);
- 			xfs_iunlock(ip, XFS_IOLOCK_EXCL);
- 			return VN_INACTIVE_CACHE;
- 		}
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
