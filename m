@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbXF3DDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbXF3DJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753650AbXF3DDy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 23:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXF3DDq
+	id S1753570AbXF3DJQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 23:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXF3DJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 23:03:46 -0400
-Received: from science.horizon.com ([192.35.100.1]:18650 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752412AbXF3DDp (ORCPT
+	Fri, 29 Jun 2007 23:09:00 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:57692 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752180AbXF3DI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 23:03:45 -0400
-Date: 29 Jun 2007 23:03:43 -0400
-Message-ID: <20070630030343.31711.qmail@science.horizon.com>
-From: linux@horizon.com
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: 2.6.22-rcX Transmeta/APM regression
-Cc: ak@suse.de, bk@suse.de, hpa@zytor.com, linux@horizon.com,
-       michal.k.k.piotrowski@gmail.com
-In-Reply-To: <20070627153114.17953.qmail@science.horizon.com>
+	Fri, 29 Jun 2007 23:08:59 -0400
+Date: Sat, 30 Jun 2007 06:08:54 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] automatic CC generation for patch submission
+Message-ID: <20070630030854.GA1297@localdomain>
+References: <20070630023451.GA21593@localdomain> <E1I4TDU-00023A-Nc@flower>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1I4TDU-00023A-Nc@flower>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay, after a ridiculous amount of bisecting and recompiling and
-rebooting...
+On Sat, Jun 30, 2007 at 05:01:44AM +0200, Oleg Verych wrote:
+> * Date: Sat, 30 Jun 2007 05:34:51 +0300
+> >
+> > Hello,
+> >
+> > I'd like to present a suggestion for automatic generation of 
+> > carbon copy fields in the E-Mails of posted patches.
+> >
+> > Basically, instead of manually figuring out who to add to CC
+> > when sending a patch to LKML by looking at MAINTAINERS, a 
+> > script can look at '.maintainers' files spread across the
+> > source tree and automatically generate a proper list of CCs
+> > for a patch.
+> 
+> LKML archive near you, search phrase "BTS", subjects that have
+> something about "the quality of the kernel". Good luck. 
 
-First I had to find out that the kernel stops booting as of
-bf50467204: "i386: Use per-cpu GDT immediately on boot"
-(With theis commit, it silently stops booting.  The GP fault I
-posted earlier comes a little later, but I didn't bother finding it.)
+Right, however many patches don't map to bug reports and don't 
+need the heavy use of BTS. This suggestion is mainly for the 
+improvement of peer review concerning code changes submitted 
+by people who are not the maintainers.
 
-and starts again as of
-b0b73cb41d: "i386: msr.h: be paranoid about types and parentheses"
-
-However, one commit before the former suspends properly, and the latter
-fails to suspend (exactly the same problem at get_fixed_ranges+0x9/0x60),
-so I had to bisect further between the two, backporting the msr.h changes
-across the msr-index.h splitoff.
-
-Anyway, the patch which introduces the problem is the aptly named 3ebad:
-3ebad59056: [PATCH] x86: Save and restore the fixed-range MTRRs of the BSP when suspending
-
-2.6.22-rc6 plus that one commit reverted successfully does APM suspend
-(and resume) for me.
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
