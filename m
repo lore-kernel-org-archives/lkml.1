@@ -1,62 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXF3VJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbXF3VKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbXF3VJf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 17:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXF3VJ1
+	id S1754180AbXF3VKt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 17:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXF3VKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 17:09:27 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:48909 "EHLO pasmtpA.tele.dk"
+	Sat, 30 Jun 2007 17:10:41 -0400
+Received: from 1wt.eu ([62.212.114.60]:3226 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752438AbXF3VJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 17:09:27 -0400
-Date: Sat, 30 Jun 2007 23:10:17 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc6-mm1
-Message-ID: <20070630211017.GA26234@uranus.ravnborg.org>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <6150.1183128630@turing-police.cc.vt.edu> <20070629140130.59d58c44.akpm@linux-foundation.org> <15437.1183177066@turing-police.cc.vt.edu> <20070629221510.95c4c8e1.akpm@linux-foundation.org>
+	id S1752438AbXF3VKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 17:10:41 -0400
+Date: Sat, 30 Jun 2007 23:06:49 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [patch] CFS scheduler, -v18
+Message-ID: <20070630210649.GA13186@1wt.eu>
+References: <20070622220202.GA16872@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070629221510.95c4c8e1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070622220202.GA16872@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 29, 2007 at 10:15:10PM -0700, Andrew Morton wrote:
-> On Sat, 30 Jun 2007 00:17:46 -0400 Valdis.Kletnieks@vt.edu wrote:
-> 
-> > On Fri, 29 Jun 2007 14:01:30 PDT, Andrew Morton said:
-> > > On Fri, 29 Jun 2007 10:50:30 -0400
-> > > Valdis.Kletnieks@vt.edu wrote:
-> > 
-> > > > Odd - just for grins, I checked what 'make oldconfig' did when handed a .config
-> > > > from 22-rc4-mm2, and it behaved just fine, much to my surprise.
-> > > 
-> > > That's probably because your old config file was relatively recent, and
-> > > had things like CONFIG_BLK_DEV=y in it.
-> > 
-> > Ahh... <light bulb goes on> Yeah, it gets a 'make oldconfig' for pretty
-> > much every single -mm, I suck at any regression testing other than "since
-> > the last -mm".
-> > 
-> 
-> All my .configs have mouldered since I lost the ability to have .config be
-> a symlink to a revision-controlled file (used to carry a custom patch for
-> this, but it died).
-> 
-> I continue to believe that kbuild's lets-trash-your-symlink behaviour is
-> obnoxious, but I was unable to persuade anyone else of this.
+Ingo,
 
-I thought we fixed that long time ago?!?!
-I am heading for vacation for 20 days without Internet (real vacation :-))
-and have properly forget most about Linux and everything about this
-issue when I return.
-In the unlikely event that I recall it I will take a look when I'm back.
+I've accidentally discovered a problem with -v18.
 
-By the way - kbuild.git is lacking behind on patches.
-I have several queded from other peopel and have more in the works myself.
-This will not be looked into until I'm back.
+Some time ago, I wrote a small program to prevent my laptop from entering
+low-power mode, and noticed that after upgrading my laptop's kernel from
+2.4.20.9+cfs-v6 to 2.4.20.14+cfs-v18, it completely freezes if I run this
+program.
 
-	Sam
+The program is trivial, it just sets its prio to nice +20 and forks a busy
+loop. I've added the ability to stop the loop after a user-definable number
+of iterations, and I can confirm that it unfreezes when the loop ends. I'm
+not even root when I run it.
+
+Everything freezes, including the frame-buffer. It's not 100% reproducible, I
+would say 90% only. Sometimes it requires a few seconds before freezing. It
+*seems* to me that running another task in parallel (such as vmstat) increases
+its chances to freeze. It seems like nicing to +19 does not cause any trouble.
+
+I've tried it on my dual athlon, and with 1 process I see occasional pauses of
+1 or 2 seconds, and with 2 processes, I see fairly larger pauses.
+
+Here's the trivial program. Probably you'll find an obvious bug.
+
+Regards,
+Willy
+
+---
+
+/*
+ * cfs-freeze.c
+ * Fork a busy loop running with idle prio. This often results
+ * in complete freezes with CFS-v18.
+ *
+ * $ gcc -O2 -s -o cfs-freeze cfs-freeze.c
+ * $ ./cfs-freeze
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sched.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+
+int main(int argc, char **argv) {
+	struct sched_param sch;
+	long long i;
+
+	if (argc > 1)
+		i = atoll(argv[1]);
+
+	if (i <= 0)
+		i = 4 * 1000 * 1000 * 1000ULL;
+
+	sch.sched_priority = 0;
+	sched_setscheduler(0, SCHED_OTHER, &sch);
+	setpriority(PRIO_PROCESS, 0, 20);
+	if (fork() == 0)
+		while (i--);
+	return 0;
+}
+
+---
+
