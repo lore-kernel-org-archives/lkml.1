@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbXF3J1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbXF3J2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbXF3J1U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 05:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbXF3J1M
+	id S1756241AbXF3J2Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 05:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbXF3J2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 05:27:12 -0400
-Received: from mx2.suse.de ([195.135.220.15]:55381 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752984AbXF3J1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 05:27:12 -0400
-From: Andi Kleen <ak@suse.de>
-To: linux@horizon.com
-Subject: Re: 2.6.22-rcX Transmeta/APM regression
-Date: Sat, 30 Jun 2007 11:26:40 +0200
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       bk@suse.de, hpa@zytor.com, michal.k.k.piotrowski@gmail.com
-References: <20070630030343.31711.qmail@science.horizon.com>
-In-Reply-To: <20070630030343.31711.qmail@science.horizon.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706301126.41179.ak@suse.de>
+	Sat, 30 Jun 2007 05:28:03 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54325 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754446AbXF3J2A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 05:28:00 -0400
+Date: Sat, 30 Jun 2007 02:26:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Monakhov <dmonakhov@sw.ru>, Len Brown <lenb@kernel.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, corentincj@iksaif.net,
+       sziwan@users.sourceforge.net, acpi4asus-user@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Oops on rmmod asus_acpi
+Message-Id: <20070630022644.20822e6b.akpm@linux-foundation.org>
+In-Reply-To: <20070628075551.GA10551@localhost.sw.ru>
+References: <Pine.LNX.4.64.0706272113120.11120@fbirervta.pbzchgretzou.qr>
+	<20070628075551.GA10551@localhost.sw.ru>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 30 June 2007 05:03, linux@horizon.com wrote:
+On Thu, 28 Jun 2007 11:55:52 +0400 Dmitry Monakhov <dmonakhov@sw.ru> wrote:
 
-> Anyway, the patch which introduces the problem is the aptly named 3ebad:
-> 3ebad59056: [PATCH] x86: Save and restore the fixed-range MTRRs of the BSP
-> when suspending
->
-> 2.6.22-rc6 plus that one commit reverted successfully does APM suspend
-> (and resume) for me.
+> On 21:16 Срд 27 Июн     , Jan Engelhardt wrote:
+> > Hi,
+> > 
+> > 
+> > 
+> > 	modprobe asus_acpi
+> > 	rmmod asus_acpi
+> > 
+> > is all that is needed to trigger an Oops in 2.6.22-rc6 (x86).
+> > If you need more info, please let me know, thanks.
+> > 
+> > Note that the machine is not ASUS at all (vmware).
+> > (But suse_factory loads asus_acpi anyway -wtf?!)
+> Fixed in -mm tree by asus_acpi-fix-oops-on-non-asus-machines.patch
 
-Mr.Linux, Does that patch fix it? 
+That patch disappeared into the acpi git tree a week ago and hasn't emerged
+since.
 
--Andi
-
-i386: Check if CPU has MTRRs before trying to save them
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/arch/i386/kernel/cpu/mtrr/main.c
-===================================================================
---- linux.orig/arch/i386/kernel/cpu/mtrr/main.c
-+++ linux/arch/i386/kernel/cpu/mtrr/main.c
-@@ -734,8 +734,11 @@ void mtrr_ap_init(void)
-  */
- void mtrr_save_state(void)
- {
--	int cpu = get_cpu();
-+	int cpu;
- 
-+	if (!cpu_has_mtrr)
-+		return;
-+	cpu  = get_cpu();
- 	if (cpu == 0)
- 		mtrr_save_fixed_ranges(NULL);
- 	else
-
-
+I shall resurrect it and will send it to Linus tomorrow.
