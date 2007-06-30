@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbXF3KKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbXF3KPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbXF3KKE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 06:10:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXF3KJx
+	id S1756807AbXF3KPO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 06:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbXF3KO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 06:09:53 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:52623 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755310AbXF3KJw (ORCPT
+	Sat, 30 Jun 2007 06:14:59 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40016 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754447AbXF3KO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 06:09:52 -0400
-Date: Sat, 30 Jun 2007 12:22:46 +0200
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] automatic CC generation for patch submission
-Message-ID: <20070630102246.GF10398@flower.upol.cz>
-References: <20070630023451.GA21593@localdomain> <E1I4TDU-00023A-Nc@flower> <20070630030854.GA1297@localdomain>
-MIME-Version: 1.0
+	Sat, 30 Jun 2007 06:14:58 -0400
+Date: Sat, 30 Jun 2007 11:14:42 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070630101442.GA23568@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	David Chinner <dgc@sgi.com>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	Suparna Bhattacharya <suparna@in.ibm.com>, torvalds@osdl.org,
+	akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	xfs@oss.sgi.com, cmm@us.ibm.com
+References: <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070630030854.GA1297@localdomain>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+In-Reply-To: <20070614091458.GH5181@schatzie.adilger.int>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 30, 2007 at 06:08:54AM +0300, Dan Aloni wrote:
-> On Sat, Jun 30, 2007 at 05:01:44AM +0200, Oleg Verych wrote:
-> > * Date: Sat, 30 Jun 2007 05:34:51 +0300
-> > >
-> > > Hello,
-> > >
-> > > I'd like to present a suggestion for automatic generation of 
-> > > carbon copy fields in the E-Mails of posted patches.
-> > >
-> > > Basically, instead of manually figuring out who to add to CC
-> > > when sending a patch to LKML by looking at MAINTAINERS, a 
-> > > script can look at '.maintainers' files spread across the
-> > > source tree and automatically generate a proper list of CCs
-> > > for a patch.
-> > 
-> > LKML archive near you, search phrase "BTS", subjects that have
-> > something about "the quality of the kernel". Good luck. 
-> 
-> Right, however many patches don't map to bug reports and don't 
-> need the heavy use of BTS. This suggestion is mainly for the 
-> improvement of peer review concerning code changes submitted 
-> by people who are not the maintainers.
+On Thu, Jun 14, 2007 at 03:14:58AM -0600, Andreas Dilger wrote:
+> I suppose it might be a bit late in the game to add a "goal"
+> parameter and e.g. FA_FL_REQUIRE_GOAL, FA_FL_NEAR_GOAL, etc to make
+> the API more suitable for XFS?  The goal could be a single __u64, or
+> a struct with e.g. __u64 byte offset (possibly also __u32 lun like
+> in FIEMAP).  I guess the one potential limitation here is the
+> number of function parameters on some architectures.
 
-Unfortunately you didn't listen, OK, just two messages:
+This isn't really about "more suitable for XFS" but more about more
+suitable for sophisticated layout decisions.
 
-<http://permalink.gmane.org/gmane.linux.kernel/544898>
-<http://permalink.gmane.org/gmane.linux.kernel/545112>
+But I'm still not confident this should be shohorned into this
+syscall.  In fact I'm already rather unhappy about the feature churn in
+the current patch series.
 
-As you will see, nobody cares about comprehensive
-patches/tests/bugs/testers/developers *tracking* system.
+The more I think about it the more I'd prefer we would just put a simple
+syscall in that implements nothing but the posix_fallocate(3) semantics
+as defined in SuS, and then go on to brainstorm about advanced
+preallocation / layout hint semantics.
 
-And don't limit yourself to fast conclusions. Thanks.
-____
