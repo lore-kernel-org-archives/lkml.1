@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbXF3Dts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbXF3EBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbXF3Dts (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 23:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXF3Dtl
+	id S1753109AbXF3EBL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 00:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750721AbXF3EBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 23:49:41 -0400
-Received: from mmail.enter.net ([216.193.128.40]:38319 "EHLO mmail.enter.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753116AbXF3Dtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 23:49:40 -0400
-X-Greylist: delayed 1878 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jun 2007 23:49:40 EDT
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Rene Herman <rene.herman@gmail.com>
-Subject: Re: Please release a stable kernel Linux 3.0
-Date: Fri, 29 Jun 2007 22:11:42 -0400
-User-Agent: KMail/1.9.6
-Cc: 7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       William D Waddington <william.waddington@beezmo.com>,
-       Helge Hafting <helge.hafting@aitel.hist.no>,
-       linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-References: <8AH0j-3Qc-11@gated-at.bofh.it> <E1I4Nf0-00016f-9A@be1.lrz> <46857946.20201@gmail.com>
-In-Reply-To: <46857946.20201@gmail.com>
+	Sat, 30 Jun 2007 00:01:03 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44912 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750714AbXF3EBB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 00:01:01 -0400
+Date: Sat, 30 Jun 2007 06:01:23 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] automatic CC generation for patch submission
+Message-ID: <20070630040123.GI6087@stusta.de>
+References: <20070630023451.GA21593@localdomain>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200706292211.43170.dhazelton@enter.net>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070630023451.GA21593@localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 June 2007 17:27:34 Rene Herman wrote:
-> On 06/29/2007 11:05 PM, Bodo Eggert wrote:
-> > Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >> Indeed if its public domain you may have almost no rights at all
-> >> depending what you were given. Once you get the source code you can do
-> >> stuff but I don't have to give you that. If its public domain I can find
-> >> security holes in it, and refuse to provide the fixed module in source
-> >> form even.
-> >
-> > The GPL forces nobody to not release his module under PD, therefore it
-> > can't protect you from that. Even minor changes - like adjusting the
-> > module to use to the current API - won't change that, at least in Germany
-> > they'd have to qualify as a work of their own in order to create a
-> > GPL-only derived work, because anything not qualifying for that could
-> > also be integrated into the PD version, and both would remain identical.
->
-> What I focussed on when asking were only my wishes as an author but Alan
-> (if I understood him right ofcourse) pointed out that _the kernel_ does not
-> want integrated code to be in the public domain regardless of my wishes.
->
-> Arguably (no doubt, sigh...) someone could distribute the kernel in binary
-> form but refuse to provide source for the bits marked as being in the
-> public domain alongside it -- yes, can of worms when compared to GPL
-> demands, but I believe I can see why one shouldn't even go near there.
+On Sat, Jun 30, 2007 at 05:34:51AM +0300, Dan Aloni wrote:
+>...
+> Basically, instead of manually figuring out who to add to CC
+> when sending a patch to LKML by looking at MAINTAINERS, a 
+> script can look at '.maintainers' files spread across the
+> source tree and automatically generate a proper list of CCs
+> for a patch.
+>...
+> To illustrate: If a patch affects a file under 
+> drivers/net/e1000, the CC script will look at these files
+> 
+>   drivers/net/e1000/.maintainers
+>   drivers/net/.maintainers
+>   drivers/.maintainers
+>   .maintainers
+> 
+> ... to gather up the mailing list addresses or an individual 
+> maintainer inbox address.
+>...
+> Any comments?
 
-Actually, they couldn't. Second PD code became included in the kernel it would 
-be covered by the GPL. If it can be shown that the kernel binary was the 
-product of merging PD code in, then there is no way top refuse access to the 
-PD code.
+As Auke said, maintaining the information in MAINTAINERS would be 
+better.
 
-DRH
+And another important use case that shouldn't require much extra work 
+would be to do the same for bug reports.
 
-> Rene.
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Generally, you should keep in mind that it must fit into the workflow of 
+the people who should use it. E.g. I could imagine that it might make 
+more sense if you write a small tool that takes a patch or a path and 
+outputs email addresses instead of a huge tool that tries to solve too 
+many problems at once and doesn't fit into the workflow of most people.
 
+> Dan Aloni
 
+cu
+Adrian
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
