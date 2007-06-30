@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbXF3JGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbXF3JJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbXF3JGW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 05:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbXF3JGN
+	id S1755636AbXF3JJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 05:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbXF3JJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 05:06:13 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47919 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753116AbXF3JGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 05:06:12 -0400
-In-Reply-To: <4684E7C6.6040300@garzik.org>
-References: <Pine.LNX.4.64.0706290012430.15686@blarg.am.freescale.net> <4684E7C6.6040300@garzik.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1446B1A2-74F8-473D-8439-BCE47E8EF9E3@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, acme@redhat.com
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'from_linus' branch
-Date: Sat, 30 Jun 2007 04:06:10 -0500
-To: Jeff Garzik <jeff@garzik.org>
-X-Mailer: Apple Mail (2.752.2)
+	Sat, 30 Jun 2007 05:09:19 -0400
+Received: from [84.243.56.243] ([84.243.56.243]:51385 "EHLO aurora.bayour.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753761AbXF3JJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 05:09:18 -0400
+From: Turbo Fredriksson <turbo@bayour.com>
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Moving MD/LVM from PPC to x86
+Organization: Bah!
+References: <87wsxneqs0.fsf@pumba.bayour.com>
+	<20070629215416.GA12786@agk.fab.redhat.com>
+X-PGP-Fingerprint: B7 92 93 0E 06 94 D6 22  98 1F 0B 5B FE 33 A1 0B
+X-PGP-Key-ID: 0x788CD1A9
+X-URL: http://www.bayour.com/
+Date: Sat, 30 Jun 2007 11:09:15 +0200
+In-Reply-To: <20070629215416.GA12786@agk.fab.redhat.com> (Alasdair G. Kergon's
+	message of "Fri, 29 Jun 2007 22:54:16 +0100")
+Message-ID: <876455erlw.fsf@pumba.bayour.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.95 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Alasdair G Kergon <agk@redhat.com>:
 
-On Jun 29, 2007, at 6:06 AM, Jeff Garzik wrote:
-
-> Kumar Gala wrote:
->> Please pull from 'for_linus' branch of
->> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
->> for_linus
->> to receive the following updates:
->>  drivers/net/gianfar.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->> Kumar Gala (1):
->>       gianfar: Fix typo bug introduced by move to udp_hdr()
+> On Thu, Jun 28, 2007 at 11:02:39PM +0200, Turbo Fredriksson wrote:
+>>   2. How do I move a VG/PV/LV from PPC to x86?
 >
-> Why is net driver stuff no longer going through me?
->
-> Fixes are regularly going upstream.
+> The on-disk LVM2 metadata should be accessible from both
+> architectures.
 
-Sorry about that, will push stuff through you in the future.  I've  
-sent Linus one off fixes in the past for post -rc issues.
-
-- k
+Well, when I move the disks, the intel machine say that one of
+the disks don't have a partition table and that the other don't
+have any MD superblock...
