@@ -1,745 +1,414 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbXF3D1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbXF3D11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756007AbXF3D1E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 23:27:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbXF3DZS
+	id S1755688AbXF3D11 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 23:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbXF3DZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 23:25:18 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:38408 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754838AbXF3DZQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 23:25:16 -0400
-Subject: [RFC PATCH 2/3] Generic Trace Setup and Control (GTSC) code
+	Fri, 29 Jun 2007 23:25:34 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:34413 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755488AbXF3DZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 23:25:32 -0400
+Subject: [RFC PATCH 3/3] blktrace conversion to GTSC
 From: Tom Zanussi <zanussi@us.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: adobriyan@gmail.com, dwilder@us.ibm.com, hunt@redhat.com
 Content-Type: text/plain
-Date: Fri, 29 Jun 2007 22:24:32 -0500
-Message-Id: <1183173872.24291.144.camel@ubuntu>
+Date: Fri, 29 Jun 2007 22:24:38 -0500
+Message-Id: <1183173878.24291.145.camel@ubuntu>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Generic Tracing and Control Interface (GTSC) code.
+This patch converts blktrace to use the Generic Trace Setup and
+Control (GTSC) interface.  Also attached is a small patch to the
+blktrace user code, needed for the ioctl change.
 
 Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
 Signed-off-by: David Wilder <dwilder@us.ibm.com>
 ---
- include/linux/gtsc.h |  104 +++++++++
- lib/Kconfig          |   10 
- lib/Makefile         |    2 
- lib/gtsc.c           |  558 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 674 insertions(+)
+ block/Kconfig                |    2 
+ block/blktrace.c             |  188 +++++--------------------------------------
+ include/linux/blktrace_api.h |   30 +++---
+ 3 files changed, 40 insertions(+), 180 deletions(-)
 
-diff --git a/include/linux/gtsc.h b/include/linux/gtsc.h
-new file mode 100644
-index 0000000..cbb2601
---- /dev/null
-+++ b/include/linux/gtsc.h
-@@ -0,0 +1,104 @@
-+/*
-+ * GTSC defines and function prototypes
-+ *
-+ * Copyright (C) 2006 IBM Inc.
-+ *
-+ *	Tom Zanussi <zanussi@us.ibm.com>
-+ *	Martin Hunt <hunt@redhat.com>
-+ *	David Wilder <dwilder@us.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
-+ */
-+#ifndef _LINUX_GTSC_H
-+#define _LINUX_GTSC_H
-+
-+#include <linux/relay.h>
-+
-+/*
-+ * GTSC channel flags
-+ */
-+#define TRACE_GLOBAL_CHANNEL	0x01
-+#define TRACE_FLIGHT_CHANNEL	0x02
-+#define TRACE_DISABLE_STATE	0x04
-+
-+enum trace_state {
-+	TRACE_SETUP,
-+	TRACE_RUNNING,
-+	TRACE_STOPPED,
-+};
-+
-+#define TRACE_ROOT_NAME_SIZE	64	/* Max root dir identifier */
-+#define TRACE_NAME_SIZE		64	/* Max trace identifier */
-+
-+/*
-+ * Global root user information
-+ */
-+struct trace_root {
-+	struct list_head list;
-+	char name[TRACE_ROOT_NAME_SIZE];
-+	struct dentry *root;
-+	unsigned int users;
-+};
-+
-+/*
-+ * Client information
-+ */
-+struct trace_info {
-+	enum trace_state state;
-+	struct dentry *state_file;
-+	struct rchan *rchan;
-+	struct dentry *dir;
-+	struct dentry *dropped_file;
-+	struct dentry *reset_consumed_file;
-+	struct dentry *nr_sub_file;
-+	struct dentry *sub_size_file;
-+	atomic_t dropped;
-+	struct trace_root *root;
-+	void *private_data;
-+	unsigned int flags;
-+	unsigned int buf_size;
-+	unsigned int buf_nr;
-+};
-+
-+#ifdef CONFIG_GTSC
-+static inline int trace_running(struct trace_info *trace)
-+{
-+	return trace->state == TRACE_RUNNING;
-+}
-+struct trace_info *trace_setup(const char *root, const char *name,
-+			       u32 buf_size, u32 buf_nr, u32 flags);
-+int trace_start(struct trace_info *trace);
-+int trace_stop(struct trace_info *trace);
-+void trace_cleanup_channel(struct trace_info *gt);
-+void trace_cleanup(struct trace_info *gt);
-+unsigned long long trace_timestamp(void);
-+#else
-+static inline struct trace_info *trace_setup(const char *root,
-+					     const char *name,
-+					     u32 buf_size,
-+					     u32 buf_nr,
-+					     u32 flags)
-+{
-+	return NULL;
-+}
-+static inline int trace_running(struct trace_info *trace) { return 0; }
-+static inline int trace_start(struct trace_info *trace) { return -EINVAL; }
-+static inline int trace_stop(struct trace_info *trace) {}
-+static inline void trace_cleanup_channel(struct trace_info *trace) {}
-+static inline void trace_cleanup(struct trace_info *trace) {}
-+static inline unsigned long long trace_timestamp(void) { return 0; }
-+#endif
-+
-+#endif
-diff --git a/lib/Kconfig b/lib/Kconfig
-index 2e7ae6b..b3931f3 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -124,4 +124,14 @@ config HAS_DMA
- 	depends on !NO_DMA
- 	default y
+diff --git a/block/Kconfig b/block/Kconfig
+index a50f481..9ae9a8c 100644
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -30,7 +30,7 @@ config LBD
+ config BLK_DEV_IO_TRACE
+ 	bool "Support for tracing block io actions"
+ 	depends on SYSFS
+-	select RELAY
++	select GTSC
+ 	select DEBUG_FS
+ 	help
+ 	  Say Y here, if you want to be able to trace the block layer actions
+diff --git a/block/blktrace.c b/block/blktrace.c
+index 3f0e7c3..c5d5821 100644
+--- a/block/blktrace.c
++++ b/block/blktrace.c
+@@ -36,7 +36,7 @@ static void trace_note(struct blk_trace *bt, pid_t pid, int action,
+ {
+ 	struct blk_io_trace *t;
  
-+config GTSC
-+	bool "Generic Trace Setup and Control"
-+	select RELAY
-+	select DEBUG_FS
-+	help
-+	  This option provides support for the setup, teardown and control
-+	  of tracing channels from kernel code.  It also provides trace
-+	  information and control to userspace via a set of debugfs control
-+	  files.  If unsure, say N.
-+
- endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index c8c8e20..d9e68fa 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -62,6 +62,8 @@ obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
+-	t = relay_reserve(bt->rchan, sizeof(*t) + len);
++	t = relay_reserve(bt->trace->rchan, sizeof(*t) + len);
+ 	if (t) {
+ 		const int cpu = smp_processor_id();
  
- lib-$(CONFIG_GENERIC_BUG) += bug.o
+@@ -126,7 +126,7 @@ void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 	pid_t pid;
+ 	int cpu;
  
-+obj-$(CONFIG_GTSC) += gtsc.o
-+
- hostprogs-y	:= gen_crc32table
- clean-files	:= crc32table.h
+-	if (unlikely(bt->trace_state != Blktrace_running))
++	if (unlikely(!trace_running(bt->trace)))
+ 		return;
  
-diff --git a/lib/gtsc.c b/lib/gtsc.c
-new file mode 100644
-index 0000000..ecd0ddf
---- /dev/null
-+++ b/lib/gtsc.c
-@@ -0,0 +1,558 @@
-+/*
-+ * Based on blktrace code, Copyright (C) 2006 Jens Axboe <axboe@suse.de>
-+ * Moved to utt.c by Tom Zanussi <zanussi@us.ibm.com>, 2006
-+ * Additional contributions by:
-+ * Martin Hunt <hunt@redhat.com>, 2007
-+ * David Wilder <dwilder@us.ibm.com>, 2007
-+ * Renamed to gtsc <dwilder.ibm.com>, 2007
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/mutex.h>
-+#include <linux/debugfs.h>
+ 	what |= ddir_act[rw & WRITE];
+@@ -152,7 +152,7 @@ void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 	if (unlikely(tsk->btrace_seq != blktrace_seq))
+ 		trace_note_tsk(bt, tsk);
+ 
+-	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
++	t = relay_reserve(bt->trace->rchan, sizeof(*t) + pdu_len);
+ 	if (t) {
+ 		cpu = smp_processor_id();
+ 		sequence = per_cpu_ptr(bt->sequence, cpu);
+@@ -178,55 +178,8 @@ void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 
+ EXPORT_SYMBOL_GPL(__blk_add_trace);
+ 
+-static struct dentry *blk_tree_root;
+-static struct mutex blk_tree_mutex;
+-static unsigned int root_users;
+-
+-static inline void blk_remove_root(void)
+-{
+-	if (blk_tree_root) {
+-		debugfs_remove(blk_tree_root);
+-		blk_tree_root = NULL;
+-	}
+-}
+-
+-static void blk_remove_tree(struct dentry *dir)
+-{
+-	mutex_lock(&blk_tree_mutex);
+-	debugfs_remove(dir);
+-	if (--root_users == 0)
+-		blk_remove_root();
+-	mutex_unlock(&blk_tree_mutex);
+-}
+-
+-static struct dentry *blk_create_tree(const char *blk_name)
+-{
+-	struct dentry *dir = NULL;
+-
+-	mutex_lock(&blk_tree_mutex);
+-
+-	if (!blk_tree_root) {
+-		blk_tree_root = debugfs_create_dir("block", NULL);
+-		if (!blk_tree_root)
+-			goto err;
+-	}
+-
+-	dir = debugfs_create_dir(blk_name, blk_tree_root);
+-	if (dir)
+-		root_users++;
+-	else
+-		blk_remove_root();
+-
+-err:
+-	mutex_unlock(&blk_tree_mutex);
+-	return dir;
+-}
+-
+ static void blk_trace_cleanup(struct blk_trace *bt)
+ {
+-	relay_close(bt->rchan);
+-	debugfs_remove(bt->dropped_file);
+-	blk_remove_tree(bt->dir);
+ 	free_percpu(bt->sequence);
+ 	kfree(bt);
+ }
+@@ -239,76 +192,14 @@ static int blk_trace_remove(request_queue_t *q)
+ 	if (!bt)
+ 		return -EINVAL;
+ 
+-	if (bt->trace_state == Blktrace_setup ||
+-	    bt->trace_state == Blktrace_stopped)
++	if (!trace_running(bt->trace)) {
++		trace_cleanup(bt->trace);
+ 		blk_trace_cleanup(bt);
++	}
+ 
+ 	return 0;
+ }
+ 
+-static int blk_dropped_open(struct inode *inode, struct file *filp)
+-{
+-	filp->private_data = inode->i_private;
+-
+-	return 0;
+-}
+-
+-static ssize_t blk_dropped_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
+-{
+-	struct blk_trace *bt = filp->private_data;
+-	char buf[16];
+-
+-	snprintf(buf, sizeof(buf), "%u\n", atomic_read(&bt->dropped));
+-
+-	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
+-}
+-
+-static const struct file_operations blk_dropped_fops = {
+-	.owner =	THIS_MODULE,
+-	.open =		blk_dropped_open,
+-	.read =		blk_dropped_read,
+-};
+-
+-/*
+- * Keep track of how many times we encountered a full subbuffer, to aid
+- * the user space app in telling how many lost events there were.
+- */
+-static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
+-				     void *prev_subbuf, size_t prev_padding)
+-{
+-	struct blk_trace *bt;
+-
+-	if (!relay_buf_full(buf))
+-		return 1;
+-
+-	bt = buf->chan->private_data;
+-	atomic_inc(&bt->dropped);
+-	return 0;
+-}
+-
+-static int blk_remove_buf_file_callback(struct dentry *dentry)
+-{
+-	debugfs_remove(dentry);
+-	return 0;
+-}
+-
+-static struct dentry *blk_create_buf_file_callback(const char *filename,
+-						   struct dentry *parent,
+-						   int mode,
+-						   struct rchan_buf *buf,
+-						   int *is_global)
+-{
+-	return debugfs_create_file(filename, mode, parent, buf,
+-					&relay_file_operations);
+-}
+-
+-static struct rchan_callbacks blk_relay_callbacks = {
+-	.subbuf_start		= blk_subbuf_start_callback,
+-	.create_buf_file	= blk_create_buf_file_callback,
+-	.remove_buf_file	= blk_remove_buf_file_callback,
+-};
+-
+ /*
+  * Setup everything required to start tracing
+  */
+@@ -317,25 +208,23 @@ static int blk_trace_setup(request_queue_t *q, struct block_device *bdev,
+ {
+ 	struct blk_user_trace_setup buts;
+ 	struct blk_trace *old_bt, *bt = NULL;
+-	struct dentry *dir = NULL;
+ 	char b[BDEVNAME_SIZE];
+ 	int ret, i;
++	struct gtsc_trace_setup *gts = &buts.gts;
+ 
+ 	if (copy_from_user(&buts, arg, sizeof(buts)))
+ 		return -EFAULT;
+ 
+-	if (!buts.buf_size || !buts.buf_nr)
+-		return -EINVAL;
+-
+-	strcpy(buts.name, bdevname(bdev, b));
++	strcpy(gts->root, "block");
++	strcpy(gts->name, bdevname(bdev, b));
+ 
+ 	/*
+ 	 * some device names have larger paths - convert the slashes
+ 	 * to underscores for this to work as expected
+ 	 */
+-	for (i = 0; i < strlen(buts.name); i++)
+-		if (buts.name[i] == '/')
+-			buts.name[i] = '_';
++	for (i = 0; i < strlen(gts->name); i++)
++		if (gts->name[i] == '/')
++			gts->name[i] = '_';
+ 
+ 	if (copy_to_user(arg, &buts, sizeof(buts)))
+ 		return -EFAULT;
+@@ -349,23 +238,12 @@ static int blk_trace_setup(request_queue_t *q, struct block_device *bdev,
+ 	if (!bt->sequence)
+ 		goto err;
+ 
+-	ret = -ENOENT;
+-	dir = blk_create_tree(buts.name);
+-	if (!dir)
++	bt->trace = trace_setup(gts->root, gts->name, gts->buf_size,
++				gts->buf_nr, 0);
++	if (!bt->trace)
+ 		goto err;
+ 
+-	bt->dir = dir;
+ 	bt->dev = bdev->bd_dev;
+-	atomic_set(&bt->dropped, 0);
+-
+-	ret = -EIO;
+-	bt->dropped_file = debugfs_create_file("dropped", 0444, dir, bt, &blk_dropped_fops);
+-	if (!bt->dropped_file)
+-		goto err;
+-
+-	bt->rchan = relay_open("trace", dir, buts.buf_size, buts.buf_nr, &blk_relay_callbacks, bt);
+-	if (!bt->rchan)
+-		goto err;
+ 
+ 	bt->act_mask = buts.act_mask;
+ 	if (!bt->act_mask)
+@@ -377,7 +255,6 @@ static int blk_trace_setup(request_queue_t *q, struct block_device *bdev,
+ 		bt->end_lba = -1ULL;
+ 
+ 	bt->pid = buts.pid;
+-	bt->trace_state = Blktrace_setup;
+ 
+ 	ret = -EBUSY;
+ 	old_bt = xchg(&q->blk_trace, bt);
+@@ -388,14 +265,10 @@ static int blk_trace_setup(request_queue_t *q, struct block_device *bdev,
+ 
+ 	return 0;
+ err:
+-	if (dir)
+-		blk_remove_tree(dir);
+ 	if (bt) {
+-		if (bt->dropped_file)
+-			debugfs_remove(bt->dropped_file);
+ 		free_percpu(bt->sequence);
+-		if (bt->rchan)
+-			relay_close(bt->rchan);
++		if (bt->trace)
++			trace_cleanup(bt->trace);
+ 		kfree(bt);
+ 	}
+ 	return ret;
+@@ -404,33 +277,21 @@ err:
+ static int blk_trace_startstop(request_queue_t *q, int start)
+ {
+ 	struct blk_trace *bt;
+-	int ret;
++	int ret = 0;
+ 
+ 	if ((bt = q->blk_trace) == NULL)
+ 		return -EINVAL;
+ 
+-	/*
+-	 * For starting a trace, we can transition from a setup or stopped
+-	 * trace. For stopping a trace, the state must be running
+-	 */
+-	ret = -EINVAL;
+ 	if (start) {
+-		if (bt->trace_state == Blktrace_setup ||
+-		    bt->trace_state == Blktrace_stopped) {
++		if (!trace_running(bt->trace)) {
+ 			blktrace_seq++;
+ 			smp_mb();
+-			bt->trace_state = Blktrace_running;
+-
+-			trace_note_time(bt);
+-			ret = 0;
+-		}
+-	} else {
+-		if (bt->trace_state == Blktrace_running) {
+-			bt->trace_state = Blktrace_stopped;
+-			relay_flush(bt->rchan);
+-			ret = 0;
++			ret = trace_start(bt->trace);
++			if (!ret)
++				trace_note_time(bt);
+ 		}
+-	}
++	} else
++		ret = trace_stop(bt->trace);
+ 
+ 	return ret;
+ }
+@@ -551,7 +412,6 @@ static void blk_trace_set_ht_offsets(void)
+ 
+ static __init int blk_trace_init(void)
+ {
+-	mutex_init(&blk_tree_mutex);
+ 	on_each_cpu(blk_trace_check_cpu_time, NULL, 1, 1);
+ 	blk_trace_set_ht_offsets();
+ 
+diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
+index 3680ff9..875323e 100644
+--- a/include/linux/blktrace_api.h
++++ b/include/linux/blktrace_api.h
+@@ -2,7 +2,7 @@
+ #define BLKTRACE_H
+ 
+ #include <linux/blkdev.h>
+-#include <linux/relay.h>
 +#include <linux/gtsc.h>
-+
-+static LIST_HEAD(trace_roots);
-+static DEFINE_MUTEX(trace_mutex);
-+
-+static int state_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t state_read(struct file *filp, char __user *buffer,
-+			  size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char *buf = "trace not started\n";
-+
-+	if (trace->state == TRACE_STOPPED)
-+		buf = "stopped\n";
-+	else if (trace->state == TRACE_RUNNING)
-+		buf = "running\n";
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+
-+static ssize_t state_write(struct file *filp, const char __user *buffer,
-+			   size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[16] = { '\0' };
-+	int ret;
-+
-+	if (trace->flags & TRACE_DISABLE_STATE)
-+		return -EINVAL;
-+	
-+	if (count > sizeof(buf) - 1)
-+		return -EINVAL;
-+
-+	if (copy_from_user(buf, buffer, count))
-+		return -EFAULT;
-+
-+	buf[count] = '\0';
-+	
-+	if (strncmp(buf, "start", strlen("start")) == 0 ) {
-+		ret = trace_start(trace);
-+		if (ret)
-+			return ret;
-+	} else if (strncmp(buffer, "stop", strlen("stop")) == 0)
-+		trace_stop(trace);
-+	else
-+		return -EINVAL;
-+
-+	return count;
-+}
-+
-+
-+static struct file_operations state_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= state_open,
-+	.read	= state_read,
-+	.write	= state_write,
-+};
-+
-+
-+static void remove_root(struct trace_info *trace)
-+{
-+	if (trace->root->root && simple_empty(trace->root->root)) {
-+		debugfs_remove(trace->root->root);
-+		list_del(&trace->root->list);
-+		kfree(trace->root);
-+		trace->root = NULL;
-+	}
-+}
-+
-+
-+static void remove_tree(struct trace_info *trace)
-+{
-+	mutex_lock(&trace_mutex);
-+
-+	debugfs_remove(trace->dir);
-+
-+	if (--trace->root->users == 0)
-+		remove_root(trace);
-+
-+	mutex_unlock(&trace_mutex);
-+}
-+
-+
-+static struct trace_root *lookup_root(const char *root)
-+{
-+	struct list_head *pos;
-+	struct trace_root *r;
-+
-+	list_for_each(pos, &trace_roots) {
-+		r = list_entry(pos, struct trace_root, list);
-+		if (!strcmp(r->name, root))
-+			return r;
-+	}
-+
-+	r = kzalloc(sizeof(struct trace_root), GFP_KERNEL);
-+	if (!r)
-+		return NULL;
-+
-+	strlcpy(r->name, root, sizeof(r->name));
-+
-+	r->root = debugfs_create_dir(root, NULL);
-+	if (r->root)
-+		list_add(&r->list, &trace_roots);
-+
-+	return r;
-+}
-+
-+
-+static struct dentry *create_tree(struct trace_info *trace,
-+				  const char *root,
-+				  const char *name)
-+{
-+	struct dentry *dir = NULL;
-+
-+	if (root == NULL || name == NULL)
-+		return NULL;
-+	
-+	mutex_lock(&trace_mutex);
-+
-+	trace->root = lookup_root(root);
-+	if (!trace->root)
-+		goto err;
-+
-+	dir = debugfs_create_dir(name, trace->root->root);
-+	if (dir)
-+		trace->root->users++;
-+	else
-+		remove_root(trace);
-+
-+err:
-+	mutex_unlock(&trace_mutex);
-+
-+	return dir;
-+}
-+
-+
-+static int dropped_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+
-+static ssize_t dropped_read(struct file *filp, char __user *buffer,
-+			    size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[16];
-+
-+	snprintf(buf, sizeof(buf), "%u\n", atomic_read(&trace->dropped));
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+
-+static struct file_operations dropped_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= dropped_open,
-+	.read	= dropped_read,
-+};
-+
-+static int reset_consumed_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t reset_consumed_write(struct file *filp,
-+				    const char __user *buffer,
-+				    size_t count,
-+				    loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+
-+	relay_reset_consumed(trace->rchan);
-+
-+	return count;
-+}
-+
-+struct file_operations reset_consumed_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= reset_consumed_open,
-+	.write	= reset_consumed_write
-+};
-+
-+static int sub_size_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t sub_size_read(struct file *filp, char __user *buffer,
-+			     size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[32];
-+
-+	snprintf(buf, sizeof(buf), "%u\n",
-+		 (unsigned int)trace->rchan->subbuf_size);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+struct file_operations sub_size_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= sub_size_open,
-+	.read	= sub_size_read,
-+};
-+
-+static int nr_sub_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+	return 0;
-+}
-+
-+static ssize_t nr_sub_read(struct file *filp, char __user *buffer,
-+			   size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[32];
-+
-+	snprintf(buf, sizeof(buf), "%u\n",
-+		 (unsigned int)trace->rchan->n_subbufs);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+struct file_operations nr_sub_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= nr_sub_open,
-+	.read	= nr_sub_read,
+ 
+ /*
+  * Trace categories
+@@ -109,34 +109,34 @@ struct blk_io_trace_remap {
+ 	__be64 sector;
+ };
+ 
+-enum {
+-	Blktrace_setup = 1,
+-	Blktrace_running,
+-	Blktrace_stopped,
+-};
+-
+ struct blk_trace {
+-	int trace_state;
+-	struct rchan *rchan;
++	struct trace_info *trace;
+ 	unsigned long *sequence;
+ 	u16 act_mask;
+ 	u64 start_lba;
+ 	u64 end_lba;
+ 	u32 pid;
+ 	u32 dev;
+-	struct dentry *dir;
+-	struct dentry *dropped_file;
+-	atomic_t dropped;
 +};
 +
 +/*
-+ * Keep track of how many times we encountered a full subbuffer, to aid
-+ * the user space app in telling how many lost events there were.
++ * User setup structure
 + */
-+static int subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
-+				 void *prev_subbuf, size_t prev_padding)
++struct gtsc_trace_setup 
 +{
-+	struct trace_info *trace = buf->chan->private_data;
-+	
-+	if (trace->flags & TRACE_FLIGHT_CHANNEL)
-+		return 1;
-+	
-+	if (!relay_buf_full(buf))
-+		return 1;
-+
-+	atomic_inc(&trace->dropped);
-+
-+	return 0;
-+}
-+
-+
-+static int remove_buf_file_callback(struct dentry *dentry)
-+{
-+	debugfs_remove(dentry);
-+
-+	return 0;
-+}
-+
-+
-+static struct dentry *create_buf_file_callback(const char *filename,
-+					       struct dentry *parent,
-+					       int mode,
-+					       struct rchan_buf *buf,
-+					       int *is_global)
-+{
-+	return debugfs_create_file(filename, mode, parent, buf,
-+				   &relay_file_operations);
-+}
-+
-+
-+static struct dentry *create_global_buf_file_callback(const char *filename,
-+						      struct dentry *parent,
-+						      int mode,
-+						      struct rchan_buf *buf,
-+						      int *is_global)
-+{
-+	*is_global = 1;
-+
-+	return debugfs_create_file(filename, mode, parent, buf,
-+				   &relay_file_operations);
-+}
-+
-+
-+static struct rchan_callbacks relay_callbacks = {
-+	.subbuf_start		= subbuf_start_callback,
-+	.create_buf_file	= create_buf_file_callback,
-+	.remove_buf_file	= remove_buf_file_callback,
-+};
-+static struct rchan_callbacks relay_callbacks_global = {
-+	.subbuf_start		= subbuf_start_callback,
-+	.create_buf_file	= create_global_buf_file_callback,
-+	.remove_buf_file	= remove_buf_file_callback,
-+};
-+
-+
-+static void remove_controls(struct trace_info *trace)
-+{
-+	if (trace->state_file)
-+		debugfs_remove(trace->state_file);
-+	if (trace->dropped_file)
-+		debugfs_remove(trace->dropped_file);
-+	if (trace->reset_consumed_file)
-+		debugfs_remove(trace->reset_consumed_file);
-+	if (trace->nr_sub_file)
-+		debugfs_remove(trace->nr_sub_file);
-+	if (trace->sub_size_file)
-+		debugfs_remove(trace->sub_size_file);
-+	if (trace->dir)
-+		remove_tree(trace);
-+}
-+
-+/*
-+ * Setup controls for tracing.
-+ */
-+static struct trace_info *setup_controls(const char *root,
-+					 const char *name, u32 flags)
-+{
-+	struct trace_info *trace = NULL;
-+
-+	trace = kzalloc(sizeof(*trace), GFP_KERNEL);
-+	if (!trace)
-+		goto err;
-+
-+	trace->dir = create_tree(trace, root, name);
-+	if (!trace->dir)
-+		goto err;
-+
-+	trace->state_file = debugfs_create_file("state", 0444, trace->dir,
-+						trace, &state_fops);
-+	if (!trace->state_file)
-+		goto err;
-+
-+	if (!flags & TRACE_FLIGHT_CHANNEL) {
-+		trace->dropped_file = debugfs_create_file("dropped", 0444,
-+							  trace->dir,
-+							  trace,
-+							  &dropped_fops);
-+		if (!trace->dropped_file)
-+			goto err;
-+	}
-+
-+	if (flags & TRACE_FLIGHT_CHANNEL) {
-+		trace->reset_consumed_file = debugfs_create_file("rewind",
-+								 0444,
-+								 trace->dir,
-+								 trace,
-+								 &reset_consumed_fops);
-+		if (!trace->reset_consumed_file)
-+			goto err;
-+	}
-+
-+	trace->nr_sub_file = debugfs_create_file("nr_sub", 0444,
-+						 trace->dir, trace,
-+						 &nr_sub_fops);
-+	if (!trace->nr_sub_file)
-+		goto err;
-+
-+	trace->sub_size_file = debugfs_create_file("sub_size", 0444,
-+						   trace->dir, trace,
-+						   &sub_size_fops);
-+	if (!trace->sub_size_file)
-+		goto err;
-+
-+	return trace;
-+err:
-+	if (trace) {
-+		remove_controls(trace);
-+		kfree(trace);
-+	}
-+
-+	return NULL;
-+}
-+
-+
-+int trace_setup_channel(struct trace_info *trace, u32 buf_size, u32 buf_nr,
-+			u32 flags)
-+{
-+	if (!buf_size || !buf_nr)
-+		return -EINVAL;
-+
-+	if (flags & TRACE_GLOBAL_CHANNEL)
-+		trace->rchan = relay_open("trace", trace->dir, buf_size,
-+					  buf_nr, &relay_callbacks_global,
-+					  trace);
-+	else
-+		trace->rchan = relay_open("trace", trace->dir, buf_size,
-+					  buf_nr, &relay_callbacks, trace);
-+	
-+	if (!trace->rchan)
-+		return -ENOMEM;
-+
-+	trace->flags = flags;
-+	trace->state = TRACE_SETUP;
-+
-+	return 0;
-+}
-+
-+
-+/**
-+ *	trace_setup: create a new gtsc trace handle
-+ *
-+ *	@root: The root directory name in the root of the debugfs
-+ *	       to place trace directories. Created as needed.
-+ *	@name: Trace directory name, created in @root
-+ *	@buf_size: size of the relay sub-buffers
-+ *	@buf_nr: number of relay sub-buffers
-+ *	@flags: Option selection (see GTSC channel flags definitions)
-+ *		default values when flags=0 are: use per-CPU buffering,
-+ *		use non-overwrite mode. See Documentation/gtsc.txt for details.
-+ *
-+ *	returns a gtsc_trace handle or NULL, if setup failed.
-+ */
-+struct trace_info *trace_setup(const char *root, const char *name,
-+			       u32 buf_size, u32 buf_nr, u32 flags)
-+{
-+	struct trace_info *trace = NULL;
-+
-+	trace = setup_controls(root, name, flags);
-+	if (!trace)
-+		return NULL;
-+
-+	trace->buf_size = buf_size;
-+	trace->buf_nr = buf_nr;
-+	trace->flags = flags;
-+	trace->state = TRACE_SETUP;
-+
-+	return trace;
-+}
-+EXPORT_SYMBOL_GPL(trace_setup);
-+
-+
-+/**
-+ *	trace_start: start tracing
-+ *
-+ *	@trace: gtsc trace handle to start or stop.
-+ *
-+ *	returns 0 if successful.
-+ */
-+int trace_start(struct trace_info *trace)
-+{
-+	/*
-+	 * For starting a trace, we can transition from a setup or stopped
-+	 * trace.
-+	 */
-+	if (trace->state == TRACE_RUNNING)
-+		return -EINVAL;
-+
-+	if (trace->state == TRACE_SETUP) {
-+		int ret;
-+
-+		ret = trace_setup_channel(trace, trace->buf_size,
-+					  trace->buf_nr, trace->flags);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	trace->state = TRACE_RUNNING;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(trace_start);
-+
-+/**
-+ *	trace_stop: stop tracing
-+ *
-+ *	@trace: gtsc trace handle to start or stop.
-+ */
-+int trace_stop(struct trace_info *trace)
-+{
-+	int ret = -EINVAL;
-+	
-+	/*
-+	 * For stopping a trace, the state must be running
-+	 */
-+	if (trace->state == TRACE_RUNNING) {
-+		trace->state = TRACE_STOPPED;
-+		relay_flush(trace->rchan);
-+		ret = 0;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(trace_stop);
-+
-+
-+/**
-+ *	trace_cleanup_channel: destroys the gtsc channel only
-+ *
-+ *	@trace: gtsc trace handle to cleanup
-+ */
-+void trace_cleanup_channel(struct trace_info *trace)
-+{
-+	if (trace->rchan)
-+		relay_close(trace->rchan);
-+	trace->rchan = NULL;
-+}
-+EXPORT_SYMBOL_GPL(trace_cleanup_channel);
-+
-+
-+/**
-+ *	trace_cleanup: destroys the gtsc channel, control files and dir
-+ *
-+ *	@trace: gtsc trace handle to cleanup
-+ */
-+void trace_cleanup(struct trace_info *trace)
-+{
-+	trace_cleanup_channel(trace);
-+	remove_controls(trace);
-+	kfree(trace);
-+}
-+EXPORT_SYMBOL_GPL(trace_cleanup);
-+
-+
-+unsigned long long trace_timestamp(void)
-+{
-+	return sched_clock();
-+}
-+EXPORT_SYMBOL_GPL(trace_timestamp);
++	char root[TRACE_ROOT_NAME_SIZE];
++	char name[TRACE_NAME_SIZE];
++	u32 buf_size;
++	u32 buf_nr;
++	u32 flags;
+ };
+ 
+ /*
+  * User setup structure passed with BLKTRACESTART
+  */
+ struct blk_user_trace_setup {
+-	char name[BDEVNAME_SIZE];	/* output */
++	struct gtsc_trace_setup gts;	/* input */
+ 	u16 act_mask;			/* input */
+-	u32 buf_size;			/* input */
+-	u32 buf_nr;			/* input */
+ 	u64 start_lba;
+ 	u64 end_lba;
+ 	u32 pid;
 
 
 
