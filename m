@@ -1,134 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbXF3Lrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbXF3LsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbXF3Lrr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 07:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbXF3Lrh
+	id S1754996AbXF3LsI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 07:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbXF3Lrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 07:47:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:49009 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbXF3Lrg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 07:47:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=MZdTwXFlAyen96YOfmPHE0d1mffFSzvrvC3ig1HSpQNXtNNyrC5AAuRDGgk9wxjRfSzFmtzhzbeRRdbLjZxOCrqknSsziDdmvSe01XQwWHNRSxYLY7P/lKqm8DXSBEKWVw7wVQYLaWlwQhe++hs4XvgoDpX+KlH6sw8/0wwOMNo=
-Message-ID: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com>
-Date: Sat, 30 Jun 2007 14:47:35 +0300
-From: "=?ISO-8859-1?Q?T=F6r=F6k_Edvin?=" <edwintorok@gmail.com>
-To: zambrano@broadcom.com, netdev@vger.kernel.org
-Subject: [PATCH] b44: power down PHY when interface down
-Cc: linux-kernel@vger.kernel.org, power@bughost.org
+	Sat, 30 Jun 2007 07:47:55 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:34113 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753599AbXF3Lrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 07:47:53 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Sat, 30 Jun 2007 05:45:42 -0600
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Samuel Ortiz <samuel@sortiz.org>,
+       "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>,
+       linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com,
+       linux-pcmcia@lists.infradead.org
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706292041.31291.bjorn.helgaas@hp.com> <200706301116.19501.arvidjaar@mail.ru>
+In-Reply-To: <200706301116.19501.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200706300545.43181.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the interface is down (or driver removed), the BroadCom 44xx card remains
-powered on, and both its MAC and PHY is using up power.
-This patch makes the driver issue a MAC_CTRL_PHY_PDOWN when the interface
-is halted, and does a partial chip reset turns off the activity LEDs too.
+On Saturday 30 June 2007 01:16:18 am Andrey Borzenkov wrote:
+> > This patch fixes the 2.6.22 regression:
+> >     "no irda0 interface (2.6.21 was OK), smsc does not find chip"
+> 
+> does not work, sorry.
 
-Applies to 2.6.22-rc6, or current git head.
+Sigh ;-)  Thanks for your patience in dealing with this.
 
-Tested on a Broadcom BCM4401-B0 card, it saves ~0.5W (measured using powertop).
+> [  958.125710]  00:0a: SMCf010 not responding at SIR 0x2e800000100, FIR 0x2e8def5a6d4; auto-configuring
+> [  958.132837]  00:0a: not responding at SIR 0x2e800000100, FIR 0xded782bc000002e8; swapping SIR/FIR and reconfiguring
+> [  958.140954]  00:0a: responds at SIR 0x100000002e8, FIR 0xded782bc000002e8
 
-Signed-off-by: Torok Edwin <edwintorok@gmail.com>
----
- b44.c |   25 ++++++++++++++++++++-----
-  1 file changed, 20 insertions(+), 5 deletions(-)
-diff --git a/drivers/net/b44.c b/drivers/net/b44.c
-index 879a2ff..00d0f57 100644
---- a/drivers/net/b44.c
-+++ b/drivers/net/b44.c
-@@ -113,6 +113,8 @@ static void b44_init_rings(struct b44 *);
- #define B44_FULL_RESET		1
- #define B44_FULL_RESET_SKIP_PHY	2
- #define B44_PARTIAL_RESET	3
-+#define B44_CHIP_RESET_FULL     4
-+#define B44_CHIP_RESET_PARTIAL  5
+This means that the SMCf010 device *did* respond, I think at the
+FIR address 0x100.  (I can't figure out the "right" way to print
+those resource_size_t things, so I added some casts in the appended
+patch.)
 
- static void b44_init_hw(struct b44 *, int);
+> [  524.426614] smsc_ircc_present(), addr 0x0100 - no device found!
 
-@@ -1283,7 +1285,7 @@ static void b44_clear_stats(struct b44 *bp)
- }
+But by the time the smsc_ircc2 driver got loaded, the device stopped
+responding.  That means something happened in between that messed it up.
 
- /* bp->lock is held. */
--static void b44_chip_reset(struct b44 *bp)
-+static void b44_chip_reset(struct b44 *bp, int reset_kind)
+> as already mentioned, port 100 cannot work:
+> 
+> 0100-013f : pcmcia_socket0
+> {pts/1}% sudo 
+> cat /sys/class/pcmcia_socket/pcmcia_socket0/available_resources_io
+> 0x00000100 - 0x000003af
+> 0x000003e0 - 0x000004ff
+> 0x00000820 - 0x000008ff
+> 0x00000a00 - 0x00000aff
+> 0x00000c00 - 0x00000cf7
+
+Well, the whole problem I'm trying to fix is that we aren't doing
+resource allocation correctly.  The BIOS has configured the IR
+device to use port 0x100, and then something else came along and
+decided to also use port 0x100.
+
+It looks like the something else is the wlags49_h1_cs driver for
+the PCMCIA card you have inserted.  Can you temporarily remove that
+card and driver and try the patch below?  If the IR device works
+without the wlags49_h1_cs driver, then we'll have to look at
+wlags49_h1_cs to see whether it's doing something wrong.
+
+Bjorn
+
+
+[patch] PNP SMCf010 quirk: work around Toshiba Portege 4000 ACPI issues
+
+When we enable the SMCf010 IR device, the Toshiba Portege 4000 BIOS claims
+the device is working, but it really isn't configured correctly.  The BIOS
+*will* configure it, but only if we call _SRS after (1) reversing the order
+of the SIR and FIR I/O port regions and (2) changing the IRQ from active-high
+to active-low.
+
+This patch addresses the 2.6.22 regression:
+    "no irda0 interface (2.6.21 was OK), smsc does not find chip"
+
+I tested this on a Portege 4000.  The smsc-ircc2 driver correctly detects
+the device, and "irattach irda0 -s && irdadump" shows transmitted and
+received packets.
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Index: w/drivers/pnp/quirks.c
+===================================================================
+--- w.orig/drivers/pnp/quirks.c	2007-06-27 20:07:45.000000000 -0600
++++ w/drivers/pnp/quirks.c	2007-06-30 05:27:03.000000000 -0600
+@@ -136,11 +136,10 @@
+ 
+ static void quirk_smc_enable(struct pnp_dev *dev)
  {
- 	if (ssb_is_core_up(bp)) {
- 		bw32(bp, B44_RCV_LAZY, 0);
-@@ -1307,6 +1309,10 @@ static void b44_chip_reset(struct b44 *bp)
-
- 	b44_clear_stats(bp);
-
-+	if (reset_kind == B44_CHIP_RESET_PARTIAL)
-+		return;/* don't enable PHY if we are doing a partial reset
-+		, we are probably going to power down */
+-	/*
+-	 * If the BIOS left the device disabled, or it is enabled and
+-	 * responding correctly, we're in good shape.
+-	 */
+-	if (!dev->active || quirk_smc_fir_enabled(dev))
++	struct resource fir, sir, irq;
 +
- 	/* Make PHY accessible. */
- 	bw32(bp, B44_MDIO_CTRL, (MDIO_CTRL_PREAMBLE |
- 			     (0x0d & MDIO_CTRL_MAXF_MASK)));
-@@ -1332,7 +1338,14 @@ static void b44_chip_reset(struct b44 *bp)
- static void b44_halt(struct b44 *bp)
- {
- 	b44_disable_ints(bp);
--	b44_chip_reset(bp);
-+	/* reset PHY */
-+	b44_phy_reset(bp);
-+	/* power down PHY */
-+	printk(KERN_INFO PFX "%s: powering down PHY\n", bp->dev->name);
-+	bw32(bp, B44_MAC_CTRL, MAC_CTRL_PHY_PDOWN);
-+	/* now reset the chip, but without enabling the MAC&PHY
-+	 * part of it. This has to be done _after_ we shut down the PHY */
-+	b44_chip_reset(bp, B44_CHIP_RESET_PARTIAL);
- }
-
- /* bp->lock is held. */
-@@ -1376,7 +1389,7 @@ static void b44_init_hw(struct b44 *bp, int reset_kind)
- {
- 	u32 val;
-
--	b44_chip_reset(bp);
-+	b44_chip_reset(bp, B44_CHIP_RESET_FULL);
- 	if (reset_kind == B44_FULL_RESET) {
- 		b44_phy_reset(bp);
- 		b44_setup_phy(bp);
-@@ -1430,7 +1443,7 @@ static int b44_open(struct net_device *dev)
-
- 	err = request_irq(dev->irq, b44_interrupt, IRQF_SHARED, dev->name, dev);
- 	if (unlikely(err < 0)) {
--		b44_chip_reset(bp);
-+		b44_chip_reset(bp, B44_CHIP_RESET_PARTIAL);
- 		b44_free_rings(bp);
- 		b44_free_consistent(bp);
- 		goto out;
-@@ -2250,7 +2263,7 @@ static int __devinit b44_init_one(struct pci_dev *pdev,
- 	/* Chip reset provides power to the b44 MAC & PCI cores, which
- 	 * is necessary for MAC register access.
++	pnp_activate_dev(dev);
++	if (quirk_smc_fir_enabled(dev))
+ 		return;
+ 
+ 	/*
+@@ -152,16 +151,62 @@
+ 	 * this.  Fortunately, they do fix things up if we auto-configure
+ 	 * the device using its _PRS and _SRS methods.
  	 */
--	b44_chip_reset(bp);
-+	b44_chip_reset(bp, B44_CHIP_RESET_FULL);
-
- 	printk(KERN_INFO "%s: Broadcom 4400 10/100BaseT Ethernet ", dev->name);
- 	for (i = 0; i < 6; i++)
-@@ -2284,6 +2297,7 @@ static void __devexit b44_remove_one(struct pci_dev *pdev)
- 	free_netdev(dev);
- 	pci_release_regions(pdev);
- 	pci_disable_device(pdev);
-+	pci_set_power_state(pdev, PCI_D3hot);
- 	pci_set_drvdata(pdev, NULL);
+-	dev_err(&dev->dev, "%s device not responding, auto-configuring "
+-		"resources\n", dev->id->id);
++	dev_err(&dev->dev, "%s not responding at SIR 0x%lx, FIR 0x%lx; "
++		"auto-configuring\n", dev->id->id,
++		(unsigned long) pnp_port_start(dev, 0), 
++		(unsigned long) pnp_port_start(dev, 1));
+ 
+ 	pnp_disable_dev(dev);
+ 	pnp_init_resource_table(&dev->res);
+ 	pnp_auto_config_dev(dev);
+ 	pnp_activate_dev(dev);
++	if (quirk_smc_fir_enabled(dev)) {
++		dev_err(&dev->dev, "responds at SIR 0x%lx, FIR 0x%lx\n",
++			(unsigned long) pnp_port_start(dev, 0),
++			(unsigned long) pnp_port_start(dev, 1));
++		return;
++	}
++
++	/*
++	 * The Toshiba Portege 4000 _CRS reports the FIR region first,
++	 * followed by the SIR region.  The BIOS will configure the bridge,
++	 * but only if we call _SRS with SIR first, then FIR.  It also
++	 * reports the IRQ as active high, when it is really active low.
++	 */
++	dev_err(&dev->dev, "not responding at SIR 0x%lx, FIR 0x%lx; "
++		"swapping SIR/FIR and reconfiguring\n",
++		(unsigned long) pnp_port_start(dev, 0),
++		(unsigned long) pnp_port_start(dev, 1));
++
++	/*
++	 * Clear IORESOURCE_AUTO so pnp_activate_dev() doesn't reassign
++	 * these resources any more.
++	 */
++	fir = dev->res.port_resource[0];
++	sir = dev->res.port_resource[1];
++	fir.flags &= ~IORESOURCE_AUTO;
++	sir.flags &= ~IORESOURCE_AUTO;
++
++	irq = dev->res.irq_resource[0];
++	irq.flags &= ~IORESOURCE_AUTO;
++	irq.flags &= ~IORESOURCE_BITS;
++	irq.flags |= IORESOURCE_IRQ_LOWEDGE;
++
++	pnp_disable_dev(dev);
++	dev->res.port_resource[0] = sir;
++	dev->res.port_resource[1] = fir;
++	dev->res.irq_resource[0] = irq;
++	pnp_activate_dev(dev);
++
++	if (quirk_smc_fir_enabled(dev)) {
++		dev_err(&dev->dev, "responds at SIR 0x%lx, FIR 0x%lx\n",
++			(unsigned long) pnp_port_start(dev, 0),
++			(unsigned long) pnp_port_start(dev, 1));
++		return;
++	}
+ 
+-	if (!quirk_smc_fir_enabled(dev))
+-		dev_err(&dev->dev, "giving up; try \"smsc-ircc2.nopnp\"\n");
++	dev_err(&dev->dev, "giving up; try \"smsc-ircc2.nopnp\" and "
++		"email bjorn.helgaas@hp.com\n");
  }
-
-@@ -2312,6 +2326,7 @@ static int b44_suspend(struct pci_dev *pdev,
-pm_message_t state)
- 		b44_setup_wol(bp);
- 	}
- 	pci_disable_device(pdev);
-+	pci_set_power_state(pdev, PCI_D3hot);
- 	return 0;
- }
+ 
+ 
