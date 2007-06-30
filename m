@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbXF3Pmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbXF3P4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757380AbXF3Pmu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 11:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXF3Pmm
+	id S1757710AbXF3P4h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 11:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbXF3P41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 11:42:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45205 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753937AbXF3Pml (ORCPT
+	Sat, 30 Jun 2007 11:56:27 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:45047 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754624AbXF3P40 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 11:42:41 -0400
-Subject: Re: IRQ handling difference between i386 and x86_64
-From: Arjan van de Ven <arjan@infradead.org>
-To: Krzysztof Oledzki <olel@ans.pl>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706301617240.16011@bizon.gios.gov.pl>
-References: <Pine.LNX.4.64.0706301617240.16011@bizon.gios.gov.pl>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sat, 30 Jun 2007 08:40:35 -0700
-Message-Id: <1183218035.2894.13.camel@laptopd505.fenrus.org>
+	Sat, 30 Jun 2007 11:56:26 -0400
+X-Greylist: delayed 1877 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 Jun 2007 11:56:26 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=EvUuInMA+4HTbozyZXzBHjF3xYMxGqf6yGpsaWXpo/PiM8yuo2utcGZPH18zZ
+	S84haeXfFFekMfBVFwnXXA5SA==
+Date: Sat, 30 Jun 2007 17:25:07 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       =?iso-8859-1?B?VPZy9ms=?= Edvin <edwintorok@gmail.com>,
+       netdev@vger.kernel.org, power@bughost.org, zambrano@broadcom.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] b44: power down PHY when interface down
+Message-ID: <20070630152507.GB2553@xi.wantstofly.org>
+References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <20070630120541.GA21339@srcf.ucam.org> <46866C6B.9010801@linux.intel.com> <20070630151923.GA22983@srcf.ucam.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070630151923.GA22983@srcf.ucam.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-06-30 at 16:55 +0200, Krzysztof Oledzki wrote:
-> Hello,
-> 
-> It seems that IRQ handling is somehow different between i386 and x86_64.
-> 
-> In my Dell PowerEdge 1950 is it possible to enable interrupts spreading 
-> over all CPUs. This a single CPU, four CORE system (Quad-Core E5335 Xeon) 
-> so I think that interrupts migration may be useful. Unfortunately, it 
-> works only with 32-bit kernel. Booting it with x86_64 leads to situation, 
-> when all interrupts goes only to the first cpu matching a smp_affinity 
-> mask.
+On Sat, Jun 30, 2007 at 04:19:23PM +0100, Matthew Garrett wrote:
 
-arguably that is the most efficient behavior... round robin of
-interrupts is the worst possible case in terms of performance
+> I'd agree that there's a need for a state where we power down as much as 
+> possible (even at the cost of functionality), but where possible it 
+> would also be nice to offer a state where the mac is powered down and 
+> the phy left up.
 
-are you using irqbalance ? (www.irqbalance.org)
-
-
+There are PHYs which can detect that someone's on the other end even
+when powered down..
