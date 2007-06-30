@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbXF3Aeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbXF3BIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752303AbXF3Aeo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 20:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbXF3Aeg
+	id S1752521AbXF3BIN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 21:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXF3BIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 20:34:36 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:43873 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbXF3Aef (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 20:34:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=r32z9S24P/gx5CKkWYN+rVzV6vCOTNxhY8h8D4Xu+n3EEqepPUWy6HZoKE9RB+y2QF1Eam0z+hY514j+LxtT0hzMMzduqj5ZVpd2juPhr1XzsnU+MnGDCsv8MbJyj9A+3HvYr0JFZcWRQub01MH89CKNgJAmR49RLBFYtyyIMm0=
-Message-ID: <9c4865a10706291734x794510b2t8cabc2478c0e01f5@mail.gmail.com>
-Date: Fri, 29 Jun 2007 20:34:34 -0400
-From: "Russell Harmon" <eatnumber1@gmail.com>
-To: "Frank Fiene" <ffiene@veka.com>
-Subject: Re: Kernel doesn't recognize complete memory
+	Fri, 29 Jun 2007 21:08:01 -0400
+Received: from z2.cat.iki.fi ([212.16.98.133]:49843 "EHLO z2.cat.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbXF3BIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 21:08:00 -0400
+Date: Sat, 30 Jun 2007 04:08:22 +0300
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: Frank Fiene <ffiene@veka.com>
 Cc: linux-kernel@vger.kernel.org, tytso@thunk.org
-In-Reply-To: <200706292225.26503.ffiene@veka.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Subject: Re: Kernel doesn't recognize complete memory
+Message-ID: <20070630010822.GP4504@mea-ext.zmailer.org>
 References: <200706292225.26503.ffiene@veka.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706292225.26503.ffiene@veka.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://kerneltrap.org/node/2450/7217 is likely your problem, although
-why you can see 3gb instead of only 1gb of ram, idk... maybe something
-ubuntu specific...
-
-On 6/29/07, Frank Fiene <ffiene@veka.com> wrote:
+On Fri, Jun 29, 2007 at 10:25:26PM +0200, Frank Fiene wrote:
 > Lenovo Z61p, Intel Core2 Duo T7200
->
+> 
 > I have 4GB RAM installed and BIOS recognize 4GB RAM.
-> Linux kernel (Ubuntu-7.04, 32bit-PAE and 64bit, openSUSE-10.2 32bit-PAE
+> Linux kernel (Ubuntu-7.04, 32bit-PAE and 64bit, openSUSE-10.2 32bit-PAE 
 > and 64bit) tells me: only 3GB of RAM are installed.
->
+
+With AMD's Athlon64 the answer would be "look into BIOS settings,
+(re)map 3-4 GB memory above 4 GB address mark"..
+
+The PCI-bus and all IO devices in it needs memory space within
+the first 4 GB of physical address space.  Some devices support
+64-bit addresses in which case they can access whole physical
+memory, most probably don't, meaning that they can access only
+memory in lowest 4 GB part of the space.
+
+Original 8088 PC had 20 bit address space, and "huge" megabyte
+of address space. Then came 286 AT era with 24 bit addresses
+and "whopping" 16 megabyte address space..  then came 386 and
+finally true 32-bit addresses -- but ISA-space VGA aperture had
+to be in there still..  and to gain access to of that memory
+located "under" that VGA aperture, there was mapping...
+
+Now the VGA aperture mapping is no more, but the PCI has similar
+requirements - albeit with bigger apertures.
+
+
+So, what does your BIOS have hidden in "advanced" menus (most likely) ?
+Something about "remap (PCI?) memory above 4 GB" ?
+
+
 > Any other user with a 4GB Thinkpad? tytso?
->
+> 
 > What can i do? Please help!
->
+> 
 > Regards
 > Frank
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+
+Regards, Matti Aarnio
