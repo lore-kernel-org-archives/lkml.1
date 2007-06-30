@@ -1,93 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXF3NRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758481AbXF3Nc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061AbXF3NRh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 09:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbXF3NR3
+	id S1758481AbXF3Nc1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 09:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbXF3NcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 09:17:29 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59267 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756069AbXF3NR2 (ORCPT
+	Sat, 30 Jun 2007 09:32:13 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:21884 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756892AbXF3NcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 09:17:28 -0400
-Date: Sat, 30 Jun 2007 14:16:44 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 1/5] avoid tlb gather restarts.
-In-Reply-To: <1183151984.13635.16.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0706301406001.12517@blonde.wat.veritas.com>
-References: <20070629135530.912094590@de.ibm.com>  <20070629141527.557443600@de.ibm.com>
-  <Pine.LNX.4.64.0706291927260.1509@blonde.wat.veritas.com>
- <1183151984.13635.16.camel@localhost>
+	Sat, 30 Jun 2007 09:32:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LE9efDq0ZmpoEmdhdDlAZRWLeD3RQY0ZlKXiMMtHz2g+rnn0jWDL3V6pkN6kHlno10hqmuaj3rX5MmGDawhshTGx4bbD+YYP/twvhggT3mJIsRFCZ/sIhbaJ2tgAB7vKcuWuxWfoeN9LufSwvjhK0gUMVURU0OxpcC5/S2wYTog=
+Message-ID: <524f69650706300632p1f4fb3e0l23bd017672b77baf@mail.gmail.com>
+Date: Sat, 30 Jun 2007 08:32:10 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Jeff Layton" <jlayton@redhat.com>
+Subject: Re: [PATCH] CIFS: make cifsd (more)
+Cc: "Christoph Hellwig" <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20070630071514.514d4833.jlayton@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAA2luYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbGludXgtbW1Aa3ZhY2sub3JnAHNjaHdpZGVmc2t5QGRlLmlibS5jb20A
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <524f69650706251525g7b17ea02o5fb3e637615fe542@mail.gmail.com>
+	 <20070630084209.GA21186@infradead.org>
+	 <20070630071514.514d4833.jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jun 2007, Martin Schwidefsky wrote:
-> On Fri, 2007-06-29 at 19:56 +0100, Hugh Dickins wrote:
-> > I don't dare comment on your page_mkclean_one patch (5/5),
-> > that dirty page business has grown too subtle for me.
-> 
-> Oh yes, the dirty handling is tricky....
+The reason that cifs switched from wait_for_completion to the kthread
+call to cifs_demultiplex_thread in the first place is because without
+use of kthread it won't work with a linux-vserver.   See the thread:
 
-I'll move that discussion over to 5/5 and Cc Peter
-(sorry I was too lazy to do so in the first place).
+http://marc.info/?l=linux-cifs-client&m=117552761703381&w=2
 
-> > On Fri, 29 Jun 2007, Martin Schwidefsky wrote:
-> > You think you're just moving the finish/gather to where they're
-> > actually necessary; but the thing is, that per-cpu struct mmu_gather
-> > is liable to accumulate a lot of unpreemptible work for the future
-> > tlb_finish_mmu, particularly when anon pages are associated with swap.
-> 
-> Hmm, ok, so you are saying that we should do a flush at the end of each
-> vma.
+If we take out the kthread call, we break those guys.
 
-I think of it as doing a flush every ZAP_BLOCK_SIZE, with the imperfect
-structure of the loop forcing perhaps an early flush at the end of each
-vma: I seem to assume large vmas, and you to assume small ones.
+I agree that using sk_callbacks is worth looking into - I only found
+ocfs2 and SunRPC (NFS) though that used it.   Is there a better
+example though?   The NFS socket handling code is huge
+(net/sunrpc/xprtsck.c) - something seems wrong when replacing a few
+lines of code with a new 1675 line file.  There must be a better
+example of doing what you suggest...
 
-IIRC, the common case for doing multiple vmas here is exit, when it
-ends up that the TLB flush can often be skipped because already done
-by the switch from exiting task; so the premature flush per vma doesn't
-matter much.  But treat that claim with maximum scepticism: I've not
-rechecked it, several aspects may be wrong.  What I do remember is
-that (at least on i386) there's a lot less actual TLB flushing done
-here than it appears from the outside.
+I am tempted to drop the socket timeout (which cifs sets to 7 seconds)
+to a smaller number and not use signals at all rather than add that
+much complexity
 
-> > So although there may be no need to resched right now, if we keep on
-> > gathering more and more without flushing, we'll be very unresponsive
-> > when a resched is needed later on.  Hence Ingo's ZAP_BLOCK_SIZE to
-> > split it up, small when CONFIG_PREEMPT, more reasonable but still
-> > limited when not.
-> 
-> Would it be acceptable to call tlb_flush_mmu instead of the
-> tlb_finish_mmu / tlb_gather_mmu pair if the condition around
-> cond_resched evaluates to false?
+On 6/30/07, Jeff Layton <jlayton@redhat.com> wrote:
+> On Sat, 30 Jun 2007 09:42:09 +0100
+> Christoph Hellwig <hch@infradead.org> wrote:
+>
+> > On Mon, Jun 25, 2007 at 05:25:00PM -0500, Steve French wrote:
+> > > Jeff,
+> > > Not seeing any objections to your revised approach (to not allowing
+> > > signals for cifsd kernel thread), I just merged something similar to
+> > > your patch to the cifs-2.6.git tree (also fixed some nearby lines that
+> > > went past 80 columns).
+> >
+> > Ok, I'm back to this.
+> >
+> > As I said mixing force_sig with the kthread infrastructure is a bad idea.
+> > The proper short-term (aka 2.6.22) fix is to revert the kthread conversion
+> > for this particular thread.  Just go back to what worked before.
+>
+> Could you clarify why this is? It looks like kthreads and signalling
+> should be more or less orthogonal. Or is it just an issue of the
+> complexity added when you mix signalling into kthreads?
+>
+> Note that the problem of insulation from userspace signals predates the
+> conversion to using the kthreads interface for cifsd. So even if we
+> revert the switch of the demultiplexer thread to kthreads in the near
+> term, I'd like to keep the recent change to block all signals from
+> userspace and use force_sig in lieu of send_sig.
+>
+> Does that sound reasonable?
+>
+> >
+> > Now the right fix is a lot more complicated and involved:
+> >
+> >       Stop using blocking recvmsg (or read) in kernel threads!
+> >
+> > If you look at what the other consumers of networking reads from kernel
+> > threads do is they either use tcp_read_sock and hooks into the sk_ callbacks
+> > which would be nice for high performance reads in cifs aswell, but probably
+> > not the demultiplexer thread, or they use MSG_DONTWAIT to avoid this problems
+> > and deal with the blocking behaviour on a higher level.
+>
+> --
+> Jeff Layton <jlayton@redhat.com>
+>
 
-That sounds a good idea, yes, that should be fine.  But beware,
-tlb_flush_mmu is an internal detail of the asm-generic/tlb.h method
-and perhaps some others, it currently doesn't exist on some arches.
 
-I think you just need to add a simple one to arm & arm26, and take
-the "ia64_" off the ia64 one.  powerpc and sparc64 go about it all 
-a bit differently, but it should be easy to give them one too.
-There may be some others missing.
+-- 
+Thanks,
 
-> The background for this change is that I'm working on another patch that
-> will change the tlb flushing for s390 quite a bit. We won't have
-> anything to flush with tlb_finish_mmu because we will either flush all
-> tlbs with tlb_gather_mmu or each pte seperatly. The pages will always be
-> freed immediatly. If we are forced to restart the tlb gather then we'll
-> do multiple flush_tlb_mm because the information that we already flushed
-> everything is lost with tlb_finish_mmu.
-
-Thanks for the info.  Sounds like we may have trouble ahead when
-rearranging this stuff, easy to forget s390 from our assumptions:
-keep watch!
-
-Hugh
+Steve
