@@ -1,68 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbXF3WxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbXF3XRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbXF3WxW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 18:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbXF3WxN
+	id S1754573AbXF3XRt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 19:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbXF3XRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 18:53:13 -0400
-Received: from bizon.gios.gov.pl ([212.244.124.8]:60519 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbXF3WxN (ORCPT
+	Sat, 30 Jun 2007 19:17:39 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:45582 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbXF3XRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 18:53:13 -0400
-Date: Sun, 1 Jul 2007 00:53:01 +0200 (CEST)
-From: Krzysztof Oledzki <olel@ans.pl>
-X-X-Sender: olel@bizon.gios.gov.pl
-To: Arjan van de Ven <arjan@infradead.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: IRQ handling difference between i386 and x86_64
-In-Reply-To: <1183218035.2894.13.camel@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0707010045040.9268@bizon.gios.gov.pl>
-References: <Pine.LNX.4.64.0706301617240.16011@bizon.gios.gov.pl>
- <1183218035.2894.13.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-1501710822-1183243981=:9268"
+	Sat, 30 Jun 2007 19:17:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=MYxJhks2gT50y1DepSFAJm55y+ze4drhPNcWnfsR94fyVoyZCDvfQjw+NLNYr
+	qHFX6nAw93rn4KbfX4px6QYWg==
+Date: Sun, 1 Jul 2007 01:17:34 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: =?iso-8859-1?B?VPZy9ms=?= Edvin <edwintorok@gmail.com>,
+       zambrano@broadcom.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, power@bughost.org
+Subject: Re: [PATCH] b44: power down PHY when interface down
+Message-ID: <20070630231734.GF2553@xi.wantstofly.org>
+References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <200706302353.25426.mb@bu3sch.de> <20070630220301.GD2553@xi.wantstofly.org> <200707010024.40649.mb@bu3sch.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707010024.40649.mb@bu3sch.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, Jul 01, 2007 at 12:24:40AM +0200, Michael Buesch wrote:
 
----187430788-1501710822-1183243981=:9268
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+> > > Hm, I was going to measure the real power advantage with a
+> > > PCI-extender card. But my B44B0 card doesn't seem to work in
+> > > that extender card. It works perfectly fine sticked directly into
+> > > the motherboard, though, and other cards like a BCM4318 work in
+> > > the extender, too.
+> > > Not sure what this is.
+> > > The extender has an application note about nonworking cards in the
+> > > extender and a too big resistor on the board IDSEL pin being the
+> > > cause of this.
+> > 
+> > Does the card show up in lspci at all?
+> 
+> No it doesn't.
+
+Right, so it sounds like it might be this issue.
 
 
+> > Does the extender board have a PCI-PCI bridge on it?  (If not,
+> > there's not really any reason to resistively couple the IDSEL
+> > line to the host, since the host should take care of that.)
+> 
+> There's no bridge. It just decouples all voltage lines, so you can
+> drive it from external supply and/or measure voltages and current.
+> On the PCB it looks like the the IDSEL line is rather directly
+> routed to the host IDSEL. It just goes through one of the bus
+> isolation chips. So I guess (just my guess) that this chip has some
+> resistance and if the total resistance of the chip + the IDSEL
+> resistor on the mainboard goes above some threshold it doesn't work
+> anymore for some cards. In the application note they write
+> about trouble for IDSEL resistors >51ohms.
 
-On Sat, 30 Jun 2007, Arjan van de Ven wrote:
+More or less.  You can't add the resistances like that, since the
+bus isolation chip buffers the IDSEL signal, but it is correct that
+if the host's IDSEL resistor is larger than a certain value, the
+combination of the resistive coupling of IDSEL plus the extra buffer
+in the isolator might be causing the IDSEL input on the 'guest' PCI
+board to assert too late (or not assert at all), causing config
+accesses to fail.
 
-> On Sat, 2007-06-30 at 16:55 +0200, Krzysztof Oledzki wrote:
->> Hello,
->>
->> It seems that IRQ handling is somehow different between i386 and x86_64.
->>
->> In my Dell PowerEdge 1950 is it possible to enable interrupts spreading
->> over all CPUs. This a single CPU, four CORE system (Quad-Core E5335 Xeon=
-)
->> so I think that interrupts migration may be useful. Unfortunately, it
->> works only with 32-bit kernel. Booting it with x86_64 leads to situation=
-,
->> when all interrupts goes only to the first cpu matching a smp_affinity
->> mask.
->
-> arguably that is the most efficient behavior... round robin of
-> interrupts is the worst possible case in terms of performance
+(This also depends on the specific 'guest' PCI board used, as you
+noted, due to differing IDSEL trace lengths/capacitances and input
+pin capacitances on different PCI boards.  Also, it might work at
+33 MHz but not work at 66 MHz, etc.)
 
-Even on dual/quadro core CPUs with shared cache? So why it is possible to=
-=20
-enable such behaviuor in BIOS, which works only on i386 BTW. :(
+If you feel adventurous, you could try to hack around this by
+figuring out which AD[31:16] line this PCI slot's IDSEL line is
+resistively coupled to (depends on the slot), and then adding
+another parallel resistor on the board itself to make the bus
+isolator's input buffer charge faster.  Note that this does
+increase the load on that specific AD[] line, which might cause
+other funny effects.
 
-> are you using irqbalance ? (www.irqbalance.org)
 
-Yes, I'm aware about this useful tool, but in some situations (routing=20
-for example) it cannot help much as it keeps three cpus idle. :(
+> > > Maybe I can try with another machine tomorrow.
+> > 
+> > That would only make a difference if there is no PCI-PCI bridge on
+> > the extender board.
+> 
+> Well, they suggest it in the application note as a possible fix. ;)
 
-Best regards,
-
- =09=09=09=09Krzysztof Ol=EAdzki
----187430788-1501710822-1183243981=:9268--
+The bus isolation chip doesn't count as a PCI-PCI bridge. :)  I'm just
+saying that you wouldn't see the issue you are seeing now if the
+extender board had a real PCI-PCI bridge on it, since in that case the
+type 0 config access to the guest PCI board would be generated by the
+bridge instead of by the host.
