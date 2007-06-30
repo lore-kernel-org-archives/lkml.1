@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbXF3Vjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbXF3Vve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbXF3Vjq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 17:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbXF3Vjj
+	id S1754442AbXF3Vve (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 17:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXF3Vv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 17:39:39 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52490 "EHLO
+	Sat, 30 Jun 2007 17:51:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44309 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752534AbXF3Vji (ORCPT
+	by vger.kernel.org with ESMTP id S1752500AbXF3VvZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 17:39:38 -0400
-Date: Sat, 30 Jun 2007 14:39:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc6-mm1
-Message-Id: <20070630143914.029ce2a7.akpm@linux-foundation.org>
-In-Reply-To: <20070630211017.GA26234@uranus.ravnborg.org>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-	<6150.1183128630@turing-police.cc.vt.edu>
-	<20070629140130.59d58c44.akpm@linux-foundation.org>
-	<15437.1183177066@turing-police.cc.vt.edu>
-	<20070629221510.95c4c8e1.akpm@linux-foundation.org>
-	<20070630211017.GA26234@uranus.ravnborg.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 30 Jun 2007 17:51:25 -0400
+Date: Sat, 30 Jun 2007 14:51:12 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: linux@horizon.com
+cc: davidel@xmailserver.org, linux-kernel@vger.kernel.org
+Subject: Re: A simpler variant on sys_indirect?
+In-Reply-To: <20070630205235.6638.qmail@science.horizon.com>
+Message-ID: <alpine.LFD.0.98.0706301447530.1172@woody.linux-foundation.org>
+References: <20070630205235.6638.qmail@science.horizon.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Jun 2007 23:10:17 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
 
-> > I continue to believe that kbuild's lets-trash-your-symlink behaviour is
-> > obnoxious, but I was unable to persuade anyone else of this.
+
+On Sat, 30 Jun 2007, linux@horizon.com wrote:
 > 
-> I thought we fixed that long time ago?!?!
+> The downsides are that you need to save and restore the prefix flags
+> across signal delivery, and you have a second user/kernel/user transition.
 
-Nope, a simple `make oldconfig' breaks the symlink.
+Both of these are basically horrible mistakes. 
 
-> I am heading for vacation for 20 days without Internet (real vacation :-))
+The first one will almost certainly break things that get clever, like 
+strace, and just make things really hard to debug.
 
-Can I come?
+The second one means that you are guaranteed to be basically twice as slow 
+on any fast system call, since the system call overhead itself is usually 
+quite a noticeable cost, often dominating everything else.
 
-> and have properly forget most about Linux and everything about this
-> issue when I return.
-> In the unlikely event that I recall it I will take a look when I'm back.
-> 
-> By the way - kbuild.git is lacking behind on patches.
-> I have several queded from other peopel and have more in the works myself.
-> This will not be looked into until I'm back.
+> And if the kernel entry overhead IS a problem, wouldn't you want to
+> batch together the non-prefix system calls as well, using something like
+> the syslet ideas that were kicked around recently?  That would
+> allow less than 1 kernel entry per system call, even with prefixes.
 
-No probs - it's been like that for all time.
+The batching has serious problems, not the least of which is that it's a 
+fundamentally more complex interface, and introduces issues like "how do 
+we pass values from one system call to the next". 
+
+That's why I shot it down for syslets too. 
+
+			Linus
