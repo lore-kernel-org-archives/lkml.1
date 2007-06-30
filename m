@@ -1,120 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734AbXF3CwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbXF3Cxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753734AbXF3CwR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 22:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXF3CwH
+	id S1753855AbXF3Cxw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 22:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXF3Cxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 22:52:07 -0400
-Received: from mga02.intel.com ([134.134.136.20]:40640 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbXF3CwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 22:52:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,477,1175497200"; 
-   d="scan'208";a="260617287"
-Message-ID: <4685C549.3020602@intel.com>
-Date: Fri, 29 Jun 2007 19:51:53 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+	Fri, 29 Jun 2007 22:53:45 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:50275 "EHLO
+	marquesa.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752365AbXF3Cxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 22:53:45 -0400
+To: davids@webmaster.com
+Cc: "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <MDEHLPKNGKAHNMBLJOLKCEPKEOAC.davids@webmaster.com>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Fri, 29 Jun 2007 23:53:30 -0300
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEPKEOAC.davids@webmaster.com> (David Schwartz's message of "Thu\, 28 Jun 2007 12\:13\:49 -0700")
+Message-ID: <orlke2885x.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Dan Aloni <da-x@monatomic.org>
-CC: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] automatic CC generation for patch submission
-References: <20070630023451.GA21593@localdomain>
-In-Reply-To: <20070630023451.GA21593@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Aloni wrote:
-> Hello,
-> 
-> I'd like to present a suggestion for automatic generation of 
-> carbon copy fields in the E-Mails of posted patches.
-> 
-> Basically, instead of manually figuring out who to add to CC
-> when sending a patch to LKML by looking at MAINTAINERS, a 
-> script can look at '.maintainers' files spread across the
-> source tree and automatically generate a proper list of CCs
-> for a patch.
-> 
-> To illustrate: If a patch affects a file under 
-> drivers/net/e1000, the CC script will look at these files
-> 
->   drivers/net/e1000/.maintainers
->   drivers/net/.maintainers
->   drivers/.maintainers
->   .maintainers
-> 
-> ... to gather up the mailing list addresses or an individual 
-> maintainer inbox address.
-> 
-> A posssible format for this file could be a newline-separated
-> list of:
-> 
->   [filename wildcard]:e-mail
-> 
-> For example, drivers/scsi/.maintainers would contain:
-> 
->   libiscsi.*:open-iscsi@googlegroups.com
->   scsi_*.c:scsi-devel@vger.kernel.org
-> 
->   etc...
-> 
-> Or, instead (or in addition) of having a '.maintainers' file 
-> each directory we can modify source files by adding parsable 
-> '/* MAINTAINER: name@domain */' comments. 
-> 
-> Some extensions to the popular E-Mail clients might be needed 
-> here. Also, a bot reading LKML would automatically send links 
-> about posted patches to the other mailing lists whenever 
-> someone forgets to add a CC.
-> 
-> Any comments?
+On Jun 28, 2007, "David Schwartz" <davids@webmaster.com> wrote:
 
-an easier way to implement this is to add an extra field in the MAINTAINERS 
-file, something like below. All the contact info would stay the same, closely 
-where applicable and it would allow you to also specify specific files as well.
+> Alexandre Oliva write:
 
-Auke
+>> > The GPL does sometimes use the word "may" where it's not clear
+>> > whether it
+>> > means you have permission or you must be able to. The general rule of
+>> > construction is that "may" means permission, unless there's some clear
+>> > indication to the contrary. The "may"s in sections one and two are
+>> > permisssion against a claim of copyright enfrocement. The "further
+>> > restriction" clause is, at it states, only on the exercise of *rights*
+>> > (which I think means those rights licensed to you under copyright law,
+>> > namely the right of distribution and copying).
 
-(horribly whitespace-mutilated copy+paste from thunderbird below)
+>> ... and modification and, depending on the jurisdiction, execution.
 
----
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4c3277c..e55be49 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -69,6 +69,7 @@ L: Mailing list that is relevant to this area
-  W: Web-page with status/info
-  T: SCM tree type and location.  Type is one of: git, hg, quilt.
-  S: Status, one of the following:
-+F: Directory tree or Files belonging to this subsystem
+> Modification, yes. Execution, well, if the rules of a jurisdiction are
+> insane, you will get insane results from almost any contract.
 
-         Supported:      Someone is actually paid to look after this.
-         Maintained:     Someone actually looks after it.
-@@ -1880,6 +1881,7 @@ M:        auke-jan.h.kok@intel.com
-  L:     e1000-devel@lists.sourceforge.net
-  W:     http://sourceforge.net/projects/e1000/
-  S:     Supported
-+F:     drivers/net/e100.c
+> Fortunately, the GPL makes it clear that execution is unrestricted for GPL'd
+> works, but does not style this as a GPL right.
 
-  INTEL PRO/1000 GIGABIT ETHERNET SUPPORT
-  P:     Jeb Cramer
-@@ -1895,6 +1897,7 @@ M:        auke-jan.h.kok@intel.com
-  L:     e1000-devel@lists.sourceforge.net
-  W:     http://sourceforge.net/projects/e1000/
-  S:     Supported
-+F:     drivers/net/e1000/
+Possible consequence:
+http://fsfla.org/svnwiki/blogs/lxo/2007-06-29-gplv3-tivo-and-linux.en
 
-  INTEL PRO/10GbE SUPPORT
-  P:     Jeff Kirsher
-@@ -1910,6 +1913,7 @@ M:        auke-jan.h.kok@intel.com
-  L:     e1000-devel@lists.sourceforge.net
-  W:     http://sourceforge.net/projects/e1000/
-  S:     Supported
-+F:     drivers/net/ixgb/
+> One would hope that jurisidictions that have such strange rules
+> would interpret the GPL to effect the same result under their laws
+> as was intended under the laws the GPL was written with respect to,
+> to the extent possible.
 
-  INTEL PRO/WIRELESS 2100 NETWORK CONNECTION SUPPORT
-  P:     Yi Zhu
+Hopefully.  But we know how justice is in the US, right? :-(
+
+> Treating ordinary use as a copyright privilege leads to nonsensical results
+> no matter what you do. For example, you get that I can drop copies of my
+> poem from an airplane and then sue anyone who reads it.
+
+Who was talking about reading?  You can read programs as much as you
+can read poems.  But since you (normally) can't run poems, copyright
+law doesn't talk about this, just like it doesn't distinguish source
+from object code of a poem.  But software is different.  So different
+that it's governed by a separate law in Brazil, which could be
+qualified as a subclass of copyright law.  And this law states that
+running programs requires permission from the copyright holder.
+
+If you find that odd, you may have an idea of how ludicrous patents on
+software, business methods et al are.  At least copyright regulation
+of execution saves us from a few abusive EULAs, created with the
+purpose of, let's see, regulating execution.  And then, since it's
+already there, why not use it for other restrictions beneficial to the
+vendor that a copyright license couldn't establish?
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
