@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbXF3FSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbXF3GPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbXF3FSU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 01:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbXF3FSN
+	id S1754542AbXF3GPH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 02:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXF3GO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 01:18:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47518 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751572AbXF3FSM (ORCPT
+	Sat, 30 Jun 2007 02:14:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:7647 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751421AbXF3GOz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 01:18:12 -0400
-Subject: Re: how to determine if the noexec stack is defined by an
-	application
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <4685B00E.3030700@andrei.myip.org>
-References: <46856F24.5060407@andrei.myip.org>
-	 <1183153758.2894.1.camel@laptopd505.fenrus.org>
-	 <4685B00E.3030700@andrei.myip.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 29 Jun 2007 22:16:15 -0700
-Message-Id: <1183180575.2894.8.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+	Sat, 30 Jun 2007 02:14:55 -0400
+Message-ID: <fa686aa40706292314g3323c98dxdecd8b5a289f1c64@mail.gmail.com>
+Date: Sat, 30 Jun 2007 02:14:55 -0400
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Akinobu Mita" <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
+       "Eberhard Moenkeberg" <emoenke@gwdg.de>,
+       "Joe Thornber" <dm-devel@redhat.com>,
+       "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/4] void unregister_blkdev - delete redundant messages
+In-Reply-To: <20070630031212.GD4045@APFDCB5C>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20070630031013.GC4045@APFDCB5C> <20070630031212.GD4045@APFDCB5C>
+X-Google-Sender-Auth: de5ec85823b6e512
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-29 at 18:21 -0700, Florin Andrei wrote:
-> Arjan van de Ven wrote:
-> >> But it's running a Web service which is a combination of C code and 
-> >> Tomcat/Java. I have no clue how to determine which portions specify a 
-> >> noexec stack and which don't.
-> > 
-> > like this:
-> > 
-> > $ eu-readelf -l /bin/true  | grep STACK
-> >   GNU_STACK      0x000000 0x00000000 0x00000000 0x000000 0x000000 RW 0x4
-> 
-> Is Sun Java 1.5 a known exception - as an application that doesn't set a 
-> noexec stack and reverts to default?
-> 
-> # eu-readelf -l ./java | grep STACK | wc -l
-> 0
-> 
-> But then, this bug report seems to indicate otherwise, if I'm reading it 
-> correctly:
-> 
-> http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5051381
+On 6/29/07, Akinobu Mita <akinobu.mita@gmail.com> wrote:
+> No need to warn unregister_blkdev() failure by the callers.
+> (The previous patch makes unregister_blkdev() print error message in
+> error case)
+
+Seeing as none of the callers check the error code; why does the
+function return anything at all?
+
+g.
 
 
-that's not a mainline kernel; and I don't rule out that early RHEL3
-versions had a 64/32 bug in this area
-> 
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
