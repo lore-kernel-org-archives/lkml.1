@@ -1,82 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbXF3LqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbXF3Lrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755804AbXF3LqU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 07:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXF3LqI
+	id S1756178AbXF3Lrr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 07:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbXF3Lrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 07:46:08 -0400
-Received: from mail.screens.ru ([213.234.233.54]:55477 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752950AbXF3LqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 07:46:07 -0400
-Date: Sat, 30 Jun 2007 15:46:58 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
-       Thomas Sattler <tsattler@gmx.de>
-Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-Message-ID: <20070630114658.GA344@tv-sign.ru>
-References: <1182969638.4769.56.camel@johannes.berg> <1183048429.4089.1.camel@johannes.berg> <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 30 Jun 2007 07:47:37 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:49009 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752859AbXF3Lrg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 07:47:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=MZdTwXFlAyen96YOfmPHE0d1mffFSzvrvC3ig1HSpQNXtNNyrC5AAuRDGgk9wxjRfSzFmtzhzbeRRdbLjZxOCrqknSsziDdmvSe01XQwWHNRSxYLY7P/lKqm8DXSBEKWVw7wVQYLaWlwQhe++hs4XvgoDpX+KlH6sw8/0wwOMNo=
+Message-ID: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com>
+Date: Sat, 30 Jun 2007 14:47:35 +0300
+From: "=?ISO-8859-1?Q?T=F6r=F6k_Edvin?=" <edwintorok@gmail.com>
+To: zambrano@broadcom.com, netdev@vger.kernel.org
+Subject: [PATCH] b44: power down PHY when interface down
+Cc: linux-kernel@vger.kernel.org, power@bughost.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1183190728.7932.43.camel@earth4>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/30, Ingo Molnar wrote:
->
-> On Thu, 2007-06-28 at 19:33 +0200, Johannes Berg wrote:
-> > No, that's not right either, but Arjan just helped me a bit with how
-> > lockdep works and I think I have the right idea now. Ignore this for
-> > now, I'll send a new patch in a few days.
-> 
-> ok. But in general, this is a very nice idea!
-> 
-> i've Cc:-ed Oleg. Oleg, what do you think? I think we should keep all
-> the workqueue APIs specified in a form that makes them lockdep coverable
-> like Johannes did. This debug mechanism could have helped with the
-> recent DVB lockup that Thomas Sattler reported.
+When the interface is down (or driver removed), the BroadCom 44xx card remains
+powered on, and both its MAC and PHY is using up power.
+This patch makes the driver issue a MAC_CTRL_PHY_PDOWN when the interface
+is halted, and does a partial chip reset turns off the activity LEDs too.
 
-I think this idea is great!
+Applies to 2.6.22-rc6, or current git head.
 
-Johannes, could you change wait_on_work() as well? Most users of
-flush_workqueue() should be converted to use it.
+Tested on a Broadcom BCM4401-B0 card, it saves ~0.5W (measured using powertop).
 
-> @@ -342,6 +351,9 @@ static int flush_cpu_workqueue(struct cp
->         } else {
->                 struct wq_barrier barr;
->
-> +               lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
-> +               lock_release(&cwq->wq->lockdep_map, 0, _THIS_IP_);
-> +
->                 active = 0;
->                 spin_lock_irq(&cwq->lock);
+Signed-off-by: Torok Edwin <edwintorok@gmail.com>
+---
+ b44.c |   25 ++++++++++++++++++++-----
+  1 file changed, 20 insertions(+), 5 deletions(-)
+diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+index 879a2ff..00d0f57 100644
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -113,6 +113,8 @@ static void b44_init_rings(struct b44 *);
+ #define B44_FULL_RESET		1
+ #define B44_FULL_RESET_SKIP_PHY	2
+ #define B44_PARTIAL_RESET	3
++#define B44_CHIP_RESET_FULL     4
++#define B44_CHIP_RESET_PARTIAL  5
 
-I am not sure why you skip "if (cwq->thread == current)" case, it can
-deadlock in the same way.
+ static void b44_init_hw(struct b44 *, int);
 
-But, perhaps we should not change flush_cpu_workqueue(). If we detect the
-deadlock, we will have num_online_cpus() reports, yes?
+@@ -1283,7 +1285,7 @@ static void b44_clear_stats(struct b44 *bp)
+ }
 
-And,
+ /* bp->lock is held. */
+-static void b44_chip_reset(struct b44 *bp)
++static void b44_chip_reset(struct b44 *bp, int reset_kind)
+ {
+ 	if (ssb_is_core_up(bp)) {
+ 		bw32(bp, B44_RCV_LAZY, 0);
+@@ -1307,6 +1309,10 @@ static void b44_chip_reset(struct b44 *bp)
 
->                 if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
-> @@ -376,6 +388,8 @@ void fastcall flush_workqueue(struct wor
->         int cpu;
->
->         might_sleep();
-> +       lock_acquire(&wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
-> +       lock_release(&wq->lockdep_map, 0, _THIS_IP_);
+ 	b44_clear_stats(bp);
 
-one of the 2 callers was already modified. Perhaps it is better to add
-lock_acquire() into the second caller, cleanup_workqueue_thread(), but
-skip flush_cpu_workqueue() ?
++	if (reset_kind == B44_CHIP_RESET_PARTIAL)
++		return;/* don't enable PHY if we are doing a partial reset
++		, we are probably going to power down */
++
+ 	/* Make PHY accessible. */
+ 	bw32(bp, B44_MDIO_CTRL, (MDIO_CTRL_PREAMBLE |
+ 			     (0x0d & MDIO_CTRL_MAXF_MASK)));
+@@ -1332,7 +1338,14 @@ static void b44_chip_reset(struct b44 *bp)
+ static void b44_halt(struct b44 *bp)
+ {
+ 	b44_disable_ints(bp);
+-	b44_chip_reset(bp);
++	/* reset PHY */
++	b44_phy_reset(bp);
++	/* power down PHY */
++	printk(KERN_INFO PFX "%s: powering down PHY\n", bp->dev->name);
++	bw32(bp, B44_MAC_CTRL, MAC_CTRL_PHY_PDOWN);
++	/* now reset the chip, but without enabling the MAC&PHY
++	 * part of it. This has to be done _after_ we shut down the PHY */
++	b44_chip_reset(bp, B44_CHIP_RESET_PARTIAL);
+ }
 
-Oleg.
+ /* bp->lock is held. */
+@@ -1376,7 +1389,7 @@ static void b44_init_hw(struct b44 *bp, int reset_kind)
+ {
+ 	u32 val;
 
+-	b44_chip_reset(bp);
++	b44_chip_reset(bp, B44_CHIP_RESET_FULL);
+ 	if (reset_kind == B44_FULL_RESET) {
+ 		b44_phy_reset(bp);
+ 		b44_setup_phy(bp);
+@@ -1430,7 +1443,7 @@ static int b44_open(struct net_device *dev)
+
+ 	err = request_irq(dev->irq, b44_interrupt, IRQF_SHARED, dev->name, dev);
+ 	if (unlikely(err < 0)) {
+-		b44_chip_reset(bp);
++		b44_chip_reset(bp, B44_CHIP_RESET_PARTIAL);
+ 		b44_free_rings(bp);
+ 		b44_free_consistent(bp);
+ 		goto out;
+@@ -2250,7 +2263,7 @@ static int __devinit b44_init_one(struct pci_dev *pdev,
+ 	/* Chip reset provides power to the b44 MAC & PCI cores, which
+ 	 * is necessary for MAC register access.
+ 	 */
+-	b44_chip_reset(bp);
++	b44_chip_reset(bp, B44_CHIP_RESET_FULL);
+
+ 	printk(KERN_INFO "%s: Broadcom 4400 10/100BaseT Ethernet ", dev->name);
+ 	for (i = 0; i < 6; i++)
+@@ -2284,6 +2297,7 @@ static void __devexit b44_remove_one(struct pci_dev *pdev)
+ 	free_netdev(dev);
+ 	pci_release_regions(pdev);
+ 	pci_disable_device(pdev);
++	pci_set_power_state(pdev, PCI_D3hot);
+ 	pci_set_drvdata(pdev, NULL);
+ }
+
+@@ -2312,6 +2326,7 @@ static int b44_suspend(struct pci_dev *pdev,
+pm_message_t state)
+ 		b44_setup_wol(bp);
+ 	}
+ 	pci_disable_device(pdev);
++	pci_set_power_state(pdev, PCI_D3hot);
+ 	return 0;
+ }
