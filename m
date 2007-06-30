@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbXF3Jcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbXF3Jds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbXF3Jcy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 05:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbXF3Jcq
+	id S1756935AbXF3Jds (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 05:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbXF3Jdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 05:32:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40499 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755216AbXF3Jco (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 05:32:44 -0400
-Date: Sat, 30 Jun 2007 10:32:43 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Jared Hulbert <jaredeh@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: vm/fs meetup in september?
-Message-ID: <20070630093243.GD22354@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jared Hulbert <jaredeh@gmail.com>, Nick Piggin <npiggin@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linux Memory Management List <linux-mm@kvack.org>,
-	linux-fsdevel@vger.kernel.org
-References: <20070624042345.GB20033@wotan.suse.de> <6934efce0706251708h7ab8d7dal6682def601a82073@mail.gmail.com> <20070626060528.GA15134@infradead.org> <6934efce0706261007x5e402eebvc528d2d39abd03a3@mail.gmail.com>
-Mime-Version: 1.0
+	Sat, 30 Jun 2007 05:33:41 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55663 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753836AbXF3Jdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 05:33:40 -0400
+From: Neil Brown <neilb@suse.de>
+To: Turbo Fredriksson <turbo@bayour.com>
+Date: Sat, 30 Jun 2007 19:33:27 +1000
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6934efce0706261007x5e402eebvc528d2d39abd03a3@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
+Message-ID: <18054.9063.45466.586046@notabene.brown>
+Cc: Alasdair G Kergon <agk@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Moving MD/LVM from PPC to x86
+In-Reply-To: message from Turbo Fredriksson on Saturday June 30
+References: <87wsxneqs0.fsf@pumba.bayour.com>
+	<20070629215416.GA12786@agk.fab.redhat.com>
+	<876455erlw.fsf@pumba.bayour.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 10:07:24AM -0700, Jared Hulbert wrote:
-> If you have a large array of a non-volatile semi-writeable memory such
-> as a highspeed NOR Flash or some of the similar emerging technologies
-> in a system.  It would be useful to use that memory as an extension of
-> RAM.  One of the ways you could do that is allow pages to be swapped
-> out to this memory.  Once there these pages could be read directly,
-> but would require a COW procedure on a write access.  The reason why I
-> think this may be a vm/fs topic is that the hardware makes writing to
-> this memory efficiently a non-trivial operation that requires
-> management just like a filesystem.  Also it seems to me that there are
-> probably overlaps between this topic and the recent filemap_xip.c
-> discussions.
+On Saturday June 30, turbo@bayour.com wrote:
+> Quoting Alasdair G Kergon <agk@redhat.com>:
+> 
+> > On Thu, Jun 28, 2007 at 11:02:39PM +0200, Turbo Fredriksson wrote:
+> >>   2. How do I move a VG/PV/LV from PPC to x86?
+> >
+> > The on-disk LVM2 metadata should be accessible from both
+> > architectures.
+> 
+> Well, when I move the disks, the intel machine say that one of
+> the disks don't have a partition table and that the other don't
+> have any MD superblock...
 
-So what you mean is "swap on flash" ?  Defintively sounds like an
-interesting topic, although I'm not too sure it's all that
-filesystem-related.
+Version 0.90 MD superblocks (still the default) uses host-endian
+values so you cannot move between architectures directly.  However
+isn't too hard to make it work. 
+Firstly, use
+   mdadm --examine --metadata=0.swap /dev/DEVICE
+
+to check that you have the right devices.
+Then
+
+  mdadm --assemble /dev/md0 --update=byteorder /dev/DEV0 /dev/DEV1  ....
+
+That should assemble the array and update the superblocks so that they
+are in the right byteorder and will assemble easily in future.
+
+NeilBrown
