@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbXF3O2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbXF3O2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758741AbXF3O2A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 10:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbXF3O1v
+	id S1758939AbXF3O2o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 10:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbXF3O2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 10:27:51 -0400
-Received: from mailgw1.fraunhofer.de ([153.96.1.18]:36917 "EHLO
-	mailgw1.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755288AbXF3O1u (ORCPT
+	Sat, 30 Jun 2007 10:28:36 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:53714 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755357AbXF3O2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 10:27:50 -0400
-Date: Sat, 30 Jun 2007 16:25:26 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: w@1wt.eu
-Cc: schilling@fokus.fraunhofer.de, linux-kernel@vger.kernel.org,
-       harald@skogtun.org, dwmw2@infradead.org, david@lang.hm
-Subject: Personal attacks (was Re: Linux Kernel include files)
-Message-ID: <468667d6.2A9nFoHQBPTCLBB5%Joerg.Schilling@fokus.fraunhofer.de>
-References: <46826d62.lTsuVo9cC7wGjcjf%Joerg.Schilling@fokus.fraunhofer.de>
- <1182960282.1170.4.camel@pmac.infradead.org>
- <46838d16.ut8KQOMKsZ9HqPYT%Joerg.Schilling@fokus.fraunhofer.de>
- <1183027034.1170.104.camel@pmac.infradead.org>
- <46838ffd.bUYvs93vY6OX67Mk%Joerg.Schilling@fokus.fraunhofer.de>
- <20070630112309.GA10245@1wt.eu>
- <46864648.xvPEouG+JEAn31tr%Joerg.Schilling@fokus.fraunhofer.de>
- <20070630122932.GA10432@1wt.eu>
-In-Reply-To: <20070630122932.GA10432@1wt.eu>
-User-Agent: nail 11.22 3/20/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 30 Jun 2007 14:27:27.0878 (UTC) FILETIME=[C8FEEA60:01C7BB22]
-X-Fraunhofer-Email-Policy: accepted
+	Sat, 30 Jun 2007 10:28:35 -0400
+X-SBRS: None
+X-RemoteIP: 81.1.80.38
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=DvtM3c9xwEzuotkz3-kA:9 a=HbadMg-CRmC5n2CwFyNF_LKbEt4A:4
+X-IronPort-AV: E=Sophos;i="4.16,480,1175468400"; 
+   d="scan'208";a="5061438"
+Subject: Re: sh section mismatches [was Re: 2.6.22-rc6 on Dreamcast (SH4)]
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, linuxsh-dev@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <a781481a0706300720p74f08085t55653b007431685f@mail.gmail.com>
+References: <a781481a0706280457r4abb5046wc82cff9d49b7975e@mail.gmail.com>
+	 <1183210853.6016.2.camel@localhost.localdomain>
+	 <a781481a0706300720p74f08085t55653b007431685f@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 30 Jun 2007 15:27:49 +0100
+Message-Id: <1183213669.6016.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau <w@1wt.eu> wrote:
+On Sat, 2007-06-30 at 19:50 +0530, Satyam Sharma wrote:
+> Hi,
 
->
-> > Jörg
-> [advertisements removed]
-
-Please stop this kind of trolling, you did not remove anything here,
-so do not claim to remove things....
-
-
-As you don't seem to know the nettiquette:
-
-If you believe you have some kind of problems that was used by the
-OP to send a personal attack, the natural reaction is to send a
-personal mail that does _not_ include a list of persons or a mailing
-list.
+> Right, as Mike just said, these warnings are the ones from
+> drivers/video/pvr2fb.c which the patch didn't touch ... that was only
+> to get rid of the "(between 'mv_dreamcast' and 'systemasic_int')"
+> warning. But of course, we can't be too sure about the patch till
+> you can boot and run the system ...
 
 
-As it does not seem to make sens to continue here, I will not reply to any 
-further mail that tries to discuss something from the "mail threading"
-attack.
-
-Jörg
-
--- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
+Boots and runs fine.
