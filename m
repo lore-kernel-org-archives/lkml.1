@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbXF3H6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbXF3IGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbXF3H6I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 03:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXF3H54
+	id S1755092AbXF3IGn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 04:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXF3IG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 03:57:56 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55559 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752253AbXF3H5z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 03:57:55 -0400
-Date: Sat, 30 Jun 2007 00:57:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dan <metalifloyd@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: PROBLEM: SATA AHCI driver significant throughput loss in
- 2.6.22-rc5-g75154f40-dirty
-Message-Id: <20070630005747.9bc9ba40.akpm@linux-foundation.org>
-In-Reply-To: <439fa30706262117u2d5553dfp8395c6ca41574a8c@mail.gmail.com>
-References: <439fa30706262117u2d5553dfp8395c6ca41574a8c@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 30 Jun 2007 04:06:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47925 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751993AbXF3IG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 04:06:26 -0400
+Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
+From: Ingo Molnar <mingo@redhat.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu,
+       Thomas Sattler <tsattler@gmx.de>
+In-Reply-To: <1183052001.4089.2.camel@johannes.berg>
+References: <1182969638.4769.56.camel@johannes.berg>
+	 <1183048429.4089.1.camel@johannes.berg>
+	 <1183052001.4089.2.camel@johannes.berg>
+Content-Type: text/plain
+Date: Sat, 30 Jun 2007 10:05:28 +0200
+Message-Id: <1183190728.7932.43.camel@earth4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 00:17:24 -0400 Dan <metalifloyd@gmail.com> wrote:
+On Thu, 2007-06-28 at 19:33 +0200, Johannes Berg wrote:
+> No, that's not right either, but Arjan just helped me a bit with how
+> lockdep works and I think I have the right idea now. Ignore this for
+> now, I'll send a new patch in a few days.
 
-> Something changed with the AHCI SATA driver in the latest git version.
-> With 2.6.21 I get ~49MB/sec according to hdparm. Using the latest git
-> version I only get ~8MB/sec. I've attached my .config and have
-> included some info about my system below. Please let me know if you
-> need more information or if I can help test anything.
-> 
-> Lenovo Thinkpad T60p
+ok. But in general, this is a very nice idea!
 
-Until we know how widespread this damage is, we'd need to consider this
-a blocking bug.
+i've Cc:-ed Oleg. Oleg, what do you think? I think we should keep all
+the workqueue APIs specified in a form that makes them lockdep coverable
+like Johannes did. This debug mechanism could have helped with the
+recent DVB lockup that Thomas Sattler reported.
 
-Are you able (as a matter of some urgency) to run a git bisection 
-search to identify the offending commit?
+	Ingo
 
-Thanks.
