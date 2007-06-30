@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbXF3Xiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbXF3Xmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbXF3Xiz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 19:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbXF3Xis
+	id S1755373AbXF3Xmo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 19:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbXF3Xmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 19:38:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:9141 "EHLO
+	Sat, 30 Jun 2007 19:42:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:11459 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752823AbXF3Xir (ORCPT
+	with ESMTP id S1753388AbXF3Xmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 19:38:47 -0400
+	Sat, 30 Jun 2007 19:42:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=HqKvG4Q5Qs31pXvl/WU5AH0Wm6/kQLi1zYmikHTyOyjuJcHu2HgubR3t2SCyg1Jhb9vmWvE2yAtxUpD24fIFwsrrp6ZFZgmG+Ucgb1sTugWTBSKOp7YMIpsaRgDyIJJPaTMH94a3Kbu3M6FmXwTdwOfWc6BJRvxorUMIvZRWmgM=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][isapnp] Fix a potential NULL pointer dereference in isapnp_read_tag()
-Date: Sun, 1 Jul 2007 01:38:31 +0200
-User-Agent: KMail/1.9.7
-Cc: Jaroslav Kysela <perex@suse.cz>, Jesper Juhl <jesper.juhl@gmail.com>
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=MGzmpPHNhsz/++YNs10Uqlu09TbYqhHHajXaZGn1S17SjtGWh/Z+x0m/L9paZbyBuCDtV35W9LZiZeeyn6dp5w+Qm/wP2m42gznzmaQ+3nHnGw+xOICHX588IKe4IdCME98wuecd0f1Vl82NMxU/oZAumkI70g3bMngDU2b12l4=
+Message-ID: <4686EA4A.9070306@googlemail.com>
+Date: Sun, 01 Jul 2007 01:42:02 +0200
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Darrick J. Wong" <djwong@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Stephane Eranian <eranian@hpl.hp.com>,
+       =?ISO-8859-1?Q?Bj=F6rn_Steinbri?= =?ISO-8859-1?Q?nk?= 
+	<B.Steinbrink@gmx.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Trent Piepho <xyzzy@speakeasy.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [1/2] 2.6.22-rc6: known regressions with patches
+References: <467F8F5A.3000205@googlemail.com> <20070630192045.GA3720@elte.hu>
+In-Reply-To: <20070630192045.GA3720@elte.hu>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707010138.32075.jesper.juhl@gmail.com>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted (as bug #809) that we dereference 'type' 
-long before we actually test it against NULL in 
-drivers/pnp/isapnp/core.c::isapnp_read_tag() - both branches of the 
-'if (tag & 0x80)' dereference type, and since this 'if' is before the test 
-against NULL and the return of -1, this will blow up is ever type is NULL.
-This is easy to fix by simply moving the NULL test to the beginning of 
-the function.
+Hi Ingo,
+
+Ingo Molnar pisze:
+> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> 
+>> Subject    : fix nmi_watchdog=2 bootup hang
+>> References : http://lkml.org/lkml/2007/6/25/51
+>> Submitter  : Ingo Molnar <mingo@elte.hu>
+>> Caused-By  : Jeremy Fitzhardinge <jeremy@xensource.com>
+>>             Andi Kleen <ak@suse.de>
+>>             commit f8822f42019eceed19cc6c0f985a489e17796ed8
+>> Status     : patch available
+> 
+> fixed by:
+> 
+>  commit b9e3614f444f6546204f4538afcaa3ebe36d49f2
+>  Author: Bj<C3><B6>rn Steinbrink <B.Steinbrink@gmx.de>
+>  Date:   Mon Jun 25 23:04:37 2007 +0200
+> 
+>      fix nmi_watchdog=2 bootup hang
+> 
+> 	Ingo
+> 
 
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+It's already removed
 
- drivers/pnp/isapnp/core.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+364  	2007-06-27 00:19:54  	8494  	 	mkkp  	"fix nmi_watchdog=2 bootup hang" fixed
 
-diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-diff --git a/drivers/pnp/isapnp/core.c b/drivers/pnp/isapnp/core.c
-index a0b1587..5696924 100644
---- a/drivers/pnp/isapnp/core.c
-+++ b/drivers/pnp/isapnp/core.c
-@@ -356,6 +356,8 @@ static int __init isapnp_read_tag(unsigned char *type, unsigned short *size)
- {
- 	unsigned char tag, tmp[2];
- 
-+	if (!type)	/* wrong type */
-+		return -1;
- 	isapnp_peek(&tag, 1);
- 	if (tag == 0)				/* invalid tag */
- 		return -1;
-@@ -370,8 +372,6 @@ static int __init isapnp_read_tag(unsigned char *type, unsigned short *size)
- #if 0
- 	printk(KERN_DEBUG "tag = 0x%x, type = 0x%x, size = %i\n", tag, *type, *size);
- #endif
--	if (type == 0)				/* wrong type */
--		return -1;
- 	if (*type == 0xff && *size == 0xffff)	/* probably invalid data */
- 		return -1;
- 	return 0;
+Regards,
+Michal
 
-
+--
+LOG
+http://www.stardust.webpages.pl/log/
