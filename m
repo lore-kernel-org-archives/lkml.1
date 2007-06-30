@@ -1,156 +1,297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbXF3D0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbXF3D0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbXF3D0a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 23:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbXF3DZB
+	id S1756521AbXF3D0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 23:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbXF3DZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 23:25:01 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35325 "EHLO e1.ny.us.ibm.com"
+	Fri, 29 Jun 2007 23:25:12 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:38499 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755313AbXF3DY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 23:24:59 -0400
-Subject: [RFC PATCH 6/6] relay: add relay_reset_consumed()
+	id S1754838AbXF3DZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jun 2007 23:25:09 -0400
+Subject: [RFC PATCH 1/3] Generic Trace Setup and Control (GTSC)
+	Documentation
 From: Tom Zanussi <zanussi@us.ibm.com>
 To: linux-kernel@vger.kernel.org
-Cc: dwilder@us.ibm.com, HOLZHEU@de.ibm.com
+Cc: adobriyan@gmail.com, dwilder@us.ibm.com, hunt@redhat.com
 Content-Type: text/plain
-Date: Fri, 29 Jun 2007 22:24:21 -0500
-Message-Id: <1183173861.24291.142.camel@ubuntu>
+Date: Fri, 29 Jun 2007 22:24:27 -0500
+Message-Id: <1183173868.24291.143.camel@ubuntu>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows relay channels to be reset i.e. unconsumed.
-Basically allows a 'rewind' function for flight-recorder tracing.
+This is the documentation for the Generic Trace Setup and Control
+patchset, first submitted a couple of weeks ago.  See
+
+http://marc.info/?l=linux-kernel&m=118214274912586&w=2
+
+for a more detailed description.
+
+I've updated this patch to incorporate the suggestions made by Alexey
+Dobriyan in that thread.
 
 Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
 Signed-off-by: David Wilder <dwilder@us.ibm.com>
 ---
- Documentation/filesystems/relay.txt |   11 ++++++
- include/linux/relay.h               |    1 
- kernel/relay.c                      |   59 ++++++++++++++++++++++++++++++++----
- 3 files changed, 66 insertions(+), 5 deletions(-)
+ gtsc.txt |  247 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 247 insertions(+)
 
-diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
-index 18d23f9..d31113a 100644
---- a/Documentation/filesystems/relay.txt
-+++ b/Documentation/filesystems/relay.txt
-@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
-     relay_close(chan)
-     relay_flush(chan)
-     relay_reset(chan)
-+    relay_reset_consumed(chan)
- 
-   channel management typically called on instigation of userspace:
- 
-@@ -452,6 +453,16 @@ state without reallocating channel buffer memory or destroying
- existing mappings.  It should however only be called when it's safe to
- do so, i.e. when the channel isn't currently being written to.
- 
-+The read(2) implementation always 'consumes' the bytes read,
-+i.e. those bytes won't be available again to subsequent reads.
-+Certain applications may nonetheless wish to allow the 'consumed' data
-+to be re-read; relay_reset_consumed() is provided for that purpose -
-+it resets the internal consumed counters for all buffers in the
-+channel.  For example, if a first set of reads 'drains' the channel,
-+and then relay_reset_consumed() is called, a second set of reads will
-+get the exact same data (assuming no new data was written between the
-+first set of reads and the second).
+diff --git a/Documentation/gtsc.txt b/Documentation/gtsc.txt
+new file mode 100644
+index 0000000..470d1fc
+--- /dev/null
++++ b/Documentation/gtsc.txt
+@@ -0,0 +1,247 @@
++Generic Trace Setup and Control (GTSC)
++==================================
++In the kernel, GTSC provides a simple API for starting and managing
++data channels to user space.  GTSC builds on the relay interface. For a
++complete description of the relay interface, please see:
++Documentation/filesystems/relay.txt.
 +
- Finally, there are a couple of utility callbacks that can be used for
- different purposes.  buf_mapped() is called whenever a channel buffer
- is mmapped from user space and buf_unmapped() is called when it's
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 6cd8c44..aca45fa 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -175,6 +175,7 @@ extern void relay_subbufs_consumed(struct rchan *chan,
- 				   unsigned int cpu,
- 				   size_t consumed);
- extern void relay_reset(struct rchan *chan);
-+extern void relay_reset_consumed(struct rchan *chan);
- extern int relay_buf_full(struct rchan_buf *buf);
- 
- extern size_t relay_switch_subbuf(struct rchan_buf *buf,
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 4311101..6806636 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -382,6 +382,57 @@ void relay_reset(struct rchan *chan)
- }
- EXPORT_SYMBOL_GPL(relay_reset);
- 
-+/**
-+ *	__relay_reset_consumed - reset a channel buffer's consumed count
-+ *	@buf: the channel buffer
-+ *
-+ *	See relay_reset_consumed for description of effect.
-+ */
-+static inline void __relay_reset_consumed(struct rchan_buf *buf)
++GTSC provides one layer in a complete tracing application.  The idea of
++the GTSC is to provide a kernel API for the setup and control of tracing
++channels.  User of GTSC must provide a data layer responsible for formatting
++and writing data into the trace channels.  
++
++A layered approach to tracing
++=============================
++A complete kernel tracing application consists of a data provider and a data
++consumer.  Both provider and consumer contain three layers; each layer works
++in tandem with the corresponding layer in the opposite side.  The layers are
++represented in the following diagram.
++  
++Provider Data layer
++	Formats raw trace data and provides data-related service.
++	For example, adding timestamps used by consumer to sort data.
++
++Provider Control layer
++	Provided by GTSC. Creates trace channels and informs the data layer
++	and consumer of the current state of the trace channels.
++
++Provider Buffering layer
++	Provided by relay. This layer buffers data in the
++	kernel for consumption by the consumer's buffer
++	layer.
++
++Provider (in-kernel facility)
++-----------------------------------------------------------------------------
++Consumer (user application)
++
++
++Consumer Buffer layer
++	Reads/consumes data from the provider's data buffers.
++
++Consumer Control layer
++	Communicates to the provider's control layer to control the state
++	of the trace channels. 
++
++Consumer Data layer
++	Sorts and formats data as provided by the provider's data layer.
++
++The provider is coded as a kernel facility.  The consumer is coded as
++a user application.
++ 
++
++GTSC - Features
++==============
++The GTSC exploits services and features provided by relay.  These features are:
++- The creation and destruction of relay channels.
++- Buffer management.  Overwrite or non-overwrite modes can be selected
++  as well as global or per-CPU buffering.
++
++Overwrite mode can be called "flight recorder mode".  Flight recorder
++mode is selected by setting the TRACE_FLIGHT_CHANNEL flag when
++creating trace channels.  In flight mode when a tracing buffer is
++full, the oldest records in the buffer will be discarded to make room
++as new records arrive.  In the default non-overwrite mode, new records
++may be written only if the buffer has room.  In either case, to
++prevent data loss, a user space reader must keep the buffers
++drained. GTSC provides a means to detect the number of records that
++have been dropped due to a buffer-full condition (non-overwrite mode
++only).
++
++When per-CPU buffers are used, relay creates one debugfs file for each
++running CPU.  The user-space consumer of the data is responsible for
++reading the per-CPU buffers and collating the records presumably using
++a time stamp or sequence number included in the trace records.  The
++use of global buffers eliminates this extra work of sequencing
++records; however the provider's data layer must hold a lock when
++writing records.  The lock prevents writers running on different CPUs
++from overwriting each other's data.  However, buffering may be slower
++because write to the buffer are serialized. Global buffering is
++selected by setting the TRACE_GLOBAL_CHANNEL flag when creating trace
++channels.
++
++GTSC User Interface
++===================
++When a GTSC channel is created and tracing has been started, the following
++directories and files are created in the root of the mounted debugfs.
++
++/debug (root of the debugfs)
++        /<trace-root-dir>
++                /<trace-name>
++                        trace0 ... traceN  (Per-CPU trace data, one per CPU)
++	        	state		   (Used to  start and stop tracing)
++                        dropped            (number of records dropped due
++                                            to a full-buffer condition, only)
++                                            for non-TRACE_FLIGHT_CHANNELs)
++                        rewind             ('un-consume' channel data i.e.
++                                            start next read at the beginning
++                                            again (TRACE_FLIGHT_CHANNELS only)
++	        	nr_sub		   (Number of sub-buffers in channel)
++	        	sub_size	   (Size of sub-buffers in channnel)
++
++Trace data is gathered from the trace[0...N] files using one of the available 
++interfaces provided by relay (see Documentation/filesystems/relay.txt).
++When using the READ(2) interface, as data is read it is marked as consumed by
++the relay subsystem.  Therefore, subsequent reads will only return unconsumed
++data.
++
++GTSC Kernel API
++===============
++An overview of the GTSC Kernel API is now given. More details of the API can
++be found in linux/gtsc.h.
++
++The steps a kernel data provider takes to utilize the GTSC are:
++1) Set up a gtsc channel - trace_setup()
++2) Start the GTSC channel - trace_start()
++3) Write one or more trace records into the channel (using the relay API).
++4) Optionally stop and start tracing as desired - trace_start()/trace_stop()
++5) Destroy the GTSC channel and underlying relay channel - trace_cleanup().
++
++GTSC Example
++===========
++This small sample module creates a GTSC channel. It places a kprobe on the
++function do_fork().  The kprobe handler will write a timestamp and
++current->pid to the GTSC channel.  
++
++You can build the kernel module kprobes_gtsc.ko using the following Makefile:
++------------------------------------CUT-------------------------------------
++obj-m := kprobes_gtsc.o
++KDIR := /lib/modules/$(shell uname -r)/build
++PWD := $(shell pwd)
++default:
++	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
++clean:
++	rm -f *.mod.c *.ko *.o
++----------------------------------CUT--------------------------------------
++/* kprobes_gtsc.c - An example of using GTSC in a kprobes module */
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/kprobes.h>
++#include <linux/gtsc.h>
++
++#define PROBE_POINT "do_fork"
++
++static struct kprobe kp;
++struct trace_info *kprobes_trace;
++
++#define GTSC_PRINTF_TMPBUF_SIZE (1024)
++static char gtsc_printf_tmpbuf[NR_CPUS][GTSC_PRINTF_TMPBUF_SIZE];
++
++/* This lock is needed only when using global relay buffers */
++static DEFINE_SPINLOCK(gtsc_printf_lock);
++
++void gtsc_printf(struct trace_info *trace, const char *format, ...)
 +{
-+	size_t n_subbufs = buf->chan->n_subbufs;
-+	size_t produced = buf->subbufs_produced;
-+	size_t consumed = buf->subbufs_consumed;
++	va_list args;
++	void *buf;
++	int len;
++	char *record;
 +
-+	if (produced < n_subbufs)
-+		buf->subbufs_consumed = 0;
-+	else {
-+		consumed = produced - n_subbufs;
-+		if (buf->offset)
-+			consumed++;
-+		buf->subbufs_consumed = consumed;
-+	}
-+	buf->bytes_consumed = 0;
-+}
-+
-+/**
-+ *	relay_reset_consumed - reset the channel's consumed counts
-+ *	@chan: the channel
-+ *
-+ *	This has the effect of making all data previously read (and
-+ *	not overwritten by subsequent writes) from a channel available
-+ *	for reading again.
-+ *
-+ *	NOTE: Care should be taken that the channel isn't actually
-+ *	being used by anything when this call is made.
-+ */
-+void relay_reset_consumed(struct rchan *chan)
-+{
-+	unsigned int i;
-+	struct rchan_buf *prev = NULL;
-+
-+	if (!chan)
++	if (!trace)
++		return;
++	if (!trace_running(trace))
 +		return;
 +
-+	for (i = 0; i < NR_CPUS; i++) {
-+		if (!chan->buf[i] || chan->buf[i] == prev)
-+			break;
-+		__relay_reset_consumed(chan->buf[i]);
-+		prev = chan->buf[i];
-+	}
++	/* get a timestamp */
++	buf = gtsc_printf_tmpbuf[smp_processor_id()];
++	len = sprintf(buf,"[%lld] ", trace_timestamp());
++
++	/* get the data */
++	va_start(args, format);
++	len += vsnprintf(buf+len, GTSC_PRINTF_TMPBUF_SIZE, format, args);
++	va_end(args);
++
++	/*
++	 * Locking can be eliminated by specifying per-cpu buffers
++	 * when calling trace_setup().
++	 */
++	spin_lock(&gtsc_printf_lock);
++
++	/* Send everything to the relay buffer */
++	if ((record = relay_reserve(trace->rchan, len)))
++		memcpy(record, buf, len);
++
++	spin_unlock(&gtsc_printf_lock);
 +}
-+EXPORT_SYMBOL_GPL(relay_reset_consumed);
 +
- /*
-  *	relay_open_buf - create a new relay channel buffer
-  *
-@@ -840,11 +891,9 @@ static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
- 		return 1;
- 	}
- 
--	if (unlikely(produced - consumed >= n_subbufs)) {
--		consumed = (produced / n_subbufs) * n_subbufs;
--		buf->subbufs_consumed = consumed;
--	}
--	
-+	if (unlikely(produced - consumed >= n_subbufs))
-+		__relay_reset_consumed(buf);
 +
- 	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
- 	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
- 
++int handler_pre(struct kprobe *p, struct pt_regs *regs)
++{
++	gtsc_printf(kprobes_trace,"%d\n", current->pid);
++	return 0;
++}
++
++int init_module(void)
++{
++	int ret;
++	/* setup gtsc, use a global relay buffer */
++	kprobes_trace = trace_setup("gtsc_example",PROBE_POINT,
++				1024,8,
++				TRACE_GLOBAL_CHANNEL | TRACE_FLIGHT_CHANNEL);
++	if (!kprobes_trace)
++		return -1;
++
++	trace_start(kprobes_trace);
++
++	/* setup the kprobe */
++	kp.pre_handler = handler_pre;
++	kp.post_handler = NULL;
++	kp.fault_handler = NULL;
++	kp.symbol_name = PROBE_POINT;
++	if ((ret=register_kprobe(&kp)) < 0) 
++		gtsc_printf(kprobes_trace,"register_kprobe failed  %d\n", ret);
++	return 0;
++}
++
++void cleanup_module(void)
++{
++	unregister_kprobe(&kp);
++	/* close down the gtsc channel */
++	trace_stop(kprobes_trace);
++	trace_cleanup(kprobes_trace);
++}
++
++MODULE_LICENSE("GPL");
++-----------------------------CUT--------------------------------------------
++How to run the example:
++$ mount -t debugfs /debug 
++$ make
++$ insmod kprobes_gtsc.ko
++
++To view the data produced by the module:
++$ cat /debug/gtsc_example/do_fork/trace0
++
++Remove the module.
++$ rmmod kprobes_gtsc
++
++The function trace_cleanup() is called when the module
++is removed.  This will cause the GTSC channel to be destroyed and the
++corresponding files to disappear from the debug file system.
++
++Credits
++=======
++GTSC adapted from blktrace authored by Jens Axboe (axboe@suse.de).
++
++Major contributions to GTSC were made by:
++Tom Zanussi <zanussi@us.ibm.com>
++Martin Hunt <hunt@redhat.com>
++David Wilder <dwilder@us.ibm.com>
 
 
 
