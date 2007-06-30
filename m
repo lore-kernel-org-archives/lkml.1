@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755051AbXF3Xd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbXF3Xiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755051AbXF3Xd5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 19:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbXF3Xdr
+	id S1755235AbXF3Xiz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 19:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbXF3Xis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 19:33:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:6290 "EHLO
+	Sat, 30 Jun 2007 19:38:48 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:9141 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbXF3Xdr (ORCPT
+	with ESMTP id S1752823AbXF3Xir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 19:33:47 -0400
+	Sat, 30 Jun 2007 19:38:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=uNGWepBwWas45Trl+52dxKz9U2jR0CeUHH48laqOSClP42HUyHKj77ZQknZTRB13ctqwrR+0CY6nRevdBQvmxoOKEJROdB/vdjpPpenhXwHhBYqQkDUJugvEhUAz+JT8vUg3+k4idmS22cMAJDsWODSW6/3XES6ANjs7hAYP3Vc=
-Message-ID: <4686E83A.4040301@googlemail.com>
-Date: Sun, 01 Jul 2007 01:33:14 +0200
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=HqKvG4Q5Qs31pXvl/WU5AH0Wm6/kQLi1zYmikHTyOyjuJcHu2HgubR3t2SCyg1Jhb9vmWvE2yAtxUpD24fIFwsrrp6ZFZgmG+Ucgb1sTugWTBSKOp7YMIpsaRgDyIJJPaTMH94a3Kbu3M6FmXwTdwOfWc6BJRvxorUMIvZRWmgM=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][isapnp] Fix a potential NULL pointer dereference in isapnp_read_tag()
+Date: Sun, 1 Jul 2007 01:38:31 +0200
+User-Agent: KMail/1.9.7
+Cc: Jaroslav Kysela <perex@suse.cz>, Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, michal.k.k.piotrowski@gmail.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs
- on resume from hibernation
-References: <200706300859.47133.arvidjaar@mail.ru> <200706302237.50567.rjw@sisk.pl> <200707010134.30843.arvidjaar@mail.ru>
-In-Reply-To: <200707010134.30843.arvidjaar@mail.ru>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Disposition: inline
+Message-Id: <200707010138.32075.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov pisze:
-> On Sunday 01 July 2007, Rafael J. Wysocki wrote:
->> On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
->>> Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
->>> suspend to disk :)
->>>
->>> Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + single
->>> pata_ali patch to switch off DMA on CD-ROM), single root on reiserfs,
->>> libata with pata_ali driver.
->>>
->>> Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
->>> system hung at least once in every rcX. Up to rc6 those lockups were
->>> absolutely silent (black screen without reaction to any key). In rc6 I
->>> just got something different. After resume I got on screem:
->>>
->>> swsusp: Marking nosave pages: 000000000009f000-0000000000100000
->>> swsusp: Basic memory bitmaps created
->>> swsusp: Basic memory bitmaps freed
->>>
->>> After that it just sits there doing nothing. Ther was brief sound of HDD
->>> but I suspect it was related more to power-on. System was responding to
->>> power-on button press:
->>>
->>> ACPI Error (event-0305): No installed handler for fixed event [00000002
->>> 20070125]
->>>
->>> And SysRq was functioning.
->> That probably means that there's a deadlock somewhere in there.
->>
->>> Unfortunately I do not have serial console so I
->>> copy manually stacks from several last screens of output; I have tried to
->>> make a photo but right now my kbluetooth is refusing to work at all so I
->>> cannot transfer them :( (but I suspect quality would be too bad anyway)
->>>
->>> laptop_mode D
->>> 	io_schedule+0xe/0x20
->> Looks suspicious to me.  Can you identify what line of code this points to?
->>
-> 
-> If you could explain how to ...
+The Coverity checker spotted (as bug #809) that we dereference 'type' 
+long before we actually test it against NULL in 
+drivers/pnp/isapnp/core.c::isapnp_read_tag() - both branches of the 
+'if (tag & 0x80)' dereference type, and since this 'if' is before the test 
+against NULL and the return of -1, this will blow up is ever type is NULL.
+This is easy to fix by simply moving the NULL test to the beginning of 
+the function.
 
-gdb vmlinux
 
-(gdb) l *io_schedule+0xe
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-Regards,
-Michal
+ drivers/pnp/isapnp/core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+diff --git a/drivers/pnp/isapnp/core.c b/drivers/pnp/isapnp/core.c
+index a0b1587..5696924 100644
+--- a/drivers/pnp/isapnp/core.c
++++ b/drivers/pnp/isapnp/core.c
+@@ -356,6 +356,8 @@ static int __init isapnp_read_tag(unsigned char *type, unsigned short *size)
+ {
+ 	unsigned char tag, tmp[2];
+ 
++	if (!type)	/* wrong type */
++		return -1;
+ 	isapnp_peek(&tag, 1);
+ 	if (tag == 0)				/* invalid tag */
+ 		return -1;
+@@ -370,8 +372,6 @@ static int __init isapnp_read_tag(unsigned char *type, unsigned short *size)
+ #if 0
+ 	printk(KERN_DEBUG "tag = 0x%x, type = 0x%x, size = %i\n", tag, *type, *size);
+ #endif
+-	if (type == 0)				/* wrong type */
+-		return -1;
+ 	if (*type == 0xff && *size == 0xffff)	/* probably invalid data */
+ 		return -1;
+ 	return 0;
+
+
