@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbXF3SLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbXF3SUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbXF3SLd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 14:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbXF3SLX
+	id S1755315AbXF3SUq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 14:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbXF3SUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 14:11:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43383 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752552AbXF3SLW (ORCPT
+	Sat, 30 Jun 2007 14:20:36 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35634 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753235AbXF3SUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 14:11:22 -0400
-Date: Sat, 30 Jun 2007 14:10:58 -0400
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       =?UTF-8?B?VMO2csO2aw==?= Edvin <edwintorok@gmail.com>,
-       netdev@vger.kernel.org, power@bughost.org, zambrano@broadcom.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: PM policy, hotplug, power saving (was Re: [PATCH] b44: power
- down PHY when interface down)
-Message-ID: <20070630141058.4c678c37@oldman>
-In-Reply-To: <468687DE.6030003@garzik.org>
-References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com>
-	<20070630120541.GA21339@srcf.ucam.org>
-	<46866C6B.9010801@linux.intel.com>
-	<468687DE.6030003@garzik.org>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 30 Jun 2007 14:20:34 -0400
+X-Sasl-enc: ZRToEp6nr2lSWelfTBiBMeZv60Lpk9wETKn1IYcT5bUq 1183227633
+Date: Sat, 30 Jun 2007 15:20:29 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: Richard Hughes <hughsient@gmail.com>, linux-acpi@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: document the proper usage of EV_KEY and
+	KEY_UNKNOWN (v2)
+Message-ID: <20070630182029.GA25474@khazad-dum.debian.net>
+References: <11802004861625-git-send-email-hmh@hmh.eng.br> <20070531222814.GB4076@khazad-dum.debian.net> <20070606165509.GB18984@khazad-dum.debian.net> <200706290104.53909.dtor@insightbb.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706290104.53909.dtor@insightbb.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Jun 2007 12:42:06 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+On Fri, 29 Jun 2007, Dmitry Torokhov wrote:
+> Finally gottent to the patch. It seems a little long-winded, how about
+> the patch below instead?
 
-> Arjan van de Ven wrote:
-> > Matthew Garrett wrote:
-> >> Do you still get link beat detection when the phy is powered down?
-> 
-> > does that matter?
-> > If the interface is down, nic drivers aren't expected to detect link... 
-> > if userspace wants to find link status it should have the interface up.
-> 
-> 
-> Definitely matters.  Switch renegotiation can take a while, and you must 
-> take into account the common case of interface bouncing (immediate down, 
-> then up).
-> 
-> Hoards actively complained the few times we experimented with this, 
-> because of e.g. DHCP's habit of bouncing the interface, which resulted 
-> in PHY power bouncing, which resulted in negotiation, which resulted in 
-> an excrutiating wait on various broken or stupid switches.
-> 
-> Overall, this may be classed with other problems of a similar sort:  we 
-> can power down a PHY, but that removes hotplug capability and extends 
-> partner/link negotiation time.
-> 
-> Like SATA, we actually want to support BOTH -- active hotplug and PHY 
-> power-down -- and so this wanders into power management policy.
-> 
-> Give me a knob, and we can program plenty of ethernet|SATA|USB|... 
-> drivers to power down the PHY and save power.
-> 
-> 	Jeff
+Well, your version of the patch:
 
-We do have IFF_DORMANT, but almost no driver uses it. And most
-certainly, the common applications wouldn't know how to use it.
+1. does not make it clear to *userland* that using EV_SCAN instead of EV_KEY
+is something that is not to be done.  If userland wants to use a key that is
+not generating an useful EV_KEY, it must remap the key to something.
+Otherwise, we are opening our flank to the crap we have with that kludge
+from hell AT keyboard reverse scan-code generation all again...  it might
+have been unavoidable with the AT keyboard, due to legacy stuff, but there
+is no way we should let it happen to anything else.
+
+2. does not make it clear that EV_SCAN events must reflect the scan code
+that, when remapped, would reprogram the key that caused that EV_SCAN event
+to be generated.
+
+I think these two points need to be addressed by the docs.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
