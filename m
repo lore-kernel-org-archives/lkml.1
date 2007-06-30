@@ -1,82 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbXF3Cxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbXF3DDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855AbXF3Cxw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 22:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXF3Cxp
+	id S1753650AbXF3DDy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 23:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXF3DDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 22:53:45 -0400
-Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:50275 "EHLO
-	marquesa.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752365AbXF3Cxp (ORCPT
+	Fri, 29 Jun 2007 23:03:46 -0400
+Received: from science.horizon.com ([192.35.100.1]:18650 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752412AbXF3DDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 22:53:45 -0400
-To: davids@webmaster.com
-Cc: "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-References: <MDEHLPKNGKAHNMBLJOLKCEPKEOAC.davids@webmaster.com>
-From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Date: Fri, 29 Jun 2007 23:53:30 -0300
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEPKEOAC.davids@webmaster.com> (David Schwartz's message of "Thu\, 28 Jun 2007 12\:13\:49 -0700")
-Message-ID: <orlke2885x.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 29 Jun 2007 23:03:45 -0400
+Date: 29 Jun 2007 23:03:43 -0400
+Message-ID: <20070630030343.31711.qmail@science.horizon.com>
+From: linux@horizon.com
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: 2.6.22-rcX Transmeta/APM regression
+Cc: ak@suse.de, bk@suse.de, hpa@zytor.com, linux@horizon.com,
+       michal.k.k.piotrowski@gmail.com
+In-Reply-To: <20070627153114.17953.qmail@science.horizon.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 28, 2007, "David Schwartz" <davids@webmaster.com> wrote:
+Okay, after a ridiculous amount of bisecting and recompiling and
+rebooting...
 
-> Alexandre Oliva write:
+First I had to find out that the kernel stops booting as of
+bf50467204: "i386: Use per-cpu GDT immediately on boot"
+(With theis commit, it silently stops booting.  The GP fault I
+posted earlier comes a little later, but I didn't bother finding it.)
 
->> > The GPL does sometimes use the word "may" where it's not clear
->> > whether it
->> > means you have permission or you must be able to. The general rule of
->> > construction is that "may" means permission, unless there's some clear
->> > indication to the contrary. The "may"s in sections one and two are
->> > permisssion against a claim of copyright enfrocement. The "further
->> > restriction" clause is, at it states, only on the exercise of *rights*
->> > (which I think means those rights licensed to you under copyright law,
->> > namely the right of distribution and copying).
+and starts again as of
+b0b73cb41d: "i386: msr.h: be paranoid about types and parentheses"
 
->> ... and modification and, depending on the jurisdiction, execution.
+However, one commit before the former suspends properly, and the latter
+fails to suspend (exactly the same problem at get_fixed_ranges+0x9/0x60),
+so I had to bisect further between the two, backporting the msr.h changes
+across the msr-index.h splitoff.
 
-> Modification, yes. Execution, well, if the rules of a jurisdiction are
-> insane, you will get insane results from almost any contract.
+Anyway, the patch which introduces the problem is the aptly named 3ebad:
+3ebad59056: [PATCH] x86: Save and restore the fixed-range MTRRs of the BSP when suspending
 
-> Fortunately, the GPL makes it clear that execution is unrestricted for GPL'd
-> works, but does not style this as a GPL right.
-
-Possible consequence:
-http://fsfla.org/svnwiki/blogs/lxo/2007-06-29-gplv3-tivo-and-linux.en
-
-> One would hope that jurisidictions that have such strange rules
-> would interpret the GPL to effect the same result under their laws
-> as was intended under the laws the GPL was written with respect to,
-> to the extent possible.
-
-Hopefully.  But we know how justice is in the US, right? :-(
-
-> Treating ordinary use as a copyright privilege leads to nonsensical results
-> no matter what you do. For example, you get that I can drop copies of my
-> poem from an airplane and then sue anyone who reads it.
-
-Who was talking about reading?  You can read programs as much as you
-can read poems.  But since you (normally) can't run poems, copyright
-law doesn't talk about this, just like it doesn't distinguish source
-from object code of a poem.  But software is different.  So different
-that it's governed by a separate law in Brazil, which could be
-qualified as a subclass of copyright law.  And this law states that
-running programs requires permission from the copyright holder.
-
-If you find that odd, you may have an idea of how ludicrous patents on
-software, business methods et al are.  At least copyright regulation
-of execution saves us from a few abusive EULAs, created with the
-purpose of, let's see, regulating execution.  And then, since it's
-already there, why not use it for other restrictions beneficial to the
-vendor that a copyright license couldn't establish?
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+2.6.22-rc6 plus that one commit reverted successfully does APM suspend
+(and resume) for me.
