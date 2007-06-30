@@ -1,97 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbXF3PNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbXF3PT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbXF3PNn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 11:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXF3PNe
+	id S1756815AbXF3PT6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 11:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbXF3PTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 11:13:34 -0400
-Received: from [212.12.190.59] ([212.12.190.59]:33228 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752627AbXF3PNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 11:13:34 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: peter@chubb.wattle.id.au
-Subject: Re: vm/fs meetup in september?
-Date: Sat, 30 Jun 2007 17:58:16 -0400
-User-Agent: KMail/1.5
-References: <20070624042345.GB20033@wotan.suse.de> <20070630093243.GD22354@infradead.org> <87bqexiwu3.wl%peter@chubb.wattle.id.au>
-In-Reply-To: <87bqexiwu3.wl%peter@chubb.wattle.id.au>
-Cc: Christoph Hellwig <hch@infradead.org>, Jared Hulbert <jaredeh@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
+	Sat, 30 Jun 2007 11:19:49 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:48239 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753209AbXF3PTs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 11:19:48 -0400
+Date: Sat, 30 Jun 2007 16:19:23 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: =?iso-8859-1?B?VPZy9ms=?= Edvin <edwintorok@gmail.com>,
+       netdev@vger.kernel.org, power@bughost.org, zambrano@broadcom.com,
+       linux-kernel@vger.kernel.org
+Message-ID: <20070630151923.GA22983@srcf.ucam.org>
+References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <20070630120541.GA21339@srcf.ucam.org> <46866C6B.9010801@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706301758.16607.a1426z@gawab.com>
+In-Reply-To: <46866C6B.9010801@linux.intel.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] b44: power down PHY when interface down
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-peter@chubb.wattle.id.au wrote:
-> >>>>> "Christoph" == Christoph Hellwig <hch@infradead.org> writes:
->
-> Christoph> On Tue, Jun 26, 2007 at 10:07:24AM -0700, Jared Hulbert
->
-> Christoph> wrote:
-> >> If you have a large array of a non-volatile semi-writeable memory
-> >> such as a highspeed NOR Flash or some of the similar emerging
-> >> technologies in a system.  It would be useful to use that memory as
-> >> an extension of RAM.  One of the ways you could do that is allow
-> >> pages to be swapped out to this memory.  Once there these pages
-> >> could be read directly, but would require a COW procedure on a
-> >> write access.  The reason why I think this may be a vm/fs topic is
-> >> that the hardware makes writing to this memory efficiently a
-> >> non-trivial operation that requires management just like a
-> >> filesystem.  Also it seems to me that there are probably overlaps
-> >> between this topic and the recent filemap_xip.c discussions.
->
-> Christoph> So what you mean is "swap on flash" ?  Defintively sounds
-> Christoph> like an interesting topic, although I'm not too sure it's
-> Christoph> all that filesystem-related.
+On Sat, Jun 30, 2007 at 07:44:59AM -0700, Arjan van de Ven wrote:
+> Matthew Garrett wrote:
+> >Do you still get link beat detection when the phy is powered down?
+> >
+> does that matter?
+> If the interface is down, nic drivers aren't expected to detect 
+> link... if userspace wants to find link status it should have the 
+> interface up.
 
-I wouldn't want to call it swap, as this carries with it block-io 
-connotations.  It's really mmap on flash.
+If that's the policy, why do we leave this up to individual drivers? 
+Right now most of them let you make the query regardless of interface 
+state.
 
-> You need either a block translation layer,
-
-Are you suggesting to go through the block layer to reach the flash?
-
-> or a (swap) filesystem that
-> understands flash peculiarities in order to make such a thing work.
-> The standard Linux swap format will not work.
-
-Correct.
-
-BTW, you may want to have a look at my "[RFC] VM: I have a dream..." thread.
-
-Here is an excerpt:
-
-"What's more, there is no more swap.
-Apps are executed inplace, as if already loaded.
-Physical RAM is used to cache slower storage RAM, much the same as the CPU 
-cache RAM caches slower physical RAM."
-
-The thread ended with this conclusion:
-
-Alan Cox wrote:
-> On Iau, 2006-02-02 at 21:59 +0300, Al Boldi wrote:
-> > So w/ 1GB RAM, no swap, and 1TB disk mmap'd, could this mmap'd space be
-> > added to the total memory available to the OS, as is done w/ swap?
->
-> Yes in theory. It would be harder to manage.
->
-> > And if that's possible, why not replace swap w/ mmap'd disk-space?
->
-> Swap is just somewhere to stick data that isnt file backed, you could
-> build a swapless mmap based OS but it wouldn't be quite the same as
-> Unix/Linux are.
-
-
-Thanks!
-
---
-Al
-
+I'd agree that there's a need for a state where we power down as much as 
+possible (even at the cost of functionality), but where possible it 
+would also be nice to offer a state where the mac is powered down and 
+the phy left up. If the existing semantics are confused then it would be 
+nice to fix them, too.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
