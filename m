@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbXF3OpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbXF3Oq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759845AbXF3OpG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 10:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbXF3Oon
+	id S1759713AbXF3Oq6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 10:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757685AbXF3Oqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 10:44:43 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:24115 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756854AbXF3Oom (ORCPT
+	Sat, 30 Jun 2007 10:46:48 -0400
+Received: from mga05.intel.com ([192.55.52.89]:55183 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756854AbXF3Oqr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 10:44:42 -0400
-Message-ID: <46866C58.2090705@oracle.com>
-Date: Sat, 30 Jun 2007 07:44:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Sat, 30 Jun 2007 10:46:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,480,1175497200"; 
+   d="scan'208";a="262933494"
+Message-ID: <46866C6B.9010801@linux.intel.com>
+Date: Sat, 30 Jun 2007 07:44:59 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-To: John Keller <jpk@sgi.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, steiner@sgi.com
-Subject: Re: [PATCH] - x86_64-add-ioapic-nmi-support-fix-3
-References: <200706301429.l5UETMXk295940@fcbayern.americas.sgi.com>
-In-Reply-To: <200706301429.l5UETMXk295940@fcbayern.americas.sgi.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: =?ISO-8859-1?Q?T=F6r=F6k_Edvin?= <edwintorok@gmail.com>,
+       netdev@vger.kernel.org, power@bughost.org, zambrano@broadcom.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] b44: power down PHY when interface down
+References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <20070630120541.GA21339@srcf.ucam.org>
+In-Reply-To: <20070630120541.GA21339@srcf.ucam.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Keller wrote:
->> [adding Andi Kleen]
->>
->> John Keller wrote:
->>> Place all the IOACPI NMI support code under CONFIG_ACPI
->>> to clear up build errors with certain configs.
->>>
->>> Signed-off-by: John Keller <jpk@sgi.com>
->>> ---
->> Is there some architectural reason that IO APIC NMI support should
->> require ACPI?
+Matthew Garrett wrote:
+> On Sat, Jun 30, 2007 at 02:47:35PM +0300, Török Edvin wrote:
+>> When the interface is down (or driver removed), the BroadCom 44xx card 
+>> remains
+>> powered on, and both its MAC and PHY is using up power.
+>> This patch makes the driver issue a MAC_CTRL_PHY_PDOWN when the interface
+>> is halted, and does a partial chip reset turns off the activity LEDs too.
 > 
-> OK, I guess standing alone this description was a bit misleading.
-> The code referred to here is the new code supporting the ACPI NMI SRC
-> structure that can be specified in the MADT. Without ACPI support this
-> code is not relevant. All the code touched by this patch was introduced
-> by eariler versions of this patchset.
+> Do you still get link beat detection when the phy is powered down?
 > 
-> This patch makes no changes to the workings of nmi_watchdog.
-
-OK, thanks for the clarification.
-
-> John
-> 
-> 
->> Is this a new requirement?  It seems like a step backwards to me.
->>
->>
->> Documentation/nmi_watchdog.txt doesn't say anything about ACPI being
->> needed.  It does say:
->>
->> "For x86-64, the needed APIC is always compiled in, and the NMI watchdog is
->> always enabled with I/O-APIC mode (nmi_watchdog=1). Currently, local APIC
->> mode (nmi_watchdog=2) does not work on x86-64.
->>
->> Using local APIC (nmi_watchdog=2) needs the first performance register, so
->> you can't use it for other purposes (such as high precision performance
->> profiling.) However, at least oprofile and the perfctr driver disable the
->> local APIC NMI watchdog automatically."
-
-
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+does that matter?
+If the interface is down, nic drivers aren't expected to detect 
+link... if userspace wants to find link status it should have the 
+interface up.
