@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbXF3OnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXF3Oov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759371AbXF3OnZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 10:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbXF3OnS
+	id S1759427AbXF3Oov (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 10:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbXF3Oom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 10:43:18 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60479 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756523AbXF3OnR (ORCPT
+	Sat, 30 Jun 2007 10:44:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:10821 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754981AbXF3Ool (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 10:43:17 -0400
-Date: Sat, 30 Jun 2007 15:04:22 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch 5/5] Optimize page_mkclean_one
-In-Reply-To: <20070629141528.511942868@de.ibm.com>
-Message-ID: <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
-References: <20070629135530.912094590@de.ibm.com> <20070629141528.511942868@de.ibm.com>
+	Sat, 30 Jun 2007 10:44:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=SWaQVEL3+EZVQqn8U5zDyQZC5hRggFZWKgJ1+pjdleSlWqbpb+hdK6r3jHtE+5+UM39h6VIO6PB79xliQpfj72pnO8KBXnS1KWA6Tq9okfxUj2joVhqClcx6TxPbvlohDqdvRYR49MNNULvc3VSnsz5Y0DYXZnRB3ob9E4DfaOo=
+Date: Sat, 30 Jun 2007 16:44:36 +0200
+From: Florian Attenberger <valdyn@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [PATCH 2.6.22-rc6] add PCI-ID for Adaptec 1430SA 4-Port SATA
+	Controller
+Message-ID: <20070630144436.GA13479@master.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbGludXgtbW1Aa3ZhY2sub3JnAHBldGVyekBpbmZyYWRlYWQub3JnAHNjaHdpZGVmc2t5QGRlLmlibS5jb20A
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jun 2007, Martin Schwidefsky wrote:
-> On Fri, 2007-06-29 at 19:56 +0100, Hugh Dickins wrote:
-> > I don't dare comment on your page_mkclean_one patch (5/5),
-> > that dirty page business has grown too subtle for me.
-> 
-> Oh yes, the dirty handling is tricky. I had to fix a really nasty bug
-> with it lately. As for page_mkclean_one the difference is that it
-> doesn't claim a page is dirty if only the write protect bit has not been
-> set. If we manage to lose dirty bits from ptes and have to rely on the
-> write protect bit to take over the job, then we have a different problem
-> altogether, no ?
+Hi,
 
-[Moving that over from 1/5 discussion].
+added this pci id to support my:
+lspci:
+01:00.0 RAID bus controller: Adaptec Unknown device 0243 (rev 02)
+lspci -n:
+01:00.0 0104: 9005:0243 (rev 02)
 
-Expect you're right, but I _really_ don't want to comment, when I don't
-understand that "|| pte_write" in the first place, and don't know the
-consequence of pte_dirty && !pte_write or !pte_dirty && pte_write there.
-Peter?
+seems to work fine.
 
-My suspicion is that the "|| pte_write" is precisely to cover your
-s390 case where pte is never dirty (it may even have been me who got
-Peter to put it in for that reason).  In which case your patch would
-be fine - though I think it'd be improved a lot by a comment or
-rearrangement or new macro in place of the pte_dirty || pte_write
-line (perhaps adjust my pte_maybe_dirty in asm-generic/pgtable.h,
-and use that - its former use in msync has gone away now).
+florian attenberger
 
-Hugh
 
-On Fri, 29 Jun 2007, Martin Schwidefsky wrote:
-
-> page_mkclean_one is used to clear the dirty bit and to set the write
-> protect bit of a pte. In additions it returns true if the pte either
-> has been dirty or if it has been writable. As far as I can see the
-> function should return true only if the pte has been dirty, or page
-> writeback will needlessly write a clean page.
-> 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
-> 
->  mm/rmap.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff -urpN linux-2.6/mm/rmap.c linux-2.6-patched/mm/rmap.c
-> --- linux-2.6/mm/rmap.c	2007-06-29 09:58:33.000000000 +0200
-> +++ linux-2.6-patched/mm/rmap.c	2007-06-29 15:44:58.000000000 +0200
-> @@ -433,11 +433,12 @@ static int page_mkclean_one(struct page 
->  
->  		flush_cache_page(vma, address, pte_pfn(*pte));
->  		entry = ptep_clear_flush(vma, address, pte);
-> +		if (pte_dirty(entry))
-> +			ret = 1;
->  		entry = pte_wrprotect(entry);
->  		entry = pte_mkclean(entry);
->  		set_pte_at(mm, address, pte, entry);
->  		lazy_mmu_prot_update(entry);
-> -		ret = 1;
->  	}
->  
->  	pte_unmap_unlock(pte, ptl);
+--- 2.6.22-rc6/drivers/ata/sata_mv.c	2007-06-30 16:21:47.462020256 +0200
++++ 2.6.22-rc6.mine/drivers/ata/sata_mv.c	2007-06-30 16:25:25.999165444 +0200
+@@ -582,6 +582,9 @@ static const struct pci_device_id mv_pci
+ 
+ 	{ PCI_VDEVICE(ADAPTEC2, 0x0241), chip_604x },
+ 
++	/* Adaptec 1430SA */
++	{ PCI_VDEVICE(ADAPTEC2, 0x0243), chip_7042 },
++
+ 	{ PCI_VDEVICE(TTI, 0x2310), chip_7042 },
+ 
+ 	/* add Marvell 7042 support */
