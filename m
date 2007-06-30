@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbXF3Sn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbXF3Szd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756366AbXF3Sn3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 14:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbXF3SnW
+	id S1755943AbXF3Szd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 14:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbXF3SzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 14:43:22 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3059 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754014AbXF3SnV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 14:43:21 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: muli@il.ibm.com (Muli Ben-Yehuda)
-Subject: Re: dma_mapping_ops for i386
-Cc: ak@suse.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, tony.luck@intel.com
-Organization: Core
-In-Reply-To: <20070627202839.GC4344@rhun.congress.lan>
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1I4hsU-0002lx-00@gondolin.me.apana.org.au>
-Date: Sun, 01 Jul 2007 02:41:02 +0800
+	Sat, 30 Jun 2007 14:55:25 -0400
+Received: from ns2.suse.de ([195.135.220.15]:48056 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752753AbXF3SzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 14:55:25 -0400
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Robert Hancock <hancockr@shaw.ca>, Zan Lynx <zlynx@acm.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Raj, Ashok" <ashok.raj@intel.com>
+Subject: Re: 2.6.22-rc6-mm1 Intel DMAR crash on AMD x86_64
+References: <46845943.7050005@shaw.ca>
+	<FC1D1B23302A22499C60C967336B2AE0016F7529@pdsmsx411.ccr.corp.intel.com>
+	<20070629152858.GA27995@linux-os.sc.intel.com>
+	<20070629162343.GD27698@rhun.ibm.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 30 Jun 2007 21:50:47 +0200
+In-Reply-To: <20070629162343.GD27698@rhun.ibm.com>
+Message-ID: <p73645543xk.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Muli Ben-Yehuda <muli@il.ibm.com> wrote:
->
->> And probably some similar mechanism for network drivers that limits
->> MTUs.
+Muli Ben-Yehuda <muli@il.ibm.com> writes:
 > 
-> Will that guarantee that block and net IOs will not straddle a page
-> boundary?
+> The convention is to print a KERN_DEBUG message if hardware is not
+> found when probing it, otherwise the boot messages become cluttered
+> with lots of "$FOO not found".
 
-Mostly.  There is the thorny case of slab debugging that breaks
-these nice assumptions.
+No the convention is to print no message at all when nothing is found
+Some drivers fail this, but they're bad examples.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+-Andi
