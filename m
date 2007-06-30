@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbXF3NIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXF3NRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbXF3NIQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 09:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbXF3NIA
+	id S1758061AbXF3NRh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 09:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbXF3NR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 09:08:00 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:56715 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755998AbXF3NH7 (ORCPT
+	Sat, 30 Jun 2007 09:17:29 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59267 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756069AbXF3NR2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 09:07:59 -0400
-Message-ID: <468652E2.4050901@zytor.com>
-Date: Sat, 30 Jun 2007 08:56:02 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Sat, 30 Jun 2007 09:17:28 -0400
+Date: Sat, 30 Jun 2007 14:16:44 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 1/5] avoid tlb gather restarts.
+In-Reply-To: <1183151984.13635.16.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0706301406001.12517@blonde.wat.veritas.com>
+References: <20070629135530.912094590@de.ibm.com>  <20070629141527.557443600@de.ibm.com>
+  <Pine.LNX.4.64.0706291927260.1509@blonde.wat.veritas.com>
+ <1183151984.13635.16.camel@localhost>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, Ram Pai <linuxram@us.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: [RFC PATCH 1/1] VFS: Augment /proc/mount with subroot and shared-subtree
-References: <20070620210343.GQ21478@ftp.linux.org.uk> <46799A31.10301@zytor.com> <1182442837.3342.13.camel@ram.us.ibm.com> <467AB5EE.3030909@zytor.com> <1182494654.2812.22.camel@ram.us.ibm.com> <467B7509.8010106@zytor.com> <1182497690.2812.54.camel@ram.us.ibm.com> <467B7F6F.4030007@zytor.com> <20070625214640.GC29058@ram.us.ibm.com> <1182808816.2816.7.camel@ram.us.ibm.com> <20070630094446.GB22889@infradead.org>
-In-Reply-To: <20070630094446.GB22889@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAA2luYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbGludXgtbW1Aa3ZhY2sub3JnAHNjaHdpZGVmc2t5QGRlLmlibS5jb20A
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
->>
->> The following additional fields are appended to each record
->> in /proc/mounts
+On Fri, 29 Jun 2007, Martin Schwidefsky wrote:
+> On Fri, 2007-06-29 at 19:56 +0100, Hugh Dickins wrote:
+> > I don't dare comment on your page_mkclean_one patch (5/5),
+> > that dirty page business has grown too subtle for me.
 > 
-> NACK.  Adding anything to the format will confuse the hell out of
-> existing parsers.  We really want something like your /proc/<pid>/mounts_new,
-> except mounts_new should have a better name (/proc/<pid>/ns anyone? :))
+> Oh yes, the dirty handling is tricky....
+
+I'll move that discussion over to 5/5 and Cc Peter
+(sorry I was too lazy to do so in the first place).
+
+> > On Fri, 29 Jun 2007, Martin Schwidefsky wrote:
+> > You think you're just moving the finish/gather to where they're
+> > actually necessary; but the thing is, that per-cpu struct mmu_gather
+> > is liable to accumulate a lot of unpreemptible work for the future
+> > tlb_finish_mmu, particularly when anon pages are associated with swap.
 > 
+> Hmm, ok, so you are saying that we should do a flush at the end of each
+> vma.
 
-Is that conjecture, or do you have evidence to that effect?  Most users 
-of this file are using it via the glibc interfaces, and there probably 
-aren't all that many users of it in the first place.
+I think of it as doing a flush every ZAP_BLOCK_SIZE, with the imperfect
+structure of the loop forcing perhaps an early flush at the end of each
+vma: I seem to assume large vmas, and you to assume small ones.
 
-This was debated in some detail earlier in this thread.
+IIRC, the common case for doing multiple vmas here is exit, when it
+ends up that the TLB flush can often be skipped because already done
+by the switch from exiting task; so the premature flush per vma doesn't
+matter much.  But treat that claim with maximum scepticism: I've not
+rechecked it, several aspects may be wrong.  What I do remember is
+that (at least on i386) there's a lot less actual TLB flushing done
+here than it appears from the outside.
 
-(Note: this patch is still wrong, since it appends the new fields in the 
-wrong place.)
+> > So although there may be no need to resched right now, if we keep on
+> > gathering more and more without flushing, we'll be very unresponsive
+> > when a resched is needed later on.  Hence Ingo's ZAP_BLOCK_SIZE to
+> > split it up, small when CONFIG_PREEMPT, more reasonable but still
+> > limited when not.
+> 
+> Would it be acceptable to call tlb_flush_mmu instead of the
+> tlb_finish_mmu / tlb_gather_mmu pair if the condition around
+> cond_resched evaluates to false?
 
-	-hpa
+That sounds a good idea, yes, that should be fine.  But beware,
+tlb_flush_mmu is an internal detail of the asm-generic/tlb.h method
+and perhaps some others, it currently doesn't exist on some arches.
+
+I think you just need to add a simple one to arm & arm26, and take
+the "ia64_" off the ia64 one.  powerpc and sparc64 go about it all 
+a bit differently, but it should be easy to give them one too.
+There may be some others missing.
+
+> The background for this change is that I'm working on another patch that
+> will change the tlb flushing for s390 quite a bit. We won't have
+> anything to flush with tlb_finish_mmu because we will either flush all
+> tlbs with tlb_gather_mmu or each pte seperatly. The pages will always be
+> freed immediatly. If we are forced to restart the tlb gather then we'll
+> do multiple flush_tlb_mm because the information that we already flushed
+> everything is lost with tlb_finish_mmu.
+
+Thanks for the info.  Sounds like we may have trouble ahead when
+rearranging this stuff, easy to forget s390 from our assumptions:
+keep watch!
+
+Hugh
