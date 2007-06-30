@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbXF3EBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXF3EEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753109AbXF3EBL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 00:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750721AbXF3EBD
+	id S1753922AbXF3EEp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 00:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbXF3EEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 00:01:03 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44912 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750714AbXF3EBB (ORCPT
+	Sat, 30 Jun 2007 00:04:38 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4669 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750714AbXF3EEh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 00:01:01 -0400
-Date: Sat, 30 Jun 2007 06:01:23 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] automatic CC generation for patch submission
-Message-ID: <20070630040123.GI6087@stusta.de>
-References: <20070630023451.GA21593@localdomain>
+	Sat, 30 Jun 2007 00:04:37 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Alexandre Oliva" <oliva@lsd.ic.unicamp.br>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Date: Fri, 29 Jun 2007 21:04:34 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKAEHFEPAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070630023451.GA21593@localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <orlke2885x.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 29 Jun 2007 21:04:59 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 29 Jun 2007 21:05:00 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 30, 2007 at 05:34:51AM +0300, Dan Aloni wrote:
->...
-> Basically, instead of manually figuring out who to add to CC
-> when sending a patch to LKML by looking at MAINTAINERS, a 
-> script can look at '.maintainers' files spread across the
-> source tree and automatically generate a proper list of CCs
-> for a patch.
->...
-> To illustrate: If a patch affects a file under 
-> drivers/net/e1000, the CC script will look at these files
-> 
->   drivers/net/e1000/.maintainers
->   drivers/net/.maintainers
->   drivers/.maintainers
->   .maintainers
-> 
-> ... to gather up the mailing list addresses or an individual 
-> maintainer inbox address.
->...
-> Any comments?
 
-As Auke said, maintaining the information in MAINTAINERS would be 
-better.
+> > Treating ordinary use as a copyright privilege leads to
+> > nonsensical results
+> > no matter what you do. For example, you get that I can drop copies of my
+> > poem from an airplane and then sue anyone who reads it.
 
-And another important use case that shouldn't require much extra work 
-would be to do the same for bug reports.
+> Who was talking about reading?
 
-Generally, you should keep in mind that it must fit into the workflow of 
-the people who should use it. E.g. I could imagine that it might make 
-more sense if you write a small tool that takes a patch or a path and 
-outputs email addresses instead of a huge tool that tries to solve too 
-many problems at once and doesn't fit into the workflow of most people.
+They are both ordinary use. It is crazy to treat the ordinary use of a work
+as a copyright privilege. If you do this, you get insane results. For
+example, coloring in the pages of a coloring book is, arguably, creating a
+derivative work. But you don't need a license to do this, because it's the
+ordinary use.
 
-> Dan Aloni
+My poem from airplanes example is just an example. You get analogously crazy
+results if you treat ordinary use of other works as a right under copyright.
 
-cu
-Adrian
+> You can read programs as much as you
+> can read poems.  But since you (normally) can't run poems, copyright
+> law doesn't talk about this, just like it doesn't distinguish source
+> from object code of a poem.
 
--- 
+You get lucicrous results from copyright laws if lawful physical possession
+(of a copy made with consent of the copyright holder) does not grant the
+right to ordinary use. You get the same ludicrous results with patents
+(imagine if I can buy a product from IBM whose ordinary use always violates
+an IBM patent and then IBM can sue me for it or if they use this to prevent
+me from selling the product or giving it away).
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> But software is different.  So different
+> that it's governed by a separate law in Brazil, which could be
+> qualified as a subclass of copyright law.  And this law states that
+> running programs requires permission from the copyright holder.
+
+So do I have to buy a program and then negotiate the right to run it
+separately? That seems very crazy.
+
+> If you find that odd, you may have an idea of how ludicrous patents on
+> software, business methods et al are.  At least copyright regulation
+> of execution saves us from a few abusive EULAs, created with the
+> purpose of, let's see, regulating execution.
+
+Quite the reverse. If execution is a copyright right, then I might need to
+agree to a license or conract to get it. If execution is not a copyright
+right, then I am safe from such craziness.
+
+> And then, since it's
+> already there, why not use it for other restrictions beneficial to the
+> vendor that a copyright license couldn't establish?
+
+Jurisdictions that treat ordinary use as a copyright right are simply
+insane. I am probably one of the stronger supporters of intellectual
+property rights (copyright and patent, not necessarily UCC and EULA issues)
+that you will find on this list, and I think that treating ordinary use as a
+right is simply insane.
+
+DS
+
 
