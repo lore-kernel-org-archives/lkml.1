@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbXF3QWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbXF3QbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbXF3QWt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 12:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbXF3QWk
+	id S1758142AbXF3QbR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 12:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbXF3QbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 12:22:40 -0400
-Received: from gw.goop.org ([64.81.55.164]:45523 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754238AbXF3QWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 12:22:39 -0400
-Message-ID: <4686834E.1070800@goop.org>
-Date: Sat, 30 Jun 2007 09:22:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Sat, 30 Jun 2007 12:31:04 -0400
+Received: from ipn26-148.piekary.net ([83.238.26.148]:41129 "EHLO
+	ipn26-148.piekary.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755083AbXF3QbE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 12:31:04 -0400
+Date: Sat, 30 Jun 2007 18:31:01 +0200
+From: Michal Januszewski <spock@gentoo.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: [PATCH v2 0/5] uvesafb: a general description
+Message-ID: <20070630163101.GA3838@spock.one.pl>
+Reply-To: spock@gentoo.org
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc6-mm1
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>	<6150.1183128630@turing-police.cc.vt.edu>	<20070629140130.59d58c44.akpm@linux-foundation.org>	<15437.1183177066@turing-police.cc.vt.edu> <20070629221510.95c4c8e1.akpm@linux-foundation.org>
-In-Reply-To: <20070629221510.95c4c8e1.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> All my .configs have mouldered since I lost the ability to have .config be
-> a symlink to a revision-controlled file (used to carry a custom patch for
-> this, but it died).
->
-> I continue to believe that kbuild's lets-trash-your-symlink behaviour is
-> obnoxious, but I was unable to persuade anyone else of this.
->   
+uvesafb is a generic driver for VBE2+ compliant video cards; an enhanced
+version of vesafb and a direct successor of vesafb-tng [1].
 
-That's pretty awful, but it hasn't really affected me much since I 
-started using separate object directories for pretty much everything.
+This is the second version of this patch, and it incorporates all fixes
+and cleanups suggested on the lkml.  My thanks to everyone who took
+their time to review the first version.
 
-    J
+uvesafb uses a userspace helper application (v86d, [2]) to run the x86
+Video BIOS code.  This makes it possible to include in uvesafb all the
+standard features (refresh rate control, video mode changes etc) that
+are missing from vesafb without resorting to ugly hacks such as the ones
+used in [1].  The current implementation of v86d can use either LRMI or
+x86emu to run the BIOS code and supports both x86 and x86_64.
+
+[1] http://dev.gentoo.org/~spock/projects/vesafb-tng/
+[2] http://dev.gentoo.org/~spock/projects/uvesafb/
+
+Best regards.
+-- 
+Michal Januszewski                              JID: spock@im.gentoo.org
+Gentoo Linux Developer                    http://people.gentoo.org/spock
+
