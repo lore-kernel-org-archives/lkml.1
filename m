@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbXF3T7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbXF3UGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881AbXF3T7s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 15:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXF3T7j
+	id S1753264AbXF3UGt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 16:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbXF3UGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 15:59:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37374 "EHLO mx1.redhat.com"
+	Sat, 30 Jun 2007 16:06:40 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38002 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640AbXF3T7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 15:59:38 -0400
-Subject: Re: drivers/net/wireless/libertas/rx.c: use-after-free
-From: Dan Williams <dcbw@redhat.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linville@tuxdriver.com, Holger Schurig <hs4233@mail.mn-solutions.de>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070629195116.GG6087@stusta.de>
-References: <20070629195116.GG6087@stusta.de>
-Content-Type: text/plain
-Date: Sat, 30 Jun 2007 16:02:46 -0400
-Message-Id: <1183233766.9150.2.camel@xo-13-A4-25.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	id S1752038AbXF3UGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 16:06:40 -0400
+Message-ID: <4686B7CD.2020404@garzik.org>
+Date: Sat, 30 Jun 2007 16:06:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Charles Shannon Hendrix <shannon@widomaker.com>
+CC: Linux Kernel List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: SATA/ADMA TIMEOUTS, dmesg output
+References: <4686A32F.1010700@widomaker.com>
+In-Reply-To: <4686A32F.1010700@widomaker.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-29 at 21:51 +0200, Adrian Bunk wrote:
-> The Coverity checker spotted the following use-after-free of "skb" in 
-> drivers/net/wireless/libertas/rx.c introduced by
-> commit 9012b28a407511fb355f6d2176a12d4653489672 (WTF did this commit
-> with the title "libertas: make debug configurable" add the 
-> "skb->protocol = __constant_htons(0x0019);" line?):
+Charles Shannon Hendrix wrote:
+> 
+> 
+> Following this post is output from Linux kernel 2.6.21 showing ADMA 
+> timeouts.
+> 
+> 2.6.21 has improved the situation over earlier kernels, but the problems 
+> do still occur.
+> 
+> nforce4 chipset, Seagate Barracuda SATA drives.
+> 
+> This is meant mainly as an additional data point in case it helps 
+> someone debug the problem.
 
-Holger, that's all you :)
+Does setting 'adma' module option to zero fix things?
 
-dan
+	Jeff
 
-> <--  snip  -->
-> 
-> ...
-> static int process_rxed_802_11_packet(wlan_private * priv, struct sk_buff *skb)
-> {
-> ...
->         libertas_upload_rx_packet(priv, skb);
-> 
->         ret = 0;
-> 
-> done:
->         skb->protocol = __constant_htons(0x0019);       /* ETH_P_80211_RAW */
-> ...
-> 
-> <--  snip  -->
-> 
-> 
-> cu
-> Adrian
-> 
+
 
