@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbXF3KIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbXF3KJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbXF3KIb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 06:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbXF3KIX
+	id S1757040AbXF3KJf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 06:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXF3KJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 06:08:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33799 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754577AbXF3KIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 06:08:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
-Date: Sat, 30 Jun 2007 12:15:19 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-References: <200706192118.23706.nigel@nigel.suspend2.net> <200706290827.13024.nigel@nigel.suspend2.net> <20070629223505.GB6732@elf.ucw.cz>
-In-Reply-To: <20070629223505.GB6732@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 30 Jun 2007 06:09:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56878 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754525AbXF3KJZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 06:09:25 -0400
+Date: Sat, 30 Jun 2007 11:09:22 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: peter@chubb.wattle.id.au
+Cc: Christoph Hellwig <hch@infradead.org>, Jared Hulbert <jaredeh@gmail.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: vm/fs meetup in september?
+Message-ID: <20070630100922.GA23495@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	peter@chubb.wattle.id.au, Jared Hulbert <jaredeh@gmail.com>,
+	Nick Piggin <npiggin@suse.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux Memory Management List <linux-mm@kvack.org>,
+	linux-fsdevel@vger.kernel.org
+References: <20070624042345.GB20033@wotan.suse.de> <6934efce0706251708h7ab8d7dal6682def601a82073@mail.gmail.com> <20070626060528.GA15134@infradead.org> <6934efce0706261007x5e402eebvc528d2d39abd03a3@mail.gmail.com> <20070630093243.GD22354@infradead.org> <87bqexiwu3.wl%peter@chubb.wattle.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706301215.20334.rjw@sisk.pl>
+In-Reply-To: <87bqexiwu3.wl%peter@chubb.wattle.id.au>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Jun 30, 2007 at 06:02:44AM -0400, peter@chubb.wattle.id.au wrote:
+> You need either a block translation layer, or a (swap) filesystem that
+> understands flash peculiarities in order to make such a thing work.
+> The standard Linux swap format will not work.
 
-On Saturday, 30 June 2007 00:35, Pavel Machek wrote:
-> Hi!
-> 
-> > > >  ALIGN
-> > > >  	.align	4096
-> > > > @@ -31,6 +46,11 @@ wakeup_code:
-> > > >  	movw	%cs, %ax
-> > > >  	movw	%ax, %ds					# Make ds:0 point to wakeup_start
-> > > >  	movw	%ax, %ss
-> > > > +
-> > > > +	testl   $1, beep_flags - wakeup_code
-> > > > +	jz      1f
-> > > > +	BEEP
-> > > > +1:
-> > > 
-> > > Can we rename/reuse existing flag variable?
-> > 
-> > Sorry, but I can't resist the opportunity to say "Send a patch!" :)
-> > 
-> > Seriously, though, I'd prefer not to. If we rename that acpi video flags 
-> > variable (I assume this is what you're thinking of), we only create cause for 
-> > confusion. A variable should for debugging or for controlling quirks, not for 
-> > both at the same time.
-> 
-> Cause for confusion? We are currently using 2 bits of that variable,
-> and we want to add one more bit. I seriously doubt that can confuse
-> anyone.
+Yes, it basically needs an ftl.  
 
-Well, indeed it would be more elegant to rename the existing flags variable
-and use another bit out of it, but I personally don't think it's _that_
-important.  At least, I don't think we should block the patch because of that.
-
-BTW, has anyone confirmed that it works on i386?
-
-BTW2, Nigel, please fix the formats in s2ram_beep_show()/_store(), they
-cause gcc to spit ugly warnings on some architectures.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
