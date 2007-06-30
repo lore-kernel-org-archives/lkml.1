@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbXF3RFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbXF3RMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbXF3RFn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 13:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbXF3RFe
+	id S1758893AbXF3RMb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 13:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbXF3RMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 13:05:34 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:41419 "EHLO
+	Sat, 30 Jun 2007 13:12:22 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:41458 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754960AbXF3RFe (ORCPT
+	with ESMTP id S1756213AbXF3RMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 13:05:34 -0400
-Date: Sat, 30 Jun 2007 19:06:53 +0200
+	Sat, 30 Jun 2007 13:12:21 -0400
+Date: Sat, 30 Jun 2007 19:13:40 +0200
 From: Rodolfo Giometti <giometti@enneenne.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <20070630170653.GS13886@enneenne.com>
-References: <20070627174537.GM13886@enneenne.com> <1182966588.1170.28.camel@pmac.infradead.org> <20070627224623.GO13886@enneenne.com> <1183018133.1170.46.camel@pmac.infradead.org> <20070628081538.GP13886@enneenne.com> <1183019474.1170.66.camel@pmac.infradead.org> <20070628084003.GQ13886@enneenne.com> <1183031060.1170.145.camel@pmac.infradead.org> <20070628161450.GD13886@enneenne.com> <20070630083827.GA21102@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070630171340.GT13886@enneenne.com>
+References: <20070628081538.GP13886@enneenne.com> <1183019474.1170.66.camel@pmac.infradead.org> <20070628084003.GQ13886@enneenne.com> <1183031060.1170.145.camel@pmac.infradead.org> <20070628161450.GD13886@enneenne.com> <1183117082.1170.308.camel@pmac.infradead.org> <20070629150813.GM13886@enneenne.com> <1183132548.1170.360.camel@pmac.infradead.org> <20070629163422.GP13886@enneenne.com> <1183135253.17622.5.camel@shinybook.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070630083827.GA21102@infradead.org>
+In-Reply-To: <1183135253.17622.5.camel@shinybook.infradead.org>
 Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
 X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
 User-Agent: Mutt/1.5.13 (2006-08-11)
@@ -33,36 +32,30 @@ X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 30, 2007 at 09:38:27AM +0100, Christoph Hellwig wrote:
+On Fri, Jun 29, 2007 at 05:40:52PM +0100, David Woodhouse wrote:
 > 
-> Sorry for coming in that late, but using syscalls for something as
-> periphal sounds like a very bad idea to me, and the syscalls aren't
-> defined nicely either (e.g. you have an ioctl lookalike).  I'd say
-> back to the drawingboard.
+> Remember you have to support _both_ 32-bit and 64-bit system calls. You
+> need to define struct compat_pps_info and struct compat_pps_params, and 
+> you'll have to provide a compat wrapper for sys_time_pps_getparams() and
+> sys_time_pps_setparams(). You'll also need to extend your
+> compat_sys_time_pps_fetch() wrapper to handle the struct pps_info too.
 
-PPS API is not only a periphal class. RFC 2783 defines new «functions»
-that allow accesso to internal system data collected by some
-periferals but these devices are never managed as a tipical char or
-block device.
+At this point I'm seriously considfering your previous suggestion:
 
-I think implementing parts or full RFC 2783 PPS's functions as
-syscalls are not so wrong... IMHO, at least! :)
+   Had you considered changing the API so that you don't need the
+   compatibility wrapper at all? Could you take an integer number of
+   µS or ms instead of a struct timespec?
 
-> And yes, even ioctls are nicer than badly designed syscalls :)
+Maybe I can define a special struct for exchanging time data as:
 
-I see, but consider that some PPS devices cannot be always connected
-with a filedescriptor since, for example, some PPS devices are
-connected by serial lines, other by parallel ports and other
-(expecially on embedded systems) are connected by CPU's GPIOs.
+   struct pps_timedata_s {
+      long sec;
+      long nsec;
+   }
 
-An userland programs shouldn't know whenever these devices are
-connected, they should only know how to collect PPS data from the
-system.
+and managing time data conversions at userland...
 
-> Also code seems to be odd at least in a few places, e.g. all the access_oks
-> and double checks of the ioctl-lookalike commands should go.
-
-I already removed such functions in my latest patches. :)
+What do you think about that? :)
 
 Thanks,
 
