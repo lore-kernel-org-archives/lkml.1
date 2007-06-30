@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbXF3HzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbXF3H6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754191AbXF3HzW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 03:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbXF3HzJ
+	id S1754713AbXF3H6I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 03:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXF3H54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 03:55:09 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2447 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbXF3HzI (ORCPT
+	Sat, 30 Jun 2007 03:57:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55559 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752253AbXF3H5z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 03:55:08 -0400
-Date: Sat, 30 Jun 2007 08:54:29 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, clameter@sgi.com, hugh@veritas.com,
-       James.Bottomley@steeleye.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Containment measures for slab objects on scatter gather lists
-Message-ID: <20070630075429.GA26051@flint.arm.linux.org.uk>
-References: <Pine.LNX.4.64.0706282128570.11739@schroedinger.engr.sgi.com> <20070628.220606.112621271.davem@davemloft.net> <20070628222424.4cbae90c.akpm@linux-foundation.org> <20070628.223734.21928089.davem@davemloft.net> <20070628224519.1a3319c3.akpm@linux-foundation.org> <20070629131657.5ecc3baa@the-village.bc.nu> <20070629134529.3e12a131.akpm@linux-foundation.org> <20070629211434.GA21187@flint.arm.linux.org.uk> <20070630001138.6caeb745@the-village.bc.nu>
+	Sat, 30 Jun 2007 03:57:55 -0400
+Date: Sat, 30 Jun 2007 00:57:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dan <metalifloyd@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: PROBLEM: SATA AHCI driver significant throughput loss in
+ 2.6.22-rc5-g75154f40-dirty
+Message-Id: <20070630005747.9bc9ba40.akpm@linux-foundation.org>
+In-Reply-To: <439fa30706262117u2d5553dfp8395c6ca41574a8c@mail.gmail.com>
+References: <439fa30706262117u2d5553dfp8395c6ca41574a8c@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070630001138.6caeb745@the-village.bc.nu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 30, 2007 at 12:11:38AM +0100, Alan Cox wrote:
-> > DMA to or from memory should be done via the DMA mapping API.  If we're
-> > DMAing to/from a limited range within a page, either we should be using
-> > dma_map_single(), or dma_map_page() with an appropriate offset and size.
+On Wed, 27 Jun 2007 00:17:24 -0400 Dan <metalifloyd@gmail.com> wrote:
+
+> Something changed with the AHCI SATA driver in the latest git version.
+> With 2.6.21 I get ~49MB/sec according to hdparm. Using the latest git
+> version I only get ~8MB/sec. I've attached my .config and have
+> included some info about my system below. Please let me know if you
+> need more information or if I can help test anything.
 > 
-> If those ranges overlap a cache line then the dma mapping API will not
-> save your backside.
+> Lenovo Thinkpad T60p
 
-There's nothing much that the DMA API can do though.  Consider DMA
-to a result buffer which is, eg, only 16 bytes in size.  So you get
-passed a size of '16' to the DMA API.  What should you do at this
-point?  BUG()?
+Until we know how widespread this damage is, we'd need to consider this
+a blocking bug.
 
-What if you have 64 or 128 byte cache lines?
+Are you able (as a matter of some urgency) to run a git bisection 
+search to identify the offending commit?
 
-> > sizes, but they do happen.  We handle this on ARM by writing back
-> > the overlapped lines and invalidating the rest before the DMA operation
-> > commences, and hope that the overlapped lines aren't touched for the
-> > duration of the DMA.)
-> 
-> The combination of "hope" and "DMA" isn't a good one for stable system
-> design. In this situation we should be waving large red flags
-
-I agree.
-
-However, I don't think this is an issue for the DMA API to handle; it's
-something that driver authors need to be aware of.  If they wish to do
-a DMA to a kmalloc'd buffer or even a page, we could require that
-offsets and sizes are cache line aligned.
-
-However, remember that turning on slab debugging turns off cache line
-alignment, so imposing such a requirement implies that the slab
-debugging will break DMA, or driver authors also have to be aware of
-that and do their own alignment internally, *or* we provide an allocator
-which does unconditionally align.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Thanks.
