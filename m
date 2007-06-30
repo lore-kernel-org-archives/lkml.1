@@ -1,98 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbXF3VKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbXF3VNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbXF3VKt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 17:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXF3VKl
+	id S1754139AbXF3VNg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 17:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbXF3VN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 17:10:41 -0400
-Received: from 1wt.eu ([62.212.114.60]:3226 "EHLO 1wt.eu"
+	Sat, 30 Jun 2007 17:13:29 -0400
+Received: from mx27.mail.ru ([194.67.23.64]:19508 "EHLO mx27.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752438AbXF3VKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 17:10:41 -0400
-Date: Sat, 30 Jun 2007 23:06:49 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v18
-Message-ID: <20070630210649.GA13186@1wt.eu>
-References: <20070622220202.GA16872@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070622220202.GA16872@elte.hu>
-User-Agent: Mutt/1.5.11
+	id S1752491AbXF3VN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 17:13:28 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Sun, 1 Jul 2007 01:13:24 +0400
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Samuel Ortiz <samuel@sortiz.org>,
+       "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>,
+       linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com,
+       linux-pcmcia@lists.infradead.org
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706300545.43181.bjorn.helgaas@hp.com> <200706301847.33834.arvidjaar@mail.ru>
+In-Reply-To: <200706301847.33834.arvidjaar@mail.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart6040947.ccfyaSeq4U";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707010113.25853.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+--nextPart6040947.ccfyaSeq4U
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I've accidentally discovered a problem with -v18.
+On Saturday 30 June 2007, Andrey Borzenkov wrote:
+> On Saturday 30 June 2007, Bjorn Helgaas wrote:
+> > This means that the SMCf010 device *did* respond, I think at the
+> > FIR address 0x100.  (I can't figure out the "right" way to print
+> > those resource_size_t things, so I added some casts in the appended
+> > patch.)
+>
+> Those can be 64 bit if CONFIG_RESOURCE_64BIT is set; so you probably shou=
+ld
+> cast to unsigned long long and use %llx. Or do it conditionally depending
+> on above macro.
+>
+> > Well, the whole problem I'm trying to fix is that we aren't doing
+> > resource allocation correctly.  The BIOS has configured the IR
+> > device to use port 0x100, and then something else came along and
+> > decided to also use port 0x100.
+>
 
-Some time ago, I wrote a small program to prevent my laptop from entering
-low-power mode, and noticed that after upgrading my laptop's kernel from
-2.4.20.9+cfs-v6 to 2.4.20.14+cfs-v18, it completely freezes if I run this
-program.
+After some digging, it works now :) So the story:
 
-The program is trivial, it just sets its prio to nice +20 and forks a busy
-loop. I've added the ability to stop the loop after a user-definable number
-of iterations, and I can confirm that it unfreezes when the loop ends. I'm
-not even root when I run it.
+PCMCIA includes code for checking for free IO range(s)
+code is active only if CONFIG_ISA is defined
+CONFIG_ISA has this excellent help text:
+          Find out whether you have ISA slots on your motherboard.=20
+and I was stupid enough to take this literally (having notebook I obviously=
+ do=20
+not have any slots at all)
 
-Everything freezes, including the frame-buffer. It's not 100% reproducible, I
-would say 90% only. Sometimes it requires a few seconds before freezing. It
-*seems* to me that running another task in parallel (such as vmstat) increases
-its chances to freeze. It seems like nicing to +19 does not cause any trouble.
+So after recompiling with CONFIG_ISA defined I now get
 
-I've tried it on my dual athlon, and with 1 process I see occasional pauses of
-1 or 2 seconds, and with 2 processes, I see fairly larger pauses.
+[ 2254.136611] cs: IO port probe 0x100-0x3af: excluding 0x100-0x107=20
+0x2e8-0x2ef 0x378-0x37f
+[ 2254.166638] cs: IO port probe 0x3e0-0x4ff: excluding 0x3f8-0x3ff=20
+0x408-0x40f 0x480-0x48f 0x4d0-0x4d7
+[ 2254.194838] cs: IO port probe 0x820-0x8ff: clean.
+[ 2254.222401] cs: IO port probe 0xc00-0xcf7: clean.
+[ 2254.250056] cs: IO port probe 0xa00-0xaff: clean.
 
-Here's the trivial program. Probably you'll find an obvious bug.
+(I wonder why this is repeated 3 times, but well ...) and smsc-ircc2 takes=
+=20
+over ports 0x100 - 0x107 and is happy.
 
-Regards,
-Willy
+THANK YOU!
 
----
+Bjorn, I believe last touch that is needed is to sort out printf issues,=20
+otherwise patch is fine here.
 
-/*
- * cfs-freeze.c
- * Fork a busy loop running with idle prio. This often results
- * in complete freezes with CFS-v18.
- *
- * $ gcc -O2 -s -o cfs-freeze cfs-freeze.c
- * $ ./cfs-freeze
- */
+=2Dandrey
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sched.h>
-#include <sys/time.h>
-#include <sys/resource.h>
+--nextPart6040947.ccfyaSeq4U
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-int main(int argc, char **argv) {
-	struct sched_param sch;
-	long long i;
+iD8DBQBGhsd1R6LMutpd94wRApmzAJ4wkJqmTOw1wKEEQL2Jtzm/yKh5NwCgzC7h
+11ZA7nK1b8RTwsIdC5v4ZDY=
+=kQzw
+-----END PGP SIGNATURE-----
 
-	if (argc > 1)
-		i = atoll(argv[1]);
-
-	if (i <= 0)
-		i = 4 * 1000 * 1000 * 1000ULL;
-
-	sch.sched_priority = 0;
-	sched_setscheduler(0, SCHED_OTHER, &sch);
-	setpriority(PRIO_PROCESS, 0, 20);
-	if (fork() == 0)
-		while (i--);
-	return 0;
-}
-
----
-
+--nextPart6040947.ccfyaSeq4U--
