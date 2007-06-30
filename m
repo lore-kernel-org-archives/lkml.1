@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbXF3IuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbXF3JGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbXF3IuP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 04:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbXF3IuE
+	id S1755472AbXF3JGW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 05:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbXF3JGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 04:50:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52735 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbXF3IuB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 04:50:01 -0400
-Date: Sat, 30 Jun 2007 09:49:48 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, clameter@sgi.com, hugh@veritas.com,
-       James.Bottomley@steeleye.com, rmk+lkml@arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Containment measures for slab objects on scatter gather lists
-Message-ID: <20070630084948.GC21186@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, clameter@sgi.com,
-	hugh@veritas.com, James.Bottomley@steeleye.com,
-	rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0706282119330.11676@schroedinger.engr.sgi.com> <20070628.212825.78710369.davem@davemloft.net> <Pine.LNX.4.64.0706282128570.11739@schroedinger.engr.sgi.com> <20070628.220606.112621271.davem@davemloft.net> <20070628222424.4cbae90c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070628222424.4cbae90c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 30 Jun 2007 05:06:13 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47919 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753116AbXF3JGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 05:06:12 -0400
+In-Reply-To: <4684E7C6.6040300@garzik.org>
+References: <Pine.LNX.4.64.0706290012430.15686@blarg.am.freescale.net> <4684E7C6.6040300@garzik.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1446B1A2-74F8-473D-8439-BCE47E8EF9E3@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, acme@redhat.com
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull from 'from_linus' branch
+Date: Sat, 30 Jun 2007 04:06:10 -0500
+To: Jeff Garzik <jeff@garzik.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 10:24:24PM -0700, Andrew Morton wrote:
-> > Really, it would be great if we could treat kmalloc() objects
-> > just like real pages.
-> 
-> >From a high level, that seems like a bad idea.  kmalloc() gives you a
-> virtual address and you really shouldn't be poking around at that memory's
-> underlying page's pageframe metadata.
-> 
-> However we can of course do tasteless and weird things if the benefit is
-> sufficient....
 
-Hey, when we had exactly that issues coming up with xfs/ext3 recovery over
-iscsi/aoe you said it's fine :)  End result is that XFS got fixed and ext3
-is still broken..
+On Jun 29, 2007, at 6:06 AM, Jeff Garzik wrote:
 
+> Kumar Gala wrote:
+>> Please pull from 'for_linus' branch of
+>> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
+>> for_linus
+>> to receive the following updates:
+>>  drivers/net/gianfar.c |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>> Kumar Gala (1):
+>>       gianfar: Fix typo bug introduced by move to udp_hdr()
+>
+> Why is net driver stuff no longer going through me?
+>
+> Fixes are regularly going upstream.
+
+Sorry about that, will push stuff through you in the future.  I've  
+sent Linus one off fixes in the past for post -rc issues.
+
+- k
