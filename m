@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbXF3TLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbXF3TWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328AbXF3TLV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 15:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbXF3TLN
+	id S1752845AbXF3TWL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 15:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXF3TWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 15:11:13 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52317 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751349AbXF3TLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 15:11:12 -0400
-Date: Sat, 30 Jun 2007 12:11:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
-Message-ID: <20070630101112.GA10444@elf.ucw.cz>
-References: <200706192118.23706.nigel@nigel.suspend2.net> <200706290827.13024.nigel@nigel.suspend2.net> <20070629223505.GB6732@elf.ucw.cz> <200706301215.20334.rjw@sisk.pl>
+	Sat, 30 Jun 2007 15:22:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46970 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750773AbXF3TV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 15:21:59 -0400
+Date: Sat, 30 Jun 2007 21:20:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Darrick J. Wong" <djwong@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Stephane Eranian <eranian@hpl.hp.com>,
+       =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Trent Piepho <xyzzy@speakeasy.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [1/2] 2.6.22-rc6: known regressions with patches
+Message-ID: <20070630192045.GA3720@elte.hu>
+References: <467F8F5A.3000205@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200706301215.20334.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <467F8F5A.3000205@googlemail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > Sorry, but I can't resist the opportunity to say "Send a patch!" :)
-> > > 
-> > > Seriously, though, I'd prefer not to. If we rename that acpi video flags 
-> > > variable (I assume this is what you're thinking of), we only create cause for 
-> > > confusion. A variable should for debugging or for controlling quirks, not for 
-> > > both at the same time.
-> > 
-> > Cause for confusion? We are currently using 2 bits of that variable,
-> > and we want to add one more bit. I seriously doubt that can confuse
-> > anyone.
-> 
-> Well, indeed it would be more elegant to rename the existing flags variable
-> and use another bit out of it, but I personally don't think it's _that_
-> important.  At least, I don't think we should block the patch
-> because of that.
+* Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-It is not _that_ important.
+> Subject    : fix nmi_watchdog=2 bootup hang
+> References : http://lkml.org/lkml/2007/6/25/51
+> Submitter  : Ingo Molnar <mingo@elte.hu>
+> Caused-By  : Jeremy Fitzhardinge <jeremy@xensource.com>
+>             Andi Kleen <ak@suse.de>
+>             commit f8822f42019eceed19cc6c0f985a489e17796ed8
+> Status     : patch available
 
-> BTW, has anyone confirmed that it works on i386?
+fixed by:
 
-If you have patch somewhere nearby, I can test it on i386 and make it
-use just one flags variable.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ commit b9e3614f444f6546204f4538afcaa3ebe36d49f2
+ Author: Bj<C3><B6>rn Steinbrink <B.Steinbrink@gmx.de>
+ Date:   Mon Jun 25 23:04:37 2007 +0200
+
+     fix nmi_watchdog=2 bootup hang
+
+	Ingo
