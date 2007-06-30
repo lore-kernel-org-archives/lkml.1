@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbXF3DJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbXF3DKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570AbXF3DJQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 23:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXF3DJA
+	id S1754073AbXF3DKO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 23:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXF3DKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 23:09:00 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:57692 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752180AbXF3DI7 (ORCPT
+	Fri, 29 Jun 2007 23:10:03 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:57661 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752205AbXF3DKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 23:08:59 -0400
-Date: Sat, 30 Jun 2007 06:08:54 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+	Fri, 29 Jun 2007 23:10:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NHsde3Q8gmqtCoR+b4fp3FQ64EXfwu0PI1V4SGAaBDmsKqVBB6mmOnLlavnFdBojhAqSJavObPV9wXNcjGBbMjOXB8qFCOeV9ds0o6ETi4g8j6xZtpnChx3oKA+3cFS7CVNsesnV37Y84OtTN6a9F+Oe8GNGbal8vJtX3w0Uedk=
+Message-ID: <a781481a0706292010w4d28305eu4b9280333afd4e6b@mail.gmail.com>
+Date: Sat, 30 Jun 2007 08:40:00 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
 Subject: Re: [RFC] automatic CC generation for patch submission
-Message-ID: <20070630030854.GA1297@localdomain>
-References: <20070630023451.GA21593@localdomain> <E1I4TDU-00023A-Nc@flower>
+Cc: "Dan Aloni" <da-x@monatomic.org>,
+       "Linux Kernel List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4685C549.3020602@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1I4TDU-00023A-Nc@flower>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+References: <20070630023451.GA21593@localdomain> <4685C549.3020602@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 30, 2007 at 05:01:44AM +0200, Oleg Verych wrote:
-> * Date: Sat, 30 Jun 2007 05:34:51 +0300
-> >
-> > Hello,
-> >
-> > I'd like to present a suggestion for automatic generation of 
-> > carbon copy fields in the E-Mails of posted patches.
-> >
-> > Basically, instead of manually figuring out who to add to CC
-> > when sending a patch to LKML by looking at MAINTAINERS, a 
-> > script can look at '.maintainers' files spread across the
-> > source tree and automatically generate a proper list of CCs
-> > for a patch.
-> 
-> LKML archive near you, search phrase "BTS", subjects that have
-> something about "the quality of the kernel". Good luck. 
+On 6/30/07, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+> [...]
+> an easier way to implement this is to add an extra field in the MAINTAINERS
+> file, something like below. All the contact info would stay the same, closely
+> where applicable and it would allow you to also specify specific files as well.
 
-Right, however many patches don't map to bug reports and don't 
-need the heavy use of BTS. This suggestion is mainly for the 
-improvement of peer review concerning code changes submitted 
-by people who are not the maintainers.
+Hmm, associating MAINTAINERS and source files. I remember surfing LKML
+archives one day and coming across this huge and ugly flamefest when some
+guy called Eric S. Raymond (hehe :-) suggested something like this and got
+burned.
 
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+Cheers,
+S
