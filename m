@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbXF3QmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbXF3RFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbXF3QmY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 12:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757710AbXF3QmO
+	id S1758729AbXF3RFn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 13:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbXF3RFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 12:42:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37020 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756267AbXF3QmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 12:42:13 -0400
-Message-ID: <468687DE.6030003@garzik.org>
-Date: Sat, 30 Jun 2007 12:42:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Sat, 30 Jun 2007 13:05:34 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:41419 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754960AbXF3RFe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 13:05:34 -0400
+Date: Sat, 30 Jun 2007 19:06:53 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070630170653.GS13886@enneenne.com>
+References: <20070627174537.GM13886@enneenne.com> <1182966588.1170.28.camel@pmac.infradead.org> <20070627224623.GO13886@enneenne.com> <1183018133.1170.46.camel@pmac.infradead.org> <20070628081538.GP13886@enneenne.com> <1183019474.1170.66.camel@pmac.infradead.org> <20070628084003.GQ13886@enneenne.com> <1183031060.1170.145.camel@pmac.infradead.org> <20070628161450.GD13886@enneenne.com> <20070630083827.GA21102@infradead.org>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>,
-       =?ISO-8859-1?Q?T=F6r=F6k_Edv?= =?ISO-8859-1?Q?in?= 
-	<edwintorok@gmail.com>,
-       netdev@vger.kernel.org, power@bughost.org, zambrano@broadcom.com,
-       linux-kernel@vger.kernel.org
-Subject: PM policy, hotplug, power saving (was Re: [PATCH] b44: power down
- PHY when interface down)
-References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <20070630120541.GA21339@srcf.ucam.org> <46866C6B.9010801@linux.intel.com>
-In-Reply-To: <46866C6B.9010801@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070630083827.GA21102@infradead.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Matthew Garrett wrote:
->> Do you still get link beat detection when the phy is powered down?
+On Sat, Jun 30, 2007 at 09:38:27AM +0100, Christoph Hellwig wrote:
+> 
+> Sorry for coming in that late, but using syscalls for something as
+> periphal sounds like a very bad idea to me, and the syscalls aren't
+> defined nicely either (e.g. you have an ioctl lookalike).  I'd say
+> back to the drawingboard.
 
-> does that matter?
-> If the interface is down, nic drivers aren't expected to detect link... 
-> if userspace wants to find link status it should have the interface up.
+PPS API is not only a periphal class. RFC 2783 defines new «functions»
+that allow accesso to internal system data collected by some
+periferals but these devices are never managed as a tipical char or
+block device.
 
+I think implementing parts or full RFC 2783 PPS's functions as
+syscalls are not so wrong... IMHO, at least! :)
 
-Definitely matters.  Switch renegotiation can take a while, and you must 
-take into account the common case of interface bouncing (immediate down, 
-then up).
+> And yes, even ioctls are nicer than badly designed syscalls :)
 
-Hoards actively complained the few times we experimented with this, 
-because of e.g. DHCP's habit of bouncing the interface, which resulted 
-in PHY power bouncing, which resulted in negotiation, which resulted in 
-an excrutiating wait on various broken or stupid switches.
+I see, but consider that some PPS devices cannot be always connected
+with a filedescriptor since, for example, some PPS devices are
+connected by serial lines, other by parallel ports and other
+(expecially on embedded systems) are connected by CPU's GPIOs.
 
-Overall, this may be classed with other problems of a similar sort:  we 
-can power down a PHY, but that removes hotplug capability and extends 
-partner/link negotiation time.
+An userland programs shouldn't know whenever these devices are
+connected, they should only know how to collect PPS data from the
+system.
 
-Like SATA, we actually want to support BOTH -- active hotplug and PHY 
-power-down -- and so this wanders into power management policy.
+> Also code seems to be odd at least in a few places, e.g. all the access_oks
+> and double checks of the ioctl-lookalike commands should go.
 
-Give me a knob, and we can program plenty of ethernet|SATA|USB|... 
-drivers to power down the PHY and save power.
+I already removed such functions in my latest patches. :)
 
-	Jeff
+Thanks,
 
+Rodolfo
 
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
