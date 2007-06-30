@@ -1,102 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbXF3XRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbXF3XST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbXF3XRt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 19:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbXF3XRj
+	id S1753995AbXF3XST (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 19:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXF3XR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 19:17:39 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:45582 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbXF3XRi (ORCPT
+	Sat, 30 Jun 2007 19:17:58 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:60769 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754828AbXF3XRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 19:17:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=MYxJhks2gT50y1DepSFAJm55y+ze4drhPNcWnfsR94fyVoyZCDvfQjw+NLNYr
-	qHFX6nAw93rn4KbfX4px6QYWg==
-Date: Sun, 1 Jul 2007 01:17:34 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: =?iso-8859-1?B?VPZy9ms=?= Edvin <edwintorok@gmail.com>,
-       zambrano@broadcom.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, power@bughost.org
-Subject: Re: [PATCH] b44: power down PHY when interface down
-Message-ID: <20070630231734.GF2553@xi.wantstofly.org>
-References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <200706302353.25426.mb@bu3sch.de> <20070630220301.GD2553@xi.wantstofly.org> <200707010024.40649.mb@bu3sch.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 30 Jun 2007 19:17:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:content-disposition:from:to:subject:date:user-agent:cc:mime-version:message-id:content-type:content-transfer-encoding;
+        b=iHPgLHlfuGxQbRjwEBOog1qmi1atelndyrCKnBC7Hn4eOTAOA6FWb+hTA83z9fEy7MvJ9ASKoXBvl5gzThaKmoH3DA+J1Rpfrv7vViKTlZ8NxUnBTlqMNF6qINKlj+jXlOpuV01nynMik6DyQsvC8uCuU+bF7/qXkMF1K9yLxbg=
 Content-Disposition: inline
-In-Reply-To: <200707010024.40649.mb@bu3sch.de>
-User-Agent: Mutt/1.4.1i
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][ISDN][resend] Guard against a potential NULL pointer dereference in old_capi_manufacturer()
+Date: Sun, 1 Jul 2007 00:59:01 +0200
+User-Agent: KMail/1.9.7
+Cc: isdn4linux@listserv.isdn4linux.de, Carsten Paeth <calle@calle.de>,
+       Kai Germaschewski <kai@germaschewski.name>,
+       Karsten Keil <kkeil@suse.de>,
+       Kai Germaschewski <kai.germaschewski@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
+MIME-Version: 1.0
+Message-Id: <200707010059.01826.jesper.juhl@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 01, 2007 at 12:24:40AM +0200, Michael Buesch wrote:
-
-> > > Hm, I was going to measure the real power advantage with a
-> > > PCI-extender card. But my B44B0 card doesn't seem to work in
-> > > that extender card. It works perfectly fine sticked directly into
-> > > the motherboard, though, and other cards like a BCM4318 work in
-> > > the extender, too.
-> > > Not sure what this is.
-> > > The extender has an application note about nonworking cards in the
-> > > extender and a too big resistor on the board IDSEL pin being the
-> > > cause of this.
-> > 
-> > Does the card show up in lspci at all?
-> 
-> No it doesn't.
-
-Right, so it sounds like it might be this issue.
+(first send: Monday 25 June 2007, resending due to no response)
 
 
-> > Does the extender board have a PCI-PCI bridge on it?  (If not,
-> > there's not really any reason to resistively couple the IDSEL
-> > line to the host, since the host should take care of that.)
-> 
-> There's no bridge. It just decouples all voltage lines, so you can
-> drive it from external supply and/or measure voltages and current.
-> On the PCB it looks like the the IDSEL line is rather directly
-> routed to the host IDSEL. It just goes through one of the bus
-> isolation chips. So I guess (just my guess) that this chip has some
-> resistance and if the total resistance of the chip + the IDSEL
-> resistor on the mainboard goes above some threshold it doesn't work
-> anymore for some cards. In the application note they write
-> about trouble for IDSEL resistors >51ohms.
+In drivers/isdn/capi/kcapi.c::old_capi_manufacturer(), if the call 
+to get_capi_ctr_by_nr(ldef.contr); in line 823 returns NULL, then 
+we'll be dereferencing a NULL pointer in the very next line.
 
-More or less.  You can't add the resistances like that, since the
-bus isolation chip buffers the IDSEL signal, but it is correct that
-if the host's IDSEL resistor is larger than a certain value, the
-combination of the resistive coupling of IDSEL plus the extra buffer
-in the isolator might be causing the IDSEL input on the 'guest' PCI
-board to assert too late (or not assert at all), causing config
-accesses to fail.
-
-(This also depends on the specific 'guest' PCI board used, as you
-noted, due to differing IDSEL trace lengths/capacitances and input
-pin capacitances on different PCI boards.  Also, it might work at
-33 MHz but not work at 66 MHz, etc.)
-
-If you feel adventurous, you could try to hack around this by
-figuring out which AD[31:16] line this PCI slot's IDSEL line is
-resistively coupled to (depends on the slot), and then adding
-another parallel resistor on the board itself to make the bus
-isolator's input buffer charge faster.  Note that this does
-increase the load on that specific AD[] line, which might cause
-other funny effects.
+(Found by Coverity checker as bug #402)
 
 
-> > > Maybe I can try with another machine tomorrow.
-> > 
-> > That would only make a difference if there is no PCI-PCI bridge on
-> > the extender board.
-> 
-> Well, they suggest it in the application note as a possible fix. ;)
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-The bus isolation chip doesn't count as a PCI-PCI bridge. :)  I'm just
-saying that you wouldn't see the issue you are seeing now if the
-extender board had a real PCI-PCI bridge on it, since in that case the
-type 0 config access to the guest PCI board would be generated by the
-bridge instead of by the host.
+ drivers/isdn/capi/kcapi.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
+index 3ed34f7..3f9e962 100644
+--- a/drivers/isdn/capi/kcapi.c
++++ b/drivers/isdn/capi/kcapi.c
+@@ -821,6 +821,8 @@ static int old_capi_manufacturer(unsigned int cmd, void 
+__user *data)
+ 				return -EFAULT;
+ 		}
+ 		card = get_capi_ctr_by_nr(ldef.contr);
++		if (!card)
++			return -EINVAL;
+ 		card = capi_ctr_get(card);
+ 		if (!card)
+ 			return -ESRCH;
+
