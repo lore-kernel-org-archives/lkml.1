@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbXF3Uwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXF3VJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbXF3Uwr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 16:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXF3Uwi
+	id S1753899AbXF3VJf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 17:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXF3VJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 16:52:38 -0400
-Received: from science.horizon.com ([192.35.100.1]:17700 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752570AbXF3Uwh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 16:52:37 -0400
-Date: 30 Jun 2007 16:52:35 -0400
-Message-ID: <20070630205235.6638.qmail@science.horizon.com>
-From: linux@horizon.com
-To: davidel@xmailserver.org, linux-kernel@vger.kernel.org
-Subject: A simpler variant on sys_indirect?
-Cc: linux@horizon.com, torvalds@linux-foundation.org
+	Sat, 30 Jun 2007 17:09:27 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48909 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752438AbXF3VJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 17:09:27 -0400
+Date: Sat, 30 Jun 2007 23:10:17 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc6-mm1
+Message-ID: <20070630211017.GA26234@uranus.ravnborg.org>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <6150.1183128630@turing-police.cc.vt.edu> <20070629140130.59d58c44.akpm@linux-foundation.org> <15437.1183177066@turing-police.cc.vt.edu> <20070629221510.95c4c8e1.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070629221510.95c4c8e1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was just thinking, while sys_indirect is an interesting way to add
-features to a system call, the argument marshalling in user space is a
-bit of a pain.
+On Fri, Jun 29, 2007 at 10:15:10PM -0700, Andrew Morton wrote:
+> On Sat, 30 Jun 2007 00:17:46 -0400 Valdis.Kletnieks@vt.edu wrote:
+> 
+> > On Fri, 29 Jun 2007 14:01:30 PDT, Andrew Morton said:
+> > > On Fri, 29 Jun 2007 10:50:30 -0400
+> > > Valdis.Kletnieks@vt.edu wrote:
+> > 
+> > > > Odd - just for grins, I checked what 'make oldconfig' did when handed a .config
+> > > > from 22-rc4-mm2, and it behaved just fine, much to my surprise.
+> > > 
+> > > That's probably because your old config file was relatively recent, and
+> > > had things like CONFIG_BLK_DEV=y in it.
+> > 
+> > Ahh... <light bulb goes on> Yeah, it gets a 'make oldconfig' for pretty
+> > much every single -mm, I suck at any regression testing other than "since
+> > the last -mm".
+> > 
+> 
+> All my .configs have mouldered since I lost the ability to have .config be
+> a symlink to a revision-controlled file (used to carry a custom patch for
+> this, but it died).
+> 
+> I continue to believe that kbuild's lets-trash-your-symlink behaviour is
+> obnoxious, but I was unable to persuade anyone else of this.
 
-An alternate idea would be to instead have a "prefix system call" that
-sets some flags that apply to the next system call made by that thread
-only.  They wouldn't be global mode flags that would mess up libraries.
+I thought we fixed that long time ago?!?!
+I am heading for vacation for 20 days without Internet (real vacation :-))
+and have properly forget most about Linux and everything about this
+issue when I return.
+In the unlikely event that I recall it I will take a look when I'm back.
 
-Maybe I've just been programming x86s too long, but this seems
-like a nicer mental model.
+By the way - kbuild.git is lacking behind on patches.
+I have several queded from other peopel and have more in the works myself.
+This will not be looked into until I'm back.
 
-The downsides are that you need to save and restore the prefix flags
-across signal delivery, and you have a second user/kernel/user transition.
-
-Most of the options seem to be applied to system calls that resolve
-path names.  While that is certainly a very important code path, it's
-also of non-trivial length, even with the dcache.  How much would one
-extra kernel entry bloat the budget?
-
-And if the kernel entry overhead IS a problem, wouldn't you want to
-batch together the non-prefix system calls as well, using something like
-the syslet ideas that were kicked around recently?  That would
-allow less than 1 kernel entry per system call, even with prefixes.
-
-Oh!  That suggests an interesting possibility that solves the signal
-handling problem as well:
-- Make a separate prefix system call, BUT
-- The flags are reset on each return to user space, THUS
-- You *have* to use a batch-system-call mechanism for the prefix
-  system calls to do anything.
-
-Of course, this takes us right back to the beginning with respect to
-messy user-space argument marshalling.  But at least it's only one
-indirect system call mechanism, not two.  Wrapping indirect system call
-mechanism #1 (to set syscall options) in indirect system call mechanism
-#2 (to batch system calls) seems like a bit of a nightmare.
-
-I'm not at all sure that these are good ideas, but they're not obviously
-bad ones, to me.  Is it worth looking for synergy between various
-"indirect system call" ideas?
+	Sam
