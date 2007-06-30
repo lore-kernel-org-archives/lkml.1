@@ -1,79 +1,429 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbXF3XSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbXF3XSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbXF3XSe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 19:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbXF3XR7
+	id S1755607AbXF3XSv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 19:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbXF3XSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 19:17:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:61012 "EHLO
+	Sat, 30 Jun 2007 19:18:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:60769 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754846AbXF3XR5 (ORCPT
+	with ESMTP id S1754828AbXF3XR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 19:17:57 -0400
+	Sat, 30 Jun 2007 19:17:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:content-disposition:from:to:subject:date:user-agent:cc:mime-version:message-id:content-type:content-transfer-encoding;
-        b=UzAhOSIG6RR6YYYFoUoj3GAd8WsYtrBdKvbjqifBXY8YF+F9p3z6/ExXq9IzGxZFMqsZQuST6cNg7Le65notZyef2UmPA82LMM978vFqKv/iZli8puJpDwu+TeP1S7ycaJDxvFqBGqY4IxblfC+AYbDP+9vWYl9ztr2b7gLiFKc=
-Content-Disposition: inline
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=oi0Lvuj/A0bikYp4AeZEpKP5+lmKOGpUpgixaMBHDUPQvyB+5vgSdW2zcuKVkHRDRIbTLapTPyXy2NzUCySPHy2uLRi4vIYZxV6VHhZ1K6DNM0lNJ1BhHwZH2oyqEc+x/L05CFMQ6PnPCagMbMcaAJAnbK8sGQq93b2AyQYiQ0k=
 From: Jesper Juhl <jesper.juhl@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][ISDN][resend] fix possible NULL deref on low memory condition in capidrv.c::send_message()
-Date: Sun, 1 Jul 2007 01:01:12 +0200
+Subject: [PATCH][Documentation][resend] Add missing files and dirs to 00-INDEX in Documentation/
+Date: Sun, 1 Jul 2007 01:05:59 +0200
 User-Agent: KMail/1.9.7
-Cc: isdn4linux@listserv.isdn4linux.de, Carsten Paeth <calle@calle.de>,
-       Karsten Keil <kkeil@suse.de>,
-       Kai Germaschewski <kai.germaschewski@gmx.de>,
-       Kai Germaschewski <kai@germaschewski.name>,
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, trivial@kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Message-Id: <200707010101.12527.jesper.juhl@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Disposition: inline
+Message-Id: <200707010106.00181.jesper.juhl@gmail.com>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(first send: Monday 25 June 2007, resending due to no response)
+(originally send: Wed, 6 Jun 2007, resending since it doesn't seem to have 
+been picked up anywhere)
 
 
-If we fail to allocate an skb in 
-drivers/isdn/capi/capidrv.c::send_message(), then we'll end up 
-dereferencing a NULL pointer.
-Since out of memory conditions are not unheard of, I believe it 
-is better to print a error message and just return rather than 
-bring down the whole kernel. 
-Sure, doing this may upset some application, but that's still 
-better than crashing the whole system.
-
-(ps. please Cc me on replies from the isdn4linux list since I'm not subscribed 
- there)
+This patch adds descriptions for a number of missing files and directories 
+to the Documentation/00-INDEX file.
+People really should learn to keep this file up-to-date when adding or 
+moving documentation...
 
 
 Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 ---
 
- drivers/isdn/capi/capidrv.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ Documentation/00-INDEX |  142 
++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 133 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/isdn/capi/capidrv.c b/drivers/isdn/capi/capidrv.c
-index 23b6f7b..476012b 100644
---- a/drivers/isdn/capi/capidrv.c
-+++ b/drivers/isdn/capi/capidrv.c
-@@ -506,9 +506,14 @@ static void send_message(capidrv_contr * card, _cmsg * 
-cmsg)
- {
- 	struct sk_buff *skb;
- 	size_t len;
-+
- 	capi_cmsg2message(cmsg, cmsg->buf);
- 	len = CAPIMSG_LEN(cmsg->buf);
- 	skb = alloc_skb(len, GFP_ATOMIC);
-+	if (!skb) {
-+		printk(KERN_ERR "capidrv::send_message: can't allocate mem\n");
-+		return;
-+	}
- 	memcpy(skb_put(skb, len), cmsg->buf, len);
- 	if (capi20_put_message(&global.ap, skb) != CAPI_NOERROR)
- 		kfree_skb(skb);
+diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+index f08ca95..8b05636 100644
+--- a/Documentation/00-INDEX
++++ b/Documentation/00-INDEX
+@@ -12,6 +12,8 @@ Following translations are available on the WWW:
+ 
+ 00-INDEX
+ 	- this file.
++ABI/
++	- info on kernel <-> userspace ABI and relative interface stability.
+ BUG-HUNTING
+ 	- brute force method of doing binary search of patches to find bug.
+ Changes
+@@ -25,37 +27,57 @@ DMA-mapping.txt
+ DocBook/
+ 	- directory with DocBook templates etc. for kernel documentation.
+ HOWTO
+-	- The process and procedures of how to do Linux kernel development.
++	- the process and procedures of how to do Linux kernel development.
+ IO-mapping.txt
+ 	- how to access I/O mapped memory from within device drivers.
+ IPMI.txt
+ 	- info on Linux Intelligent Platform Management Interface (IPMI) Driver.
+ IRQ-affinity.txt
+ 	- how to select which CPU(s) handle which interrupt events on SMP.
++IRQ.txt
++	- description of what an IRQ is.
+ ManagementStyle
+ 	- how to (attempt to) manage kernel hackers.
+ MSI-HOWTO.txt
+ 	- the Message Signaled Interrupts (MSI) Driver Guide HOWTO and FAQ.
++PCIEBUS-HOWTO.txt
++	- a guide describing the PCI Express Port Bus driver.
+ RCU/
+ 	- directory with info on RCU (read-copy update).
+ README.DAC960
+ 	- info on Mylex DAC960/DAC1100 PCI RAID Controller Driver for Linux.
++README.cycladesZ
++	- info on Cyclades-Z firmware loading.
+ SAK.txt
+ 	- info on Secure Attention Keys.
++SecurityBugs
++	- procedure for reporting security bugs found in the kernel.
++SubmitChecklist
++	- Linux kernel patch submission checklist.
+ SubmittingDrivers
+ 	- procedure to get a new driver source included into the kernel tree.
+ SubmittingPatches
+ 	- procedure to get a source patch included into the kernel tree.
+ VGA-softcursor.txt
+ 	- how to change your VGA cursor from a blinking underscore.
++accounting/
++	- documentation on accounting and taskstats.
++aoe/
++	- description of AoE (ATA over Ethernet) along with config examples.
+ applying-patches.txt
+ 	- description of various trees and how to apply their patches.
+ arm/
+ 	- directory with info about Linux on the ARM architecture.
++atomic_ops.txt
++	- semantics and behavior of atomic and bitmask operations.
++auxdisplay/
++	- misc. LCD driver documentation (cfag12864b, ks0108).
+ basic_profiling.txt
+ 	- basic instructions for those who wants to profile Linux kernel.
+ binfmt_misc.txt
+ 	- info on the kernel support for extra binary formats.
++blackfin/
++	- directory with documentation for the Blackfin arch.
+ block/
+ 	- info on the Block I/O (BIO) layer.
+ cachetlb.txt
+@@ -68,16 +90,32 @@ cli-sti-removal.txt
+ 	- cli()/sti() removal guide.
+ computone.txt
+ 	- info on Computone Intelliport II/Plus Multiport Serial Driver.
++connector/
++	- docs on the netlink based userspace<->kernel space communication mod.
++console/
++	- documentation on Linux console drivers.
+ cpqarray.txt
+ 	- info on using Compaq's SMART2 Intelligent Disk Array Controllers.
+ cpu-freq/
+ 	- info on CPU frequency and voltage scaling.
++cpu-hotplug.txt
++	- document describing CPU hotplug support in the Linux kernel.
++cpu-load.txt
++	- document describing how CPU load statistics are collected.
++cpusets.txt
++	- documents the cpusets feature; assign CPUs and Mem to a set of tasks.
++cputopology.txt
++	- documentation on how CPU topology info is exported via sysfs.
+ cris/
+ 	- directory with info about Linux on CRIS architecture.
+ crypto/
+ 	- directory with info on the Crypto API.
++dcdbas.txt
++	- information on the Dell Systems Management Base Driver.
+ debugging-modules.txt
+ 	- some notes on debugging modules after Linux 2.6.3.
++dell_rbu.txt
++	- document demonstrating the use of the Dell Remote BIOS Update driver.
+ device-mapper/
+ 	- directory with info on Device Mapper.
+ devices.txt
+@@ -86,32 +124,52 @@ digiepca.txt
+ 	- info on Digi Intl. {PC,PCI,EISA}Xx and Xem series cards.
+ dnotify.txt
+ 	- info about directory notification in Linux.
++dontdiff
++	- file containing a list of files that should never be diff'ed.
+ driver-model/
+ 	- directory with info about Linux driver model.
++drivers/
++	- directory with driver documentation (currently only EDAC).
+ dvb/
+ 	- info on Linux Digital Video Broadcast (DVB) subsystem.
+ early-userspace/
+ 	- info about initramfs, klibc, and userspace early during boot.
++ecryptfs.txt
++	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
+ eisa.txt
+ 	- info on EISA bus support.
+ exception.txt
+ 	- how Linux v2.2 handles exceptions without verify_area etc.
++fault-injection/
++	- dir with docs about the fault injection capabilities infrastructure.
+ fb/
+ 	- directory with info on the frame buffer graphics abstraction layer.
++feature-removal-schedule.txt
++	- list of files and features that are going to be removed.
+ filesystems/
+ 	- directory with info on the various filesystems that Linux supports.
+ firmware_class/
+ 	- request_firmware() hotplug interface info.
+ floppy.txt
+ 	- notes and driver options for the floppy disk driver.
++fujitsu/
++	- Fujitsu FR-V Linux documentation.
++gpio.txt
++	- overview of GPIO (General Purpose Input/Output) access conventions.
+ hayes-esp.txt
+ 	- info on using the Hayes ESP serial driver.
+ highuid.txt
+ 	- notes on the change from 16 bit to 32 bit user/group IDs.
+ hpet.txt
+ 	- High Precision Event Timer Driver for Linux.
++hrtimer/
++	- info on the timer_stats debugging facility for timer (ab)use.
++hrtimers/
++	- info on the hrtimers subsystem for high-resolution kernel timers.
+ hw_random.txt
+ 	- info on Linux support for random number generator in i8xx chipsets.
++hwmon/
++	- directory with docs on various hardware monitoring drivers.
+ i2c/
+ 	- directory with info about the I2C bus/protocol (2 wire, kHz speed).
+ i2o/
+@@ -122,16 +180,22 @@ ia64/
+ 	- directory with info about Linux on Intel 64 bit architecture.
+ ide.txt
+ 	- important info for users of ATA devices (IDE/EIDE disks and CD-ROMS).
++infiniband/
++	- directory with documents concerning Linux InfiniBand support.
+ initrd.txt
+ 	- how to use the RAM disk as an initial/temporary root filesystem.
+ input/
+ 	- info on Linux input device support.
+ io_ordering.txt
+ 	- info on ordering I/O writes to memory-mapped addresses.
++ioctl/
++	- directory with documents describing various IOCTL calls.
+ ioctl-number.txt
+ 	- how to implement and register device/driver ioctl calls.
+ iostats.txt
+ 	- info on I/O statistics Linux kernel provides.
++irqflags-tracing.txt
++	- how to use the irq-flags tracing feature.
+ isapnp.txt
+ 	- info on Linux ISA Plug & Play support.
+ isdn/
+@@ -140,26 +204,40 @@ java.txt
+ 	- info on the in-kernel binary support for Java(tm).
+ kbuild/
+ 	- directory with info about the kernel build process.
+-kdumpt.txt
+-       - mini HowTo on getting the crash dump code to work.
++kdump/
++	- directory with mini HowTo on getting the crash dump code to work.
+ kernel-doc-nano-HOWTO.txt
+ 	- mini HowTo on generation and location of kernel documentation files.
+ kernel-docs.txt
+ 	- listing of various WWW + books that document kernel internals.
+ kernel-parameters.txt
+ 	- summary listing of command line / boot prompt args for the kernel.
++keys-request-key.txt
++	- description of the kernel key request service.
++keys.txt
++	- description of the kernel key retention service.
+ kobject.txt
+ 	- info of the kobject infrastructure of the Linux kernel.
++kprobes.txt
++	- documents the kernel probes debugging feature.
++kref.txt
++	- docs on adding reference counters (krefs) to kernel objects.
+ laptop-mode.txt
+-	- How to conserve battery power using laptop-mode.
++	- how to conserve battery power using laptop-mode.
+ ldm.txt
+ 	- a brief description of LDM (Windows Dynamic Disks).
++leds-class.txt
++	- documents LED handling under Linux.
++local_ops.txt
++	- semantics and behavior of local atomic operations.
++lockdep-design.txt
++	- documentation on the runtime locking correctness validator.
+ locks.txt
+ 	- info on file locking implementations, flock() vs. fcntl(), etc.
+ logo.gif
+-	- Full colour GIF image of Linux logo (penguin).
++	- full colour GIF image of Linux logo (penguin - Tux).
+ logo.txt
+-	- Info on creator of above logo & site to get additional images from.
++	- info on creator of above logo & site to get additional images from.
+ m68k/
+ 	- directory with info about Linux on Motorola 68k architecture.
+ magic-number.txt
+@@ -170,6 +248,8 @@ mca.txt
+ 	- info on supporting Micro Channel Architecture (e.g. PS/2) systems.
+ md.txt
+ 	- info on boot arguments for the multiple devices driver.
++memory-barriers.txt
++	- info on Linux kernel memory barriers.
+ memory.txt
+ 	- info on typical Linux memory problems.
+ mips/
+@@ -177,9 +257,11 @@ mips/
+ mono.txt
+ 	- how to execute Mono-based .NET binaries with the help of BINFMT_MISC.
+ moxa-smartio
+-	- info on installing/using Moxa multiport serial driver.
++	- file with info on installing/using Moxa multiport serial driver.
+ mtrr.txt
+ 	- how to use PPro Memory Type Range Registers to increase performance.
++mutex-design.txt
++	- info on the generic mutex subsystem.
+ nbd.txt
+ 	- info on a TCP implementation of a network block device.
+ netlabel/
+@@ -190,6 +272,8 @@ nfsroot.txt
+ 	- short guide on setting up a diskless box with NFS root filesystem.
+ nmi_watchdog.txt
+ 	- info on NMI watchdog for SMP systems.
++nommu-mmap.txt
++	- documentation about no-mmu memory mapping support.
+ numastat.txt
+ 	- info on how to read Numa policy hit/miss statistics in sysfs.
+ oops-tracing.txt
+@@ -202,8 +286,16 @@ parport.txt
+ 	- how to use the parallel-port driver.
+ parport-lowlevel.txt
+ 	- description and usage of the low level parallel port functions.
++pci-error-recovery.txt
++	- info on PCI error recovery.
+ pci.txt
+ 	- info on the PCI subsystem for device driver authors.
++pcieaer-howto.txt
++	- the PCI Express Advanced Error Reporting Driver Guide HOWTO.
++pcmcia/
++	- info on the Linux PCMCIA driver.
++pi-futex.txt
++	- documentation on lightweight PI-futexes.
+ pm.txt
+ 	- info on Linux power management support.
+ pnp.txt
+@@ -214,18 +306,32 @@ powerpc/
+ 	- directory with info on using Linux with the PowerPC.
+ preempt-locking.txt
+ 	- info on locking under a preemptive kernel.
++prio_tree.txt
++	- info on radix-priority-search-tree use for indexing vmas.
+ ramdisk.txt
+ 	- short guide on how to set up and use the RAM disk.
++rbtree.txt
++	- info on what red-black trees are and what they are for.
+ riscom8.txt
+ 	- notes on using the RISCom/8 multi-port serial driver.
++robust-futex-ABI.txt
++	- documentation of the robust futex ABI.
++robust-futexes.txt
++	- a description of what robust futexes are.
+ rocket.txt
+ 	- info on the Comtrol RocketPort multiport serial driver.
+ rpc-cache.txt
+ 	- introduction to the caching mechanisms in the sunrpc layer.
++rt-mutex-design.txt
++	- description of the RealTime mutex implementation design.
++rt-mutex.txt
++	- desc. of RT-mutex subsystem with PI (Priority Inheritance) support.
+ rtc.txt
+ 	- notes on how to use the Real Time Clock (aka CMOS clock) driver.
+ s390/
+ 	- directory with info on using Linux on the IBM S390.
++sched-arch.txt
++	- CPU Scheduler implementation hints for architecture specific code.
+ sched-coding.txt
+ 	- reference for various scheduler-related methods in the O(1) scheduler.
+ sched-design.txt
+@@ -240,22 +346,32 @@ serial/
+ 	- directory with info on the low level serial API.
+ serial-console.txt
+ 	- how to set up Linux with a serial line console as the default.
++sgi-ioc4.txt
++	- description of the SGI IOC4 PCI (multi function) device.
+ sgi-visws.txt
+ 	- short blurb on the SGI Visual Workstations.
+ sh/
+ 	- directory with info on porting Linux to a new architecture.
++sharedsubtree.txt
++	- a description of shared subtrees for namespaces.
+ smart-config.txt
+ 	- description of the Smart Config makefile feature.
+ smp.txt
+ 	- a few notes on symmetric multi-processing.
++sony-laptop.txt
++	- Sony Notebook Control Driver (SNC) Readme.
+ sonypi.txt
+ 	- info on Linux Sony Programmable I/O Device support.
+ sound/
+ 	- directory with info on sound card support.
+ sparc/
+ 	- directory with info on using Linux on Sparc architecture.
++sparse.txt
++	- info on how to obtain and use the sparse tool for typechecking.
+ specialix.txt
+ 	- info on hardware/driver for specialix IO8+ multiport serial card.
++spi/
++	- overview of Linux kernel Serial Peripheral Interface (SPI) support.
+ spinlocks.txt
+ 	- info on using spinlocks to provide exclusive access in kernel.
+ stable_api_nonsense.txt
+@@ -274,24 +390,32 @@ sysrq.txt
+ 	- info on the magic SysRq key.
+ telephony/
+ 	- directory with info on telephony (e.g. voice over IP) support.
++thinkpad-acpi.txt
++	- information on the (IBM and Lenovo) ThinkPad ACPI Extras driver.
+ time_interpolators.txt
+ 	- info on time interpolators.
+ tipar.txt
+ 	- information about Parallel link cable for Texas Instruments handhelds.
+ tty.txt
+ 	- guide to the locking policies of the tty layer.
+-unicode.txt
+-	- info on the Unicode character/font mapping used in Linux.
+ uml/
+ 	- directory with information about User Mode Linux.
++unicode.txt
++	- info on the Unicode character/font mapping used in Linux.
++unshare.txt
++	- description of the Linux unshare system call.
+ usb/
+ 	- directory with info regarding the Universal Serial Bus.
++video-output.txt
++	- sysfs class driver interface to enable/disable a video output device.
+ video4linux/
+ 	- directory with info regarding video/TV/radio cards and linux.
+ vm/
+ 	- directory with info on the Linux vm code.
+ voyager.txt
+ 	- guide to running Linux on the Voyager architecture.
++w1/
++	- directory with documents regarding the 1-wire (w1) subsystem.
+ watchdog/
+ 	- how to auto-reboot Linux if it has "fallen and can't get up". ;-)
+ x86_64/
+
+
 
