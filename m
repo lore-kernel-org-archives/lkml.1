@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbXF3Uwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbXF3Uwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbXF3Uwa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 16:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXF3UwW
+	id S1754303AbXF3Uwr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 16:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXF3Uwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 16:52:22 -0400
-Received: from kallisti.us ([67.59.168.233]:44992 "EHLO kallisti.us"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752427AbXF3UwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 16:52:21 -0400
-X-Greylist: delayed 1432 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 Jun 2007 16:52:21 EDT
-From: Ross Vandegrift <ross@kallisti.us>
-Date: Sat, 30 Jun 2007 16:28:21 -0400
-To: linux-kernel@vger.kernel.org
-Cc: dm-devel@redhat.com
-Subject: dump of ext3 very slow from dm LV
-Message-ID: <20070630202821.GA2770@kallisti.us>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 30 Jun 2007 16:52:38 -0400
+Received: from science.horizon.com ([192.35.100.1]:17700 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752570AbXF3Uwh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 16:52:37 -0400
+Date: 30 Jun 2007 16:52:35 -0400
+Message-ID: <20070630205235.6638.qmail@science.horizon.com>
+From: linux@horizon.com
+To: davidel@xmailserver.org, linux-kernel@vger.kernel.org
+Subject: A simpler variant on sys_indirect?
+Cc: linux@horizon.com, torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+I was just thinking, while sys_indirect is an interesting way to add
+features to a system call, the argument marshalling in user space is a
+bit of a pain.
 
-A while back I asked about this on the LVM mailing list, but didn't
-receive a response.  Am revisiting it now, so would like a broader
-audience.
+An alternate idea would be to instead have a "prefix system call" that
+sets some flags that apply to the next system call made by that thread
+only.  They wouldn't be global mode flags that would mess up libraries.
 
-I've run into some substantial read slowness when using dump or tar
-to backup filesystems that are stored on LVM2 LVs.  All of my tests
-are dumping ext3 filesystems to /dev/null.
+Maybe I've just been programming x86s too long, but this seems
+like a nicer mental model.
 
-I'm seeing speeds in the range of 3-4MiB/s.  If I increase dump's
-blocksize to 128KiB records, speed jumps up to about 20KiB/s, which
-is better but still frustratingly slow. Going to 1024KiB gets me
-about 28MiB/s.
+The downsides are that you need to save and restore the prefix flags
+across signal delivery, and you have a second user/kernel/user transition.
 
-Today I loop mounted a file on my LVM, filled it up with some crap
-from urandom and dumped it out.  I was able to get 50-60MiB/s.  
+Most of the options seem to be applied to system calls that resolve
+path names.  While that is certainly a very important code path, it's
+also of non-trivial length, even with the dcache.  How much would one
+extra kernel entry bloat the budget?
 
-Is this amount of performance loss due to dm expected? My LV is just two
-SATA hard disks that I put into a VG. Stupid benchmarks with dd gives me
-a raw read speed from the LV of about 60MiB/sec.
+And if the kernel entry overhead IS a problem, wouldn't you want to
+batch together the non-prefix system calls as well, using something like
+the syslet ideas that were kicked around recently?  That would
+allow less than 1 kernel entry per system call, even with prefixes.
 
-I'm using kernel 2.6.18-4-686 from debian.  Any ideas on what's
-slowing down dump? 
--- 
-Ross Vandegrift
-ross@kallisti.us
+Oh!  That suggests an interesting possibility that solves the signal
+handling problem as well:
+- Make a separate prefix system call, BUT
+- The flags are reset on each return to user space, THUS
+- You *have* to use a batch-system-call mechanism for the prefix
+  system calls to do anything.
 
-"The good Christian should beware of mathematicians, and all those who
-make empty prophecies. The danger already exists that the mathematicians
-have made a covenant with the devil to darken the spirit and to confine
-man in the bonds of Hell."
-	--St. Augustine, De Genesi ad Litteram, Book II, xviii, 37
+Of course, this takes us right back to the beginning with respect to
+messy user-space argument marshalling.  But at least it's only one
+indirect system call mechanism, not two.  Wrapping indirect system call
+mechanism #1 (to set syscall options) in indirect system call mechanism
+#2 (to batch system calls) seems like a bit of a nightmare.
+
+I'm not at all sure that these are good ideas, but they're not obviously
+bad ones, to me.  Is it worth looking for synergy between various
+"indirect system call" ideas?
