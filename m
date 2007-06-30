@@ -1,60 +1,390 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbXF3DWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbXF3DYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734AbXF3DWh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jun 2007 23:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbXF3DWa
+	id S1754867AbXF3DYT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jun 2007 23:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXF3DYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jun 2007 23:22:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:13979 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753020AbXF3DW3 (ORCPT
+	Fri, 29 Jun 2007 23:24:10 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:48739 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753011AbXF3DYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jun 2007 23:22:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Y2viJNEzbhx80eW+dDRvxjj9rJ61I+18HSv7o9Mbjk/WYfELfyudEEX1vNNYZ3Rf5QBSU9qi4HSS4ZDy5s5FI1bqTAiKWUyHHduJ48TVEqmyTtsnvd1ycJ76EzEIl5qWL9FWeEGFkHE05VTTj9C1KfdOKCkTN8v9ZY/pNJval9I=
-Date: Sat, 30 Jun 2007 12:13:22 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
+	Fri, 29 Jun 2007 23:24:08 -0400
+Subject: [RFC PATCH 1/6] Driver Tracing Interface (DTI) Documentation
+From: Tom Zanussi <zanussi@us.ibm.com>
 To: linux-kernel@vger.kernel.org
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/4 -mm] void unregister_blkdev - delete redundant message
-Message-ID: <20070630031322.GE4045@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	Grant Likely <grant.likely@secretlab.ca>
-References: <20070630031013.GC4045@APFDCB5C> <20070630031212.GD4045@APFDCB5C>
+Cc: michaele@au1.ibm.com, dwilder@us.ibm.com, HOLZHEU@de.ibm.com
+Content-Type: text/plain
+Date: Fri, 29 Jun 2007 22:23:37 -0500
+Message-Id: <1183173817.24291.137.camel@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070630031212.GD4045@APFDCB5C>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No need to warn unregister_blkdev() failure by caller.
-(The previous patch makes unregister_blkdev() print error message in
-error case)
+Hi,
 
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+This patchset contains the code for a tracing and debugging facility
+named 'The Driver Tracing Interface (DTI)' after the title of our OLS
+paper, to be presented tomorrow. ;-)
 
+It was originally based on ideas from a useful s390 tracing utility
+called s390dbf (see Documentation/s390/s390dbf.txt), which allows
+driver writers to set up and continually log to a small (or large)
+circular 'flight-recording' buffer.  When something goes wrong, the
+buffer can be cat'ed from userspace and the contents analyzed to help
+determine the source of the problem.
+
+The s390dbf facility supports multiple log levels, so the level of
+detail being logged can be dynamically controlled (again in user space
+via a control file).  which in turn provides even more help in
+determining the source of the problem.  This facility has apparently
+proven itself very useful in the field and has helped solve driver
+problems on production systems.
+
+The Driver Tracing Interface introduced here does essentially the same
+thing, but makes the functionality available to all architectures, not
+just s390.  It's built on top of the relay interface, and so makes
+per-cpu logging available to users of the interface, something which
+the s390dbf facility currently lacks.
+
+Because the data is logged to per-cpu buffers, there needs to be an
+easy way for users to easily view it without having to read and merge
+the individual per-cpu buffers themselves.  To solve this problem, DTI
+provides a merged 'view' via a debugfs file, which merges and presents
+the per-cpu data when read.
+
+DTI is also very useful as a debugging tool for kernel development.  I
+personally use the klog example in the relay-apps user code all the
+time for quick-and-dirty tracing, and I know that other people use
+similar home-grown tracing tools (and even post them here).
+Hopefully, the DTI interface provides a decent enough simplification
+of the relay API that using it for these types of tracing applications
+would be attractive to people put off by the bare relay API.
+
+I created a DTI sourceforge site earlier today, but it hasn't been
+approved yet.  Once it's available, I'll put a few example patches up
+there along with some user tools (for binary tracing).  But in the
+meantime, here's a short description of the examples:
+
+- dti-ext2-example.patch - ext2 contains some debugging code that uses
+  printk().  Redefining ext2_debug() in ext2_fs.h to use dti_printk()
+  basically turns the existing debugging code into a flight-recording
+  DTI channel.
+
+- dti-systrace-example.patch - does binary tracing of all interrupts,
+  system calls and schedule changes (x86).  This demonstrates using a
+  single DTI channel across multiple 'subsystems' as well as custom
+  formatting and presentation of the binary data (using the DTI user
+  code).
+
+- dti-early-example.patch - does early tracing i.e. before initcalls.
+  Logs data starting from the beginning of start_kernel() and when the
+  system comes up, boot data is available in a DTI debugfs file.
+
+This patchset includes a few additions to relay, and also a patch that
+converts some of the s390 drivers from s390dbf to DTI.
+
+DTI uses the Generic Tracing Setup and Control (GTSC) API, which was
+posted a couple of weeks ago and which I'll post an updated version of
+following this patchset.
+
+For maximum satisfaction, you should also make sure your kernel has
+these two relay patches applied:
+
+http://marc.info/?l=linux-kernel&m=118214275032484&w=2
+http://marc.info/?l=linux-kernel&m=118232840921694&w=2
+
+Thanks also to Michael Ellerman for some useful suggestions on the
+interface.
+
+Tom
+
+Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
+Signed-off-by: David Wilder <dwilder@us.ibm.com>
 ---
- drivers/block/xsysace.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ dti.txt |  272 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 272 insertions(+)
 
-Index: 2.6-mm/drivers/block/xsysace.c
-===================================================================
---- 2.6-mm.orig/drivers/block/xsysace.c
-+++ 2.6-mm/drivers/block/xsysace.c
-@@ -1157,9 +1157,7 @@ static void __exit ace_exit(void)
- {
- 	pr_debug("Unregistering Xilinx SystemACE driver\n");
- 	driver_unregister(&ace_driver);
--	if (unregister_blkdev(ace_major, "xsysace"))
--		printk(KERN_WARNING "systemace unregister_blkdev(%i) failed\n",
--		       ace_major);
-+	unregister_blkdev(ace_major, "xsysace");
- }
- 
- module_init(ace_init);
+diff --git a/Documentation/drivers/dti.txt b/Documentation/drivers/dti.txt
+new file mode 100644
+index 0000000..e071167
+--- /dev/null
++++ b/Documentation/drivers/dti.txt
+@@ -0,0 +1,272 @@
++Driver Tracing Interface (DTI)
++==============================
++
++The Driver Tracing Interface provides easy-to-use interfaces for
++logging per-cpu 'flight recorder' data in the kernel and merging and
++presenting it to userspace.
++
++On the kernel side, data can be logged as text using a printk()-like
++logging function, or it can be logged in binary form using a couple of
++special binary event logging functions.
++
++On the user side, the combined contents of all the data present in the
++per-cpu relay files can be read from a single debugfs file that merges
++and presents the contents of the per-cpu data files.  This is mostly
++useful for text-based logging, but also works for binary logging.  For
++binary logging, there is a small userspace library and examples
++available which merge and display the binary per-cpu data in userspace
++rather than in the kernel.  See http://sourceforge.net/projects/dti.
++
++DTI also presents an interface to user space allowing it to control the
++amount or 'level' of data being logged at any given time using levels
++corresponding to printk log levels.  This interface can also be used to
++stop logging and to destroy the channel.
++
++The length and format of the data logged into a DTI channel is completely
++up to the client.
++
++DTI also provides an easy way to do 'early logging' in the kernel
++e.g. from the beginning of the start_kernel() kernel init code.
++
++DTI is built on top of the relay interface (see
++Documentation/filesystems/relay.txt) and the Generic Trace Setup and
++Control interface (see Documentation/gtsc.txt).
++
++This document provides an overview of the DTI API.  The details of the
++function parameters are documented along with the functions in the DTI
++code - please see that for details.
++
++
++Using DTI
++=========
++
++In the kernel, DTI provides both a low-level interface and a
++high-level 'handle-based' interface.  The handle-based interface is
++built on top of the low-level interface.  The main difference between
++the low and high-level interfaces is that in addition to being easier
++to use, the high-level interface only allocates the channel buffers
++'on-demand', when the first event of a high enough priority comes in.
++With the low-level interface, the channel buffers are created
++immediately.  Also, with the high-level interface, 'early' logging is
++possible; with the low-level interface, it's not.
++
++The handle-based interface
++--------------------------
++
++To do some quick printk()-style tracing using DTI, first define a DTI
++handle in your source file:
++
++  #include <linux/dti.h>
++
++  DEFINE_DTI_HANDLE(my_handle, "mytrace", 4096 * 4, DTI_LEVEL_OFF);
++
++This example sets up a dti handle called my_handle with per-cpu relay
++buffers of 16k each, and an initial trace level of 'off'.
++
++If you're logging from a module, you also need to initialize the
++handle in your module init function:
++
++  INIT_DTI_HANDLE(my_handle);
++
++If you define the handle in a kernel source file, or if your module is
++compiled into the kernel, you don't need the INIT_DTI_HANDLE() -
++initialization will be taken care of automatically for you.
++
++This will create a debugfs directory for your trace with a bunch of
++files in it:
++
++  /sys/kernel/debug/dti/mytrace
++
++Now that you have a handle, you can log to it e.g.:
++
++  dti_printk(my_handle, DTI_LEVEL_DEFAULT, "debug string\n");
++
++When this statement is executed, it will check whether the level given
++in the dti_printk() is less than or equal to the channel's current
++tracing level.  If it is, the event will be logged, otherwis it will
++be ignored. In this example, it won't be logged, since the channel
++starts out as DTI_LEVEL_OFF, which is lower than any possible event.
++
++Since the channel is off, setting the channel's current level to
++something greater than or equal to DTI_LEVEL_DEFAULT will cause the
++event to be logged e.g.:
++
++  echo 7 > /sys/kernel/debug/dti/mytrace/level
++
++After you're done logging, you can view the events in the channel by
++reading either the 'merged' or merged-ts' files e.g.:
++
++  cat /sys/kernel/debug/dti/mytrace/merged
++
++Reading these files causes the current contents of the per-cpu relay
++channels to be merged and sent to the user.  The difference between
++'merged' and 'merged-ts' is that 'merged-ts' displays timestamp and
++cpu information, whereas 'merged' doesn't - it displays exactly what
++was logged into the channel.
++
++binary tracing
++--------------
++
++dti_printk() is one of three DTI logging functions available and is
++used for printing text to a DTI channel.  The other two logging
++functions can be used for logging binary data:
++
++  dti_event(handle, trace_level, buf, len)
++
++dti_event() simply logs whatever is passed in buf to the channel.
++Like dti_printk(), it automatically provides the necessary
++synchronization to avoid overwriting other events.
++
++  dti_reserve(handle, trace_level, len)
++
++dti_reserve() simply reserves space in the channel for the event.  It
++doesn't provide any synchronization to avoid overwriting other events
++- callers must provide their own synchronization when using this.
++
++The logging functions can be intermixed, but the client should be
++prepared to make sense of the mixed data.
++
++Using the binary logging functions to log data in binary form implies
++that it probably wouldn't make much sense to simply 'cat' the 'merged'
++file to look at the data.  It makes more sense to have a userspace
++tool read and merge the per-cpu binary data and present it in a
++human-readable form.
++
++At the DTI sourceforge site, there's a utility called 'dtiprint' that
++reads and merges the binary per-cpu data from any DTI channel and
++prints it as hex.  If that's not sufficiently usable, there's also an
++example that shows how to write a customized display application for
++displaying application-specific binary data.  It makes use of a source
++library called 'libdti' which makes writing one-off utilities pretty
++simple.
++
++'early' tracing
++---------------
++
++With the handle-based interface, channels are created and ready to use
++during the do_initcalls() phase of kernel initialization.  If you want
++to do tracing before then (say at the beginning of start_kernel()),
++you can define an 'early' DTI handle using DEFINE_DTI_EARLY_HANDLE():
++
++  static char early_tracebuf[4096 * 4];
++
++  DEFINE_DTI_EARLY_HANDLE(early_dti_handle, "early", 4096 * 8,
++                          DTI_LEVEL_DEFAULT, early_tracebuf,
++                          sizeof(early_tracebuf));
++
++This example creates a 32k per-cpu DTI channel having the default log
++level, and in addition specifies a single 16k buffer that will be used
++to log data into until the relay channels can be created at handle
++initialization time.  In this case, after the system boots up, the file
++
++  /sys/kernel/debug/dti/early/merged
++
++will contain the data collected during early tracing.
++
++Handles created with DEFINE_DTI_EARLY_HANDLE are exactly the same as
++handles created using DEFINE_DTI_HANDLE() except that a static init
++buffer is attached to the handle.  This static buffer is logged into
++until the relay channel becomes available, at which point the contents
++of the static buffer are re-logged into the relay buffer.  Early
++handles have the same lifetimes as normal handles and can be used in
++the same way after initialization.  There are no special logging
++functions needed for logging early data - the same dti_printk(), etc,
++functions are used to log to an early channel.
++
++The low-level interface
++-----------------------
++
++To use the low-level interface, first register a channel:
++
++  channel = dti_register(name, size, init_level)
++
++This will create a DTI channel ready for logging to.  The size of each
++per-cpu buffer is given as the 'size' param and the channel will be
++created with the initial trace level specified.  The channel directory
++will appear at /sys/kernel/debug/dti/name.
++
++If you want to explicitly specify sub-buffer sizes and numbers (see
++relay.txt for more information on sub-buffers), you can use the
++double-underscore version:
++
++ channel = __dti_register(name, sub_size, nr_sub, init_level)
++
++When you're done with a channel, call:
++
++
++  dti_unregister(trace)
++
++to destroy the channel and its containing subdirectory.
++
++To change the current log level of a channel, use:
++
++
++  dti_set_level(trace, new_level)
++
++For the low-level interface, the logging functions are essentially the
++same, but don't use handles:
++
++  __dti_printk(trace, level, fmt, ...)
++  __dti_event(trace, level, buf, len)
++  __dti_reserve(trace, level, len)
++
++Misc
++----
++
++For the high-level interface, after a DTI channel is created, but
++before the first loggable event has arrived, the debugfs directory
++layout appears as:
++
++  /sys/kernel/debug/dti/name/
++                            level
++                            nr_sub
++                            rewind
++                            state
++                            sub_size
++
++After the first loggable event arrives, or if using the low-level
++interface, the debugfs directory layout looks like this:
++
++  /sys/kernel/debug/dti/name/
++                            level
++                            merged
++                            merged-ts
++                            nr_sub
++                            rewind
++                            state
++                            sub_size
++                            trace0
++                            trace1
++
++Here, the 'merged' and 'merged-ts' views are added, along with the
++actual relay channels ('trace0, trace1, etc).
++
++The 'level' file can be written to change the log level and/or turn
++tracing on/off.  The log levels (see include/linux/dti.h) run from -2
++to 7, with special meanings for levels -1 and -2:
++
++  -1 means to stop tracing completely (the string "off" can also be used)
++
++  -2 means to destroy the relay channel, but leave the other control
++   files intact (the string "destroy" can also be used)
++
++Destruction of the trace directory and the control files is under
++control of the kernel code and can't be done from userspace.
++  
++
++Resources
++=========
++
++For example code and userspace tools, see the DTI homepage:
++
++  http://sourceforge.net/projects/dti
++
++
++Credits
++=======
++
++Tom Zanussi		<zanussi@us.ibm.com>
++Dave Wilder		<wilder@us.ibm.com>
++Michael Holzheu		<holzeu@de.ibm.com>
++Vara Prasad		<prasadav@us.ibm.com>
++
+
+
+
