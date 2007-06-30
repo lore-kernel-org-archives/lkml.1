@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbXF3TJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbXF3TLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753140AbXF3TJM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 15:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbXF3TI6
+	id S1753328AbXF3TLV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 15:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbXF3TLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 15:08:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54733 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073AbXF3TI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 15:08:58 -0400
-Date: Sat, 30 Jun 2007 21:08:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: Dynamic ticks make system jerking
-Message-ID: <20070630190844.GA1775@elte.hu>
-References: <20070626150015.GA20233@informatik.uni-freiburg.de> <1182872749.11854.27.camel@chaos> <20070627163529.GA12978@informatik.uni-freiburg.de> <20070629223303.GA26926@informatik.uni-freiburg.de>
+	Sat, 30 Jun 2007 15:11:13 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52317 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751349AbXF3TLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jun 2007 15:11:12 -0400
+Date: Sat, 30 Jun 2007 12:11:12 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
+Message-ID: <20070630101112.GA10444@elf.ucw.cz>
+References: <200706192118.23706.nigel@nigel.suspend2.net> <200706290827.13024.nigel@nigel.suspend2.net> <20070629223505.GB6732@elf.ucw.cz> <200706301215.20334.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070629223303.GA26926@informatik.uni-freiburg.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200706301215.20334.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de> wrote:
+> > > Sorry, but I can't resist the opportunity to say "Send a patch!" :)
+> > > 
+> > > Seriously, though, I'd prefer not to. If we rename that acpi video flags 
+> > > variable (I assume this is what you're thinking of), we only create cause for 
+> > > confusion. A variable should for debugging or for controlling quirks, not for 
+> > > both at the same time.
+> > 
+> > Cause for confusion? We are currently using 2 bits of that variable,
+> > and we want to add one more bit. I seriously doubt that can confuse
+> > anyone.
+> 
+> Well, indeed it would be more elegant to rename the existing flags variable
+> and use another bit out of it, but I personally don't think it's _that_
+> important.  At least, I don't think we should block the patch
+> because of that.
 
-> I found the problem, it had only indirectly to do with nohz.  I didn't 
-> acknowledge the serial interrupt but as the timer and the serial need 
-> the same acknowledgement the serial irq got his ack always when the 
-> timer triggerd.  Up to now that delay didn't stick out as the delay 
-> was < 10ms.
+It is not _that_ important.
 
-yeah, that makes sense. Now you've probably got a better serial driver 
-as a side-effect :-)
+> BTW, has anyone confirmed that it works on i386?
 
-	Ingo
+If you have patch somewhere nearby, I can test it on i386 and make it
+use just one flags variable.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
