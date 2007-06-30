@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXF3Oov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbXF3OpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbXF3Oov (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 10:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbXF3Oom
+	id S1759845AbXF3OpG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 10:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbXF3Oon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 10:44:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:10821 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754981AbXF3Ool (ORCPT
+	Sat, 30 Jun 2007 10:44:43 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24115 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756854AbXF3Oom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 10:44:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=SWaQVEL3+EZVQqn8U5zDyQZC5hRggFZWKgJ1+pjdleSlWqbpb+hdK6r3jHtE+5+UM39h6VIO6PB79xliQpfj72pnO8KBXnS1KWA6Tq9okfxUj2joVhqClcx6TxPbvlohDqdvRYR49MNNULvc3VSnsz5Y0DYXZnRB3ob9E4DfaOo=
-Date: Sat, 30 Jun 2007 16:44:36 +0200
-From: Florian Attenberger <valdyn@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: [PATCH 2.6.22-rc6] add PCI-ID for Adaptec 1430SA 4-Port SATA
-	Controller
-Message-ID: <20070630144436.GA13479@master.home>
+	Sat, 30 Jun 2007 10:44:42 -0400
+Message-ID: <46866C58.2090705@oracle.com>
+Date: Sat, 30 Jun 2007 07:44:40 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: John Keller <jpk@sgi.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, steiner@sgi.com
+Subject: Re: [PATCH] - x86_64-add-ioapic-nmi-support-fix-3
+References: <200706301429.l5UETMXk295940@fcbayern.americas.sgi.com>
+In-Reply-To: <200706301429.l5UETMXk295940@fcbayern.americas.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+John Keller wrote:
+>> [adding Andi Kleen]
+>>
+>> John Keller wrote:
+>>> Place all the IOACPI NMI support code under CONFIG_ACPI
+>>> to clear up build errors with certain configs.
+>>>
+>>> Signed-off-by: John Keller <jpk@sgi.com>
+>>> ---
+>> Is there some architectural reason that IO APIC NMI support should
+>> require ACPI?
+> 
+> OK, I guess standing alone this description was a bit misleading.
+> The code referred to here is the new code supporting the ACPI NMI SRC
+> structure that can be specified in the MADT. Without ACPI support this
+> code is not relevant. All the code touched by this patch was introduced
+> by eariler versions of this patchset.
+> 
+> This patch makes no changes to the workings of nmi_watchdog.
 
-added this pci id to support my:
-lspci:
-01:00.0 RAID bus controller: Adaptec Unknown device 0243 (rev 02)
-lspci -n:
-01:00.0 0104: 9005:0243 (rev 02)
+OK, thanks for the clarification.
 
-seems to work fine.
+> John
+> 
+> 
+>> Is this a new requirement?  It seems like a step backwards to me.
+>>
+>>
+>> Documentation/nmi_watchdog.txt doesn't say anything about ACPI being
+>> needed.  It does say:
+>>
+>> "For x86-64, the needed APIC is always compiled in, and the NMI watchdog is
+>> always enabled with I/O-APIC mode (nmi_watchdog=1). Currently, local APIC
+>> mode (nmi_watchdog=2) does not work on x86-64.
+>>
+>> Using local APIC (nmi_watchdog=2) needs the first performance register, so
+>> you can't use it for other purposes (such as high precision performance
+>> profiling.) However, at least oprofile and the perfctr driver disable the
+>> local APIC NMI watchdog automatically."
 
-florian attenberger
 
-
---- 2.6.22-rc6/drivers/ata/sata_mv.c	2007-06-30 16:21:47.462020256 +0200
-+++ 2.6.22-rc6.mine/drivers/ata/sata_mv.c	2007-06-30 16:25:25.999165444 +0200
-@@ -582,6 +582,9 @@ static const struct pci_device_id mv_pci
- 
- 	{ PCI_VDEVICE(ADAPTEC2, 0x0241), chip_604x },
- 
-+	/* Adaptec 1430SA */
-+	{ PCI_VDEVICE(ADAPTEC2, 0x0243), chip_7042 },
-+
- 	{ PCI_VDEVICE(TTI, 0x2310), chip_7042 },
- 
- 	/* add Marvell 7042 support */
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
