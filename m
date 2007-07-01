@@ -1,26 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbXGAUVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbXGAUVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758019AbXGAUVV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 16:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758399AbXGAUUT
+	id S1758975AbXGAUVp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 16:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbXGAUUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 16:20:19 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46814 "EHLO
+	Sun, 1 Jul 2007 16:20:24 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46820 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758322AbXGAUUR (ORCPT
+	with ESMTP id S1758462AbXGAUUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 16:20:17 -0400
-Date: Sun, 1 Jul 2007 22:20:43 +0200
+	Sun, 1 Jul 2007 16:20:21 -0400
+Date: Sun, 1 Jul 2007 22:20:48 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Oruba <peter.oruba@amd.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>, cramerj@intel.com,
-       john.ronciak@intel.com, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, auke-jan.h.kok@intel.com,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: [-mm patch] e1000: #if 0 two functions
-Message-ID: <20070701202043.GE10869@stusta.de>
+Cc: dwmw2@infradead.org, Mark Ferrell <mferrell@mvista.com>,
+       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: [2.6 patch] remove dead MTD_PMC551_APERTURE_SIZE option
+Message-ID: <20070701202048.GF10869@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -28,49 +24,28 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-e1000_{read,write}_pci_cfg() are no longer used.
+The CONFIG_MTD_PMC551_APERTURE_SIZE option seems to never have existed, 
+so there's no reason for carrying an #ifdef for it.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
 This patch has been sent on:
-- 5 Jun 2007
+- 3 Jun 2007
 
- drivers/net/e1000/e1000_hw.h   |    2 --
- drivers/net/e1000/e1000_main.c |    4 ++++
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
---- linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_hw.h.old	2007-06-04 22:03:05.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_hw.h	2007-06-04 22:03:14.000000000 +0200
-@@ -421,8 +421,6 @@ void e1000_tbi_adjust_stats(struct e1000
- void e1000_get_bus_info(struct e1000_hw *hw);
- void e1000_pci_set_mwi(struct e1000_hw *hw);
- void e1000_pci_clear_mwi(struct e1000_hw *hw);
--void e1000_read_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t * value);
--void e1000_write_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t * value);
- int32_t e1000_read_pcie_cap_reg(struct e1000_hw *hw, uint32_t reg, uint16_t *value);
- void e1000_pcix_set_mmrbc(struct e1000_hw *hw, int mmrbc);
- int e1000_pcix_get_mmrbc(struct e1000_hw *hw);
---- linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_main.c.old	2007-06-04 22:03:24.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_main.c	2007-06-04 22:03:40.000000000 +0200
-@@ -4888,6 +4888,8 @@ e1000_pci_clear_mwi(struct e1000_hw *hw)
- 	pci_clear_mwi(adapter->pdev);
- }
+--- linux-2.6.22-rc3-mm1/drivers/mtd/devices/pmc551.c.old	2007-06-03 19:16:00.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/mtd/devices/pmc551.c	2007-06-03 19:16:50.000000000 +0200
+@@ -649,11 +649,7 @@
+  * Stuff these outside the ifdef so as to not bust compiled in driver support
+  */
+ static int msize = 0;
+-#if defined(CONFIG_MTD_PMC551_APERTURE_SIZE)
+-static int asize = CONFIG_MTD_PMC551_APERTURE_SIZE;
+-#else
+ static int asize = 0;
+-#endif
  
-+#if 0
-+
- void
- e1000_read_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t *value)
- {
-@@ -4904,6 +4906,8 @@ e1000_write_pci_cfg(struct e1000_hw *hw,
- 	pci_write_config_word(adapter->pdev, reg, *value);
- }
- 
-+#endif  /*  0  */
-+
- int
- e1000_pcix_get_mmrbc(struct e1000_hw *hw)
- {
-
+ module_param(msize, int, 0);
+ MODULE_PARM_DESC(msize, "memory size in Megabytes [1 - 1024]");
 
