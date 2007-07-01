@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbXGAIpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbXGAIsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbXGAIpa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 04:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbXGAIpU
+	id S1756600AbXGAIsm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 04:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXGAIsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 04:45:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56928 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751105AbXGAIpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 04:45:18 -0400
-Date: Sun, 1 Jul 2007 10:45:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v18
-Message-ID: <20070701084501.GA10548@elte.hu>
-References: <20070622220202.GA16872@elte.hu> <20070630210649.GA13186@1wt.eu> <20070701083102.GA4499@elte.hu>
+	Sun, 1 Jul 2007 04:48:35 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:57897 "EHLO
+	marquesa.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754303AbXGAIse (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 04:48:34 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <20070622013417.GT21478@ftp.linux.org.uk>
+	<20070622041949.GA15625@thunk.org>
+	<orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070625132853.GH10008@csclub.uwaterloo.ca>
+	<orhcov7qsz.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070626041013.GG24745@delft.aura.cs.cmu.edu>
+	<orvedb4433.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<ormyyn40o9.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070626162541.GA5464@delft.aura.cs.cmu.edu>
+	<or3b0d0zdz.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070628050852.GA16686@delft.aura.cs.cmu.edu>
+	<orodj0y38k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<or4pksx8z8.fsf@oliva.athome.lsd.ic.unicamp.br>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Sun, 01 Jul 2007 05:48:26 -0300
+In-Reply-To: <or4pksx8z8.fsf@oliva.athome.lsd.ic.unicamp.br> (Alexandre Oliva's message of "Thu\, 28 Jun 2007 14\:52\:11 -0300")
+Message-ID: <or1wfsa4rp.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070701083102.GA4499@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 28, 2007, Alexandre Oliva <oliva@lsd.ic.unicamp.br> wrote:
 
-Willy,
+> On Jun 28, 2007, Alexandre Oliva <oliva@lsd.ic.unicamp.br> wrote:
+>> So, let's narrow the scenario to: tivoized machine downloads binary
+>> from protected site, refrains from downloading sources that it could
+>> download, user can still access and copy the binaries, but can't
+>> obtain the sources because the machine opted not to get them.
 
-could you check whether your current v18 CFS tree has the fix below 
-included? I discovered it right after having released v18 so i updated 
-the v18 files in place - but maybe you downloaded an early version? I 
-thought it's relatively harmless, that it would only affect SCHED_IDLE 
-tasks, but maybe it affects nice +19 tasks too on your box!
+>> Now, the user can't distribute the binaries, because doing so without
+>> being able to get the sources to pass them on would be copyright
+>> infringement.  Would a court see this as a restriction on distribution
+>> imposed by the distributor?  Or by the copyright holder?
 
-	Ingo
+> I'm not sure my point was clear (not even to myself), so let me try to
+> clarify with a slightly different scenario.
 
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -342,8 +342,9 @@ update_stats_enqueue(struct cfs_rq *cfs_
- 		s64 tmp;
- 
- 		if (se->wait_runtime < 0) {
--			tmp = (0 - se->wait_runtime) << NICE_0_SHIFT;
--			key += (tmp * se->load.inv_weight) >> WMULT_SHIFT;
-+			tmp = -se->wait_runtime;
-+			key += (tmp * se->load.inv_weight) >>
-+					(WMULT_SHIFT - NICE_0_SHIFT);
- 		} else {
- 			tmp = se->wait_runtime * se->load.weight;
- 			key -= tmp >> NICE_0_SHIFT;
+http://fsfla.org/svnwiki/blogs/lxo/2007-07-01-gplv3-tivo-and-linux.en
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
