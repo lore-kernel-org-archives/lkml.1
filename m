@@ -1,78 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758412AbXGAWTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXGAWcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758412AbXGAWTj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 18:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXGAWTc
+	id S1758263AbXGAWcQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 18:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXGAWcC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 18:19:32 -0400
-Received: from gw.goop.org ([64.81.55.164]:37831 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbXGAWTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 18:19:32 -0400
-Message-ID: <46882872.7040005@goop.org>
-Date: Sun, 01 Jul 2007 15:19:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [i386] Questions regarding provisional page tables initialization
-References: <20070701203833.GA3498@Ahmed>
-In-Reply-To: <20070701203833.GA3498@Ahmed>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jul 2007 18:32:02 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52565 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751484AbXGAWcA (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 18:32:00 -0400
+Date: Mon, 2 Jul 2007 08:31:48 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][XFS][resend] fix memory leak in xfs_inactive()
+Message-ID: <20070701223147.GU31489@sgi.com>
+References: <200707010116.52012.jesper.juhl@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707010116.52012.jesper.juhl@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ahmed S. Darwish wrote:
-> Hi list,
->
-> AFAIK, in the initializaion phase, kernel builds pages tables with two
-> mappings, identity and PAGE_OFFSET + C mapping. The provisional _global
-> directory_ is contained in swapper_pg_dir variable. while the provisional 
-> _page tables_ are stored starting from pg0, right after _end.
->
-> There're some stuff that confused me for a full day about the code (head.S)
-> that  accomplishes the above words:
->
-> 	movl $(pg0 - __PAGE_OFFSET), %edi
-> 	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx	
-> 	movl $0x007, %eax			/* 0x007 = PRESENT+RW+USER */
-> 10:
-> 	leal $0x007(%edi),%ecx			/* Create PDE entry */
->
-> What does the address of 7 bytes displacement after %edi - the physical address
-> of pg0 - represent ?. Why not just putting the address of %edi (the address of
-> pagetable cell to be mapped by swapper_pg_dir) in %ecx without displacement?
->   
+On Sun, Jul 01, 2007 at 01:16:51AM +0200, Jesper Juhl wrote:
+> (this is back from May 16 2007, resending since it doesn't look like 
+> the patch ever made it in anywhere)
 
-The pte format contains the pfn in the top 20 bits, and flags in the 
-lower 12 bits.  As the comment says "0x007 = PRESENT+RW+USER".
+http://oss.sgi.com/cgi-bin/cvsweb.cgi/linux-2.6-xfs/fs/xfs/xfs_vnodeops.c.diff?r1=1.698;r2=1.699;f=h
 
->         page_pde_offset = (__PAGE_OFFSET >> 20)
-> 	movl %ecx,(%edx)			/* Store identity PDE entry */
-> 	movl %ecx,page_pde_offset(%edx)		/* Store kernel PDE entry */
->
-> Why the pde_offset is PAGE_OFFSET >> 20 instead of PAGE_OFFSET >> 22 ?
-> * 22 to right shift the whole page_shift (12) and pgdir_shift (10) bits.
->   
+Will get merged in 2.6.23-rc1 window.
 
-As Andreas said, its (PAGE_OFFSET >> 22) << 2.
+Cheers,
 
->         [...]
-> 	/* Initialize the 1024 _page table_ cells with %eax (0x007) */
-> 	movl $1024, %ecx
-> 11:
-> 	stosl
-> 	addl $0x1000,%eax
-> 	loop 11b
->
-> The page table entries beginning from pg0 (pointed by %edi) and following pages 
-> are initialized with  the series 7 + 8 + 8 + ... for each cell. This series has
-> the property of setting the PRESENT+RW+USER bits in the whole entries to 1 but it
-> sets lots of the entries BASE address to 0 too. Why is this done ?
->   
-
-I don't follow you.  Are you overlooking the 'L' on stosl?
-
-    J
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
