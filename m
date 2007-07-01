@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbXGAHnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXGAHng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758764AbXGAHnT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbXGAHii
+	id S1756791AbXGAHng (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 03:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbXGAHim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:38:38 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:46831 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755853AbXGAHie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:38:34 -0400
-Subject: [EXT4 set 9][PATCH 1/5]Morecleanups:ext4-zero_user_page
+	Sun, 1 Jul 2007 03:38:42 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:59604 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757352AbXGAHij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 03:38:39 -0400
+Subject: [EXT4 set 9][PATCH 2/5]Morecleanups: use is_power_of_2 () in
+	fill_super
 From: Mingming Cao <cmm@us.ibm.com>
 Reply-To: cmm@us.ibm.com
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-ext4@vger.kernel.org
 Content-Type: text/plain
 Organization: IBM Linux Technology Center
-Date: Sun, 01 Jul 2007 03:38:32 -0400
-Message-Id: <1183275512.4010.137.camel@localhost.localdomain>
+Date: Sun, 01 Jul 2007 03:38:37 -0400
+Message-Id: <1183275518.4010.138.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use zero_user_page() in ext4 where possible.
+Subject: is_power_of_2: ext4/super.c
+From: vignesh babu <vignesh.babu@wipro.com>
 
+Replace (n & (n-1)) in the context of power of 2 checks with is_power_of_2()
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+---
 
-Index: linux-2.6.22-rc4-mm2/fs/ext4/inode.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/fs/ext4/inode.c
-+++ linux-2.6.22-rc4-mm2/fs/ext4/inode.c
-@@ -1830,7 +1830,6 @@ int ext4_block_truncate_page(handle_t *h
- 	struct inode *inode = mapping->host;
- 	struct buffer_head *bh;
- 	int err = 0;
--	void *kaddr;
+ fs/ext4/super.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 
- 	if ((EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) &&
- 			test_opt(inode->i_sb, EXTENTS) &&
-@@ -1847,10 +1846,7 @@ int ext4_block_truncate_page(handle_t *h
- 	 */
- 	if (!page_has_buffers(page) && test_opt(inode->i_sb, NOBH) &&
- 	     ext4_should_writeback_data(inode) && PageUptodate(page)) {
--		kaddr = kmap_atomic(page, KM_USER0);
--		memset(kaddr + offset, 0, length);
--		flush_dcache_page(page);
--		kunmap_atomic(kaddr, KM_USER0);
-+		zero_user_page(page, offset, length, KM_USER0);
- 		set_page_dirty(page);
- 		goto unlock;
- 	}
-@@ -1903,10 +1899,7 @@ int ext4_block_truncate_page(handle_t *h
- 			goto unlock;
- 	}
+diff -puN fs/ext4/super.c~is_power_of_2-ext4-superc fs/ext4/super.c
+--- a/fs/ext4/super.c~is_power_of_2-ext4-superc
++++ a/fs/ext4/super.c
+@@ -36,6 +36,7 @@
+ #include <linux/namei.h>
+ #include <linux/quotaops.h>
+ #include <linux/seq_file.h>
++#include <linux/log2.h>
 
--	kaddr = kmap_atomic(page, KM_USER0);
--	memset(kaddr + offset, 0, length);
--	flush_dcache_page(page);
--	kunmap_atomic(kaddr, KM_USER0);
-+	zero_user_page(page, offset, length, KM_USER0);
+ #include <asm/uaccess.h>
 
- 	BUFFER_TRACE(bh, "zeroed end of block");
+@@ -1662,7 +1663,7 @@ static int ext4_fill_super (struct super
+ 		sbi->s_inode_size = le16_to_cpu(es->s_inode_size);
+ 		sbi->s_first_ino = le32_to_cpu(es->s_first_ino);
+ 		if ((sbi->s_inode_size < EXT4_GOOD_OLD_INODE_SIZE) ||
+-		    (sbi->s_inode_size & (sbi->s_inode_size - 1)) ||
++		    (!is_power_of_2(sbi->s_inode_size)) ||
+ 		    (sbi->s_inode_size > blocksize)) {
+ 			printk (KERN_ERR
+ 				"EXT4-fs: unsupported inode size: %d\n",
+_
+
+Patches currently in -mm which might be from vignesh.babu@wipro.com are
+
+git-ubi.patch
+use-is_power_of_2-in-cxgb3-cxgb3_mainc.patch
+use-is_power_of_2-in-myri10ge-myri10gec.patch
+is_power_of_2-ext3-superc.patch
+is_power_of_2-ext4-superc.patch
+is_pwoer_of_2-jbd.patch
 
 
 
