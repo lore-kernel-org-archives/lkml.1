@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbXGALrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757250AbXGAMDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbXGALrN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 07:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbXGALrD
+	id S1757250AbXGAMDE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 08:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbXGAMCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 07:47:03 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35771 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755553AbXGALrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 07:47:01 -0400
-X-Authenticated: #4399952
-X-Provags-ID: V01U2FsdGVkX1+ckjsV7mOc8pUGfetHnNQVRtOdfM3VUGFSspq0w2
-	LJp5z37Srn0TcP
-From: Florian Schmidt <mista.tapas@gmx.net>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Date: Sun, 1 Jul 2007 13:46:52 +0200
-User-Agent: KMail/1.9.6
-Cc: alan@lxorguk.ukuu.org.uk, bunk@stusta.de, nix@esperi.org.uk,
-       galibert@pobox.com, tiwai@suse.de, kloczek@rudy.mif.pg.gda.pl,
-       linux-kernel@vger.kernel.org
-References: <20070624200837.16e11305@the-village.bc.nu> <E1I4IoZ-0003Hm-00@dorka.pomaz.szeredi.hu> <E1I4J76-0003MW-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I4J76-0003MW-00@dorka.pomaz.szeredi.hu>
-X-Face: %EpW[IH18fBP*R?oz~]%Klbl.q!_(Xs_q"t?K~RVx[c7~3|C3kDdA(8y_KOB\{(Rn(=?utf-8?q?MZhm=0A=09=7B/l=2E?=>O48>i9k<+(,c^Y%mGm)M\+RxuxL4r<7-W63sB$+w\}hkT"Q2?v&N:y\Z
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 1 Jul 2007 08:02:54 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:48343 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755164AbXGAMCx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 08:02:53 -0400
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070630171340.GT13886@enneenne.com>
+References: <20070628081538.GP13886@enneenne.com>
+	 <1183019474.1170.66.camel@pmac.infradead.org>
+	 <20070628084003.GQ13886@enneenne.com>
+	 <1183031060.1170.145.camel@pmac.infradead.org>
+	 <20070628161450.GD13886@enneenne.com>
+	 <1183117082.1170.308.camel@pmac.infradead.org>
+	 <20070629150813.GM13886@enneenne.com>
+	 <1183132548.1170.360.camel@pmac.infradead.org>
+	 <20070629163422.GP13886@enneenne.com>
+	 <1183135253.17622.5.camel@shinybook.infradead.org>
+	 <20070630171340.GT13886@enneenne.com>
+Content-Type: text/plain
+Date: Sun, 01 Jul 2007 13:03:11 +0100
+Message-Id: <1183291392.2828.17.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707011346.52872.mista.tapas@gmx.net>
-X-Y-GMX-Trusted: 0
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 June 2007, Miklos Szeredi wrote:
-> > > > Not as if it would be hard to add ioctl support to fuse.  What fuse
-> > > > can't handle is the data argument of ioctl(), so the most it could do
-> > > > is give the filesystem a pid (tid) and a virtual address.  The
-> > > > userspace fs could then get/put the data through /proc/<pid>/mem.
-> > >
-> > > Hork...
-> > >
-> > > Identify the generic ioctls that are relevant to a FUSE file system and
-> > > have real meaning *and* are useful.
-> >
-> > I don't think there are any such.
-> >
-> > The point in this thread was I think about emulating an OSS sound
-> > device through a fuse fs.  In that case fuse would need _generic_
-> > ioctl support, which simply can't be done without weird userspace
-> > hacks.
->
-> Well, had a look at what FUSD does.  It assumes that the ioctl
-> argument is stuctured according to the command.  If all OSS ioctls are
-> like that, then fine, fuse can support it properly.
->
-> The drawback of this is that ioctls which aren't structured properly
-> could cause weird failures due to wrong data being accessed by the
-> poor unknowing kernel.
->
-> Miklos
+On Sat, 2007-06-30 at 19:13 +0200, Rodolfo Giometti wrote:
+> Maybe I can define a special struct for exchanging time data as:
+> 
+>    struct pps_timedata_s {
+>       long sec;
+>       long nsec;
+>    } 
 
-Included with the docs there's a list of the OSS ioctls. I don't understand 
-enough of the problem to judge whether they are suitable to be handled by 
-FUSE:
-
-http://manuals.opensound.com/developer/ioctl.html [version 4]
-http://www.4front-tech.com/pguide/oss.pdf [version 3]
-
-I don't know which API version is supposed to be supported though.
-
-Regards,
-Flo
+Seems reasonable enough in principle -- but whatever you do, don't use
+"long" for it. That would definitely need different behaviour for 32-bit
+vs. 64-bit. Use explicitly sized types such as uint32_t or uint64_t.
 
 -- 
-Palimm Palimm!
-http://tapas.affenbande.org
+dwmw2
+
