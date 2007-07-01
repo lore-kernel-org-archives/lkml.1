@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbXGAQbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbXGAQcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbXGAQbY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 12:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbXGAQbR
+	id S1756788AbXGAQcs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 12:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXGAQcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 12:31:17 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:37271
+	Sun, 1 Jul 2007 12:32:41 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:43254
 	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752572AbXGAQbQ (ORCPT
+	by vger.kernel.org with ESMTP id S1752325AbXGAQcl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 12:31:16 -0400
-Date: Sun, 1 Jul 2007 18:32:24 +0200
+	Sun, 1 Jul 2007 12:32:41 -0400
+Date: Sun, 1 Jul 2007 18:33:49 +0200
 From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: khali@linux-fr.org, lm-sensors@lm-sensors.org
+To: mchehab@infradead.org, video4linux-list@redhat.com
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 3/5] use mutex instead of semaphore in SMSC LPC47M192 driver
-Message-ID: <20070701163224.GF3940@traven>
+Subject: [PATCH 4/5] use mutex instead of semaphore in Virtual Video driver
+Message-ID: <20070701163349.GG3940@traven>
 Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	khali@linux-fr.org, lm-sensors@lm-sensors.org,
+	mchehab@infradead.org, video4linux-list@redhat.com,
 	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 References: <20070701162529.GC3940@traven>
 MIME-Version: 1.0
@@ -28,143 +28,86 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The SMSC LPC47M192 driver uses a semaphore as mutex. Use the mutex API
+The Virtual Video driver uses a semaphore as mutex. Use the mutex API
 instead of the (binary) semaphore.
 
 Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
 --
 
-diff --git a/drivers/hwmon/smsc47m192.c b/drivers/hwmon/smsc47m192.c
-index a012f39..7c5cfa2 100644
---- a/drivers/hwmon/smsc47m192.c
-+++ b/drivers/hwmon/smsc47m192.c
-@@ -31,6 +31,7 @@
- #include <linux/hwmon-vid.h>
- #include <linux/err.h>
- #include <linux/sysfs.h>
+diff --git a/drivers/media/video/vivi.c b/drivers/media/video/vivi.c
+index f7e1d19..e86f4cd 100644
+--- a/drivers/media/video/vivi.c
++++ b/drivers/media/video/vivi.c
+@@ -25,6 +25,7 @@
+ #include <linux/pci.h>
+ #include <linux/random.h>
+ #include <linux/version.h>
 +#include <linux/mutex.h>
+ #include <linux/videodev2.h>
+ #include <linux/dma-mapping.h>
+ #ifdef CONFIG_VIDEO_V4L1_COMPAT
+@@ -168,7 +169,7 @@ static LIST_HEAD(vivi_devlist);
+ struct vivi_dev {
+ 	struct list_head           vivi_devlist;
  
- /* Addresses to scan */
- static unsigned short normal_i2c[] = { 0x2c, 0x2d, I2C_CLIENT_END };
-@@ -97,7 +98,7 @@ static inline int TEMP_FROM_REG(s8 val)
- struct smsc47m192_data {
- 	struct i2c_client client;
- 	struct class_device *class_dev;
--	struct semaphore update_lock;
-+	struct mutex update_lock;
- 	char valid;		/* !=0 if following fields are valid */
- 	unsigned long last_updated;	/* In jiffies */
+-	struct semaphore           lock;
++	struct mutex               lock;
  
-@@ -164,11 +165,11 @@ static ssize_t set_in_min(struct device *dev, struct device_attribute *attr,
- 	struct smsc47m192_data *data = i2c_get_clientdata(client);
- 	unsigned long val = simple_strtoul(buf, NULL, 10);
+ 	int                        users;
  
--	down(&data->update_lock);
-+	mutex_lock(&data->update_lock);
- 	data->in_min[nr] = IN_TO_REG(val, nr);
- 	i2c_smbus_write_byte_data(client, SMSC47M192_REG_IN_MIN(nr),
- 							data->in_min[nr]);
--	up(&data->update_lock);
-+	mutex_unlock(&data->update_lock);
- 	return count;
- }
- 
-@@ -181,11 +182,11 @@ static ssize_t set_in_max(struct device *dev, struct device_attribute *attr,
- 	struct smsc47m192_data *data = i2c_get_clientdata(client);
- 	unsigned long val = simple_strtoul(buf, NULL, 10);
- 
--	down(&data->update_lock);
-+	mutex_lock(&data->update_lock);
- 	data->in_max[nr] = IN_TO_REG(val, nr);
- 	i2c_smbus_write_byte_data(client, SMSC47M192_REG_IN_MAX(nr),
- 							data->in_max[nr]);
--	up(&data->update_lock);
-+	mutex_unlock(&data->update_lock);
- 	return count;
- }
- 
-@@ -243,11 +244,11 @@ static ssize_t set_temp_min(struct device *dev, struct device_attribute *attr,
- 	struct smsc47m192_data *data = i2c_get_clientdata(client);
- 	long val = simple_strtol(buf, NULL, 10);
- 
--	down(&data->update_lock);
-+	mutex_lock(&data->update_lock);
- 	data->temp_min[nr] = TEMP_TO_REG(val);
- 	i2c_smbus_write_byte_data(client, SMSC47M192_REG_TEMP_MIN[nr],
- 						data->temp_min[nr]);
--	up(&data->update_lock);
-+	mutex_unlock(&data->update_lock);
- 	return count;
- }
- 
-@@ -260,11 +261,11 @@ static ssize_t set_temp_max(struct device *dev, struct device_attribute *attr,
- 	struct smsc47m192_data *data = i2c_get_clientdata(client);
- 	long val = simple_strtol(buf, NULL, 10);
- 
--	down(&data->update_lock);
-+	mutex_lock(&data->update_lock);
- 	data->temp_max[nr] = TEMP_TO_REG(val);
- 	i2c_smbus_write_byte_data(client, SMSC47M192_REG_TEMP_MAX[nr],
- 						data->temp_max[nr]);
--	up(&data->update_lock);
-+	mutex_unlock(&data->update_lock);
- 	return count;
- }
- 
-@@ -287,7 +288,7 @@ static ssize_t set_temp_offset(struct device *dev, struct device_attribute
- 	u8 sfr = i2c_smbus_read_byte_data(client, SMSC47M192_REG_SFR);
- 	long val = simple_strtol(buf, NULL, 10);
- 
--	down(&data->update_lock);
-+	mutex_lock(&data->update_lock);
- 	data->temp_offset[nr] = TEMP_TO_REG(val);
- 	if (nr>1)
- 		i2c_smbus_write_byte_data(client,
-@@ -303,7 +304,7 @@ static ssize_t set_temp_offset(struct device *dev, struct device_attribute
- 	} else if ((sfr & 0x10) == (nr==0 ? 0x10 : 0))
- 		i2c_smbus_write_byte_data(client,
- 					SMSC47M192_REG_TEMP_OFFSET(nr), 0);
--	up(&data->update_lock);
-+	mutex_unlock(&data->update_lock);
- 	return count;
- }
- 
-@@ -531,7 +532,7 @@ static int smsc47m192_detect(struct i2c_adapter *adapter, int address,
- 	/* Fill in the remaining client fields and put into the global list */
- 	strlcpy(client->name, "smsc47m192", I2C_NAME_SIZE);
- 	data->vrm = vid_which_vrm();
--	init_MUTEX(&data->update_lock);
-+	mutex_init(&data->update_lock);
- 
- 	/* Tell the I2C layer a new client has arrived */
- 	if ((err = i2c_attach_client(client)))
-@@ -594,7 +595,7 @@ static struct smsc47m192_data *smsc47m192_update_device(struct device *dev)
- 	struct smsc47m192_data *data = i2c_get_clientdata(client);
- 	int i, config;
- 
--	down(&data->update_lock);
-+	mutex_lock(&data->update_lock);
- 
- 	if (time_after(jiffies, data->last_updated + HZ + HZ / 2)
- 	 || !data->valid) {
-@@ -645,7 +646,7 @@ static struct smsc47m192_data *smsc47m192_update_device(struct device *dev)
- 		data->valid = 1;
+@@ -892,16 +893,16 @@ static struct videobuf_queue_ops vivi_video_qops = {
+ static int res_get(struct vivi_dev *dev, struct vivi_fh *fh)
+ {
+ 	/* is it free? */
+-	down(&dev->lock);
++	mutex_lock(&dev->lock);
+ 	if (dev->resources) {
+ 		/* no, someone else uses it */
+-		up(&dev->lock);
++		mutex_unlock(&dev->lock);
+ 		return 0;
  	}
- 
--	up(&data->update_lock);
-+	mutex_unlock(&data->update_lock);
- 
- 	return data;
+ 	/* it's free, grab it */
+ 	dev->resources =1;
+ 	dprintk(1,"res: get\n");
+-	up(&dev->lock);
++	mutex_unlock(&dev->lock);
+ 	return 1;
  }
+ 
+@@ -912,10 +913,10 @@ static int res_locked(struct vivi_dev *dev)
+ 
+ static void res_free(struct vivi_dev *dev, struct vivi_fh *fh)
+ {
+-	down(&dev->lock);
++	mutex_lock(&dev->lock);
+ 	dev->resources = 0;
+ 	dprintk(1,"res: put\n");
+-	up(&dev->lock);
++	mutex_lock(&dev->lock);
+ }
+ 
+ /* ------------------------------------------------------------------
+@@ -1422,7 +1423,7 @@ static int __init vivi_init(void)
+ 	init_waitqueue_head(&dev->vidq.wq);
+ 
+ 	/* initialize locks */
+-	init_MUTEX(&dev->lock);
++	mutex_init(&dev->lock);
+ 
+ 	dev->vidq.timeout.function = vivi_vid_timeout;
+ 	dev->vidq.timeout.data     = (unsigned long)dev;
 
 -- 
 Matthias Kaehlcke
 Linux Application Developer
 Barcelona
 
-                       El camino se hace al andar
-                           (Antonio Machado)
+      In itself, homosexuality is as limiting as heterosexuality: the
+     ideal should be to be capable of loving a woman or a man; either,
+      a human being, without  feeling fear, restraint, or obligation
+                          (Simone de Beauvoir)
                                                                  .''`.
     using free software / Debian GNU/Linux | http://debian.org  : :'  :
                                                                 `. `'`
