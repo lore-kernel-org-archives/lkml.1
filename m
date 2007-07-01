@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbXGAMTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbXGAMWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757401AbXGAMTT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 08:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbXGAMTK
+	id S1757482AbXGAMWn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 08:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbXGAMWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 08:19:10 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:47240 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755616AbXGAMTJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 08:19:09 -0400
-To: mista.tapas@gmx.net
-CC: alan@lxorguk.ukuu.org.uk, bunk@stusta.de, nix@esperi.org.uk,
-       galibert@pobox.com, tiwai@suse.de, kloczek@rudy.mif.pg.gda.pl,
-       linux-kernel@vger.kernel.org
-In-reply-to: <200707011346.52872.mista.tapas@gmx.net> (message from Florian
-	Schmidt on Sun, 1 Jul 2007 13:46:52 +0200)
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <20070624200837.16e11305@the-village.bc.nu> <E1I4IoZ-0003Hm-00@dorka.pomaz.szeredi.hu> <E1I4J76-0003MW-00@dorka.pomaz.szeredi.hu> <200707011346.52872.mista.tapas@gmx.net>
-Message-Id: <E1I4yMW-00078W-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sun, 01 Jul 2007 14:17:08 +0200
+	Sun, 1 Jul 2007 08:22:36 -0400
+Received: from zakalwe.fi ([80.83.5.154]:45621 "EHLO zakalwe.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755523AbXGAMWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 08:22:36 -0400
+Date: Sun, 1 Jul 2007 15:22:25 +0300
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: mtk-manpages@gmx.net, Davide Libenzi <davidel@xmailserver.org>
+Subject: Man page correction: epoll (7)
+Message-ID: <20070701122225.GB3400@zakalwe.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Well, had a look at what FUSD does.  It assumes that the ioctl
-> > argument is stuctured according to the command.  If all OSS ioctls are
-> > like that, then fine, fuse can support it properly.
-> >
-> > The drawback of this is that ioctls which aren't structured properly
-> > could cause weird failures due to wrong data being accessed by the
-> > poor unknowing kernel.
+Here's a bit of email I exchanged with Davide Libenzi on epoll (7) man 
+page. There is an error in answer 9:
+
+Davide Libenzi wrote:
+> On Mon, 25 Jun 2007, Heikki Orsila wrote:
+>> >From epoll man page:
+>>
+>>        Q9     Do I need to continuously read/write an  fd  until  EAGAIN when
+>>               using the EPOLLET flag ( Edge Triggered behaviour ) ?
+>>
+>>        A9     No you don't.
+>>             ...
+>>             For example, if you call read(2) by asking to  read
+>>             a  certain  amount of data and read(2) returns a lower number of
+>>             bytes, you can be sure to have exhausted the read I/O space  for
+>>             such  file  descriptor.
+>>             ...
+>>
+>> This doesn't seem very true in the general case. Afaik, terminal
+>> devices can be configured to return only one line per read(). For
+>> example,
+>>
+>>       read(terminal_fd, buf, 4096)
+>>
+>> will return 34 (the length of the line) but obviously the IO space would
+>> not be exhausted if _two_ lines arrived into terminal fd during IO wait.
+>> And thus, arrival of the second line went unnoticed.
+>>
+>> Teaching to optimise nonblocking reads will likely cause more bugs.
+>>
+>> I'm I correct? If yes, that number should be removed from the question
+>> list.
 > 
-> Included with the docs there's a list of the OSS ioctls. I don't understand 
-> enough of the problem to judge whether they are suitable to be handled by 
-> FUSE:
+> Yes, you are correct. Although the above is true for the majority of
+> stream files, so it better be fixed with the few counter-examples 
+> instead of being removed.
 > 
-> http://manuals.opensound.com/developer/ioctl.html [version 4]
-> http://www.4front-tech.com/pguide/oss.pdf [version 3]
+> - Davide
+
+and
+
+Davide Libenzi wrote:
+> Heikki Orsila wrote:
+>> Maybe so that we say that as a general rule one must read until EAGAIN,
+>> but mention specific cases where one only needs to wait for "short"
+>> reads?
 > 
-> I don't know which API version is supposed to be supported though.
+> Yes, that's fine with me.
 
-Thanks, but these docs are about what the ioctls do, and I'm totally
-uninterested in that.  What I'm interested is how the ioctl data is
-_structured_.
 
-OK, had a look at <linux/soundcard.h>, it does define a data
-structuring based on the ioctl numbers, and it's just slightly
-different from the structuring defined by <asm-generic/ioctl.h>.  Oh,
-the beauty of the ioctls.
+So, the Q9 should be changed:
 
-So answering my own question: no, it's not sanely possible to support
-ioctls through fuse without userspace hacks or significant effort.
+Q9	Do I need to continuously read/write an  fd  until  EAGAIN when
+	using the EPOLLET flag ( Edge Triggered behaviour ) ?
 
-A possibly acceptable option is to add a plugin mechanism, whereby
-people could write small ioctl interpreter kernel modules for their
-specific needs (such as parsing OSS ioctls), which would
-serialize/deserialize any type of ioctl input/output making them
-suitable for transfering between the kernel and the userspace
-filesystem.
+A9	As a general rule, yes. However, there are exceptions.
+	With some types of fds it is enough to wait until
+	read returns less bytes than was requested by the read call.
 
-Another, much more complex option is to design a generic ioctl data
-interpreter language, and let the filesystem upload their ioctl
-parsers into the kernel.
+Are there any fd types where such behavior is guaranteed by the Linux 
+kernel (for the future)? I.e. one can assume that edge-triggered fds 
+will behave properly if
 
-Miklos
+	x = read(fd, data, count) and x < count ?
+
+Regular files? Sockets? What?
+
+-- 
+Heikki Orsila			Barbie's law:
+heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
+http://www.iki.fi/shd
