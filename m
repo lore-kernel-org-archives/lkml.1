@@ -1,26 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbXGARBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbXGARJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758322AbXGARBi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 13:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXGARBc
+	id S1757637AbXGARJT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 13:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbXGARJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 13:01:32 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3473 "EHLO
+	Sun, 1 Jul 2007 13:09:09 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1174 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752325AbXGARBb (ORCPT
+	with ESMTP id S1753822AbXGARJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 13:01:31 -0400
+	Sun, 1 Jul 2007 13:09:06 -0400
 X-AuthUser: davidel@xmailserver.org
-Date: Sun, 1 Jul 2007 10:01:23 -0700 (PDT)
+Date: Sun, 1 Jul 2007 10:09:04 -0700 (PDT)
 From: Davide Libenzi <davidel@xmailserver.org>
 X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Heikki Orsila <shdl@zakalwe.fi>
+To: Ulrich Drepper <drepper@gmail.com>
 cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mtk-manpages@gmx.net
-Subject: Re: Man page correction: epoll (7)
-In-Reply-To: <20070701122225.GB3400@zakalwe.fi>
-Message-ID: <Pine.LNX.4.64.0707010953250.7547@alien.or.mcafeemobile.com>
-References: <20070701122225.GB3400@zakalwe.fi>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 0/6] sys_indirect RFC - sys_indirect introduction
+In-Reply-To: <a36005b50707010925k5c936c1ch2238b560c595a833@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0707011003510.7547@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.28360.1183153732.0> 
+ <a36005b50706291848p406fbb9aw99697f609b0d5c4b@mail.gmail.com> 
+ <Pine.LNX.4.64.0706301208140.2957@alien.or.mcafeemobile.com> 
+ <a36005b50706301454j46c23760m5f0ac6088fe24a9d@mail.gmail.com> 
+ <Pine.LNX.4.64.0706301458300.2957@alien.or.mcafeemobile.com> 
+ <Pine.LNX.4.64.0706301529310.2957@alien.or.mcafeemobile.com>
+ <a36005b50707010925k5c936c1ch2238b560c595a833@mail.gmail.com>
 X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
 X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
@@ -28,29 +36,25 @@ Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jul 2007, Heikki Orsila wrote:
+On Sun, 1 Jul 2007, Ulrich Drepper wrote:
 
-> So, the Q9 should be changed:
+> On 6/30/07, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > This is how all those overloaded syscalls looks like, BTW:
+> > [...]
+> > How would you do that with a single shared strcture, w/out adding in all
+> > signal paths the knowledge of the structure?
 > 
-> Q9	Do I need to continuously read/write an  fd  until  EAGAIN when
-> 	using the EPOLLET flag ( Edge Triggered behaviour ) ?
-> 
-> A9	As a general rule, yes. However, there are exceptions.
-> 	With some types of fds it is enough to wait until
-> 	read returns less bytes than was requested by the read call.
-> 
-> Are there any fd types where such behavior is guaranteed by the Linux 
-> kernel (for the future)? I.e. one can assume that edge-triggered fds 
-> will behave properly if
-> 
-> 	x = read(fd, data, count) and x < count ?
-> 
-> Regular files? Sockets? What?
+> You said it yourself: each individual wrapper would look like this.
+> Generalization really isn't possible, you'll have each wrapper syscall
+> looking different.  This means there is no reason to try coming up
+> with some overly complicated data structure which would only be useful
+> if the processing of that data structure could be centralized.
 
-Basically, any "streaming" file. That is, any file that tends to fill up 
-the buffer you supply to the call in full (till they have data in their 
-buffers, that is). Packet/token oriented files would be the ones you 
-cannot apply the rule to, since data is returned in multiple of tokens.
+With the current API design you'd able to easily confine the "pre" code 
+inside the "set" function, and the "post" code inside the "unset" 
+function. It looks pretty clean to me, and allows to limit the knowledge 
+of sys_indirect, the more as possible inside kernel/indirect.c.
+
 
 
 - Davide
