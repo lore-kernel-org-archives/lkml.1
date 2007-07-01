@@ -1,85 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXGAPbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbXGAPgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbXGAPbA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 11:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXGAPav
+	id S1755216AbXGAPgu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 11:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXGAPgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 11:30:51 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:57918
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbXGAPau (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 11:30:50 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Subject: Re: [PATCH] b44: power down PHY when interface down
-Date: Sun, 1 Jul 2007 17:29:59 +0200
-User-Agent: KMail/1.9.6
-Cc: =?iso-8859-1?q?T=F6r=F6k_Edvin?= <edwintorok@gmail.com>,
-       zambrano@broadcom.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, power@bughost.org
-References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <200707011223.17235.mb@bu3sch.de> <20070701150006.GE7929@xi.wantstofly.org>
-In-Reply-To: <20070701150006.GE7929@xi.wantstofly.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jul 2007 11:36:43 -0400
+Received: from mail.screens.ru ([213.234.233.54]:35676 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752350AbXGAPgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 11:36:42 -0400
+Date: Sun, 1 Jul 2007 19:36:29 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] rename cancel_rearming_delayed_work() to cancel_delayed_work_sync()
+Message-ID: <20070701153629.GA105@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707011729.59673.mb@bu3sch.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 July 2007 17:00:06 Lennert Buytenhek wrote:
-> On Sun, Jul 01, 2007 at 12:23:16PM +0200, Michael Buesch wrote:
-> 
-> > > More or less.  You can't add the resistances like that, since the
-> > > bus isolation chip buffers the IDSEL signal, but it is correct that
-> > > if the host's IDSEL resistor is larger than a certain value, the
-> > > combination of the resistive coupling of IDSEL plus the extra buffer
-> > > in the isolator might be causing the IDSEL input on the 'guest' PCI
-> > > board to assert too late (or not assert at all), causing config
-> > > accesses to fail.
-> > > 
-> > > (This also depends on the specific 'guest' PCI board used, as you
-> > > noted, due to differing IDSEL trace lengths/capacitances and input
-> > > pin capacitances on different PCI boards.  Also, it might work at
-> > > 33 MHz but not work at 66 MHz, etc.)
-> > 
-> > It doesn't work on any of my boards :(
-> 
-> What extender board is this?  Do you have docs/schematics?
+Imho, the current naming of cancel_xxx workqueue functions is very confusing.
 
-catalyst pcibx32
-http://bu3sch.de/pcibx.php
-Docs yes, schematics no.
+	cancel_delayed_work()
+	cancel_rearming_delayed_work()
+	cancel_rearming_delayed_workqueue()	// obsolete
 
-> And what motherboard brand/type?
+	cancel_work_sync()
 
-ABit AI7
-The other was some MSI and some very old random board. dunno.
-It works perfectly fine with other cards, like a linksys
-wlan card with a broadcom 4318 chip. It's just the b44
-that doesn't work in the extender.
+This looks as if the first 2 functions differ in "type" of their argument which
+is not true any longer, nowadays the difference is the behaviour.
 
-> Actually, the IDSEL resistor would be on the computer's
-> motherboard, not on the PCI board.  And to which address line
+The semantics of cancel_rearming_delayed_work(dwork) was changed significantly,
+it doesn't require that dwork rearms itself, and cancels dwork synchronously.
 
-Yeah, I know.
+Rename it to cancel_delayed_work_sync(). This matches cancel_delayed_work() and
+cancel_work_sync(). Re-create cancel_rearming_delayed_work() as a simple inline
+obsolete wrapper, like cancel_rearming_delayed_workqueue().
 
-> the IDSEL line is connected depends on which PCI slot on the
-> motherboard you're looking at.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Sure.
+--- OLD/include/linux/workqueue.h~1_rename	2007-05-17 23:05:13.000000000 +0400
++++ OLD/include/linux/workqueue.h	2007-06-02 14:26:54.000000000 +0400
+@@ -166,14 +166,21 @@ static inline int cancel_delayed_work(st
+ 	return ret;
+ }
+ 
+-extern void cancel_rearming_delayed_work(struct delayed_work *work);
++extern void cancel_delayed_work_sync(struct delayed_work *work);
+ 
+-/* Obsolete. use cancel_rearming_delayed_work() */
++/* Obsolete. use cancel_delayed_work_sync() */
+ static inline
+ void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
+ 					struct delayed_work *work)
+ {
+-	cancel_rearming_delayed_work(work);
++	cancel_delayed_work_sync(work);
++}
++
++/* Obsolete. use cancel_delayed_work_sync() */
++static inline
++void cancel_rearming_delayed_work(struct delayed_work *work)
++{
++	cancel_delayed_work_sync(work);
+ }
+ 
+ #endif
+--- OLD/kernel/workqueue.c~1_rename	2007-05-19 01:55:03.000000000 +0400
++++ OLD/kernel/workqueue.c	2007-07-01 15:02:12.000000000 +0400
+@@ -486,13 +486,13 @@ void cancel_work_sync(struct work_struct
+ EXPORT_SYMBOL_GPL(cancel_work_sync);
+ 
+ /**
+- * cancel_rearming_delayed_work - reliably kill off a delayed work.
++ * cancel_delayed_work_sync - reliably kill off a delayed work.
+  * @dwork: the delayed work struct
+  *
+  * It is possible to use this function if @dwork rearms itself via queue_work()
+  * or queue_delayed_work(). See also the comment for cancel_work_sync().
+  */
+-void cancel_rearming_delayed_work(struct delayed_work *dwork)
++void cancel_delayed_work_sync(struct delayed_work *dwork)
+ {
+ 	while (!del_timer(&dwork->timer) &&
+ 	       !try_to_grab_pending(&dwork->work))
+@@ -500,7 +500,7 @@ void cancel_rearming_delayed_work(struct
+ 	wait_on_work(&dwork->work);
+ 	work_clear_pending(&dwork->work);
+ }
+-EXPORT_SYMBOL(cancel_rearming_delayed_work);
++EXPORT_SYMBOL(cancel_delayed_work_sync);
+ 
+ static struct workqueue_struct *keventd_wq __read_mostly;
+ 
 
-> A multimeter should do the trick, but I would advise against this
-> if you're not totally comfortable with hacking hardware.
-
-Well, you mean to measure the idsel against each possible AD line?
-It's difficult, because the motherboard is inside of a standard
-computer case and a watercooling system is mounted. So I would
-have to disassemble all that stuff. :/
-Probably I can measure it with very thin probes on the slots
-without unmounting the board, hm...
-
--- 
-Greetings Michael.
