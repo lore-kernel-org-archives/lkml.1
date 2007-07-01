@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbXGAU2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbXGAU2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759314AbXGAU2G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 16:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758349AbXGAUXT
+	id S1759704AbXGAU2i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 16:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759409AbXGAUXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 16:23:19 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46894 "EHLO
+	Sun, 1 Jul 2007 16:23:20 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46898 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759480AbXGAUXP (ORCPT
+	with ESMTP id S1759305AbXGAUXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 16:23:15 -0400
-Date: Sun, 1 Jul 2007 22:23:41 +0200
+	Sun, 1 Jul 2007 16:23:17 -0400
+Date: Sun, 1 Jul 2007 22:23:44 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mm/slub.c: make code static
-Message-ID: <20070701202341.GW10869@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, acme@ghostprotocols.net,
+       davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, dccp@vger.kernel.org, netdev@vger.kernel.org
+Subject: [-mm patch] make struct dccp_li_cachep static
+Message-ID: <20070701202344.GX10869@stusta.de>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes some needlessly global code static.
+On Thu, Jun 28, 2007 at 03:43:21AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.22-rc4-mm2:
+>...
+>  git-net.patch
+>...
+>  git trees
+>...
+
+
+Struct dccp_li_cachep can become static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
-
- mm/slub.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
---- linux-2.6.22-rc6-mm1/mm/slub.c.old	2007-07-01 00:34:07.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/mm/slub.c	2007-07-01 00:35:26.000000000 +0200
-@@ -240,7 +240,7 @@
- 
- /* A list of all slab caches on the system */
- static DECLARE_RWSEM(slub_lock);
--LIST_HEAD(slab_caches);
-+static LIST_HEAD(slab_caches);
- 
- /*
-  * Tracking user of a slab.
-@@ -3658,7 +3658,7 @@
- 	.filter = uevent_filter,
+--- linux-2.6.22-rc6-mm1/net/dccp/ccids/lib/loss_interval.c.old	2007-07-01 00:38:12.000000000 +0200
++++ linux-2.6.22-rc6-mm1/net/dccp/ccids/lib/loss_interval.c	2007-07-01 00:38:21.000000000 +0200
+@@ -27,7 +27,7 @@
+ 	u32		 dccplih_interval;
  };
  
--decl_subsys(slab, &slab_ktype, &slab_uevent_ops);
-+static decl_subsys(slab, &slab_ktype, &slab_uevent_ops);
+-struct kmem_cache *dccp_li_cachep __read_mostly;
++static struct kmem_cache *dccp_li_cachep __read_mostly;
  
- #define ID_STR_LENGTH 64
- 
-@@ -3756,7 +3756,7 @@
- 	struct saved_alias *next;
- };
- 
--struct saved_alias *alias_list;
-+static struct saved_alias *alias_list;
- 
- static int sysfs_slab_alias(struct kmem_cache *s, const char *name)
+ static inline struct dccp_li_hist_entry *dccp_li_hist_entry_new(const gfp_t prio)
  {
 
