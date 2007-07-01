@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbXGARfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbXGASHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757736AbXGARfs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 13:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbXGARfl
+	id S1756760AbXGASHb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 14:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbXGASHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 13:35:41 -0400
-Received: from mail.screens.ru ([213.234.233.54]:53765 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753182AbXGARfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 13:35:40 -0400
-Date: Sun, 1 Jul 2007 21:35:58 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [NETPOLL] netconsole: fix soft lockup when removing module
-Message-ID: <20070701173558.GA207@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 1 Jul 2007 14:07:23 -0400
+Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:20977 "HELO
+	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753822AbXGASHW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 14:07:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=igAc/mujQVCIo8+TSmmx8X62jUDJTtS9xjI9wm8rkIlIxdOr7O/GKUiFWYg5M8lv8iIF2vMENilp9aU42vR3SrpvU5jnQqLHccHo2J+5bcieI1WbxmamTq/yv45hgqxVEmz/5zeS+JLuXtw6SiVytBu/hr5CLpHALBfCgWhVTTE=  ;
+X-YMail-OSG: jy0KDLIVM1nX0lYPq2vbPBzJ9tmnlRfufe4xW5DIr8I2DIKK
+From: David Brownell <david-b@pacbell.net>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] PXA27x UDC driver.
+Date: Sun, 1 Jul 2007 10:49:41 -0700
+User-Agent: KMail/1.9.6
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070628103619.GW13886@enneenne.com> <20070701150036.GA20518@flint.arm.linux.org.uk>
+In-Reply-To: <20070701150036.GA20518@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200707011049.42333.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
->
->    #1
->    Until kernel ver. 2.6.21 (including) cancel_rearming_delayed_work()
->    required a work function should always (unconditionally) rearm with
->    delay > 0 - otherwise it would endlessly loop. This patch replaces
->    this function with cancel_delayed_work(). Later kernel versions don't
->    require this, so here it's only for uniformity.
+On Sunday 01 July 2007, Russell King - ARM Linux wrote:
+> >  
+> > +#ifdef CONFIG_USB_GADGET_PXA27X
+> > +#define DEV_CONFIG_SUBSET
+> > +#endif
+> > +
+> 
+> Bad - can we not make this runtime dependent?
 
-But 2.6.22 doesn't need this change, why it was merged?
+The #define controls which descriptors are statically linked
+into every object.  I suppose someone could submit a patch which
+does that differently ... I'm not keen on having lots of "will
+never use" data bloating any driver, but it could be moved to
+__initdata, at the cost of adding code to kmalloc (and kfree)
+all the individual descriptors.  Restricting code bloat to init
+sections would still be worse than no bloat...
 
-In fact, I suspect this change adds a race,
 
-> --- a/net/core/netpoll.c
-> +++ b/net/core/netpoll.c
-> @@ -72,7 +72,8 @@ static void queue_process(struct work_struct *work)
->  			netif_tx_unlock(dev);
->  			local_irq_restore(flags);
->  
-> -			schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> +			if (atomic_read(&npinfo->refcnt))
-> +				schedule_delayed_work(&npinfo->tx_work, HZ/10);
->  			return;
->  		}
->  		netif_tx_unlock(dev);
-> @@ -785,9 +786,15 @@ void netpoll_cleanup(struct netpoll *np)
->  			if (atomic_dec_and_test(&npinfo->refcnt)) {
->  				skb_queue_purge(&npinfo->arp_tx);
->  				skb_queue_purge(&npinfo->txq);
-> -				cancel_rearming_delayed_work(&npinfo->tx_work);
-> +				cancel_delayed_work(&npinfo->tx_work);
->  				flush_scheduled_work();
+> > +static void *pxa27x_ep_alloc_buffer(struct usb_ep *_ep, unsigned bytes,
+> > +				    dma_addr_t * dma, unsigned int gfp_flags)
+> > +{
+> > +	...
+> 
+> Err, no.  There's a perfectly good replacement.  DMA pools.  Please use
+> the provided infrastructure instead of inventing your own solution.
 
-Suppose that ->refcnt == 1, and queue_process() was preempted just after
-atomic_read(&npinfo->refcnt).
+This was cloned from code which predates dma pools.  :)
 
-netpoll_cleanup() comes, cancel_delayed_work() does nothing, flush_scheduled_work()
-sleeps.
+Regardless, I'm planning to remove that interface from the gadget stack.
+It's utility is far exceeded by the number of controller driver bugs
+in that area.  Plus, if any gadget driver needs such a mechanism, the
+dma_pool stuff that now exists could be called directly.
 
-queue_process() gets CPU, re-schedules ->tx_work, and returns.
 
-flush_scheduled_work() completes, netpoll_cleanup() frees npinfo and returns
-while ->tx_work is pending.
+> Pointers which are cleared are set to NULL not zero.  Zero is an integer.
+> NULL is a pointer.  Don't confuse the two.
 
-No?
+ISTR this class of error would be reported by sparse ("make check").
 
-Oleg.
-
+- Dave
