@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbXGAUW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbXGAUXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759271AbXGAUW3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 16:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbXGAUUp
+	id S1759082AbXGAUXH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 16:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758804AbXGAUU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 16:20:45 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:46830 "EHLO
+	Sun, 1 Jul 2007 16:20:57 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46836 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758674AbXGAUUn (ORCPT
+	with ESMTP id S1758788AbXGAUU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 16:20:43 -0400
-Date: Sun, 1 Jul 2007 22:21:10 +0200
+	Sun, 1 Jul 2007 16:20:56 -0400
+Date: Sun, 1 Jul 2007 22:21:22 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/net/ns83820.c: fix a check-after-use
-Message-ID: <20070701202110.GH10869@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] allow disabling DNOTIFY without EMBEDDED
+Message-ID: <20070701202122.GJ10869@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,26 +23,42 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a check-after-use spotted by the Coverity checker.
+This patch allows disabling DNOTIFY with CIONFIG_EMBEDDED=n.
+
+I'm currently running a kernel with dnotify disabled and I haven't run 
+into any problem. Is there any popular application left that breaks 
+without dnotify support in the kernel?
+
+Note that this patch does not remove dnotify support, it still defaults
+to "y", and the help text recommends enabling it.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.22-rc6-mm1/drivers/net/ns83820.c.old	2007-06-29 22:12:22.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/drivers/net/ns83820.c	2007-06-29 22:13:59.000000000 +0200
-@@ -1985,11 +1985,13 @@ static int __devinit ns83820_init_one(st
+
+This patch has been sent on:
+- 22 Jun 2007
+
+--- linux-2.6.22-rc4-mm2/fs/Kconfig.old	2007-06-21 18:25:20.000000000 +0200
++++ linux-2.6.22-rc4-mm2/fs/Kconfig	2007-06-21 18:25:54.000000000 +0200
+@@ -585,17 +585,17 @@
+ 	depends on XFS_QUOTA || QUOTA
+ 	default y
  
- 	ndev = alloc_etherdev(sizeof(struct ns83820));
- 	dev = PRIV(ndev);
--	dev->ndev = ndev;
-+
- 	err = -ENOMEM;
- 	if (!dev)
- 		goto out;
+ config DNOTIFY
+-	bool "Dnotify support" if EMBEDDED
++	bool "Dnotify support"
+ 	default y
+ 	help
+ 	  Dnotify is a directory-based per-fd file change notification system
+ 	  that uses signals to communicate events to user-space.  There exist
+ 	  superior alternatives, but some applications may still rely on
+ 	  dnotify.
  
-+	dev->ndev = ndev;
-+
- 	spin_lock_init(&dev->rx_info.lock);
- 	spin_lock_init(&dev->tx_lock);
- 	spin_lock_init(&dev->misc_lock);
+-	  Because of this, if unsure, say Y.
++	  If unsure, say Y.
+ 
+ config AUTOFS_FS
+ 	tristate "Kernel automounter support"
+ 	help
 
