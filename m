@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbXGARdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbXGARfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbXGARdX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 13:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbXGARdP
+	id S1757736AbXGARfs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 13:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbXGARfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 13:33:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:4870 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753030AbXGARdO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 13:33:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=XwP9aXnwnCBbOx6zhoEbCqTn0z7AiN6VJfE4wBFlwnwS5SgRnRwxd1aGbTG53Izq1Jac+W/RDKMwFuM4UPL3zcaBF/VdDFbs+RsO9RIZy6LercCf6X0iaT+dl32uv9U6mUu4yZGT8dgTiVSb5FPEYGSOAG+33AKtfUpZsd24WOA=
-Message-ID: <2c0942db0707011033v21c91584h3924402f0ce30fa5@mail.gmail.com>
-Date: Sun, 1 Jul 2007 10:33:12 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: Dan <metalifloyd@gmail.com>
-Subject: Re: PROBLEM: SATA AHCI driver significant throughput loss in 2.6.22-rc5-g75154f40-dirty
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <439fa30707010956h1c467e28xc9eff37ebec523ad@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jul 2007 13:35:41 -0400
+Received: from mail.screens.ru ([213.234.233.54]:53765 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753182AbXGARfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 13:35:40 -0400
+Date: Sun, 1 Jul 2007 21:35:58 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [NETPOLL] netconsole: fix soft lockup when removing module
+Message-ID: <20070701173558.GA207@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <439fa30706262117u2d5553dfp8395c6ca41574a8c@mail.gmail.com>
-	 <20070630005747.9bc9ba40.akpm@linux-foundation.org>
-	 <439fa30707010956h1c467e28xc9eff37ebec523ad@mail.gmail.com>
-X-Google-Sender-Auth: 1f4cf95616adc7d9
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/1/07, Dan <metalifloyd@gmail.com> wrote:
-> > Are you able (as a matter of some urgency) to run a git bisection
-> > search to identify the offending commit?
+Jarek Poplawski wrote:
 >
-> For some reason I am no longer able to reproduce the problem. I've
-> tried several versions including the one I reported and I just can't
-> reproduce the problem. I accidentally overwrote the original kernel
-> that had the problem. The weird thing is even when I reset the git
-> tree to 2.6.22-rc5-g75154f40 and build it, the error is gone.
+>    #1
+>    Until kernel ver. 2.6.21 (including) cancel_rearming_delayed_work()
+>    required a work function should always (unconditionally) rearm with
+>    delay > 0 - otherwise it would endlessly loop. This patch replaces
+>    this function with cancel_delayed_work(). Later kernel versions don't
+>    require this, so here it's only for uniformity.
 
-But that isn't the kernel you reported the error against. You reported
-that 2.6.22-rc5-g75154f40-*dirty* had the error, which means there was
-a diff between what you were building and what was in the repository.
-If you know what the diff was and it was something trivial, then you
-can disregard this bit of pedantry, but if not, try to recall if you
-had something else patched against that.
+But 2.6.22 doesn't need this change, why it was merged?
 
-Regardless, as it's not reproducible it sounds like the report should
-be closed...
+In fact, I suspect this change adds a race,
+
+> --- a/net/core/netpoll.c
+> +++ b/net/core/netpoll.c
+> @@ -72,7 +72,8 @@ static void queue_process(struct work_struct *work)
+>  			netif_tx_unlock(dev);
+>  			local_irq_restore(flags);
+>  
+> -			schedule_delayed_work(&npinfo->tx_work, HZ/10);
+> +			if (atomic_read(&npinfo->refcnt))
+> +				schedule_delayed_work(&npinfo->tx_work, HZ/10);
+>  			return;
+>  		}
+>  		netif_tx_unlock(dev);
+> @@ -785,9 +786,15 @@ void netpoll_cleanup(struct netpoll *np)
+>  			if (atomic_dec_and_test(&npinfo->refcnt)) {
+>  				skb_queue_purge(&npinfo->arp_tx);
+>  				skb_queue_purge(&npinfo->txq);
+> -				cancel_rearming_delayed_work(&npinfo->tx_work);
+> +				cancel_delayed_work(&npinfo->tx_work);
+>  				flush_scheduled_work();
+
+Suppose that ->refcnt == 1, and queue_process() was preempted just after
+atomic_read(&npinfo->refcnt).
+
+netpoll_cleanup() comes, cancel_delayed_work() does nothing, flush_scheduled_work()
+sleeps.
+
+queue_process() gets CPU, re-schedules ->tx_work, and returns.
+
+flush_scheduled_work() completes, netpoll_cleanup() frees npinfo and returns
+while ->tx_work is pending.
+
+No?
+
+Oleg.
+
