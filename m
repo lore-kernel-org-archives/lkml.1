@@ -1,114 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbXGAQcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbXGAQdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756788AbXGAQcs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 12:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXGAQcl
+	id S1758185AbXGAQdU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 12:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbXGAQdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 12:32:41 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:43254
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752325AbXGAQcl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 12:32:41 -0400
-Date: Sun, 1 Jul 2007 18:33:49 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: mchehab@infradead.org, video4linux-list@redhat.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 4/5] use mutex instead of semaphore in Virtual Video driver
-Message-ID: <20070701163349.GG3940@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	mchehab@infradead.org, video4linux-list@redhat.com,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20070701162529.GC3940@traven>
+	Sun, 1 Jul 2007 12:33:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:56753 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752226AbXGAQdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 12:33:10 -0400
+Message-ID: <4687D744.6000103@goop.org>
+Date: Sun, 01 Jul 2007 09:33:08 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070701162529.GC3940@traven>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
+       chrisw@sous-sol.org, xen-devel@lists.xensource.com,
+       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>
+Subject: Re: 2.6.22-rc6-mm1: Xen: WARNING: Absolute relocations present
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>	<20070628204001.GA6087@stusta.de> <46841EC4.7080805@goop.org> <m1hcoorv79.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1hcoorv79.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Virtual Video driver uses a semaphore as mutex. Use the mutex API
-instead of the (binary) semaphore.
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>> Adrian Bunk wrote:
+>>     
+>>> <--  snip  -->
+>>>
+>>> ...
+>>>   RELOCS  arch/i386/boot/compressed/vmlinux.relocs
+>>> WARNING: Absolute relocations present
+>>> Offset     Info     Type     Sym.Value Sym.Name
+>>> c0101f80 020c6501   R_386_32 00000000  xen_irq_disable_direct_reloc
+>>> c0101f9a 0221ea01   R_386_32 00000000  xen_save_fl_direct_reloc
+>>> ...
+>>>
+>>> <--  snip  -->
+>>>
+>>>       
+>> Hm.  Those are false alarms.  I guess I could do something to hide them, but
+>> there's nothing inherently wrong with correctly used abs symbols.  Is there
+>> someway to whitelist them?
+>>     
+>
+> Yes.  Just add them to arch/i386/boot/compressed/relocs.c safe_abs_syms.
+>   
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+OK, how's this?
 
---
+Subject: xen: suppress abs symbol warnings for unused reloc pointers
 
-diff --git a/drivers/media/video/vivi.c b/drivers/media/video/vivi.c
-index f7e1d19..e86f4cd 100644
---- a/drivers/media/video/vivi.c
-+++ b/drivers/media/video/vivi.c
-@@ -25,6 +25,7 @@
- #include <linux/pci.h>
- #include <linux/random.h>
- #include <linux/version.h>
-+#include <linux/mutex.h>
- #include <linux/videodev2.h>
- #include <linux/dma-mapping.h>
- #ifdef CONFIG_VIDEO_V4L1_COMPAT
-@@ -168,7 +169,7 @@ static LIST_HEAD(vivi_devlist);
- struct vivi_dev {
- 	struct list_head           vivi_devlist;
- 
--	struct semaphore           lock;
-+	struct mutex               lock;
- 
- 	int                        users;
- 
-@@ -892,16 +893,16 @@ static struct videobuf_queue_ops vivi_video_qops = {
- static int res_get(struct vivi_dev *dev, struct vivi_fh *fh)
- {
- 	/* is it free? */
--	down(&dev->lock);
-+	mutex_lock(&dev->lock);
- 	if (dev->resources) {
- 		/* no, someone else uses it */
--		up(&dev->lock);
-+		mutex_unlock(&dev->lock);
- 		return 0;
- 	}
- 	/* it's free, grab it */
- 	dev->resources =1;
- 	dprintk(1,"res: get\n");
--	up(&dev->lock);
-+	mutex_unlock(&dev->lock);
- 	return 1;
- }
- 
-@@ -912,10 +913,10 @@ static int res_locked(struct vivi_dev *dev)
- 
- static void res_free(struct vivi_dev *dev, struct vivi_fh *fh)
- {
--	down(&dev->lock);
-+	mutex_lock(&dev->lock);
- 	dev->resources = 0;
- 	dprintk(1,"res: put\n");
--	up(&dev->lock);
-+	mutex_lock(&dev->lock);
- }
- 
- /* ------------------------------------------------------------------
-@@ -1422,7 +1423,7 @@ static int __init vivi_init(void)
- 	init_waitqueue_head(&dev->vidq.wq);
- 
- 	/* initialize locks */
--	init_MUTEX(&dev->lock);
-+	mutex_init(&dev->lock);
- 
- 	dev->vidq.timeout.function = vivi_vid_timeout;
- 	dev->vidq.timeout.data     = (unsigned long)dev;
+The Xen code generates some abs symbols which are OK from a relocation
+perspective.
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Adrian Bunk <bunk@stusta.de>
 
-      In itself, homosexuality is as limiting as heterosexuality: the
-     ideal should be to be capable of loving a woman or a man; either,
-      a human being, without  feeling fear, restraint, or obligation
-                          (Simone de Beauvoir)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+---
+ arch/i386/boot/compressed/relocs.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+===================================================================
+--- a/arch/i386/boot/compressed/relocs.c
++++ b/arch/i386/boot/compressed/relocs.c
+@@ -31,6 +31,8 @@ static const char* safe_abs_relocs[] = {
+ 		"__kernel_rt_sigreturn",
+ 		"__kernel_sigreturn",
+ 		"SYSENTER_RETURN",
++		"xen_irq_disable_direct_reloc",
++		"xen_save_fl_direct_reloc",
+ };
+ 
+ static int is_safe_abs_reloc(const char* sym_name)
+
+
