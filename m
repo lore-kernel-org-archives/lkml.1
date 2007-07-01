@@ -1,73 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbXGAHkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbXGAHlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbXGAHkx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbXGAHhu
+	id S1756867AbXGAHlS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 03:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757006AbXGAHh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:37:50 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36398 "EHLO e2.ny.us.ibm.com"
+	Sun, 1 Jul 2007 03:37:58 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:55078 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756260AbXGAHhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:37:47 -0400
-Subject: [EXT4 set 4][PATCH 4/5] i_version:ext4 inode version update
+	id S1756995AbXGAHhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 03:37:55 -0400
+Subject: [EXT4 set 4][PATCH 5/5] i_version: noversion mount option to
+	disable inode version updates
 From: Mingming Cao <cmm@us.ibm.com>
 Reply-To: cmm@us.ibm.com
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, nfsv4@linux-nfs.org
+       linux-ext4@vger.kernel.org
 Content-Type: text/plain
 Organization: IBM Linux Technology Center
-Date: Sun, 01 Jul 2007 03:37:45 -0400
-Message-Id: <1183275465.4010.130.camel@localhost.localdomain>
+Date: Sun, 01 Jul 2007 03:37:53 -0400
+Message-Id: <1183275474.4010.132.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is on top of i_version_update_vfs.
-The i_version field of the inode is set on inode creation and incremented when
-the inode is being modified.
+Add a "noversion" mount option to disable inode version updates.
 
-Signed-off-by: Jean Noel Cordenner <jean-noel.cordenner@bull.net>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
+Signed-off-by: Kalpak Shah <kalpak@clusterfs.com>
 
-Index: linux-2.6.22-rc4/fs/ext4/ialloc.c
+Index: linux-2.6.21/fs/ext4/super.c
 ===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/ialloc.c	2007-06-13 17:16:28.000000000 -0700
-+++ linux-2.6.22-rc4/fs/ext4/ialloc.c	2007-06-13 17:24:45.000000000 -0700
-@@ -565,6 +565,7 @@ got:
- 	inode->i_blocks = 0;
- 	inode->i_mtime = inode->i_atime = inode->i_ctime = ei->i_crtime =
- 						       ext4_current_time(inode);
-+	inode->i_version = 1;
- 
- 	memset(ei->i_data, 0, sizeof(ei->i_data));
- 	ei->i_dir_start_lookup = 0;
-Index: linux-2.6.22-rc4/fs/ext4/inode.c
+--- linux-2.6.21.orig/fs/ext4/super.c
++++ linux-2.6.21/fs/ext4/super.c
+@@ -725,7 +725,7 @@ enum {
+ 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
+ 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
+ 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
+-	Opt_grpquota, Opt_extents, Opt_noextents,
++	Opt_grpquota, Opt_extents, Opt_noextents, Opt_noversion,
+ };
+
+ static match_table_t tokens = {
+@@ -777,6 +777,7 @@ static match_table_t tokens = {
+ 	{Opt_barrier, "barrier=%u"},
+ 	{Opt_extents, "extents"},
+ 	{Opt_noextents, "noextents"},
++	{Opt_noversion, "noversion"},
+ 	{Opt_err, NULL},
+ 	{Opt_resize, "resize"},
+ };
+@@ -1115,6 +1116,9 @@ clear_qf_name:
+ 		case Opt_noextents:
+ 			clear_opt (sbi->s_mount_opt, EXTENTS);
+ 			break;
++		case Opt_noversion:
++			set_opt(sbi->s_mount_opt, NOVERSION);
++			break;
+ 		default:
+ 			printk (KERN_ERR
+ 				"EXT4-fs: Unrecognized mount option \"%s\" "
+Index: linux-2.6.21/include/linux/ext4_fs.h
 ===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/inode.c	2007-06-13 17:21:29.000000000 -0700
-+++ linux-2.6.22-rc4/fs/ext4/inode.c	2007-06-13 17:24:45.000000000 -0700
-@@ -3082,6 +3082,7 @@ int ext4_mark_iloc_dirty(handle_t *handl
+--- linux-2.6.21.orig/include/linux/ext4_fs.h
++++ linux-2.6.21/include/linux/ext4_fs.h
+@@ -473,6 +473,7 @@ do {									       \
+ #define EXT4_MOUNT_USRQUOTA		0x100000 /* "old" user quota */
+ #define EXT4_MOUNT_GRPQUOTA		0x200000 /* "old" group quota */
+ #define EXT4_MOUNT_EXTENTS		0x400000 /* Extents support */
++#define EXT4_MOUNT_NOVERSION		0x800000 /* No inode version updates */
+
+ /* Compatibility, for having both ext2_fs.h and ext4_fs.h included at once */
+ #ifndef _LINUX_EXT2_FS_H
+Index: linux-2.6.21/fs/ext4/inode.c
+===================================================================
+--- linux-2.6.21.orig/fs/ext4/inode.c
++++ linux-2.6.21/fs/ext4/inode.c
+@@ -3082,7 +3082,9 @@ int ext4_mark_iloc_dirty(handle_t *handl
  {
  	int err = 0;
- 
-+	inode->i_version++;
+
+-	inode->i_version++;
++	if (!test_opt(inode->i_sb, NOVERSION))
++		inode->i_version++;
++
  	/* the do_update_inode consumes one bh->b_count */
  	get_bh(iloc->bh);
- 
-Index: linux-2.6.22-rc4/fs/ext4/super.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/super.c	2007-06-13 17:19:11.000000000 -0700
-+++ linux-2.6.22-rc4/fs/ext4/super.c	2007-06-13 17:24:45.000000000 -0700
-@@ -2846,8 +2846,8 @@ out:
- 		i_size_write(inode, off+len-towrite);
- 		EXT4_I(inode)->i_disksize = inode->i_size;
- 	}
--	inode->i_version++;
- 	inode->i_mtime = inode->i_ctime = CURRENT_TIME;
-+	inode->i_version = 1;
- 	ext4_mark_inode_dirty(handle, inode);
- 	mutex_unlock(&inode->i_mutex);
- 	return len - towrite;
+
 
 
