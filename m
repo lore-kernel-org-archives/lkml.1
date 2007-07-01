@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbXGAT0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbXGATsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbXGAT0p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 15:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbXGAT0i
+	id S1758102AbXGATsK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 15:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbXGATr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 15:26:38 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:49406 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756183AbXGAT0i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 15:26:38 -0400
-Date: Sun, 1 Jul 2007 21:27:55 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <20070701192755.GX13886@enneenne.com>
-References: <20070628084003.GQ13886@enneenne.com> <1183031060.1170.145.camel@pmac.infradead.org> <20070628161450.GD13886@enneenne.com> <1183117082.1170.308.camel@pmac.infradead.org> <20070629150813.GM13886@enneenne.com> <1183132548.1170.360.camel@pmac.infradead.org> <20070629163422.GP13886@enneenne.com> <1183135253.17622.5.camel@shinybook.infradead.org> <20070630171340.GT13886@enneenne.com> <1183291392.2828.17.camel@shinybook.infradead.org>
-MIME-Version: 1.0
+	Sun, 1 Jul 2007 15:47:59 -0400
+Received: from mail.screens.ru ([213.234.233.54]:36619 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755203AbXGATr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 15:47:58 -0400
+Date: Sun, 1 Jul 2007 23:47:59 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Sattler <tsattler@gmx.de>
+Cc: Markus Rechberger <mrechberger@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Mack <daniel@qanu.de>,
+       Holger Waechtler <holger@qanu.de>
+Subject: Re: 2.6.22-rc6 spurious hangs
+Message-ID: <20070701194759.GA269@tv-sign.ru>
+References: <4683F48F.9010603@gmx.de> <20070628181044.GA613@tv-sign.ru> <4684B132.2070405@gmx.de> <20070629130955.GA284@tv-sign.ru> <20070629131605.GA25964@elte.hu> <20070629135848.GA332@tv-sign.ru> <1183152090.7089.183.camel@gaivota> <d9def9db0706291434v2fe69578qf84488bfd6a965f3@mail.gmail.com> <20070630141928.GA5182@tv-sign.ru> <4687F883.1000007@gmx.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1183291392.2828.17.camel@shinybook.infradead.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <4687F883.1000007@gmx.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 01, 2007 at 01:03:11PM +0100, David Woodhouse wrote:
+On 07/01, Thomas Sattler wrote:
+>
+> > Thomas, any chance you could try the patch below? It is very, very stupid,
+> > it was done without any understanding of this code, and of course it is
+> > completely untested. I doubt very much it is correct, and even if it is
+> > correct it is definitely not good. It would be great if Dmitry can take a look.
 > 
-> Seems reasonable enough in principle -- but whatever you do, don't use
-> "long" for it. That would definitely need different behaviour for 32-bit
-> vs. 64-bit. Use explicitly sized types such as uint32_t or uint64_t.
+> I'm still testing but I couldn't break it until now.
+> And I didn't find any drawbacks yet.
 
-Which is the difference in using __u32 or uint32_t? Maybe is better
-defining the new struct as follow?
+Great, thanks a lot Thomas!
 
-    struct pps_timedata_s {
-       uint32_t sec;
-       uint32_t nsec;
-    }
+I'll re-send the patch tomorrow with a proper changelog unless you find
+something else or maintainers have any objections.
 
-or as:
+Oleg.
 
-    struct pps_timedata_s {
-	__u32 sec;
-	__u32 nsec;
-    }
-
-?
-
-Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
