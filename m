@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbXGAWiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbXGAWjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758116AbXGAWiu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 18:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbXGAWil
+	id S1758755AbXGAWjU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 18:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbXGAWjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 18:38:41 -0400
-Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:58291 "EHLO
-	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751820AbXGAWik (ORCPT
+	Sun, 1 Jul 2007 18:39:09 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:60272 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbXGAWjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 18:38:40 -0400
-Date: Sun, 1 Jul 2007 18:38:37 -0400 (EDT)
+	Sun, 1 Jul 2007 18:39:08 -0400
+Date: Sun, 1 Jul 2007 18:39:04 -0400 (EDT)
 From: James Morris <jmorris@namei.org>
 X-X-Sender: jmorris@d.namei
 To: Adrian Bunk <bunk@stusta.de>
 cc: Andrew Morton <akpm@linux-foundation.org>,
        Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] unexport mmap_min_addr
-In-Reply-To: <20070701202353.GZ10869@stusta.de>
-Message-ID: <Line.LNX.4.64.0707011838250.14811@d.namei>
+Subject: Re: [-mm patch] remove security/selinux/hooks.c:enabled_mmap_min_addr
+In-Reply-To: <20070701202357.GA10869@stusta.de>
+Message-ID: <Line.LNX.4.64.0707011838410.14811@d.namei>
 References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
- <20070701202353.GZ10869@stusta.de>
+ <20070701202357.GA10869@stusta.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,20 +33,18 @@ On Sun, 1 Jul 2007, Adrian Bunk wrote:
 > >...
 > > Changes since 2.6.22-rc4-mm2:
 > >...
-> >  git-selinux.patch
+> > +git-selinux-disable-mmap_min_addr-by-default.patch
+> > 
+> >  Fix git-selinux
 > >...
-> >  git trees
-> >...
 > 
 > 
-> Unneeded export.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> This became dead code.
 
-Thanks, applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-akpm
+Thanks, it was already fixed in my tree.
 
 
+- James
 -- 
 James Morris
 <jmorris@namei.org>
