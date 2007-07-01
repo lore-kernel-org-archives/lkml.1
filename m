@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbXGAEtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbXGAEvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbXGAEtj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 00:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbXGAEtb
+	id S1755954AbXGAEvs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 00:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXGAEvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 00:49:31 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:51359 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbXGAEta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 00:49:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RagCrCAn0qcW7z4JQuSdV0Ah7SoKcT9MLxUxvrEv9VzAH3iqt+Ww3UdrJLtqRyXFWJVhsEM9OpDSznzV1OfEimwdQ8K28wj1uK2rKP/Go+2PLJ/v2k4yUDP1ow3m1lcMcF+kpCYx7hTpmhD2ddnzR4SSsPlakl0vDARPVzrmmqw=
-Message-ID: <a781481a0706302149jcaeca33q4f556bcb6193c31d@mail.gmail.com>
-Date: Sun, 1 Jul 2007 10:19:29 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "jim miro" <daliroot@yahoo.com>
-Subject: Re: kvm_amd: Unknown symbol signal_pending - where should I be looking?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <95403.37043.qm@web39512.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 1 Jul 2007 00:51:41 -0400
+Received: from smtpout.mac.com ([17.250.248.174]:64941 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751125AbXGAEvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 00:51:40 -0400
+In-Reply-To: <468687DE.6030003@garzik.org>
+References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <20070630120541.GA21339@srcf.ucam.org> <46866C6B.9010801@linux.intel.com> <468687DE.6030003@garzik.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <05EEFFFE-AD93-40A1-8851-92C3053286E1@mac.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       =?ISO-8859-1?Q?T=F6r=F6k_Edvin?= <edwintorok@gmail.com>,
+       netdev@vger.kernel.org, power@bughost.org, zambrano@broadcom.com,
+       linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <95403.37043.qm@web39512.mail.mud.yahoo.com>
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: PM policy, hotplug, power saving (was Re: [PATCH] b44: power down PHY when interface down)
+Date: Sun, 1 Jul 2007 00:51:15 -0400
+To: Jeff Garzik <jeff@garzik.org>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/1/07, jim miro <daliroot@yahoo.com> wrote:
-> I am trying to get Kvm running on Debian with a custom
->  2.6.22-rc5 amd dual core kernel.
-
-Custom as in custom (non-mainline) patches? Can't really
-help with those, then.
-
-> To prepare I do:
+On Jun 30, 2007, at 12:42:06, Jeff Garzik wrote:
+> Definitely matters.  Switch renegotiation can take a while, and you  
+> must take into account the common case of interface bouncing  
+> (immediate down, then up).
 >
-> /sbin/modprobe kvm-amd
-> FATAL: Error inserting kvm_amd
-> (/lib/modules/2.6.22-rc5/extra/kvm-amd.ko): Unknown
-> symbol in module, or unknown parameter (see dmesg)
+> Hoards actively complained the few times we experimented with this,  
+> because of e.g. DHCP's habit of bouncing the interface, which  
+> resulted in PHY power bouncing, which resulted in negotiation,  
+> which resulted in an excrutiating wait on various broken or stupid  
+> switches.
 >
-> dmesg returns:
-> kvm_amd: Unknown symbol signal_pending
+> Overall, this may be classed with other problems of a similar  
+> sort:  we can power down a PHY, but that removes hotplug capability  
+> and extends partner/link negotiation time.
+>
+> Like SATA, we actually want to support BOTH -- active hotplug and  
+> PHY power-down -- and so this wanders into power management policy.
+>
+> Give me a knob, and we can program plenty of ethernet|SATA|USB|...  
+> drivers to power down the PHY and save power.
 
-signal_pending was supposed to be an inline, and
-drivers/kvm/svm.c does #include sched.h ... so not sure
-where's the problem.
+With some buggy switches and other hardware you actually *want* to  
+bounce the link to get them to properly renegotiate.  I can also see  
+wanting to power off and on a single-PoE-port NIC to restart whatever  
+device is at the other end, although I don't know if any such devices  
+exist.  Currently the tg3 driver turns the PHY off and on during down/ 
+up on a few of my systems, which I use to make a buggy no-name switch  
+recognize STP changes properly.
 
-> lsmod shows:
-> kvm                    56996  0
-
-Send your .config, in any case.
+Cheers,
+Kyle Moffett
