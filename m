@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbXGAHOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbXGAHRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbXGAHOW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbXGAHOJ
+	id S1756352AbXGAHRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 03:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbXGAHRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:14:09 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:29800 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753431AbXGAHNu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:13:50 -0400
-Subject: Re: [patch 5/5] Optimize page_mkclean_one
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
-References: <20070629135530.912094590@de.ibm.com>
-	 <20070629141528.511942868@de.ibm.com>
-	 <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sun, 01 Jul 2007 09:15:53 +0200
-Message-Id: <1183274153.15924.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jul 2007 03:17:14 -0400
+Received: from smtp04.mtu.ru ([62.5.255.51]:49826 "EHLO smtp04.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751867AbXGAHRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 03:17:13 -0400
+X-Greylist: delayed 535 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Jul 2007 03:17:13 EDT
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+       michal.k.k.piotrowski@gmail.com
+Date: Sun, 01 Jul 2007 11:08:16 +0400
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706301847.33834.arvidjaar@mail.ru> <200707010113.25853.arvidjaar@mail.ru> <200706302130.49440.bjorn.helgaas@hp.com>
+User-Agent: KNode/0.10.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <20070701070816.BB294782035@smtp04.mtu.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-06-30 at 15:04 +0100, Hugh Dickins wrote:
-> > Oh yes, the dirty handling is tricky. I had to fix a really nasty bug
-> > with it lately. As for page_mkclean_one the difference is that it
-> > doesn't claim a page is dirty if only the write protect bit has not been
-> > set. If we manage to lose dirty bits from ptes and have to rely on the
-> > write protect bit to take over the job, then we have a different problem
-> > altogether, no ?
+Bjorn Helgaas wrote:
+
+[...]
 > 
-> [Moving that over from 1/5 discussion].
+> I suspect that things will mostly work if you load the drivers in
+> the (smsc-ircc2, wlags49_h1_cs) order.
+
+yes
+
+> Then smsc-ircc2 has a chance 
+> to reserve the resources before yenta and wlags49 get involved.  But
+> of course, we can't rely on that workaround.
 > 
-> Expect you're right, but I _really_ don't want to comment, when I don't
-> understand that "|| pte_write" in the first place, and don't know the
-> consequence of pte_dirty && !pte_write or !pte_dirty && pte_write there.
 
-The pte_write() part is for the shared dirty page tracking. If you want
-to make sure that a max of x% of your pages are dirty then you cannot
-allow to have more than x% to be writable. Thats why page_mkclean_one
-clears the dirty bit and makes the page read-only.
+yes :)
 
-> My suspicion is that the "|| pte_write" is precisely to cover your
-> s390 case where pte is never dirty (it may even have been me who got
-> Peter to put it in for that reason).  In which case your patch would
-> be fine - though I think it'd be improved a lot by a comment or
-> rearrangement or new macro in place of the pte_dirty || pte_write
-> line (perhaps adjust my pte_maybe_dirty in asm-generic/pgtable.h,
-> and use that - its former use in msync has gone away now).
+> I think there's lots of work needed here -- make PNP reserve resources,
+> add smarter PNP quirk infrastructure so we can do things at _SRS-time,
+> add real Portege BIOS workaround, etc.  Way more than we can do for
+> 2.6.22.
+> 
 
-No, s390 is covered by the page_test_dirty / page_clear_dirty pair in
-page_mkclean. 
+yes :)
 
--- 
-blue skies,
-  Martin.
+> What do you think we need to get 2.6.22 out?  I was thinking of a
+> stop-gap patch like the one below. 
 
-"Reality continues to ruin my life." - Calvin.
+I agree. I was about to suggest the same the very first time I have seen
+this issue.
+
+> I'm between trips and can't 
+> really test it.  In my one quick boot, it did find the IR device,
+> but irdadump didn't seem to do anything.
+> 
+
+I confirm that loading smsc-icc2 with nopnp (with your other two patches
+applied) works, finds SIR/FIR and irdadump shows data flowing. 
+
+-andrey
+
+> 
+> 
+> [patch] smsc-ircc2: bypass PNP detection until we get the quirks worked
+> [out
+> 
+> Don't use PNP detection by default yet.  We have some PNP and BIOS issues
+> to work out first.
+> 
+> Sample problem on a Toshiba Portege 4000: the SMCf010 device is handed off
+> disabled.  We assign I/O ports originally assigned to the SMCf010 to a
+> PCMCIA device instead.  We enable the SMCf010, configuring it to use
+> disjoint ports, but _SRS doesn't work correctly, so the device doesn't
+> work.
+> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> 
+> Index: w/drivers/net/irda/smsc-ircc2.c
+> ===================================================================
+> --- w.orig/drivers/net/irda/smsc-ircc2.c      2007-06-30 21:00:06.000000000
+> -0600
+> +++ w/drivers/net/irda/smsc-ircc2.c   2007-06-30 21:00:08.000000000 -0600
+> @@ -79,7 +79,7 @@
+>  MODULE_DESCRIPTION("SMC IrCC SIR/FIR controller driver");
+>  MODULE_LICENSE("GPL");
+>  
+> -static int smsc_nopnp;
+> +static int smsc_nopnp = 1;
+>  module_param_named(nopnp, smsc_nopnp, bool, 0);
+>  MODULE_PARM_DESC(nopnp, "Do not use PNP to detect controller settings");
 
 
