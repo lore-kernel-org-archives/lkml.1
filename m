@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXGAKYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbXGAK3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbXGAKYP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 06:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbXGAKYF
+	id S1757209AbXGAK3l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 06:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbXGAK3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 06:24:05 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:34523
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754960AbXGAKYE (ORCPT
+	Sun, 1 Jul 2007 06:29:35 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:45663 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755486AbXGAK3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 06:24:04 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Subject: Re: [PATCH] b44: power down PHY when interface down
-Date: Sun, 1 Jul 2007 12:23:16 +0200
-User-Agent: KMail/1.9.6
-Cc: =?iso-8859-1?q?T=F6r=F6k_Edvin?= <edwintorok@gmail.com>,
-       zambrano@broadcom.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, power@bughost.org
-References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <200707010024.40649.mb@bu3sch.de> <20070630231734.GF2553@xi.wantstofly.org>
-In-Reply-To: <20070630231734.GF2553@xi.wantstofly.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707011223.17235.mb@bu3sch.de>
+	Sun, 1 Jul 2007 06:29:34 -0400
+To: schwidefsky@de.ibm.com
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com
+In-reply-to: <20070629141528.511942868@de.ibm.com> (message from Martin
+	Schwidefsky on Fri, 29 Jun 2007 15:55:35 +0200)
+Subject: Re: [patch 5/5] Optimize page_mkclean_one
+References: <20070629135530.912094590@de.ibm.com> <20070629141528.511942868@de.ibm.com>
+Message-Id: <E1I4wgB-00071r-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 01 Jul 2007 12:29:19 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 July 2007 01:17:34 Lennert Buytenhek wrote:
-> More or less.  You can't add the resistances like that, since the
-> bus isolation chip buffers the IDSEL signal, but it is correct that
-> if the host's IDSEL resistor is larger than a certain value, the
-> combination of the resistive coupling of IDSEL plus the extra buffer
-> in the isolator might be causing the IDSEL input on the 'guest' PCI
-> board to assert too late (or not assert at all), causing config
-> accesses to fail.
-> 
-> (This also depends on the specific 'guest' PCI board used, as you
-> noted, due to differing IDSEL trace lengths/capacitances and input
-> pin capacitances on different PCI boards.  Also, it might work at
-> 33 MHz but not work at 66 MHz, etc.)
+> page_mkclean_one is used to clear the dirty bit and to set the write
+> protect bit of a pte. In additions it returns true if the pte either
+> has been dirty or if it has been writable. As far as I can see the
+> function should return true only if the pte has been dirty, or page
+> writeback will needlessly write a clean page.
 
-It doesn't work on any of my boards :(
+There are some weird cases, like for example get_user_pages(), when
+the pte takes a write fault and the page is modified, but the pte
+doesn't become dirty, because the page is written through the kernel
+mapping.
 
-> If you feel adventurous, you could try to hack around this by
-> figuring out which AD[31:16] line this PCI slot's IDSEL line is
-> resistively coupled to (depends on the slot), and then adding
-> another parallel resistor on the board itself to make the bus
-> isolator's input buffer charge faster.  Note that this does
-> increase the load on that specific AD[] line, which might cause
-> other funny effects.
+In the get_user_pages() case the page itself is dirtied, so your patch
+probably doesn't break that.  But I'm not sure if there aren't similar
+cases like that that the pte_write() check is taking care of.
 
-Well, but how to find out to which address line it's connected to?
-Pretty hard to follow the PCB traces, especially since it's
-multilayered.
+And anyway if the dirty page tracking works correctly, your patch
+won't optimize anything, since the pte will _only_ become writable if
+the page was dirtied.
 
--- 
-Greetings Michael.
+So in fact normally pte_dirty() and pte_write() should be equivalent,
+except for some weird cases.
+
+Miklos
