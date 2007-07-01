@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbXGAIzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbXGAJE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756654AbXGAIzk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 04:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXGAIzb
+	id S1756691AbXGAJE3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 05:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbXGAJEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 04:55:31 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46708 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755108AbXGAIz3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 04:55:29 -0400
-Date: Sun, 1 Jul 2007 09:54:45 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch 5/5] Optimize page_mkclean_one
-In-Reply-To: <1183274153.15924.6.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0707010926130.11148@blonde.wat.veritas.com>
-References: <20070629135530.912094590@de.ibm.com>  <20070629141528.511942868@de.ibm.com>
-  <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
- <1183274153.15924.6.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbGludXgtbW1Aa3ZhY2sub3JnAHBldGVyekBpbmZyYWRlYWQub3JnAHNjaHdpZGVmc2t5QGRlLmlibS5jb20A
-X-Brightmail-Tracker: AAAAAA==
+	Sun, 1 Jul 2007 05:04:21 -0400
+Received: from 1wt.eu ([62.212.114.60]:3238 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753569AbXGAJEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 05:04:20 -0400
+Date: Sun, 1 Jul 2007 11:00:29 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [patch] CFS scheduler, -v18
+Message-ID: <20070701090029.GB19045@1wt.eu>
+References: <20070622220202.GA16872@elte.hu> <20070630210649.GA13186@1wt.eu> <20070701083102.GA4499@elte.hu> <20070701084501.GA10548@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070701084501.GA10548@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jul 2007, Martin Schwidefsky wrote:
-> > 
-> > Expect you're right, but I _really_ don't want to comment, when I don't
-> > understand that "|| pte_write" in the first place, and don't know the
-> > consequence of pte_dirty && !pte_write or !pte_dirty && pte_write there.
-> 
-> The pte_write() part is for the shared dirty page tracking. If you want
-> to make sure that a max of x% of your pages are dirty then you cannot
-> allow to have more than x% to be writable. Thats why page_mkclean_one
-> clears the dirty bit and makes the page read-only.
+Hi Ingo,
 
-The whole of page_mkclean_one is for the dirty page tracking: so it's
-obvious why it tests pte_dirty, but not obvious why it tests pte_write.
+On Sun, Jul 01, 2007 at 10:45:01AM +0200, Ingo Molnar wrote:
+> could you check whether your current v18 CFS tree has the fix below 
+> included? I discovered it right after having released v18 so i updated 
+> the v18 files in place - but maybe you downloaded an early version? I 
+> thought it's relatively harmless, that it would only affect SCHED_IDLE 
+> tasks, but maybe it affects nice +19 tasks too on your box!
 
-> 
-> > My suspicion is that the "|| pte_write" is precisely to cover your
-> > s390 case where pte is never dirty (it may even have been me who got
-> > Peter to put it in for that reason).  In which case your patch would
-> > be fine - though I think it'd be improved a lot by a comment or
-> > rearrangement or new macro in place of the pte_dirty || pte_write
-> > line (perhaps adjust my pte_maybe_dirty in asm-generic/pgtable.h,
-> > and use that - its former use in msync has gone away now).
-> 
-> No, s390 is covered by the page_test_dirty / page_clear_dirty pair in
-> page_mkclean. 
+Good catch, it was the cause of the problem. I've just applied
+your fix below and rebuilt and the system behaves perfectly now.
 
-That's where its dirty page count comes from, yes: but since the s390
-pte_dirty just says no, if page_mkclean_one tested only pte_dirty,
-then it wouldn't do anything on s390, and in particular wouldn't
-write protect the ptes to re-enforce dirty counting from then on.
+Thanks very much !
+Willy
 
-So in answering your denials, I grow more confident that the pte_write
-test is precisely for the s390 case.  Though it might also be to cover
-some defect in the write-protection scheme on other arches.
-
-Come to think of it, would your patch really make any difference?
-Although page_mkclean's "count" of dirty ptes on s390 will be nonsense,
-that count would anyway be unknown, and it's only used as a boolean;
-and now I don't think your patch changes the boolean value - if any
-pte is found writable (and if the scheme is working) that implies
-that the page was written to, and so should give the same answer
-as the page_test_dirty.
-
-But I could easily be overlooking something: Peter will recall.
-
-Hugh
