@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbXGAJrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbXGAKCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbXGAJrx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 05:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbXGAJrp
+	id S1756886AbXGAKCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 06:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbXGAKCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 05:47:45 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:62246 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754960AbXGAJro (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 05:47:44 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Linux Kernel include files
-To: Jan Engelhardt <jengelh@computergmbh.de>, harald@skogtun.org,
-       david@lang.hm, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       schilling@fokus.fraunhofer.de
-Reply-To: 7eggert@gmx.de
-Date: Sun, 01 Jul 2007 11:47:35 +0200
-References: <8AGnE-33a-13@gated-at.bofh.it> <8AIfO-63r-29@gated-at.bofh.it> <8AZJA-7BV-3@gated-at.bofh.it> <8AZJA-7BV-1@gated-at.bofh.it> <8AZJQ-7BV-15@gated-at.bofh.it> <8AZTo-7OT-3@gated-at.bofh.it> <8B4T2-7py-37@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Sun, 1 Jul 2007 06:02:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36514 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755797AbXGAKCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 06:02:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
+Date: Sun, 1 Jul 2007 12:09:28 +0200
+User-Agent: KMail/1.9.5
+Cc: michal.k.k.piotrowski@gmail.com, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
+References: <200706300859.47133.arvidjaar@mail.ru> <200706302237.50567.rjw@sisk.pl> <200707010134.30843.arvidjaar@mail.ru>
+In-Reply-To: <200707010134.30843.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1I4w1n-0000ch-KC@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+abYP3yeUOu68BdufmgdcbUFknvje/NE6ipWc
- 9zmah31UZ6Lj3o/hbGsTLdaB/PBDsvS8NFO98/DZM85bDrBNTN
- iFO8BuGdCnjps44GL2LwA==
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707011209.29250.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> On Jun 28 2007 12:57, Jan-Benedict Glaw wrote:
-
->>> > It's not an accusation -- it's merely an observation. You may not have
->>> > noticed that your mailer was misbehaving; now you _do_ know, and if you
->>> > care about RFC compliance you might want to fix it. You're not _obliged_
->>> > to fix it, of course. I just thought you'd like to know.
->>> 
->>> Well there you are: my mailer is definitely NOT missbehaving.
->>> Please do not repeat similar accusations when not knowing the reason.
->>
->>Just out of interest: In which cases do you want to break threading?
+On Saturday, 30 June 2007 23:34, Andrey Borzenkov wrote:
+> On Sunday 01 July 2007, Rafael J. Wysocki wrote:
+> > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
+> > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
+> > > suspend to disk :)
+> > >
+> > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + single
+> > > pata_ali patch to switch off DMA on CD-ROM), single root on reiserfs,
+> > > libata with pata_ali driver.
+> > >
+> > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
+> > > system hung at least once in every rcX. Up to rc6 those lockups were
+> > > absolutely silent (black screen without reaction to any key). In rc6 I
+> > > just got something different. After resume I got on screem:
+> > >
+> > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
+> > > swsusp: Basic memory bitmaps created
+> > > swsusp: Basic memory bitmaps freed
+> > >
+> > > After that it just sits there doing nothing. Ther was brief sound of HDD
+> > > but I suspect it was related more to power-on. System was responding to
+> > > power-on button press:
+> > >
+> > > ACPI Error (event-0305): No installed handler for fixed event [00000002
+> > > 20070125]
+> > >
+> > > And SysRq was functioning.
+> >
+> > That probably means that there's a deadlock somewhere in there.
+> >
+> > > Unfortunately I do not have serial console so I
+> > > copy manually stacks from several last screens of output; I have tried to
+> > > make a photo but right now my kbluetooth is refusing to work at all so I
+> > > cannot transfer them :( (but I suspect quality would be too bad anyway)
+> > >
+> > > laptop_mode D
+> > > 	io_schedule+0xe/0x20
+> >
+> > Looks suspicious to me.  Can you identify what line of code this points to?
+> >
 > 
-> The threading for this thread is ok.
+> If you could explain how to ... 
 
-It's broken from 46826d62.lTsuVo9cC7wGjcjf%Joerg.Schilling@fokus.fraunhofer.de
-on, or news:8AGnE-33a-13@gated-at.bofh.it
+Michal has already done that. :-)
 
-It will be broken again here, this time because of the news gateway.
+[--snip--]
+> >
+> > I see you're using CFQ as the default IO scheduler.  Can you please switch
+> > to AS and see if that changes anything?
+> >
+> 
+> Sure, but given that I have no idea how to reproduce the lockup, we may never 
+> know whether it actually helped.
+
+Well, if the lockup never happens with AS, that will indicate something ...
+
+Greetings,
+Rafael
+
+
 -- 
-Top 100 things you don't want the sysadmin to say:
-54. Uh huh......"nu -k $USER".. no problem....sure thing...
-
-Friﬂ, Spammer: maXuz@LA7exnsi.7eggert.dyndns.org q9kcgx.G@w.7eggert.dyndns.org
+"Premature optimization is the root of all evil." - Donald Knuth
