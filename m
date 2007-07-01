@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbXGAWPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758412AbXGAWTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758588AbXGAWPF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 18:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXGAWOy
+	id S1758412AbXGAWTj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 18:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXGAWTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 18:14:54 -0400
-Received: from smtp113.plus.mail.re1.yahoo.com ([69.147.102.76]:30208 "HELO
-	smtp113.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752844AbXGAWOx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 18:14:53 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
-  b=3WZ6xblcTmZ5Bnj9KrqnZmWK/wQebVZhK0z0Y2c8MI+eXPfXH+8+FvXkYjkChlYf5PiPWoLEOp0dnyva+y5g1s/M8+vUBb8h/w7klZ2dkY5lbXM5ylQ6k1OUVUxIRoyGhxrJtw/BzRWMVzBuOgxvUKRzxzX+xeQMkfuHnsjfslw=  ;
-X-YMail-OSG: L0VsNH4VM1l_nSOa70iaBJTIeJMiY0gh7ozCk2RL9bRbqyD96wKXKhLWOGPYLjwNYcS7JqcSkQ--
-Date: Mon, 2 Jul 2007 00:11:11 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] fix error handling in ext3_create_journal
-Message-ID: <20070701221111.GA8627@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
+	Sun, 1 Jul 2007 18:19:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:37831 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751309AbXGAWTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 18:19:32 -0400
+Message-ID: <46882872.7040005@goop.org>
+Date: Sun, 01 Jul 2007 15:19:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [i386] Questions regarding provisional page tables initialization
+References: <20070701203833.GA3498@Ahmed>
+In-Reply-To: <20070701203833.GA3498@Ahmed>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ahmed S. Darwish wrote:
+> Hi list,
+>
+> AFAIK, in the initializaion phase, kernel builds pages tables with two
+> mappings, identity and PAGE_OFFSET + C mapping. The provisional _global
+> directory_ is contained in swapper_pg_dir variable. while the provisional 
+> _page tables_ are stored starting from pg0, right after _end.
+>
+> There're some stuff that confused me for a full day about the code (head.S)
+> that  accomplishes the above words:
+>
+> 	movl $(pg0 - __PAGE_OFFSET), %edi
+> 	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx	
+> 	movl $0x007, %eax			/* 0x007 = PRESENT+RW+USER */
+> 10:
+> 	leal $0x007(%edi),%ecx			/* Create PDE entry */
+>
+> What does the address of 7 bytes displacement after %edi - the physical address
+> of pg0 - represent ?. Why not just putting the address of %edi (the address of
+> pagetable cell to be mapped by swapper_pg_dir) in %ecx without displacement?
+>   
 
----
-From: Borislav Petkov <bbpetkov@yahoo.de>
+The pte format contains the pfn in the top 20 bits, and flags in the 
+lower 12 bits.  As the comment says "0x007 = PRESENT+RW+USER".
 
-Fix error handling in ext3_create_journal according to kernel conventions.
+>         page_pde_offset = (__PAGE_OFFSET >> 20)
+> 	movl %ecx,(%edx)			/* Store identity PDE entry */
+> 	movl %ecx,page_pde_offset(%edx)		/* Store kernel PDE entry */
+>
+> Why the pde_offset is PAGE_OFFSET >> 20 instead of PAGE_OFFSET >> 22 ?
+> * 22 to right shift the whole page_shift (12) and pgdir_shift (10) bits.
+>   
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
---
+As Andreas said, its (PAGE_OFFSET >> 22) << 2.
 
-Index: linux-2.6.22-rc6/fs/ext3/super.c
-===================================================================
---- linux-2.6.22-rc6/fs/ext3/super.c.orig	2007-07-01 21:12:51.000000000 +0200
-+++ linux-2.6.22-rc6/fs/ext3/super.c	2007-07-01 21:14:32.000000000 +0200
-@@ -2075,6 +2075,7 @@
- 			       unsigned int journal_inum)
- {
- 	journal_t *journal;
-+	int err;
- 
- 	if (sb->s_flags & MS_RDONLY) {
- 		printk(KERN_ERR "EXT3-fs: readonly filesystem when trying to "
-@@ -2082,13 +2083,15 @@
- 		return -EROFS;
- 	}
- 
--	if (!(journal = ext3_get_journal(sb, journal_inum)))
-+	journal = ext3_get_journal(sb, journal_inum);
-+	if (!journal)
- 		return -EINVAL;
- 
- 	printk(KERN_INFO "EXT3-fs: creating new journal on inode %u\n",
- 	       journal_inum);
- 
--	if (journal_create(journal)) {
-+	err = journal_create(journal);
-+	if (err) {
- 		printk(KERN_ERR "EXT3-fs: error creating journal.\n");
- 		journal_destroy(journal);
- 		return -EIO;
--- 
-Regards/Gruß,
-    Boris.
+>         [...]
+> 	/* Initialize the 1024 _page table_ cells with %eax (0x007) */
+> 	movl $1024, %ecx
+> 11:
+> 	stosl
+> 	addl $0x1000,%eax
+> 	loop 11b
+>
+> The page table entries beginning from pg0 (pointed by %edi) and following pages 
+> are initialized with  the series 7 + 8 + 8 + ... for each cell. This series has
+> the property of setting the PRESENT+RW+USER bits in the whole entries to 1 but it
+> sets lots of the entries BASE address to 0 too. Why is this done ?
+>   
+
+I don't follow you.  Are you overlooking the 'L' on stosl?
+
+    J
