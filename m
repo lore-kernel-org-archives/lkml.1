@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbXGAKCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXGAKYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbXGAKCV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 06:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbXGAKCO
+	id S1756925AbXGAKYP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 06:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbXGAKYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 06:02:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36514 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755797AbXGAKCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 06:02:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
-Date: Sun, 1 Jul 2007 12:09:28 +0200
-User-Agent: KMail/1.9.5
-Cc: michal.k.k.piotrowski@gmail.com, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
-References: <200706300859.47133.arvidjaar@mail.ru> <200706302237.50567.rjw@sisk.pl> <200707010134.30843.arvidjaar@mail.ru>
-In-Reply-To: <200707010134.30843.arvidjaar@mail.ru>
+	Sun, 1 Jul 2007 06:24:05 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:34523
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754960AbXGAKYE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 06:24:04 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Subject: Re: [PATCH] b44: power down PHY when interface down
+Date: Sun, 1 Jul 2007 12:23:16 +0200
+User-Agent: KMail/1.9.6
+Cc: =?iso-8859-1?q?T=F6r=F6k_Edvin?= <edwintorok@gmail.com>,
+       zambrano@broadcom.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, power@bughost.org
+References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <200707010024.40649.mb@bu3sch.de> <20070630231734.GF2553@xi.wantstofly.org>
+In-Reply-To: <20070630231734.GF2553@xi.wantstofly.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707011209.29250.rjw@sisk.pl>
+Message-Id: <200707011223.17235.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 30 June 2007 23:34, Andrey Borzenkov wrote:
-> On Sunday 01 July 2007, Rafael J. Wysocki wrote:
-> > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
-> > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
-> > > suspend to disk :)
-> > >
-> > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + single
-> > > pata_ali patch to switch off DMA on CD-ROM), single root on reiserfs,
-> > > libata with pata_ali driver.
-> > >
-> > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
-> > > system hung at least once in every rcX. Up to rc6 those lockups were
-> > > absolutely silent (black screen without reaction to any key). In rc6 I
-> > > just got something different. After resume I got on screem:
-> > >
-> > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
-> > > swsusp: Basic memory bitmaps created
-> > > swsusp: Basic memory bitmaps freed
-> > >
-> > > After that it just sits there doing nothing. Ther was brief sound of HDD
-> > > but I suspect it was related more to power-on. System was responding to
-> > > power-on button press:
-> > >
-> > > ACPI Error (event-0305): No installed handler for fixed event [00000002
-> > > 20070125]
-> > >
-> > > And SysRq was functioning.
-> >
-> > That probably means that there's a deadlock somewhere in there.
-> >
-> > > Unfortunately I do not have serial console so I
-> > > copy manually stacks from several last screens of output; I have tried to
-> > > make a photo but right now my kbluetooth is refusing to work at all so I
-> > > cannot transfer them :( (but I suspect quality would be too bad anyway)
-> > >
-> > > laptop_mode D
-> > > 	io_schedule+0xe/0x20
-> >
-> > Looks suspicious to me.  Can you identify what line of code this points to?
-> >
+On Sunday 01 July 2007 01:17:34 Lennert Buytenhek wrote:
+> More or less.  You can't add the resistances like that, since the
+> bus isolation chip buffers the IDSEL signal, but it is correct that
+> if the host's IDSEL resistor is larger than a certain value, the
+> combination of the resistive coupling of IDSEL plus the extra buffer
+> in the isolator might be causing the IDSEL input on the 'guest' PCI
+> board to assert too late (or not assert at all), causing config
+> accesses to fail.
 > 
-> If you could explain how to ... 
+> (This also depends on the specific 'guest' PCI board used, as you
+> noted, due to differing IDSEL trace lengths/capacitances and input
+> pin capacitances on different PCI boards.  Also, it might work at
+> 33 MHz but not work at 66 MHz, etc.)
 
-Michal has already done that. :-)
+It doesn't work on any of my boards :(
 
-[--snip--]
-> >
-> > I see you're using CFQ as the default IO scheduler.  Can you please switch
-> > to AS and see if that changes anything?
-> >
-> 
-> Sure, but given that I have no idea how to reproduce the lockup, we may never 
-> know whether it actually helped.
+> If you feel adventurous, you could try to hack around this by
+> figuring out which AD[31:16] line this PCI slot's IDSEL line is
+> resistively coupled to (depends on the slot), and then adding
+> another parallel resistor on the board itself to make the bus
+> isolator's input buffer charge faster.  Note that this does
+> increase the load on that specific AD[] line, which might cause
+> other funny effects.
 
-Well, if the lockup never happens with AS, that will indicate something ...
-
-Greetings,
-Rafael
-
+Well, but how to find out to which address line it's connected to?
+Pretty hard to follow the PCB traces, especially since it's
+multilayered.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Greetings Michael.
