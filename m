@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXGAWcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbXGAWiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbXGAWcQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 18:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXGAWcC
+	id S1758116AbXGAWiu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 18:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbXGAWil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 18:32:02 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52565 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751484AbXGAWcA (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 18:32:00 -0400
-Date: Mon, 2 Jul 2007 08:31:48 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][XFS][resend] fix memory leak in xfs_inactive()
-Message-ID: <20070701223147.GU31489@sgi.com>
-References: <200707010116.52012.jesper.juhl@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707010116.52012.jesper.juhl@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 1 Jul 2007 18:38:41 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:58291 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751820AbXGAWik (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 18:38:40 -0400
+Date: Sun, 1 Jul 2007 18:38:37 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Adrian Bunk <bunk@stusta.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport mmap_min_addr
+In-Reply-To: <20070701202353.GZ10869@stusta.de>
+Message-ID: <Line.LNX.4.64.0707011838250.14811@d.namei>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+ <20070701202353.GZ10869@stusta.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 01, 2007 at 01:16:51AM +0200, Jesper Juhl wrote:
-> (this is back from May 16 2007, resending since it doesn't look like 
-> the patch ever made it in anywhere)
+On Sun, 1 Jul 2007, Adrian Bunk wrote:
 
-http://oss.sgi.com/cgi-bin/cvsweb.cgi/linux-2.6-xfs/fs/xfs/xfs_vnodeops.c.diff?r1=1.698;r2=1.699;f=h
+> On Thu, Jun 28, 2007 at 03:43:21AM -0700, Andrew Morton wrote:
+> >...
+> > Changes since 2.6.22-rc4-mm2:
+> >...
+> >  git-selinux.patch
+> >...
+> >  git trees
+> >...
+> 
+> 
+> Unneeded export.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Will get merged in 2.6.23-rc1 window.
+Thanks, applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-akpm
 
-Cheers,
 
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+James Morris
+<jmorris@namei.org>
