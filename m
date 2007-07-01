@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbXGAQvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbXGAQ4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757982AbXGAQvv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 12:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbXGAQvo
+	id S1757591AbXGAQ4r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 12:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbXGAQ4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 12:51:44 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:45918 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbXGAQvn (ORCPT
+	Sun, 1 Jul 2007 12:56:39 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:62521 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753453AbXGAQ4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 12:51:43 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sun, 1 Jul 2007 12:49:58 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] SPARC64: Emphasize that sparc64 doesn't support return
- probes.
-Message-ID: <Pine.LNX.4.64.0707011248490.3046@localhost.localdomain>
+	Sun, 1 Jul 2007 12:56:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AyIo92QjQnBGOTh8StcswY1AQrDxL+1ZBWCANwhaaw5aMBhTEFi824940f4asEyvffuvq0jxcXHdC6fJeMCPNydESd+kUGWfQ4LeDVbCe32Zn8rHVsIffSz4INxTNofFy9nFmoCTUGFpL0Xvcrm3w3vvSEboNTOMZ0PTtjbgFTU=
+Message-ID: <439fa30707010956h1c467e28xc9eff37ebec523ad@mail.gmail.com>
+Date: Sun, 1 Jul 2007 12:56:36 -0400
+From: Dan <metalifloyd@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: PROBLEM: SATA AHCI driver significant throughput loss in 2.6.22-rc5-g75154f40-dirty
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <20070630005747.9bc9ba40.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <439fa30706262117u2d5553dfp8395c6ca41574a8c@mail.gmail.com>
+	 <20070630005747.9bc9ba40.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Are you able (as a matter of some urgency) to run a git bisection
+> search to identify the offending commit?
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+For some reason I am no longer able to reproduce the problem. I've
+tried several versions including the one I reported and I just can't
+reproduce the problem. I accidentally overwrote the original kernel
+that had the problem. The weird thing is even when I reset the git
+tree to 2.6.22-rc5-g75154f40 and build it, the error is gone.
 
----
+I've tested with the latest git and all seems well so far. I'll keep a
+close eye out and will try to run bisect to find the problem. Sorry, I
+should have done that in the first place (Didn't know about it).
 
-diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
-index 89a1b46..6b04c86 100644
---- a/arch/sparc64/Kconfig
-+++ b/arch/sparc64/Kconfig
-@@ -446,6 +446,7 @@ config KPROBES
- 	  execute a callback function.  register_kprobe() establishes
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
-+	  (Note that sparc64 does *not* currently support return probes.)
- 	  If in doubt, say "N".
- endmenu
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+-Dan
