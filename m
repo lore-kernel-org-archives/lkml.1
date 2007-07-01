@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbXGACE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbXGAC52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755867AbXGACE5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 22:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbXGACEt
+	id S1755859AbXGAC52 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 22:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbXGAC5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 22:04:49 -0400
-Received: from smtp-03.mandic.com.br ([200.225.81.143]:43048 "EHLO
-	smtp-03.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754424AbXGACEs (ORCPT
+	Sat, 30 Jun 2007 22:57:19 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:48708 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754700AbXGAC5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 22:04:48 -0400
-Message-ID: <46870BB7.9020901@mandic.com.br>
-Date: Sat, 30 Jun 2007 23:04:39 -0300
-From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Sat, 30 Jun 2007 22:57:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=EDOEJJqk0qQ2dhCdUJUtYcVD7n4ZyrMze6+Ljql6h6ymlgOAZMKJrP1n86JkNNu09
+	ndP1pChl0hpzyYrecERdA==
+Message-ID: <468717FF.3090401@google.com>
+Date: Sat, 30 Jun 2007 22:57:03 -0400
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: cpufreq@lists.linux.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jeremy@goop.org
-Subject: Re: speedstep-centrino (no such device)
-References: <fa.jQgBX5GocqZWw6ordgUe/I1tfb0@ifi.uio.no> <468442D4.2030900@shaw.ca>
-In-Reply-To: <468442D4.2030900@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andrew Morton <akpm@google.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
+Subject: Re: [RFC 1/7] cpuset write dirty map
+References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com> <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com> <468023CA.2090401@google.com> <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com> <20070626152204.b6b4bc3f.akpm@google.com> <4682A9B6.8070003@google.com> <Pine.LNX.4.64.0706271437410.31227@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0706271437410.31227@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Renato S. Yamane wrote:
->> Is impossible use speedstep in my Laptop with Pentium M 1,86Ghz:
->>
->> #modprobe speedstep-centrino
->> FATAL: Error inserting speedstep_centrino 
->> (/lib/modules/2.6.18-3-686/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.ko): 
->> No such device
->>
->> To do that (speedstep), I need install powersaved, but 
->> speedstep-centrino is not used.
+Christoph Lameter wrote:
+> On Wed, 27 Jun 2007, Ethan Solomita wrote:
 > 
-> I believe acpi-cpufreq is preferred over speedstep-centrino in most 
-> cases today, does that work?
+>> 	I looked over it at one point. Most of the code doesn't conflict, but I
+>> believe that the code path which calculates the dirty limits will need
+>> some merging. Doable but non-trivial.
+>> 	-- Ethan
+> 
+> I hope you will keep on updating the patchset and posting it against 
+> current mm?
+> 
 
-Robert, acpi_cpufreq works fine to me.
-I insert parameter CPUFREQD_MODULE="acpi_cpufreq" in my 
-/etc/powersave/cpufreq and now is possible use scaling frequency.
-
-I read 
-/usr/src/linux-2.6.21.5/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c 
-and see that this module is made using document 25261202.pdf (from 
-Intel) as reference.
-
-This document include only some Pentium M models.
-
-My Pentium M is model 750 (1.86GHz) and you can see datasheet on 
-document 30526202.pdf available here:
-<http://download.intel.com/design/mobile/datashts/30526202.pdf>
-
-What I can choose on "CPUFreq Processor drivers" availiable in .config?
-Currently I do that (in Kernel 2.6.21.1):
-
-# CPUFreq processor drivers
-#
-CONFIG_X86_ACPI_CPUFREQ=m
-# CONFIG_X86_POWERNOW_K6 is not set
-# CONFIG_X86_POWERNOW_K7 is not set
-# CONFIG_X86_POWERNOW_K8 is not set
-# CONFIG_X86_GX_SUSPMOD is not set
-CONFIG_X86_SPEEDSTEP_CENTRINO=y
-CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
-CONFIG_X86_SPEEDSTEP_ICH=m
-# CONFIG_X86_SPEEDSTEP_SMI is not set
-# CONFIG_X86_P4_CLOCKMOD is not set
-# CONFIG_X86_CPUFREQ_NFORCE2 is not set
-# CONFIG_X86_LONGRUN is not set
-# CONFIG_X86_LONGHAUL is not set
-# CONFIG_X86_E_POWERSAVER is not set
-
-#
-# shared options
-#
-# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-CONFIG_X86_SPEEDSTEP_LIB=m
-CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK=y
-
-Best regards,
-Renato S. Yamane
+	I have no new changes, but I can update it against the current mm. Or
+did the per-bdi throttling change get taken by Andrew?
+	-- Ethan
