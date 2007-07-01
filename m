@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbXGAHN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbXGAHOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbXGAHN5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbXGAHNt
+	id S1755749AbXGAHOW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 03:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbXGAHOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:13:49 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55943 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753406AbXGAHNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:13:49 -0400
-Date: Sun, 1 Jul 2007 17:13:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-Message-Id: <20070701171325.29d8b184.sfr@canb.auug.org.au>
-In-Reply-To: <20070630171340.GT13886@enneenne.com>
-References: <20070628081538.GP13886@enneenne.com>
-	<1183019474.1170.66.camel@pmac.infradead.org>
-	<20070628084003.GQ13886@enneenne.com>
-	<1183031060.1170.145.camel@pmac.infradead.org>
-	<20070628161450.GD13886@enneenne.com>
-	<1183117082.1170.308.camel@pmac.infradead.org>
-	<20070629150813.GM13886@enneenne.com>
-	<1183132548.1170.360.camel@pmac.infradead.org>
-	<20070629163422.GP13886@enneenne.com>
-	<1183135253.17622.5.camel@shinybook.infradead.org>
-	<20070630171340.GT13886@enneenne.com>
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Sun, 1 Jul 2007 03:14:09 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:29800 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753431AbXGAHNu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 03:13:50 -0400
+Subject: Re: [patch 5/5] Optimize page_mkclean_one
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
+References: <20070629135530.912094590@de.ibm.com>
+	 <20070629141528.511942868@de.ibm.com>
+	 <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Sun, 01 Jul 2007 09:15:53 +0200
+Message-Id: <1183274153.15924.6.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__1_Jul_2007_17_13_25_+1000_k8_NAgIbIqrN1VDj"
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__1_Jul_2007_17_13_25_+1000_k8_NAgIbIqrN1VDj
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2007-06-30 at 15:04 +0100, Hugh Dickins wrote:
+> > Oh yes, the dirty handling is tricky. I had to fix a really nasty bug
+> > with it lately. As for page_mkclean_one the difference is that it
+> > doesn't claim a page is dirty if only the write protect bit has not been
+> > set. If we manage to lose dirty bits from ptes and have to rely on the
+> > write protect bit to take over the job, then we have a different problem
+> > altogether, no ?
+> 
+> [Moving that over from 1/5 discussion].
+> 
+> Expect you're right, but I _really_ don't want to comment, when I don't
+> understand that "|| pte_write" in the first place, and don't know the
+> consequence of pte_dirty && !pte_write or !pte_dirty && pte_write there.
 
-On Sat, 30 Jun 2007 19:13:40 +0200 Rodolfo Giometti <giometti@enneenne.com>=
- wrote:
->
-> Maybe I can define a special struct for exchanging time data as:
->=20
->    struct pps_timedata_s {
->       long sec;
->       long nsec;
->    }
->=20
-> and managing time data conversions at userland...
->=20
-> What do you think about that? :)
+The pte_write() part is for the shared dirty page tracking. If you want
+to make sure that a max of x% of your pages are dirty then you cannot
+allow to have more than x% to be writable. Thats why page_mkclean_one
+clears the dirty bit and makes the page read-only.
 
-"long" is one of the datatypes that changes size between 32 bit and 64
-bit, so not such a good choice. You could use __u32 or __64 (or
-whatever), that makes it very clear that these are fixed size data types.
+> My suspicion is that the "|| pte_write" is precisely to cover your
+> s390 case where pte is never dirty (it may even have been me who got
+> Peter to put it in for that reason).  In which case your patch would
+> be fine - though I think it'd be improved a lot by a comment or
+> rearrangement or new macro in place of the pte_dirty || pte_write
+> line (perhaps adjust my pte_maybe_dirty in asm-generic/pgtable.h,
+> and use that - its former use in msync has gone away now).
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+No, s390 is covered by the page_test_dirty / page_clear_dirty pair in
+page_mkclean. 
 
---Signature=_Sun__1_Jul_2007_17_13_25_+1000_k8_NAgIbIqrN1VDj
-Content-Type: application/pgp-signature
+-- 
+blue skies,
+  Martin.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+"Reality continues to ruin my life." - Calvin.
 
-iD8DBQFGh1QaTgG2atn1QN8RAvc0AKCTikSqkoucmiBWX48Xz7FKH7h9KACgkRp1
-9jwe4Pkzyva97mn0wVHu7T8=
-=UVZQ
------END PGP SIGNATURE-----
 
---Signature=_Sun__1_Jul_2007_17_13_25_+1000_k8_NAgIbIqrN1VDj--
