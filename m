@@ -1,166 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbXGAHio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXGAHjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbXGAHio (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbXGAHgo
+	id S1757511AbXGAHjN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 03:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbXGAHgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:36:44 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40797 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756817AbXGAHgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:36:41 -0400
-Subject: [EXT4 set 2][PATCH 4/5] cleanups: Rename CONFIG_JBD_DEBUG to
-	CONFIG_JBD2_DEBUG
+	Sun, 1 Jul 2007 03:36:52 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:38377 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755812AbXGAHgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 03:36:50 -0400
+Subject: [EXT4 set 2][PATCH 5/5] cleanups: Export jbd2-debug via debugfs
 From: Mingming Cao <cmm@us.ibm.com>
 Reply-To: cmm@us.ibm.com
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-ext4@vger.kernel.org
 Content-Type: text/plain
 Organization: IBM Linux Technology Center
-Date: Sun, 01 Jul 2007 03:36:37 -0400
-Message-Id: <1183275397.4010.123.camel@localhost.localdomain>
+Date: Sun, 01 Jul 2007 03:36:48 -0400
+Message-Id: <1183275408.4010.124.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the JBD code was forked to create the new JBD2 code base, the
-references to CONFIG_JBD_DEBUG where never changed to
-CONFIG_JBD2_DEBUG.  This patch fixes that.
+> On Jun 07, 2007  23:45 -0500, Jose R. Santos wrote:
+> > The jbd2-debug file used to be located in /proc/sys/fs/jbd2-debug, but
+> > create_proc_entry() does not do lookups on file names with more that one
+> > directory deep.  This causes the entry creation to fail and hence, no proc
+> > file is created.  This patch moves the file to /proc/jbd2-degug.
+> > 
+> > The file could be move to /proc/fs/jbd2/jbd2-debug, but it would require
+> > some minor alterations to the jbd-stats patch.
+> 
+> I don't think we really want to be adding top-level files in /proc.
+> What about using the "debugfs" filesystem (not to be confused with
+> the e2fsprogs 'debugfs' command)?
+
+How about this then?  Moved the file to use debugfs as well as having
+the nice effect of removing more lines than what it adds.
 
 Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
 ---
+ fs/jbd2/journal.c    |   62    20 +    42 -    0 !
+ include/linux/jbd2.h |    2    1 +     1 -     0 !
+ 2 files changed, 21 insertions(+), 43 deletions(-)
+
 Index: linux-2.6.22-rc4/fs/jbd2/journal.c
 ===================================================================
---- linux-2.6.22-rc4.orig/fs/jbd2/journal.c	2007-06-11 16:15:49.000000000 -0700
-+++ linux-2.6.22-rc4/fs/jbd2/journal.c	2007-06-11 16:16:18.000000000 -0700
-@@ -528,7 +528,7 @@
- {
- 	int err = 0;
+--- linux-2.6.22-rc4.orig/fs/jbd2/journal.c	2007-06-11 16:16:18.000000000 -0700
++++ linux-2.6.22-rc4/fs/jbd2/journal.c	2007-06-11 16:36:10.000000000 -0700
+@@ -35,6 +35,7 @@
+ #include <linux/kthread.h>
+ #include <linux/poison.h>
+ #include <linux/proc_fs.h>
++#include <linux/debugfs.h>
  
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- 	spin_lock(&journal->j_state_lock);
- 	if (!tid_geq(journal->j_commit_request, tid)) {
- 		printk(KERN_EMERG
-@@ -1709,7 +1709,7 @@
-  * Journal_head storage management
-  */
- static struct kmem_cache *jbd2_journal_head_cache;
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- static atomic_t nr_journal_heads = ATOMIC_INIT(0);
- #endif
- 
-@@ -1747,7 +1747,7 @@
- 	struct journal_head *ret;
- 	static unsigned long last_warning;
- 
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- 	atomic_inc(&nr_journal_heads);
- #endif
- 	ret = kmem_cache_alloc(jbd2_journal_head_cache, GFP_NOFS);
-@@ -1768,7 +1768,7 @@
- 
- static void journal_free_journal_head(struct journal_head *jh)
- {
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- 	atomic_dec(&nr_journal_heads);
- 	memset(jh, JBD_POISON_FREE, sizeof(*jh));
- #endif
-@@ -1953,12 +1953,12 @@
- /*
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+@@ -1954,60 +1955,37 @@
   * /proc tunables
   */
--#if defined(CONFIG_JBD_DEBUG)
-+#if defined(CONFIG_JBD2_DEBUG)
- int jbd2_journal_enable_debug;
+ #if defined(CONFIG_JBD2_DEBUG)
+-int jbd2_journal_enable_debug;
++u16 jbd2_journal_enable_debug;
  EXPORT_SYMBOL(jbd2_journal_enable_debug);
  #endif
  
--#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_PROC_FS)
-+#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_PROC_FS)
+-#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_PROC_FS)
++#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_DEBUG_FS)
  
- static struct proc_dir_entry *proc_jbd_debug;
+-static struct proc_dir_entry *proc_jbd_debug;
++#define JBD2_DEBUG_NAME "jbd2-debug"
  
-@@ -2073,7 +2073,7 @@
+-static int read_jbd_debug(char *page, char **start, off_t off,
+-			  int count, int *eof, void *data)
+-{
+-	int ret;
+-
+-	ret = sprintf(page + off, "%d\n", jbd2_journal_enable_debug);
+-	*eof = 1;
+-	return ret;
+-}
++struct dentry *jbd2_debugfs_dir, *jbd2_debug;
  
- static void __exit journal_exit(void)
+-static int write_jbd_debug(struct file *file, const char __user *buffer,
+-			   unsigned long count, void *data)
++static void __init jbd2_create_debugfs_entry(void)
  {
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- 	int n = atomic_read(&nr_journal_heads);
+-	char buf[32];
+-
+-	if (count > ARRAY_SIZE(buf) - 1)
+-		count = ARRAY_SIZE(buf) - 1;
+-	if (copy_from_user(buf, buffer, count))
+-		return -EFAULT;
+-	buf[ARRAY_SIZE(buf) - 1] = '\0';
+-	jbd2_journal_enable_debug = simple_strtoul(buf, NULL, 10);
+-	return count;
+-}
+-
+-#define JBD_PROC_NAME "sys/fs/jbd2-debug"
+-
+-static void __init create_jbd_proc_entry(void)
+-{
+-	proc_jbd_debug = create_proc_entry(JBD_PROC_NAME, 0644, NULL);
+-	if (proc_jbd_debug) {
+-		/* Why is this so hard? */
+-		proc_jbd_debug->read_proc = read_jbd_debug;
+-		proc_jbd_debug->write_proc = write_jbd_debug;
+-	}
++	jbd2_debugfs_dir = debugfs_create_dir("jbd2", NULL);
++	if (jbd2_debugfs_dir)
++		jbd2_debug = debugfs_create_u16(JBD2_DEBUG_NAME, S_IRUGO,
++						jbd2_debugfs_dir,
++						&jbd2_journal_enable_debug);
+ }
+ 
+-static void __exit jbd2_remove_jbd_proc_entry(void)
++static void __exit jbd2_remove_debugfs_entry(void)
+ {
+-	if (proc_jbd_debug)
+-		remove_proc_entry(JBD_PROC_NAME, NULL);
++	if (jbd2_debug)
++		debugfs_remove(jbd2_debug);
++	if (jbd2_debugfs_dir)
++		debugfs_remove(jbd2_debugfs_dir);
+ }
+ 
+ #else
+ 
+-#define create_jbd_proc_entry() do {} while (0)
+-#define jbd2_remove_jbd_proc_entry() do {} while (0)
++#define jbd2_create_debugfs_entry() do {} while (0)
++#define jbd2_remove_debugfs_entry() do {} while (0)
+ 
+ #endif
+ 
+@@ -2067,7 +2045,7 @@
+ 	ret = journal_init_caches();
+ 	if (ret != 0)
+ 		jbd2_journal_destroy_caches();
+-	create_jbd_proc_entry();
++	jbd2_create_debugfs_entry();
+ 	return ret;
+ }
+ 
+@@ -2078,7 +2056,7 @@
  	if (n)
  		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
-Index: linux-2.6.22-rc4/fs/jbd2/recovery.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/jbd2/recovery.c	2007-06-04 17:57:25.000000000 -0700
-+++ linux-2.6.22-rc4/fs/jbd2/recovery.c	2007-06-11 16:16:18.000000000 -0700
-@@ -295,7 +295,7 @@
- 		printk(KERN_ERR "JBD: error %d scanning journal\n", err);
- 		++journal->j_transaction_sequence;
- 	} else {
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- 		int dropped = info.end_transaction - be32_to_cpu(sb->s_sequence);
  #endif
- 		jbd_debug(0,
-Index: linux-2.6.22-rc4/include/linux/ext4_fs.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/ext4_fs.h	2007-06-11 16:15:59.000000000 -0700
-+++ linux-2.6.22-rc4/include/linux/ext4_fs.h	2007-06-11 16:16:18.000000000 -0700
-@@ -237,7 +237,7 @@
- #define EXT4_IOC_GROUP_ADD		_IOW('f', 8,struct ext4_new_group_input)
- #define	EXT4_IOC_GETVERSION_OLD		FS_IOC_GETVERSION
- #define	EXT4_IOC_SETVERSION_OLD		FS_IOC_SETVERSION
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- #define EXT4_IOC_WAIT_FOR_READONLY	_IOR('f', 99, long)
- #endif
- #define EXT4_IOC_GETRSVSZ		_IOR('f', 5, long)
-@@ -253,7 +253,7 @@
- #define EXT4_IOC32_GETRSVSZ		_IOR('f', 5, int)
- #define EXT4_IOC32_SETRSVSZ		_IOW('f', 6, int)
- #define EXT4_IOC32_GROUP_EXTEND		_IOW('f', 7, unsigned int)
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- #define EXT4_IOC32_WAIT_FOR_READONLY	_IOR('f', 99, int)
- #endif
- #define EXT4_IOC32_GETVERSION_OLD	FS_IOC32_GETVERSION
-Index: linux-2.6.22-rc4/include/linux/ext4_fs_sb.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/ext4_fs_sb.h	2007-06-11 16:15:55.000000000 -0700
-+++ linux-2.6.22-rc4/include/linux/ext4_fs_sb.h	2007-06-11 16:16:18.000000000 -0700
-@@ -71,7 +71,7 @@
- 	struct list_head s_orphan;
- 	unsigned long s_commit_interval;
- 	struct block_device *journal_bdev;
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- 	struct timer_list turn_ro_timer;	/* For turning read-only (crash simulation) */
- 	wait_queue_head_t ro_wait_queue;	/* For people waiting for the fs to go read-only */
- #endif
+-	jbd2_remove_jbd_proc_entry();
++	jbd2_remove_debugfs_entry();
+ 	jbd2_journal_destroy_caches();
+ }
+ 
 Index: linux-2.6.22-rc4/include/linux/jbd2.h
 ===================================================================
---- linux-2.6.22-rc4.orig/include/linux/jbd2.h	2007-06-11 16:15:49.000000000 -0700
-+++ linux-2.6.22-rc4/include/linux/jbd2.h	2007-06-11 16:16:18.000000000 -0700
-@@ -50,11 +50,11 @@
-  */
- #define JBD_DEFAULT_MAX_COMMIT_AGE 5
- 
--#ifdef CONFIG_JBD_DEBUG
-+#ifdef CONFIG_JBD2_DEBUG
- /*
-  * Define JBD_EXPENSIVE_CHECKING to enable more expensive internal
-  * consistency checks.  By default we don't do this unless
-- * CONFIG_JBD_DEBUG is on.
-+ * CONFIG_JBD2_DEBUG is on.
+--- linux-2.6.22-rc4.orig/include/linux/jbd2.h	2007-06-11 16:16:18.000000000 -0700
++++ linux-2.6.22-rc4/include/linux/jbd2.h	2007-06-11 16:35:25.000000000 -0700
+@@ -57,7 +57,7 @@
+  * CONFIG_JBD2_DEBUG is on.
   */
  #define JBD_EXPENSIVE_CHECKING
- extern int jbd2_journal_enable_debug;
+-extern int jbd2_journal_enable_debug;
++extern u16 jbd2_journal_enable_debug;
+ 
+ #define jbd_debug(n, f, a...)						\
+ 	do {								\
 
 
