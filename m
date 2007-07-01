@@ -1,69 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbXGBC1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbXGBDMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759037AbXGBC1l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 22:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756225AbXGBC1d
+	id S1758997AbXGBDMp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 23:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbXGBDMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 22:27:33 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47133 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755940AbXGBC1d (ORCPT
+	Sun, 1 Jul 2007 23:12:36 -0400
+Received: from host06.hostingexpert.com ([216.80.70.60]:48091 "EHLO
+	host06.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756845AbXGBDMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 22:27:33 -0400
-Date: Mon, 2 Jul 2007 04:27:59 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ezk@cs.sunysb.edu,
-       jsipek@cs.sunysb.edu, linux-kernel@vger.kernel.org,
-       unionfs@filesystems.org
-Subject: Re: [-mm patch] unionfs: make functions static
-Message-ID: <20070702022759.GE10869@stusta.de>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <20070701202330.GU10869@stusta.de> <20070702014249.GA14417@filer.fsl.cs.sunysb.edu>
+	Sun, 1 Jul 2007 23:12:35 -0400
+X-Greylist: delayed 20579 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Jul 2007 23:12:35 EDT
+Message-ID: <46881CBB.4020000@linuxtv.org>
+Date: Sun, 01 Jul 2007 17:29:31 -0400
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070702014249.GA14417@filer.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc6-mm1: TUNER_TEA5761 kconfig fixes
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <20070701202320.GS10869@stusta.de>
+In-Reply-To: <20070701202320.GS10869@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - host06.hostingexpert.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - linuxtv.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 01, 2007 at 09:42:49PM -0400, Josef Sipek wrote:
-> On Sun, Jul 01, 2007 at 10:23:30PM +0200, Adrian Bunk wrote:
-> > This patch makes some needlessly global functions static.
-> > 
+Adrian Bunk wrote:
+> On Thu, Jun 28, 2007 at 03:43:21AM -0700, Andrew Morton wrote:
+>   
+>> ...
+>> Changes since 2.6.22-rc4-mm2:
+>> ...
+>>  git-dvb.patch
+>> ...
+>>  git trees
+>> ...
+>>     
+>
+>
+> The following doesn't make much sense:
+>
+> drivers/media/video/Kconfig:
 > ...
-> > --- linux-2.6.22-rc6-mm1/fs/unionfs/lookup.c.old	2007-07-01 00:05:02.000000000 +0200
-> > +++ linux-2.6.22-rc6-mm1/fs/unionfs/lookup.c	2007-07-01 00:06:05.000000000 +0200
-> > @@ -18,6 +18,8 @@
-> >  
-> >  #include "union.h"
-> >  
-> > +static int realloc_dentry_private_data(struct dentry *dentry);
-> > +
-> >  /* is the filename valid == !(whiteout for a file or opaque dir marker) */
-> 
-> I forget who said it, but someone wasn't very happy with prototypes like
-> that in .c files. What's the prefered way - are they ok for static symbols?
+> config TUNER_TEA5761
+>         tristate "TEA 5761 radio tuner (EXPERIMENTAL)"
+> ...
+>
+> drivers/media/video/Makefile:
+> ...
+> ifneq ($(CONFIG_TUNER_TEA5761),)
+>   tuner-objs += tea5761.o
+> endif
+> ...
+>
+> With this setup, TUNER_TEA5761=m is equivalent to TUNER_TEA5761=y.
+>
+> This patch therefore changes TUNER_TEA5761 to a bool.
+>
+> The missing dependency on EXPERIMENTAL the prompt text indicates also 
+> gets added by this patch.
+>
+> Additionally, the Makefile entry can now be written in a more compact way.
+>
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>   
+Acked-by: Michael Krufky <mkrufky@linuxtv.org>
 
-It might have even been me who said this - but about global functions.
+Thanks, Adrian
 
-For global functions, prototypes in header files allow gcc to check 
-whether the prototype matches the actual function. With a prototype
-in the C file of the caller that's not possible, and if they are 
-different it can result in nasty runtime errors.
-
-For static functions that's not an issue since gcc sees both the 
-prototype and the actual function.
-
-> Josef "Jeff" Sipek.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Mauro,  I'll push this into hg and send you a pull request.
+> ---
+>
+> BTW: tea5761.c is currently completely unused.
+>
+>  drivers/media/video/Kconfig  |    3 ++-
+>  drivers/media/video/Makefile |    4 +---
+>  2 files changed, 3 insertions(+), 4 deletions(-)
+>
+> --- linux-2.6.22-rc6-mm1/drivers/media/video/Kconfig.old	2007-06-30 03:51:13.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/drivers/media/video/Kconfig	2007-06-30 03:51:40.000000000 +0200
+> @@ -490,7 +490,8 @@
+>  	  If in doubt, say N.
+>  
+>  config TUNER_TEA5761
+> -	tristate "TEA 5761 radio tuner (EXPERIMENTAL)"
+> +	bool "TEA 5761 radio tuner (EXPERIMENTAL)"
+> +	depends on EXPERIMENTAL
+>  	depends on I2C
+>  	select VIDEO_TUNER
+>  	help
+> --- linux-2.6.22-rc6-mm1/drivers/media/video/Makefile.old	2007-06-30 03:52:00.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/drivers/media/video/Makefile	2007-06-30 03:53:25.000000000 +0200
+> @@ -7,9 +7,7 @@
+>  tuner-objs	:=	tuner-core.o tuner-types.o tuner-simple.o \
+>  			mt20xx.o tda8290.o tea5767.o tda9887.o
+>  
+> -ifneq ($(CONFIG_TUNER_TEA5761),)
+> -  tuner-objs += tea5761.o
+> -endif
+> +tuner-$(CONFIG_TUNER_TEA5761)	+= tea5761.o
+>  
+>  msp3400-objs	:=	msp3400-driver.o msp3400-kthreads.o
+>  
+>   
 
