@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbXGAOz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbXGAPAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbXGAOz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 10:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbXGAOzS
+	id S1757198AbXGAPAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 11:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbXGAPAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 10:55:18 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:46545 "EHLO
+	Sun, 1 Jul 2007 11:00:10 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:46556 "EHLO
 	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755099AbXGAOzR (ORCPT
+	with ESMTP id S1755157AbXGAPAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 10:55:17 -0400
+	Sun, 1 Jul 2007 11:00:08 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
 	d=wantstofly.org;
 	h=date:from:to:cc:subject:message-id:mime-version:content-type:
 	content-disposition:in-reply-to:user-agent;
-	b=lI7/aavRdtCzrkBmSghjGm4MJdmJhAZgsfiwEf4r0A+yLHVsiY0PK4mMcM1Um
-	7UpZelX6vr71Nc4Xr+bb38blQ==
-Date: Sun, 1 Jul 2007 16:55:14 +0200
+	b=YCBBtYs2/TaBd/Gzk1YIzE1YsPiGlWJDh2FTEpSX1iWUm9XFIjg5CV2B/UuMM
+	aPYwr0ikkancWcJD3YzV0ZxvA==
+Date: Sun, 1 Jul 2007 17:00:06 +0200
 From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PXA27x UDC driver.
-Message-ID: <20070701145514.GD7929@xi.wantstofly.org>
-References: <20070628103619.GW13886@enneenne.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: =?iso-8859-1?B?VPZy9ms=?= Edvin <edwintorok@gmail.com>,
+       zambrano@broadcom.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, power@bughost.org
+Subject: Re: [PATCH] b44: power down PHY when interface down
+Message-ID: <20070701150006.GE7929@xi.wantstofly.org>
+References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <200707010024.40649.mb@bu3sch.de> <20070630231734.GF2553@xi.wantstofly.org> <200707011223.17235.mb@bu3sch.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070628103619.GW13886@enneenne.com>
+In-Reply-To: <200707011223.17235.mb@bu3sch.de>
 User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 12:36:20PM +0200, Rodolfo Giometti wrote:
+On Sun, Jul 01, 2007 at 12:23:16PM +0200, Michael Buesch wrote:
 
-> attached you can find new version of my patch for PXA27x UDC driver
-> support against kernel 2.6.22-rc3 (but it applies also ro rc6).
+> > More or less.  You can't add the resistances like that, since the
+> > bus isolation chip buffers the IDSEL signal, but it is correct that
+> > if the host's IDSEL resistor is larger than a certain value, the
+> > combination of the resistive coupling of IDSEL plus the extra buffer
+> > in the isolator might be causing the IDSEL input on the 'guest' PCI
+> > board to assert too late (or not assert at all), causing config
+> > accesses to fail.
+> > 
+> > (This also depends on the specific 'guest' PCI board used, as you
+> > noted, due to differing IDSEL trace lengths/capacitances and input
+> > pin capacitances on different PCI boards.  Also, it might work at
+> > 33 MHz but not work at 66 MHz, etc.)
 > 
-> I'd like to know what I have to do in order to prepare this patch for
-> kernel inclusion. It's time PXA27x has its UDC driver into linux! :)
+> It doesn't work on any of my boards :(
 
-Aren't there about 300 different versions of the PXA27x gadget
-driver out there?
+What extender board is this?  Do you have docs/schematics?
+And what motherboard brand/type?
+
+
+> > If you feel adventurous, you could try to hack around this by
+> > figuring out which AD[31:16] line this PCI slot's IDSEL line is
+> > resistively coupled to (depends on the slot), and then adding
+> > another parallel resistor on the board itself to make the bus
+> > isolator's input buffer charge faster.  Note that this does
+> > increase the load on that specific AD[] line, which might cause
+> > other funny effects.
+> 
+> Well, but how to find out to which address line it's connected to?
+> Pretty hard to follow the PCB traces, especially since it's
+> multilayered.
+
+Actually, the IDSEL resistor would be on the computer's
+motherboard, not on the PCI board.  And to which address line
+the IDSEL line is connected depends on which PCI slot on the
+motherboard you're looking at.
+
+A multimeter should do the trick, but I would advise against this
+if you're not totally comfortable with hacking hardware.
