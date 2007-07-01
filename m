@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbXGAPhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbXGAPhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756804AbXGAPhU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 11:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXGAPhH
+	id S1757372AbXGAPhs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 11:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXGAPhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 11:37:07 -0400
-Received: from mail.screens.ru ([213.234.233.54]:35689 "EHLO mail.screens.ru"
+	Sun, 1 Jul 2007 11:37:39 -0400
+Received: from mail.screens.ru ([213.234.233.54]:35706 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752350AbXGAPhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 11:37:05 -0400
-Date: Sun, 1 Jul 2007 19:37:10 +0400
+	id S1752350AbXGAPhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 11:37:38 -0400
+Date: Sun, 1 Jul 2007 19:37:49 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jarek Poplawski <jarkao2@o2.pl>, Steven Rostedt <rostedt@goodmis.org>,
-       Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] make cancel_xxx_work_sync() return a boolean
-Message-ID: <20070701153710.GA108@tv-sign.ru>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] tty_io.c: don't use flush_scheduled_work()
+Message-ID: <20070701153749.GA111@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,122 +25,111 @@ User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change cancel_work_sync() and cancel_delayed_work_sync() to return a boolean
-indicating whether the work was actually cancelled. A zero return value means
-that the work was not pending/queued.
+I don't know how to test this patch, the ack/nack from maintainer is wanted.
 
-Without that kind of change it is not possible to avoid flush_workqueue()
-sometimes, see the next patch as an example.
+flush_scheduled_work() is evil and should be avoided. Change tty_set_ldisc()
+and release_dev() to use cancel_delayed_work_sync/cancel_work_sync.
 
-Also, this patch unifies both functions and kills the (unlikely) busy-wait loop.
+I am not sure we really need to call do_tty_hangup() when cancel_work_sync()
+returns true, but this matches the current behaviour.
+
+Also, some whitespace fixes.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- OLD/include/linux/workqueue.h~2_retval	2007-06-02 14:26:54.000000000 +0400
-+++ OLD/include/linux/workqueue.h	2007-07-01 16:02:32.000000000 +0400
-@@ -148,7 +148,7 @@ extern int keventd_up(void);
- extern void init_workqueues(void);
- int execute_in_process_context(work_func_t fn, struct execute_work *);
+--- t/drivers/char/tty_io.c~	2007-07-01 18:00:10.000000000 +0400
++++ t/drivers/char/tty_io.c	2007-07-01 19:22:25.000000000 +0400
+@@ -162,6 +162,8 @@ static void release_tty(struct tty_struc
+ static void __proc_set_tty(struct task_struct *tsk, struct tty_struct *tty);
+ static void proc_set_tty(struct task_struct *tsk, struct tty_struct *tty);
  
--extern void cancel_work_sync(struct work_struct *work);
-+extern int cancel_work_sync(struct work_struct *work);
- 
- /*
-  * Kill off a pending schedule_delayed_work().  Note that the work callback
-@@ -166,7 +166,7 @@ static inline int cancel_delayed_work(st
- 	return ret;
- }
- 
--extern void cancel_delayed_work_sync(struct delayed_work *work);
-+extern int cancel_delayed_work_sync(struct delayed_work *work);
- 
- /* Obsolete. use cancel_delayed_work_sync() */
- static inline
---- OLD/kernel/workqueue.c~2_retval	2007-07-01 15:02:12.000000000 +0400
-+++ OLD/kernel/workqueue.c	2007-07-01 16:56:22.000000000 +0400
-@@ -382,16 +382,16 @@ void fastcall flush_workqueue(struct wor
- EXPORT_SYMBOL_GPL(flush_workqueue);
- 
- /*
-- * Upon a successful return, the caller "owns" WORK_STRUCT_PENDING bit,
-+ * Upon a successful return (>= 0), the caller "owns" WORK_STRUCT_PENDING bit,
-  * so this work can't be re-armed in any way.
-  */
- static int try_to_grab_pending(struct work_struct *work)
- {
- 	struct cpu_workqueue_struct *cwq;
--	int ret = 0;
-+	int ret = -1;
- 
- 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
--		return 1;
-+		return 0;
- 
- 	/*
- 	 * The queueing is in progress, or it is already queued. Try to
-@@ -457,10 +457,28 @@ static void wait_on_work(struct work_str
- 		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
- }
- 
-+static int __cancel_work_timer(struct work_struct *work,
-+				struct timer_list* timer)
-+{
-+	int ret;
-+
-+	do {
-+		ret = (timer && likely(del_timer(timer)));
-+		if (!ret)
-+			ret = try_to_grab_pending(work);
-+		wait_on_work(work);
-+	} while (unlikely(ret < 0));
-+
-+	work_clear_pending(work);
-+	return ret;
-+}
++static void do_tty_hangup(struct work_struct *work);
 +
  /**
-  * cancel_work_sync - block until a work_struct's callback has terminated
-  * @work: the work which is to be flushed
+  *	alloc_tty_struct	-	allocate a tty object
   *
-+ * Returns true if @work was pending.
-+ *
-  * cancel_work_sync() will cancel the work if it is queued. If the work's
-  * callback appears to be running, cancel_work_sync() will block until it
-  * has completed.
-@@ -476,12 +494,9 @@ static void wait_on_work(struct work_str
-  * The caller must ensure that workqueue_struct on which this work was last
-  * queued can't be destroyed before this function returns.
-  */
--void cancel_work_sync(struct work_struct *work)
-+int cancel_work_sync(struct work_struct *work)
- {
--	while (!try_to_grab_pending(work))
--		cpu_relax();
--	wait_on_work(work);
--	work_clear_pending(work);
-+	return __cancel_work_timer(work, NULL);
- }
- EXPORT_SYMBOL_GPL(cancel_work_sync);
+@@ -1038,12 +1040,10 @@ restart:
+ 	 *	we say so later on.
+ 	 */
  
-@@ -489,16 +504,14 @@ EXPORT_SYMBOL_GPL(cancel_work_sync);
-  * cancel_delayed_work_sync - reliably kill off a delayed work.
-  * @dwork: the delayed work struct
-  *
-+ * Returns true if @dwork was pending.
-+ *
-  * It is possible to use this function if @dwork rearms itself via queue_work()
-  * or queue_delayed_work(). See also the comment for cancel_work_sync().
-  */
--void cancel_delayed_work_sync(struct delayed_work *dwork)
-+int cancel_delayed_work_sync(struct delayed_work *dwork)
- {
--	while (!del_timer(&dwork->timer) &&
--	       !try_to_grab_pending(&dwork->work))
--		cpu_relax();
--	wait_on_work(&dwork->work);
--	work_clear_pending(&dwork->work);
-+	return __cancel_work_timer(&dwork->work, &dwork->timer);
- }
- EXPORT_SYMBOL(cancel_delayed_work_sync);
+-	work = cancel_delayed_work(&tty->buf.work);
+-	/*
+-	 * Wait for ->hangup_work and ->buf.work handlers to terminate
+-	 */
+-	 
+-	flush_scheduled_work();
++	work = cancel_delayed_work_sync(&tty->buf.work);
++	if (cancel_work_sync(&tty->hangup_work))
++		do_tty_hangup(&tty->hangup_work);
++
+ 	/* Shutdown the current discipline. */
+ 	if (tty->ldisc.close)
+ 		(tty->ldisc.close)(tty);
+@@ -1074,23 +1074,22 @@ restart:
+ 		}
+ 	}
+ 	/* At this point we hold a reference to the new ldisc and a
+-	   a reference to the old ldisc. If we ended up flipping back
+-	   to the existing ldisc we have two references to it */
+-	
++	 * a reference to the old ldisc. If we ended up flipping back
++	 * to the existing ldisc we have two references to it
++	 */
+ 	if (tty->ldisc.num != o_ldisc.num && tty->driver->set_ldisc)
+ 		tty->driver->set_ldisc(tty);
+-		
++
+ 	tty_ldisc_put(o_ldisc.num);
+-	
++
+ 	/*
+ 	 *	Allow ldisc referencing to occur as soon as the driver
+ 	 *	ldisc callback completes.
+ 	 */
+-	 
+ 	tty_ldisc_enable(tty);
+ 	if (o_tty)
+ 		tty_ldisc_enable(o_tty);
+-	
++
+ 	/* Restart it in case no characters kick it off. Safe if
+ 	   already running */
+ 	if (work)
+@@ -2457,7 +2456,7 @@ static void release_dev(struct file * fi
+ 	/* check whether both sides are closing ... */
+ 	if (!tty_closing || (o_tty && !o_tty_closing))
+ 		return;
+-	
++
+ #ifdef TTY_DEBUG_HANGUP
+ 	printk(KERN_DEBUG "freeing tty structure...");
+ #endif
+@@ -2467,15 +2466,11 @@ static void release_dev(struct file * fi
+ 	 * race with the set_ldisc code path.
+ 	 */
+ 	clear_bit(TTY_LDISC, &tty->flags);
+-	cancel_delayed_work(&tty->buf.work);
++	cancel_delayed_work_sync(&tty->buf.work);
++	if (cancel_work_sync(&tty->hangup_work))
++		do_tty_hangup(&tty->hangup_work);
  
+ 	/*
+-	 * Wait for ->hangup_work and ->buf.work handlers to terminate
+-	 */
+-	 
+-	flush_scheduled_work();
+-	
+-	/*
+ 	 * Wait for any short term users (we know they are just driver
+ 	 * side waiters as the file is closing so user count on the file
+ 	 * side is zero.
+@@ -2497,7 +2492,7 @@ static void release_dev(struct file * fi
+ 	if (tty->ldisc.close)
+ 		(tty->ldisc.close)(tty);
+ 	tty_ldisc_put(tty->ldisc.num);
+-	
++
+ 	/*
+ 	 *	Switch the line discipline back
+ 	 */
 
