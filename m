@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbXF3X53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbXGAAC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755434AbXF3X53 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jun 2007 19:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbXF3X5V
+	id S1755300AbXGAAC1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jun 2007 20:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbXGAACS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jun 2007 19:57:21 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1492 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753597AbXF3X5U (ORCPT
+	Sat, 30 Jun 2007 20:02:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:24140 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753597AbXGAACS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jun 2007 19:57:20 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 30 Jun 2007 16:57:18 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Kyle Moffett <mrmacman_g4@mac.com>
-cc: Andy Isaacson <adi@hexapodia.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 0/4] MAP_NOZERO v2 - VM_NOZERO/MAP_NOZERO early summer
- madness
-In-Reply-To: <8F40BE4A-BD38-4C3F-B77D-35661E84C553@mac.com>
-Message-ID: <Pine.LNX.4.64.0706301652050.2957@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.5792.1183056564.0>
- <EC4CE052-5514-465E-92D2-9D50DA970DDC@mac.com> <20070629193954.GL9157@hexapodia.org>
- <Pine.LNX.4.64.0706291306220.31176@alien.or.mcafeemobile.com>
- <D65DCB84-F812-4C3B-8E68-EACA0CA8A0C0@mac.com>
- <Pine.LNX.4.64.0706291711320.31176@alien.or.mcafeemobile.com>
- <8F40BE4A-BD38-4C3F-B77D-35661E84C553@mac.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 30 Jun 2007 20:02:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=G2C0Mn438mGzQjd35k+3KVSi/0hL/xGcNDRt6HLDPsm2h1K6MdThyh6Ceng7rBjDRsFTmAqzVoj1j2ckHCmY8/+r/MtUSCWPIwuXFbuWdDTFjm+K8TNWuP67zKYRWi28t3YiTMzcLbYmfMKnmYG+evW71QayksgXmzExO4Hug54=
+Message-ID: <4686EEE8.4010806@googlemail.com>
+Date: Sun, 01 Jul 2007 02:01:44 +0200
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Andrey Borzenkov <arvidjaar@mail.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Samuel Ortiz <samuel@sortiz.org>,
+       "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>,
+       linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com,
+       linux-pcmcia@lists.infradead.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc
+ does not find chip
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706191731.24085.bjorn.helgaas@hp.com> <200706272156.05865.bjorn.helgaas@hp.com> <200706292041.31291.bjorn.helgaas@hp.com>
+In-Reply-To: <200706292041.31291.bjorn.helgaas@hp.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Jun 2007, Kyle Moffett wrote:
+Hi,
 
-> On Jun 30, 2007, at 15:03:07, Davide Libenzi wrote:
-> > Hmm, why would you need MAP_REUSABLE? If a page is visible at any time for a
-> > given UID, and you have a login under such UID, you can fetch the content of
-> > the page at any time (ie, ptrace_attach, gdb, ...).
+Bjorn Helgaas pisze:
+> [patch] PNP SMCf010 quirk: work around Toshiba Portege 4000 ACPI issues
 > 
-> Not under SELinux or other LSMs.  I suppose those could live without a 15%
-> performance improvement in some workloads, but it would be nice if we could
-> avoid it.  Essentially, UID is a really poor way to define
-> process-security-equivalence classes in some systems.  If you really want to
-> define such classes then you need to add LSM hooks to manage the equivalence
-> classes.
+> When we enable the SMCf010 IR device, the Toshiba Portege 4000 BIOS claims
+> the device is working, but it really isn't configured correctly.  The BIOS
+> *will* configure it, but only if we call _SRS after (1) reversing the order
+> of the SIR and FIR I/O port regions and (2) changing the IRQ from active-high
+> to active-low.
 > 
-> > I think the focus should be to find a case where under the currently
-> > implemented policy for MAP_NOZERO, MAP_NOZERO represent a loss of security
-> > WRT no MAP_NOZERO.
+> This patch fixes the 2.6.22 regression:
+>     "no irda0 interface (2.6.21 was OK), smsc does not find chip"
+
+Hmmm...
+
+375  	2007-06-29 14:24:47  	6921  	 	mkkp  	"no irda0 interface (2.6.21 was OK), smsc does not find chip" fixed, STATISTICS Bjorn Helgaas +1
+
+Wasn't it fixed?
+
+commit 172d0496cd22c98ee2e4238821fa309c01685f3a
+Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date:   Wed Jun 27 14:09:52 2007 -0700
+[..]
+    This patch addresses part of the 2.6.22 regression:
+        "no irda0 interface (2.6.21 was OK), smsc does not find chip"
+
+
 > 
-> Very simple case:
-> SELinux is turned on, an s9 (IE: TOP_SECRET) process calls free(), and an s3
-> (IE: UNCLASSIFIED) process calls malloc(), getting the data from the
-> TOP_SECRET process.
-
-Note that you use *s3* and *s9*. Those will be two different context cookies. 
-SeLinux will have its own way to set the cookie in the mm_struct, to *s3* 
-in one case, and to *s9* in the other case. This will make things so that 
-they'll never see each other pages.
-
-
-
-
-> > It is very easy, assuming a simple unsigned long cookie is enough for
-> > SeLinux, to fit in the current MAP_NOZERO.   Well, we have to change
-> > something in the current struct page _mapcount reuse, but that doable. There
-> > is one line to change, that is the line where the cookie is assigned  to the
-> > mm_struct.
+> I tested this on a Portege 4000.  The smsc-ircc2 driver correctly detects
+> the device, and "irattach irda0 -s && irdadump" shows transmitted and
+> received packets.
 > 
-> I think if you create the concept of a "process equivalence class" and add an
-> LSM hook for it, then the unsigned long could just store which equivalence
-> class the page is in.  The default without LSMs would be to use
-> mutual-ptraceability as the equivalence class (IE: the UID with a proviso for
-> SUID binaries).  LSMs should be able to create a process_equivalence_class
-> hook which when called returns an unsigned long identifying the "equivalence
-> class" (IE: pool) into which the page is placed when freed (or ((unsigned
-> long)-1) to forcibly zero the page).  When a process requests a
-> maybe-not-zeroed page, the LSM hook would be called again to determine what
-> equivalence class should be used, (or ((unsigned long)-1) for
-> dont-use-any-class).
 
-I'd rather prefer to not create anything, and to not add anything. SeLinux 
-can set the cookie as it likes, and it can also disable the feature. Since 
-SeLinux is definitely not the common case, I'd prefer to keep the simple 
-unsigned long cookie abstraction, and let them handle however they like it.
+Regards,
+Michal
 
-
-
-- Davide
-
-
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
