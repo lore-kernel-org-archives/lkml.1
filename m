@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbXGAW4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbXGAW4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757422AbXGAW4D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 18:56:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXGAWzx
+	id S1758693AbXGAW4c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 18:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758374AbXGAW4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 18:55:53 -0400
-Received: from ananke.telenet-ops.be ([195.130.137.78]:38508 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbXGAWzw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 18:55:52 -0400
-Date: Mon, 2 Jul 2007 00:55:36 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Kumar Gala <galak@freescale.com>,
-       David Gibson <david@gibson.dropbear.id.au>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] ppc: remove APUS support
-In-Reply-To: <20070701202206.GO10869@stusta.de>
-Message-ID: <Pine.LNX.4.64.0707020053530.30442@anakin>
-References: <20070701202206.GO10869@stusta.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 1 Jul 2007 18:56:19 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53867 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757669AbXGAW4Q (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 18:56:16 -0400
+Date: Mon, 2 Jul 2007 08:55:43 +1000
+From: David Chinner <dgc@sgi.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, suparna@in.ibm.com, cmm@us.ibm.com,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070701225543.GW31489@sgi.com>
+References: <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070630102111.GB23568@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jul 2007, Adrian Bunk wrote:
-> Current status of APUS:
-> - arch/powerpc/: a patch to remove it is in powerpc.git
-> - arch/ppc/: marked BROKEN since 2 years
+On Sat, Jun 30, 2007 at 11:21:11AM +0100, Christoph Hellwig wrote:
+> On Tue, Jun 26, 2007 at 04:02:47PM +0530, Amit K. Arora wrote:
+> > > Can you clarify - what is the current behaviour when ENOSPC (or some other
+> > > error) is hit?  Does it keep the current fallocate() or does it free it?
+> > 
+> > Currently it is left on the file system implementation. In ext4, we do
+> > not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
+> > end up with partial (pre)allocation. This is inline with dd and
+> > posix_fallocate, which also do not free the partially allocated space.
 > 
-> This patch therefore removes the remaining parts of APUS support.
+> I can't find anything in the specification of posix_fallocate
+> (http://www.opengroup.org/onlinepubs/009695399/functions/posix_fallocate.html)
+> that tells what should happen to allocate blocks on error.
 
-> --- linux-2.6.22-rc6-mm1/include/asm-m68k/pgtable.h.old	2007-06-30 01:23:33.000000000 +0200
-> +++ linux-2.6.22-rc6-mm1/include/asm-m68k/pgtable.h	2007-06-30 01:23:43.000000000 +0200
-> @@ -107,8 +107,6 @@ extern void *empty_zero_page;
->  /* 64-bit machines, beware!  SRB. */
->  #define SIZEOF_PTR_LOG2			       2
->  
-> -#define mm_end_of_chunk(addr, len)	0
-> -
->  extern void kernel_set_cachemode(void *addr, unsigned long size, int cmode);
->  
->  /*
-> --- linux-2.6.22-rc6-mm1/drivers/scsi/a2091.c.old	2007-06-30 01:23:53.000000000 +0200
-> +++ linux-2.6.22-rc6-mm1/drivers/scsi/a2091.c	2007-06-30 01:24:08.000000000 +0200
-> @@ -46,8 +46,7 @@ static int dma_setup(struct scsi_cmnd *c
->      struct Scsi_Host *instance = cmd->device->host;
->  
->      /* don't allow DMA if the physical address is bad */
-> -    if (addr & A2091_XFER_MASK ||
-> -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-> +    if (addr & A2091_XFER_MASK)
->      {
->  	HDATA(instance)->dma_bounce_len = (cmd->SCp.this_residual + 511)
->  	    & ~0x1ff;
-> --- linux-2.6.22-rc6-mm1/drivers/scsi/a3000.c.old	2007-06-30 01:24:17.000000000 +0200
-> +++ linux-2.6.22-rc6-mm1/drivers/scsi/a3000.c	2007-06-30 01:24:26.000000000 +0200
-> @@ -54,8 +54,7 @@ static int dma_setup(struct scsi_cmnd *c
->       * end of a physical memory chunk, then allocate a bounce
->       * buffer
->       */
-> -    if (addr & A3000_XFER_MASK ||
-> -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-> +    if (addr & A3000_XFER_MASK)
->      {
->  	HDATA(a3000_host)->dma_bounce_len = (cmd->SCp.this_residual + 511)
->  	    & ~0x1ff;
-> --- linux-2.6.22-rc6-mm1/drivers/scsi/gvp11.c.old	2007-06-30 01:24:35.000000000 +0200
-> +++ linux-2.6.22-rc6-mm1/drivers/scsi/gvp11.c	2007-06-30 01:24:46.000000000 +0200
-> @@ -54,8 +54,7 @@ static int dma_setup(struct scsi_cmnd *c
->      static int scsi_alloc_out_of_range = 0;
->  
->      /* use bounce buffer if the physical address is bad */
-> -    if (addr & HDATA(cmd->device->host)->dma_xfer_mask ||
-> -	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-> +    if (addr & HDATA(cmd->device->host)->dma_xfer_mask)
->      {
->  	HDATA(cmd->device->host)->dma_bounce_len = (cmd->SCp.this_residual + 511)
->  	    & ~0x1ff;
+Yeah, and AFAICT glibc leaves them behind ATM.
 
-These seem to be completely unrelated to removing APUS support?
+> But common sense would be to not leak disk space on failure of this
+> syscall, and this definitively should not be left up to the filesystem,
+> either we always leak it or always free it, and I'd strongly favour
+> the latter variant.
 
-Gr{oetje,eeting}s,
+We can't simply walk the range an remove unwritten extents, as some
+of them may have been present before the fallocate() call. That
+makes it extremely difficult to undo a failed call and not remove
+more pre-existing pre-allocations.
 
-						Geert
+Given the current behaviour for posix_fallocate() in glibc, I think
+that retaining the same error semantic and punting the cleanup to
+userspace (where the app will fail with ENOSPC anyway) is the only
+sane thing we can do here. Trying to undo this in the kernel leads
+to lots of extra rarely used code in error handling paths...
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Cheers,
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
