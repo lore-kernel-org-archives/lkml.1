@@ -1,295 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbXGAHhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbXGAHiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbXGAHhl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbXGAHg0
+	id S1756873AbXGAHiI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 03:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbXGAHgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:36:26 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:56284 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756660AbXGAHgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:36:23 -0400
-Subject: [EXT4 set 2][PATCH 2/5] cleanups: Add extent sanity checks
+	Sun, 1 Jul 2007 03:36:36 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45625 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756714AbXGAHge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 03:36:34 -0400
+Subject: [EXT4 set 2][PATCH 3/5] cleanups: set_jbd2_64bit_feature for >16TB
+	ext4 fs
 From: Mingming Cao <cmm@us.ibm.com>
 Reply-To: cmm@us.ibm.com
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-ext4@vger.kernel.org
 Content-Type: text/plain
 Organization: IBM Linux Technology Center
-Date: Sun, 01 Jul 2007 03:36:22 -0400
-Message-Id: <1183275382.4010.121.camel@localhost.localdomain>
+Date: Sun, 01 Jul 2007 03:36:32 -0400
+Message-Id: <1183275392.4010.122.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-with the patch all headers are checked. the code should become
-more resistant to on-disk corruptions. needless BUG_ON() have
-been removed. please, review for inclusion.
+Set the journals JBD2_FEATURE_INCOMPAT_64BIT on devices with more
+than 32bit block sizes during mount time.  This ensure proper record
+lenth when writing to the journal.
 
-Signed-off-by: Alex Tomas <alex@clusterfs.com>
+Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+---
+ fs/ext4/super.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Index: linux-2.6.22-rc4/fs/ext4/extents.c
+Index: linux-2.6.22-rc4/fs/ext4/super.c
 ===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/extents.c	2007-06-11 17:22:15.000000000 -0700
-+++ linux-2.6.22-rc4/fs/ext4/extents.c	2007-06-11 17:27:57.000000000 -0700
-@@ -91,36 +91,6 @@
- 	ix->ei_leaf_hi = cpu_to_le16((unsigned long) ((pb >> 31) >> 1) & 0xffff);
- }
- 
--static int ext4_ext_check_header(const char *function, struct inode *inode,
--				struct ext4_extent_header *eh)
--{
--	const char *error_msg = NULL;
--
--	if (unlikely(eh->eh_magic != EXT4_EXT_MAGIC)) {
--		error_msg = "invalid magic";
--		goto corrupted;
--	}
--	if (unlikely(eh->eh_max == 0)) {
--		error_msg = "invalid eh_max";
--		goto corrupted;
--	}
--	if (unlikely(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max))) {
--		error_msg = "invalid eh_entries";
--		goto corrupted;
--	}
--	return 0;
--
--corrupted:
--	ext4_error(inode->i_sb, function,
--			"bad header in inode #%lu: %s - magic %x, "
--			"entries %u, max %u, depth %u",
--			inode->i_ino, error_msg, le16_to_cpu(eh->eh_magic),
--			le16_to_cpu(eh->eh_entries), le16_to_cpu(eh->eh_max),
--			le16_to_cpu(eh->eh_depth));
--
--	return -EIO;
--}
--
- static handle_t *ext4_ext_journal_restart(handle_t *handle, int needed)
- {
- 	int err;
-@@ -269,6 +239,70 @@
- 	return size;
- }
- 
-+static inline int
-+ext4_ext_max_entries(struct inode *inode, int depth)
-+{
-+	int max;
-+
-+	if (depth == ext_depth(inode)) {
-+		if (depth == 0)
-+			max = ext4_ext_space_root(inode);
-+		else
-+			max = ext4_ext_space_root_idx(inode);
-+	} else {
-+		if (depth == 0)
-+			max = ext4_ext_space_block(inode);
-+		else
-+			max = ext4_ext_space_block_idx(inode);
-+	}
-+
-+	return max;
-+}
-+
-+static int __ext4_ext_check_header(const char *function, struct inode *inode,
-+					struct ext4_extent_header *eh,
-+					int depth)
-+{
-+	const char *error_msg = NULL;
-+	int max = 0;
-+
-+	if (unlikely(eh->eh_magic != EXT4_EXT_MAGIC)) {
-+		error_msg = "invalid magic";
-+		goto corrupted;
-+	}
-+	if (unlikely(le16_to_cpu(eh->eh_depth) != depth)) {
-+		error_msg = "unexpected eh_depth";
-+		goto corrupted;
-+	}
-+	if (unlikely(eh->eh_max == 0)) {
-+		error_msg = "invalid eh_max";
-+		goto corrupted;
-+	}
-+	max = ext4_ext_max_entries(inode, depth);
-+	if (unlikely(le16_to_cpu(eh->eh_max) > max)) {
-+		error_msg = "too large eh_max";
-+		goto corrupted;
-+	}
-+	if (unlikely(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max))) {
-+		error_msg = "invalid eh_entries";
-+		goto corrupted;
-+	}
-+	return 0;
-+
-+corrupted:
-+	ext4_error(inode->i_sb, function,
-+			"bad header in inode #%lu: %s - magic %x, "
-+			"entries %u, max %u(%u), depth %u(%u)",
-+			inode->i_ino, error_msg, le16_to_cpu(eh->eh_magic),
-+			le16_to_cpu(eh->eh_entries), le16_to_cpu(eh->eh_max),
-+			max, le16_to_cpu(eh->eh_depth), depth);
-+
-+	return -EIO;
-+}
-+
-+#define ext4_ext_check_header(inode, eh, depth)	\
-+	__ext4_ext_check_header(__FUNCTION__, inode, eh, depth)
-+
- #ifdef EXT_DEBUG
- static void ext4_ext_show_path(struct inode *inode, struct ext4_ext_path *path)
- {
-@@ -329,6 +363,7 @@
- /*
-  * ext4_ext_binsearch_idx:
-  * binary search for the closest index of the given block
-+ * the header must be checked before calling this
-  */
- static void
- ext4_ext_binsearch_idx(struct inode *inode, struct ext4_ext_path *path, int block)
-@@ -336,9 +371,6 @@
- 	struct ext4_extent_header *eh = path->p_hdr;
- 	struct ext4_extent_idx *r, *l, *m;
- 
--	BUG_ON(eh->eh_magic != EXT4_EXT_MAGIC);
--	BUG_ON(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max));
--	BUG_ON(le16_to_cpu(eh->eh_entries) <= 0);
- 
- 	ext_debug("binsearch for %d(idx):  ", block);
- 
-@@ -388,6 +420,7 @@
- /*
-  * ext4_ext_binsearch:
-  * binary search for closest extent of the given block
-+ * the header must be checked before calling this
-  */
- static void
- ext4_ext_binsearch(struct inode *inode, struct ext4_ext_path *path, int block)
-@@ -395,9 +428,6 @@
- 	struct ext4_extent_header *eh = path->p_hdr;
- 	struct ext4_extent *r, *l, *m;
- 
--	BUG_ON(eh->eh_magic != EXT4_EXT_MAGIC);
--	BUG_ON(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max));
--
- 	if (eh->eh_entries == 0) {
- 		/*
- 		 * this leaf is empty:
-@@ -468,11 +498,10 @@
- 	short int depth, i, ppos = 0, alloc = 0;
- 
- 	eh = ext_inode_hdr(inode);
--	BUG_ON(eh == NULL);
--	if (ext4_ext_check_header(__FUNCTION__, inode, eh))
-+	i = depth = ext_depth(inode);
-+	if (ext4_ext_check_header(inode, eh, depth))
- 		return ERR_PTR(-EIO);
- 
--	i = depth = ext_depth(inode);
- 
- 	/* account possible depth increase */
- 	if (!path) {
-@@ -488,6 +517,7 @@
- 	while (i) {
- 		ext_debug("depth %d: num %d, max %d\n",
- 			  ppos, le16_to_cpu(eh->eh_entries), le16_to_cpu(eh->eh_max));
-+
- 		ext4_ext_binsearch_idx(inode, path + ppos, block);
- 		path[ppos].p_block = idx_pblock(path[ppos].p_idx);
- 		path[ppos].p_depth = i;
-@@ -504,7 +534,7 @@
- 		path[ppos].p_hdr = eh;
- 		i--;
- 
--		if (ext4_ext_check_header(__FUNCTION__, inode, eh))
-+		if (ext4_ext_check_header(inode, eh, i))
- 			goto err;
+--- linux-2.6.22-rc4.orig/fs/ext4/super.c	2007-06-11 16:15:54.000000000 -0700
++++ linux-2.6.22-rc4/fs/ext4/super.c	2007-06-11 16:16:10.000000000 -0700
+@@ -1804,6 +1804,13 @@
+ 		goto failed_mount3;
  	}
  
-@@ -513,9 +543,6 @@
- 	path[ppos].p_ext = NULL;
- 	path[ppos].p_idx = NULL;
- 
--	if (ext4_ext_check_header(__FUNCTION__, inode, eh))
--		goto err;
--
- 	/* find extent */
- 	ext4_ext_binsearch(inode, path + ppos, block);
- 
-@@ -1673,13 +1700,12 @@
- 	unsigned short ex_ee_len;
- 	struct ext4_extent *ex;
- 
-+	/* the header must be checked already in ext4_ext_remove_space() */
- 	ext_debug("truncate since %lu in leaf\n", start);
- 	if (!path[depth].p_hdr)
- 		path[depth].p_hdr = ext_block_hdr(path[depth].p_bh);
- 	eh = path[depth].p_hdr;
- 	BUG_ON(eh == NULL);
--	BUG_ON(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max));
--	BUG_ON(eh->eh_magic != EXT4_EXT_MAGIC);
- 
- 	/* find where to start removing */
- 	ex = EXT_LAST_EXTENT(eh);
-@@ -1825,7 +1851,7 @@
- 		return -ENOMEM;
- 	}
- 	path[0].p_hdr = ext_inode_hdr(inode);
--	if (ext4_ext_check_header(__FUNCTION__, inode, path[0].p_hdr)) {
-+	if (ext4_ext_check_header(inode, path[0].p_hdr, depth)) {
- 		err = -EIO;
- 		goto out;
- 	}
-@@ -1846,17 +1872,8 @@
- 		if (!path[i].p_hdr) {
- 			ext_debug("initialize header\n");
- 			path[i].p_hdr = ext_block_hdr(path[i].p_bh);
--			if (ext4_ext_check_header(__FUNCTION__, inode,
--							path[i].p_hdr)) {
--				err = -EIO;
--				goto out;
--			}
- 		}
- 
--		BUG_ON(le16_to_cpu(path[i].p_hdr->eh_entries)
--			   > le16_to_cpu(path[i].p_hdr->eh_max));
--		BUG_ON(path[i].p_hdr->eh_magic != EXT4_EXT_MAGIC);
--
- 		if (!path[i].p_idx) {
- 			/* this level hasn't been touched yet */
- 			path[i].p_idx = EXT_LAST_INDEX(path[i].p_hdr);
-@@ -1873,17 +1890,24 @@
- 				i, EXT_FIRST_INDEX(path[i].p_hdr),
- 				path[i].p_idx);
- 		if (ext4_ext_more_to_rm(path + i)) {
-+			struct buffer_head *bh;
- 			/* go to the next level */
- 			ext_debug("move to level %d (block %llu)\n",
- 				  i + 1, idx_pblock(path[i].p_idx));
- 			memset(path + i + 1, 0, sizeof(*path));
--			path[i+1].p_bh =
--				sb_bread(sb, idx_pblock(path[i].p_idx));
--			if (!path[i+1].p_bh) {
-+			bh = sb_bread(sb, idx_pblock(path[i].p_idx));
-+			if (!bh) {
- 				/* should we reset i_size? */
- 				err = -EIO;
- 				break;
- 			}
-+			BUG_ON(i + 1 > depth);
-+			if (ext4_ext_check_header(inode, ext_block_hdr(bh),
-+							depth - i - 1)) {
-+				err = -EIO;
-+				break;
-+			}
-+			path[i+1].p_bh = bh;
- 
- 			/* save actual number of indexes since this
- 			 * number is changed at the next iteration */
++	if (ext4_blocks_count(es) > 0xffffffffULL &&
++	    !jbd2_journal_set_features(EXT4_SB(sb)->s_journal, 0, 0,
++				       JBD2_FEATURE_INCOMPAT_64BIT)) {
++		printk(KERN_ERR "ext4: Failed to set 64-bit journal feature\n");
++		goto failed_mount4;
++	}
++
+ 	/* We have now updated the journal if required, so we can
+ 	 * validate the data journaling mode. */
+ 	switch (test_opt(sb, DATA_FLAGS)) {
 
 
