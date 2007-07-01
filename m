@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbXGAQuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbXGAQvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757856AbXGAQuz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 12:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbXGAQus
+	id S1757982AbXGAQvv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 12:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbXGAQvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 12:50:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48418 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752901AbXGAQur (ORCPT
+	Sun, 1 Jul 2007 12:51:44 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45918 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbXGAQvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 12:50:47 -0400
-Date: Sun, 1 Jul 2007 12:50:35 -0400
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: blink driver power saving
-Message-ID: <20070701125035.3f54d8b0@oldman>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jul 2007 12:51:43 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sun, 1 Jul 2007 12:49:58 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] SPARC64: Emphasize that sparc64 doesn't support return
+ probes.
+Message-ID: <Pine.LNX.4.64.0707011248490.3046@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The blink driver wakes up every jiffies which wastes power unnecessarily.
-Using a notifier gives same effect. Also add ability to unload module.
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
---- a/drivers/misc/blink.c	2007-06-29 22:56:20.000000000 -0400
-+++ b/drivers/misc/blink.c	2007-07-01 12:44:37.000000000 -0400
-@@ -16,12 +16,30 @@ static void do_blink(unsigned long data)
- 	add_timer(&blink_timer);
- }
- 
--static int blink_init(void)
-+static int blink_panic_event(struct notifier_block *blk,
-+			     unsigned long event, void *arg)
- {
--	printk(KERN_INFO "Enabling keyboard blinking\n");
- 	do_blink(0);
- 	return 0;
- }
- 
-+static struct notifier_block blink_notify = {
-+	.notifier_call = blink_panic_event,
-+};
-+
-+static __init int blink_init(void)
-+{
-+	printk(KERN_INFO "Enabling keyboard blinking\n");
-+	atomic_notifier_chain_register(&panic_notifier_list, &blink_notify);
-+	return 0;
-+}
-+
-+static __exit void blink_remove(void)
-+{
-+	del_timer_sync(&blink_timer);
-+	atomic_notifier_chain_unregister(&panic_notifier_list, &blink_notify);
-+}
-+
- module_init(blink_init);
-+module_exit(blink_remove);
- 
+---
+
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index 89a1b46..6b04c86 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -446,6 +446,7 @@ config KPROBES
+ 	  execute a callback function.  register_kprobe() establishes
+ 	  a probepoint and specifies the callback.  Kprobes is useful
+ 	  for kernel debugging, non-intrusive instrumentation and testing.
++	  (Note that sparc64 does *not* currently support return probes.)
+ 	  If in doubt, say "N".
+ endmenu
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
