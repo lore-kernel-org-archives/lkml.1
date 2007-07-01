@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXGAHng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbXGAHnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbXGAHng (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbXGAHim
+	id S1758565AbXGAHnx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 03:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757253AbXGAHiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:38:42 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:59604 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757352AbXGAHij (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:38:39 -0400
-Subject: [EXT4 set 9][PATCH 2/5]Morecleanups: use is_power_of_2 () in
-	fill_super
+	Sun, 1 Jul 2007 03:38:51 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:46882 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757387AbXGAHiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 03:38:46 -0400
+Subject: [EXT4 set 9][PATCH
+	3/5]Morecleanups:ext4-remove-extra-is_rdonly-check
 From: Mingming Cao <cmm@us.ibm.com>
 Reply-To: cmm@us.ibm.com
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-ext4@vger.kernel.org
 Content-Type: text/plain
 Organization: IBM Linux Technology Center
-Date: Sun, 01 Jul 2007 03:38:37 -0400
-Message-Id: <1183275518.4010.138.camel@localhost.localdomain>
+Date: Sun, 01 Jul 2007 03:38:44 -0400
+Message-Id: <1183275524.4010.139.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: is_power_of_2: ext4/super.c
-From: vignesh babu <vignesh.babu@wipro.com>
+Subject: ext4: remove extra IS_RDONLY() check
+From: Dave Hansen <haveblue@us.ibm.com>
 
-Replace (n & (n-1)) in the context of power of 2 checks with is_power_of_2()
+ext4_change_inode_journal_flag() is only called from one location:
+ext4_ioctl(EXT3_IOC_SETFLAGS).  That ioctl case already has a IS_RDONLY()
+call in it so this one is superfluous.
 
-Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 Cc: <linux-ext4@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
 
- fs/ext4/super.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
+ fs/ext4/inode.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -puN fs/ext4/super.c~is_power_of_2-ext4-superc fs/ext4/super.c
---- a/fs/ext4/super.c~is_power_of_2-ext4-superc
-+++ a/fs/ext4/super.c
-@@ -36,6 +36,7 @@
- #include <linux/namei.h>
- #include <linux/quotaops.h>
- #include <linux/seq_file.h>
-+#include <linux/log2.h>
+diff -puN fs/ext4/inode.c~ext4-remove-extra-is_rdonly-check fs/ext4/inode.c
+--- a/fs/ext4/inode.c~ext4-remove-extra-is_rdonly-check
++++ a/fs/ext4/inode.c
+@@ -3352,7 +3352,7 @@ int ext4_change_inode_journal_flag(struc
+ 	 */
 
- #include <asm/uaccess.h>
+ 	journal = EXT4_JOURNAL(inode);
+-	if (is_journal_aborted(journal) || IS_RDONLY(inode))
++	if (is_journal_aborted(journal))
+ 		return -EROFS;
 
-@@ -1662,7 +1663,7 @@ static int ext4_fill_super (struct super
- 		sbi->s_inode_size = le16_to_cpu(es->s_inode_size);
- 		sbi->s_first_ino = le32_to_cpu(es->s_first_ino);
- 		if ((sbi->s_inode_size < EXT4_GOOD_OLD_INODE_SIZE) ||
--		    (sbi->s_inode_size & (sbi->s_inode_size - 1)) ||
-+		    (!is_power_of_2(sbi->s_inode_size)) ||
- 		    (sbi->s_inode_size > blocksize)) {
- 			printk (KERN_ERR
- 				"EXT4-fs: unsupported inode size: %d\n",
-_
-
-Patches currently in -mm which might be from vignesh.babu@wipro.com are
-
-git-ubi.patch
-use-is_power_of_2-in-cxgb3-cxgb3_mainc.patch
-use-is_power_of_2-in-myri10ge-myri10gec.patch
-is_power_of_2-ext3-superc.patch
-is_power_of_2-ext4-superc.patch
-is_pwoer_of_2-jbd.patch
-
+ 	jbd2_journal_lock_updates(journal);
 
 
