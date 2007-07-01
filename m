@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbXGAHom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbXGAIb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758967AbXGAHom (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbXGAHjE
+	id S1756252AbXGAIb4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 04:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXGAIbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:39:04 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37922 "EHLO e2.ny.us.ibm.com"
+	Sun, 1 Jul 2007 04:31:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34001 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757477AbXGAHjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:39:01 -0400
-Subject: [EXT4 set 9][PATCH 5/5]Extent micro cleanups
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Sun, 01 Jul 2007 03:38:59 -0400
-Message-Id: <1183275539.4010.141.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	id S1754303AbXGAIbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 04:31:46 -0400
+Date: Sun, 1 Jul 2007 10:31:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Willy Tarreau <w@1wt.eu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [patch] CFS scheduler, -v18
+Message-ID: <20070701083102.GA4499@elte.hu>
+References: <20070622220202.GA16872@elte.hu> <20070630210649.GA13186@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070630210649.GA13186@1wt.eu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dmitry Monakhov <dmonakhov@sw.ru>
-Subject: ext4: extent macros cleanup
 
-- Replace math equation to it's macro equivalent
-- make ext4_ext_grow_indepth() indexes/leaf correct
+* Willy Tarreau <w@1wt.eu> wrote:
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-Acked-by: Alex Tomas <alex@clusterfs.com>
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
----
- fs/ext4/extents.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+> Ingo,
+> 
+> I've accidentally discovered a problem with -v18.
+> 
+> Some time ago, I wrote a small program to prevent my laptop from 
+> entering low-power mode, and noticed that after upgrading my laptop's 
+> kernel from 2.4.20.9+cfs-v6 to 2.4.20.14+cfs-v18, it completely 
+> freezes if I run this program.
+> 
+> The program is trivial, it just sets its prio to nice +20 and forks a 
+> busy loop. I've added the ability to stop the loop after a 
+> user-definable number of iterations, and I can confirm that it 
+> unfreezes when the loop ends. I'm not even root when I run it.
 
-diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-index 12fe3d7..1fd00ac 100644
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -375,7 +375,7 @@ ext4_ext_binsearch_idx(struct inode *inode, struct ext4_ext_path *path, int bloc
- 	ext_debug("binsearch for %d(idx):  ", block);
+hm, i tried your test-app and it causes no problems here. (which is not 
+a surprise - your app starts a nice +19 busy loop, which is one of the 
+common tests i do here too.)
 
- 	l = EXT_FIRST_INDEX(eh) + 1;
--	r = EXT_FIRST_INDEX(eh) + le16_to_cpu(eh->eh_entries) - 1;
-+	r = EXT_LAST_INDEX(eh);
- 	while (l <= r) {
- 		m = l + (r - l) / 2;
- 		if (block < le32_to_cpu(m->ei_block))
-@@ -440,7 +440,7 @@ ext4_ext_binsearch(struct inode *inode, struct ext4_ext_path *path, int block)
- 	ext_debug("binsearch for %d:  ", block);
+To further debug this, could you try to create a 'high priority shell' 
+on a text console (i.e. not under X) that is SCHED_FIFO prio 98? 
+Something like:
 
- 	l = EXT_FIRST_EXTENT(eh) + 1;
--	r = EXT_FIRST_EXTENT(eh) + le16_to_cpu(eh->eh_entries) - 1;
-+	r = EXT_LAST_EXTENT(eh);
+  chrt -f -p 98 $$
 
- 	while (l <= r) {
- 		m = l + (r - l) / 2;
-@@ -922,8 +922,11 @@ static int ext4_ext_grow_indepth(handle_t *handle, struct inode *inode,
- 	curp->p_hdr->eh_max = cpu_to_le16(ext4_ext_space_root_idx(inode));
- 	curp->p_hdr->eh_entries = cpu_to_le16(1);
- 	curp->p_idx = EXT_FIRST_INDEX(curp->p_hdr);
--	/* FIXME: it works, but actually path[0] can be index */
--	curp->p_idx->ei_block = EXT_FIRST_EXTENT(path[0].p_hdr)->ee_block;
-+	
-+	if (path[0].p_hdr->eh_depth)
-+	  curp->p_idx->ei_block = EXT_FIRST_INDEX(path[0].p_hdr)->ei_block;
-+	else
-+	  curp->p_idx->ei_block = EXT_FIRST_EXTENT(path[0].p_hdr)->ee_block;
- 	ext4_idx_store_pblock(curp->p_idx, newblock);
+should do the trick. And then run this script:
 
- 	neh = ext_inode_hdr(inode);
+  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
 
+before the test, during the test and after the test, from the high-prio 
+shell session. (the shell runs at SCHED_FIFO, so the expectation would 
+be for that it will be able to run during the test too) Then please send 
+me the resulting 3 debug files. Thanks,
 
+	Ingo
