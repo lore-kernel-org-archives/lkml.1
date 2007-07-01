@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbXGAEvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbXGAFbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954AbXGAEvs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 00:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXGAEvl
+	id S1755616AbXGAFbz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 01:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXGAFbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 00:51:41 -0400
-Received: from smtpout.mac.com ([17.250.248.174]:64941 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751125AbXGAEvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 00:51:40 -0400
-In-Reply-To: <468687DE.6030003@garzik.org>
-References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <20070630120541.GA21339@srcf.ucam.org> <46866C6B.9010801@linux.intel.com> <468687DE.6030003@garzik.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <05EEFFFE-AD93-40A1-8851-92C3053286E1@mac.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       =?ISO-8859-1?Q?T=F6r=F6k_Edvin?= <edwintorok@gmail.com>,
-       netdev@vger.kernel.org, power@bughost.org, zambrano@broadcom.com,
-       linux-kernel@vger.kernel.org
+	Sun, 1 Jul 2007 01:31:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:22705 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbXGAFbq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 01:31:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RbGxW+UTt/gr7lni/emDX2NOSgx7WnXkX2iovMWK9r/CrApCytJrOL7plwApuNLd1LxeUmp7rKkaDyTtftnX653o3RrVplWYmAHxb108il2AUVkWeBbifUGoHWUBcTGyvpHaxqXhCd1dDCOc5+qsiL6MXPr+xziFeCRzmq/5KQc=
+Message-ID: <a781481a0706302231g70bd82c9m9d91abae411233ee@mail.gmail.com>
+Date: Sun, 1 Jul 2007 11:01:45 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: 2.6.22-rc6-mm1
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070630211017.GA26234@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: PM policy, hotplug, power saving (was Re: [PATCH] b44: power down PHY when interface down)
-Date: Sun, 1 Jul 2007 00:51:15 -0400
-To: Jeff Garzik <jeff@garzik.org>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+Content-Disposition: inline
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+	 <6150.1183128630@turing-police.cc.vt.edu>
+	 <20070629140130.59d58c44.akpm@linux-foundation.org>
+	 <15437.1183177066@turing-police.cc.vt.edu>
+	 <20070629221510.95c4c8e1.akpm@linux-foundation.org>
+	 <20070630211017.GA26234@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 30, 2007, at 12:42:06, Jeff Garzik wrote:
-> Definitely matters.  Switch renegotiation can take a while, and you  
-> must take into account the common case of interface bouncing  
-> (immediate down, then up).
->
-> Hoards actively complained the few times we experimented with this,  
-> because of e.g. DHCP's habit of bouncing the interface, which  
-> resulted in PHY power bouncing, which resulted in negotiation,  
-> which resulted in an excrutiating wait on various broken or stupid  
-> switches.
->
-> Overall, this may be classed with other problems of a similar  
-> sort:  we can power down a PHY, but that removes hotplug capability  
-> and extends partner/link negotiation time.
->
-> Like SATA, we actually want to support BOTH -- active hotplug and  
-> PHY power-down -- and so this wanders into power management policy.
->
-> Give me a knob, and we can program plenty of ethernet|SATA|USB|...  
-> drivers to power down the PHY and save power.
+On 7/1/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> [...]
+> I am heading for vacation for 20 days without Internet (real vacation :-))
 
-With some buggy switches and other hardware you actually *want* to  
-bounce the link to get them to properly renegotiate.  I can also see  
-wanting to power off and on a single-PoE-port NIC to restart whatever  
-device is at the other end, although I don't know if any such devices  
-exist.  Currently the tg3 driver turns the PHY off and on during down/ 
-up on a few of my systems, which I use to make a buggy no-name switch  
-recognize STP changes properly.
+I hope I'm not late in catching you here ...
 
-Cheers,
-Kyle Moffett
+> By the way - kbuild.git is lacking behind on patches.
+> I have several queded from other peopel and have more in the works myself.
+
+... is http://lkml.org/lkml/2007/6/23/116/ one of those queued up too?
+
+Note that that patch is also:
+Tested-by: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+
+As you can see from:
+http://readlist.com/lists/vger.kernel.org/linux-kernel/72/361641.html
+
+[ I think I'll utilize the next few days going through my patches-to-do
+list and resurrecting old patches-that-fell-into-lkml-blackhole ... ]
+
+Satyam
