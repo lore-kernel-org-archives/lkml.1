@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbXGAPPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXGAPbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbXGAPPR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 11:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbXGAPPF
+	id S1754168AbXGAPbA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 11:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXGAPav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 11:15:05 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:43863
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750830AbXGAPPE (ORCPT
+	Sun, 1 Jul 2007 11:30:51 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:57918
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbXGAPau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 11:15:04 -0400
-Date: Sun, 1 Jul 2007 17:16:10 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: davem@davemloft.net, wli@holomorphy.com, sparclinux@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Videopix Frame Grabber: Fix unreleased lock in vfc_debug()
-Message-ID: <20070701151610.GA3940@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	davem@davemloft.net, wli@holomorphy.com, sparclinux@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+	Sun, 1 Jul 2007 11:30:50 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Subject: Re: [PATCH] b44: power down PHY when interface down
+Date: Sun, 1 Jul 2007 17:29:59 +0200
+User-Agent: KMail/1.9.6
+Cc: =?iso-8859-1?q?T=F6r=F6k_Edvin?= <edwintorok@gmail.com>,
+       zambrano@broadcom.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, power@bughost.org
+References: <4354d3270706300447ladcda4by987b1f87963112f9@mail.gmail.com> <200707011223.17235.mb@bu3sch.de> <20070701150006.GE7929@xi.wantstofly.org>
+In-Reply-To: <20070701150006.GE7929@xi.wantstofly.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707011729.59673.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Videopix Frame Grabber: vfc_debug() doesn't release the device lock
-when copy_from_user() fails
+On Sunday 01 July 2007 17:00:06 Lennert Buytenhek wrote:
+> On Sun, Jul 01, 2007 at 12:23:16PM +0200, Michael Buesch wrote:
+> 
+> > > More or less.  You can't add the resistances like that, since the
+> > > bus isolation chip buffers the IDSEL signal, but it is correct that
+> > > if the host's IDSEL resistor is larger than a certain value, the
+> > > combination of the resistive coupling of IDSEL plus the extra buffer
+> > > in the isolator might be causing the IDSEL input on the 'guest' PCI
+> > > board to assert too late (or not assert at all), causing config
+> > > accesses to fail.
+> > > 
+> > > (This also depends on the specific 'guest' PCI board used, as you
+> > > noted, due to differing IDSEL trace lengths/capacitances and input
+> > > pin capacitances on different PCI boards.  Also, it might work at
+> > > 33 MHz but not work at 66 MHz, etc.)
+> > 
+> > It doesn't work on any of my boards :(
+> 
+> What extender board is this?  Do you have docs/schematics?
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+catalyst pcibx32
+http://bu3sch.de/pcibx.php
+Docs yes, schematics no.
 
----
+> And what motherboard brand/type?
 
-diff --git a/drivers/sbus/char/vfc_dev.c b/drivers/sbus/char/vfc_dev.c
-index 6afc7e5..1cbdabd 100644
---- a/drivers/sbus/char/vfc_dev.c
-+++ b/drivers/sbus/char/vfc_dev.c
-@@ -248,6 +248,7 @@ static int vfc_debug(struct vfc_dev *dev, int cmd, void __user *argp)
- 					buffer,inout.len);
- 
- 		if (copy_to_user(argp,&inout,sizeof(inout))) {
-+			vfc_unlock_device(dev);
- 			kfree(buffer);
- 			return -EFAULT;
- 		}
- 
+ABit AI7
+The other was some MSI and some very old random board. dunno.
+It works perfectly fine with other cards, like a linksys
+wlan card with a broadcom 4318 chip. It's just the b44
+that doesn't work in the extender.
+
+> Actually, the IDSEL resistor would be on the computer's
+> motherboard, not on the PCI board.  And to which address line
+
+Yeah, I know.
+
+> the IDSEL line is connected depends on which PCI slot on the
+> motherboard you're looking at.
+
+Sure.
+
+> A multimeter should do the trick, but I would advise against this
+> if you're not totally comfortable with hacking hardware.
+
+Well, you mean to measure the idsel against each possible AD line?
+It's difficult, because the motherboard is inside of a standard
+computer case and a watercooling system is mounted. So I would
+have to disassemble all that stuff. :/
+Probably I can measure it with very thin probes on the slots
+without unmounting the board, hm...
+
 -- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-
-   Usually when people are sad, they don't do anything. They just cry over
-     their condition. But when they get angry, they bring about a change
-                              (Malcolm X)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Greetings Michael.
