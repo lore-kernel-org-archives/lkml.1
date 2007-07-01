@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbXGAHgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbXGAHgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbXGAHgW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 03:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbXGAHfw
+	id S1756819AbXGAHgl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 03:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbXGAHgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 03:35:52 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:54083 "EHLO e5.ny.us.ibm.com"
+	Sun, 1 Jul 2007 03:36:06 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:51014 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755956AbXGAHfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 03:35:50 -0400
-Subject: [EXT4 set 1][PATCH 1/2] Add noextents mount option
+	id S1755273AbXGAHgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 03:36:03 -0400
+Subject: [EXT4 set 1][PATCH 2/2] Enable extents by default for ext4dev
 From: Mingming Cao <cmm@us.ibm.com>
 Reply-To: cmm@us.ibm.com
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-ext4@vger.kernel.org
 Content-Type: text/plain
 Organization: IBM Linux Technology Center
-Date: Sun, 01 Jul 2007 03:35:48 -0400
-Message-Id: <1183275348.4010.118.camel@localhost.localdomain>
+Date: Sun, 01 Jul 2007 03:36:01 -0400
+Message-Id: <1183275361.4010.119.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a mount option to turn off extents.
+Turn on extents feature by default in ext4 filesystem. User could use
+-o noextents to turn it off.
 
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
----
+
 Index: linux-2.6.22-rc4/fs/ext4/super.c
 ===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/super.c	2007-06-11 17:02:18.000000000 -0700
-+++ linux-2.6.22-rc4/fs/ext4/super.c	2007-06-11 17:02:22.000000000 -0700
-@@ -725,7 +725,7 @@
- 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
- 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
- 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
--	Opt_grpquota, Opt_extents,
-+	Opt_grpquota, Opt_extents, Opt_noextents,
- };
+--- linux-2.6.22-rc4.orig/fs/ext4/super.c	2007-06-11 17:02:22.000000000 -0700
++++ linux-2.6.22-rc4/fs/ext4/super.c	2007-06-11 17:03:09.000000000 -0700
+@@ -1546,6 +1546,12 @@
  
- static match_table_t tokens = {
-@@ -776,6 +776,7 @@
- 	{Opt_usrquota, "usrquota"},
- 	{Opt_barrier, "barrier=%u"},
- 	{Opt_extents, "extents"},
-+	{Opt_noextents, "noextents"},
- 	{Opt_err, NULL},
- 	{Opt_resize, "resize"},
- };
-@@ -1111,6 +1112,9 @@
- 		case Opt_extents:
- 			set_opt (sbi->s_mount_opt, EXTENTS);
- 			break;
-+		case Opt_noextents:
-+			clear_opt (sbi->s_mount_opt, EXTENTS);
-+			break;
- 		default:
- 			printk (KERN_ERR
- 				"EXT4-fs: Unrecognized mount option \"%s\" "
+ 	set_opt(sbi->s_mount_opt, RESERVATION);
+ 
++	/*
++	 * turn on extents feature by default in ext4 filesystem
++	 * User -o noextents to turn it off
++	 */
++	set_opt (sbi->s_mount_opt, EXTENTS);
++
+ 	if (!parse_options ((char *) data, sb, &journal_inum, &journal_devnum,
+ 			    NULL, 0))
+ 		goto failed_mount;
 
 
