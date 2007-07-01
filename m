@@ -1,74 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbXGCV0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbXGCV1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760500AbXGCV0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbXGCV0N
+	id S1761626AbXGCV1q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbXGCV1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:26:13 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:42125 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755621AbXGCV0M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:26:12 -0400
-Date: Tue, 03 Jul 2007 14:28:50 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
-In-reply-to: <20070703120430.4dcbba68@freepuppy.localdomain.hemminger.net>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <468ABF92.5030800@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-References: <200706291330.37070.yinghai.lu@sun.com>
- <20070703115840.e05a0f47.akpm@linux-foundation.org>
- <20070703120430.4dcbba68@freepuppy.localdomain.hemminger.net>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 3 Jul 2007 17:27:37 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:65320 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753759AbXGCV1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:27:35 -0400
+Subject: [PATCH 3/4] scsi: megaraid_sas - add module param max_sectors,
+	cmd_per_lun
+From: bo yang <bo.yang@lsi.com>
+To: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
+       sumant.patro@lsi.com
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sun, 01 Jul 2007 12:48:21 -0400
+Message-Id: <1183308501.4723.14.camel@dhcp-75-197.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+X-OriginalArrivalTime: 03 Jul 2007 21:27:18.0334 (UTC) FILETIME=[EEEAB5E0:01C7BDB8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> On Tue, 3 Jul 2007 11:58:40 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
->> On Fri, 29 Jun 2007 13:30:36 -0700
->> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
->>
->>> [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
->> Please copy netdev@vger.kernel.org on net patches.
->>
->> This patch modifies a net driver as well as the networking core.  These
->> subsytems have different maintainers who run different development trees. 
->> Consequently I must split your patch into two and change their titles and
->> changelogs appropriately.
->>
->> Please do this for us in future, thanks.
->>
->>
->>> diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
->>> index 42ba1c0..6d53b52 100644
->>> --- a/drivers/net/forcedeth.c
->>> +++ b/drivers/net/forcedeth.c
->>> @@ -1383,7 +1383,7 @@ static int nv_alloc_rx(struct net_device *dev)
->>>  		less_rx = np->last_rx.orig;
->>>  
->>>  	while (np->put_rx.orig != less_rx) {
->>> -		struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
->>> +		struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
->> If we're going to do this then it would probably make sense to change
->> dev_alloc_skb_node() so that it takes a `struct net_device *' rather than a
->> bare node-id.  That's a call which the net guys will need to make, which is
->> why we cc them on our emails.
-> 
-> The driver should use netdev_alloc_skb. That routine is supposed to be overriden
-> on architecture's that need per node changes.
+Adding module parameters to configure max sectors per request & # of cmds for each lun.
 
-do you mean:
-use dev_alloc_skb_node for numa arch.
-and other non numa will use macro or static inline to dev_alloc_skb
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-YH
+---
+
+drivers/scsi/megaraid/megaraid_sas.c |   87 ++++++++++++++++++++++++-
+drivers/scsi/megaraid/megaraid_sas.h |    2
+ 2 files changed, 88 insertions(+), 1 deletion(-)
+
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
+linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c 2007-06-30
+04:02:02.000000000 -0400
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c 2007-06-30
+08:07:16.000000000 -0400
+@@ -61,6 +61,23 @@ MODULE_PARM_DESC(fast_load,
+  "megasas: Faster loading of the driver, skips physical devices! \
+   (default=0)");
+ 
++/*
++ * Number of sectors per IO command
++ * Will be set in megasas_init_mfi if user does not provide
++ */
++static unsigned int max_sectors = 0;
++module_param_named(max_sectors, max_sectors, int, 0);
++MODULE_PARM_DESC(max_sectors,
++ "Maximum number of sectors per IO command");
++
++/*
++ * Number of cmds per logical unit
++ */
++static unsigned int cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
++module_param_named(cmd_per_lun, cmd_per_lun, int, 0);
++MODULE_PARM_DESC(cmd_per_lun,
++ "Maximum number of commands per logical unit (default=128)");
++
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(MEGASAS_VERSION);
+ MODULE_AUTHOR("megaraidlinux@lsi.com");
+@@ -2298,6 +2315,30 @@ static int megasas_start_aen(struct mega
+ 				    class_locale.word);
+ }
+ 
++static ssize_t
++sysfs_max_sectors_read(struct kobject *kobj, char *buf,
++			loff_t off, size_t count)
++{
++	struct Scsi_Host *host = class_to_shost(container_of(kobj,
++					struct class_device, kobj));
++	struct megasas_instance *instance = 
++				(struct megasas_instance *)host->hostdata;
++
++	count = sprintf(buf,"%u\n", instance->max_sectors_per_req);
++
++	return count+1;
++}
++
++static struct bin_attribute sysfs_max_sectors_attr = {
++	.attr = {
++		.name = "max_sectors",
++		.mode = S_IRUSR|S_IRGRP|S_IROTH,
++		.owner = THIS_MODULE,
++	},
++	.size = 7,
++	.read = sysfs_max_sectors_read,
++};
++
+ /**
+  * megasas_io_attach -	Attaches this driver to SCSI mid-layer
+  * @instance:		Adapter soft state
+@@ -2305,6 +2346,7 @@ static int megasas_start_aen(struct mega
+ static int megasas_io_attach(struct megasas_instance *instance)
+ {
+ 	struct Scsi_Host *host = instance->host;
++	int error;
+ 
+ 	/*
+ 	 * Export parameters required by SCSI mid-layer
+@@ -2314,8 +2356,35 @@ static int megasas_io_attach(struct mega
+ 	host->can_queue = instance->max_fw_cmds - MEGASAS_INT_CMDS;
+ 	host->this_id = instance->init_id;
+ 	host->sg_tablesize = instance->max_num_sge;
++
++	/*
++	 * Check if the module parameter value for max_sectors can be used
++	 */
++	if (max_sectors && max_sectors <= instance->max_sectors_per_req)
++		instance->max_sectors_per_req = max_sectors;
++	else {
++		if(max_sectors)
++			printk(KERN_INFO "megasas: max_sectors should be > 0 and"
++			 	"<= %d\n",instance->max_sectors_per_req);
++	}
++
+ 	host->max_sectors = instance->max_sectors_per_req;
+-	host->cmd_per_lun = 128;
++
++	/*
++	 * Check if the module parameter value for cmd_per_lun can be used
++	 */
++	instance->cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
++	if (cmd_per_lun && cmd_per_lun <= MEGASAS_DEFAULT_CMD_PER_LUN)
++		instance->cmd_per_lun = cmd_per_lun;
++	else
++		printk(KERN_INFO "megasas: cmd_per_lun should be > 0 and"
++			 	"<= %d\n",MEGASAS_DEFAULT_CMD_PER_LUN);
++
++	host->cmd_per_lun = instance->cmd_per_lun;
++
++	printk(KERN_DEBUG "megasas: max_sectors : 0x%x, cmd_per_lun : 0x%x\n",
++			instance->max_sectors_per_req, instance->cmd_per_lun);
++
+ 	host->max_channel = MEGASAS_MAX_CHANNELS - 1;
+ 	host->max_id = MEGASAS_MAX_DEV_PER_CHANNEL;
+ 	host->max_lun = MEGASAS_MAX_LUN;
+@@ -2330,10 +2399,25 @@ static int megasas_io_attach(struct mega
+ 	}
+ 
+ 	/*
++	 * Create sysfs entries for module paramaters
++	 */
++	error = sysfs_create_bin_file(&instance->host->shost_classdev.kobj,
++			&sysfs_max_sectors_attr);
++	if (error) {
++		printk(KERN_INFO "megasas: Error in creating the sysfs entry"
++				" max_sectors.\n");
++		goto out_remove_host;
++	}
++
++	/*
+ 	 * Trigger SCSI to scan our drives
+ 	 */
+ 	scsi_scan_host(host);
+ 	return 0;
++
++out_remove_host:
++	scsi_remove_host(host);
++	return error;
+ }
+ 
+ static int
+@@ -2753,6 +2837,7 @@ static void megasas_detach_one(struct pc
+ 	instance = pci_get_drvdata(pdev);
+ 	host = instance->host;
+ 
++	sysfs_remove_bin_file(&host->shost_classdev.kobj,
+&sysfs_max_sectors_attr);
+ 	scsi_remove_host(instance->host);
+ 	megasas_flush_cache(instance);
+ 	megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
+linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-06-30
+04:02:03.000000000 -0400
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-06-18
+05:30:11.000000000 -0400
+@@ -537,6 +537,7 @@ struct megasas_ctrl_info {
+ #define MEGASAS_DEFAULT_INIT_ID			-1
+ #define MEGASAS_MAX_LUN				8
+ #define MEGASAS_MAX_LD				64
++#define MEGASAS_DEFAULT_CMD_PER_LUN		128
+ 
+ #define MEGASAS_DBG_LVL    1
+ 
+@@ -1080,6 +1081,7 @@ struct megasas_instance {
+  u16 max_num_sge;
+  u16 max_fw_cmds;
+ 	u32 max_sectors_per_req;
++	u32 cmd_per_lun;
+ 
+ 	struct megasas_cmd **cmd_list;
+ 	struct list_head cmd_pool;
+
