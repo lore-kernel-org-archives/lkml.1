@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbXGAQQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757250AbXGAQR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756343AbXGAQQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 12:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbXGAQQs
+	id S1757250AbXGAQR4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 12:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXGAQRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 12:16:48 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51654 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753900AbXGAQQr (ORCPT
+	Sun, 1 Jul 2007 12:17:48 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:43995 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754133AbXGAQRs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 12:16:47 -0400
-Date: Sun, 1 Jul 2007 17:22:22 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] tty_io.c: don't use flush_scheduled_work()
-Message-ID: <20070701172222.22812744@the-village.bc.nu>
-In-Reply-To: <20070701153749.GA111@tv-sign.ru>
-References: <20070701153749.GA111@tv-sign.ru>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jul 2007 12:17:48 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sun, 1 Jul 2007 12:16:14 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: instrumentation and kprobes really still "EXPERIMENTAL"?
+Message-ID: <Pine.LNX.4.64.0707011204580.32355@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jul 2007 19:37:49 +0400
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-> I don't know how to test this patch, the ack/nack from maintainer is wanted.
-> 
-> flush_scheduled_work() is evil and should be avoided. Change tty_set_ldisc()
-> and release_dev() to use cancel_delayed_work_sync/cancel_work_sync.
-> 
-> I am not sure we really need to call do_tty_hangup() when cancel_work_sync()
-> returns true, but this matches the current behaviour.
-> 
-> Also, some whitespace fixes.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+  i just noticed that, in the Kconfig files that support KPROBES, both
+the "Instrumentation support" menu is still listed as EXPERIMENTAL,
+while Kprobes support within is simultaneously dependent on that same
+selection.
 
-I'm sorry but the tty layer hangup code is not in a shape to do these
-changes. Please leave it alone until the revoke() code in 2.6.2x-mm is
-ready for mainstream then we will switch to that and all the mess goes
-away.
+  for one, that's kind of redundant and, for another, isn't kprobes
+mature enough to not be considered experimental anymore?  after all,
+red hat is shipping fedora 7 with kprobes support on by default.  that
+kind of takes it out of the realm of experimental, doesn't it?
 
-Its just *too* fragile to touch otherwise, and we've had repeated
-breakages from tiny changes in this area.
+  in addition, while most of the KPROBES config options depend on
 
-Alan
+  KALLSYMS && EXPERIMENTAL && MODULES
+
+the s390 architecture depends only on
+
+  EXPERIMENTAL && MODULES
+
+and its instrumentation support is *not* listed as experimental.
+
+  also, the avr32 entry is in the file Kconfig.debug, and depends only
+on DEBUG_KERNEL.  just an observation.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
