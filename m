@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbXGAUYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbXGAUYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759642AbXGAUYZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 16:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbXGAUV0
+	id S1759532AbXGAUYi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 16:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758481AbXGAUV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 16:21:26 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46845 "EHLO
+	Sun, 1 Jul 2007 16:21:28 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46856 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758867AbXGAUVO (ORCPT
+	with ESMTP id S1758878AbXGAUVY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 16:21:14 -0400
-Date: Sun, 1 Jul 2007 22:21:31 +0200
+	Sun, 1 Jul 2007 16:21:24 -0400
+Date: Sun, 1 Jul 2007 22:21:50 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ctindel@users.sourceforge.net, fubar@us.ibm.com,
-       bonding-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [2.6 patch] bonding/bond_main.c: make 2 functions static
-Message-ID: <20070701202131.GL10869@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] unexport bio_{,un}map_user
+Message-ID: <20070701202150.GN10869@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,54 +24,24 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes two needleesly global functions static.
+bio_{,un}map_user no longer have any modular users.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
 This patch has been sent on:
-- 31 Mar 2007
+- 24 Mar 2007
 
- drivers/net/bonding/bond_main.c |    5 +++--
- drivers/net/bonding/bonding.h   |    2 --
- 2 files changed, 3 insertions(+), 4 deletions(-)
-
---- linux-2.6.21-rc5-mm3/drivers/net/bonding/bonding.h.old	2007-03-31 21:12:31.000000000 +0200
-+++ linux-2.6.21-rc5-mm3/drivers/net/bonding/bonding.h	2007-03-31 21:12:42.000000000 +0200
-@@ -301,13 +301,11 @@
- void bond_destroy_slave_symlinks(struct net_device *master, struct net_device *slave);
- int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev);
- int bond_release(struct net_device *bond_dev, struct net_device *slave_dev);
--int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev);
- void bond_mii_monitor(struct net_device *bond_dev);
- void bond_loadbalance_arp_mon(struct net_device *bond_dev);
- void bond_activebackup_arp_mon(struct net_device *bond_dev);
- void bond_set_mode_ops(struct bonding *bond, int mode);
- int bond_parse_parm(char *mode_arg, struct bond_parm_tbl *tbl);
--const char *bond_mode_name(int mode);
- void bond_select_active_slave(struct bonding *bond);
- void bond_change_active_slave(struct bonding *bond, struct slave *new_active);
- void bond_register_arp(struct bonding *);
---- linux-2.6.21-rc5-mm3/drivers/net/bonding/bond_main.c.old	2007-03-31 21:12:50.000000000 +0200
-+++ linux-2.6.21-rc5-mm3/drivers/net/bonding/bond_main.c	2007-03-31 21:13:16.000000000 +0200
-@@ -187,7 +187,7 @@
- 
- /*---------------------------- General routines -----------------------------*/
- 
--const char *bond_mode_name(int mode)
-+static const char *bond_mode_name(int mode)
- {
- 	switch (mode) {
- 	case BOND_MODE_ROUNDROBIN :
-@@ -1224,7 +1224,8 @@
- 
- /*---------------------------------- IOCTL ----------------------------------*/
- 
--int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev)
-+static int bond_sethwaddr(struct net_device *bond_dev,
-+			  struct net_device *slave_dev)
- {
- 	dprintk("bond_dev=%p\n", bond_dev);
- 	dprintk("slave_dev=%p\n", slave_dev);
+--- linux-2.6.21-rc4-mm1/fs/bio.c.old	2007-03-24 11:42:28.000000000 +0100
++++ linux-2.6.21-rc4-mm1/fs/bio.c	2007-03-24 11:42:39.000000000 +0100
+@@ -1253,8 +1253,6 @@
+ EXPORT_SYMBOL(bio_add_page);
+ EXPORT_SYMBOL(bio_add_pc_page);
+ EXPORT_SYMBOL(bio_get_nr_vecs);
+-EXPORT_SYMBOL(bio_map_user);
+-EXPORT_SYMBOL(bio_unmap_user);
+ EXPORT_SYMBOL(bio_map_kern);
+ EXPORT_SYMBOL(bio_pair_release);
+ EXPORT_SYMBOL(bio_split);
 
