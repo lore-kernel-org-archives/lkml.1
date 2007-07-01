@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbXGAN2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbXGANzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757600AbXGAN2K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 09:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbXGAN15
+	id S1756560AbXGANzf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 09:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXGANz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 09:27:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52902 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756234AbXGAN15 (ORCPT
+	Sun, 1 Jul 2007 09:55:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:34841 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbXGANz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 09:27:57 -0400
-Subject: Re: [patch 5/5] Optimize page_mkclean_one
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0707010926130.11148@blonde.wat.veritas.com>
-References: <20070629135530.912094590@de.ibm.com>
-	 <20070629141528.511942868@de.ibm.com>
-	 <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
-	 <1183274153.15924.6.camel@localhost>
-	 <Pine.LNX.4.64.0707010926130.11148@blonde.wat.veritas.com>
-Content-Type: text/plain
-Date: Sun, 01 Jul 2007 15:27:48 +0200
-Message-Id: <1183296468.5180.10.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sun, 1 Jul 2007 09:55:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:organization:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Pks2VfQuYNfl0BtxR72vViiCTm4RP2NvTaSwtobgTemRbAAaubffCYGwMCUXIj/TxkyzagkPKR9bhtZ4+qlEf4ep3bIcZ5hcls37yD6mfUDXVkYy90G2HNkTAJGFnfKtnxg3augnxPlAC9b/zT3EMYz/vl8aWNLQGG6/D4WAPrY=
+Message-ID: <4687B247.8000306@gmail.com>
+Date: Sun, 01 Jul 2007 15:55:19 +0200
+From: Patrizio Bassi <patrizio.bassi@gmail.com>
+Reply-To: patrizio.bassi@gmail.com
+Organization: patrizio.bassi@gmail.com
+User-Agent: Thunderbird 2.0.0.4 (X11/20070619)
+MIME-Version: 1.0
+To: "Kernel, " <linux-kernel@vger.kernel.org>
+Subject: sky2: keep the interface up and working
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-01 at 09:54 +0100, Hugh Dickins wrote:
+Hi
 
-> But I could easily be overlooking something: Peter will recall.
+I'm using vmware and bridged networking with interface eth1.
 
-/me tries to get his brain up to speed after the OLS closing party :-)
+The brigde works only when eth1 has the physical connection enabled, so
+i always need to have another pc running.
+with tcpdump i can see packets coming from virtual machines, but none
+sent back.
 
-I did both pte_dirty and pte_write because I was extra careful. One
-_should_ imply the other, but since we'll be clearing both, I thought it
-prudent to also check both.
+I wonder if it's possibile to have the interface always "alive" (as
+ifconfig reports it up) in order to have the bridge working.
+I looked for some ethtool options...but nothing...
 
-I will have to think on this a little more, but I'm currently of the
-opinion that the optimisation is not correct. But I'll have a thorough
-look at s390 again when I get home.
+thanks for support
+
+Patrizio
 
