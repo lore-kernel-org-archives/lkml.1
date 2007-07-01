@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759735AbXGAUZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbXGAUZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759735AbXGAUZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 16:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759150AbXGAUWA
+	id S1760041AbXGAUZp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 16:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758476AbXGAUWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 16:22:00 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46867 "EHLO
+	Sun, 1 Jul 2007 16:22:19 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46871 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759040AbXGAUVw (ORCPT
+	with ESMTP id S1758852AbXGAUWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 16:21:52 -0400
-Date: Sun, 1 Jul 2007 22:22:19 +0200
+	Sun, 1 Jul 2007 16:22:17 -0400
+Date: Sun, 1 Jul 2007 22:22:43 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Andrew Morton <akpm@linux-foundation.org>,
-       Antonino Daplas <adaplas@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: [-mm patch] fix include/asm-m68k/fb.h
-Message-ID: <20070701202219.GP10869@stusta.de>
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [-mm patch] fix duplicate CONFIG_DMAR Makefile line
+Message-ID: <20070701202243.GQ10869@stusta.de>
 References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -26,17 +27,32 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 28, 2007 at 03:43:21AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.22-rc4-mm2:
+>...
+> +intel-iommu-intel-iommu-driver.patch
+>...
+>  Intel IOMMU support
+>...
+
+
+Contrary to popular belief, two identical Makefile lines don't bring any 
+advantages.   ;-)
+
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.22-rc6-mm1/include/asm-m68k/fb.h.old	2007-06-30 02:40:16.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/include/asm-m68k/fb.h	2007-06-30 02:40:25.000000000 +0200
-@@ -15,6 +15,7 @@
- #else
- static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
- 				unsigned long off)
-+{
- 	if (CPU_IS_020_OR_030)
- 		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE030;
- 	if (CPU_IS_040_OR_060) {
+--- linux-2.6.22-rc6-mm1/drivers/pci/Makefile.old	2007-06-30 03:33:54.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/pci/Makefile	2007-06-30 03:34:04.000000000 +0200
+@@ -23,9 +23,6 @@
+ # Build Intel IOMMU support
+ obj-$(CONFIG_DMAR) += dmar.o iova.o intel-iommu.o
+ 
+-#Build Intel-IOMMU support
+-obj-$(CONFIG_DMAR) += iova.o dmar.o intel-iommu.o
+-
+ #
+ # Some architectures use the generic PCI setup functions
+ #
 
