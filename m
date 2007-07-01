@@ -1,50 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbXGAQZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbXGAQ2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757943AbXGAQZt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 12:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbXGAQZm
+	id S1757971AbXGAQ2X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 12:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbXGAQ2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 12:25:42 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:50331 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754621AbXGAQZm (ORCPT
+	Sun, 1 Jul 2007 12:28:14 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:37263
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753309AbXGAQ2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 12:25:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Y4FmkNO2EAAQundS62NRV0XULa/v8ZloiZwXebsFxUy+5OkhhB2Z2ErU2tRsBZ0Nw+Vszq9v3bHw/FOiPQ8AvLHXPEnB9oEXQC3rmXfdoI7ilB46eGYraGZvpUP/C8vnwKA+ljlKOSzk93Z5hxHWLh9Jl1Eb9Cz3b6bY+bkOt2k=
-Message-ID: <a36005b50707010925k5c936c1ch2238b560c595a833@mail.gmail.com>
-Date: Sun, 1 Jul 2007 09:25:40 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: [patch 0/6] sys_indirect RFC - sys_indirect introduction
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0706301529310.2957@alien.or.mcafeemobile.com>
+	Sun, 1 Jul 2007 12:28:13 -0400
+Date: Sun, 1 Jul 2007 18:29:21 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: megaraidlinux@lsi.com, linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 1/5] use mutex instead of semaphore in Megaraid Mailbox driver
+Message-ID: <20070701162921.GD3940@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	megaraidlinux@lsi.com, linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <20070701162529.GC3940@traven>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <send-serie.davidel@xmailserver.org.28360.1183153732.0>
-	 <a36005b50706291848p406fbb9aw99697f609b0d5c4b@mail.gmail.com>
-	 <Pine.LNX.4.64.0706301208140.2957@alien.or.mcafeemobile.com>
-	 <a36005b50706301454j46c23760m5f0ac6088fe24a9d@mail.gmail.com>
-	 <Pine.LNX.4.64.0706301458300.2957@alien.or.mcafeemobile.com>
-	 <Pine.LNX.4.64.0706301529310.2957@alien.or.mcafeemobile.com>
+In-Reply-To: <20070701162529.GC3940@traven>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/30/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> This is how all those overloaded syscalls looks like, BTW:
-> [...]
-> How would you do that with a single shared strcture, w/out adding in all
-> signal paths the knowledge of the structure?
+The Megaraid Mailbox driver uses a semaphore as mutex. Use the mutex
+API instead of the (binary) semaphore.
 
-You said it yourself: each individual wrapper would look like this.
-Generalization really isn't possible, you'll have each wrapper syscall
-looking different.  This means there is no reason to try coming up
-with some overly complicated data structure which would only be useful
-if the processing of that data structure could be centralized.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+
+--
+
+diff --git a/drivers/scsi/megaraid/mega_common.h b/drivers/scsi/megaraid/mega_common.h
+index 26e1e6c..fef9ac9 100644
+--- a/drivers/scsi/megaraid/mega_common.h
++++ b/drivers/scsi/megaraid/mega_common.h
+@@ -21,6 +21,7 @@
+ #include <linux/types.h>
+ #include <linux/pci.h>
+ #include <linux/spinlock.h>
++#include <linux/mutex.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+ #include <linux/blkdev.h>
+diff --git a/drivers/scsi/megaraid/megaraid_mbox.c b/drivers/scsi/megaraid/megaraid_mbox.c
+index 04d0b69..2cecc64 100644
+--- a/drivers/scsi/megaraid/megaraid_mbox.c
++++ b/drivers/scsi/megaraid/megaraid_mbox.c
+@@ -3957,7 +3957,7 @@ megaraid_sysfs_alloc_resources(adapter_t *adapter)
+ 		megaraid_sysfs_free_resources(adapter);
+ 	}
+ 
+-	sema_init(&raid_dev->sysfs_sem, 1);
++	mutex_init(&raid_dev->sysfs_mtx);
+ 
+ 	init_waitqueue_head(&raid_dev->sysfs_wait_q);
+ 
+@@ -4058,7 +4058,7 @@ megaraid_sysfs_get_ldmap(adapter_t *adapter)
+ 	/*
+ 	 * Allow only one read at a time to go through the sysfs attributes
+ 	 */
+-	down(&raid_dev->sysfs_sem);
++	mutex_lock(&raid_dev->sysfs_mtx);
+ 
+ 	uioc	= raid_dev->sysfs_uioc;
+ 	mbox64	= raid_dev->sysfs_mbox64;
+@@ -4134,7 +4134,7 @@ megaraid_sysfs_get_ldmap(adapter_t *adapter)
+ 
+ 	del_timer_sync(timerp);
+ 
+-	up(&raid_dev->sysfs_sem);
++	mutex_unlock(&raid_dev->sysfs_mtx);
+ 
+ 	return rval;
+ }
+diff --git a/drivers/scsi/megaraid/megaraid_mbox.h b/drivers/scsi/megaraid/megaraid_mbox.h
+index 9de803c..626459d 100644
+--- a/drivers/scsi/megaraid/megaraid_mbox.h
++++ b/drivers/scsi/megaraid/megaraid_mbox.h
+@@ -168,7 +168,7 @@ typedef struct {
+  * @hw_error			: set if FW not responding
+  * @fast_load			: If set, skip physical device scanning
+  * @channel_class		: channel class, RAID or SCSI
+- * @sysfs_sem			: semaphore to serialize access to sysfs res.
++ * @sysfs_mtx			: mutex to serialize access to sysfs res.
+  * @sysfs_uioc			: management packet to issue FW calls from sysfs
+  * @sysfs_mbox64		: mailbox packet to issue FW calls from sysfs
+  * @sysfs_buffer		: data buffer for FW commands issued from sysfs
+@@ -208,7 +208,7 @@ typedef struct {
+ 	int				hw_error;
+ 	int				fast_load;
+ 	uint8_t				channel_class;
+-	struct semaphore		sysfs_sem;
++	struct mutex			sysfs_mtx;
+ 	uioc_t				*sysfs_uioc;
+ 	mbox64_t			*sysfs_mbox64;
+ 	caddr_t				sysfs_buffer;
+
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+         An ounce of practice is worth more than tons of preaching
+                            (Mahatma Gandhi)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
