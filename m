@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbXGAW4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbXGAXE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758693AbXGAW4c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 18:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758374AbXGAW4T
+	id S1758246AbXGAXE6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 19:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbXGAXEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 18:56:19 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53867 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757669AbXGAW4Q (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 18:56:16 -0400
-Date: Mon, 2 Jul 2007 08:55:43 +1000
-From: David Chinner <dgc@sgi.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, suparna@in.ibm.com, cmm@us.ibm.com,
-       xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070701225543.GW31489@sgi.com>
-References: <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 1 Jul 2007 19:04:50 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38741 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751478AbXGAXEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jul 2007 19:04:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [-mm patch] kernel/power/main.c: make code static
+Date: Mon, 2 Jul 2007 01:12:03 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <20070701202336.GV10869@stusta.de>
+In-Reply-To: <20070701202336.GV10869@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070630102111.GB23568@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200707020112.04013.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 30, 2007 at 11:21:11AM +0100, Christoph Hellwig wrote:
-> On Tue, Jun 26, 2007 at 04:02:47PM +0530, Amit K. Arora wrote:
-> > > Can you clarify - what is the current behaviour when ENOSPC (or some other
-> > > error) is hit?  Does it keep the current fallocate() or does it free it?
-> > 
-> > Currently it is left on the file system implementation. In ext4, we do
-> > not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
-> > end up with partial (pre)allocation. This is inline with dd and
-> > posix_fallocate, which also do not free the partially allocated space.
+On Sunday, 1 July 2007 22:23, Adrian Bunk wrote:
+> On Thu, Jun 28, 2007 at 03:43:21AM -0700, Andrew Morton wrote:
+> >...
+> > Changes since 2.6.22-rc4-mm2:
+> >...
+> > +pm-reduce-code-duplication-between-mainc-and-userc.patch
+> >...
+> >  PM updates
+> >...
 > 
-> I can't find anything in the specification of posix_fallocate
-> (http://www.opengroup.org/onlinepubs/009695399/functions/posix_fallocate.html)
-> that tells what should happen to allocate blocks on error.
+> 
+> Some code can now become static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Yeah, and AFAICT glibc leaves them behind ATM.
+This clashes and partially overlaps with some patches that I have in the works.
 
-> But common sense would be to not leak disk space on failure of this
-> syscall, and this definitively should not be left up to the filesystem,
-> either we always leak it or always free it, and I'd strongly favour
-> the latter variant.
+Greetings,
+Rafael
 
-We can't simply walk the range an remove unwritten extents, as some
-of them may have been present before the fallocate() call. That
-makes it extremely difficult to undo a failed call and not remove
-more pre-existing pre-allocations.
 
-Given the current behaviour for posix_fallocate() in glibc, I think
-that retaining the same error semantic and punting the cleanup to
-userspace (where the app will fail with ENOSPC anyway) is the only
-sane thing we can do here. Trying to undo this in the kernel leads
-to lots of extra rarely used code in error handling paths...
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+"Premature optimization is the root of all evil." - Donald Knuth
