@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbXGAUUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbXGAUUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758459AbXGAUUV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jul 2007 16:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbXGAUUG
+	id S1758631AbXGAUUk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jul 2007 16:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbXGAUUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jul 2007 16:20:06 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:46802 "EHLO
+	Sun, 1 Jul 2007 16:20:15 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46805 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754397AbXGAUUE (ORCPT
+	with ESMTP id S1757503AbXGAUUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jul 2007 16:20:04 -0400
-Date: Sun, 1 Jul 2007 22:20:31 +0200
+	Sun, 1 Jul 2007 16:20:11 -0400
+Date: Sun, 1 Jul 2007 22:20:37 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] kernel/relay.c: make functions static
-Message-ID: <20070701202031.GB10869@stusta.de>
+Cc: Dave Jones <davej@redhat.com>, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
+Message-ID: <20070701202037.GC10869@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,76 +26,446 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes some needlessly global functions static.
+This patch contains the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Acked-by: Dave Jones <davej@redhat.com>
 
 ---
 
 This patch has been sent on:
-- 4 Apr 2007
+- 6 Apr 2007
 
- kernel/relay.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ Documentation/feature-removal-schedule.txt        |   23 -
+ arch/i386/kernel/cpu/cpufreq/Kconfig              |   18 
+ arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  280 --------------
+ arch/x86_64/kernel/cpufreq/Kconfig                |    6 
+ 4 files changed, 21 insertions(+), 306 deletions(-)
 
---- linux-2.6.21-rc5-mm3/kernel/relay.c.old	2007-04-03 01:33:49.000000000 +0200
-+++ linux-2.6.21-rc5-mm3/kernel/relay.c	2007-04-03 01:36:07.000000000 +0200
-@@ -79,7 +79,7 @@
-  *
-  *	Caller should already have grabbed mmap_sem.
-  */
--int relay_mmap_buf(struct rchan_buf *buf, struct vm_area_struct *vma)
-+static int relay_mmap_buf(struct rchan_buf *buf, struct vm_area_struct *vma)
- {
- 	unsigned long length = vma->vm_end - vma->vm_start;
- 	struct file *filp = vma->vm_file;
-@@ -143,7 +143,7 @@
-  *
-  *	Returns channel buffer if successful, %NULL otherwise.
-  */
--struct rchan_buf *relay_create_buf(struct rchan *chan)
-+static struct rchan_buf *relay_create_buf(struct rchan *chan)
- {
- 	struct rchan_buf *buf = kzalloc(sizeof(struct rchan_buf), GFP_KERNEL);
- 	if (!buf)
-@@ -173,7 +173,7 @@
-  *
-  *	Should only be called from kref_put().
-  */
--void relay_destroy_channel(struct kref *kref)
-+static void relay_destroy_channel(struct kref *kref)
- {
- 	struct rchan *chan = container_of(kref, struct rchan, kref);
- 	kfree(chan);
-@@ -183,7 +183,7 @@
-  *	relay_destroy_buf - destroy an rchan_buf struct and associated buffer
-  *	@buf: the buffer struct
-  */
--void relay_destroy_buf(struct rchan_buf *buf)
-+static void relay_destroy_buf(struct rchan_buf *buf)
- {
- 	struct rchan *chan = buf->chan;
- 	unsigned int i;
-@@ -208,7 +208,7 @@
-  *	rchan_buf_struct and the channel buffer.  Should only be called from
-  *	kref_put().
-  */
--void relay_remove_buf(struct kref *kref)
-+static void relay_remove_buf(struct kref *kref)
- {
- 	struct rchan_buf *buf = container_of(kref, struct rchan_buf, kref);
- 	buf->chan->cb->remove_buf_file(buf->dentry);
-@@ -221,11 +221,10 @@
-  *
-  *	Returns 1 if the buffer is empty, 0 otherwise.
-  */
--int relay_buf_empty(struct rchan_buf *buf)
-+static int relay_buf_empty(struct rchan_buf *buf)
- {
- 	return (buf->subbufs_produced - buf->subbufs_consumed) ? 0 : 1;
- }
--EXPORT_SYMBOL_GPL(relay_buf_empty);
+--- linux-2.6.19-rc6-mm2/arch/i386/kernel/cpu/cpufreq/Kconfig.old	2006-12-01 07:23:38.000000000 +0100
++++ linux-2.6.19-rc6-mm2/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-12-01 07:24:02.000000000 +0100
+@@ -109,7 +109,7 @@
+ config X86_SPEEDSTEP_CENTRINO
+ 	tristate "Intel Enhanced SpeedStep"
+ 	select CPU_FREQ_TABLE
+-	select X86_SPEEDSTEP_CENTRINO_TABLE if (!X86_SPEEDSTEP_CENTRINO_ACPI)
++	select X86_SPEEDSTEP_CENTRINO_TABLE
+ 	help
+ 	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
+ 	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs. However,
+@@ -121,20 +121,6 @@
  
- /**
-  *	relay_buf_full - boolean, is the channel buffer full?
-
+ 	  If in doubt, say N.
+ 
+-config X86_SPEEDSTEP_CENTRINO_ACPI
+-	bool "Use ACPI tables to decode valid frequency/voltage (deprecated)"
+-	depends on X86_SPEEDSTEP_CENTRINO && ACPI_PROCESSOR
+-	depends on !(X86_SPEEDSTEP_CENTRINO = y && ACPI_PROCESSOR = m)
+-	help
+-	  This is deprecated and this functionality is now merged into
+-	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
+-	  speedstep_centrino.
+-	  Use primarily the information provided in the BIOS ACPI tables
+-	  to determine valid CPU frequency and voltage pairings. It is
+-	  required for the driver to work on non-Banias CPUs.
+-
+-	  If in doubt, say Y.
+-
+ config X86_SPEEDSTEP_CENTRINO_TABLE
+ 	bool "Built-in tables for Banias CPUs"
+ 	depends on X86_SPEEDSTEP_CENTRINO
+@@ -222,7 +207,7 @@
+ config X86_ACPI_CPUFREQ_PROC_INTF
+ 	bool "/proc/acpi/processor/../performance interface (deprecated)"
+ 	depends on PROC_FS
+-	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K7_ACPI || X86_POWERNOW_K8_ACPI
++	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K7_ACPI || X86_POWERNOW_K8_ACPI
+ 	help
+ 	  This enables the deprecated /proc/acpi/processor/../performance
+ 	  interface. While it is helpful for debugging, the generic,
+--- linux-2.6.19-rc6-mm2/arch/x86_64/kernel/cpufreq/Kconfig.old	2006-12-01 07:24:11.000000000 +0100
++++ linux-2.6.19-rc6-mm2/arch/x86_64/kernel/cpufreq/Kconfig	2006-12-01 07:24:21.000000000 +0100
+@@ -42,10 +42,6 @@
+ 
+ 	  If in doubt, say N.
+ 
+-config X86_SPEEDSTEP_CENTRINO_ACPI
+-	bool
+-	depends on X86_SPEEDSTEP_CENTRINO
+-
+ config X86_ACPI_CPUFREQ
+ 	tristate "ACPI Processor P-States driver"
+ 	select CPU_FREQ_TABLE
+@@ -65,7 +60,7 @@
+ config X86_ACPI_CPUFREQ_PROC_INTF
+         bool "/proc/acpi/processor/../performance interface (deprecated)"
+ 	depends on PROC_FS
+-	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
++	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
+ 	help
+ 	  This enables the deprecated /proc/acpi/processor/../performance
+ 	  interface. While it is helpful for debugging, the generic,
+--- linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.old	2007-02-17 23:29:53.000000000 +0100
++++ linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2007-02-17 23:30:44.000000000 +0100
+@@ -21,12 +21,6 @@
+ #include <linux/delay.h>
+ #include <linux/compiler.h>
+ 
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-#include <linux/acpi.h>
+-#include <linux/dmi.h>
+-#include <acpi/processor.h>
+-#endif
+-
+ #include <asm/msr.h>
+ #include <asm/processor.h>
+ #include <asm/cpufeature.h>
+@@ -257,9 +251,7 @@
+ 		/* Matched a non-match */
+ 		dprintk("no table support for CPU model \"%s\"\n",
+ 		       cpu->x86_model_id);
+-#ifndef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-		dprintk("try compiling with CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI enabled\n");
+-#endif
++		dprintk("try using the acpi-cpufreq driver\n");
+ 		return -ENOENT;
+ 	}
+ 
+@@ -346,213 +338,6 @@
+ }
+ 
+ 
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-
+-static struct acpi_processor_performance *acpi_perf_data[NR_CPUS];
+-
+-/*
+- * centrino_cpu_early_init_acpi - Do the preregistering with ACPI P-States
+- * library
+- *
+- * Before doing the actual init, we need to do _PSD related setup whenever
+- * supported by the BIOS. These are handled by this early_init routine.
+- */
+-static int centrino_cpu_early_init_acpi(void)
+-{
+-	unsigned int	i, j;
+-	struct acpi_processor_performance	*data;
+-
+-	for_each_possible_cpu(i) {
+-		data = kzalloc(sizeof(struct acpi_processor_performance), 
+-				GFP_KERNEL);
+-		if (!data) {
+-			for_each_possible_cpu(j) {
+-				kfree(acpi_perf_data[j]);
+-				acpi_perf_data[j] = NULL;
+-			}
+-			return (-ENOMEM);
+-		}
+-		acpi_perf_data[i] = data;
+-	}
+-
+-	acpi_processor_preregister_performance(acpi_perf_data);
+-	return 0;
+-}
+-
+-
+-#ifdef CONFIG_SMP
+-/*
+- * Some BIOSes do SW_ANY coordination internally, either set it up in hw
+- * or do it in BIOS firmware and won't inform about it to OS. If not
+- * detected, this has a side effect of making CPU run at a different speed
+- * than OS intended it to run at. Detect it and handle it cleanly.
+- */
+-static int bios_with_sw_any_bug;
+-static int sw_any_bug_found(struct dmi_system_id *d)
+-{
+-	bios_with_sw_any_bug = 1;
+-	return 0;
+-}
+-
+-static struct dmi_system_id sw_any_bug_dmi_table[] = {
+-	{
+-		.callback = sw_any_bug_found,
+-		.ident = "Supermicro Server X6DLP",
+-		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "Supermicro"),
+-			DMI_MATCH(DMI_BIOS_VERSION, "080010"),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "X6DLP"),
+-		},
+-	},
+-	{ }
+-};
+-#endif
+-
+-/*
+- * centrino_cpu_init_acpi - register with ACPI P-States library
+- *
+- * Register with the ACPI P-States library (part of drivers/acpi/processor.c)
+- * in order to determine correct frequency and voltage pairings by reading
+- * the _PSS of the ACPI DSDT or SSDT tables.
+- */
+-static int centrino_cpu_init_acpi(struct cpufreq_policy *policy)
+-{
+-	unsigned long			cur_freq;
+-	int				result = 0, i;
+-	unsigned int			cpu = policy->cpu;
+-	struct acpi_processor_performance	*p;
+-
+-	p = acpi_perf_data[cpu];
+-
+-	/* register with ACPI core */
+-	if (acpi_processor_register_performance(p, cpu)) {
+-		dprintk(PFX "obtaining ACPI data failed\n");
+-		return -EIO;
+-	}
+-
+-	policy->shared_type = p->shared_type;
+-	/*
+-	 * Will let policy->cpus know about dependency only when software 
+-	 * coordination is required.
+-	 */
+-	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL ||
+-	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+-		policy->cpus = p->shared_cpu_map;
+-	}
+-
+-#ifdef CONFIG_SMP
+-	dmi_check_system(sw_any_bug_dmi_table);
+-	if (bios_with_sw_any_bug && cpus_weight(policy->cpus) == 1) {
+-		policy->shared_type = CPUFREQ_SHARED_TYPE_ALL;
+-		policy->cpus = cpu_core_map[cpu];
+-	}
+-#endif
+-
+-	/* verify the acpi_data */
+-	if (p->state_count <= 1) {
+-		dprintk("No P-States\n");
+-		result = -ENODEV;
+-		goto err_unreg;
+-	}
+-
+-	if ((p->control_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
+-	    (p->status_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
+-		dprintk("Invalid control/status registers (%x - %x)\n",
+-			p->control_register.space_id, p->status_register.space_id);
+-		result = -EIO;
+-		goto err_unreg;
+-	}
+-
+-	for (i=0; i<p->state_count; i++) {
+-		if ((p->states[i].control & INTEL_MSR_RANGE) !=
+-		    (p->states[i].status & INTEL_MSR_RANGE)) {
+-			dprintk("Different MSR bits in control (%llu) and status (%llu)\n",
+-				p->states[i].control, p->states[i].status);
+-			result = -EINVAL;
+-			goto err_unreg;
+-		}
+-
+-		if (!p->states[i].core_frequency) {
+-			dprintk("Zero core frequency for state %u\n", i);
+-			result = -EINVAL;
+-			goto err_unreg;
+-		}
+-
+-		if (p->states[i].core_frequency > p->states[0].core_frequency) {
+-			dprintk("P%u has larger frequency (%llu) than P0 (%llu), skipping\n", i,
+-				p->states[i].core_frequency, p->states[0].core_frequency);
+-			p->states[i].core_frequency = 0;
+-			continue;
+-		}
+-	}
+-
+-	centrino_model[cpu] = kzalloc(sizeof(struct cpu_model), GFP_KERNEL);
+-	if (!centrino_model[cpu]) {
+-		result = -ENOMEM;
+-		goto err_unreg;
+-	}
+-
+-	centrino_model[cpu]->model_name=NULL;
+-	centrino_model[cpu]->max_freq = p->states[0].core_frequency * 1000;
+-	centrino_model[cpu]->op_points =  kmalloc(sizeof(struct cpufreq_frequency_table) *
+-					     (p->state_count + 1), GFP_KERNEL);
+-        if (!centrino_model[cpu]->op_points) {
+-                result = -ENOMEM;
+-                goto err_kfree;
+-        }
+-
+-        for (i=0; i<p->state_count; i++) {
+-		centrino_model[cpu]->op_points[i].index = p->states[i].control & INTEL_MSR_RANGE;
+-		centrino_model[cpu]->op_points[i].frequency = p->states[i].core_frequency * 1000;
+-		dprintk("adding state %i with frequency %u and control value %04x\n", 
+-			i, centrino_model[cpu]->op_points[i].frequency, centrino_model[cpu]->op_points[i].index);
+-	}
+-	centrino_model[cpu]->op_points[p->state_count].frequency = CPUFREQ_TABLE_END;
+-
+-	cur_freq = get_cur_freq(cpu);
+-
+-	for (i=0; i<p->state_count; i++) {
+-		if (!p->states[i].core_frequency) {
+-			dprintk("skipping state %u\n", i);
+-			centrino_model[cpu]->op_points[i].frequency = CPUFREQ_ENTRY_INVALID;
+-			continue;
+-		}
+-		
+-		if (extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0) !=
+-		    (centrino_model[cpu]->op_points[i].frequency)) {
+-			dprintk("Invalid encoded frequency (%u vs. %u)\n",
+-				extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0),
+-				centrino_model[cpu]->op_points[i].frequency);
+-			result = -EINVAL;
+-			goto err_kfree_all;
+-		}
+-
+-		if (cur_freq == centrino_model[cpu]->op_points[i].frequency)
+-			p->state = i;
+-	}
+-
+-	/* notify BIOS that we exist */
+-	acpi_processor_notify_smm(THIS_MODULE);
+-	printk("speedstep-centrino with X86_SPEEDSTEP_CENTRINO_ACPI "
+-	       "config is deprecated.\n "
+-	       "Use X86_ACPI_CPUFREQ (acpi-cpufreq) instead.\n" );
+-
+-	return 0;
+-
+- err_kfree_all:
+-	kfree(centrino_model[cpu]->op_points);
+- err_kfree:
+-	kfree(centrino_model[cpu]);
+- err_unreg:
+-	acpi_processor_unregister_performance(p, cpu);
+-	dprintk(PFX "invalid ACPI data\n");
+-	return (result);
+-}
+-#else
+-static inline int centrino_cpu_init_acpi(struct cpufreq_policy *policy) { return -ENODEV; }
+-static inline int centrino_cpu_early_init_acpi(void) { return 0; }
+-#endif
+-
+ static int centrino_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
+@@ -568,27 +353,25 @@
+ 	if (cpu_has(cpu, X86_FEATURE_CONSTANT_TSC))
+ 		centrino_driver.flags |= CPUFREQ_CONST_LOOPS;
+ 
+-	if (centrino_cpu_init_acpi(policy)) {
+-		if (policy->cpu != 0)
+-			return -ENODEV;
++	if (policy->cpu != 0)
++		return -ENODEV;
+ 
+-		for (i = 0; i < N_IDS; i++)
+-			if (centrino_verify_cpu_id(cpu, &cpu_ids[i]))
+-				break;
+-
+-		if (i != N_IDS)
+-			centrino_cpu[policy->cpu] = &cpu_ids[i];
+-
+-		if (!centrino_cpu[policy->cpu]) {
+-			dprintk("found unsupported CPU with "
+-			"Enhanced SpeedStep: send /proc/cpuinfo to "
+-			MAINTAINER "\n");
+-			return -ENODEV;
+-		}
++	for (i = 0; i < N_IDS; i++)
++		if (centrino_verify_cpu_id(cpu, &cpu_ids[i]))
++			break;
+ 
+-		if (centrino_cpu_init_table(policy)) {
+-			return -ENODEV;
+-		}
++	if (i != N_IDS)
++		centrino_cpu[policy->cpu] = &cpu_ids[i];
++
++	if (!centrino_cpu[policy->cpu]) {
++		dprintk("found unsupported CPU with "
++		"Enhanced SpeedStep: send /proc/cpuinfo to "
++		MAINTAINER "\n");
++		return -ENODEV;
++	}
++
++	if (centrino_cpu_init_table(policy)) {
++		return -ENODEV;
+ 	}
+ 
+ 	/* Check to see if Enhanced SpeedStep is enabled, and try to
+@@ -634,20 +417,6 @@
+ 
+ 	cpufreq_frequency_table_put_attr(cpu);
+ 
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	if (!centrino_model[cpu]->model_name) {
+-		static struct acpi_processor_performance *p;
+-
+-		if (acpi_perf_data[cpu]) {
+-			p = acpi_perf_data[cpu];
+-			dprintk("unregistering and freeing ACPI data\n");
+-			acpi_processor_unregister_performance(p, cpu);
+-			kfree(centrino_model[cpu]->op_points);
+-			kfree(centrino_model[cpu]);
+-		}
+-	}
+-#endif
+-
+ 	centrino_model[cpu] = NULL;
+ 
+ 	return 0;
+@@ -841,25 +610,12 @@
+ 	if (!cpu_has(cpu, X86_FEATURE_EST))
+ 		return -ENODEV;
+ 
+-	centrino_cpu_early_init_acpi();
+-
+ 	return cpufreq_register_driver(&centrino_driver);
+ }
+ 
+ static void __exit centrino_exit(void)
+ {
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	unsigned int j;
+-#endif
+-	
+ 	cpufreq_unregister_driver(&centrino_driver);
+-
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	for_each_possible_cpu(j) {
+-		kfree(acpi_perf_data[j]);
+-		acpi_perf_data[j] = NULL;
+-	}
+-#endif
+ }
+ 
+ MODULE_AUTHOR ("Jeremy Fitzhardinge <jeremy@goop.org>");
+--- linux-2.6.20-mm1/Documentation/feature-removal-schedule.txt.old	2007-02-17 23:33:09.000000000 +0100
++++ linux-2.6.20-mm1/Documentation/feature-removal-schedule.txt	2007-02-17 23:33:46.000000000 +0100
+@@ -214,28 +214,6 @@
+ 
+ ---------------------------
+ 
+-What:	ACPI hooks (X86_SPEEDSTEP_CENTRINO_ACPI) in speedstep-centrino driver
+-When:	December 2006
+-Why:	Speedstep-centrino driver with ACPI hooks and acpi-cpufreq driver are
+-	functionally very much similar. They talk to ACPI in same way. Only
+-	difference between them is the way they do frequency transitions.
+-	One uses MSRs and the other one uses IO ports. Functionaliy of
+-	speedstep_centrino with ACPI hooks is now merged into acpi-cpufreq.
+-	That means one common driver will support all Intel Enhanced Speedstep
+-	capable CPUs. That means less confusion over name of
+-	speedstep-centrino driver (with that driver supposed to be used on
+-	non-centrino platforms). That means less duplication of code and
+-	less maintenance effort and no possibility of these two drivers
+-	going out of sync.
+-	Current users of speedstep_centrino with ACPI hooks are requested to
+-	switch over to acpi-cpufreq driver. speedstep-centrino will continue
+-	to work using older non-ACPI static table based scheme even after this
+-	date.
+-
+-Who:	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+-
+----------------------------
+-
+ What:	/sys/firmware/acpi/namespace
+ When:	2.6.21
+ Why:	The ACPI namespace is effectively the symbol list for
