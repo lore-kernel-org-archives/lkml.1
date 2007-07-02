@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbXGBI7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbXGBJJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbXGBI7k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 04:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXGBI7d
+	id S1755127AbXGBJJB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 05:09:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXGBJIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 04:59:33 -0400
-Received: from mail.screens.ru ([213.234.233.54]:40790 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752077AbXGBI7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 04:59:32 -0400
-Date: Mon, 2 Jul 2007 12:59:49 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Re: [NETPOLL] netconsole: fix soft lockup when removing module
-Message-ID: <20070702085949.GA110@tv-sign.ru>
-References: <20070701173558.GA207@tv-sign.ru> <20070702075226.GB1639@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 2 Jul 2007 05:08:53 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:46233
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbXGBJIw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 05:08:52 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [2.6 patch] drivers/net/wireless/libertas/wext.c: remove dead code
+Date: Mon, 2 Jul 2007 11:07:28 +0200
+User-Agent: KMail/1.9.6
+Cc: Adrian Bunk <bunk@stusta.de>, Dan Williams <dcbw@redhat.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070701202040.GD10869@stusta.de> <1183366434.4089.96.camel@johannes.berg>
+In-Reply-To: <1183366434.4089.96.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070702075226.GB1639@ff.dom.local>
-User-Agent: Mutt/1.5.11
+Message-Id: <200707021107.28390.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02, Jarek Poplawski wrote:
+On Monday 02 July 2007 10:53:54 Johannes Berg wrote:
+> On Sun, 2007-07-01 at 22:20 +0200, Adrian Bunk wrote:
+> > This patch removes dead code introduced by
+> > commit 90a42210f275e1f828eb6c08bf8252c2d6a774e0 and spotted
+> > by the Coverity checker.
 > 
-> diff -Nurp 2.6.22-rc7-/net/core/netpoll.c 2.6.22-rc7/net/core/netpoll.c
-> --- 2.6.22-rc7-/net/core/netpoll.c	2007-07-02 09:03:27.000000000 +0200
-> +++ 2.6.22-rc7/net/core/netpoll.c	2007-07-02 09:32:34.000000000 +0200
-> @@ -72,8 +72,7 @@ static void queue_process(struct work_st
->  			netif_tx_unlock(dev);
->  			local_irq_restore(flags);
->  
-> -			if (atomic_read(&npinfo->refcnt))
-> -				schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> +			schedule_delayed_work(&npinfo->tx_work, HZ/10);
->  			return;
->  		}
->  		netif_tx_unlock(dev);
-> @@ -786,7 +785,7 @@ void netpoll_cleanup(struct netpoll *np)
->  			if (atomic_dec_and_test(&npinfo->refcnt)) {
->  				skb_queue_purge(&npinfo->arp_tx);
->  				skb_queue_purge(&npinfo->txq);
-> -				cancel_delayed_work(&npinfo->tx_work);
-> +				cancel_rearming_delayed_work(&npinfo->tx_work);
->  				flush_scheduled_work();
+> > --- linux-2.6.22-rc6-mm1/drivers/net/wireless/libertas/wext.c.old	2007-06-29 21:52:56.000000000 +0200
+> > +++ linux-2.6.22-rc6-mm1/drivers/net/wireless/libertas/wext.c	2007-06-29 21:53:43.000000000 +0200
+> > @@ -1823,85 +1823,82 @@ static int wlan_set_encodeext(struct net
+> 
+> out of curiosity, why so much context?
 
-While you are here, could you also delete this flush_scheduled_work() ?
-It is not needed any longer.
+Because you see why it's dead code in the context and don't have
+to lookup the code tree. ;)
 
-Oleg.
-
+-- 
+Greetings Michael.
