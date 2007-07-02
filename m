@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbXGBJQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756394AbXGBJSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbXGBJQs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 05:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbXGBJQj
+	id S1756394AbXGBJSS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 05:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXGBJSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 05:16:39 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:38998 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751963AbXGBJQi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 05:16:38 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 2 Jul 2007 05:14:35 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       systemtap@sources.redhat.com
-Subject: Re: instrumentation and kprobes really still "EXPERIMENTAL"?
-In-Reply-To: <863e9df20707020154o5232e44ch37dd55811c377a8f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707020512320.26135@localhost.localdomain>
-References: <Pine.LNX.4.64.0707011204580.32355@localhost.localdomain>
- <863e9df20707020154o5232e44ch37dd55811c377a8f@mail.gmail.com>
+	Mon, 2 Jul 2007 05:18:11 -0400
+Received: from ns1.suse.de ([195.135.220.2]:59881 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751963AbXGBJSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 05:18:11 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: Re: [i386] Questions regarding provisional page tables initialization
+References: <20070701203833.GA3498@Ahmed> <46882872.7040005@goop.org>
+	<20070702011332.GA3503@Ahmed>
+X-Yow: I've read SEVEN MILLION books!!
+Date: Mon, 02 Jul 2007 11:18:08 +0200
+In-Reply-To: <20070702011332.GA3503@Ahmed> (Ahmed S. Darwish's message of
+	"Mon\, 2 Jul 2007 04\:13\:33 +0300")
+Message-ID: <je8x9zrwof.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.97 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jul 2007, Abhishek Sagar wrote:
+"Ahmed S. Darwish" <darwish.07@gmail.com> writes:
 
-> On 7/1/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> > isn't kprobes mature enough to not be considered experimental anymore?
->
-> That would vary from arch to arch.
+> yes, but isn't the displacement here (0x007) a _bytes_ displacement ?. so
+> effectively, %ecx now contains physical address of pg0 + 7bytes. Is it A 
+> meaningful place/address ?.
 
-fair enough.  however, at the very least, i'm thinking that the entire
-"Instrumentation support" submenu can be made non-EXPERIMENTAL, while
-individual entries therein can be EXPERIMENTAL on a choice-by-choice
-basis or something like that.
+It's not pg0 + 7bytes, it is pg0 plus 3 flag bits.  Since a page address
+is always page aligned, the low bits are reused for flags.
 
-anyway, others are welcome to play with that as they see fit.
+Andreas.
 
-rday
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
