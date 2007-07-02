@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbXGBG0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbXGBHFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbXGBG0p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 02:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbXGBG0W
+	id S1753042AbXGBHFc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 03:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbXGBHFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 02:26:22 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:37909 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbXGBG0S (ORCPT
+	Mon, 2 Jul 2007 03:05:24 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:8127 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbXGBHFV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 02:26:18 -0400
-X-IronPort-AV: i="4.16,485,1175486400"; 
-   d="scan'208"; a="44094436:sNHT23253440"
-Subject: [GIT PULL] Blackfin arch fixes
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Mon, 2 Jul 2007 03:05:21 -0400
+Subject: Re: [patch 5/5] Optimize page_mkclean_one
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <1183296468.5180.10.camel@lappy>
+References: <20070629135530.912094590@de.ibm.com>
+	 <20070629141528.511942868@de.ibm.com>
+	 <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
+	 <1183274153.15924.6.camel@localhost>
+	 <Pine.LNX.4.64.0707010926130.11148@blonde.wat.veritas.com>
+	 <1183296468.5180.10.camel@lappy>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Mon, 02 Jul 2007 14:31:24 +0800
-Message-Id: <1183357884.32471.9.camel@roc-desktop>
+Organization: IBM Corporation
+Date: Mon, 02 Jul 2007 09:07:26 +0200
+Message-Id: <1183360046.12198.8.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-X-OriginalArrivalTime: 02 Jul 2007 06:26:17.0041 (UTC) FILETIME=[E5764C10:01C7BC71]
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+On Sun, 2007-07-01 at 15:27 +0200, Peter Zijlstra wrote:
+> > But I could easily be overlooking something: Peter will recall.
+> 
+> /me tries to get his brain up to speed after the OLS closing party :-)
 
-Please pull from "master" branch of:
+Oh-oh, the Black Thorn party :-)
 
-  master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git/ master
+> I did both pte_dirty and pte_write because I was extra careful. One
+> _should_ imply the other, but since we'll be clearing both, I thought it
+> prudent to also check both.
 
-Jie Zhang (1):
-      Blackfin arch: Add proper -mcpu option according to the cpu and silicon revision configuration
+Just ran a little experiment: I've added a simple WARN_ON(ret == 0) to
+page_mkclean after the page_test_dirty() check to see if there are cases
+where the page is dirty and all ptes are read-only. A little stress run
+including massive swap did not print a single warning.
 
-Mike Frysinger (1):
-      Blackfin arch: update board defconfig files
+> I will have to think on this a little more, but I'm currently of the
+> opinion that the optimisation is not correct. But I'll have a thorough
+> look at s390 again when I get home.
 
-Robin Getz (1):
-      Blackfin arch: Fix up remaining printks with proper log levels
+I think the patch is correct, although I beginning to doubt that is has
+any effect.
 
- arch/blackfin/Kconfig                       |    6 ++++++
- arch/blackfin/Makefile                      |   21 +++++++++++++++++++++
- arch/blackfin/configs/BF533-EZKIT_defconfig |   12 +++++++++++-
- arch/blackfin/configs/BF533-STAMP_defconfig |   26 ++++++++++++++++++++++----
- arch/blackfin/configs/BF537-STAMP_defconfig |   26 ++++++++++++++++++++++----
- arch/blackfin/configs/BF561-EZKIT_defconfig |   12 ++++++++++--
- arch/blackfin/configs/PNAV-10_defconfig     |   13 +++++++++++--
- arch/blackfin/kernel/setup.c                |   18 ++++++++++++++----
- arch/blackfin/kernel/traps.c                |    3 ++-
- include/asm-blackfin/processor.h            |    4 ++++
- 10 files changed, 123 insertions(+), 18 deletions(-)
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
