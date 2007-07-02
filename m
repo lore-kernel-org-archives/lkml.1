@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbXGBOPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbXGBOPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759881AbXGBOPI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXGBOOz
+	id S1760028AbXGBOPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759862AbXGBOPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:14:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51892 "EHLO mail.dvmed.net"
+	Mon, 2 Jul 2007 10:15:07 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51902 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbXGBOOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:14:53 -0400
-Message-ID: <4689085A.9030005@garzik.org>
-Date: Mon, 02 Jul 2007 10:14:50 -0400
+	id S1759626AbXGBOPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:15:05 -0400
+Message-ID: <46890862.2090002@garzik.org>
+Date: Mon, 02 Jul 2007 10:14:58 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roy Franz <roy.lists@gmail.com>
-Subject: Re: [PATCH -mm] sata_nv: allow changing queue depth
-References: <468457C8.7060507@shaw.ca>
-In-Reply-To: <468457C8.7060507@shaw.ca>
+To: Tejun Heo <htejun@gmail.com>
+CC: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, enricoss@tiscali.it,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 2.6.22-rc5] libata: add HTS541616J9SA00 to NCQ blacklist
+References: <fa.sspu6LOivd/touNtS2IsMKPqHa0@ifi.uio.no> <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no> <467EC909.9040006@shaw.ca> <467F2495.3080509@gmail.com> <467F286B.40607@gmail.com>
+In-Reply-To: <467F286B.40607@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
@@ -30,32 +29,26 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> The sata_nv driver was missing the change_queue_depth hook in the SCSI host
-> template which the other NCQ-capable libata drivers had. This made it impossible
-> to change the queue depth by user request. Add this in.
+Tejun Heo wrote:
+> Another member of HTS5416* family doing spurious NCQ completion.
 > 
-> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> Cc: Enrico Sardi <enricoss@tiscali.it>
+> ---
+>  drivers/ata/libata-core.c |    1 +
+>  1 file changed, 1 insertion(+)
 > 
-> --- linux-2.6.22-rc6-mm1/drivers/ata/sata_nv.c	2007-06-28 17:30:28.000000000 -0600
-> +++ linux-2.6.22-rc6-mm1edit/drivers/ata/sata_nv.c	2007-06-28 17:39:30.000000000 -0600
-> @@ -398,6 +398,7 @@ static struct scsi_host_template nv_adma
->  	.name			= DRV_NAME,
->  	.ioctl			= ata_scsi_ioctl,
->  	.queuecommand		= ata_scsi_queuecmd,
-> +	.change_queue_depth	= ata_scsi_change_queue_depth,
->  	.can_queue		= NV_ADMA_MAX_CPBS,
->  	.this_id		= ATA_SHT_THIS_ID,
->  	.sg_tablesize		= NV_ADMA_SGTBL_TOTAL_LEN,
-> @@ -416,6 +417,7 @@ static struct scsi_host_template nv_swnc
->  	.name			= DRV_NAME,
->  	.ioctl			= ata_scsi_ioctl,
->  	.queuecommand		= ata_scsi_queuecmd,
-> +	.change_queue_depth	= ata_scsi_change_queue_depth,
->  	.can_queue		= ATA_MAX_QUEUE,
->  	.this_id		= ATA_SHT_THIS_ID,
->  	.sg_tablesize		= LIBATA_MAX_PRD,
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index adfae9d..fbca8d8 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -3803,6 +3803,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
+>  	/* Drives which do spurious command completion */
+>  	{ "HTS541680J9SA00",	"SB2IC7EP",	ATA_HORKAGE_NONCQ, },
+>  	{ "HTS541612J9SA00",	"SBDIC7JP",	ATA_HORKAGE_NONCQ, },
+> +	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
+>  	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
 
-applied manually, patch didn't apply to 2.6.22-rc7
+applied
 
 
