@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbXGBRC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbXGBRET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbXGBRC2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 13:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbXGBRCU
+	id S1754563AbXGBRET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 13:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXGBREN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 13:02:20 -0400
-Received: from hermes.domdv.de ([193.102.202.1]:2561 "EHLO hermes.domdv.de"
+	Mon, 2 Jul 2007 13:04:13 -0400
+Received: from hermes.domdv.de ([193.102.202.1]:2129 "EHLO hermes.domdv.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbXGBRCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 13:02:16 -0400
-Message-ID: <46892F97.9060400@domdv.de>
-Date: Mon, 02 Jul 2007 19:02:15 +0200
+	id S1752201AbXGBREM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 13:04:12 -0400
+Message-ID: <4689300C.9050802@domdv.de>
+Date: Mon, 02 Jul 2007 19:04:12 +0200
 From: Andreas Steinmetz <ast@domdv.de>
 User-Agent: Mail/News 1.5.0.7 (X11/20060915)
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
+To: Jan Engelhardt <jengelh@computergmbh.de>
 CC: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        netfilter-devel@lists.netfilter.org
 Subject: Re: mss to pmtu clamping partially broken?
-References: <4684E853.20900@domdv.de> <4684EF6A.7070109@trash.net> <4684F3D8.1080800@domdv.de> <4684F4FB.9070807@trash.net> <4684F5D3.8020506@domdv.de> <4684F75E.90304@trash.net>
-In-Reply-To: <4684F75E.90304@trash.net>
+References: <4684E853.20900@domdv.de> <Pine.LNX.4.64.0706301034320.22579@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0706301034320.22579@fbirervta.pbzchgretzou.qr>
 X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
-> Its possible that one of your ISPs is doing clamping. You could
-> check on ppp0 if thats the case. Or maybe for some reason the
-> PMTU value for the internal host is smaller than 1500. You can
-> check that by doing "ip route get <internal host>".
-> 
-> 
+Jan Engelhardt wrote:
+> Do you really need clamping? It's a hack, since TCP should do MSS negotiation
+> itself. (Of course it may happen that some routers are broken.) But usually not
+> for incoming packets.
 
-Oh well, thew fun with ISPs. Same provider, clamping on one line but not
-the other. This is fun :-(
+You never know when you hit ICMP blackholes, broken routers and other
+evil things. Better safe than sorry so clamping is the way to go for me.
 
 -- 
 Andreas Steinmetz                       SPAMmers use robotrap@domdv.de
