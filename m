@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbXGBOKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759594AbXGBOO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759969AbXGBOKv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXGBOKl
+	id S1759594AbXGBOO0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbXGBOOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:10:41 -0400
-Received: from mail.tmr.com ([64.65.253.246]:48264 "EHLO gaimboi.tmr.com"
+	Mon, 2 Jul 2007 10:14:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51848 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752431AbXGBOKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:10:40 -0400
-Message-ID: <46890803.3020501@tmr.com>
-Date: Mon, 02 Jul 2007 10:13:23 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1753370AbXGBOOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:14:16 -0400
+Message-ID: <46890835.2050104@garzik.org>
+Date: Mon, 02 Jul 2007 10:14:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v18
-References: <20070622220202.GA16872@elte.hu> <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com>
-In-Reply-To: <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: api <linuxgent@kpnplanet.nl>, linux-kernel@vger.kernel.org,
+       scsi <linux-scsi@vger.kernel.org>, jejb <james.bottomley@steeleye.com>
+Subject: Re: [PATCH] scsi disk help file is not complete
+References: <466D9440.3080005@kpnplanet.nl> <20070611115934.9097fb04.randy.dunlap@oracle.com>
+In-Reply-To: <20070611115934.9097fb04.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> Hello,
+Randy Dunlap wrote:
+> On Mon, 11 Jun 2007 20:28:16 +0200 api wrote:
 > 
-> On 6/23/07, Ingo Molnar <mingo@elte.hu> wrote:
->> i'm pleased to announce release -v18 of the CFS scheduler patchset.
+>> Good day,
+>> When doing make menuconfig one comes across CONFIG_BLK_DEV_SD.
+>> The help file states that this is for scsi disks.NO MENTION IS MADE THAT
+>> IT IS NEEDE FOR SATA DISKS AS WELL!
+>> Would have saved me a lot of time if the help was up to date.
+>> I hope this can be changed so others can make a kernel for sata systems
+>> quicker.
 > 
->> As usual, any sort of feedback, bugreport, fix and suggestion is more
->> than welcome!
 > 
-> I have been running cfs-v18 for a couple of days now, and today I
-> stumbled upon a rather strange problem. Consider the following short
-> program:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> while(1)
->        printf("%ld\r", 1000 * clock() / CLOCKS_PER_SEC);
+> Add help info for BLK_DEV_SD referring to its use in
+> SATA or PATA driver configurations.
 > 
-> Running this in an xterm makes the xterm totally unresponsive. Ctrl-C
-> takes about two seconds to terminate the program, during which the
-> program will keep running. In fact, it seems that the longer it runs,
-> the longer it takes to terminate (towards 5 seconds after running for
-> a couple of minutes). This is rather surprising, as the rest of the
-> system is quite responsive (even remarkably so). I think this is also
-> in contrast with the expected behaviour, that Ctrl-C/program
-> termination should be prioritized somehow.
+> Add help text for "ATA" indicating that it probably needs
+> some SCSI config symbols enabled in order to be useful.
 > 
-This sounds as though it might be related to the issues I see with my 
-"glitch1" script, posted here a while ago. With cfs-v18 the effect of 
-having multiple xterms scrolling is obvious, occasionally they behave as 
-if they were "owed" more CPU and get paid back all at once. I've seen 
-this effect to one degree or another since cfs-v13, which did NOT show 
-the effect.
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/ata/Kconfig  |    5 +++++
+>  drivers/scsi/Kconfig |    1 +
+>  2 files changed, 6 insertions(+)
 
-> Some other observations: X.Org seems to be running at about 75% CPU on
-> CPU 1, the xterm at about 45% on CPU 0, and a.out at about 20% on CPU
-> 0. (HT processor)
-> 
-> Killing with -2 or -9 from another terminal works immediately. Ctrl-Z
-> takes the same time as Ctrl-C.
-> 
-I think this is because the shell to read the keypress is getting high 
-latency, rather than the process taking a long time to react. I have 
-been wrong before...
-
-I read Ingo's reply to this, I'll gather the same information when the 
-test machine is available later this morning and send it off to Ingo.
-
-> Another thing to note is that simply looping with no output retains
-> the expected responsiveness of the xterm. Printing i++ is somewhere
-> halfway in between.
-> 
-See http://www.tmr.com/~public/source  (note the tilde) for glitch1.
-
-> Is this behaviour expected or even intended? My main point is that
-> Ctrl-C is a safety fallback which suddenly doesn't work as usual. I
-> might even go so far as to call it a regression.
-> 
-> I'd also like to point out that Folding@Home seems to draw more CPU
-> than it should. Or, at least, in top, it shows up as using 50% CPU
-> even though other processes are demanding as much as they can get. The
-> FAH program should be running with idle priority. I expect it to fall
-> to near 0% when other programs are running at full speed, but it keeps
-> trotting along. And I am pretty sure that this is not due to SMP/HT (I
-> made sure to utilize both CPUs).
-> 
-> Lastly, I'd like to mention that I got BUGs (soft lockups) with -v8,
-> though it has not been reproducible with -v18, so I suppose it must
-> have been fixed already.
-> 
-> Otherwise, I am satisfied with the performance of CFS. Especially the
-> desktop is noticably smoother. Thanks!
-> 
-> Kind regards,
-> Vegard Nossum
+applied
 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
