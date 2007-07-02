@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbXGBNzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbXGBN6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759008AbXGBNzU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 09:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbXGBNzJ
+	id S1758847AbXGBN6v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 09:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbXGBN6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 09:55:09 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:37734 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380AbXGBNzI (ORCPT
+	Mon, 2 Jul 2007 09:58:41 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:12438 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883AbXGBN6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 09:55:08 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 2 Jul 2007 15:54:47 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: ping: [GIT PULL] ieee1394 fixes
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.c55f5a5f5f6f4b57@s5r6.in-berlin.de>
+	Mon, 2 Jul 2007 09:58:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OH+DDEdA4xbijpViw/U67Bd6XpUH/o31Zqm2BaLitegCCIGtTe8t9antUyCisK6GVOh3Y+7bNghjg3gmqg7ivrd+uUbW9eXV5cZT3bM8vMW3/GgxAlGpmprZRqe1X8R04ti+LC0o8cycFW4NYWefI8ManeZ+tgUWoZFtnGPpQ2w=
+Message-ID: <9a8748490707020658t5e6542ag6edb435dbc4499ab@mail.gmail.com>
+Date: Mon, 2 Jul 2007 15:58:39 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: why does git perpetually complain about include/asm-blackfin/macros.h?
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Git Mailing List" <git@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <4688EF9B.8020405@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0707020800010.1972@localhost.localdomain>
+	 <4688EF9B.8020405@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29 Jun, Stefan Richter wrote:
-> Linus, please pull from the for-linus branch at
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-> 
-> to receive the following updates.
-> 
-> Stefan Richter (2):
->       firewire: fix async reception on big endian machines
->       firewire: add Kconfig help on building both stacks
-> 
-> 
->  drivers/firewire/Kconfig   |   65 +++++++++++++++++++++++------------
->  drivers/firewire/fw-ohci.c |    6 ++--
->  2 files changed, 46 insertions(+), 25 deletions(-)
+On 02/07/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Robert P. J. Day wrote:
+> >   for the umpteenth time, after doing a pull, i see this:
+> >
+> > $ git diff
+> > diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
+> > deleted file mode 100644
+> > index e69de29..0000000
+> > $
+>
+> I have the same problem.  git 1.5.0.6 on Fedora Core 5 or 6.
+>
+> I even tried a completely fresh clone, but the problem still appears.
+>
+I've seen that as well, but in my case doing a
+$ git reset --hard master
+fixed it.
 
-Linus, this fixes a show-stopping bug on big endian CPUs.  Thanks,
 -- 
-Stefan Richter
--=====-=-=== -=== ---=-
-http://arcgraph.de/sr/
-
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
