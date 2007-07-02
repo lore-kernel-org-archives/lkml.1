@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbXGBJkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbXGBJrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbXGBJkm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 05:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXGBJkh
+	id S1756042AbXGBJrt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 05:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbXGBJrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 05:40:37 -0400
-Received: from styx.suse.cz ([82.119.242.94]:35362 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751008AbXGBJkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 05:40:36 -0400
-Message-ID: <4688C812.9020200@suse.cz>
-Date: Mon, 02 Jul 2007 11:40:34 +0200
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1) Gecko/20061107 SUSE/1.0.99-26 SeaMonkey/1.1b
+	Mon, 2 Jul 2007 05:47:41 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33418 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751008AbXGBJrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 05:47:40 -0400
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [i386] Questions regarding provisional page tables initialization
+References: <20070701203833.GA3498@Ahmed>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 02 Jul 2007 12:43:15 +0200
+In-Reply-To: <20070701203833.GA3498@Ahmed>
+Message-ID: <p731wfr3x30.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] Fix XFS_IOC_FSBULKSTAT{,_SINGLE} and XFS_IOC_FSINUMBERS
- in compat mode
-References: <20070619132549.266927601@suse.cz> <20070619132726.893544847@suse.cz> <20070628034957.GE989688@sgi.com>
-In-Reply-To: <20070628034957.GE989688@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> On Tue, Jun 19, 2007 at 03:25:52PM +0200, mmarek@suse.cz wrote:
->> +static int xfs_bulkstat_one_compat(
->> +	xfs_mount_t	*mp,		/* mount point for filesystem */
->> +	xfs_ino_t	ino,		/* inode number to get data for */
->> +	void		__user *buffer,	/* buffer to place output in */
->> +	int		ubsize,		/* size of buffer */
->> +	void		*private_data,	/* my private data */
->> +	xfs_daddr_t	bno,		/* starting bno of inode cluster */
->> +	int		*ubused,	/* bytes used by me */
->> +	void		*dibuff,	/* on-disk inode buffer */
->> +	int		*stat)		/* BULKSTAT_RV_... */
+"Ahmed S. Darwish" <darwish.07@gmail.com> writes:
 > 
-> Hmmm - this is almost all duplicated code. It's pretty much what I
-> described, but maybe not /quite/ what I had in mind here. It's a
-> *big* improvement on the first version, but it seems now that the
-> only real difference xfs_bulkstat_one() and
-> xfs_bulkstat_one_compat() is copy_to_user() vs the discrete put_user
-> calls.
+> There're some stuff that confused me for a full day about the code (head.S)
+> that  accomplishes the above words:
 > 
-> I think we can remove xfs_bulkstat_one_compat() completely by using
-> the same method you used with the xfs_inumber_fmt functions.
+> 	movl $(pg0 - __PAGE_OFFSET), %edi
+> 	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx	
+> 	movl $0x007, %eax			/* 0x007 = PRESENT+RW+USER */
+> 10:
+> 	leal $0x007(%edi),%ecx			/* Create PDE entry */
+> 
+> What does the address of 7 bytes displacement after %edi - the physical address
+> of pg0 - represent ?. 
 
-You mean xfs_ioc_bulkstat_compat() -> native xfs_bulkstat() -> native
-xfs_bulkstat_one() -> a compat output formatter, so a
-pointer-to-function passed to pointer-to-function? ;) I could (ab)use
-the void *private_data arg which xfs_bulkstat passes unmodified to the
-formatter; xfs_bulkstat_one() doesn't make use of it atm. I'll try it
-and post the result in a while.
+The trick is not to know everything, but to know where to look ...
 
-Michal
+Page table entries use the first 12 bits for various flags. Take a look
+at the Intel or AMD x86 documentation from their websites.
+
+-Andi
