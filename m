@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756394AbXGBJSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756623AbXGBJWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756394AbXGBJSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 05:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXGBJSL
+	id S1756623AbXGBJWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 05:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXGBJWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 05:18:11 -0400
-Received: from ns1.suse.de ([195.135.220.2]:59881 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751963AbXGBJSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 05:18:11 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: Re: [i386] Questions regarding provisional page tables initialization
-References: <20070701203833.GA3498@Ahmed> <46882872.7040005@goop.org>
-	<20070702011332.GA3503@Ahmed>
-X-Yow: I've read SEVEN MILLION books!!
-Date: Mon, 02 Jul 2007 11:18:08 +0200
-In-Reply-To: <20070702011332.GA3503@Ahmed> (Ahmed S. Darwish's message of
-	"Mon\, 2 Jul 2007 04\:13\:33 +0300")
-Message-ID: <je8x9zrwof.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.97 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 2 Jul 2007 05:22:13 -0400
+Received: from mailhost.terra.es ([213.4.149.12]:29739 "EHLO
+	csmtpout2.frontal.correo" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751354AbXGBJWM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 05:22:12 -0400
+Subject: ppdev - libieee1284.so  conflicts with 2.6.21
+From: Juan Antonio Martinez <jonsito@teleline.es>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 02 Jul 2007 11:22:09 +0200
+Message-Id: <1183368129.4967.1.camel@drake.micasa.es>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Ahmed S. Darwish" <darwish.07@gmail.com> writes:
+I've reported this error to Fedora Bugzilla:
 
-> yes, but isn't the displacement here (0x007) a _bytes_ displacement ?. so
-> effectively, %ecx now contains physical address of pg0 + 7bytes. Is it A 
-> meaningful place/address ?.
+http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=246406
 
-It's not pg0 + 7bytes, it is pg0 plus 3 flag bits.  Since a page address
-is always page aligned, the low bits are reused for flags.
+In sort: to use libieee1284 I need to disable ppdev usage with
+kernel 2.6.21. Kernel 2.6.20 works fine
 
-Andreas.
+[root@drake char]# uname -a
+Linux drake.micasa.es 2.6.21-1.3228.fc7 #1 SMP Tue Jun 12 15:37:31 EDT
+2007 i686 athlon i386 GNU/Linux
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+By doing "echo disallow method ppdev > /etc/ieee1284.conf" everything
+works fine on both kernels
+
+Seems affect several distributions, not Fedora specific:
+http://bugs.archlinux.org/task/7438
+http://sourceforge.net/tracker/index.php?func=detail&aid=1739643&group_id=29314&atid=395778
+http://www.digipedia.pl/man/libieee1284.3.html
+
+Not sure if a kernel bug or a library one, so my apologizes if
+this is not the propper list
+
+Juan Antonio
+
+
