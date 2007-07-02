@@ -1,90 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbXGBNcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbXGBNgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbXGBNcP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 09:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbXGBNcF
+	id S1757198AbXGBNgs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 09:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbXGBNgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 09:32:05 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:49117 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753630AbXGBNcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 09:32:04 -0400
-Message-ID: <4688FE50.7050806@drzeus.cx>
-Date: Mon, 02 Jul 2007 15:32:00 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <andrew@sanpeople.com>, Andreas Beier <mughat@gmail.com>,
-       Hamish Guthrie <hamish@prodigi.ch>, Marc Pignat <marc.pignat@hevs.ch>,
-       wux@landicorp.com, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-Subject: Re: [PATCH] mmc: at91_mci: fix hanging and rework to match flowcharts
-References: <4688EC94.1090901@rfo.atmel.com>
-In-Reply-To: <4688EC94.1090901@rfo.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jul 2007 09:36:41 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:57931 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751817AbXGBNgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 09:36:40 -0400
+Date: Mon, 2 Jul 2007 15:45:02 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] rename cancel_rearming_delayed_work() to cancel_delayed_work_sync()
+Message-ID: <20070702134502.GF1639@ff.dom.local>
+References: <20070701153629.GA105@tv-sign.ru> <20070702114541.GE1639@ff.dom.local> <20070702121447.GA261@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070702121447.GA261@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Ferre wrote:
-> Fixes hanging using multi block operations (seen during CMD25).
-> Follows closely the datasheet flowcharts.
+On Mon, Jul 02, 2007 at 04:14:47PM +0400, Oleg Nesterov wrote:
+> On 07/02, Jarek Poplawski wrote:
+> >
+> > On Sun, Jul 01, 2007 at 07:36:29PM +0400, Oleg Nesterov wrote:
+> > > Imho, the current naming of cancel_xxx workqueue functions is very confusing.
+> > > 
+> > > 	cancel_delayed_work()
+> > > 	cancel_rearming_delayed_work()
+> > > 	cancel_rearming_delayed_workqueue()	// obsolete
+> > > 
+> > > 	cancel_work_sync()
+> > > 
+> > > This looks as if the first 2 functions differ in "type" of their argument which
+> > > is not true any longer, nowadays the difference is the behaviour.
+> > > 
+> > > The semantics of cancel_rearming_delayed_work(dwork) was changed significantly,
+> > > it doesn't require that dwork rearms itself, and cancels dwork synchronously.
+> > > 
+> > > Rename it to cancel_delayed_work_sync(). This matches cancel_delayed_work() and
+> > > cancel_work_sync(). Re-create cancel_rearming_delayed_work() as a simple inline
+> > > obsolete wrapper, like cancel_rearming_delayed_workqueue().
+> > 
+> > I like the idea of this change, but have some doubt: "_sync"
+> > usually suggests the main difference from "" (or _nosync) is:
+> > _sync waits for something, while _nosync doesn't wait and
+> > instantly returns.
 > 
-> This piece of code handles better big file writing. I had to take care
-> of the notbusy signal during write (at91_mci_handle_cmdrdy function) and
-> to rearrange the AT91_MCI_ENDRX and AT91_MCI_RXBUFF flag usage.
+> Yes, but we already have cancel_work_sync().
+
+And it's OK because it actually can block. Some confusion
+could appear (maybe to me only) if we would add cancel_work()
+which would also ... block.
+
 > 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-> ---
-
-Most of the patch looks ok. Do you want to wait for some more tests or should I
-chuck this into the imminent merge window?
-
-> @@ -817,7 +834,11 @@ static int __init at91_mci_probe(struct
->     mmc->ops = &at91_mci_ops;
->     mmc->f_min = 375000;
-> -    mmc->f_max = 25000000;
-> +    if (cpu_is_at91sam9263())
-> +        mmc->f_max = 50000000;
-> +    else
-> +        mmc->f_max = 25000000;
-> +
->     mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
->     mmc->caps = MMC_CAP_BYTEBLOCK | MMC_CAP_MULTIWRITE;
+> > Here it's a bit complicated: cancel_delayed_work() (so nosync),
+> > actually can wait a little too (on del_timer_sync). And
+> > cancel_rearming_delayed_work() is really more universal now,
+> > but still the main difference is this should be used with works
+> > that rearm (at least sometimes). If there is no rearming - no
+> > reason for this function (of course not forbidden too)  - and
+> > maybe it better helps to remember the difference?
 > 
-
-This seems unrelated to the rest of the patch. Also, high-speed won't be enabled
-unless you set the appropriate caps (which should be checked against timing
-specifications, not just assigned and hope for the best).
-
-> @@ -830,11 +851,11 @@ static int __init at91_mci_probe(struct
->     host->bus_mode = 0;
->     host->board = pdev->dev.platform_data;
->     if (host->board->wire4) {
-> -#ifdef SUPPORT_4WIRE
-> -        mmc->caps |= MMC_CAP_4_BIT_DATA;
-> -#else
-> -        printk("AT91 MMC: 4 wire bus mode not supported by this driver
-> - using 1 wire\n");
-> -#endif
-> +        if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-> +            mmc->caps |= MMC_CAP_4_BIT_DATA;
-> +        else
-> +            printk("AT91 MMC: 4 wire bus mode not supported"
-> +                " - using 1 wire\n");
->     }
+> There is a reason even if no rearming. We have a lot of
 > 
->     /*
+> 	cancel_delayed_work();
+> 	flush_workqueue();
 > 
+> This should be converted to use cancel_delayed_work_sync().
+> 
+> Note also that both cancel_work_sync() and cancel_rearming_delayed_work()
+> can be used on any work (rearming or not) and both imply "flush".
+> I think the "_rearming" part of the name is very confusing, and a "good"
+> name should be consistent with cancel_work_sync() and cancel_delayed_work()
+> which we already have.
 
-This also looks unrelated.
+I know, but I'm a little afraid of "overloading" the "_sync":
+here it's kind of double sync (can block plus really finish
+something). I wonder if this way is used elsewhere in linux.
 
-Rgds
--- 
-     -- Pierre Ossman
+But I see the more serious reason for it is: it's in your next
+patches and we don't want to waste time. So, I'll try to check
+this in the evening, and if nothing strange - I'll send acks
+tomorrow (of course - not that I think they are needed...).
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Thanks,
+Jarek P.
