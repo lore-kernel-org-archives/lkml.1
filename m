@@ -1,88 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbXGBIKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbXGBIXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758922AbXGBIKx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 04:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbXGBIKo
+	id S1758950AbXGBIXx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 04:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbXGBIXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 04:10:44 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:41083 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbXGBIKn (ORCPT
+	Mon, 2 Jul 2007 04:23:45 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:14395 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752477AbXGBIXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 04:10:43 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: Jan Engelhardt <jengelh@computergmbh.de>
+	Mon, 2 Jul 2007 04:23:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CR4kYUMf/ov1b0mfsKX8IsQI6xRui8SJ4R/lh5xm3WexXPlJaPf6zR/vLHDlVbdu3O0Tbb8xwYsfVsaXD2831o47Vk/chiR9z2JGgornMe8zVP7MPNRc3uxj1v8UgRLYd9SXN8Vx7ivAncr1h0w2WZIu0UUvX9T7z+nP8713Sxk=
+Message-ID: <a781481a0707020123y25129aachf9de53c670e98342@mail.gmail.com>
+Date: Mon, 2 Jul 2007 13:53:43 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: nigel@suspend2.net
 Subject: Re: Suspend2 is getting a new name.
-Date: Mon, 2 Jul 2007 18:10:46 +1000
-User-Agent: KMail/1.9.6
-Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>
-References: <200707021730.57066.nigel@nigel.suspend2.net> <Pine.LNX.4.64.0707020934540.15758@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0707020934540.15758@fbirervta.pbzchgretzou.qr>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200707021730.57066.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1244877.0oEC4RLnDV";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707021810.47181.nigel@nigel.suspend2.net>
+Content-Disposition: inline
+References: <200707021730.57066.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1244877.0oEC4RLnDV
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+[ Shamelessly off-topic, but SCNR myself ]
 
-Hi.
+On 7/2/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> Hi all.
+>
+> Suspend2's name is changing to "TuxOnIce".
 
-On Monday 02 July 2007 17:39:34 Jan Engelhardt wrote:
->=20
-> On Jul 2 2007 17:30, Nigel Cunningham wrote:
-> >
-> >Hi all.
-> >
-> >Suspend2's name is changing to "TuxOnIce".
-> >
-> >This is for a couple of reasons:
-> >
-> >In recent discussions on LKML, the point was made that the word "Suspend=
-"=20
-is=20
-> >confusing. It is used to refer to both suspending to disk and suspending=
- to=20
-> >ram. Life will be simpler if we more clearly differentiate the two.
->=20
-> Reminds me of... (scnr)
-> http://www.ixsoft.de/software/products/OFTUXICE.html
-> http://dicey.org/b/images/s20060418_0.jpg (
+Hmm, FunkyMixedCase name ...
 
-This one is our existing logo. I believe Bernard made it with Blender. Gues=
-s=20
-someone has appropriated it :\
-=20
-http://cc314.classicgaming.gamespy.com/encyclopedia/images/enemyk1-kfrozen.=
-gif )=20
-> and things like
->=20
-http://es.tldp.org/LinuxFocus/pub/mirror/LinuxFocus/common/images/coverJanu=
-ary2003.jpg
+<tongue-firmly-in-cheek>
+... hope this'll make it work on my laptop too :-)
 
-Cute pictures.
+[ Is there a prize for posting waaay off-topic messages? ]
 
-Should I mention other people have seen allusions to drugs? :)
+BTW, TuxOnIce is a better choice for name than some variation of
+"Hibernate", from a biological perspective too -- as everybody already
+knows, penguins never quite hibernate, but spend the entire rough
+Antarctic winter bunched up in a group on the surface (ice) itself ...
 
-Nigel
-
---nextPart1244877.0oEC4RLnDV
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGiLMHN0y+n1M3mo0RAhdDAKDIM7Jugdg7avNUa3RsysPDprRAfQCg04MN
-Sb+5OZLccnT4zIpBG+xCfX4=
-=CeCx
------END PGP SIGNATURE-----
-
---nextPart1244877.0oEC4RLnDV--
+Satyam
