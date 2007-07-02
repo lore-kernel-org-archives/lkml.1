@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbXGBTfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbXGBTnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbXGBTfy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 15:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbXGBTfs
+	id S1755449AbXGBTnZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 15:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXGBTnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 15:35:48 -0400
-Received: from mail.ipom.com ([69.73.131.218]:38097 "EHLO mail.ipom.com"
+	Mon, 2 Jul 2007 15:43:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38841 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752753AbXGBTfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 15:35:47 -0400
-Date: Mon, 2 Jul 2007 12:35:41 -0700
-From: Phil Dibowitz <phil@ipom.com>
-To: Krzysztof Oledzki <ole@ans.pl>
-Cc: Andreas Steinmetz <ast@domdv.de>, Jan Engelhardt <jengelh@computergmbh.de>,
-       netfilter-devel@lists.netfilter.org,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: mss to pmtu clamping partially broken?
-Message-ID: <20070702193541.GA14961@ipom.com>
-References: <4684E853.20900@domdv.de> <Pine.LNX.4.64.0706301034320.22579@fbirervta.pbzchgretzou.qr> <4689300C.9050802@domdv.de> <20070702182850.GB14507@ipom.com> <Pine.LNX.4.64.0707022113330.25153@bizon.gios.gov.pl>
+	id S1752727AbXGBTnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 15:43:16 -0400
+Message-ID: <468954BD.50205@sandeen.net>
+Date: Mon, 02 Jul 2007 14:40:45 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707022113330.25153@bizon.gios.gov.pl>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][XFS][resend] memory leak; allocated transaction not freed
+ in xfs_inactive_free_eofblocks() in failure case.
+References: <200707010116.54884.jesper.juhl@gmail.com>
+In-Reply-To: <200707010116.54884.jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jesper Juhl wrote:
+> (this is back from May 16 2007, resending since it doesn't look like 
+> the patch ever made it in anywhere)
+> 
+> 
 
---ibTvN161/egqYuK8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Weird, looks like it's in cvs...
 
-On Mon, Jul 02, 2007 at 09:16:57PM +0200, Krzysztof Oledzki wrote:
->
->
-> On Mon, 2 Jul 2007, Phil Dibowitz wrote:
->
->> On Mon, Jul 02, 2007 at 07:04:12PM +0200, Andreas Steinmetz wrote:
->>> Jan Engelhardt wrote:
->>>> Do you really need clamping? It's a hack, since TCP should do MSS=20
->>>> negotiation
->>>> itself. (Of course it may happen that some routers are broken.) But=20
->>>> usually not
->>>> for incoming packets.
->>>
->>> You never know when you hit ICMP blackholes, broken routers and other
->>> evil things. Better safe than sorry so clamping is the way to go for me.
->>
->> I encourage you to report PMTUD Blackholes to the MSS Initiative at
->> http://www.phildev.net/mss/
->
-> Any chances for similar initiative for "SACK vandals"? ;)
+http://oss.sgi.com/cgi-bin/cvsweb.cgi/xfs-linux/xfs_vnodeops.c.diff?r1=text&tr1=1.699&r2=text&tr2=1.698&f=h
 
-There's already a counterpart for ECN blackholes, so I'm not opposed to it.
-However, keeping up with new reports, re-testing existing offenders, etc.
-takes up a good chunk of time, so I don't have the time to do it myself. I'm
-happy to reference such a site, however.
+but not in git.
 
-Though - I'm not familiar with the problem of SACK vandals either. There
-appears to be a thread on here, I'll go read it...
+-Eric
 
---=20
-Phil Dibowitz                             phil@ipom.com
-Open Source software and tech docs        Insanity Palace of Metallica
-http://www.phildev.net/                   http://www.ipom.com/
+> Fix XFS memory leak; allocated transaction not freed in xfs_inactive_free_eofblocks() in failure case.
+> 
+> the code allocates a transaction, but in the case where 'truncate' is
+> !=0 and xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE, 0); happens to return
+> an error, we'll just return from the function without dealing with the
+> memory allocated byxfs_trans_alloc() and assigned to 'tp', thus it'll be
+> orphaned/leaked - not good.
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> --- 
+>  fs/xfs/xfs_vnodeops.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/xfs/xfs_vnodeops.c b/fs/xfs/xfs_vnodeops.c
+> index de17aed..32519cf 100644
+> --- a/fs/xfs/xfs_vnodeops.c
+> +++ b/fs/xfs/xfs_vnodeops.c
+> @@ -1260,6 +1260,7 @@ xfs_inactive_free_eofblocks(
+>  		error = xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE,
+>  				    ip->i_size);
+>  		if (error) {
+> +			xfs_trans_cancel(tp, 0);
+>  			xfs_iunlock(ip, XFS_IOLOCK_EXCL);
+>  			return error;
+>  		}
+> 
+> 
+> 
 
-"Never write it in C if you can do it in 'awk';
- Never do it in 'awk' if 'sed' can handle it;
- Never use 'sed' when 'tr' can do the job;
- Never invoke 'tr' when 'cat' is sufficient;
- Avoid using 'cat' whenever possible" -- Taylor's Laws of Programming
-
-
---ibTvN161/egqYuK8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGiVONN5XoxaHnMrsRAq/sAJ9LU8QSHmWweicfOeZIH6aVnkxliACfY3P2
-Lk50bXqfRzg3G1mCZvbFbpg=
-=SomG
------END PGP SIGNATURE-----
-
---ibTvN161/egqYuK8--
