@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbXGBNSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbXGBNcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbXGBNSX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 09:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbXGBNSQ
+	id S1757393AbXGBNcP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 09:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbXGBNcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 09:18:16 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:54192 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754566AbXGBNSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 09:18:16 -0400
-Message-ID: <4688FB14.90307@free.fr>
-Date: Mon, 02 Jul 2007 15:18:12 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Mon, 2 Jul 2007 09:32:05 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:49117 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753630AbXGBNcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 09:32:04 -0400
+Message-ID: <4688FE50.7050806@drzeus.cx>
+Date: Mon, 02 Jul 2007 15:32:00 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [CONFIG_PREEMPT_RT] High frequency periodic timer
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <andrew@sanpeople.com>, Andreas Beier <mughat@gmail.com>,
+       Hamish Guthrie <hamish@prodigi.ch>, Marc Pignat <marc.pignat@hevs.ch>,
+       wux@landicorp.com, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
+Subject: Re: [PATCH] mmc: at91_mci: fix hanging and rework to match flowcharts
+References: <4688EC94.1090901@rfo.atmel.com>
+In-Reply-To: <4688EC94.1090901@rfo.atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Nicolas Ferre wrote:
+> Fixes hanging using multi block operations (seen during CMD25).
+> Follows closely the datasheet flowcharts.
+> 
+> This piece of code handles better big file writing. I had to take care
+> of the notbusy signal during write (at91_mci_handle_cmdrdy function) and
+> to rearrange the AT91_MCI_ENDRX and AT91_MCI_RXBUFF flag usage.
+> 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+> ---
 
-I have been experimenting with the CONFIG_PREEMPT_RT patch for a few 
-months. Specifically kernel 2.6.20.7-rt8.
+Most of the patch looks ok. Do you want to wait for some more tests or should I
+chuck this into the imminent merge window?
 
-http://rt.wiki.kernel.org/index.php/Main_Page
+> @@ -817,7 +834,11 @@ static int __init at91_mci_probe(struct
+>     mmc->ops = &at91_mci_ops;
+>     mmc->f_min = 375000;
+> -    mmc->f_max = 25000000;
+> +    if (cpu_is_at91sam9263())
+> +        mmc->f_max = 50000000;
+> +    else
+> +        mmc->f_max = 25000000;
+> +
+>     mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
+>     mmc->caps = MMC_CAP_BYTEBLOCK | MMC_CAP_MULTIWRITE;
+> 
 
-I've been running into some unexpected problems, so I wanted to ask 
-those who have some experience with this patch what they thought.
+This seems unrelated to the rest of the patch. Also, high-speed won't be enabled
+unless you set the appropriate caps (which should be checked against timing
+specifications, not just assigned and hope for the best).
 
-Here's a brief description of my application:
+> @@ -830,11 +851,11 @@ static int __init at91_mci_probe(struct
+>     host->bus_mode = 0;
+>     host->board = pdev->dev.platform_data;
+>     if (host->board->wire4) {
+> -#ifdef SUPPORT_4WIRE
+> -        mmc->caps |= MMC_CAP_4_BIT_DATA;
+> -#else
+> -        printk("AT91 MMC: 4 wire bus mode not supported by this driver
+> - using 1 wire\n");
+> -#endif
+> +        if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
+> +            mmc->caps |= MMC_CAP_4_BIT_DATA;
+> +        else
+> +            printk("AT91 MMC: 4 wire bus mode not supported"
+> +                " - using 1 wire\n");
+>     }
+> 
+>     /*
+> 
 
-System A periodically sends timestamped packets. These packets travel 
-over a network, or through a network emulator, and get randomly dropped 
-or delayed by a random amount of time. These packets reach system B at 
-some point. System B uses the timestamp to re-send the packets smoothly, 
-as if they had been produced on B, with only a constant time-shift. 
-Basically, B acts as a "dejittering" router.
+This also looks unrelated.
 
-I have implemented this with high-resolution timers. Every time the 
-timer fires, I send one packet. In "parallel", I buffer incoming packets 
-that arrive from system A.
+Rgds
+-- 
+     -- Pierre Ossman
 
-Consider 1316-byte packets and a 80 Mbit/s stream bit rate.
-
-This means the timer period is 1316*8 / 80 = 131.6 µs
-
-I've been wondering whether having such a small period (high frequency) 
-might be a problem / challenge for the real-time kernel (scheduler, IRQ 
-handler, other component).
-
-The CPU used is mid-range (i.e. 1.5 GHz Celeron M) single core, and it 
-easily copes with just the receiving part.
-
-But I have seen some odd behavior (random crashes in my program) that 
-must mean I have made some incorrect assumptions.
-
-What do you all think?
-
-Regards.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
