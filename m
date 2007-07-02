@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbXGBTJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757039AbXGBTMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbXGBTJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 15:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbXGBTJv
+	id S1757039AbXGBTMA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 15:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbXGBTLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 15:09:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:42823 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753574AbXGBTJu (ORCPT
+	Mon, 2 Jul 2007 15:11:54 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:60806 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753364AbXGBTLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 15:09:50 -0400
+	Mon, 2 Jul 2007 15:11:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=DqpnkDTv/qe39oRX0n9UYQbRjU3JZY/axELzez5KxiPAYs7QMfULYWClbAB61M4HNgB1d8hoIFEYrhn2pwlzmblMW+GmZRdhonRBXrhN0uvGYyUMpch/2uQ7jiXO5cD9QSHNCWiIVhZuVG90YqVgAdN3VWAL2wxGbj3xf+Zw5+c=
-Message-ID: <a9e22dff0707021209i13718d72p84160c4d3ff89e4@mail.gmail.com>
-Date: Mon, 2 Jul 2007 22:09:49 +0300
-From: "Ni@m" <niam.niam@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: pci hidden behind transparent bridge
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MaDCIqb5LkaueMsOPW6A2zLcBikX0s/ip4KltA+MLYfw1hdfTwfhJTV4Wg/qSgHCYUuA7RGmSv0qR9kVOhALaETAzQK4jX3aAYftml7SvpC1DsfaWhYFIQ5BPHybCttcdrjTTmbXFxfZDIJhsDYitJc0xsX5ypaZ4jaAwObpJOU=
+Message-ID: <b637ec0b0707021211jcf26634n384c1733ddf34864@mail.gmail.com>
+Date: Mon, 2 Jul 2007 21:11:52 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Alon Bar-Lev" <alon.barlev@gmail.com>
+Subject: Re: Suspend2 is getting a new name.
+Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <9e0cf0bf0707021141g1c71318dje2e7bf2709e66594@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <200707021730.57066.nigel@nigel.suspend2.net>
+	 <b637ec0b0707020130s76dbe749n9e3c8bfb9a7ebf1f@mail.gmail.com>
+	 <9e0cf0bf0707021141g1c71318dje2e7bf2709e66594@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi! I noticed such message:
+Hi
 
-"PCI: Bus #07 (-#0a) is hidden behind transparent bridge #06 (-#06)
-(try 'pci=assign-busses')
-Please report the result to linux-kernel to fix this permanently"
+On 7/2/07, Alon Bar-Lev <alon.barlev@gmail.com> wrote:
+> On 7/2/07, Fabio Comolli <fabio.comolli@gmail.com> wrote:
+> > Hi.
+> >
+> > On 7/2/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> > > Hi all.
+> > >
+> > > Suspend2's name is changing to "TuxOnIce".
+> > >
+> >
+> > Am I the only person on this list thinking that a plain "hibernate"
+> > will be a much better choice?
+>
+> No you are not the only one :)
 
-on my
-Linux niam 2.6.22-rc6-cfs-v18 #6 Mon Jul 2 20:19:25 EEST 2007 i686
-Intel(R) Celeron(R) M processor 1.50GHz GenuineIntel GNU/Linux
+Ah, OK. I was beginning to think that something (more than usual) was
+wrong with me.  Maybe one day someone at alsa-project will decide that
+my sound card driver's name will change from snd_intel8x0 to
+"TheEmperorsCry" ;-)
 
-What does it mean??
+>
+> Best Regards,
+> Alon Bar-Lev.
+>
+
+Regards,
+Fabio
