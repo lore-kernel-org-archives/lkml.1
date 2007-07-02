@@ -1,39 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbXGBOPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759080AbXGBOVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760090AbXGBOPy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758168AbXGBOPp
+	id S1759080AbXGBOVm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbXGBOVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:15:45 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:12540 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759346AbXGBOPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:15:45 -0400
-Message-ID: <468908A9.2010702@openvz.org>
-Date: Mon, 02 Jul 2007 18:16:09 +0400
-From: Kirill Korotaev <dev@openvz.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	Mon, 2 Jul 2007 10:21:35 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:15109 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752383AbXGBOVe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:21:34 -0400
+Message-ID: <46890A52.6020201@ru.mvista.com>
+Date: Mon, 02 Jul 2007 18:23:14 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: jbd lost fix?
-Content-Type: text/plain; charset=us-ascii
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: kgdb-bugreport@lists.sourceforge.net,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc6-mm1
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <200706291432.10128.m.kozlowski@tuxland.pl> <4685010C.4000108@ru.mvista.com> <4689025C.8000001@windriver.com>
+In-Reply-To: <4689025C.8000001@windriver.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan,
+Hello.
 
-it looks like the following fix:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=43c3e6f5abdf6acac9b90c86bf03f995bf7d3d92
+Jason Wessel wrote:
 
-was lost after resurrecting of the spliced checkpointing list in this patch:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=78ce89c92bc6eaf5933b5664bff64253a7103bd7;hp=cdaad343b561cdeb38b0578bb038
+>>>     allmodconfig on powerpc (iMac g3) fails due to
+>>> git-kgdb.patch. allmodconfig defaults should be changed?
 
-Can you please confirm that?
+>>>   CC      arch/powerpc/kernel/kgdb.o
+>>> arch/powerpc/kernel/kgdb.c:485:2: error: #error Both XMON and KGDB 
+>>> selected in .config. Unselect one of them.
+>>> make[1]: *** [arch/powerpc/kernel/kgdb.o] Blad 1
+>>> make: *** [arch/powerpc/kernel] Blad 2
 
-Thanks,
-Kirill
+>>     I'm not sure if this will work out but maybe it's worth to disable 
+>> XMON if KGDB is selected, like this?
+>> config XMON
+>>     bool "Include xmon kernel debugger"
+>>     depends on DEBUGGER && !KGDB
 
+> It did not seem that you can make a radio button / multi-select kernel 
+> config option unless the options are in the same Kconfig file.  Given 
+> that xmon and kgdb are mutually exclusive at the moment.
+
+> What Sergei mentioned is the fix that needs to be used for the time being.
+> Attached is the patch I put in the for_mm branch in the linux-2.6-kgdb 
+> git tree.
+
+> Jason.
+
+> ------------------------------------------------------------------------
+
+> xmon_or_kgdb.patch
+
+> From: Jason Wessel <jason.wessel@windriver.com>
+> Subject: [PATCH] Turn off xmon if kgdb is active on ppc and powerpc
+
+> Xmon and kgdb are mutuall exclusive at the moment so xmon should be
+> turned off in the kernel config options if kgdb selected.  The case with "make allmodconfig" was failing and this patch addresses the problem.
+
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+
+> ---
+>  arch/powerpc/Kconfig.debug |    2 +-
+>  arch/ppc/Kconfig.debug     |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+
+    This patch does not seem complete as the #error that was tiggering has not 
+been deleleted from arch/powerpc/kernel/kgdb.c (and not it's useless)
+
+WBR, Sergei
