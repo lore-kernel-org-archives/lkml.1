@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbXGBIyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbXGBI4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbXGBIyx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 04:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbXGBIyq
+	id S1754812AbXGBI4S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 04:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXGBI4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 04:54:46 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:2334 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbXGBIyp (ORCPT
+	Mon, 2 Jul 2007 04:56:04 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:45533 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751584AbXGBI4C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 04:54:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=azVkbCeHbSV54MK0G70eyfLXxa7mJROAbYeVcxLz5Aq1VkaFSZiBDya3AyQCwDxp6P8cCqD8uwrZ65iNP+jEwL8rlGAybk88q5WuIBe9sVVqJ935wyMCQ2pOGEg9gdw43Q5AFuXM7YqecEyQ6l1xi3vqV2HEWc3/qJnBMdmYito=
-Message-ID: <863e9df20707020154o5232e44ch37dd55811c377a8f@mail.gmail.com>
-Date: Mon, 2 Jul 2007 14:24:44 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: instrumentation and kprobes really still "EXPERIMENTAL"?
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       systemtap@sources.redhat.com
-In-Reply-To: <Pine.LNX.4.64.0707011204580.32355@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0707011204580.32355@localhost.localdomain>
+	Mon, 2 Jul 2007 04:56:02 -0400
+Subject: Re: [2.6 patch] drivers/net/wireless/libertas/wext.c: remove dead
+	code
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Dan Williams <dcbw@redhat.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070701202040.GD10869@stusta.de>
+References: <20070701202040.GD10869@stusta.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-m7zAeKz37qZGmPRfBjg7"
+Date: Mon, 02 Jul 2007 10:53:54 +0200
+Message-Id: <1183366434.4089.96.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/1/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> isn't kprobes mature enough to not be considered experimental anymore?
 
-That would vary from arch to arch.
+--=-m7zAeKz37qZGmPRfBjg7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->   in addition, while most of the KPROBES config options depend on
->
->   KALLSYMS && EXPERIMENTAL && MODULES
->
-> the s390 architecture depends only on
->
->   EXPERIMENTAL && MODULES
->
-> and its instrumentation support is *not* listed as experimental.
->
->   also, the avr32 entry is in the file Kconfig.debug, and depends only
-> on DEBUG_KERNEL.  just an observation.
+On Sun, 2007-07-01 at 22:20 +0200, Adrian Bunk wrote:
+> This patch removes dead code introduced by
+> commit 90a42210f275e1f828eb6c08bf8252c2d6a774e0 and spotted
+> by the Coverity checker.
 
-This probably stems from the episodic growth kprobes across different
-archs. It can be cleaned up I suppose.
+> --- linux-2.6.22-rc6-mm1/drivers/net/wireless/libertas/wext.c.old	2007-06=
+-29 21:52:56.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/drivers/net/wireless/libertas/wext.c	2007-06-29 =
+21:53:43.000000000 +0200
+> @@ -1823,85 +1823,82 @@ static int wlan_set_encodeext(struct net
 
---
-Abhishek Sagar
+out of curiosity, why so much context?
 
-P.S: Adding systemtap in CC.
--
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+johannes
+
+--=-m7zAeKz37qZGmPRfBjg7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGiL0h/ETPhpq3jKURAn/QAKCKl5F8t/HfdbZ4wZmAHhwNplkIjwCfV3PJ
+3AThodhAU7lPkBdjiFT3leA=
+=1Swq
+-----END PGP SIGNATURE-----
+
+--=-m7zAeKz37qZGmPRfBjg7--
+
