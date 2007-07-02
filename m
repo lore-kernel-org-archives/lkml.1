@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751457AbXGBEOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751068AbXGBEsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751457AbXGBEOW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 00:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbXGBEOO
+	id S1751068AbXGBEsv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 00:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbXGBEsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 00:14:14 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43001 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750728AbXGBEON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 00:14:13 -0400
-Subject: Re: [Cbe-oss-dev] [PATCH 1/1] Fix elf_core_dump() when writing
-	arch specific notes (spu coredumps)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, linux-arch@vger.kernel.org,
-       Arnd Bergmann <arnd.bergmann@de.ibm.com>, linux-kernel@vger.kernel.org,
-       ak@suse.de, petr@vandrovec.name, cbe-oss-dev@ozlabs.org
-In-Reply-To: <67867aa5e78ae107a62706a33a2aa643e8244256.1183016719.git.michael@ellerman.id.au>
-References: <67867aa5e78ae107a62706a33a2aa643e8244256.1183016719.git.michael@ellerman.id.au>
-Content-Type: text/plain
-Date: Mon, 02 Jul 2007 14:13:39 +1000
-Message-Id: <1183349619.10386.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 2 Jul 2007 00:48:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36737 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750742AbXGBEso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 00:48:44 -0400
+X-Authenticated: #1474915
+X-Provags-ID: V01U2FsdGVkX1+5EAUYxtO5kPxm0//QhkgRVsBpW6uLuOQSJvriHZ
+	Um2wUDgC3A4puJ
+Message-ID: <468883A7.8010005@gmx.de>
+Date: Mon, 02 Jul 2007 06:48:39 +0200
+From: Thomas Sattler <tsattler@gmx.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Markus Rechberger <mrechberger@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Mack <daniel@qanu.de>,
+       Holger Waechtler <holger@qanu.de>
+Subject: Re: 2.6.22-rc6 spurious hangs
+References: <4683F48F.9010603@gmx.de> <20070628181044.GA613@tv-sign.ru> <4684B132.2070405@gmx.de> <20070629130955.GA284@tv-sign.ru> <20070629131605.GA25964@elte.hu> <20070629135848.GA332@tv-sign.ru> <1183152090.7089.183.camel@gaivota> <d9def9db0706291434v2fe69578qf84488bfd6a965f3@mail.gmail.com> <20070630141928.GA5182@tv-sign.ru> <4687F883.1000007@gmx.de> <20070701194759.GA269@tv-sign.ru>
+In-Reply-To: <20070701194759.GA269@tv-sign.ru>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> Thomas, any chance you could try the patch below?
+>> I'm still testing but I couldn't break it until now.
+> Great, thanks a lot Thomas!
+The box is still running without a problem,
+it seems the bug is fixed.
 
- .../...
+Thanks a lot,
+Thomas
 
-> While I'm here I should point out that the spu coredump code does not work
-> if we're dumping to a pipe - we'll have to wait for 23 to fix that.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-
-Ugly but I suppose we can't do better for 2.6.22
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-
+-- 
+keep mailinglists in english, feel free to send PM in german
