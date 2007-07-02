@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751378AbXGBKEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbXGBKPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751378AbXGBKEU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 06:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbXGBKED
+	id S1755434AbXGBKPv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 06:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbXGBKPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 06:04:03 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:34473 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750775AbXGBKEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 06:04:01 -0400
-Date: Mon, 2 Jul 2007 12:12:23 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S\. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH 2/2][NETPOLL] netconsole: delete flush_scheduled_work
-Message-ID: <20070702101223.GC1639@ff.dom.local>
-References: <20070701173558.GA207@tv-sign.ru> <20070702075226.GB1639@ff.dom.local> <20070702085949.GA110@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 2 Jul 2007 06:15:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:2120 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbXGBKPm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 06:15:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Gahp94b3JvUInDkyEal5j78jlN9qZOw6bPHTfkmBy1vPpBefwTAnhimjCG1B/s4KdMA646w5otBaFkA3nHKkfIMfBicN+8FuAGVZxRt/RBMqu4ZddzzVmYK2gOxIEkDCA5QNsePTBnblocyBJAfFfUnE7g2ndnUtyXKeSZ7IAh0=
+Message-ID: <91b13c310707020315v54d19338u817d23d4380bde07@mail.gmail.com>
+Date: Mon, 2 Jul 2007 18:15:40 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Does the kernel HPET support has problems or the hwclock from util-linux?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070702085949.GA110@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 12:59:49PM +0400, Oleg Nesterov wrote:
-...
-> While you are here, could you also delete this flush_scheduled_work() ?
-> It is not needed any longer.
+from this address, I know util-linux-2.12r is the latest:
+http://www.kernel.org/pub/linux/utils/util-linux/util-linux-2.12r.lsm
 
-Yes. I've thought about this, and even planned to mention, but then
-forgotten... Of course, you are right, but since it stayed so long
-and doesn't seem to be dangerous, and there is -rc7 I wasn't so brave.
-But now I have an explanation...
+My Dell OptiPlex 320 has 4 HPET timers and no RTC, so the execution of
+hwclock has errors:
 
-Jarek P.
+gektop@tux ~ $ /sbin/hwclock --show
+select() to /dev/rtc to wait for clock tick timed out
+gektop@tux ~ $ /sbin/hwclock --version
+hwclock from util-linux-2.12r
 
----------->
+I wonder is there (kernel.org) a specific description of hwclock and util-linux?
 
-Subject: [PATCH][NETPOLL] netconsole: delete flush_scheduled_work
-
-flush_scheduled_work() isn't needed after cancel_rearming_delayed_work(),
-so here it's removed from netpoll_cleanup().
-
-PS: This patch was prepared on 2.6.22-rc7 with my other today's patch:
-netconsole: fix soft lockup ...
-
-Noticed-by: Oleg Nesterov <oleg@tv-sign.ru>
-
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-
----
-
-diff -Nurp 2.6.22-rc7-plus-revert1-/net/core/netpoll.c 2.6.22-rc7-plus-revert1/net/core/netpoll.c
---- 2.6.22-rc7-plus-revert1-/net/core/netpoll.c	2007-07-02 09:32:34.000000000 +0200
-+++ 2.6.22-rc7-plus-revert1/net/core/netpoll.c	2007-07-02 11:43:29.000000000 +0200
-@@ -786,7 +786,6 @@ void netpoll_cleanup(struct netpoll *np)
- 				skb_queue_purge(&npinfo->arp_tx);
- 				skb_queue_purge(&npinfo->txq);
- 				cancel_rearming_delayed_work(&npinfo->tx_work);
--				flush_scheduled_work();
- 
- 				/* clean after last, unfinished work */
- 				if (!skb_queue_empty(&npinfo->txq)) {
+-- 
+Denis Cheng
+Linux Application Developer
