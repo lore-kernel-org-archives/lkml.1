@@ -1,38 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbXGBOJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbXGBOJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbXGBOJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbXGBOJR
+	id S1759623AbXGBOJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbXGBOJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:09:17 -0400
-Received: from khc.piap.pl ([195.187.100.11]:48542 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753037AbXGBOJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:09:16 -0400
-To: manio@skyboo.net
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.21.1] nfs-root: added possibility to override default MTU (for UDP jumbo frames)
-References: <E1I5LAW-0004Dn-8b@skyboo.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 02 Jul 2007 16:09:14 +0200
-In-Reply-To: <E1I5LAW-0004Dn-8b@skyboo.net> (manio@skyboo.net's message of "Mon, 02 Jul 2007 14:38:16 +0200")
-Message-ID: <m3fy46rj79.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 2 Jul 2007 10:09:23 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57898 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756073AbXGBOJW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:09:22 -0400
+Date: Mon, 2 Jul 2007 15:15:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       eng.linux@digi.com
+Subject: Re: [PATCH][RFC] Remove support for the orphaned, obsolete Digi
+ EPCA driver.
+Message-ID: <20070702151534.2728ae63@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0707020945290.18113@localhost.localdomain>
+References: <Pine.LNX.4.64.0707020906530.19712@localhost.localdomain>
+	<20070702144605.5cf99b3a@the-village.bc.nu>
+	<Pine.LNX.4.64.0707020945290.18113@localhost.localdomain>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-manio@skyboo.net writes:
+> > > This driver requires a number of user-space tools.  They can be acquired from
+> > > http://www.digi.com, but only works with 2.4 kernels."
+> >
+> > So fix them or merge the newer digi drivers first.
+> 
+> ok, but what then does it mean to read that this driver:
+> 
+> 1) *requires* a number of user-space tools, and
+> 2) these tools don't work with the 2.6 kernel?
 
-> To use a NFS-root for UDP jumbo frames the kernel on the client need to bring
-> up interface with MTU set to 9000 bytes - otherwise it cannot contact server
-> with jumbo frames enabled (nfs server not responding, still trying) and
-> cannot
-> boot. Added a kernel parameter named 'ipmtu' which can be used to specify
-> initial MTU size when booting via nfsroot.
-
-Isn't the whole IP autoconfig and NFS root set to die?
-Why not do it in initramfs?
--- 
-Krzysztof Halasa
+Last time I poked at the tools they were working under 2.6 with some
+trivial compile fixes. Ideally this driver would be trimmed to ISA only
+and the newer dgrs drivers merged but latter half appears to be something
+digi have no interest in
