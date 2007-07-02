@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbXGBRUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbXGBR0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbXGBRUk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 13:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXGBRUa
+	id S1754543AbXGBR0Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 13:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbXGBR0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 13:20:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37312 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323AbXGBRUa (ORCPT
+	Mon, 2 Jul 2007 13:26:15 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:26280 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbXGBR0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 13:20:30 -0400
-Subject: Re: New format Intel microcode...
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alex Riesen <raa.lkml@gmail.com>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       Daniel J Blueman <daniel.blueman@gmail.com>, jamagallon@ono.com,
-       tigran@aivazian.fsnet.co.uk,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <81b0412b0707020156q2dedde7fw6c46e8d626ed34a7@mail.gmail.com>
-References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com>
-	 <1174610594.6598.3.camel@sli10-conroe.sh.intel.com>
-	 <81b0412b0707020156q2dedde7fw6c46e8d626ed34a7@mail.gmail.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 02 Jul 2007 10:18:29 -0700
-Message-Id: <1183396710.2691.0.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+	Mon, 2 Jul 2007 13:26:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JrkmjBrUSOL82lGQ9WZUx53P7hNi1iib3WKA1ga7dbo4IcTC62F0OIUAqP+DHjQNXKN/iAmb3lFczuOwOze/c96YDeyse0T9cToQn/X2xnkHSNSC6CosRBpXaCexNUACukLYdxcwC1B+vWIs/Dx4GzNjdc50hCphX725wXtp35Q=
+Message-ID: <6934efce0707021026wad68bbar2d239d0cb7954ea0@mail.gmail.com>
+Date: Mon, 2 Jul 2007 10:26:13 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Al Boldi" <a1426z@gawab.com>
+Subject: Re: vm/fs meetup in september?
+Cc: peter@chubb.wattle.id.au, "Christoph Hellwig" <hch@infradead.org>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linux Memory Management List" <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <200706301758.16607.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20070624042345.GB20033@wotan.suse.de>
+	 <20070630093243.GD22354@infradead.org>
+	 <87bqexiwu3.wl%peter@chubb.wattle.id.au>
+	 <200706301758.16607.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-02 at 10:56 +0200, Alex Riesen wrote:
-> On 3/23/07, Shaohua Li <shaohua.li@intel.com> wrote:
-> > On Thu, 2007-03-22 at 23:45 +0000, Daniel J Blueman wrote:
-> > > Is the tool you mentioned last June [1] available for splitting up the
-> > > old firmware files to the new format (eg
-> > > /lib/firmware/intel-ucode/06-0d-06), or are updates available from
-> > > Intel (or otherwise) in this new format?
-> > Yes, we are preparing the new format data files and maybe put it into a
-> > new website. We will announce it when it's ready.
-> 
-> Well, is it ready yet?
-> -
+> > Christoph> So what you mean is "swap on flash" ?  Defintively sounds
+> > Christoph> like an interesting topic, although I'm not too sure it's
+> > Christoph> all that filesystem-related.
+>
+> I wouldn't want to call it swap, as this carries with it block-io
+> connotations.  It's really mmap on flash.
 
-you can use the old format still as well without any problems...
+Yes it is really mmap on flash.  But you are "swapping" pages from RAM
+to be mmap'ed on flash.  Also the flash-io complexities are similar to
+the block-io layer.  I think "swap on flash" is fair.  Though that
+might be confused with making swap work on a NAND flash, which is very
+much like the current block-io approach.  "Mmappable swap on flash" is
+more exact, I suppose.
 
+> > You need either a block translation layer,
+>
+> Are you suggesting to go through the block layer to reach the flash?
 
+Well the obvious route would be to have this management layer use the
+MTD, I can't see anything wrong with that.
 
--- 
-if you want to mail me at work (you don't), use arjan (at)
-linux.intel.com
-Test the interaction between Linux and your BIOS via
-http://www.linuxfirmwarekit.org
+> > or a (swap) filesystem that
+> > understands flash peculiarities in order to make such a thing work.
+> > The standard Linux swap format will not work.
+>
+> Correct.
+>
+> BTW, you may want to have a look at my "[RFC] VM: I have a dream..." thread.
 
+Interesting.  This idea does allow for swap to be access directly.
