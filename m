@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbXGBSJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXGBSNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbXGBSJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 14:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXGBSJv
+	id S1754684AbXGBSNn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 14:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXGBSNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 14:09:51 -0400
-Received: from 241-226.umostel.ru ([77.246.241.226]:56375 "EHLO mail.aknet.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751736AbXGBSJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 14:09:50 -0400
-Message-ID: <46893F97.7080200@aknet.ru>
-Date: Mon, 02 Jul 2007 22:10:31 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 2 Jul 2007 14:13:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43956 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752566AbXGBSNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 14:13:35 -0400
+Date: Mon, 2 Jul 2007 20:13:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v18
+Message-ID: <20070702181329.GA13064@elte.hu>
+References: <20070622220202.GA16872@elte.hu> <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com> <b647ffbd0707020601r774a38d4gb62b6c07f1b5db32@mail.gmail.com> <19f34abd0707020643g6a274db5q1d25cabd85b9a25f@mail.gmail.com> <20070702155029.GA13241@elte.hu> <19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: William Tambe <tambewilliam@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Concerning a post that you made about expandable anonymous shared
- mappings
-References: <468562F6.4010604@gmail.com> <Pine.LNX.4.64.0707021619020.32337@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0707021619020.32337@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-Hugh Dickins wrote:
-> You've answered your own question: we did not make the change Stas
-> suggested, IIRC because I remained a little uneasy with that change
-> in behaviour, and nobody else spoke up for it.
-IIRC your argument, that made sense to me,
-was that with such an approach, you can only
-expand the backing-store, but never shrink.
-I agree this is a problem from some point of
-view. I have no idea whether it is important
-or not, but it definitely _looks_ not very good.
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
->>         //why does this failed. I am well in the interval [4096, 8192]
->>         *(unsigned int *)(ptr + 4096 + 8)= 10;
->> }
-Well, this generates a bus error, while, for
-example, doing the same trick with having a
-/dev/mem as a backing-store, simply maps the
-"enlarged" space with the anonymous memory,
-and so does not generate a SIGBUS (not producing
-a desired effect either, of course).
-Why do we have it both ways? Shouldn't they
-(i.e. /dev/zero and /dev/mem mapping) behave
-the same after expanding with mremap?
+> > thx. As an initial matter, could you double-check whether your v18
+> > kernel source has the patch below applied already?
+> 
+> It does.
 
-> I haven't given it any thought since then:
-I was thinking about it a bit, and I imagined
-we need something like
-    int mopen(void *addr, size_t len, unsigned int flags);
-which will give you an fd for the memory area,
-which you can then ftruncate() and mmap() (and
-mremap).
-It looks like vmsplice() is a very close one,
-but unfortunately it involves pipe, which will
-not give you an ability to ftruncate() I suppose.
-I even asked Jens Axboe about the possibility
-to have mopen(). He said it might be a good
-optimization (having only one syscall whereas
-now 2 are needed (pipe/vmsplice)), but not
-worth an efforts.
-Now, if maybe someone have a time and patience,
-he can explain me what was an advantage of using
-pipe with vmsplice() at all. Why it was not
-possible to have something like the mopen() above,
-that will give you an fd right away, without a
-pipe, so that ftruncate/mmap/lseek etc can be
-used on it? Well, I guess this was discussed
-many times, but I failed to google anything
-relevant...
-Such a thing could solve that mremap() problem
-that me and William Tambe have.
+ok. Does the xterm slowdown get any better if you do:
 
+  echo 46 > /proc/sys/kernel/sched_features
+
+? The default on v18 is:
+
+  echo 14 > /proc/sys/kernel/sched_features
+
+	Ingo
