@@ -1,63 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbXGBNMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbXGBNN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbXGBNMD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 09:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbXGBNLx
+	id S1758655AbXGBNN4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 09:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXGBNNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 09:11:53 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:54581 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbXGBNLw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 09:11:52 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: blink driver power saving
-To: Andi Kleen <ak@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Reply-To: 7eggert@gmx.de
-Date: Mon, 02 Jul 2007 15:11:44 +0200
-References: <8CaWr-2o4-19@gated-at.bofh.it> <8Cfjl-PJ-33@gated-at.bofh.it> <8CfW1-1TX-23@gated-at.bofh.it> <8ChEo-4yy-1@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Mon, 2 Jul 2007 09:13:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57848 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751173AbXGBNNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 09:13:45 -0400
+Message-ID: <4688FA00.5050801@redhat.com>
+Date: Mon, 02 Jul 2007 09:13:36 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070529)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1I5Lgu-0000mK-7V@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/GGYi14MCisaERCTF032c//iA7vFoQmS1O5wM
- 6UVYifv+xwHl/QVfw/IHfhbNX/+G6qBS9hesjeEVk+MzFcHiPV
- qd32nSoL3fdMysSCeWpVw==
+To: manio@skyboo.net
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.21.1] nfs-root: added possibility to override default
+ MTU (for UDP jumbo frames)
+References: <E1I5LAW-0004Dn-8b@skyboo.net>
+In-Reply-To: <E1I5LAW-0004Dn-8b@skyboo.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> wrote:
-> On Monday 02 July 2007 00:14, Linus Torvalds wrote:
->> On Sun, 1 Jul 2007, Andi Kleen wrote:
+manio@skyboo.net wrote:
+> To use a NFS-root for UDP jumbo frames the kernel on the client need to bring
+> up interface with MTU set to 9000 bytes - otherwise it cannot contact server
+> with jumbo frames enabled (nfs server not responding, still trying) and cannot
+> boot. Added a kernel parameter named 'ipmtu' which can be used to specify
+> initial MTU size when booting via nfsroot.
+>
+>   
 
->> > What is so bad with it? Note it's a debugging facility and used
->> > for kcrash kernels where the video output doesn't work. But they
->> > normally only run a few minutes to dump the previous state to disk
->> > and then reboot.
->>
->> It has been a total disaster from beginning to end.
->>
->> It wastes power.
-> 
-> Again:
-> It's not intended for normal kernels. It's a debugging feature.
-> It's not intended for normal kernels. It's a debugging feature.
-> It's not intended for normal kernels. It's a debugging feature.
-> 
-> Got it now? Power wasting or not just doesn't matter for it.
+Could you describe the problem better, please?  Something does not
+sound right.  Both ends need to have jumbo frames enabled in order
+to use jumbo frames, but if one end or the other does not, the systems
+still should be able to exchange packets using normal sized ethernet
+packets.  Isn't this a problem that mtu discovery should handle?
 
-There may be some setups that would overheat due to the sudden load,
-while still running fine under normal conditions. Especially if the
-fan is off or broken.
--- 
-Fun things to slip into your budget
-An abacus
+    Thanx...
 
-Friß, Spammer: FK2F@ugyhXY.7eggert.dyndns.org u@zq7ggfIq.7eggert.dyndns.org
+       ps
+
+> Signed-off-by: Mariusz Bialonczyk <manio@skyboo.net>
+>
+> diff -Nru linux-2.6.21.1-orig/Documentation/kernel-parameters.txt linux-2.6.21.1/Documentation/kernel-parameters.txt
+> --- linux-2.6.21.1-orig/Documentation/kernel-parameters.txt	2007-04-27 23:49:26.000000000 +0200
+> +++ linux-2.6.21.1/Documentation/kernel-parameters.txt	2007-07-01 18:47:11.000000000 +0200
+> @@ -720,6 +720,9 @@
+>  	ip2=		[HW] Set IO/IRQ pairs for up to 4 IntelliPort boards
+>  			See comment before ip2_setup() in drivers/char/ip2.c.
+>  
+> +	ipmtu=		[IP_PNP]
+> +			See Documentation/nfsroot.txt.
+> +
+>  	ips=		[HW,SCSI] Adaptec / IBM ServeRAID controller
+>  			See header of drivers/scsi/ips.c.
+>  
+> diff -Nru linux-2.6.21.1-orig/Documentation/nfsroot.txt linux-2.6.21.1/Documentation/nfsroot.txt
+> --- linux-2.6.21.1-orig/Documentation/nfsroot.txt	2007-04-27 23:49:26.000000000 +0200
+> +++ linux-2.6.21.1/Documentation/nfsroot.txt	2007-07-01 19:02:40.000000000 +0200
+> @@ -153,6 +153,16 @@
+>                  Default: any
+>  
+>  
+> +ipmtu=<mtu_value>
+> +
+> +  This parameter tells the kernel to override default MTU size to specified
+> +  <mtu_value>. Useful in cases where NFS server have jumbo frames enabled and
+> +  client can't connect via UDP because of default MTU value (in ethernet
+> +  usually 1500 bytes). With this option before bringing interface up, kernel
+> +  will set the passed MTU size. In case of NFS-root booting server and client
+> +  can use UDP jumbo frames (NFS's rsize and wsize set to 8192 for instance).
+> +
+> +
+>  
+>  
+>  3.) Boot Loader
+> diff -Nru linux-2.6.21.1-orig/net/ipv4/ipconfig.c linux-2.6.21.1/net/ipv4/ipconfig.c
+> --- linux-2.6.21.1-orig/net/ipv4/ipconfig.c	2007-04-27 23:49:26.000000000 +0200
+> +++ linux-2.6.21.1/net/ipv4/ipconfig.c	2007-07-01 15:44:44.000000000 +0200
+> @@ -113,6 +113,8 @@
+>   */
+>  int ic_set_manually __initdata = 0;		/* IPconfig parameters set manually */
+>  
+> +unsigned int ic_mtu __initdata = 0;		/* IPconfig MTU parameter: 0 - defaults, other - override */
+> +
+>  static int ic_enable __initdata = 0;		/* IP config enabled? */
+>  
+>  /* Protocol choice */
+> @@ -209,6 +211,11 @@
+>  			able &= ic_proto_enabled;
+>  			if (ic_proto_enabled && !able)
+>  				continue;
+> +			if (ic_mtu > 0)
+> +			{
+> +				printk(KERN_ERR "IP-Config: Overriding %s MTU to %d bytes\n", dev->name, ic_mtu);
+> +				dev->mtu = ic_mtu;
+> +			}
+>  			oflags = dev->flags;
+>  			if (dev_change_flags(dev, oflags | IFF_UP) < 0) {
+>  				printk(KERN_ERR "IP-Config: Failed to open %s\n", dev->name);
+> @@ -1506,5 +1513,14 @@
+>  	return ip_auto_config_setup(addrs);
+>  }
+>  
+> +static int __init mtu_config_setup(char *str)
+> +{
+> +	if (!str)
+> +		return 0;
+> +	ic_mtu = simple_strtoul(str, &str, 0);
+> +	return 1;
+> +}
+> +
+>  __setup("ip=", ip_auto_config_setup);
+> +__setup("ipmtu=", mtu_config_setup);
+>  __setup("nfsaddrs=", nfsaddrs_config_setup);
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
+
