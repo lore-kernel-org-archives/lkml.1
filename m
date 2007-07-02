@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXGBUIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbXGBUN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755492AbXGBUIY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 16:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXGBUIN
+	id S1756191AbXGBUN7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 16:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbXGBUNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 16:08:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41745 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbXGBUIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 16:08:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Greaves <david@dgreaves.com>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-Date: Mon, 2 Jul 2007 22:15:11 +0200
-User-Agent: KMail/1.9.5
-Cc: Tejun Heo <htejun@gmail.com>, David Chinner <dgc@sgi.com>,
-       David Robinson <zxvdr.au@gmail.com>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>
-References: <46744065.6060605@dgreaves.com> <200707021712.50323.rjw@sisk.pl> <4689298B.2000407@dgreaves.com>
-In-Reply-To: <4689298B.2000407@dgreaves.com>
+	Mon, 2 Jul 2007 16:13:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:42130 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753315AbXGBUNv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 16:13:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=qL8xOgXJPM5kwgzmhkddewKWqVzsoE5GDj82ke2LIVloyHTJmntqzMTeJhf1/e3XK07F1p18JyfFVgJQJOUPYd2z2pE+hRkie+9BUUcKTYeOtkZn5lGIdXiLV/Rjx4eyHcUb5cYRBH6ZOXaZ9nRKB49WOElKsU7FN/gUE8vgWe8=
+Date: Mon, 2 Jul 2007 22:13:54 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: rae l <crquan@gmail.com>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: Does the kernel HPET support has problems or the hwclock from util-linux?
+Message-ID: <20070702201354.GA13313@dreamland.darkstar.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707022215.12200.rjw@sisk.pl>
+In-Reply-To: <91b13c310707020315v54d19338u817d23d4380bde07@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 2 July 2007 18:36, David Greaves wrote:
-> Rafael J. Wysocki wrote:
-> > On Monday, 2 July 2007 16:32, David Greaves wrote:
-> >> Rafael J. Wysocki wrote:
-> >>> On Monday, 2 July 2007 12:56, Tejun Heo wrote:
-> >>>> David Greaves wrote:
-> >>>>>> Tejun Heo wrote:
-> >>>>>>> It's really weird tho.  The PHY RDY status changed events are coming
-> >>>>>>> from the device which is NOT used while resuming
-> >>>>> There is an obvious problem there though Tejun (the errors even when sda
-> >>>>> isn't involved in the OS boot) - can I start another thread about that
-> >>>>> issue/bug later? I need to reshuffle partitions so I'd rather get the
-> >>>>> hibernate working first and then go back to it if that's OK?
-> >>>> Yeah, sure.  The problem is that we don't know whether or how those two
-> >>>> are related.  It would be great if there's a way to verify memory image
-> >>>> read from hibernation is intact.  Rafael, any ideas?
-> >>> Well, s2disk has an option to compute an MD5 checksum of the image during
-> >>> the hibernation and verify it while reading the image.
-> >> (Assuming you mean the mainline version)
-> >>
-> >> Sounds like a good think to try next...
-> >> Couldn't see anything on this in ../Documentation/power/*
-> >> How do I enable it?
-> > 
-> > Add 'compute checksum = y' to the s2disk's configuration file.
+rae l <crquan@gmail.com> ha scritto:
+> from this address, I know util-linux-2.12r is the latest:
+> http://www.kernel.org/pub/linux/utils/util-linux/util-linux-2.12r.lsm
 > 
-> Ah, right - that's uswsusp isn't it? Which isn't what I'm having problems with 
-> AFAIK?
+> My Dell OptiPlex 320 has 4 HPET timers and no RTC, so the execution of
+> hwclock has errors:
 > 
-> My suspend procedure is:
-> 
-> xfs_freeze -f /scratch
-> sync
-> echo platform > /sys/power/disk
-> echo disk > /sys/power/state
-> xfs_freeze -u /scratch
-> 
-> Which should work (actually it should work without the sync/xfs_freeze too).
-> 
-> So to debug the problem I'd like to minimally extend this process rather than 
-> replace it with another approach.
+> gektop@tux ~ $ /sbin/hwclock --show
+> select() to /dev/rtc to wait for clock tick timed out
+> gektop@tux ~ $ /sbin/hwclock --version
+> hwclock from util-linux-2.12r
 
-Well, this is not entirely "another approach".  Only the saving of the image is
-done differently, the rest is the same.
+I think that the problem is that HPET and the CMOS RTC (list in CC)
+share the same interrupt line.
+I suppose that you should enable CONFIG_HPET_RTC_IRQ (my hardware has
+the same "feature"); in this way /dev/rtc correcly reports that it
+cannot deliver the interrupt (when HPET is enabled) and hwclock uses
+direct ISA access.
 
-> I take it there isn't an 'echo y > /sys/power/do_image_checksum'?
-
-No, there is not anything like that.
-
-Greetings,
-Rafael
-
-
+Luca
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Windows NT crashed.
+I'm the Blue Screen of Death.
+No one hears your screams.
