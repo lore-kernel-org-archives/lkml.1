@@ -1,95 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbXGBG0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbXGBG0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752802AbXGBG0a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 02:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXGBG0J
+	id S1754871AbXGBG0p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 02:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbXGBG0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 02:26:09 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:54767 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751075AbXGBG0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 02:26:07 -0400
-Date: Mon, 2 Jul 2007 08:34:24 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 2 Jul 2007 02:26:22 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:37909 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbXGBG0S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 02:26:18 -0400
+X-IronPort-AV: i="4.16,485,1175486400"; 
+   d="scan'208"; a="44094436:sNHT23253440"
+Subject: [GIT PULL] Blackfin arch fixes
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "David S\. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [NETPOLL] netconsole: fix soft lockup when removing module
-Message-ID: <20070702063424.GA1639@ff.dom.local>
-References: <20070701173558.GA207@tv-sign.ru>
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Mon, 02 Jul 2007 14:31:24 +0800
+Message-Id: <1183357884.32471.9.camel@roc-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070701173558.GA207@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.6.1 
+X-OriginalArrivalTime: 02 Jul 2007 06:26:17.0041 (UTC) FILETIME=[E5764C10:01C7BC71]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 01, 2007 at 09:35:58PM +0400, Oleg Nesterov wrote:
-> Jarek Poplawski wrote:
-> >
-> >    #1
-> >    Until kernel ver. 2.6.21 (including) cancel_rearming_delayed_work()
-> >    required a work function should always (unconditionally) rearm with
-> >    delay > 0 - otherwise it would endlessly loop. This patch replaces
-> >    this function with cancel_delayed_work(). Later kernel versions don't
-> >    require this, so here it's only for uniformity.
-> 
-> But 2.6.22 doesn't need this change, why it was merged?
+Hi Linus:
 
-One bad reason is given above. Should I look for another one?
+Please pull from "master" branch of:
 
-> 
-> In fact, I suspect this change adds a race,
+  master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git/ master
 
-You are right!
+Jie Zhang (1):
+      Blackfin arch: Add proper -mcpu option according to the cpu and silicon revision configuration
 
-> 
-> > --- a/net/core/netpoll.c
-> > +++ b/net/core/netpoll.c
-> > @@ -72,7 +72,8 @@ static void queue_process(struct work_struct *work)
-> >  			netif_tx_unlock(dev);
-> >  			local_irq_restore(flags);
-> >  
-> > -			schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> > +			if (atomic_read(&npinfo->refcnt))
-> > +				schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> >  			return;
-> >  		}
-> >  		netif_tx_unlock(dev);
-> > @@ -785,9 +786,15 @@ void netpoll_cleanup(struct netpoll *np)
-> >  			if (atomic_dec_and_test(&npinfo->refcnt)) {
-> >  				skb_queue_purge(&npinfo->arp_tx);
-> >  				skb_queue_purge(&npinfo->txq);
-> > -				cancel_rearming_delayed_work(&npinfo->tx_work);
-> > +				cancel_delayed_work(&npinfo->tx_work);
-> >  				flush_scheduled_work();
-> 
-> Suppose that ->refcnt == 1, and queue_process() was preempted just after
-> atomic_read(&npinfo->refcnt).
-> 
-> netpoll_cleanup() comes, cancel_delayed_work() does nothing, flush_scheduled_work()
-> sleeps.
-> 
-> queue_process() gets CPU, re-schedules ->tx_work, and returns.
-> 
-> flush_scheduled_work() completes, netpoll_cleanup() frees npinfo and returns
-> while ->tx_work is pending.
-> 
-> No?
+Mike Frysinger (1):
+      Blackfin arch: update board defconfig files
 
-No no. (Yes!)
+Robin Getz (1):
+      Blackfin arch: Fix up remaining printks with proper log levels
 
-I had some doubts about this, and you found very good reason
-for this.
-
-I'll soon send a patch to restore cancel_rearming_delayed_work
-in 2.6.22.
-
-So, 2.6.21 needs something better (maybe you've found it btw.?),
-but they weren't too interested, anyway.
-
-Thanks very much & regards,
-Jarek P.
+ arch/blackfin/Kconfig                       |    6 ++++++
+ arch/blackfin/Makefile                      |   21 +++++++++++++++++++++
+ arch/blackfin/configs/BF533-EZKIT_defconfig |   12 +++++++++++-
+ arch/blackfin/configs/BF533-STAMP_defconfig |   26 ++++++++++++++++++++++----
+ arch/blackfin/configs/BF537-STAMP_defconfig |   26 ++++++++++++++++++++++----
+ arch/blackfin/configs/BF561-EZKIT_defconfig |   12 ++++++++++--
+ arch/blackfin/configs/PNAV-10_defconfig     |   13 +++++++++++--
+ arch/blackfin/kernel/setup.c                |   18 ++++++++++++++----
+ arch/blackfin/kernel/traps.c                |    3 ++-
+ include/asm-blackfin/processor.h            |    4 ++++
+ 10 files changed, 123 insertions(+), 18 deletions(-)
