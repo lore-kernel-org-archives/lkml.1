@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbXGBHFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbXGBHGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753042AbXGBHFc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 03:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbXGBHFY
+	id S1754677AbXGBHGp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 03:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbXGBHGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 03:05:24 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:8127 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbXGBHFV (ORCPT
+	Mon, 2 Jul 2007 03:06:39 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:48148 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750765AbXGBHGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 03:05:21 -0400
-Subject: Re: [patch 5/5] Optimize page_mkclean_one
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <1183296468.5180.10.camel@lappy>
-References: <20070629135530.912094590@de.ibm.com>
-	 <20070629141528.511942868@de.ibm.com>
-	 <Pine.LNX.4.64.0706301448450.13752@blonde.wat.veritas.com>
-	 <1183274153.15924.6.camel@localhost>
-	 <Pine.LNX.4.64.0707010926130.11148@blonde.wat.veritas.com>
-	 <1183296468.5180.10.camel@lappy>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 02 Jul 2007 09:07:26 +0200
-Message-Id: <1183360046.12198.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Mon, 2 Jul 2007 03:06:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=062isb6hQrERX8l9g/Fzl8dq+ubG2i9vUkvbrAAITW7aTweoHoxUMi65NGuATq0xyHusxd6oii0LEtItw8Q5SgAKtaHsKZ+SozKZ7bOzbGDqfd1DX+LuYE4+n+7XCK1rM6aylBL9ITVHg4b22eP6Xm7nZ9sLh0fYDQoIfnFAgzs=  ;
+X-YMail-OSG: eDr_DJoVM1kI5pdBCJiOQJOzjVmk08lMQ9_mPMsal8qaxXIq3O2j4xtqNp74A1uxRmVGauQkcw--
+Message-ID: <4688A3F7.8040806@yahoo.com.au>
+Date: Mon, 02 Jul 2007 17:06:31 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
+       Miklos Szeredi <miklos@szeredi.hu>, chris@atlee.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621202917.a2bfbfc7.dada1@cosmosbay.com> <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org> <4680D162.9050603@yahoo.com.au> <alpine.LFD.0.98.0706261016200.8675@woody.linux-foundation.org> <4681F448.3040201@yahoo.com.au> <alpine.LFD.0.98.0706262249590.8675@woody.linux-foundation.org> <alpine.LFD.0.98.0706271233300.8675@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706271233300.8675@woody.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-01 at 15:27 +0200, Peter Zijlstra wrote:
-> > But I could easily be overlooking something: Peter will recall.
+Linus Torvalds wrote:
+> Nick,
+>  call me a worry-wart, but I slept on this, and started worrying..
 > 
-> /me tries to get his brain up to speed after the OLS closing party :-)
+> On Tue, 26 Jun 2007, Linus Torvalds wrote:
+> 
+>>So try it with just a byte counter, and test some stupid micro-benchmark 
+>>on both a P4 and a Core 2 Duo, and if it's in the noise, maybe we can make 
+>>it the normal spinlock sequence just because it isn't noticeably slower.
+> 
+> 
+> So I thought about this a bit more, and I like your sequence counter 
+> approach, but it still worried me.
+> 
+> In the current spinlock code, we have a very simple setup for a 
+> successful grab of the spinlock:
+> 
+> 	CPU#0					CPU#1
+...
 
-Oh-oh, the Black Thorn party :-)
+Yeah, thanks.
 
-> I did both pte_dirty and pte_write because I was extra careful. One
-> _should_ imply the other, but since we'll be clearing both, I thought it
-> prudent to also check both.
+> Now, I have good reason to believe that all Intel and AMD CPU's have a 
+> stricter-than-documented memory ordering, and that your spinlock may 
+> actually work perfectly well. But it still worries me. As far as I can 
+> tell, there's a theoretical problem with your spinlock implementation.
+> 
+> So I'd like you to ask around some CPU people, and get people from both 
+> Intel and AMD to sign off on your spinlocks as safe. I suspect you already 
+> have the required contacts, but if you don't, I can send things off to the 
+> appropriate people at least inside Intel.
 
-Just ran a little experiment: I've added a simple WARN_ON(ret == 0) to
-page_mkclean after the page_test_dirty() check to see if there are cases
-where the page is dirty and all ptes are read-only. A little stress run
-including massive swap did not print a single warning.
+Haven't made too much progress on this, but I have asked someone@amd who
+might be able to at least know the right person to ask :P (might be faster
+to ask Andi to ask :))
 
-> I will have to think on this a little more, but I'm currently of the
-> opinion that the optimisation is not correct. But I'll have a thorough
-> look at s390 again when I get home.
+If you know someone at Intel then that would be appreciated.
 
-I think the patch is correct, although I beginning to doubt that is has
-any effect.
+It would be nice if it is safe (and can be guaranteed to be safe in future).
+
+However OTOH, the fastpath may be even faster if we do it in a "definitely
+safe" way.
+
+That is, do the xaddw against 16-bits with the head in 8 of those and the
+tail in the other 8. Then compare the byte registers of the register
+returned by xaddw for the test. Although the xaddw is going to be slower
+than an xaddb, this way we subsequently avoid the extra load completely,
+while avoiding ordering issues.
+
+In the slowpath we would have to have a token locked op in there (like
+the current spinlocks do), but this could be taken out iff our inquiries
+come back positive.
+
+Anyway, I'll try redoing the patch and getting some numbers.
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+SUSE Labs, Novell Inc.
