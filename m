@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXGBNBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbXGBNGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561AbXGBNBp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 09:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbXGBNBi
+	id S1758166AbXGBNGV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 09:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbXGBNGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 09:01:38 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:54139 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753720AbXGBNBi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 09:01:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=q2RUXMyQvG3TSMDMJh5/lLjCloF+IgwqnRTWchn12kmBGN267D+pVdOA3KTENrh/YyIZMBaXb3N5sK2mIiT9HZ2a5y4zxVHl4QE1djsIhd6Vr5JqECidhf5OAcSDF4QfCE01z711EIzXacr0FOsEaJPTtU8KlOwL/KxqLcCx7g8=
-Message-ID: <b647ffbd0707020601r774a38d4gb62b6c07f1b5db32@mail.gmail.com>
-Date: Mon, 2 Jul 2007 15:01:37 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v18
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070622220202.GA16872@elte.hu>
-	 <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com>
+	Mon, 2 Jul 2007 09:06:06 -0400
+Received: from [82.160.134.4] ([82.160.134.4]:56977 "EHLO skyboo.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751173AbXGBNGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 09:06:05 -0400
+X-Greylist: delayed 1665 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jul 2007 09:06:05 EDT
+To: akpm@linux-foundation.org
+Subject: [PATCH 2.6.21.1] nfs-root: added possibility to override default MTU (for UDP jumbo frames)
+Cc: linux-kernel@vger.kernel.org, manio@skyboo.net, netdev@vger.kernel.org
+Message-Id: <E1I5LAW-0004Dn-8b@skyboo.net>
+From: manio@skyboo.net
+Date: Mon, 02 Jul 2007 14:38:16 +0200
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: manio@skyboo.net
+X-SA-Exim-Scanned: No (on skyboo.net); SAEximRunCond expanded to false
+X-Authenticated-Sender: manio
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/07/07, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> Hello,
->
-> On 6/23/07, Ingo Molnar <mingo@elte.hu> wrote:
-> > i'm pleased to announce release -v18 of the CFS scheduler patchset.
->
-> > As usual, any sort of feedback, bugreport, fix and suggestion is more
-> > than welcome!
->
-> I have been running cfs-v18 for a couple of days now, and today I
-> stumbled upon a rather strange problem. Consider the following short
-> program:
->
-> while(1)
->         printf("%ld\r", 1000 * clock() / CLOCKS_PER_SEC);
+To use a NFS-root for UDP jumbo frames the kernel on the client need to bring
+up interface with MTU set to 9000 bytes - otherwise it cannot contact server
+with jumbo frames enabled (nfs server not responding, still trying) and cannot
+boot. Added a kernel parameter named 'ipmtu' which can be used to specify
+initial MTU size when booting via nfsroot.
 
-Is it running with a default (0) nice value?
+Signed-off-by: Mariusz Bialonczyk <manio@skyboo.net>
 
-could you please run the following script when your application is running?
-As you have pointed out :
-
-"... In fact, it seems that the longer it runs, the longer it takes to
-terminate (towards 5 seconds after running for a couple of minutes
-..." ,
-
-please run the script a few times : say, before starting up your
-application, 10 sec. after it's got started, 1 minute, a few minute...
-
-http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-
-then send us the resulting files. TIA,
-
-
--- 
-Best regards,
-Dmitry Adamushko
+diff -Nru linux-2.6.21.1-orig/Documentation/kernel-parameters.txt linux-2.6.21.1/Documentation/kernel-parameters.txt
+--- linux-2.6.21.1-orig/Documentation/kernel-parameters.txt	2007-04-27 23:49:26.000000000 +0200
++++ linux-2.6.21.1/Documentation/kernel-parameters.txt	2007-07-01 18:47:11.000000000 +0200
+@@ -720,6 +720,9 @@
+ 	ip2=		[HW] Set IO/IRQ pairs for up to 4 IntelliPort boards
+ 			See comment before ip2_setup() in drivers/char/ip2.c.
+ 
++	ipmtu=		[IP_PNP]
++			See Documentation/nfsroot.txt.
++
+ 	ips=		[HW,SCSI] Adaptec / IBM ServeRAID controller
+ 			See header of drivers/scsi/ips.c.
+ 
+diff -Nru linux-2.6.21.1-orig/Documentation/nfsroot.txt linux-2.6.21.1/Documentation/nfsroot.txt
+--- linux-2.6.21.1-orig/Documentation/nfsroot.txt	2007-04-27 23:49:26.000000000 +0200
++++ linux-2.6.21.1/Documentation/nfsroot.txt	2007-07-01 19:02:40.000000000 +0200
+@@ -153,6 +153,16 @@
+                 Default: any
+ 
+ 
++ipmtu=<mtu_value>
++
++  This parameter tells the kernel to override default MTU size to specified
++  <mtu_value>. Useful in cases where NFS server have jumbo frames enabled and
++  client can't connect via UDP because of default MTU value (in ethernet
++  usually 1500 bytes). With this option before bringing interface up, kernel
++  will set the passed MTU size. In case of NFS-root booting server and client
++  can use UDP jumbo frames (NFS's rsize and wsize set to 8192 for instance).
++
++
+ 
+ 
+ 3.) Boot Loader
+diff -Nru linux-2.6.21.1-orig/net/ipv4/ipconfig.c linux-2.6.21.1/net/ipv4/ipconfig.c
+--- linux-2.6.21.1-orig/net/ipv4/ipconfig.c	2007-04-27 23:49:26.000000000 +0200
++++ linux-2.6.21.1/net/ipv4/ipconfig.c	2007-07-01 15:44:44.000000000 +0200
+@@ -113,6 +113,8 @@
+  */
+ int ic_set_manually __initdata = 0;		/* IPconfig parameters set manually */
+ 
++unsigned int ic_mtu __initdata = 0;		/* IPconfig MTU parameter: 0 - defaults, other - override */
++
+ static int ic_enable __initdata = 0;		/* IP config enabled? */
+ 
+ /* Protocol choice */
+@@ -209,6 +211,11 @@
+ 			able &= ic_proto_enabled;
+ 			if (ic_proto_enabled && !able)
+ 				continue;
++			if (ic_mtu > 0)
++			{
++				printk(KERN_ERR "IP-Config: Overriding %s MTU to %d bytes\n", dev->name, ic_mtu);
++				dev->mtu = ic_mtu;
++			}
+ 			oflags = dev->flags;
+ 			if (dev_change_flags(dev, oflags | IFF_UP) < 0) {
+ 				printk(KERN_ERR "IP-Config: Failed to open %s\n", dev->name);
+@@ -1506,5 +1513,14 @@
+ 	return ip_auto_config_setup(addrs);
+ }
+ 
++static int __init mtu_config_setup(char *str)
++{
++	if (!str)
++		return 0;
++	ic_mtu = simple_strtoul(str, &str, 0);
++	return 1;
++}
++
+ __setup("ip=", ip_auto_config_setup);
++__setup("ipmtu=", mtu_config_setup);
+ __setup("nfsaddrs=", nfsaddrs_config_setup);
