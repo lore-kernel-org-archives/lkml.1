@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbXGBW6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbXGBW7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbXGBW6K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 18:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbXGBW56
+	id S1758058AbXGBW7o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 18:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbXGBW7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 18:57:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56023 "EHLO
+	Mon, 2 Jul 2007 18:59:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42026 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756002AbXGBW55 (ORCPT
+	by vger.kernel.org with ESMTP id S1756002AbXGBW7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 18:57:57 -0400
-Date: Mon, 2 Jul 2007 15:56:33 -0700
+	Mon, 2 Jul 2007 18:59:36 -0400
+Date: Mon, 2 Jul 2007 15:59:12 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       openib-general@openib.org, jim.houston@ccur.com,
-       Stefan Roscher <ossrosch@linux.vnet.ibm.com>, raisch@de.ibm.com
-Subject: Re: idr_get_new_above() limitation?
-Message-Id: <20070702155633.720b5667.akpm@linux-foundation.org>
-In-Reply-To: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
-References: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
+To: "Ni@m" <niam.niam@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-usb-devel@lists.sourceforge.net
+Subject: Re: NIKON D50 problem
+Message-Id: <20070702155912.fe1e6834.akpm@linux-foundation.org>
+In-Reply-To: <a9e22dff0707021217r239ebcf0g8154a6e985b078f3@mail.gmail.com>
+References: <a9e22dff0707021217r239ebcf0g8154a6e985b078f3@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,63 +25,59 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jul 2007 19:19:26 +0200
-Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com> wrote:
+On Mon, 2 Jul 2007 22:17:20 +0300
+"Ni@m" <niam.niam@gmail.com> wrote:
 
-> For ehca device driver we're intending to utilize 
-> idr_get_new_above() and have written a test case, which I'm attaching
-> at the end. Basically it tries to get an idr token above a lower boundary
-> by calling idr_get_new_above() and then uses idr_find() to check if 
-> the returned token can be found. 
-> Here is our observation with 2.6.22-rc7 on ppc64:
+> Hi! Recently I've found out that my camera NIKON D50 can't mount any more.
+> uname -a: "Linux niam 2.6.22-rc6-cfs-v18 #6 Mon Jul 2 20:19:25 EEST
+> 2007 i686 Intel(R) Celeron(R) M processor 1.50GHz GenuineIntel
+> GNU/Linux"
 > 
-> Use lower boundary 0x3ffffffc
-> [root@xyz idr_bug]# insmod idr_test_mod.ko start=1073741820
-> insmod: error inserting 'idr_test_mod.ko': -1 Unknown symbol in module
-> [root@xyz idr_bug]# dmesg -c
-> i=3ffffffc token=3ffffffc t=000000003ffffffc
-> i=3ffffffd token=3ffffffd t=000000003ffffffd
-> i=3ffffffe token=3ffffffe t=000000003ffffffe
-> i=3fffffff token=3fffffff t=000000003fffffff
-> i=40000000 token=40000000 t=0000000000000000
-> Invalid object 0000000000000000. Expected 40000000
+> dmesg:
+> scsi 2:0:0:0: Direct-Access     NIKON    D50              1.00 PQ: 0 ANSI: 2
+> sd 2:0:0:0: [sdb] 1984001 512-byte hardware sectors (1016 MB)
+> sd 2:0:0:0: [sdb] Write Protect is off
+> sd 2:0:0:0: [sdb] Mode Sense: 0f 00 00 00
+> sd 2:0:0:0: [sdb] Assuming drive cache: write through
+> sd 2:0:0:0: [sdb] 1984001 512-byte hardware sectors (1016 MB)
+> sd 2:0:0:0: [sdb] Write Protect is off
+> sd 2:0:0:0: [sdb] Mode Sense: 0f 00 00 00
+> sd 2:0:0:0: [sdb] Assuming drive cache: write through
+>  sdb: sdb1
+> sd 2:0:0:0: [sdb] Attached SCSI removable disk
+> sd 2:0:0:0: Attached scsi generic sg2 type 0
+> usb-storage: device scan complete
+> end_request: I/O error, dev sdb, sector 1984000
+> Buffer I/O error on device sdb, logical block 1984000
+> end_request: I/O error, dev sdb, sector 1984000
+> Buffer I/O error on device sdb, logical block 1984000
+> end_request: I/O error, dev sdb, sector 1983992
+> Buffer I/O error on device sdb, logical block 1983992
+> end_request: I/O error, dev sdb, sector 1983993
+> Buffer I/O error on device sdb, logical block 1983993
+> Buffer I/O error on device sdb, logical block 1983994
+> Buffer I/O error on device sdb, logical block 1983995
+> Buffer I/O error on device sdb, logical block 1983996
+> Buffer I/O error on device sdb, logical block 1983997
+> Buffer I/O error on device sdb, logical block 1983998
+> Buffer I/O error on device sdb, logical block 1983999
+> end_request: I/O error, dev sdb, sector 1983992
+> ...................
 > 
-> That means token 0x40000000 seems to be the "upper boundary" of idr_find().
-> However the behaviour is not consistent in that it was returned by
-> idr_get_new_above().
+> Some time ago(I really can't remember version of the kernel)
+> everything was Ok. I'll try to find out the workable version of the
+> kernel ... but I've already tried 2.6.20 - the same =(.
+> I'm not sure, but It's possible that I've had ATA subsystem but not
+> libata ... I haven't tested this case yet.
 > 
-> Looking at void *idr_find(struct idr *idp, int id)
-> {
-> 	int n;
-> 	struct idr_layer *p;
-> 
-> 	n = idp->layers * IDR_BITS;
-> 	p = idp->top;
-> 
-> 	/* Mask off upper bits we don't use for the search. */
-> 	id &= MAX_ID_MASK;
-> 
-> 	if (id >= (1 << n))
-> 		return NULL;
-> 
-> 	while (n > 0 && p) {
-> 		n -= IDR_BITS;
-> 		p = p->ary[(id >> n) & IDR_MASK];
-> 	}
-> 	return((void *)p);
-> }
-> we found that the if-condition has failed:
->   layers = 5
->   IDR_BITS = 6
->   n = 30
->   (id >= (1 << n)) = (0x40000000 >= 0x40000000) = 1
-> 
-> Since MAX_ID_MASK=0x7fffffff, I'm wondering if 0x40000000 is the actual
-> upper boundary. Any hints or suggestions are appreciated.
+> PS. I can see photos on my camera ... flash card is Ok. I have this
+> problem even if I changed the flash card in this camera.
 
-Looks like a bug to me.  Really an IDR tree on 32-bit should go all
-the way up to 0xffffffff.  Certainly up to 0x7fffffff.  And the fact
-that idr_find() disagrees with idr_get_new_above() is a big hint
-that the code is getting it wrong.
+It's more likely a usb-storage or scsi layer problem.
+
+The device reports as having 1984001 sectors and the kernel is reporting IO
+errors around the very end of the device.  Presumably an IO is straddling
+end-of-device and we're not handling that correctly.
+
 
 
