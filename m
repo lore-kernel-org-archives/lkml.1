@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbXGBHoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbXGBIAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbXGBHoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 03:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXGBHoI
+	id S1758970AbXGBIAt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 04:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbXGBIAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 03:44:08 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:44791 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751895AbXGBHoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 03:44:06 -0400
-Date: Mon, 2 Jul 2007 09:52:26 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S\. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH] Re: [NETPOLL] netconsole: fix soft lockup when removing module
-Message-ID: <20070702075226.GB1639@ff.dom.local>
-References: <20070701173558.GA207@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070701173558.GA207@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 2 Jul 2007 04:00:40 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:34889 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751439AbXGBIAk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 04:00:40 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Mon, 2 Jul 2007 03:58:43 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: David Miller <davem@davemloft.net>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SPARC64: Emphasize that sparc64 doesn't support return
+ probes.
+In-Reply-To: <20070701.203709.120448384.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0707020358250.22224@localhost.localdomain>
+References: <Pine.LNX.4.64.0707011248490.3046@localhost.localdomain>
+ <20070701.203709.120448384.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 1 Jul 2007, David Miller wrote:
 
->From my recent patch:
+> From: "Robert P. J. Day" <rpjday@mindspring.com>
+> Date: Sun, 1 Jul 2007 12:49:58 -0400 (EDT)
+>
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+>
+> I think it's simply better for me to add kretprobe
+> support don't you think?
+>
+> It's on my todo list and I don't want to add this doc blurb
+> that will very shortly become wrong.
 
-> >    #1
-> >    Until kernel ver. 2.6.21 (including) cancel_rearming_delayed_work()
-> >    required a work function should always (unconditionally) rearm with
-> >    delay > 0 - otherwise it would endlessly loop. This patch replaces
-> >    this function with cancel_delayed_work(). Later kernel versions don't
-> >    require this, so here it's only for uniformity.
+ok, i didn't realize that was coming.
 
-But Oleg Nesterov <oleg@tv-sign.ru> found:
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-> But 2.6.22 doesn't need this change, why it was merged?
-> 
-> In fact, I suspect this change adds a race,
-...
-
-His description was right (thanks), so this patch reverts #1.
-
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-
----
-
-diff -Nurp 2.6.22-rc7-/net/core/netpoll.c 2.6.22-rc7/net/core/netpoll.c
---- 2.6.22-rc7-/net/core/netpoll.c	2007-07-02 09:03:27.000000000 +0200
-+++ 2.6.22-rc7/net/core/netpoll.c	2007-07-02 09:32:34.000000000 +0200
-@@ -72,8 +72,7 @@ static void queue_process(struct work_st
- 			netif_tx_unlock(dev);
- 			local_irq_restore(flags);
- 
--			if (atomic_read(&npinfo->refcnt))
--				schedule_delayed_work(&npinfo->tx_work, HZ/10);
-+			schedule_delayed_work(&npinfo->tx_work, HZ/10);
- 			return;
- 		}
- 		netif_tx_unlock(dev);
-@@ -786,7 +785,7 @@ void netpoll_cleanup(struct netpoll *np)
- 			if (atomic_dec_and_test(&npinfo->refcnt)) {
- 				skb_queue_purge(&npinfo->arp_tx);
- 				skb_queue_purge(&npinfo->txq);
--				cancel_delayed_work(&npinfo->tx_work);
-+				cancel_rearming_delayed_work(&npinfo->tx_work);
- 				flush_scheduled_work();
- 
- 				/* clean after last, unfinished work */
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
