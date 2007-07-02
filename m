@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbXGBHMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbXGBH2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbXGBHMq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 03:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXGBHMg
+	id S1754224AbXGBH2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 03:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXGBH2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 03:12:36 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:21496 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbXGBHMf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 03:12:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Rmqva4fTD2rM1c+y1yogJPzYui7VWuqI9I9v/MqR+Y/h/RV+JgHLA90IpLhwPa0hGDZFYLnKdklZ6HDSAZchqKqT33YU2jeNdyoWqLAWfeVMIpnye77N+8t210EqvJEtttEo2TXoYkLdDjP+rlw62qihAzr4h8Rlr4CUuq2D2b0=
-Message-ID: <4688A55B.3020504@gmail.com>
-Date: Mon, 02 Jul 2007 16:12:27 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>, Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, enricoss@tiscali.it,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 2.6.22-rc5] libata: add HTS541616J9SA00 to NCQ blacklist
-References: <fa.sspu6LOivd/touNtS2IsMKPqHa0@ifi.uio.no> <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no> <467EC909.9040006@shaw.ca> <467F2495.3080509@gmail.com> <467F286B.40607@gmail.com>
-In-Reply-To: <467F286B.40607@gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jul 2007 03:28:07 -0400
+Received: from ee.oulu.fi ([130.231.61.23]:34578 "EHLO ee.oulu.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118AbXGBH2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 03:28:06 -0400
+X-Greylist: delayed 1377 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jul 2007 03:28:06 EDT
+Date: Mon, 2 Jul 2007 10:05:06 +0300
+From: Pekka Pietikainen <pp@ee.oulu.fi>
+To: linux-kernel@vger.kernel.org
+Subject: Re: howto disable vlantag in tg3
+Message-ID: <20070702070506.GA8399@ee.oulu.fi>
+References: <87zm2g6waa.fsf@samuel.flexserv.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <87zm2g6waa.fsf@samuel.flexserv.de>
+User-Agent: Mutt/1.4.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Another member of HTS5416* family doing spurious NCQ completion.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Enrico Sardi <enricoss@tiscali.it>
+On Sun, Jul 01, 2007 at 04:19:57PM +0200, Daniel J. Priem wrote:
+> Hi,
+> the tg3 module automatically removes any incoming vlantags from packets.
+> how can i stop this on 2.6.18?
+> is there some hidden echo foo > /sys/...
+> or modprobe options tg3 dontusetagbla?
+I think it's the same thing as on the newer broadcom bnx2, which I ran into.
+There's some new enterprise managmenent thingy, ASF, that gets confused if
+there are vlan tags present -> the driver is setup to strip them out if that
+feature is enabled.
 
-Jeff, ping.
+There is a dos-based tool to disable that bit on the bnx2 hardware
+(which gives you those vlan tags back, vlans do work, you just can't
+see them with tcpdump etc.), you can probably find one for tg3 as well
+from broadcom.
 
 -- 
-tejun
+Pekka Pietikainen
