@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760638AbXGBO7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbXGBO7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760638AbXGBO7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbXGBO7K
+	id S1759941AbXGBO7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756458AbXGBO7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:59:10 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:38495 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752856AbXGBO7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:59:09 -0400
-Date: Mon, 2 Jul 2007 16:05:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Kilau, Scott" <Scott_Kilau@digi.com>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Eng.Linux" <Eng.Linux@digi.com>
-Subject: Re: [PATCH][RFC] Remove support for the orphaned, obsolete Digi
- EPCA driver.
-Message-ID: <20070702160508.3d34cb90@the-village.bc.nu>
-In-Reply-To: <335DD0B75189FB428E5C32680089FB9F012DD309@mtk-sms-mail01.digi.com>
-References: <Pine.LNX.4.64.0707020906530.19712@localhost.localdomain>
-	<20070702144605.5cf99b3a@the-village.bc.nu>
-	<Pine.LNX.4.64.0707020945290.18113@localhost.localdomain>
-	<20070702151534.2728ae63@the-village.bc.nu>
-	<335DD0B75189FB428E5C32680089FB9F012DD309@mtk-sms-mail01.digi.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jul 2007 10:59:46 -0400
+Received: from vena.lwn.net ([206.168.112.25]:60843 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752856AbXGBO7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:59:46 -0400
+To: Heikki Orsila <shdl@zakalwe.fi>
+Cc: linux-kernel@vger.kernel.org, rdunlap@xenotime.net
+Subject: Re: [PATCH] Documentation: improvement to volatile considered harmful (resubmit) 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Sun, 01 Jul 2007 15:26:22 +0300."
+             <20070701122622.GC3400@zakalwe.fi> 
+Date: Mon, 02 Jul 2007 08:59:45 -0600
+Message-ID: <15122.1183388385@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> (Probably the biggest obstacle, was the extra ioctls to
-> manage "Digi" specific things, and other hooks that are
-> simply not permitted in in-kernel code)
+Heikki Orsila <shdl@zakalwe.fi> wrote:
 
-Oh please ignore the ioctl bigots, I think they've also mostly gone away
-and accepted they lost the argument to the real world anyway/
-
-> Trust me, I *know* the pain of keeping the driver out-of-tree
-> with the constant flux in the kernel API, and I understand that
-> most people here say its completely self-inflicted...
+> I'm resubmitting this as I didn't get any replies, this time CCeing 
+> proper people, sorry..
 > 
-> But massively crippling the driver from a usability POV,
-> just simply isn't an option.
+> Kernel locking/synchronization primitives are better than volatile types 
+> from code readability point of view also.
 
-Sure
+I think that just dilutes the real point.  It's not a choice between
+locking and volatile - the locking must be there regardless.  It's a
+correctness issue; if the result happens to be more readable too that's
+a bonus.
 
-Alan
+If somebody wants to put this sentence in I won't object, but I don't
+think it really improves the document either.
+
+Thanks,
+
+jon
