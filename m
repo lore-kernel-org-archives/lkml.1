@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbXGBKWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbXGBKXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbXGBKWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 06:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbXGBKW2
+	id S1757388AbXGBKXc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 06:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbXGBKXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 06:22:28 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:45273 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751368AbXGBKW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 06:22:28 -0400
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: "rae l" <crquan@gmail.com>
-Subject: Re: Does the kernel HPET support has problems or the hwclock from util-linux?
-Date: Mon, 2 Jul 2007 13:21:58 +0300
-User-Agent: KMail/1.9.7
-Cc: "Adrian Bunk" <bunk@stusta.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <91b13c310707020315v54d19338u817d23d4380bde07@mail.gmail.com>
-In-Reply-To: <91b13c310707020315v54d19338u817d23d4380bde07@mail.gmail.com>
+	Mon, 2 Jul 2007 06:23:23 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:54682 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbXGBKXW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 06:23:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=WBvbM+9QAjqqyF7gstdUvcdCtQJuZhidffzVaMTGgPitGZuVG/yO5xaLlUbCG+oCzaKFqI07H5Vl8tv4DLe4QoLMAGYft4/uA55xBhCa37n4Sg/IJ3LqbNxSvyAvyAIJCqHsQADajtKaqlsoshb4VTAZU/nFgsdeFAlD28MWKHg=
+Date: Mon, 2 Jul 2007 13:23:03 +0300
+To: Andreas Schwab <schwab@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: Re: [i386] Questions regarding provisional page tables initialization
+Message-ID: <20070702102303.GA17533@Ahmed>
+References: <20070701203833.GA3498@Ahmed> <46882872.7040005@goop.org> <20070702011332.GA3503@Ahmed> <je8x9zrwof.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4652339.FOqBCoUMxi";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707021322.11933.ismail@pardus.org.tr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <je8x9zrwof.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4652339.FOqBCoUMxi
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Andreas,
 
-On Monday 02 July 2007 13:15:40 rae l wrote:
-> from this address, I know util-linux-2.12r is the latest:
-> http://www.kernel.org/pub/linux/utils/util-linux/util-linux-2.12r.lsm
+On Mon, Jul 02, 2007 at 11:18:08AM +0200, Andreas Schwab wrote:
+> "Ahmed S. Darwish" <darwish.07@gmail.com> writes:
+> 
+> > yes, but isn't the displacement here (0x007) a _bytes_ displacement ?. so
+> > effectively, %ecx now contains physical address of pg0 + 7bytes. Is it A 
+> > meaningful place/address ?.
+> 
+> It's not pg0 + 7bytes, it is pg0 plus 3 flag bits.  Since a page address
+> is always page aligned, the low bits are reused for flags.
+> 
 
-util-linux is now maintained @ http://userweb.kernel.org/~kzak/util-linux-n=
-g/
+I'm sure there's a problem in _my_ understanding, but isn't the displacement
+- as specified by AT&T syntax - represented in bytes ?. I've wrote a small
+assembly function to be sure:
 
-/ismail
+.data
+integer:
+	.string "%d\n"
 
-=2D-=20
-Perfect is the enemy of good
+.text
+test_func:
+	push	%ebp
+	mov	%esp, %ebp
+	push	0x008(%ebp)   ## 8 bytes displacement (the first arg), right ?
+	push	$integer
+	call 	printf
+	mov	%ebp, %esp
+	pop	%ebp
+	ret
 
---nextPart4652339.FOqBCoUMxi
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+The above method works fine and prints "5" to stdout by the code:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
+.global	main
+main:
+	mov	$5, %eax
+	push	%eax
+	call	test_func
 
-iQIVAwUARojR00e9qviWcMsnAQIkuhAAnHns0GOXpqUKgKLaHy9A1DUHzMW1Q0TX
-sGPJEpJJrdbTE5fgHKcijHqGkMGE2OQF2LI4zwRJi4LhIFAhN3+aR2O4TPXdfPHN
-ZnsEhmnwS77jk9pHMjti+6ZO6JAUGeJbnsdGM/07arxLLwSG7FrzBX8eotzDXSDl
-yxSJq3H62oyG7N2XdvbGiAbzv5QMsEG5/nyYkf87UzoMqMOfsqv/XFgXyhYWhY90
-HihZGQG6uvAhiIwkqxqAUOSt98VdYHc/K525ntplu2/ty0k9TeZcojM/1/zgUeX0
-HxfJhDuk9vpAcO1YLf/w4jBS0tH58KpbQg47sK4+ddDMDBJt2ApjI8oB2NtkPWxN
-riNnXzstdMPSmD/BH5Cei5YT7dMBolUhisxGan0elzsj8zZwz3spsaU2hG8/5Bi9
-A17vfK6FQ7TBuUOjhli2O8kWLpXkXujTUsRKX8dHLm571WrvX7rqTJUN5lEZfPFU
-wE1F05GzhdPG4ViVx5WOHw1wvjP8nPrigoa5BUXSN/QcYlrgBbgYaCRgiDp+eDXv
-GiQDaKQ54eIEQDSSoPEYCrO7kzICLxmSH/yPMlKjujvd0j2e1QakbIoXUg+N0CnO
-jCD7Lzw56V35QiaJY6gsTw/QgKdfZw4ME2NJlYvSw01g/SvfukUk9oStDZ4THHtB
-UW4Gj2biy+c=
-=SwzG
------END PGP SIGNATURE-----
+	movl	$1, %eax
+	movl	$0, %ebx
+	int	$0x80
 
---nextPart4652339.FOqBCoUMxi--
+now back to head.S code:
+ 	leal    0x007(%edi),%ecx	/* Create PDE entry */
+
+Isn't the above line the same condition (bytes, not bits displacement) ?. 
+Thanks for your patience !.
+
+(For other kind replies, don't understand me wrong. I did my homework and
+ studied the pte format before asking ;). It's just the bytes/bits issue 
+ above that confuses me).
+
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
