@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759660AbXGBOgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759840AbXGBOhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759660AbXGBOgh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbXGBOg3
+	id S1759840AbXGBOhm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbXGBOhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:36:29 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:48841 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753817AbXGBOg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:36:27 -0400
-From: Chr <chunkeey@web.de>
-To: Thorsten Leemhuis <fedora@leemhuis.info>
-Subject: Re: [patch 2.6.22-rc6] ATA: add a PCI ID for Intel Santa Rosa PATA controller
-Date: Mon, 2 Jul 2007 16:36:24 +0200
-User-Agent: KMail/1.9.7
-Cc: Chuck Ebbert <cebbert@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jason Gaston <jason.d.gaston@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <468408F1.3080307@redhat.com> <200707021324.17250.chunkeey@web.de> <4688E519.7040308@leemhuis.info>
-In-Reply-To: <4688E519.7040308@leemhuis.info>
+	Mon, 2 Jul 2007 10:37:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52204 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754314AbXGBOhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:37:32 -0400
+Message-ID: <46890DA8.4070400@garzik.org>
+Date: Mon, 02 Jul 2007 10:37:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alex Riesen <raa.lkml@gmail.com>
+CC: Jesper Juhl <jesper.juhl@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: why does git perpetually complain about include/asm-blackfin/macros.h?
+References: <Pine.LNX.4.64.0707020800010.1972@localhost.localdomain>	 <4688EF9B.8020405@garzik.org>	 <9a8748490707020658t5e6542ag6edb435dbc4499ab@mail.gmail.com>	 <4689073D.1020802@garzik.org> <81b0412b0707020722q25e8eb41t456e7316fe4a7b40@mail.gmail.com>
+In-Reply-To: <81b0412b0707020722q25e8eb41t456e7316fe4a7b40@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707021636.25192.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX1+YG3/JHmdj1VOdfR18ga/jisScIT4ou8VRxrws
-	FTtvZv4UOwSUSk8VgDOKMHrrVkur/SKt9kr0OStqsfsU81lDTB
-	N3a+cNPbg=
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 2. July 2007, Thorsten Leemhuis wrote:
-> > but Alan Cox wrote:
-> > http://www.mail-archive.com/linux-ide%40vger.kernel.org/msg07417.html
-> >> Its ich_pata_133 - all the newer chips are.
-> 
-> Intel afaik never supported Ultra ATA 133 officially in any of the
-> mainstream desktop or mobile chipsets.
+Alex Riesen wrote:
+> Do some of your branches miss the commit by which it was removed?
 
-You're probably right! But, what about Intel's ICH5 and ICH7/7-R (i945, i975)?
+git-clone followed by git-checkout master recreates the problem.
 
-see ata_piix.c: line 193ff
-	{ 0x8086, 0x24DB, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_133 },
-[...]
-	{ 0x8086, 0x27DF, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_133 },
+But to answer your question directly, I rebase, so they absolutely do 
+not miss any commits.
 
-On the other hand, we can leave it, because of a "off-by-one error" in ata_piix.c, 
-do_pata_set_dmamode, line ~770:
 
-(the comment is important!)
-/*
- * --> UDMA is handled by a combination of clock switching and
- * selection of dividers <---
- * [...]
- */
-u_speed = min(2 - (udma & 1), udma);
-if (udma == 5)
-	u_clock = 0x1000;	/* 100Mhz */ <-- wrong! it's 133Mhz.
-else if (udma > 2)
-	u_clock = 1;		/* 66Mhz */
-else
-	u_clock = 0;		/* 33Mhz */
+> It is somewhat unclear what "reappear" means, though: do you mean
 
-=>
-for udma = 6(133MB/s) , we get u_speed=2 and u_clock=1
-for udma = 4(66MB/s), we get the "same" values! (u_speed=2 and u_clock=1)
+Attempts to give you precise output to answer your question yielded a 
+data point, the kernel's "make distclean" causes this:
 
-...
-so, atleast for ata_piix, UDMA6 and UDMA4 *is* the same, right?
+[jgarzik@pretzel linux-2.6]$ make distclean && git checkout master && 
+git diff HEAD
+D       include/asm-blackfin/macros.h
+Switched to branch "master"
+diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
+deleted file mode 100644
+index e69de29..0000000
 
-> 
-> >> They work even better if you
-> >> set them into AHCI mode in the BIOS and then they should "just work" with
-> >> recent kernels as the AHCI driver now matches by class.
-> > And "Gaston, Jason D" <jason.d.gaston@intel.com> didn't complain about it.
-> > it's a "bit" confusing with all "native" AHCI SATA chipset that have to emulate 
-> > PATA for compatibility reasons... 
-> 
-> Well, just FYI: on my Laptop AHCI is enabled and used for the SATA hard
-> disk. But the DVD drive still is a pata one afaics (I'm not in front of
-> the machine, so I can't check), connected via the pata controller -- so
-> for me there is no emulation involved (at least afaics).
-> 
-I know. I wanted to say something else... but it doesn't really matter
-(not every operating system supports AHCI-only controllers by default...)
+[jgarzik@pretzel linux-2.6]$ git checkout -f
 
-Thanks, 
-	Chr.
+[jgarzik@pretzel linux-2.6]$ make distclean && git checkout master && 
+git diff HEAD
+D       include/asm-blackfin/macros.h
+Switched to branch "master"
+diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
+deleted file mode 100644
+index e69de29..0000000
+
+[jgarzik@pretzel linux-2.6]$ git checkout -f
+
+[jgarzik@pretzel linux-2.6]$ git checkout master && git diff 
+HEADSwitched to branch "master"
+
+[jgarzik@pretzel linux-2.6]$ git checkout master && git diff HEAD
+Switched to branch "master"
+
+[jgarzik@pretzel linux-2.6]$
+
+
+So, not a git problem but a kernel Makefile problem.  Sorry for the git 
+noise.
+
+	Jeff
+
 
