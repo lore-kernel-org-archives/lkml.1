@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbXGBTQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbXGBTR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757320AbXGBTQl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 15:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbXGBTQf
+	id S1757402AbXGBTR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 15:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbXGBTRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 15:16:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:56433 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753102AbXGBTQe (ORCPT
+	Mon, 2 Jul 2007 15:17:23 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:58462 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754018AbXGBTRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 15:16:34 -0400
+	Mon, 2 Jul 2007 15:17:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fPG8R1vmPBLKY+UU93wixJoT99DuYALMMT+oLVhGPbvAU9TiJUUM3yfOh64lBW+yLLYr8A/VePPa2ZRIP/jVoUr53y7g5VPNpRUim/FBSuy+fNYKMo0wTV0ypYoQLKNY3t1yBTgIP7tHtaKjRpdDms4/4mk1nF9Ppa5RM1C3xYQ=
-Message-ID: <d120d5000707021216y1a3641b1rbc0c741e2d7d4e70@mail.gmail.com>
-Date: Mon, 2 Jul 2007 15:16:30 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Stephen Hemminger" <shemminger@linux-foundation.org>
-Subject: Re: [PATCH] fujtisu application panel driver
-Cc: "Len Brown" <lenb@kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-In-Reply-To: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ulmJBZrBy8R/IjcilvriI8y+RHmLWqswn/DFqMWaXljr+WnKozF5L0ZNPjKbig0IEWKg1KkTIUoOhlQQVhmTP65NiVvcbkP1GiWAubrvFasWLR/U342p38u0m96TBVMkRG3tGMf8JdEWGu81dGpMFaSTislRY14LVote8gT7oF8=
+Message-ID: <a9e22dff0707021217r239ebcf0g8154a6e985b078f3@mail.gmail.com>
+Date: Mon, 2 Jul 2007 22:17:20 +0300
+From: "Ni@m" <niam.niam@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: NIKON D50 problem
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+Hi! Recently I've found out that my camera NIKON D50 can't mount any more.
+uname -a: "Linux niam 2.6.22-rc6-cfs-v18 #6 Mon Jul 2 20:19:25 EEST
+2007 i686 Intel(R) Celeron(R) M processor 1.50GHz GenuineIntel
+GNU/Linux"
 
-On 7/2/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> This driver supports the application buttons on some Fujitsu Lifebook laptops.
-> These buttons are read via the SMBus, for more details see:
->        http://apanel.sourceforge.net/tech.php
-> The buttons are handled as by the regular input system.
-> Two models are detected now, but other Fujitsu laptop's have
-> keys that may work similarly.
->
-> It is based on the earlier apanel driver done by Jochen Eisenger, but
-> with many changes.  The original driver used ioctl's and a separate
-> user space program; this version hooks into the input subsystem so
-> that the normal Gnome/KDE shortcuts work without any userspace
-> changes.
->
+dmesg:
+scsi 2:0:0:0: Direct-Access     NIKON    D50              1.00 PQ: 0 ANSI: 2
+sd 2:0:0:0: [sdb] 1984001 512-byte hardware sectors (1016 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 0f 00 00 00
+sd 2:0:0:0: [sdb] Assuming drive cache: write through
+sd 2:0:0:0: [sdb] 1984001 512-byte hardware sectors (1016 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 0f 00 00 00
+sd 2:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 2:0:0:0: [sdb] Attached SCSI removable disk
+sd 2:0:0:0: Attached scsi generic sg2 type 0
+usb-storage: device scan complete
+end_request: I/O error, dev sdb, sector 1984000
+Buffer I/O error on device sdb, logical block 1984000
+end_request: I/O error, dev sdb, sector 1984000
+Buffer I/O error on device sdb, logical block 1984000
+end_request: I/O error, dev sdb, sector 1983992
+Buffer I/O error on device sdb, logical block 1983992
+end_request: I/O error, dev sdb, sector 1983993
+Buffer I/O error on device sdb, logical block 1983993
+Buffer I/O error on device sdb, logical block 1983994
+Buffer I/O error on device sdb, logical block 1983995
+Buffer I/O error on device sdb, logical block 1983996
+Buffer I/O error on device sdb, logical block 1983997
+Buffer I/O error on device sdb, logical block 1983998
+Buffer I/O error on device sdb, logical block 1983999
+end_request: I/O error, dev sdb, sector 1983992
+...................
 
-Thank you very much for updating the patch. I have a couple of requests though:
+Some time ago(I really can't remember version of the kernel)
+everything was Ok. I'll try to find out the workable version of the
+kernel ... but I've already tried 2.6.20 - the same =(.
+I'm not sure, but It's possible that I've had ATA subsystem but not
+libata ... I haven't tested this case yet.
 
-1. LEDs shoud use the generic led subsystem instead of input layer. I
-do not have plans of adding any more LED_XXX constants and I think
-that adding any LEDs not directly relating to keyboard state was a
-mistake.
-
-2. It would be nice if driver supported changing its keymaps now that
-we allow overriding default getkeycode() and setkeycode().
-
-3. Do not aaccess input_dev->private directly. input_set_drvdata() and
-input+_getdrvdata shoudl be used.
-
-> +static int apanel_event(struct input_dev *dev, unsigned int type,
-> +                       unsigned int code, int value)
-> +{
-> +       struct apanel *ap = dev->private;
-
-Also I don't think the above is correct. I think you need the following here:
-
-   struct input_polled_dev *polldev = input_get_drvdata(dev);
-   struct apanal *ap = polldev->private;
-
-4:
-> +       ipdev->input->cdev.dev = &ap->client.dev;
-
-Please change to "ipdev->input->dev.parent = &ap->client.dev;"
-
-5:
-> +       ipdev->input->private = ap;
-
-polledev uses input->private for its own purposed, you need to use
-ipdev->private.
-
-Thank you.
-
--- 
-Dmitry
+PS. I can see photos on my camera ... flash card is Ok. I have this
+problem even if I changed the flash card in this camera.
