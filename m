@@ -1,161 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbXGBVUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbXGBVqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbXGBVUQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 17:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbXGBVUE
+	id S1756726AbXGBVqN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 17:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbXGBVp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 17:20:04 -0400
-Received: from smtp3.nextra.sk ([195.168.1.142]:1535 "EHLO mailhub3.nextra.sk"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755201AbXGBVUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 17:20:03 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: daniel.ritz@gmx.ch
-Subject: [PATCH] [resend] IRTOUCHSYSTEMS support for usbtouchscreen
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
+	Mon, 2 Jul 2007 17:45:56 -0400
+Received: from mga01.intel.com ([192.55.52.88]:24236 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755629AbXGBVpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 17:45:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,489,1175497200"; 
+   d="scan'208";a="263707107"
+Message-ID: <46897212.30104@intel.com>
+Date: Mon, 02 Jul 2007 14:45:54 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
 MIME-Version: 1.0
-X-Length: 5062
-Date: Mon, 2 Jul 2007 23:19:56 +0200
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_9vWiGH8qhkamspz"
-Message-Id: <200707022319.57322.linux@rainbow-software.org>
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Adrian Bunk <bunk@stusta.de>, jgarzik@pobox.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, saw@saw.sw.com.sg
+Subject: Re: [2.6 patch] the overdue eepro100 removal
+References: <20070701202139.GM10869@stusta.de> <46894BD5.9080609@tmr.com>
+In-Reply-To: <46894BD5.9080609@tmr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Jul 2007 21:45:54.0610 (UTC) FILETIME=[5DDB2920:01C7BCF2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_9vWiGH8qhkamspz
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Bill Davidsen wrote:
+> Adrian Bunk wrote:
+>> This patch contains the overdue removal of the eepro100 driver.
+>>
+>> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>>
+> The hardware supported by this driver is still in use, thanks. It's 
+> probably easier to leave the eepro100 driver in than find anyone who 
+> wants to investigate why the other driver (e100? from memory) doesn't 
+> work with some cards. As I recall this was suggested over a year ago and 
+> it was decided to leave it in, all of the reasons for doing so still 
+> seem valid. There really doesn't seem to be a benefit, it's not like 
+> people are working night and day to support new cards for this chip.
+> 
 
-Hello,
-this patch adds support for IRTOUCHSYSTEMS (or UNITOP) infrared touchscreens. 
+please see the thread "Re: [PATCH] fix e100 rx path on ARM (was [PATCH] e100 rx: 
+or s and el bits)" which is discussing a fix for this issue and currently being 
+worked.
 
-The manufacturer (http://www.irtouch.com) provides only closed source drivers 
-for specific kernel versions (looks like GPL violation, btw.) which I haven't 
-even tried (as there's no chance that any of the modules could work with 
-2.6.22-rc kernel). They also don't provide any protocol specification.
+eepro100 will *still* be removed once e100 is fixed to support those devices.
 
-So I made this code (attached) after observing the data stream with usbmon for 
-a while. If someone is interested in my observations, here are the results:
+Moreover, we now also have a fix for the e100 IPMI issues on some tyan boards 
+(patch coming this week!). That hopefully solves all e100 issues that are still 
+open.
 
-The touchscreen sends data in 8-byte packets.
-BYTE 0 - unknown meaning, seen only one value: 0x54
-BYTE 1 - unknown meaning, 3 lowest bits indicate touch state
-        values seen: 0x81, 0x82 or 0x83
-        bit 0 = set if the screen is touched and was not touched before (touch
-        bit 1 = set if the screen is touched and was touched (dragging)
-        bit 2 = set if the touch was ended (release)
-BYTES 2 and 3 - X position, high-order-byte first, range = 0 to 0x0FFF
-BYTES 4 and 5 - Y position, high-order-byte first, range = 0 to 0x0FFF
-BYTE 6 - unknown meaning, seen only one value: 0xFF
-BYTE 7 - unknown meaning, seen only one value: 0x00
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
--- 
-Ondrej Zary
-
---Boundary-00=_9vWiGH8qhkamspz
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="usbtouchscreen-add-irtouch.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="usbtouchscreen-add-irtouch.patch"
-
-diff -ur linux-2.6.22-rc6-orig/drivers/input/touchscreen/Kconfig linux-2.6.22-rc6/drivers/input/touchscreen/Kconfig
---- linux-2.6.22-rc6-orig/drivers/input/touchscreen/Kconfig	2007-06-29 12:56:19.000000000 +0200
-+++ linux-2.6.22-rc6/drivers/input/touchscreen/Kconfig	2007-06-29 13:01:38.000000000 +0200
-@@ -177,6 +177,7 @@
- 	  - some other eTurboTouch
- 	  - Gunze AHL61
- 	  - DMC TSC-10/25
-+	  - IRTOUCHSYSTEMS/UNITOP
- 
- 	  Have a look at <http://linux.chapter7.ch/touchkit/> for
- 	  a usage description and the required user-space stuff.
-@@ -219,4 +220,9 @@
- 	bool "DMC TSC-10/25 device support" if EMBEDDED
- 	depends on TOUCHSCREEN_USB_COMPOSITE
- 
-+config TOUCHSCREEN_USB_IRTOUCH
-+	default y
-+	bool "IRTOUCHSYSTEMS/UNITOP device support" if EMBEDDED
-+	depends on TOUCHSCREEN_USB_COMPOSITE
-+
- endif
-Only in linux-2.6.22-rc6/drivers/input/touchscreen/: built-in.o
-diff -ur linux-2.6.22-rc6-orig/drivers/input/touchscreen/usbtouchscreen.c linux-2.6.22-rc6/drivers/input/touchscreen/usbtouchscreen.c
---- linux-2.6.22-rc6-orig/drivers/input/touchscreen/usbtouchscreen.c	2007-06-29 12:56:19.000000000 +0200
-+++ linux-2.6.22-rc6/drivers/input/touchscreen/usbtouchscreen.c	2007-06-29 13:01:48.000000000 +0200
-@@ -9,6 +9,7 @@
-  *  - eTurboTouch
-  *  - Gunze AHL61
-  *  - DMC TSC-10/25
-+ *  - IRTOUCHSYSTEMS/UNITOP
-  *
-  * Copyright (C) 2004-2006 by Daniel Ritz <daniel.ritz@gmx.ch>
-  * Copyright (C) by Todd E. Johnson (mtouchusb.c)
-@@ -110,6 +111,7 @@
- 	DEVTYPE_ETURBO,
- 	DEVTYPE_GUNZE,
- 	DEVTYPE_DMC_TSC10,
-+	DEVTYPE_IRTOUCH,
- };
- 
- static struct usb_device_id usbtouch_devices[] = {
-@@ -150,6 +152,11 @@
- 	{USB_DEVICE(0x0afa, 0x03e8), .driver_info = DEVTYPE_DMC_TSC10},
- #endif
- 
-+#ifdef CONFIG_TOUCHSCREEN_USB_IRTOUCH
-+	{USB_DEVICE(0x595a, 0x0001), .driver_info = DEVTYPE_IRTOUCH},
-+	{USB_DEVICE(0x6615, 0x0001), .driver_info = DEVTYPE_IRTOUCH},
-+#endif
-+
- 	{}
- };
- 
-@@ -416,6 +423,21 @@
- 
- 
- /*****************************************************************************
-+ * IRTOUCH Part
-+ */
-+#ifdef CONFIG_TOUCHSCREEN_USB_IRTOUCH
-+static int irtouch_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
-+{
-+	dev->x = (pkt[3] << 8) | pkt[2];
-+	dev->y = (pkt[5] << 8) | pkt[4];
-+	dev->touch = (pkt[1] & 0x03) ? 1 : 0;
-+
-+	return 1;
-+}
-+#endif
-+
-+
-+/*****************************************************************************
-  * the different device descriptors
-  */
- static struct usbtouch_device_info usbtouch_dev_info[] = {
-@@ -504,6 +526,17 @@
- 		.read_data	= dmc_tsc10_read_data,
- 	},
- #endif
-+
-+#ifdef CONFIG_TOUCHSCREEN_USB_IRTOUCH
-+	[DEVTYPE_IRTOUCH] = {
-+		.min_xc		= 0x0,
-+		.max_xc		= 0x0fff,
-+		.min_yc		= 0x0,
-+		.max_yc		= 0x0fff,
-+		.rept_size	= 8,
-+		.read_data	= irtouch_read_data,
-+	},
-+#endif
- };
- 
-
---Boundary-00=_9vWiGH8qhkamspz--
+Auke
