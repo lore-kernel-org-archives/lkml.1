@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbXGBWfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbXGBWfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbXGBWfk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 18:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbXGBWfb
+	id S1756005AbXGBWfw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 18:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbXGBWfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 18:35:31 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61366 "EHLO
+	Mon, 2 Jul 2007 18:35:33 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61365 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754951AbXGBWfa (ORCPT
+	with ESMTP id S1754957AbXGBWfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 2 Jul 2007 18:35:30 -0400
-Date: Mon, 02 Jul 2007 15:37:13 -0700
+Date: Mon, 02 Jul 2007 15:36:37 -0700
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 4/4] net: add usb_alloc_urb_node to use use kmalloc_node
+Subject: [PATCH 3/4] usb: allocated usb releated dma buffer with kmalloc_node
 In-reply-to: <200706291326.43563.yinghai.lu@sun.com>
 To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
        Greg KH <greg@kroah.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200707021537.13840.yinghai.lu@sun.com>
+Message-id: <200707021536.37814.yinghai.lu@sun.com>
 MIME-version: 1.0
 Content-type: text/plain; charset=iso-8859-1
 Content-transfer-encoding: 7BIT
@@ -28,193 +28,232 @@ User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 4/4] net: add usb_alloc_urb_node to use use kmalloc_node
+[PATCH 3/4] usb: allocated usb releated dma buffer with kmalloc_node
 
-For amd64 based two way system. USB always on node0. but urb allocated via
-kmalloc always get ram on node1. So change to kmalloc_node to get urb on
-corresponding node
+For amd64 based two way system. USB always on node0. but dma buffer for urb
+allocated via kmalloc always get ram on node1. So change to kmalloc_node to
+get dma_buffer on corresponding node
 
 Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
+diff --git a/drivers/usb/core/config.c b/drivers/usb/core/config.c
+index dd34823..0454f29 100644
+--- a/drivers/usb/core/config.c
++++ b/drivers/usb/core/config.c
+@@ -504,7 +504,7 @@ int usb_get_configuration(struct usb_device *dev)
+ 	if (!dev->rawdescriptors)
+ 		goto err2;
+ 
+-	buffer = kmalloc(USB_DT_CONFIG_SIZE, GFP_KERNEL);
++	buffer = kmalloc_node(USB_DT_CONFIG_SIZE, GFP_KERNEL, dev_to_node(&dev->dev));
+ 	if (!buffer)
+ 		goto err2;
+ 	desc = (struct usb_config_descriptor *)buffer;
+@@ -531,7 +531,7 @@ int usb_get_configuration(struct usb_device *dev)
+ 		    USB_DT_CONFIG_SIZE);
+ 
+ 		/* Now that we know the length, get the whole thing */
+-		bigbuffer = kmalloc(length, GFP_KERNEL);
++		bigbuffer = kmalloc_node(length, GFP_KERNEL, dev_to_node(&dev->dev));
+ 		if (!bigbuffer) {
+ 			result = -ENOMEM;
+ 			goto err;
+diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
+index 927a181..60cefbb 100644
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -718,7 +718,7 @@ static int proc_bulk(struct dev_state *ps, void __user *arg)
+ 	len1 = bulk.len;
+ 	if (len1 > MAX_USBFS_BUFFER_SIZE)
+ 		return -EINVAL;
+-	if (!(tbuf = kmalloc(len1, GFP_KERNEL)))
++	if (!(tbuf = kmalloc_node(len1, GFP_KERNEL, dev_to_node(&dev->dev))))
+ 		return -ENOMEM;
+ 	tmo = bulk.timeout;
+ 	if (bulk.ep & 0x80) {
+@@ -938,7 +938,7 @@ static int proc_do_submiturb(struct dev_state *ps, struct usbdevfs_urb *uurb,
+ 		/* min 8 byte setup packet, max 8 byte setup plus an arbitrary data stage */
+ 		if (uurb->buffer_length < 8 || uurb->buffer_length > (8 + MAX_USBFS_BUFFER_SIZE))
+ 			return -EINVAL;
+-		if (!(dr = kmalloc(sizeof(struct usb_ctrlrequest), GFP_KERNEL)))
++		if (!(dr = kmalloc_node(sizeof(struct usb_ctrlrequest), GFP_KERNEL, dev_to_node(&ps->dev->dev))))
+ 			return -ENOMEM;
+ 		if (copy_from_user(dr, uurb->buffer, 8)) {
+ 			kfree(dr);
+@@ -990,7 +990,7 @@ static int proc_do_submiturb(struct dev_state *ps, struct usbdevfs_urb *uurb,
+ 				!= USB_ENDPOINT_XFER_ISOC)
+ 			return -EINVAL;
+ 		isofrmlen = sizeof(struct usbdevfs_iso_packet_desc) * uurb->number_of_packets;
+-		if (!(isopkt = kmalloc(isofrmlen, GFP_KERNEL)))
++		if (!(isopkt = kmalloc_node(isofrmlen, GFP_KERNEL, dev_to_node(&ps->dev->dev))))
+ 			return -ENOMEM;
+ 		if (copy_from_user(isopkt, iso_frame_desc, isofrmlen)) {
+ 			kfree(isopkt);
+@@ -1032,7 +1032,7 @@ static int proc_do_submiturb(struct dev_state *ps, struct usbdevfs_urb *uurb,
+ 		kfree(dr);
+ 		return -ENOMEM;
+ 	}
+-	if (!(as->urb->transfer_buffer = kmalloc(uurb->buffer_length, GFP_KERNEL))) {
++	if (!(as->urb->transfer_buffer = kmalloc_node(uurb->buffer_length, GFP_KERNEL, dev_to_node(&ps->dev->dev)))) {
+ 		kfree(isopkt);
+ 		kfree(dr);
+ 		free_async(as);
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 24f10a1..ae21c69 100644
+index 24f10a1..3e63161 100644
 --- a/drivers/usb/core/hub.c
 +++ b/drivers/usb/core/hub.c
-@@ -818,7 +818,7 @@ static int hub_configure(struct usb_hub *hub,
- 	if (maxp > sizeof(*hub->buffer))
- 		maxp = sizeof(*hub->buffer);
+@@ -449,7 +449,7 @@ void usb_hub_tt_clear_buffer (struct usb_device *udev, int pipe)
+ 	 * since each TT has "at least two" buffers that can need it (and
+ 	 * there can be many TTs per hub).  even if they're uncommon.
+ 	 */
+-	if ((clear = kmalloc (sizeof *clear, GFP_ATOMIC)) == NULL) {
++	if ((clear = kmalloc_node(sizeof *clear, GFP_ATOMIC, dev_to_node(&udev->dev))) == NULL) {
+ 		dev_err (&udev->dev, "can't save CLEAR_TT_BUFFER state\n");
+ 		/* FIXME recover somehow ... RESET_TT? */
+ 		return;
+@@ -611,7 +611,7 @@ static int hub_configure(struct usb_hub *hub,
+ 		goto fail;
+ 	}
  
--	hub->urb = usb_alloc_urb(0, GFP_KERNEL);
-+	hub->urb = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&hdev->dev));
- 	if (!hub->urb) {
- 		message = "couldn't allocate interrupt urb";
+-	hub->status = kmalloc(sizeof(*hub->status), GFP_KERNEL);
++	hub->status = kmalloc_node(sizeof(*hub->status), GFP_KERNEL, dev_to_node(&hdev->dev));
+ 	if (!hub->status) {
+ 		message = "can't kmalloc hub status buffer";
  		ret = -ENOMEM;
+@@ -619,7 +619,7 @@ static int hub_configure(struct usb_hub *hub,
+ 	}
+ 	mutex_init(&hub->status_mutex);
+ 
+-	hub->descriptor = kmalloc(sizeof(*hub->descriptor), GFP_KERNEL);
++	hub->descriptor = kmalloc_node(sizeof(*hub->descriptor), GFP_KERNEL, dev_to_node(&hdev->dev));
+ 	if (!hub->descriptor) {
+ 		message = "can't kmalloc hub descriptor";
+ 		ret = -ENOMEM;
+@@ -2213,7 +2213,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
+ 			int r = 0;
+ 
+ #define GET_DESCRIPTOR_BUFSIZE	64
+-			buf = kmalloc(GET_DESCRIPTOR_BUFSIZE, GFP_NOIO);
++			buf = kmalloc_node(GET_DESCRIPTOR_BUFSIZE, GFP_NOIO, dev_to_node(&udev->dev));
+ 			if (!buf) {
+ 				retval = -ENOMEM;
+ 				continue;
+@@ -2343,7 +2343,7 @@ check_highspeed (struct usb_hub *hub, struct usb_device *udev, int port1)
+ 	struct usb_qualifier_descriptor	*qual;
+ 	int				status;
+ 
+-	qual = kmalloc (sizeof *qual, GFP_KERNEL);
++	qual = kmalloc_node(sizeof *qual, GFP_KERNEL, dev_to_node(&udev->dev));
+ 	if (qual == NULL)
+ 		return;
+ 
+@@ -2894,7 +2894,7 @@ static int config_descriptors_changed(struct usb_device *udev)
+ 		if (len < le16_to_cpu(udev->config[index].desc.wTotalLength))
+ 			len = le16_to_cpu(udev->config[index].desc.wTotalLength);
+ 	}
+-	buf = kmalloc (len, GFP_KERNEL);
++	buf = kmalloc_node(len, GFP_KERNEL, dev_to_node(&udev->dev));
+ 	if (buf == NULL) {
+ 		dev_err(&udev->dev, "no mem to re-read configs after reset\n");
+ 		/* assume the worst */
 diff --git a/drivers/usb/core/message.c b/drivers/usb/core/message.c
-index f9fed34..c432b0e 100644
+index f9fed34..1f299e0 100644
 --- a/drivers/usb/core/message.c
 +++ b/drivers/usb/core/message.c
-@@ -77,7 +77,7 @@ static int usb_internal_control_msg(struct usb_device *usb_dev,
- 	int retv;
- 	int length;
- 
--	urb = usb_alloc_urb(0, GFP_NOIO);
-+	urb = usb_alloc_urb_node(0, GFP_NOIO, dev_to_node(&usb_dev->dev));
- 	if (!urb)
- 		return -ENOMEM;
-   
-@@ -215,7 +215,7 @@ int usb_bulk_msg(struct usb_device *usb_dev, unsigned int pipe,
- 	if (!ep || len < 0)
- 		return -EINVAL;
- 
--	urb = usb_alloc_urb(0, GFP_KERNEL);
-+	urb = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&usb_dev->dev));
- 	if (!urb)
- 		return -ENOMEM;
- 
-@@ -391,7 +391,7 @@ int usb_sg_init (
- 	for (i = 0; i < io->entries; i++) {
- 		unsigned		len;
- 
--		io->urbs [i] = usb_alloc_urb (0, mem_flags);
-+		io->urbs [i] = usb_alloc_urb_node(0, mem_flags, dev_to_node(&dev->dev));
- 		if (!io->urbs [i]) {
- 			io->entries = i;
- 			goto nomem;
-diff --git a/drivers/usb/core/urb.c b/drivers/usb/core/urb.c
-index 94ea972..8e11ef1 100644
---- a/drivers/usb/core/urb.c
-+++ b/drivers/usb/core/urb.c
-@@ -53,13 +53,13 @@ void usb_init_urb(struct urb *urb)
-  *
-  * The driver must call usb_free_urb() when it is finished with the urb.
-  */
--struct urb *usb_alloc_urb(int iso_packets, gfp_t mem_flags)
-+struct urb *usb_alloc_urb_node(int iso_packets, gfp_t mem_flags, int node)
+@@ -120,7 +120,7 @@ static int usb_internal_control_msg(struct usb_device *usb_dev,
+ int usb_control_msg(struct usb_device *dev, unsigned int pipe, __u8 request, __u8 requesttype,
+ 			 __u16 value, __u16 index, void *data, __u16 size, int timeout)
  {
- 	struct urb *urb;
+-	struct usb_ctrlrequest *dr = kmalloc(sizeof(struct usb_ctrlrequest), GFP_NOIO);
++	struct usb_ctrlrequest *dr = kmalloc_node(sizeof(struct usb_ctrlrequest), GFP_NOIO, dev_to_node(&dev->dev));
+ 	int ret;
+ 	
+ 	if (!dr)
+@@ -765,7 +765,7 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
+ 	if (size <= 0 || !buf || !index)
+ 		return -EINVAL;
+ 	buf[0] = 0;
+-	tbuf = kmalloc(256, GFP_KERNEL);
++	tbuf = kmalloc_node(256, GFP_KERNEL, dev_to_node(&dev->dev));
+ 	if (!tbuf)
+ 		return -ENOMEM;
  
--	urb = kmalloc(sizeof(struct urb) +
-+	urb = kmalloc_node(sizeof(struct urb) +
- 		iso_packets * sizeof(struct usb_iso_packet_descriptor),
--		mem_flags);
-+		mem_flags, node);
- 	if (!urb) {
- 		err("alloc_urb: kmalloc failed");
- 		return NULL;
-@@ -67,6 +67,10 @@ struct urb *usb_alloc_urb(int iso_packets, gfp_t mem_flags)
- 	usb_init_urb(urb);
- 	return urb;
- }
-+struct urb *usb_alloc_urb(int iso_packets, gfp_t mem_flags)
-+{
-+	return usb_alloc_urb_node(iso_packets, mem_flags, -1);
-+}
+@@ -828,9 +828,9 @@ char *usb_cache_string(struct usb_device *udev, int index)
+ 	char *smallbuf = NULL;
+ 	int len;
  
- /**
-  * usb_free_urb - frees the memory used by a urb when all users of it are finished
-@@ -479,6 +483,7 @@ void usb_kill_urb(struct urb *urb)
- }
+-	if (index > 0 && (buf = kmalloc(256, GFP_KERNEL)) != NULL) {
++	if (index > 0 && (buf = kmalloc_node(256, GFP_KERNEL, dev_to_node(&udev->dev))) != NULL) {
+ 		if ((len = usb_string(udev, index, buf, 256)) > 0) {
+-			if ((smallbuf = kmalloc(++len, GFP_KERNEL)) == NULL)
++			if ((smallbuf = kmalloc_node(++len, GFP_KERNEL, dev_to_node(&udev->dev))) == NULL)
+ 				return buf;
+ 			memcpy(smallbuf, buf, len);
+ 		}
+@@ -864,7 +864,7 @@ int usb_get_device_descriptor(struct usb_device *dev, unsigned int size)
  
- EXPORT_SYMBOL(usb_init_urb);
-+EXPORT_SYMBOL(usb_alloc_urb_node);
- EXPORT_SYMBOL(usb_alloc_urb);
- EXPORT_SYMBOL(usb_free_urb);
- EXPORT_SYMBOL(usb_get_urb);
-diff --git a/drivers/usb/storage/onetouch.c b/drivers/usb/storage/onetouch.c
-index d353693..938395d 100644
---- a/drivers/usb/storage/onetouch.c
-+++ b/drivers/usb/storage/onetouch.c
-@@ -157,7 +157,7 @@ int onetouch_connect_input(struct us_data *ss)
- 	if (!onetouch->data)
- 		goto fail1;
+ 	if (size > sizeof(*desc))
+ 		return -EINVAL;
+-	desc = kmalloc(sizeof(*desc), GFP_NOIO);
++	desc = kmalloc_node(sizeof(*desc), GFP_NOIO, dev_to_node(&dev->dev));
+ 	if (!desc)
+ 		return -ENOMEM;
  
--	onetouch->irq = usb_alloc_urb(0, GFP_KERNEL);
-+	onetouch->irq = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&udev->dev));
- 	if (!onetouch->irq)
- 		goto fail2;
+@@ -900,7 +900,7 @@ int usb_get_device_descriptor(struct usb_device *dev, unsigned int size)
+ int usb_get_status(struct usb_device *dev, int type, int target, void *data)
+ {
+ 	int ret;
+-	u16 *status = kmalloc(sizeof(*status), GFP_KERNEL);
++	u16 *status = kmalloc_node(sizeof(*status), GFP_KERNEL, dev_to_node(&dev->dev));
  
+ 	if (!status)
+ 		return -ENOMEM;
+@@ -1630,7 +1630,7 @@ int usb_driver_set_configuration(struct usb_device *udev, int config)
+ {
+ 	struct set_config_request *req;
+ 
+-	req = kmalloc(sizeof(*req), GFP_KERNEL);
++	req = kmalloc_node(sizeof(*req), GFP_KERNEL, dev_to_node(&udev->dev));
+ 	if (!req)
+ 		return -ENOMEM;
+ 	req->udev = udev;
 diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
-index 8e898e3..36cc5ef 100644
+index 8e898e3..007aaf9 100644
 --- a/drivers/usb/storage/usb.c
 +++ b/drivers/usb/storage/usb.c
-@@ -781,7 +781,7 @@ static int usb_stor_acquire_resources(struct us_data *us)
- 	int p;
- 	struct task_struct *th;
+@@ -470,7 +470,7 @@ static int associate_dev(struct us_data *us, struct usb_interface *intf)
+ 		return -ENOMEM;
+ 	}
  
--	us->current_urb = usb_alloc_urb(0, GFP_KERNEL);
-+	us->current_urb = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&us->pusb_dev->dev));
- 	if (!us->current_urb) {
- 		US_DEBUGP("URB allocation failed\n");
+-	us->sensebuf = kmalloc(US_SENSE_SIZE, GFP_KERNEL);
++	us->sensebuf = kmalloc_node(US_SENSE_SIZE, GFP_KERNEL, dev_to_node(&us->pusb_dev->dev));
+ 	if (!us->sensebuf) {
+ 		US_DEBUGP("Sense buffer allocation failed\n");
  		return -ENOMEM;
 diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index d91b9da..f1f460b 100644
+index d91b9da..3d25ae1 100644
 --- a/drivers/hid/usbhid/hid-core.c
 +++ b/drivers/hid/usbhid/hid-core.c
-@@ -840,7 +840,7 @@ static struct hid_device *usb_hid_configure(struct usb_interface *intf)
- 		if (usb_endpoint_dir_in(endpoint)) {
- 			if (usbhid->urbin)
- 				continue;
--			if (!(usbhid->urbin = usb_alloc_urb(0, GFP_KERNEL)))
-+			if (!(usbhid->urbin = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&dev->dev))))
- 				goto fail;
- 			pipe = usb_rcvintpipe(dev, endpoint->bEndpointAddress);
- 			usb_fill_int_urb(usbhid->urbin, dev, pipe, usbhid->inbuf, insize,
-@@ -850,7 +850,7 @@ static struct hid_device *usb_hid_configure(struct usb_interface *intf)
- 		} else {
- 			if (usbhid->urbout)
- 				continue;
--			if (!(usbhid->urbout = usb_alloc_urb(0, GFP_KERNEL)))
-+			if (!(usbhid->urbout = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&dev->dev))))
- 				goto fail;
- 			pipe = usb_sndintpipe(dev, endpoint->bEndpointAddress);
- 			usb_fill_int_urb(usbhid->urbout, dev, pipe, usbhid->outbuf, 0,
-@@ -910,7 +910,7 @@ static struct hid_device *usb_hid_configure(struct usb_interface *intf)
- 	if (usb_string(dev, dev->descriptor.iSerialNumber, hid->uniq, 64) <= 0)
- 		hid->uniq[0] = 0;
+@@ -759,7 +759,7 @@ static struct hid_device *usb_hid_configure(struct usb_interface *intf)
+ 		return NULL;
+ 	}
  
--	usbhid->urbctrl = usb_alloc_urb(0, GFP_KERNEL);
-+	usbhid->urbctrl = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&dev->dev));
- 	if (!usbhid->urbctrl)
- 		goto fail;
+-	if (!(rdesc = kmalloc(rsize, GFP_KERNEL))) {
++	if (!(rdesc = kmalloc_node(rsize, GFP_KERNEL, dev_to_node(&dev->dev)))) {
+ 		dbg("couldn't allocate rdesc memory");
+ 		return NULL;
+ 	}
+diff --git a/drivers/hid/usbhid/hiddev.c b/drivers/hid/usbhid/hiddev.c
+index 488d61b..74e67bb 100644
+--- a/drivers/hid/usbhid/hiddev.c
++++ b/drivers/hid/usbhid/hiddev.c
+@@ -476,7 +476,7 @@ static int hiddev_ioctl(struct inode *inode, struct file *file, unsigned int cmd
+ 			if (get_user(idx, (int __user *)arg))
+ 				return -EFAULT;
  
-diff --git a/drivers/hid/usbhid/usbkbd.c b/drivers/hid/usbhid/usbkbd.c
-index 1309787..aafc530 100644
---- a/drivers/hid/usbhid/usbkbd.c
-+++ b/drivers/hid/usbhid/usbkbd.c
-@@ -192,9 +192,9 @@ static void usb_kbd_close(struct input_dev *dev)
+-			if ((buf = kmalloc(HID_STRING_SIZE, GFP_KERNEL)) == NULL)
++			if ((buf = kmalloc_node(HID_STRING_SIZE, GFP_KERNEL, dev_to_node(&dev->dev))) == NULL)
+ 				return -ENOMEM;
  
- static int usb_kbd_alloc_mem(struct usb_device *dev, struct usb_kbd *kbd)
- {
--	if (!(kbd->irq = usb_alloc_urb(0, GFP_KERNEL)))
-+	if (!(kbd->irq = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&dev->dev))))
- 		return -1;
--	if (!(kbd->led = usb_alloc_urb(0, GFP_KERNEL)))
-+	if (!(kbd->led = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&dev->dev))))
- 		return -1;
- 	if (!(kbd->new = usb_buffer_alloc(dev, 8, GFP_ATOMIC, &kbd->new_dma)))
- 		return -1;
-diff --git a/drivers/hid/usbhid/usbmouse.c b/drivers/hid/usbhid/usbmouse.c
-index 5345c73..d12a3dd 100644
---- a/drivers/hid/usbhid/usbmouse.c
-+++ b/drivers/hid/usbhid/usbmouse.c
-@@ -143,7 +143,7 @@ static int usb_mouse_probe(struct usb_interface *intf, const struct usb_device_i
- 	if (!mouse->data)
- 		goto fail1;
- 
--	mouse->irq = usb_alloc_urb(0, GFP_KERNEL);
-+	mouse->irq = usb_alloc_urb_node(0, GFP_KERNEL, dev_to_node(&dev->dev));
- 	if (!mouse->irq)
- 		goto fail2;
- 
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index 94bd38a..a0b63ef 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -1263,6 +1263,7 @@ static inline void usb_fill_int_urb (struct urb *urb,
- }
- 
- extern void usb_init_urb(struct urb *urb);
-+extern struct urb *usb_alloc_urb_node(int iso_packets, gfp_t mem_flags, int node);
- extern struct urb *usb_alloc_urb(int iso_packets, gfp_t mem_flags);
- extern void usb_free_urb(struct urb *urb);
- #define usb_put_urb usb_free_urb
+ 			if ((len = usb_string(dev, idx, buf, HID_STRING_SIZE-1)) < 0) {
