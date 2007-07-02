@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbXGBH2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbXGBHbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbXGBH2R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 03:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXGBH2H
+	id S1753482AbXGBHbF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 03:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXGBHaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 03:28:07 -0400
-Received: from ee.oulu.fi ([130.231.61.23]:34578 "EHLO ee.oulu.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbXGBH2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 03:28:06 -0400
-X-Greylist: delayed 1377 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jul 2007 03:28:06 EDT
-Date: Mon, 2 Jul 2007 10:05:06 +0300
-From: Pekka Pietikainen <pp@ee.oulu.fi>
-To: linux-kernel@vger.kernel.org
-Subject: Re: howto disable vlantag in tg3
-Message-ID: <20070702070506.GA8399@ee.oulu.fi>
-References: <87zm2g6waa.fsf@samuel.flexserv.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <87zm2g6waa.fsf@samuel.flexserv.de>
-User-Agent: Mutt/1.4.2i
+	Mon, 2 Jul 2007 03:30:55 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:60469 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbXGBHaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 03:30:55 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Suspend2 is getting a new name.
+User-Agent: KMail/1.9.6
+MIME-Version: 1.0
+Date: Mon, 2 Jul 2007 17:30:56 +1000
+Content-Type: multipart/signed;
+  boundary="nextPart4365828.Xalgg0LzGX";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707021730.57066.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 01, 2007 at 04:19:57PM +0200, Daniel J. Priem wrote:
-> Hi,
-> the tg3 module automatically removes any incoming vlantags from packets.
-> how can i stop this on 2.6.18?
-> is there some hidden echo foo > /sys/...
-> or modprobe options tg3 dontusetagbla?
-I think it's the same thing as on the newer broadcom bnx2, which I ran into.
-There's some new enterprise managmenent thingy, ASF, that gets confused if
-there are vlan tags present -> the driver is setup to strip them out if that
-feature is enabled.
+--nextPart4365828.Xalgg0LzGX
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-There is a dos-based tool to disable that bit on the bnx2 hardware
-(which gives you those vlan tags back, vlans do work, you just can't
-see them with tcpdump etc.), you can probably find one for tg3 as well
-from broadcom.
+Hi all.
 
--- 
-Pekka Pietikainen
+Suspend2's name is changing to "TuxOnIce".
+
+This is for a couple of reasons:
+
+In recent discussions on LKML, the point was made that the word "Suspend" i=
+s=20
+confusing. It is used to refer to both suspending to disk and suspending to=
+=20
+ram. Life will be simpler if we more clearly differentiate the two.
+
+The name Suspend2 came about a couple of years ago when we made the 2.0=20
+release and started self-hosting. If we ever get to a 3.0 release, the name=
+=20
+could become even more confusing! (And there are already problems with peop=
+le=20
+confusing the name with swsusp and talking about uswsusp as version 3!).
+
+http://www.suspend2.net is still working at the moment, but we'll shift to=
+=20
+http://www.tuxonice.net over the next while. The wiki and bugzilla are=20
+already done; email will remain on suspend2.net for a little while and git=
+=20
+trees will be renamed at the time of the next stable release.
+
+Regards,
+
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
+
+--nextPart4365828.Xalgg0LzGX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGiKmxN0y+n1M3mo0RAhUIAJ92msMGmDSye72Zg+R4u1lEAmbt5QCfV2Mo
+Ilnd8geH9mmfAnlfcANX8AY=
+=V4u6
+-----END PGP SIGNATURE-----
+
+--nextPart4365828.Xalgg0LzGX--
