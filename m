@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759134AbXGBLsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbXGBLwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759134AbXGBLsV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 07:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbXGBLsO
+	id S1758289AbXGBLwQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 07:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbXGBLwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 07:48:14 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:11809 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753180AbXGBLsN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 07:48:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=A93A9GlpOlLGqeLb5Smp3h1OaBnZj+kIF+Dz0zsrtNj9EX+sp/n/zZRW6HLOn1s+JxMPrY1bImG8+SF0+X+j0UhgkyFh1IIC0tLchsiKAY4qcma9Si5Gog/34cKQzPrUoTRTzQiLA4owAmL7gAOdCmnaUVDiNBqZfvx2GYG+54s=
-Message-ID: <863e9df20707020448o21c3baf2xda3528df312179c@mail.gmail.com>
-Date: Mon, 2 Jul 2007 17:18:11 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: instrumentation and kprobes really still "EXPERIMENTAL"?
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       systemtap@sources.redhat.com
-In-Reply-To: <Pine.LNX.4.64.0707020619590.29879@localhost.localdomain>
+	Mon, 2 Jul 2007 07:52:05 -0400
+Received: from mail.suse.de ([195.135.220.2]:40501 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753180AbXGBLwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 07:52:04 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Indan Zupancic" <indan@nul.nu>
+Subject: Re: blink driver power saving
+Date: Mon, 2 Jul 2007 13:51:57 +0200
+User-Agent: KMail/1.9.6
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "" Dmitry Torokhov "" <dtor@insightbb.com>
+References: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net>
+In-Reply-To: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0707011204580.32355@localhost.localdomain>
-	 <863e9df20707020154o5232e44ch37dd55811c377a8f@mail.gmail.com>
-	 <Pine.LNX.4.64.0707020512320.26135@localhost.localdomain>
-	 <863e9df20707020256m75d24f52yfc5acd78cacffac7@mail.gmail.com>
-	 <Pine.LNX.4.64.0707020619590.29879@localhost.localdomain>
+Message-Id: <200707021351.57965.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/2/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> consider this random Kconfig file arch/x86_64/oprofile/Kconfig:
->
-> =============================
-> config PROFILING
->         bool "Profiling support (EXPERIMENTAL)"
->         help
->           Say Y here to enable the extended profiling support mechanisms used
->           by profilers such as OProfile.
->
->
-> config OPROFILE
->         tristate "OProfile system profiling (EXPERIMENTAL)"
->         depends on PROFILING
->         help
->           OProfile is a profiling system capable of profiling the
->           whole system, include the kernel, kernel modules, libraries,
->           and applications.
->
->           If unsure, say N.
-> ==============================
->
->   the above is a bit silly.  note that both prompts advertise
-> themselves as "EXPERIMENTAL" even though neither of them has such a
-> dependency.  they *are*, however, part of an submenu that *is*
-> dependent on EXPERIMENTAL (although you'd never know that just by
-> looking at that Kconfig file).  in short, it's just kind of ugly
-> hackery at the moment.
+On Monday 02 July 2007 13:43:23 Indan Zupancic wrote:
+> On Mon, July 2, 2007 01:59, Andi Kleen wrote:
+> > Well only those that could be already hung from user space
+> > with setleds (that was also confirmed).  Actually I thought
+> > they didn't hang completely, but just stopped reacting to
+> > the keyboard (which is actually pretty bad for every user
+> > to be able to trigger)
+> 
+> Pavel's lost key events, mine stopped reacting altogether.
 
-Yes but pushing the EXPERIMENTAL check to individual menu members
-shouldn't be done in a way which leads to an empty menu for any kernel
-configuration. I suspect that this is why the EXPERIMENTAL check is on
-the instrumentation menu in the first place.
+Did you try if the network was still alive? Perhaps it was
+just a locked up keyboard.
 
->   my original point was simply that, based on its acceptance, it would
-> seem kprobes has progressed beyond the EXPERIMENTAL phase, that's all.
+> 
+> > I guess the better way to handle those would be to find out the
+> > minimum frequency of blinking that is still ok and rate limit it to that in
+> > the keyboard driver.
+> 
+> Dmitry already has a patch for that. He limited it to one event each 50 ms.
 
-It's worth a look on some archs.
+Great.
 
---
-Abhishek Sagar
--
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> > Anyways, Stephen's patch just doesn't make sense:
+> > he clearly didn't understand the code at all. Before you
+> > apply it and cripple it better drop the driver completely.
+> 
+> CC'ing Dmitry, as I think he doesn't like the blink driver much either. ;-)
+
+Perhaps one of you geniuses who all hate it can find a better way to 
+solve the "video output dead after kexec; but need visual feedback to the user
+while crash dumping" problem. I'm waiting for your patches.
+
+-Andi
