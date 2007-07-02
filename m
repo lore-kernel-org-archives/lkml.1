@@ -1,67 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbXGBUm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbXGBUyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbXGBUm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 16:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbXGBUmV
+	id S1755988AbXGBUyJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 16:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbXGBUx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 16:42:21 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41710 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754353AbXGBUmU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 16:42:20 -0400
-Date: Mon, 2 Jul 2007 16:38:53 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ezk@cs.sunysb.edu,
-       jsipek@cs.sunysb.edu, linux-kernel@vger.kernel.org,
-       unionfs@filesystems.org
-Subject: Re: [-mm patch] unionfs: make functions static
-Message-ID: <20070702203853.GA13904@filer.fsl.cs.sunysb.edu>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <20070701202330.GU10869@stusta.de> <20070702014249.GA14417@filer.fsl.cs.sunysb.edu> <20070702022759.GE10869@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070702022759.GE10869@stusta.de>
-User-Agent: Mutt/1.4.1i
+	Mon, 2 Jul 2007 16:53:59 -0400
+Received: from mail.windriver.com ([147.11.1.11]:53600 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751834AbXGBUx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 16:53:58 -0400
+Message-ID: <468965D8.7020405@windriver.com>
+Date: Mon, 02 Jul 2007 15:53:44 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: [PATCH] i386 - Fix regression, endless loop in ptrace singlestep
+ over an int80
+Content-Type: multipart/mixed;
+ boundary="------------000906030103080504050907"
+X-OriginalArrivalTime: 02 Jul 2007 20:53:46.0576 (UTC) FILETIME=[15670D00:01C7BCEB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 04:27:59AM +0200, Adrian Bunk wrote:
-> On Sun, Jul 01, 2007 at 09:42:49PM -0400, Josef Sipek wrote:
-> > On Sun, Jul 01, 2007 at 10:23:30PM +0200, Adrian Bunk wrote:
-> > > This patch makes some needlessly global functions static.
-> > > 
-> > ...
-> > > --- linux-2.6.22-rc6-mm1/fs/unionfs/lookup.c.old	2007-07-01 00:05:02.000000000 +0200
-> > > +++ linux-2.6.22-rc6-mm1/fs/unionfs/lookup.c	2007-07-01 00:06:05.000000000 +0200
-> > > @@ -18,6 +18,8 @@
-> > >  
-> > >  #include "union.h"
-> > >  
-> > > +static int realloc_dentry_private_data(struct dentry *dentry);
-> > > +
-> > >  /* is the filename valid == !(whiteout for a file or opaque dir marker) */
-> > 
-> > I forget who said it, but someone wasn't very happy with prototypes like
-> > that in .c files. What's the prefered way - are they ok for static symbols?
-> 
-> It might have even been me who said this - but about global functions.
-> 
-> For global functions, prototypes in header files allow gcc to check 
-> whether the prototype matches the actual function. With a prototype
-> in the C file of the caller that's not possible, and if they are 
-> different it can result in nasty runtime errors.
-> 
-> For static functions that's not an issue since gcc sees both the 
-> prototype and the actual function.
- 
-Ok, fair enough. Applied & pushed to korg tree.
+This is a multi-part message in MIME format.
+--------------000906030103080504050907
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Thanks.
 
-Josef "Jeff" Sipek.
+Attached is a patch with a complete test case to fix the regression 
+introduced by the commit: 635cf99a80f4ebee59d70eb64bb85ce829e4591f.
 
--- 
-Once you have their hardware. Never give it back.
-(The First Rule of Hardware Acquisition)
+This patch is against kernel 2.6.21 but the fix is applicable to 2.6.21 
+and up.  Prior to the commit that introduced the regression the ltp 
+ptrace tests would complete correctly.  I augmented the test case from 
+the original patch header to include the problem case that shows up in 
+the lpt tests.
+
+The brief summary is that the the TIF_SINGLESTEP state needs to be 
+altered on the exit path and not the entry path to a syscall, else it 
+can loop forever on the same instruction right after the syscall is 
+executed in certain cases.
+
+Thanks,
+Jason.
+
+--------------000906030103080504050907
+Content-Type: text/plain;
+ name="ptrace_int80_loop_fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ptrace_int80_loop_fix.patch"
+
+ptrace_int80_loop_fix.patch
+
+[PATCH] i386: fix infinite loop with singlestep int80 syscalls
+
+The commit 635cf99a80f4ebee59d70eb64bb85ce829e4591f introduced a
+regression.  Executing a ptrace single step after certain int80
+accesses will infinitely loop and never advance the PC.
+
+The TIF_SINGLESTEP check should be done on the return from the syscall
+and not before it.
+
+The new test case is below:
+
+/* Test whether singlestep through an int80 syscall works.
+ */
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <asm/user.h>
+#include <string.h>
+
+static int child, status;
+static struct user_regs_struct regs;
+
+static void do_child()
+{
+	char str[80] = "child: int80 test\n";
+
+	ptrace(PTRACE_TRACEME, 0, 0, 0);
+	kill(getpid(), SIGUSR1);
+	write(fileno(stdout),str,strlen(str));
+	asm ("int $0x80" : : "a" (20)); /* getpid */
+}
+    
+static void do_parent()
+{
+	unsigned long eip, expected = 0;
+again:
+	waitpid(child, &status, 0);
+	if (WIFEXITED(status) || WIFSIGNALED(status))
+		return;
+    
+	if (WIFSTOPPED(status)) {
+		ptrace(PTRACE_GETREGS, child, 0, &regs);
+		eip = regs.eip;
+		if (expected)
+			fprintf(stderr, "child stop @ %08lx, expected %08lx %s\n",
+					eip, expected,
+					eip == expected ? "" : " <== ERROR");
+    
+		if (*(unsigned short *)eip == 0x80cd) {
+			fprintf(stderr, "int 0x80 at %08x\n", (unsigned int)eip);
+			expected = eip + 2;
+		} else
+			expected = 0;
+    
+		ptrace(PTRACE_SINGLESTEP, child, NULL, NULL);
+	}
+	goto again;
+}
+    
+int main(int argc, char * const argv[])
+{
+	child = fork();
+	if (child)
+		do_parent();
+	else
+		do_child();
+	return 0;
+}
+
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+
+---
+ arch/i386/kernel/entry.S |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-2.6.21-standard/arch/i386/kernel/entry.S
+===================================================================
+--- linux-2.6.21-standard.orig/arch/i386/kernel/entry.S
++++ linux-2.6.21-standard/arch/i386/kernel/entry.S
+@@ -371,10 +371,6 @@ ENTRY(system_call)
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	SAVE_ALL
+ 	GET_THREAD_INFO(%ebp)
+-	testl $TF_MASK,PT_EFLAGS(%esp)
+-	jz no_singlestep
+-	orl $_TIF_SINGLESTEP,TI_flags(%ebp)
+-no_singlestep:
+ 					# system call tracing in operation / emulation
+ 	/* Note, _TIF_SECCOMP is bit number 8, and so it needs testw and not testb */
+ 	testw $(_TIF_SYSCALL_EMU|_TIF_SYSCALL_TRACE|_TIF_SECCOMP|_TIF_SYSCALL_AUDIT),TI_flags(%ebp)
+@@ -389,6 +385,10 @@ syscall_exit:
+ 					# setting need_resched or sigpending
+ 					# between sampling and the iret
+ 	TRACE_IRQS_OFF
++	testl $TF_MASK,PT_EFLAGS(%esp)	# If tracing set singlestep flag on exit
++	jz no_singlestep
++	orl $_TIF_SINGLESTEP,TI_flags(%ebp)
++no_singlestep:
+ 	movl TI_flags(%ebp), %ecx
+ 	testw $_TIF_ALLWORK_MASK, %cx	# current->work
+ 	jne syscall_exit_work
+
+--------------000906030103080504050907--
