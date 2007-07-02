@@ -1,44 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbXGBUTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbXGBUff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbXGBUTf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 16:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbXGBUT1
+	id S1756557AbXGBUff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 16:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbXGBUfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 16:19:27 -0400
-Received: from ns1.suse.de ([195.135.220.2]:44071 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754595AbXGBUT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 16:19:27 -0400
-Date: Mon, 2 Jul 2007 22:19:23 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: blink driver power saving
-Message-ID: <20070702201923.GA30104@suse.de>
-Mail-Followup-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net> <200707021351.57965.ak@suse.de> <d120d5000707020531y43d41b6fl46e05c8343dbbeae@mail.gmail.com> <200707021439.27357.ak@suse.de> <d120d5000707020642j752ca814l501aaa543f9babcf@mail.gmail.com> <d120d5000707020643y1b4f03ebid0ae37adb40d0a53@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000707020643y1b4f03ebid0ae37adb40d0a53@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 2 Jul 2007 16:35:24 -0400
+Received: from mga05.intel.com ([192.55.52.89]:21849 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754356AbXGBUfX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 16:35:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,488,1175497200"; 
+   d="scan'208";a="263683454"
+Message-Id: <20070702170614.769378000@em64tdvp.jf.intel.com>
+Date: Mon, 02 Jul 2007 10:06:14 -0700
+From: Chandramouli Narayanan <mouli@linux.intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: ak@suse.de, akpm@linux-foundation.org
+Subject: [PATCH 2.6.21 0/3] x86_64 EFI64 support Try #2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dmitry Torokhov <dmitry.torokhov@gmail.com> [2007-07-02 15:43]:
-> On 7/2/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
->>
->> I was thinking about something like the atached (untested and sorry
->> for using attachment). It shoudl blink just one led (numLock) on any
->> keyboard that has such LED (and allows to control it).
->>
->
-> Argh, bad one. This one shoudl be better.
+--
+This is Try #2 of x86_64 of EFI64 support with changes implemented based on
+feedback received. Details can be found in the patch files. These changes
+have been tested on UEFI platforms. No issues to report.
 
-Ok, I didn't think of that possibility. That looks better than my
-attempt to modify low-level console stuff ... :)
+Looking forward to your comments,
 
-
-Thanks,
-   Bernhard
+thanks,
+Chandramouli Narayanan <mouli@linux.intel.com>
