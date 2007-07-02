@@ -1,209 +1,382 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXGBOsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbXGBOwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758090AbXGBOsY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbXGBOsQ
+	id S1759565AbXGBOwf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbXGBOw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:48:16 -0400
-Received: from mail.screens.ru ([213.234.233.54]:51127 "EHLO mail.screens.ru"
+	Mon, 2 Jul 2007 10:52:27 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:48909 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755977AbXGBOsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:48:14 -0400
-Date: Mon, 2 Jul 2007 18:48:17 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Markus Rechberger <mrechberger@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Thomas Sattler <tsattler@gmx.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Mack <daniel@qanu.de>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Holger Waechtler <holger@qanu.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] dvb/cinergyT2: fix flush_workqueue() vs work->func() deadlock
-Message-ID: <20070702144817.GA455@tv-sign.ru>
+	id S1753370AbXGBOw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:52:26 -0400
+Date: Mon, 2 Jul 2007 10:52:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20070702145224.GA9959@havoc.gtf.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spotted and tested by Thomas Sattler <tsattler@gmx.de>.
 
-cinergyT2.c does cancel_delayed_work() + flush_scheduled_work() while
-holding cinergyt2->sem. This leads to deadlock because work->func()
-needs the same mutex to complete. Another bug is that this code in fact
-can't reliably stop the re-arming delayed_work.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-Convert this code to use cancel_rearming_delayed_work() and move it
-out of ->sem. Another mutex, ->wq_sem, was added to protect against the
-concurrent open/resume.
+to receive the following updates:
 
-This patch is a horrible hack to fix the lockup which happens in practice.
-As Dmitry Torokhov pointed out this driver has other problems and needs
-further changes.
+ drivers/ata/Kconfig         |    5 ++++
+ drivers/ata/libata-core.c   |    3 +-
+ drivers/ata/pata_pdc2027x.c |   11 ++++++++-
+ drivers/ata/pata_sis.c      |   46 +++++++++++++++++++++++++++++++++++++++++-
+ drivers/ata/sata_inic162x.c |    7 ++++++
+ drivers/ata/sata_nv.c       |    2 +
+ drivers/ata/sata_sis.c      |   39 +++++++++++++++++------------------
+ drivers/ata/sis.h           |    2 +-
+ drivers/scsi/Kconfig        |    1 +
+ 9 files changed, 89 insertions(+), 27 deletions(-)
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Albert Lee (2):
+      libata: pata_pdc2027x PLL input clock fix
+      libata: remove reading alt_status from ata_hsm_qc_complete()
 
---- t/drivers/media/dvb/cinergyT2/cinergyT2.c~cinergy	2007-06-19 17:09:15.000000000 +0400
-+++ t/drivers/media/dvb/cinergyT2/cinergyT2.c	2007-06-30 18:01:43.000000000 +0400
-@@ -118,6 +118,7 @@ struct cinergyt2 {
- 	struct dvb_demux demux;
- 	struct usb_device *udev;
- 	struct mutex sem;
-+	struct mutex wq_sem;
- 	struct dvb_adapter adapter;
- 	struct dvb_device *fedev;
- 	struct dmxdev dmxdev;
-@@ -482,14 +483,14 @@ static int cinergyt2_open (struct inode 
- 	struct cinergyt2 *cinergyt2 = dvbdev->priv;
- 	int err = -ERESTARTSYS;
+Randy Dunlap (1):
+      scsi disk help file is not complete
+
+Robert Hancock (1):
+      sata_nv: allow changing queue depth
+
+Tejun Heo (2):
+      sata_inic162x: disable LBA48 devices
+      libata: add HTS541616J9SA00 to NCQ blacklist
+
+Uwe Koziolek (1):
+      libata: PATA-mode fixes for sis_sata
+
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index b4a8d60..4ad8675 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -16,6 +16,11 @@ menuconfig ATA
+ 	  that "speaks" the ATA protocol, also called ATA controller),
+ 	  because you will be asked for it.
  
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->sem))
--		return -ERESTARTSYS;
-+	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->wq_sem))
-+		goto out;
++	  NOTE: ATA enables basic SCSI support; *however*,
++	  'SCSI disk support', 'SCSI tape support', or
++	  'SCSI CDROM support' may also be needed,
++	  depending on your hardware configuration.
++
+ if ATA
  
--	if ((err = dvb_generic_open(inode, file))) {
--		mutex_unlock(&cinergyt2->sem);
--		return err;
--	}
-+	if (mutex_lock_interruptible(&cinergyt2->sem))
-+		goto out_unlock1;
+ config ATA_NONSTANDARD
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index bfc59a1..2407f84 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3798,6 +3798,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
+ 	/* Drives which do spurious command completion */
+ 	{ "HTS541680J9SA00",	"SB2IC7EP",	ATA_HORKAGE_NONCQ, },
+ 	{ "HTS541612J9SA00",	"SBDIC7JP",	ATA_HORKAGE_NONCQ, },
++	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
+ 	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
  
-+	if ((err = dvb_generic_open(inode, file)))
-+		goto out_unlock2;
- 
- 	if ((file->f_flags & O_ACCMODE) != O_RDONLY) {
- 		cinergyt2_sleep(cinergyt2, 0);
-@@ -498,8 +499,12 @@ static int cinergyt2_open (struct inode 
- 
- 	atomic_inc(&cinergyt2->inuse);
- 
-+out_unlock2:
- 	mutex_unlock(&cinergyt2->sem);
--	return 0;
-+out_unlock1:
-+	mutex_unlock(&cinergyt2->wq_sem);
-+out:
-+	return err;
+ 	/* Devices with NCQ limits */
+@@ -4781,8 +4782,6 @@ static void ata_hsm_qc_complete(struct ata_queued_cmd *qc, int in_wq)
+ 		} else
+ 			ata_qc_complete(qc);
+ 	}
+-
+-	ata_altstatus(ap); /* flush */
  }
  
- static void cinergyt2_unregister(struct cinergyt2 *cinergyt2)
-@@ -519,15 +524,17 @@ static int cinergyt2_release (struct ino
- 	struct dvb_device *dvbdev = file->private_data;
- 	struct cinergyt2 *cinergyt2 = dvbdev->priv;
+ /**
+diff --git a/drivers/ata/pata_pdc2027x.c b/drivers/ata/pata_pdc2027x.c
+index 0d2cc49..69a5aa4 100644
+--- a/drivers/ata/pata_pdc2027x.c
++++ b/drivers/ata/pata_pdc2027x.c
+@@ -689,10 +689,12 @@ static long pdc_detect_pll_input_clock(struct ata_host *host)
+ 	void __iomem *mmio_base = host->iomap[PDC_MMIO_BAR];
+ 	u32 scr;
+ 	long start_count, end_count;
+-	long pll_clock;
++	struct timeval start_time, end_time;
++	long pll_clock, usec_elapsed;
  
--	mutex_lock(&cinergyt2->sem);
-+	mutex_lock(&cinergyt2->wq_sem);
+ 	/* Read current counter value */
+ 	start_count = pdc_read_counter(host);
++	do_gettimeofday(&start_time);
  
- 	if (!cinergyt2->disconnect_pending && (file->f_flags & O_ACCMODE) != O_RDONLY) {
--		cancel_delayed_work(&cinergyt2->query_work);
--		flush_scheduled_work();
-+		cancel_rearming_delayed_work(&cinergyt2->query_work);
+ 	/* Start the test mode */
+ 	scr = readl(mmio_base + PDC_SYS_CTL);
+@@ -705,6 +707,7 @@ static long pdc_detect_pll_input_clock(struct ata_host *host)
+ 
+ 	/* Read the counter values again */
+ 	end_count = pdc_read_counter(host);
++	do_gettimeofday(&end_time);
+ 
+ 	/* Stop the test mode */
+ 	scr = readl(mmio_base + PDC_SYS_CTL);
+@@ -713,7 +716,11 @@ static long pdc_detect_pll_input_clock(struct ata_host *host)
+ 	readl(mmio_base + PDC_SYS_CTL); /* flush */
+ 
+ 	/* calculate the input clock in Hz */
+-	pll_clock = (start_count - end_count) * 10;
++	usec_elapsed = (end_time.tv_sec - start_time.tv_sec) * 1000000 +
++		(end_time.tv_usec - start_time.tv_usec);
 +
-+		mutex_lock(&cinergyt2->sem);
- 		cinergyt2_sleep(cinergyt2, 1);
-+		mutex_unlock(&cinergyt2->sem);
++	pll_clock = (start_count - end_count) / 100 *
++		(100000000 / usec_elapsed);
+ 
+ 	PDPRINTK("start[%ld] end[%ld] \n", start_count, end_count);
+ 	PDPRINTK("PLL input clock[%ld]Hz\n", pll_clock);
+diff --git a/drivers/ata/pata_sis.c b/drivers/ata/pata_sis.c
+index ec3ae93..cfe4ec6 100644
+--- a/drivers/ata/pata_sis.c
++++ b/drivers/ata/pata_sis.c
+@@ -560,6 +560,40 @@ static const struct ata_port_operations sis_133_ops = {
+ 	.port_start		= ata_port_start,
+ };
+ 
++static const struct ata_port_operations sis_133_for_sata_ops = {
++	.port_disable		= ata_port_disable,
++	.set_piomode		= sis_133_set_piomode,
++	.set_dmamode		= sis_133_set_dmamode,
++	.mode_filter		= ata_pci_default_filter,
++
++	.tf_load		= ata_tf_load,
++	.tf_read		= ata_tf_read,
++	.check_status		= ata_check_status,
++	.exec_command		= ata_exec_command,
++	.dev_select		= ata_std_dev_select,
++
++	.freeze			= ata_bmdma_freeze,
++	.thaw			= ata_bmdma_thaw,
++	.error_handler		= ata_bmdma_error_handler,
++	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
++	.cable_detect		= sis_133_cable_detect,
++
++	.bmdma_setup		= ata_bmdma_setup,
++	.bmdma_start		= ata_bmdma_start,
++	.bmdma_stop		= ata_bmdma_stop,
++	.bmdma_status		= ata_bmdma_status,
++	.qc_prep		= ata_qc_prep,
++	.qc_issue		= ata_qc_issue_prot,
++	.data_xfer		= ata_data_xfer,
++
++	.irq_handler		= ata_interrupt,
++	.irq_clear		= ata_bmdma_irq_clear,
++	.irq_on			= ata_irq_on,
++	.irq_ack		= ata_irq_ack,
++
++	.port_start		= ata_port_start,
++};
++
+ static const struct ata_port_operations sis_133_early_ops = {
+ 	.port_disable		= ata_port_disable,
+ 	.set_piomode		= sis_100_set_piomode,
+@@ -733,13 +767,20 @@ static const struct ata_port_info sis_info100_early = {
+ 	.pio_mask	= 0x1f,	/* pio0-4 */
+ 	.port_ops	= &sis_66_ops,
+ };
+-const struct ata_port_info sis_info133 = {
++static const struct ata_port_info sis_info133 = {
+ 	.sht		= &sis_sht,
+ 	.flags		= ATA_FLAG_SLAVE_POSS | ATA_FLAG_SRST,
+ 	.pio_mask	= 0x1f,	/* pio0-4 */
+ 	.udma_mask	= ATA_UDMA6,
+ 	.port_ops	= &sis_133_ops,
+ };
++const struct ata_port_info sis_info133_for_sata = {
++	.sht		= &sis_sht,
++	.flags		= ATA_FLAG_SLAVE_POSS | ATA_FLAG_SRST,
++	.pio_mask	= 0x1f,	/* pio0-4 */
++	.udma_mask	= ATA_UDMA6,
++	.port_ops	= &sis_133_for_sata_ops,
++};
+ static const struct ata_port_info sis_info133_early = {
+ 	.sht		= &sis_sht,
+ 	.flags		= ATA_FLAG_SLAVE_POSS | ATA_FLAG_SRST,
+@@ -749,7 +790,7 @@ static const struct ata_port_info sis_info133_early = {
+ };
+ 
+ /* Privately shared with the SiS180 SATA driver, not for use elsewhere */
+-EXPORT_SYMBOL_GPL(sis_info133);
++EXPORT_SYMBOL_GPL(sis_info133_for_sata);
+ 
+ static void sis_fixup(struct pci_dev *pdev, struct sis_chipset *sis)
+ {
+@@ -975,6 +1016,7 @@ static int sis_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
+ static const struct pci_device_id sis_pci_tbl[] = {
+ 	{ PCI_VDEVICE(SI, 0x5513), },	/* SiS 5513 */
+ 	{ PCI_VDEVICE(SI, 0x5518), },	/* SiS 5518 */
++	{ PCI_VDEVICE(SI, 0x1180), },	/* SiS 1180 */
+ 
+ 	{ }
+ };
+diff --git a/drivers/ata/sata_inic162x.c b/drivers/ata/sata_inic162x.c
+index 2d80c9d..dc3bbce 100644
+--- a/drivers/ata/sata_inic162x.c
++++ b/drivers/ata/sata_inic162x.c
+@@ -496,6 +496,13 @@ static void inic_dev_config(struct ata_device *dev)
+ 	/* inic can only handle upto LBA28 max sectors */
+ 	if (dev->max_sectors > ATA_MAX_SECTORS)
+ 		dev->max_sectors = ATA_MAX_SECTORS;
++
++	if (dev->n_sectors >= 1 << 28) {
++		ata_dev_printk(dev, KERN_ERR,
++	"ERROR: This driver doesn't support LBA48 yet and may cause\n"
++	"                data corruption on such devices.  Disabling.\n");
++		ata_dev_disable(dev);
++	}
+ }
+ 
+ static void init_port(struct ata_port *ap)
+diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
+index adfa693..d53cb8c 100644
+--- a/drivers/ata/sata_nv.c
++++ b/drivers/ata/sata_nv.c
+@@ -307,6 +307,7 @@ static struct scsi_host_template nv_sht = {
+ 	.name			= DRV_NAME,
+ 	.ioctl			= ata_scsi_ioctl,
+ 	.queuecommand		= ata_scsi_queuecmd,
++	.change_queue_depth	= ata_scsi_change_queue_depth,
+ 	.can_queue		= ATA_DEF_QUEUE,
+ 	.this_id		= ATA_SHT_THIS_ID,
+ 	.sg_tablesize		= LIBATA_MAX_PRD,
+@@ -325,6 +326,7 @@ static struct scsi_host_template nv_adma_sht = {
+ 	.name			= DRV_NAME,
+ 	.ioctl			= ata_scsi_ioctl,
+ 	.queuecommand		= ata_scsi_queuecmd,
++	.change_queue_depth	= ata_scsi_change_queue_depth,
+ 	.can_queue		= NV_ADMA_MAX_CPBS,
+ 	.this_id		= ATA_SHT_THIS_ID,
+ 	.sg_tablesize		= NV_ADMA_SGTBL_TOTAL_LEN,
+diff --git a/drivers/ata/sata_sis.c b/drivers/ata/sata_sis.c
+index 221099d..f111c98 100644
+--- a/drivers/ata/sata_sis.c
++++ b/drivers/ata/sata_sis.c
+@@ -72,8 +72,8 @@ static const struct pci_device_id sis_pci_tbl[] = {
+ 	{ PCI_VDEVICE(SI, 0x0181), sis_180 },		/* SiS 964/180 */
+ 	{ PCI_VDEVICE(SI, 0x0182), sis_180 },		/* SiS 965/965L */
+ 	{ PCI_VDEVICE(SI, 0x0183), sis_180 },		/* SiS 965/965L */
+-	{ PCI_VDEVICE(SI, 0x1182), sis_180 },		/* SiS 966/966L */
+-	{ PCI_VDEVICE(SI, 0x1183), sis_180 },		/* SiS 966/966L */
++	{ PCI_VDEVICE(SI, 0x1182), sis_180 },		/* SiS 966/680 */
++	{ PCI_VDEVICE(SI, 0x1183), sis_180 },		/* SiS 966/966L/968/680 */
+ 
+ 	{ }	/* terminate list */
+ };
+@@ -161,7 +161,6 @@ static unsigned int get_scr_cfg_addr(struct ata_port *ap, unsigned int sc_reg)
+ 			case 0x0182:
+ 			case 0x0183:
+ 			case 0x1182:
+-			case 0x1183:
+ 				addr += SIS182_SATA1_OFS;
+ 				break;
+ 		}
+@@ -183,8 +182,8 @@ static u32 sis_scr_cfg_read (struct ata_port *ap, unsigned int sc_reg)
+ 
+ 	pci_read_config_dword(pdev, cfg_addr, &val);
+ 
+-	if ((pdev->device == 0x0182) || (pdev->device == 0x0183) || (pdev->device == 0x1182) ||
+-	    (pdev->device == 0x1183) || (pmr & SIS_PMR_COMBINED))
++	if ((pdev->device == 0x0182) || (pdev->device == 0x0183) ||
++	    (pdev->device == 0x1182) || (pmr & SIS_PMR_COMBINED))
+ 		pci_read_config_dword(pdev, cfg_addr+0x10, &val2);
+ 
+ 	return (val|val2) &  0xfffffffb; /* avoid problems with powerdowned ports */
+@@ -203,8 +202,8 @@ static void sis_scr_cfg_write (struct ata_port *ap, unsigned int sc_reg, u32 val
+ 
+ 	pci_write_config_dword(pdev, cfg_addr, val);
+ 
+-	if ((pdev->device == 0x0182) || (pdev->device == 0x0183) || (pdev->device == 0x1182) ||
+-	    (pdev->device == 0x1183) || (pmr & SIS_PMR_COMBINED))
++	if ((pdev->device == 0x0182) || (pdev->device == 0x0183) ||
++	    (pdev->device == 0x1182) || (pmr & SIS_PMR_COMBINED))
+ 		pci_write_config_dword(pdev, cfg_addr+0x10, val);
+ }
+ 
+@@ -224,8 +223,8 @@ static u32 sis_scr_read (struct ata_port *ap, unsigned int sc_reg)
+ 
+ 	val = ioread32(ap->ioaddr.scr_addr + (sc_reg * 4));
+ 
+-	if ((pdev->device == 0x0182) || (pdev->device == 0x0183) || (pdev->device == 0x1182) ||
+-	    (pdev->device == 0x1183) || (pmr & SIS_PMR_COMBINED))
++	if ((pdev->device == 0x0182) || (pdev->device == 0x0183) ||
++	    (pdev->device == 0x1182) || (pmr & SIS_PMR_COMBINED))
+ 		val2 = ioread32(ap->ioaddr.scr_addr + (sc_reg * 4) + 0x10);
+ 
+ 	return (val | val2) &  0xfffffffb;
+@@ -245,8 +244,8 @@ static void sis_scr_write (struct ata_port *ap, unsigned int sc_reg, u32 val)
+ 		sis_scr_cfg_write(ap, sc_reg, val);
+ 	else {
+ 		iowrite32(val, ap->ioaddr.scr_addr + (sc_reg * 4));
+-		if ((pdev->device == 0x0182) || (pdev->device == 0x0183) || (pdev->device == 0x1182) ||
+-		    (pdev->device == 0x1183) || (pmr & SIS_PMR_COMBINED))
++		if ((pdev->device == 0x0182) || (pdev->device == 0x0183) ||
++		    (pdev->device == 0x1182) || (pmr & SIS_PMR_COMBINED))
+ 			iowrite32(val, ap->ioaddr.scr_addr + (sc_reg * 4)+0x10);
+ 	}
+ }
+@@ -293,11 +292,11 @@ static int sis_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		/* The PATA-handling is provided by pata_sis */
+ 		switch (pmr & 0x30) {
+ 		case 0x10:
+-			ppi[1] = &sis_info133;
++			ppi[1] = &sis_info133_for_sata;
+ 			break;
+ 
+ 		case 0x30:
+-			ppi[0] = &sis_info133;
++			ppi[0] = &sis_info133_for_sata;
+ 			break;
+ 		}
+ 		if ((pmr & SIS_PMR_COMBINED) == 0) {
+@@ -324,14 +323,14 @@ static int sis_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		break;
+ 
+ 	case 0x1182:
++		dev_printk(KERN_INFO, &pdev->dev, "Detected SiS 1182/966/680 SATA controller\n");
++		pi.flags |= ATA_FLAG_SLAVE_POSS;
++		break;
++
+ 	case 0x1183:
+-		pci_read_config_dword(pdev, 0x64, &val);
+-		if (val & 0x10000000) {
+-			dev_printk(KERN_INFO, &pdev->dev, "Detected SiS 1182/1183/966L SATA controller\n");
+-		} else {
+-			dev_printk(KERN_INFO, &pdev->dev, "Detected SiS 1182/1183/966 SATA controller\n");
+-			pi.flags |= ATA_FLAG_SLAVE_POSS;
+-		}
++		dev_printk(KERN_INFO, &pdev->dev, "Detected SiS 1183/966/966L/968/680 controller in PATA mode\n");
++		ppi[0] = &sis_info133_for_sata;
++		ppi[1] = &sis_info133_for_sata;
+ 		break;
  	}
  
--	mutex_unlock(&cinergyt2->sem);
-+	mutex_unlock(&cinergyt2->wq_sem);
+diff --git a/drivers/ata/sis.h b/drivers/ata/sis.h
+index 0f2208d..f7f3eeb 100644
+--- a/drivers/ata/sis.h
++++ b/drivers/ata/sis.h
+@@ -2,4 +2,4 @@
+ struct ata_port_info;
  
- 	if (atomic_dec_and_test(&cinergyt2->inuse) && cinergyt2->disconnect_pending) {
- 		warn("delayed unregister in release");
-@@ -838,13 +845,13 @@ static int cinergyt2_register_rc(struct 
- 
- static void cinergyt2_unregister_rc(struct cinergyt2 *cinergyt2)
- {
--	cancel_delayed_work(&cinergyt2->rc_query_work);
-+	cancel_rearming_delayed_work(&cinergyt2->rc_query_work);
- 	input_unregister_device(cinergyt2->rc_input_dev);
- }
- 
- static inline void cinergyt2_suspend_rc(struct cinergyt2 *cinergyt2)
- {
--	cancel_delayed_work(&cinergyt2->rc_query_work);
-+	cancel_rearming_delayed_work(&cinergyt2->rc_query_work);
- }
- 
- static inline void cinergyt2_resume_rc(struct cinergyt2 *cinergyt2)
-@@ -907,6 +914,7 @@ static int cinergyt2_probe (struct usb_i
- 	usb_set_intfdata (intf, (void *) cinergyt2);
- 
- 	mutex_init(&cinergyt2->sem);
-+	mutex_init(&cinergyt2->wq_sem);
- 	init_waitqueue_head (&cinergyt2->poll_wq);
- 	INIT_DELAYED_WORK(&cinergyt2->query_work, cinergyt2_query);
- 
-@@ -974,11 +982,8 @@ static void cinergyt2_disconnect (struct
- {
- 	struct cinergyt2 *cinergyt2 = usb_get_intfdata (intf);
- 
--	flush_scheduled_work();
--
- 	cinergyt2_unregister_rc(cinergyt2);
--
--	cancel_delayed_work(&cinergyt2->query_work);
-+	cancel_rearming_delayed_work(&cinergyt2->query_work);
- 	wake_up_interruptible(&cinergyt2->poll_wq);
- 
- 	cinergyt2->demux.dmx.close(&cinergyt2->demux.dmx);
-@@ -992,21 +997,22 @@ static int cinergyt2_suspend (struct usb
- {
- 	struct cinergyt2 *cinergyt2 = usb_get_intfdata (intf);
- 
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->sem))
-+	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->wq_sem))
- 		return -ERESTARTSYS;
- 
- 	if (1) {
--		struct cinergyt2 *cinergyt2 = usb_get_intfdata (intf);
- 
- 		cinergyt2_suspend_rc(cinergyt2);
--		cancel_delayed_work(&cinergyt2->query_work);
-+		cancel_rearming_delayed_work(&cinergyt2->query_work);
-+
-+		mutex_lock(&cinergyt2->sem);
- 		if (cinergyt2->streaming)
- 			cinergyt2_stop_stream_xfer(cinergyt2);
--		flush_scheduled_work();
- 		cinergyt2_sleep(cinergyt2, 1);
-+		mutex_unlock(&cinergyt2->sem);
- 	}
- 
--	mutex_unlock(&cinergyt2->sem);
-+	mutex_unlock(&cinergyt2->wq_sem);
- 	return 0;
- }
- 
-@@ -1014,9 +1020,15 @@ static int cinergyt2_resume (struct usb_
- {
- 	struct cinergyt2 *cinergyt2 = usb_get_intfdata (intf);
- 	struct dvbt_set_parameters_msg *param = &cinergyt2->param;
-+	int err = -ERESTARTSYS;
- 
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->sem))
--		return -ERESTARTSYS;
-+	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->wq_sem))
-+		goto out;
-+
-+	if (mutex_lock_interruptible(&cinergyt2->sem))
-+		goto out_unlock1;
-+
-+	err = 0;
- 
- 	if (!cinergyt2->sleeping) {
- 		cinergyt2_sleep(cinergyt2, 0);
-@@ -1029,7 +1041,10 @@ static int cinergyt2_resume (struct usb_
- 	cinergyt2_resume_rc(cinergyt2);
- 
- 	mutex_unlock(&cinergyt2->sem);
--	return 0;
-+out_unlock1:
-+	mutex_unlock(&cinergyt2->wq_sem);
-+out:
-+	return err;
- }
- 
- static const struct usb_device_id cinergyt2_table [] __devinitdata = {
-
+ /* pata_sis.c */
+-extern const struct ata_port_info sis_info133;
++extern const struct ata_port_info sis_info133_for_sata;
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index 2b2f5c1..eb46cb0 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -60,6 +60,7 @@ config BLK_DEV_SD
+ 	depends on SCSI
+ 	---help---
+ 	  If you want to use SCSI hard disks, Fibre Channel disks,
++	  Serial ATA (SATA) or Parallel ATA (PATA) hard disks,
+ 	  USB storage or the SCSI or parallel port version of
+ 	  the IOMEGA ZIP drive, say Y and read the SCSI-HOWTO,
+ 	  the Disk-HOWTO and the Multi-Disk-HOWTO, available from
