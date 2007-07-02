@@ -1,87 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXGBK7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXGBLKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbXGBK7t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 06:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbXGBK7l
+	id S1756214AbXGBLKY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 07:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbXGBLKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 06:59:41 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:49739 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751368AbXGBK7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 06:59:39 -0400
-Date: Mon, 2 Jul 2007 13:08:01 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S\. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [NETPOLL] netconsole: fix soft lockup when removing module
-Message-ID: <20070702110801.GD1639@ff.dom.local>
-References: <20070701173558.GA207@tv-sign.ru> <20070702063424.GA1639@ff.dom.local> <20070702092408.GA137@tv-sign.ru>
+	Mon, 2 Jul 2007 07:10:13 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:20422 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbXGBLKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 07:10:12 -0400
+Date: Mon, 2 Jul 2007 15:04:53 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: pe1rxq@amsat.org, v4l-dvb-maintainer@linuxtv.org
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: [PATCH] se401: fix "&& 0x" typo
+Message-ID: <20070702110453.GA6634@localhost.sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070702092408.GA137@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 01:24:08PM +0400, Oleg Nesterov wrote:
-> On 07/02, Jarek Poplawski wrote:
-> >
-> > > > --- a/net/core/netpoll.c
-> > > > +++ b/net/core/netpoll.c
-> > > > @@ -72,7 +72,8 @@ static void queue_process(struct work_struct *work)
-> > > >  			netif_tx_unlock(dev);
-> > > >  			local_irq_restore(flags);
-> > > >  
-> > > > -			schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> > > > +			if (atomic_read(&npinfo->refcnt))
-> > > > +				schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> > > >  			return;
-> > > >  		}
-> >
-> > [...snip...]
-> > 
-> > So, 2.6.21 needs something better (maybe you've found it btw.?),
-> > but they weren't too interested, anyway.
-> 
-> We can do a double flush trick. If queue_process() checks ->refcnt before
-> schedule_delayed_work() like above, netpoll_cleanup() can do
-> 
-> 	flush_scheduled_work();
-> 
-> 	// the next invocation of queue_process()
-> 	// must see ->refcnt == 0
-> 	if (!cancel_delayed_work(&npinfo->tx_work)) {
-> 		/* may be queued, wait for completion */
-> 		flush_scheduled_work();
-> 	}
+Code there survived trivial regexp made earlier, but after bulk preprocessing
+was done...
 
-I'll try to think about it later, but I don't plan to do next patch,
-so feel free to send this. I didn't plan to fix netpoll at all
-(I never didn't use nor studied this before...). But couldn't stand
-this stupid lockup stays in 2.6.21. Now, I see it probably doesn't
-annoy more than 2 or 3 people around...
+===>	if (!cp[2] && 0x40) {	<===
+		printk("<3>" "%s: " "Bayer format not supported!" ...
+		return 1;
+	}
 
-> 
-> Jarek, I don't understand net/, a silly question. Why do we need the #2 chunk?
-> Isn't it better to move skb_queue_purge(&npinfo->txq) after cancel_..._work()
-> instead?
 
-I've thought about this too, but because I don't know netpoll/netconsole
-enough I didn't want to change more than minimum needed. 
+NOTE: to me, check or error message should be reverted, but I know nothing
+about this driver.
 
-skb_queue_purge() uses heavy locking (irqsave) and I don't remember now
-if I've found the reason or simply believed somebody had to have a reason
-to do this there, anyway, if moved after cancel_ it could be done without
-this locking, and something like while () instead of my if () should be
-enough.
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
 
-But there was not much interest about this patch, and I'm not currently
-interested to be the main netconsole expert too, so maybe you would
-like to try...
+ drivers/media/video/se401.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Cheers,
-Jarek P.
+--- a/drivers/media/video/se401.c
++++ b/drivers/media/video/se401.c
+@@ -1280,7 +1280,7 @@ static int se401_init(struct usb_se401 *se401, int button)
+ 	rc=se401_sndctrl(0, se401, SE401_REQ_GET_HEIGHT, 0, cp, sizeof(cp));
+ 	se401->cheight=cp[0]+cp[1]*256;
+ 
+-	if (!cp[2] && SE401_FORMAT_BAYER) {
++	if (!(cp[2] & SE401_FORMAT_BAYER)) {
+ 		err("Bayer format not supported!");
+ 		return 1;
+ 	}
+
