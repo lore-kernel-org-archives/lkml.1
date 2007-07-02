@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbXGBN6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbXGBOCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbXGBN6v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 09:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbXGBN6l
+	id S1758975AbXGBOCJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbXGBOBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 09:58:41 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:12438 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752883AbXGBN6k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 09:58:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OH+DDEdA4xbijpViw/U67Bd6XpUH/o31Zqm2BaLitegCCIGtTe8t9antUyCisK6GVOh3Y+7bNghjg3gmqg7ivrd+uUbW9eXV5cZT3bM8vMW3/GgxAlGpmprZRqe1X8R04ti+LC0o8cycFW4NYWefI8ManeZ+tgUWoZFtnGPpQ2w=
-Message-ID: <9a8748490707020658t5e6542ag6edb435dbc4499ab@mail.gmail.com>
-Date: Mon, 2 Jul 2007 15:58:39 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: why does git perpetually complain about include/asm-blackfin/macros.h?
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Git Mailing List" <git@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <4688EF9B.8020405@garzik.org>
+	Mon, 2 Jul 2007 10:01:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40690 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752432AbXGBOBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:01:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+Date: Mon, 2 Jul 2007 16:08:55 +0200
+User-Agent: KMail/1.9.5
+Cc: David Greaves <david@dgreaves.com>, David Chinner <dgc@sgi.com>,
+       David Robinson <zxvdr.au@gmail.com>,
+       LVM general discussion and development 
+	<linux-lvm@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>
+References: <46744065.6060605@dgreaves.com> <4684C0DD.4080702@dgreaves.com> <4688D9F2.6020000@gmail.com>
+In-Reply-To: <4688D9F2.6020000@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0707020800010.1972@localhost.localdomain>
-	 <4688EF9B.8020405@garzik.org>
+Message-Id: <200707021608.56616.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/07/07, Jeff Garzik <jeff@garzik.org> wrote:
-> Robert P. J. Day wrote:
-> >   for the umpteenth time, after doing a pull, i see this:
-> >
-> > $ git diff
-> > diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
-> > deleted file mode 100644
-> > index e69de29..0000000
-> > $
->
-> I have the same problem.  git 1.5.0.6 on Fedora Core 5 or 6.
->
-> I even tried a completely fresh clone, but the problem still appears.
->
-I've seen that as well, but in my case doing a
-$ git reset --hard master
-fixed it.
+On Monday, 2 July 2007 12:56, Tejun Heo wrote:
+> David Greaves wrote:
+> >> Tejun Heo wrote:
+> >>> It's really weird tho.  The PHY RDY status changed events are coming
+> >>> from the device which is NOT used while resuming
+> > 
+> > There is an obvious problem there though Tejun (the errors even when sda
+> > isn't involved in the OS boot) - can I start another thread about that
+> > issue/bug later? I need to reshuffle partitions so I'd rather get the
+> > hibernate working first and then go back to it if that's OK?
+> 
+> Yeah, sure.  The problem is that we don't know whether or how those two
+> are related.  It would be great if there's a way to verify memory image
+> read from hibernation is intact.  Rafael, any ideas?
+
+Well, s2disk has an option to compute an MD5 checksum of the image during
+the hibernation and verify it while reading the image.  Still, s2disk/resume
+aren't very easy to install  and configure ...
+
+Greetings,
+Rafael
+
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+"Premature optimization is the root of all evil." - Donald Knuth
