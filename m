@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbXGBOPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbXGBOPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760028AbXGBOPb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759862AbXGBOPH
+	id S1760090AbXGBOPy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758168AbXGBOPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:15:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51902 "EHLO mail.dvmed.net"
+	Mon, 2 Jul 2007 10:15:45 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:12540 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759626AbXGBOPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:15:05 -0400
-Message-ID: <46890862.2090002@garzik.org>
-Date: Mon, 02 Jul 2007 10:14:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1759346AbXGBOPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:15:45 -0400
+Message-ID: <468908A9.2010702@openvz.org>
+Date: Mon, 02 Jul 2007 18:16:09 +0400
+From: Kirill Korotaev <dev@openvz.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, enricoss@tiscali.it,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 2.6.22-rc5] libata: add HTS541616J9SA00 to NCQ blacklist
-References: <fa.sspu6LOivd/touNtS2IsMKPqHa0@ifi.uio.no> <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no> <467EC909.9040006@shaw.ca> <467F2495.3080509@gmail.com> <467F286B.40607@gmail.com>
-In-Reply-To: <467F286B.40607@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jan Kara <jack@suse.cz>
+CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: jbd lost fix?
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Another member of HTS5416* family doing spurious NCQ completion.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Enrico Sardi <enricoss@tiscali.it>
-> ---
->  drivers/ata/libata-core.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index adfae9d..fbca8d8 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -3803,6 +3803,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
->  	/* Drives which do spurious command completion */
->  	{ "HTS541680J9SA00",	"SB2IC7EP",	ATA_HORKAGE_NONCQ, },
->  	{ "HTS541612J9SA00",	"SBDIC7JP",	ATA_HORKAGE_NONCQ, },
-> +	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
->  	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
+Jan,
 
-applied
+it looks like the following fix:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=43c3e6f5abdf6acac9b90c86bf03f995bf7d3d92
 
+was lost after resurrecting of the spliced checkpointing list in this patch:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=78ce89c92bc6eaf5933b5664bff64253a7103bd7;hp=cdaad343b561cdeb38b0578bb038
+
+Can you please confirm that?
+
+Thanks,
+Kirill
 
