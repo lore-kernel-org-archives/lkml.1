@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbXGBMqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbXGBMvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbXGBMqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 08:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbXGBMqO
+	id S1757480AbXGBMvf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 08:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbXGBMv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 08:46:14 -0400
-Received: from mail02.vsnet.ch ([153.109.10.41]:50009 "EHLO mail02.vsnet.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753886AbXGBMqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 08:46:13 -0400
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Subject: Re: [PATCH] mmc: at91_mci: fix hanging and rework to match flowcharts
-Date: Mon, 2 Jul 2007 14:45:13 +0200
-User-Agent: KMail/1.9.5
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <andrew@sanpeople.com>, Andreas Beier <mughat@gmail.com>,
-       Hamish Guthrie <hamish@prodigi.ch>, wux@landicorp.com,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-References: <4688EC94.1090901@rfo.atmel.com>
-In-Reply-To: <4688EC94.1090901@rfo.atmel.com>
+	Mon, 2 Jul 2007 08:51:29 -0400
+Received: from web33214.mail.mud.yahoo.com ([209.191.69.162]:48085 "HELO
+	web33214.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753066AbXGBMv2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 08:51:28 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jul 2007 08:51:28 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=m0uc6SXgvOfyd6WMKDdQ7C2ZjfF5PLgOE2v82w57ezeiK7WiWWC20oLEV/+bz6k9hLGybcJ1H7ILox+fLYkdoXec308hsVzebLoDBngYqhSOxth61b/SatxQJltMS1pDhVPiWmvBaK/Je3l0S9WC0p/tU502ts2ICMieFfXQtxE=;
+X-YMail-OSG: dqF0fN4VM1muzURzdX0Z7qBlZbqM2zyHvN8jHdb1RXfxIXzXnRRDGIDK_QdSXhf1EU5qnPjakOAaqIJ46otGY0.YCoaNhc28BtGhF9i4Kir_7VclL0U2bjHICnvK7Q--
+Date: Mon, 2 Jul 2007 05:44:47 -0700 (PDT)
+From: N O S P A M <krey_zo@yahoo.com>
+Subject: Porting Linux Kernel To New Type Of CPU and Hardware
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707021445.14316.marc.pignat@hevs.ch>
-X-VSnet-MailScanner: Found to be clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <400150.4546.qm@web33214.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 July 2007 14:16, Nicolas Ferre wrote:
-> Fixes hanging using multi block operations (seen during CMD25).
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Verified working on at91rm9200 using 1 wire mode.
+Hi
+I plan to hire a famous, professional Linux software
+development team or company to port the whole Linux
+Kernel and device drivers to a new type of CPU and
+hardware, with fixed budget and a time limit.
 
-A small remark, only for future improvements:
-> @@ -817,7 +834,11 @@ static int __init at91_mci_probe(struct 
->  
->  	mmc->ops = &at91_mci_ops;
->  	mmc->f_min = 375000;
-> -	mmc->f_max = 25000000;
-> +	if (cpu_is_at91sam9263())
-> +		mmc->f_max = 50000000;
-> +	else
-> +		mmc->f_max = 25000000;
-for at91rm9200 f_max is MCK/2 why don't use it?
+What is the name of the professional, experienced
+software company or team familiar with Linux Kernel
+programming?
+Thank you.
 
-Nice work, thanks
 
-Regards
-
-Marc
+       
+____________________________________________________________________________________
+Boardwalk for $500? In 2007? Ha! Play Monopoly Here and Now (it's updated for today's economy) at Yahoo! Games.
+http://get.games.yahoo.com/proddesc?gamekey=monopolyherenow  
