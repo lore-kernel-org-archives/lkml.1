@@ -1,72 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbXGBLRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbXGBLWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbXGBLRA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 07:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXGBLQw
+	id S1757396AbXGBLWa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 07:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbXGBLWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 07:16:52 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:48727 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752694AbXGBLQv (ORCPT
+	Mon, 2 Jul 2007 07:22:23 -0400
+Received: from messidor.freesurf.fr ([212.43.206.29]:49083 "EHLO
+	smtp-out.freesurf.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752880AbXGBLWW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 07:16:51 -0400
-Message-ID: <4688DE8F.4040902@linux.vnet.ibm.com>
-Date: Mon, 02 Jul 2007 16:46:31 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 2 Jul 2007 07:22:22 -0400
+Message-ID: <38318.82.227.54.211.1183375340.squirrel@arlette.freesurf.fr>
+Date: Mon, 2 Jul 2007 13:22:20 +0200 (CEST)
+Subject: Re: 2.6.21-rt9 problem : xruns
+From: <skyball000@freesurf.fr>
+To: <g.liakhovetski@gmx.de>
+X-Priority: 3
+In-Reply-To: <Pine.LNX.4.60.0706292225400.4227@poirot.grange>
+References: <Pine.LNX.4.60.0706292225400.4227@poirot.grange>
+Importance: Normal
+X-MSMail-Priority: Normal
+Cc: <linux-kernel@vger.kernel.org>
+X-Mailer: SquirrelMail (version 1.2.5)
 MIME-Version: 1.0
-To: Krzysztof Oledzki <olel@ans.pl>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: IRQ handling difference between i386 and x86_64
-References: <Pine.LNX.4.64.0706301617240.16011@bizon.gios.gov.pl> <1183218035.2894.13.camel@laptopd505.fenrus.org>
-In-Reply-To: <1183218035.2894.13.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Arjan van de Ven wrote:
-> On Sat, 2007-06-30 at 16:55 +0200, Krzysztof Oledzki wrote:
->> Hello,
+> On Fri, 29 Jun 2007 skyball000@freesurf.fr wrote:
+>
+>> Hi,
 >>
->> It seems that IRQ handling is somehow different between i386 and x86_64.
+>> I've recently compiled a "vanilla" 2.6.21 kernel, patched with Ingo
+>> Molnar's rt-8 patch, as I was unable to compile with rt-7.
 >>
->> In my Dell PowerEdge 1950 is it possible to enable interrupts spreading 
->> over all CPUs. This a single CPU, four CORE system (Quad-Core E5335 Xeon) 
->> so I think that interrupts migration may be useful. Unfortunately, it 
->> works only with 32-bit kernel. Booting it with x86_64 leads to situation, 
->> when all interrupts goes only to the first cpu matching a smp_affinity 
->> mask.
-> 
-> arguably that is the most efficient behavior... round robin of
-> interrupts is the worst possible case in terms of performance
-> 
-> are you using irqbalance ? (www.irqbalance.org)
+>> I needed it because I'm using audio applications (tests were made with
+>> FrugalWare, but I don't think it's a distro issue).
+>>
+>> Everything was allright until I changed my motherboard for an  Asrock
+>> 4coreDual-Vsta (I formerly used a Nforce4 one), with VIA PT880 Ultra
+>> chipset.
+>>
+>> I've justed switched the hardware, as Linux is neat enough to boot
+>> without having to reinstall the whole OS.
+>>
+>> Since, I get tons of xruns when using RT applications, and the only
+>> solution I've found to "fix" it was to disable ACPI at boot time.
+>
+> Interestingly, this looks very similar to a problem I had... Could you,
+>  please, verify if acpid is running (with ACPI configured on), and if
+> yes -  stop it and retest for xruns?
+>
+> Thanks
+> Guennadi
+>
+I've only seen a "kacpid" (unkillable), managed to stop ACPI services with
+init scripts but xruns are still there (a few less).
 
-If you have not been using irqbalance, then setting more bits in
-irq/smp_affinity will utilize hardware APIC routing. Sending interrupt
-to more than one CPU will work in flat mode only.
+>> Moreover, I get this message at boot time :
+>> PCI: BIOS bug: MCFG area@e0000000 is not E820 reserved
+>> PCI: not using MMCONFIG
+>>
+>> I've also tested this hardware setup with a UbuntoStudio kernel
+>> (2.6.19), and everything works flawlessy (no XRUNS, no kernel
+>> messages) !
+>>
+>> So here is my question (I'd like to understand what's happening) :
+>>    - is it a kernel (or patch) issue ?
+>>    - is it a bad chipset support in the latest kernel versions ? -
+>>    could this be related to BIOS issues only (I've tried all available
+>> versions without any change) ?
+>>    - should I use special settings in the ".config" in order to avoid
+>>    these
+>> problems ?
+>>
+>> I wasn't able to detect what causes these XRUNS, so if anyone has
+>> clues ...
+>>
+>> Regards
+>> skb
+>>
+>>
+>>
+>>
+>>
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe
+>> linux-kernel" in the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+> ---
+> Guennadi Liakhovetski
 
-In 32 bit kernel the IOAPIC is configured in flat mode while in 64 bit
-it is in physical flat mode.  Physical flat mode will support
-interrupt routing to only one CPU.
-
-32-bit: Enabling APIC mode:  Flat.  Using 2 I/O APICs
-64-bit: Setting APIC routing to physical flat
-
-This is the reason for the observed interrupt routing behavior.  I
-guess future kernels will use 'physical flat' mode to avoid hardware
-bugs on various complex configurations and also make it scale up to
-larger systems.  Also utilizing hardware routing to send interrupts to
-many CPUs may not provide desired behavior.
-
-irqbalance application will do the needful.  I agree with Arjan on the
-fact that equal interrupt distribution need not provide best
-performance.  You will run into complex routing issues only when you
-have more NICs than actual number of CPU cores.
-
---Vaidy
 
 
