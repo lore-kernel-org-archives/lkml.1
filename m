@@ -1,126 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbXGBIhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbXGBIo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759432AbXGBIhk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 04:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXGBIhd
+	id S1759402AbXGBIo0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 04:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXGBIoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 04:37:33 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:40804 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbXGBIhb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 04:37:31 -0400
-Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
-       Thomas Sattler <tsattler@gmx.de>
-In-Reply-To: <20070630114658.GA344@tv-sign.ru>
-References: <1182969638.4769.56.camel@johannes.berg>
-	 <1183048429.4089.1.camel@johannes.berg>
-	 <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4>
-	 <20070630114658.GA344@tv-sign.ru>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Ft9hCOBo7S2XxS437mua"
-Date: Mon, 02 Jul 2007 10:37:58 +0200
-Message-Id: <1183365478.4089.90.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Mon, 2 Jul 2007 04:44:18 -0400
+Received: from mail02.vsnet.ch ([153.109.10.41]:52485 "EHLO mail02.vsnet.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752491AbXGBIoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 04:44:18 -0400
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: tglx@linutronix.de
+Subject: [BUG] clockevents : clockevent_delta2ns usage
+Date: Mon, 2 Jul 2007 10:43:39 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, "Remy Bohmer" <l.pinguin@gmail.com>,
+       "David Brownell" <david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707021043.39617.marc.pignat@hevs.ch>
+X-VSnet-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello all!
 
---=-Ft9hCOBo7S2XxS437mua
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+We're currently working with David Brownell and Remy Bohmer on implementation
+of clocksource/events on the at91rm9200 processor (arm arch).
 
-On Sat, 2007-06-30 at 15:46 +0400, Oleg Nesterov wrote:
-> On 06/30, Ingo Molnar wrote:
-> >
-> > On Thu, 2007-06-28 at 19:33 +0200, Johannes Berg wrote:
-> > > No, that's not right either, but Arjan just helped me a bit with how
-> > > lockdep works and I think I have the right idea now. Ignore this for
-> > > now, I'll send a new patch in a few days.
-> >=20
-> > ok. But in general, this is a very nice idea!
-> >=20
-> > i've Cc:-ed Oleg. Oleg, what do you think? I think we should keep all
-> > the workqueue APIs specified in a form that makes them lockdep coverabl=
-e
-> > like Johannes did. This debug mechanism could have helped with the
-> > recent DVB lockup that Thomas Sattler reported.
->=20
-> I think this idea is great!
+While debugging our implementation, we came about a rounding problem, in the
+setting of min_delta_ns field, and I think it can be in almost all clock_event_device.
 
-:)
+Almost all clock_event_device initialize the field min_delta_ns this way:
+	clkevt32k.mult = div_sc(CLOCK_TICK_RATE, NSEC_PER_SEC, clkevt32k.shift);
+	clkevt32k.max_delta_ns = clockevent_delta2ns(0x000fffff, &clkevt32k);
+	clkevt32k.min_delta_ns = clockevent_delta2ns(1, &clkevt32k);
 
-> Johannes, could you change wait_on_work() as well? Most users of
-> flush_workqueue() should be converted to use it.
+The clockevent_delta2ns function rounds the result down, so the rounded min_delta_ns
+can be smaller than the real min_delta_ns.
 
-Sure. The case I had used flush_workqueue() but I'll look into
-wait_on_work() and maybe converting the place where I had this.
+When clockevents_program_event is called, this rounding problem shows up:
+...
+	if (delta < dev->min_delta_ns)
+		delta = dev->min_delta_ns;
 
-> > @@ -342,6 +351,9 @@ static int flush_cpu_workqueue(struct cp
-> >         } else {
-> >                 struct wq_barrier barr;
-> >
-> > +               lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0, 2, _THIS_I=
-P_);
-> > +               lock_release(&cwq->wq->lockdep_map, 0, _THIS_IP_);
-> > +
-> >                 active =3D 0;
-> >                 spin_lock_irq(&cwq->lock);
->=20
-> I am not sure why you skip "if (cwq->thread =3D=3D current)" case, it can
-> deadlock in the same way.
+	clc = delta * dev->mult;
+	clc >>= dev->shift;
 
-I wasn't sure what would happen with recursion.
+	return dev->set_next_event((unsigned long) clc, dev)
 
-> But, perhaps we should not change flush_cpu_workqueue(). If we detect the
-> deadlock, we will have num_online_cpus() reports, yes?
+When delta is to small, min_delta_ns will be used, and with a wrong rounding,
+will call set_next_event with a value smaller than the expected, and 
+set_next_event will fail.
 
-Not sure what you're thinking of here. I initially had it in
-flush_workqueue() but then put it into flush_cpu_workqueue(), but I have
-to admit that I already forgot why.
+This will result in an infinite loop when clockevents_program_event is called
+from tick_program_event with a too short delay.
 
-> And,
->=20
-> >                 if (!list_empty(&cwq->worklist) || cwq->current_work !=
-=3D NULL) {
-> > @@ -376,6 +388,8 @@ void fastcall flush_workqueue(struct wor
-> >         int cpu;
-> >
-> >         might_sleep();
-> > +       lock_acquire(&wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
-> > +       lock_release(&wq->lockdep_map, 0, _THIS_IP_);
->=20
-> one of the 2 callers was already modified. Perhaps it is better to add
-> lock_acquire() into the second caller, cleanup_workqueue_thread(), but
-> skip flush_cpu_workqueue() ?
+In our driver, we fixed this problem using that:
+-	clkevt32k.min_delta_ns = clockevent_delta2ns(1, &clkevt32k);
++	clkevt32k.min_delta_ns = clockevent_delta2ns(1, &clkevt32k)+1;
 
-I'll have to look at the code.
+I think other clock_event_device can have the same problem.
 
-The problem I discussed with Arjan is that with this patch all
-workqueues are in the same class which is wrong, so I'll have to modify
-the workqueue creation API by introducing some macros for the LOCKDEP
-case that pass the current code spot as the workqueue class. I'll try to
-do that later today.
+Regards
 
-johannes
-
---=-Ft9hCOBo7S2XxS437mua
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGiLlm/ETPhpq3jKURAletAJ9mmIL6F7sUIszQTFgnSN0/ZBGKvwCgiB+V
-oxit7RMZS8Mf8j32D1JS11w=
-=9ZrB
------END PGP SIGNATURE-----
-
---=-Ft9hCOBo7S2XxS437mua--
-
+Marc
