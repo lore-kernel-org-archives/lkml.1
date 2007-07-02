@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbXGBKWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbXGBKWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbXGBKWQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 06:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbXGBKV7
+	id S1757185AbXGBKWh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 06:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbXGBKW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 06:21:59 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:42496 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbXGBKV6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 06:21:58 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 2 Jul 2007 06:20:04 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       systemtap@sources.redhat.com
-Subject: Re: instrumentation and kprobes really still "EXPERIMENTAL"?
-In-Reply-To: <863e9df20707020256m75d24f52yfc5acd78cacffac7@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707020619590.29879@localhost.localdomain>
-References: <Pine.LNX.4.64.0707011204580.32355@localhost.localdomain> 
- <863e9df20707020154o5232e44ch37dd55811c377a8f@mail.gmail.com> 
- <Pine.LNX.4.64.0707020512320.26135@localhost.localdomain>
- <863e9df20707020256m75d24f52yfc5acd78cacffac7@mail.gmail.com>
+	Mon, 2 Jul 2007 06:22:28 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:45273 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751368AbXGBKW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 06:22:28 -0400
+From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: "rae l" <crquan@gmail.com>
+Subject: Re: Does the kernel HPET support has problems or the hwclock from util-linux?
+Date: Mon, 2 Jul 2007 13:21:58 +0300
+User-Agent: KMail/1.9.7
+Cc: "Adrian Bunk" <bunk@stusta.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <91b13c310707020315v54d19338u817d23d4380bde07@mail.gmail.com>
+In-Reply-To: <91b13c310707020315v54d19338u817d23d4380bde07@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: multipart/signed;
+  boundary="nextPart4652339.FOqBCoUMxi";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707021322.11933.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jul 2007, Abhishek Sagar wrote:
+--nextPart4652339.FOqBCoUMxi
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On 7/2/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> > On Mon, 2 Jul 2007, Abhishek Sagar wrote:
-> >
-> > > On 7/1/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> > > > isn't kprobes mature enough to not be considered experimental anymore?
-> > >
-> > > That would vary from arch to arch.
-> >
-> > fair enough.  however, at the very least, i'm thinking that the entire
-> > "Instrumentation support" submenu can be made non-EXPERIMENTAL, while
-> > individual entries therein can be EXPERIMENTAL on a choice-by-choice
-> > basis or something like that.
->
-> There's not a lot in that menu. It holds oprofile on every arch I
-> grepped on. Oprofile might come across as being marked
-> non-experimental but that may very well be due to the assumption
-> that the menu that holds that option will enforce the EXPERIMENTAL
-> check.
+On Monday 02 July 2007 13:15:40 rae l wrote:
+> from this address, I know util-linux-2.12r is the latest:
+> http://www.kernel.org/pub/linux/utils/util-linux/util-linux-2.12r.lsm
 
-consider this random Kconfig file arch/x86_64/oprofile/Kconfig:
+util-linux is now maintained @ http://userweb.kernel.org/~kzak/util-linux-n=
+g/
 
-=============================
-config PROFILING
-        bool "Profiling support (EXPERIMENTAL)"
-        help
-          Say Y here to enable the extended profiling support mechanisms used
-          by profilers such as OProfile.
+/ismail
 
+=2D-=20
+Perfect is the enemy of good
 
-config OPROFILE
-        tristate "OProfile system profiling (EXPERIMENTAL)"
-        depends on PROFILING
-        help
-          OProfile is a profiling system capable of profiling the
-          whole system, include the kernel, kernel modules, libraries,
-          and applications.
+--nextPart4652339.FOqBCoUMxi
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-          If unsure, say N.
-==============================
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
 
-  the above is a bit silly.  note that both prompts advertise
-themselves as "EXPERIMENTAL" even though neither of them has such a
-dependency.  they *are*, however, part of an submenu that *is*
-dependent on EXPERIMENTAL (although you'd never know that just by
-looking at that Kconfig file).  in short, it's just kind of ugly
-hackery at the moment.
+iQIVAwUARojR00e9qviWcMsnAQIkuhAAnHns0GOXpqUKgKLaHy9A1DUHzMW1Q0TX
+sGPJEpJJrdbTE5fgHKcijHqGkMGE2OQF2LI4zwRJi4LhIFAhN3+aR2O4TPXdfPHN
+ZnsEhmnwS77jk9pHMjti+6ZO6JAUGeJbnsdGM/07arxLLwSG7FrzBX8eotzDXSDl
+yxSJq3H62oyG7N2XdvbGiAbzv5QMsEG5/nyYkf87UzoMqMOfsqv/XFgXyhYWhY90
+HihZGQG6uvAhiIwkqxqAUOSt98VdYHc/K525ntplu2/ty0k9TeZcojM/1/zgUeX0
+HxfJhDuk9vpAcO1YLf/w4jBS0tH58KpbQg47sK4+ddDMDBJt2ApjI8oB2NtkPWxN
+riNnXzstdMPSmD/BH5Cei5YT7dMBolUhisxGan0elzsj8zZwz3spsaU2hG8/5Bi9
+A17vfK6FQ7TBuUOjhli2O8kWLpXkXujTUsRKX8dHLm571WrvX7rqTJUN5lEZfPFU
+wE1F05GzhdPG4ViVx5WOHw1wvjP8nPrigoa5BUXSN/QcYlrgBbgYaCRgiDp+eDXv
+GiQDaKQ54eIEQDSSoPEYCrO7kzICLxmSH/yPMlKjujvd0j2e1QakbIoXUg+N0CnO
+jCD7Lzw56V35QiaJY6gsTw/QgKdfZw4ME2NJlYvSw01g/SvfukUk9oStDZ4THHtB
+UW4Gj2biy+c=
+=SwzG
+-----END PGP SIGNATURE-----
 
-  i made a suggestion a while back about having maturity levels like
-"EXPERIMENTAL" **automatically** added to the displayed prompts when
-you're doing a config -- that would go a long way to avoiding all this
-manual adding of a maturity level to Kconfig prompts, but that's a
-non-trivial change and is something the Kconfig folks would have to
-handle.
-
-  my original point was simply that, based on its acceptance, it would
-seem kprobes has progressed beyond the EXPERIMENTAL phase, that's all.
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+--nextPart4652339.FOqBCoUMxi--
