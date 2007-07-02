@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbXGBR6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbXGBSJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbXGBR6n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 13:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbXGBR6e
+	id S1754302AbXGBSJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 14:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXGBSJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 13:58:34 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55697 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752028AbXGBR6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 13:58:33 -0400
-Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: linux-fsdevel@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       nfsv4@linux-nfs.org
-In-Reply-To: <1183275424.4010.126.camel@localhost.localdomain>
-References: <1183275424.4010.126.camel@localhost.localdomain>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 02 Jul 2007 10:58:33 -0400
-Message-Id: <1183388313.3864.35.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Mon, 2 Jul 2007 14:09:51 -0400
+Received: from 241-226.umostel.ru ([77.246.241.226]:56375 "EHLO mail.aknet.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751736AbXGBSJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 14:09:50 -0400
+Message-ID: <46893F97.7080200@aknet.ru>
+Date: Mon, 02 Jul 2007 22:10:31 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: William Tambe <tambewilliam@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Concerning a post that you made about expandable anonymous shared
+ mappings
+References: <468562F6.4010604@gmail.com> <Pine.LNX.4.64.0707021619020.32337@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0707021619020.32337@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond or Bruce, can you please review these patch series and ack if you
-agrees? Thanks.
+Hi.
 
-As to performance concerns that raise before the inode version counter
-(at least for ext4) is done inside ext4_mark_inode_dirty), so there is
-no extra IO work to store this counter to disk.
+Hugh Dickins wrote:
+> You've answered your own question: we did not make the change Stas
+> suggested, IIRC because I remained a little uneasy with that change
+> in behaviour, and nobody else spoke up for it.
+IIRC your argument, that made sense to me,
+was that with such an approach, you can only
+expand the backing-store, but never shrink.
+I agree this is a problem from some point of
+view. I have no idea whether it is important
+or not, but it definitely _looks_ not very good.
 
-Mingming
-On Sun, 2007-07-01 at 03:37 -0400, Mingming Cao wrote:
-> This patch converts the 32-bit i_version in the generic inode to a 64-bit
-> i_version field.
-> 
-> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-> Signed-off-by: Jean Noel Cordenner <jean-noel.cordenner@bull.net>
-> Signed-off-by: Kalpak Shah <kalpak@clusterfs.com>
-> 
-> Index: linux-2.6.21/include/linux/fs.h
-> ===================================================================
-> --- linux-2.6.21.orig/include/linux/fs.h
-> +++ linux-2.6.21/include/linux/fs.h
-> @@ -549,7 +549,7 @@ struct inode {
->  	uid_t			i_uid;
->  	gid_t			i_gid;
->  	dev_t			i_rdev;
-> -	unsigned long		i_version;
-> +	u64			i_version;
->  	loff_t			i_size;
->  #ifdef __NEED_I_SIZE_ORDERED
->  	seqcount_t		i_size_seqcount;
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>         //why does this failed. I am well in the interval [4096, 8192]
+>>         *(unsigned int *)(ptr + 4096 + 8)= 10;
+>> }
+Well, this generates a bus error, while, for
+example, doing the same trick with having a
+/dev/mem as a backing-store, simply maps the
+"enlarged" space with the anonymous memory,
+and so does not generate a SIGBUS (not producing
+a desired effect either, of course).
+Why do we have it both ways? Shouldn't they
+(i.e. /dev/zero and /dev/mem mapping) behave
+the same after expanding with mremap?
+
+> I haven't given it any thought since then:
+I was thinking about it a bit, and I imagined
+we need something like
+    int mopen(void *addr, size_t len, unsigned int flags);
+which will give you an fd for the memory area,
+which you can then ftruncate() and mmap() (and
+mremap).
+It looks like vmsplice() is a very close one,
+but unfortunately it involves pipe, which will
+not give you an ability to ftruncate() I suppose.
+I even asked Jens Axboe about the possibility
+to have mopen(). He said it might be a good
+optimization (having only one syscall whereas
+now 2 are needed (pipe/vmsplice)), but not
+worth an efforts.
+Now, if maybe someone have a time and patience,
+he can explain me what was an advantage of using
+pipe with vmsplice() at all. Why it was not
+possible to have something like the mopen() above,
+that will give you an fd right away, without a
+pipe, so that ftruncate/mmap/lseek etc can be
+used on it? Well, I guess this was discussed
+many times, but I failed to google anything
+relevant...
+Such a thing could solve that mremap() problem
+that me and William Tambe have.
 
