@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXGBTvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXGBUIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755492AbXGBTvK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 15:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXGBTu5
+	id S1755492AbXGBUIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 16:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXGBUIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 15:50:57 -0400
-Received: from bizon.gios.gov.pl ([212.244.124.8]:55290 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752880AbXGBTu4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 15:50:56 -0400
-Date: Mon, 2 Jul 2007 21:50:46 +0200 (CEST)
-From: Krzysztof Oledzki <ole@ans.pl>
-X-X-Sender: ole@bizon.gios.gov.pl
-To: Phil Dibowitz <phil@ipom.com>
-cc: Andreas Steinmetz <ast@domdv.de>, Jan Engelhardt <jengelh@computergmbh.de>,
-       netfilter-devel@lists.netfilter.org,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: mss to pmtu clamping partially broken?
-In-Reply-To: <20070702193541.GA14961@ipom.com>
-Message-ID: <Pine.LNX.4.64.0707022147540.25153@bizon.gios.gov.pl>
-References: <4684E853.20900@domdv.de> <Pine.LNX.4.64.0706301034320.22579@fbirervta.pbzchgretzou.qr>
- <4689300C.9050802@domdv.de> <20070702182850.GB14507@ipom.com>
- <Pine.LNX.4.64.0707022113330.25153@bizon.gios.gov.pl> <20070702193541.GA14961@ipom.com>
+	Mon, 2 Jul 2007 16:08:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41745 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753370AbXGBUIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 16:08:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Greaves <david@dgreaves.com>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+Date: Mon, 2 Jul 2007 22:15:11 +0200
+User-Agent: KMail/1.9.5
+Cc: Tejun Heo <htejun@gmail.com>, David Chinner <dgc@sgi.com>,
+       David Robinson <zxvdr.au@gmail.com>,
+       LVM general discussion and development 
+	<linux-lvm@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>
+References: <46744065.6060605@dgreaves.com> <200707021712.50323.rjw@sisk.pl> <4689298B.2000407@dgreaves.com>
+In-Reply-To: <4689298B.2000407@dgreaves.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-593621854-1183405846=:25153"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707022215.12200.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Monday, 2 July 2007 18:36, David Greaves wrote:
+> Rafael J. Wysocki wrote:
+> > On Monday, 2 July 2007 16:32, David Greaves wrote:
+> >> Rafael J. Wysocki wrote:
+> >>> On Monday, 2 July 2007 12:56, Tejun Heo wrote:
+> >>>> David Greaves wrote:
+> >>>>>> Tejun Heo wrote:
+> >>>>>>> It's really weird tho.  The PHY RDY status changed events are coming
+> >>>>>>> from the device which is NOT used while resuming
+> >>>>> There is an obvious problem there though Tejun (the errors even when sda
+> >>>>> isn't involved in the OS boot) - can I start another thread about that
+> >>>>> issue/bug later? I need to reshuffle partitions so I'd rather get the
+> >>>>> hibernate working first and then go back to it if that's OK?
+> >>>> Yeah, sure.  The problem is that we don't know whether or how those two
+> >>>> are related.  It would be great if there's a way to verify memory image
+> >>>> read from hibernation is intact.  Rafael, any ideas?
+> >>> Well, s2disk has an option to compute an MD5 checksum of the image during
+> >>> the hibernation and verify it while reading the image.
+> >> (Assuming you mean the mainline version)
+> >>
+> >> Sounds like a good think to try next...
+> >> Couldn't see anything on this in ../Documentation/power/*
+> >> How do I enable it?
+> > 
+> > Add 'compute checksum = y' to the s2disk's configuration file.
+> 
+> Ah, right - that's uswsusp isn't it? Which isn't what I'm having problems with 
+> AFAIK?
+> 
+> My suspend procedure is:
+> 
+> xfs_freeze -f /scratch
+> sync
+> echo platform > /sys/power/disk
+> echo disk > /sys/power/state
+> xfs_freeze -u /scratch
+> 
+> Which should work (actually it should work without the sync/xfs_freeze too).
+> 
+> So to debug the problem I'd like to minimally extend this process rather than 
+> replace it with another approach.
 
----187430788-593621854-1183405846=:25153
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Well, this is not entirely "another approach".  Only the saving of the image is
+done differently, the rest is the same.
+
+> I take it there isn't an 'echo y > /sys/power/do_image_checksum'?
+
+No, there is not anything like that.
+
+Greetings,
+Rafael
 
 
-
-On Mon, 2 Jul 2007, Phil Dibowitz wrote:
-
-> On Mon, Jul 02, 2007 at 09:16:57PM +0200, Krzysztof Oledzki wrote:
->>
->>
->> On Mon, 2 Jul 2007, Phil Dibowitz wrote:
->>
->>> On Mon, Jul 02, 2007 at 07:04:12PM +0200, Andreas Steinmetz wrote:
->>>> Jan Engelhardt wrote:
->>>>> Do you really need clamping? It's a hack, since TCP should do MSS
->>>>> negotiation
->>>>> itself. (Of course it may happen that some routers are broken.) But
->>>>> usually not
->>>>> for incoming packets.
->>>>
->>>> You never know when you hit ICMP blackholes, broken routers and other
->>>> evil things. Better safe than sorry so clamping is the way to go for m=
-e.
->>>
->>> I encourage you to report PMTUD Blackholes to the MSS Initiative at
->>> http://www.phildev.net/mss/
->>
->> Any chances for similar initiative for "SACK vandals"? ;)
->
-> There's already a counterpart for ECN blackholes, so I'm not opposed to i=
-t.
-> However, keeping up with new reports, re-testing existing offenders, etc.
-> takes up a good chunk of time, so I don't have the time to do it myself. =
-I'm
-> happy to reference such a site, however.
-
-Indeed and it seems there are more important issues, like similar window=20
-scaling problem for example. :(
-
-Best regards,
-
- =09=09=09=09Krzysztof Ol=EAdzki
----187430788-593621854-1183405846=:25153--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
