@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbXGBTN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbXGBTP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbXGBTN6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 15:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbXGBTNv
+	id S1756628AbXGBTP4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 15:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbXGBTPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 15:13:51 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3861 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138AbXGBTNv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 15:13:51 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Subject: Re: [PATCH] mmc: at91_mci: fix hanging and rework to match flowcharts
-Date: Mon, 2 Jul 2007 21:13:45 +0200
-User-Agent: KMail/1.9.5
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <andrew@sanpeople.com>, Andreas Beier <mughat@gmail.com>,
-       Hamish Guthrie <hamish@prodigi.ch>, Marc Pignat <marc.pignat@hevs.ch>,
-       wux@landicorp.com, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-References: <4688EC94.1090901@rfo.atmel.com>
-In-Reply-To: <4688EC94.1090901@rfo.atmel.com>
+	Mon, 2 Jul 2007 15:15:49 -0400
+Received: from mail.tmr.com ([64.65.253.246]:48451 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753138AbXGBTPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 15:15:48 -0400
+Message-ID: <46894F8F.3070607@tmr.com>
+Date: Mon, 02 Jul 2007 15:18:39 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707022113.46858.m.kozlowski@tuxland.pl>
+To: nigel@suspend2.net
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Suspend2 is getting a new name.
+References: <200707021730.57066.nigel@nigel.suspend2.net>
+In-Reply-To: <200707021730.57066.nigel@nigel.suspend2.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Nigel Cunningham wrote:
+> Hi all.
+> 
+> Suspend2's name is changing to "TuxOnIce".
+> 
+> This is for a couple of reasons:
+> 
+> In recent discussions on LKML, the point was made that the word "Suspend" is 
+> confusing. It is used to refer to both suspending to disk and suspending to 
+> ram. Life will be simpler if we more clearly differentiate the two.
+> 
+> The name Suspend2 came about a couple of years ago when we made the 2.0 
+> release and started self-hosting. If we ever get to a 3.0 release, the name 
+> could become even more confusing! (And there are already problems with people 
+> confusing the name with swsusp and talking about uswsusp as version 3!).
+> 
+> http://www.suspend2.net is still working at the moment, but we'll shift to 
+> http://www.tuxonice.net over the next while. The wiki and bugzilla are 
+> already done; email will remain on suspend2.net for a little while and git 
+> trees will be renamed at the time of the next stable release.
+> 
+I guess this is "good news, bad news" time. The good news is that the 
+"suspend with working resume" project is still active, the bad news is 
+that making provisions for long term out of mainline operation sounds as 
+if you have no hope of getting this code into the mainline kernel. :-(
 
-> @@ -250,28 +246,27 @@ static void at91_mci_pre_dma_read(struct
->  /*
->   * Handle after a dma read
->   */
-> -static void at91_mci_post_dma_read(struct at91mci_host *host)
-> +static int at91_mci_post_dma_read(struct at91mci_host *host)
->  {
->         struct mmc_command *cmd;
->         struct mmc_data *data;
-> +       int completed = 0;
-
-You added 'completed' but you use it only once - as a return value.
-
->         pr_debug("post dma read done\n");
-> +       return completed;
-> }
-
-What's the point?
-
-	Mariusz
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
