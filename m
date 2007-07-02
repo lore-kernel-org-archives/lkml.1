@@ -1,167 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbXGBWFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbXGBWGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbXGBWFZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 18:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbXGBWFO
+	id S1757405AbXGBWGj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 18:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbXGBWGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 18:05:14 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:10445 "EHLO
-	viefep28-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755988AbXGBWFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 18:05:13 -0400
-From: Daniel Ritz <daniel.ritz@gmx.ch>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Fwd: [PATCH] IRTOUCHSYSTEMS support for usbtouchscreen
-Date: Tue, 3 Jul 2007 00:02:44 +0200
-User-Agent: KMail/1.9.6
-Cc: Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org
+	Mon, 2 Jul 2007 18:06:30 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:37822 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755988AbXGBWG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 18:06:29 -0400
+Date: Mon, 2 Jul 2007 17:06:27 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <morgan@kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
+       casey@schaufler-ca.com, Andrew Morton <akpm@google.com>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>, James Morris <jmorris@namei.org>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] file caps: update selinux xattr hooks
+Message-ID: <20070702220627.GA12463@sergelap.austin.ibm.com>
+References: <20070628182255.GA13144@sergelap.austin.ibm.com> <1183387015.12218.25.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_EYXiGTn3XSIjqf9"
-Message-Id: <200707030002.44853.daniel.ritz@gmx.ch>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1183387015.12218.25.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_EYXiGTn3XSIjqf9
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Quoting Stephen Smalley (sds@tycho.nsa.gov):
+> On Thu, 2007-06-28 at 13:22 -0500, Serge E. Hallyn wrote:
+> > This fixes a shortcoming of the cap_setfcap patch I sent earlier,
+> > pointed out by Stephen Smalley.
+> > 
+> > Seems to compile and boot on my little systems.
+> > 
+> > thanks,
+> > -serge
+> > 
+> > >From d729000b922a2877a48ce2b5a03a9366d8c65d04 Mon Sep 17 00:00:00 2001
+> > From: Serge E. Hallyn <serue@us.ibm.com>
+> > Date: Thu, 28 Jun 2007 11:57:19 -0400
+> > Subject: [PATCH 1/1] file caps: update selinux xattr hooks
+> > 
+> > SELinux does not call out to it's secondary module for setxattr
+> > or removexattr mediation, as the secondary module would
+> > incorrectly prevent writing of selinux xattrs.  This means
+> > that when selinux and capability are both loaded, admins will
+> > be able to write file capabilities with CAP_SYS_ADMIN as before,
+> > not with CAP_SETFCAP.
+> > 
+> > Update the selinux hooks to hardcode logic for the special
+> > consideration for file caps.
+> > 
+> > I changed the flow of the removexattr hook to reduce the amount
+> > of indentation I was getting.  It was probably written the way
+> > it was for a reason, and if it was, I apologize and will
+> > rewrite :)  If it wasn't, hopefully this way is ok.
+> > 
+> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> > ---
+> >  security/selinux/hooks.c |   75 +++++++++++++++++++++++++++++----------------
+> >  1 files changed, 48 insertions(+), 27 deletions(-)
+> > 
+> > diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> > index af42820..db0a4ed 100644
+> > --- a/security/selinux/hooks.c
+> > +++ b/security/selinux/hooks.c
+> > @@ -2289,6 +2289,30 @@ static int selinux_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
+> >  	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
+> >  }
+> >  
+> > +/* called by selinux_inode_setxattr to mediate setting
+> > + * of non-selinux xattrs */
+> > +static int selinux_inode_setotherxattr(struct dentry *dentry, char *name)
+> > +{
+> > +	if (strncmp(name, XATTR_SECURITY_PREFIX,
+> > +		     sizeof XATTR_SECURITY_PREFIX - 1))
+> > +		return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
+> > +
+> > +	/* a file capability requires cap_setfcap */
+> > +	if (!strcmp(name, XATTR_NAME_CAPS)) {
+> > +		if (!capable(CAP_SETFCAP))
+> > +			return -EPERM;
+> > +		else
+> > +			return 0;
+> > +	}
+> > +
+> > +	/* A different attribute in the security namespace.
+> > +	   Restrict to administrator. */
+> > +	if (!capable(CAP_SYS_ADMIN))
+> > +		return -EPERM;
+> > +
+> > +	return 0;
+> > +}
+> 
+> In reworking the flow of this code, you've changed the behavior (more so
+> than you intended) - your checking above only applies the FILE__SETATTR
+> check if dealing with a non-security attribute, whereas the original
+> logic (below) applied that check to all non-selinux attributes.  So with
+> your new logic, we don't get any process-to-object check for
+> security.cap or security.<other>, and thus lose the domain-to-type check
+> or the level-to-level check.
 
-looks good.
 
-Signed-off-by: Daniel Ritz <daniel.ritz@gmx.ch>
+Thanks Stephen, does the following version appear correct?  It just
+checks for a different cap for security.capability, then if granted
+goes on to check FILE__GETATTR before granting setxattr or removexattr
+on any security.* xattr.
 
---- forwarded message ---
+thanks,
+-serge
 
-Hello,
-this patch adds support for IRTOUCHSYSTEMS (or UNITOP) infrared touchscreens. 
+>From 5ec50bc22d3320565002658433829f7dc5bc0aa5 Mon Sep 17 00:00:00 2001
+From: Serge E. Hallyn <serue@us.ibm.com>
+Date: Mon, 2 Jul 2007 14:07:51 -0400
+Subject: [PATCH 1/1] file caps: update selinux xattr hooks (v2)
 
-The manufacturer (http://www.irtouch.com) provides only closed source drivers 
-for specific kernel versions (looks like GPL violation, btw.) which I haven't 
-even tried (as there's no chance that any of the modules could work with 
-2.6.22-rc kernel). They also don't provide any protocol specification.
+SELinux does not call out to it's secondary module for setxattr
+or removexattr mediation, as the secondary module would
+incorrectly prevent writing of selinux xattrs.  This means
+that when selinux and capability are both loaded, admins will
+be able to write file capabilities with CAP_SYS_ADMIN as before,
+not with CAP_SETFCAP.
 
-So I made this code (attached) after observing the data stream with usbmon for 
-a while. If someone is interested in my observations, here are the results:
+Update the selinux hooks to hardcode logic for the special
+consideration for file caps.
 
-The touchscreen sends data in 8-byte packets.
-BYTE 0 - unknown meaning, seen only one value: 0x54
-BYTE 1 - unknown meaning, 3 lowest bits indicate touch state
-        values seen: 0x81, 0x82 or 0x83
-        bit 0 = set if the screen is touched and was not touched before (touch
-        bit 1 = set if the screen is touched and was touched (dragging)
-        bit 2 = set if the touch was ended (release)
-BYTES 2 and 3 - X position, high-order-byte first, range = 0 to 0x0FFF
-BYTES 4 and 5 - Y position, high-order-byte first, range = 0 to 0x0FFF
-BYTE 6 - unknown meaning, seen only one value: 0xFF
-BYTE 7 - unknown meaning, seen only one value: 0x00
+Note that the setxattr and removexattr logic for non selinux
+attrs appears to be identical.  So I do have another patch
+where selinux_inode_setotherxattr takes an extra argument
+u32 av (in case removexattr ever gets its own av permission)
+so removexattr can shrink and just use that.  But first I
+thought I'd see if this version is even close correct :)
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ security/selinux/hooks.c |   48 ++++++++++++++++++++++++++++-----------------
+ 1 files changed, 30 insertions(+), 18 deletions(-)
 
--- 
-Ondrej Zary
-
---Boundary-00=_EYXiGTn3XSIjqf9
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="usbtouchscreen-add-irtouch.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="usbtouchscreen-add-irtouch.patch"
-
-diff -ur linux-2.6.22-rc6-orig/drivers/input/touchscreen/Kconfig linux-2.6.22-rc6/drivers/input/touchscreen/Kconfig
---- linux-2.6.22-rc6-orig/drivers/input/touchscreen/Kconfig	2007-06-29 12:56:19.000000000 +0200
-+++ linux-2.6.22-rc6/drivers/input/touchscreen/Kconfig	2007-06-29 13:01:38.000000000 +0200
-@@ -177,6 +177,7 @@
- 	  - some other eTurboTouch
- 	  - Gunze AHL61
- 	  - DMC TSC-10/25
-+	  - IRTOUCHSYSTEMS/UNITOP
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index af42820..336525c 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2289,6 +2289,25 @@ static int selinux_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
+ 	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
+ }
  
- 	  Have a look at <http://linux.chapter7.ch/touchkit/> for
- 	  a usage description and the required user-space stuff.
-@@ -219,4 +220,9 @@
- 	bool "DMC TSC-10/25 device support" if EMBEDDED
- 	depends on TOUCHSCREEN_USB_COMPOSITE
- 
-+config TOUCHSCREEN_USB_IRTOUCH
-+	default y
-+	bool "IRTOUCHSYSTEMS/UNITOP device support" if EMBEDDED
-+	depends on TOUCHSCREEN_USB_COMPOSITE
-+
- endif
-Only in linux-2.6.22-rc6/drivers/input/touchscreen/: built-in.o
-diff -ur linux-2.6.22-rc6-orig/drivers/input/touchscreen/usbtouchscreen.c linux-2.6.22-rc6/drivers/input/touchscreen/usbtouchscreen.c
---- linux-2.6.22-rc6-orig/drivers/input/touchscreen/usbtouchscreen.c	2007-06-29 12:56:19.000000000 +0200
-+++ linux-2.6.22-rc6/drivers/input/touchscreen/usbtouchscreen.c	2007-06-29 13:01:48.000000000 +0200
-@@ -9,6 +9,7 @@
-  *  - eTurboTouch
-  *  - Gunze AHL61
-  *  - DMC TSC-10/25
-+ *  - IRTOUCHSYSTEMS/UNITOP
-  *
-  * Copyright (C) 2004-2006 by Daniel Ritz <daniel.ritz@gmx.ch>
-  * Copyright (C) by Todd E. Johnson (mtouchusb.c)
-@@ -110,6 +111,7 @@
- 	DEVTYPE_ETURBO,
- 	DEVTYPE_GUNZE,
- 	DEVTYPE_DMC_TSC10,
-+	DEVTYPE_IRTOUCH,
- };
- 
- static struct usb_device_id usbtouch_devices[] = {
-@@ -150,6 +152,11 @@
- 	{USB_DEVICE(0x0afa, 0x03e8), .driver_info = DEVTYPE_DMC_TSC10},
- #endif
- 
-+#ifdef CONFIG_TOUCHSCREEN_USB_IRTOUCH
-+	{USB_DEVICE(0x595a, 0x0001), .driver_info = DEVTYPE_IRTOUCH},
-+	{USB_DEVICE(0x6615, 0x0001), .driver_info = DEVTYPE_IRTOUCH},
-+#endif
-+
- 	{}
- };
- 
-@@ -416,6 +423,21 @@
- 
- 
- /*****************************************************************************
-+ * IRTOUCH Part
-+ */
-+#ifdef CONFIG_TOUCHSCREEN_USB_IRTOUCH
-+static int irtouch_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
++static int selinux_inode_setotherxattr(struct dentry *dentry, char *name)
 +{
-+	dev->x = (pkt[3] << 8) | pkt[2];
-+	dev->y = (pkt[5] << 8) | pkt[4];
-+	dev->touch = (pkt[1] & 0x03) ? 1 : 0;
++	if (!strncmp(name, XATTR_SECURITY_PREFIX,
++		     sizeof XATTR_SECURITY_PREFIX - 1)) {
++		if (!strcmp(name, XATTR_NAME_CAPS)) {
++			if (!capable(CAP_SETFCAP))
++				return -EPERM;
++		} else if (!capable(CAP_SYS_ADMIN)) {
++			/* A different attribute in the security namespace.
++			   Restrict to administrator. */
++			return -EPERM;
++		}
++	}
 +
-+	return 1;
++	/* Not an attribute we recognize, so just check the
++	   ordinary setattr permission. */
++	return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
 +}
-+#endif
 +
-+
-+/*****************************************************************************
-  * the different device descriptors
-  */
- static struct usbtouch_device_info usbtouch_dev_info[] = {
-@@ -504,6 +526,17 @@
- 		.read_data	= dmc_tsc10_read_data,
- 	},
- #endif
-+
-+#ifdef CONFIG_TOUCHSCREEN_USB_IRTOUCH
-+	[DEVTYPE_IRTOUCH] = {
-+		.min_xc		= 0x0,
-+		.max_xc		= 0x0fff,
-+		.min_yc		= 0x0,
-+		.max_yc		= 0x0fff,
-+		.rept_size	= 8,
-+		.read_data	= irtouch_read_data,
-+	},
-+#endif
- };
+ static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value, size_t size, int flags)
+ {
+ 	struct task_security_struct *tsec = current->security;
+@@ -2299,19 +2318,8 @@ static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value
+ 	u32 newsid;
+ 	int rc = 0;
  
+-	if (strcmp(name, XATTR_NAME_SELINUX)) {
+-		if (!strncmp(name, XATTR_SECURITY_PREFIX,
+-			     sizeof XATTR_SECURITY_PREFIX - 1) &&
+-		    !capable(CAP_SYS_ADMIN)) {
+-			/* A different attribute in the security namespace.
+-			   Restrict to administrator. */
+-			return -EPERM;
+-		}
+-
+-		/* Not an attribute we recognize, so just check the
+-		   ordinary setattr permission. */
+-		return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
+-	}
++	if (strcmp(name, XATTR_NAME_SELINUX))
++		return selinux_inode_setotherxattr(dentry, name);
+ 
+ 	sbsec = inode->i_sb->s_security;
+ 	if (sbsec->behavior == SECURITY_FS_USE_MNTPOINT)
+@@ -2387,11 +2395,15 @@ static int selinux_inode_removexattr (struct dentry *dentry, char *name)
+ {
+ 	if (strcmp(name, XATTR_NAME_SELINUX)) {
+ 		if (!strncmp(name, XATTR_SECURITY_PREFIX,
+-			     sizeof XATTR_SECURITY_PREFIX - 1) &&
+-		    !capable(CAP_SYS_ADMIN)) {
+-			/* A different attribute in the security namespace.
+-			   Restrict to administrator. */
+-			return -EPERM;
++			     sizeof XATTR_SECURITY_PREFIX - 1)) {
++			if (!strcmp(name, XATTR_NAME_CAPS)) {
++				if (!capable(CAP_SETFCAP))
++					return -EPERM;
++			} else if (!capable(CAP_SYS_ADMIN)) {
++				/* A different attribute in the security
++				   namespace.  Restrict to administrator. */
++				return -EPERM;
++			}
+ 		}
+ 
+ 		/* Not an attribute we recognize, so just check the
+-- 
+1.5.1.1.GIT
 
---Boundary-00=_EYXiGTn3XSIjqf9--
