@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXGBMP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbXGBMQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755579AbXGBMP5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 08:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXGBMPs
+	id S1756368AbXGBMQk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 08:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbXGBMQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 08:15:48 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50766 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751730AbXGBMPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 08:15:47 -0400
-Message-ID: <4688EC70.1000607@garzik.org>
-Date: Mon, 02 Jul 2007 08:15:44 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Mon, 2 Jul 2007 08:16:33 -0400
+Received: from smtp-01b.mandic.com.br ([200.225.81.136]:54186 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752512AbXGBMQc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 08:16:32 -0400
+Message-ID: <4688EC9B.4070206@mandic.com.br>
+Date: Mon, 02 Jul 2007 09:16:27 -0300
+From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, acme@redhat.com
-Subject: Re: Please pull from 'from_linus' branch
-References: <Pine.LNX.4.64.0706290012430.15686@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0706290012430.15686@blarg.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Oliver Neukum <oliver@neukum.org>
+CC: Fabio Comolli <fabio.comolli@gmail.com>, nigel@suspend2.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Suspend2 is getting a new name.
+References: <200707021730.57066.nigel@nigel.suspend2.net> <b637ec0b0707020130s76dbe749n9e3c8bfb9a7ebf1f@mail.gmail.com> <200707021035.37425.oliver@neukum.org>
+In-Reply-To: <200707021035.37425.oliver@neukum.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
-> Please pull from 'for_linus' branch of
+Oliver Neukum escreveu:
+> Am Montag, 2. Juli 2007 schrieb Fabio Comolli:
+>> On 7/2/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+>>> Suspend2's name is changing to "TuxOnIce".
+>>
+>> Am I the only person on this list thinking that a plain "hibernate"
+>> will be a much better choice?
 > 
-> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_linus
-> 
-> to receive the following updates:
-> 
->  drivers/net/gianfar.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Kumar Gala (1):
->       gianfar: Fix typo bug introduced by move to udp_hdr()
+> Yes, you are the only person. "Hibernate" is the concept. The separate
+> implementations also need names.
 
-pulled
+TuxOnIce sounds like a "game" :-)
+But I don't see any problem with this.
 
-
+Regards,
+Renato
