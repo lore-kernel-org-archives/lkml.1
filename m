@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbXGBJX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbXGBJkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756950AbXGBJX7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 05:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbXGBJXu
+	id S1755252AbXGBJkm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 05:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXGBJkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 05:23:50 -0400
-Received: from mail.screens.ru ([213.234.233.54]:36893 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751333AbXGBJXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 05:23:49 -0400
-Date: Mon, 2 Jul 2007 13:24:08 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [NETPOLL] netconsole: fix soft lockup when removing module
-Message-ID: <20070702092408.GA137@tv-sign.ru>
-References: <20070701173558.GA207@tv-sign.ru> <20070702063424.GA1639@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070702063424.GA1639@ff.dom.local>
-User-Agent: Mutt/1.5.11
+	Mon, 2 Jul 2007 05:40:37 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35362 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751008AbXGBJkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 05:40:36 -0400
+Message-ID: <4688C812.9020200@suse.cz>
+Date: Mon, 02 Jul 2007 11:40:34 +0200
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1) Gecko/20061107 SUSE/1.0.99-26 SeaMonkey/1.1b
+MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] Fix XFS_IOC_FSBULKSTAT{,_SINGLE} and XFS_IOC_FSINUMBERS
+ in compat mode
+References: <20070619132549.266927601@suse.cz> <20070619132726.893544847@suse.cz> <20070628034957.GE989688@sgi.com>
+In-Reply-To: <20070628034957.GE989688@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02, Jarek Poplawski wrote:
->
-> > > --- a/net/core/netpoll.c
-> > > +++ b/net/core/netpoll.c
-> > > @@ -72,7 +72,8 @@ static void queue_process(struct work_struct *work)
-> > >  			netif_tx_unlock(dev);
-> > >  			local_irq_restore(flags);
-> > >  
-> > > -			schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> > > +			if (atomic_read(&npinfo->refcnt))
-> > > +				schedule_delayed_work(&npinfo->tx_work, HZ/10);
-> > >  			return;
-> > >  		}
->
-> [...snip...]
+David Chinner wrote:
+> On Tue, Jun 19, 2007 at 03:25:52PM +0200, mmarek@suse.cz wrote:
+>> +static int xfs_bulkstat_one_compat(
+>> +	xfs_mount_t	*mp,		/* mount point for filesystem */
+>> +	xfs_ino_t	ino,		/* inode number to get data for */
+>> +	void		__user *buffer,	/* buffer to place output in */
+>> +	int		ubsize,		/* size of buffer */
+>> +	void		*private_data,	/* my private data */
+>> +	xfs_daddr_t	bno,		/* starting bno of inode cluster */
+>> +	int		*ubused,	/* bytes used by me */
+>> +	void		*dibuff,	/* on-disk inode buffer */
+>> +	int		*stat)		/* BULKSTAT_RV_... */
 > 
-> So, 2.6.21 needs something better (maybe you've found it btw.?),
-> but they weren't too interested, anyway.
+> Hmmm - this is almost all duplicated code. It's pretty much what I
+> described, but maybe not /quite/ what I had in mind here. It's a
+> *big* improvement on the first version, but it seems now that the
+> only real difference xfs_bulkstat_one() and
+> xfs_bulkstat_one_compat() is copy_to_user() vs the discrete put_user
+> calls.
+> 
+> I think we can remove xfs_bulkstat_one_compat() completely by using
+> the same method you used with the xfs_inumber_fmt functions.
 
-We can do a double flush trick. If queue_process() checks ->refcnt before
-schedule_delayed_work() like above, netpoll_cleanup() can do
+You mean xfs_ioc_bulkstat_compat() -> native xfs_bulkstat() -> native
+xfs_bulkstat_one() -> a compat output formatter, so a
+pointer-to-function passed to pointer-to-function? ;) I could (ab)use
+the void *private_data arg which xfs_bulkstat passes unmodified to the
+formatter; xfs_bulkstat_one() doesn't make use of it atm. I'll try it
+and post the result in a while.
 
-	flush_scheduled_work();
-
-	// the next invocation of queue_process()
-	// must see ->refcnt == 0
-	if (!cancel_delayed_work(&npinfo->tx_work)) {
-		/* may be queued, wait for completion */
-		flush_scheduled_work();
-	}
-
-Jarek, I don't understand net/, a silly question. Why do we need the #2 chunk?
-Isn't it better to move skb_queue_purge(&npinfo->txq) after cancel_..._work()
-instead?
-
-Oleg.	
-
+Michal
