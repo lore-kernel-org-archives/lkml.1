@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbXGBLrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759134AbXGBLsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbXGBLrh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 07:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbXGBLr3
+	id S1759134AbXGBLsV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 07:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbXGBLsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 07:47:29 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36916 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754275AbXGBLr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 07:47:27 -0400
-Date: Mon, 2 Jul 2007 17:17:30 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070702114730.GA21966@amitarora.in.ibm.com>
-References: <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070701225543.GW31489@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 2 Jul 2007 07:48:14 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:11809 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753180AbXGBLsN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 07:48:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A93A9GlpOlLGqeLb5Smp3h1OaBnZj+kIF+Dz0zsrtNj9EX+sp/n/zZRW6HLOn1s+JxMPrY1bImG8+SF0+X+j0UhgkyFh1IIC0tLchsiKAY4qcma9Si5Gog/34cKQzPrUoTRTzQiLA4owAmL7gAOdCmnaUVDiNBqZfvx2GYG+54s=
+Message-ID: <863e9df20707020448o21c3baf2xda3528df312179c@mail.gmail.com>
+Date: Mon, 2 Jul 2007 17:18:11 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: instrumentation and kprobes really still "EXPERIMENTAL"?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       systemtap@sources.redhat.com
+In-Reply-To: <Pine.LNX.4.64.0707020619590.29879@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070701225543.GW31489@sgi.com>
-User-Agent: Mutt/1.4.1i
+References: <Pine.LNX.4.64.0707011204580.32355@localhost.localdomain>
+	 <863e9df20707020154o5232e44ch37dd55811c377a8f@mail.gmail.com>
+	 <Pine.LNX.4.64.0707020512320.26135@localhost.localdomain>
+	 <863e9df20707020256m75d24f52yfc5acd78cacffac7@mail.gmail.com>
+	 <Pine.LNX.4.64.0707020619590.29879@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 08:55:43AM +1000, David Chinner wrote:
-> On Sat, Jun 30, 2007 at 11:21:11AM +0100, Christoph Hellwig wrote:
-> > On Tue, Jun 26, 2007 at 04:02:47PM +0530, Amit K. Arora wrote:
-> > > > Can you clarify - what is the current behaviour when ENOSPC (or some other
-> > > > error) is hit?  Does it keep the current fallocate() or does it free it?
-> > > 
-> > > Currently it is left on the file system implementation. In ext4, we do
-> > > not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
-> > > end up with partial (pre)allocation. This is inline with dd and
-> > > posix_fallocate, which also do not free the partially allocated space.
-> > 
-> > I can't find anything in the specification of posix_fallocate
-> > (http://www.opengroup.org/onlinepubs/009695399/functions/posix_fallocate.html)
-> > that tells what should happen to allocate blocks on error.
-> 
-> Yeah, and AFAICT glibc leaves them behind ATM.
+On 7/2/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+> consider this random Kconfig file arch/x86_64/oprofile/Kconfig:
+>
+> =============================
+> config PROFILING
+>         bool "Profiling support (EXPERIMENTAL)"
+>         help
+>           Say Y here to enable the extended profiling support mechanisms used
+>           by profilers such as OProfile.
+>
+>
+> config OPROFILE
+>         tristate "OProfile system profiling (EXPERIMENTAL)"
+>         depends on PROFILING
+>         help
+>           OProfile is a profiling system capable of profiling the
+>           whole system, include the kernel, kernel modules, libraries,
+>           and applications.
+>
+>           If unsure, say N.
+> ==============================
+>
+>   the above is a bit silly.  note that both prompts advertise
+> themselves as "EXPERIMENTAL" even though neither of them has such a
+> dependency.  they *are*, however, part of an submenu that *is*
+> dependent on EXPERIMENTAL (although you'd never know that just by
+> looking at that Kconfig file).  in short, it's just kind of ugly
+> hackery at the moment.
 
-Yes, it does.
- 
-> > But common sense would be to not leak disk space on failure of this
-> > syscall, and this definitively should not be left up to the filesystem,
-> > either we always leak it or always free it, and I'd strongly favour
-> > the latter variant.
+Yes but pushing the EXPERIMENTAL check to individual menu members
+shouldn't be done in a way which leads to an empty menu for any kernel
+configuration. I suspect that this is why the EXPERIMENTAL check is on
+the instrumentation menu in the first place.
 
-I would not call it a "leak", since the blocks which got allocated as
-part of the partial success of the fallocate syscall can be strictly
-accounted for (i.e. they are assigned to a particular inode). And these
-can be freed by the application, using a suitable @mode of fallocate.
- 
-> We can't simply walk the range an remove unwritten extents, as some
-> of them may have been present before the fallocate() call. That
-> makes it extremely difficult to undo a failed call and not remove
-> more pre-existing pre-allocations.
+>   my original point was simply that, based on its acceptance, it would
+> seem kprobes has progressed beyond the EXPERIMENTAL phase, that's all.
 
-Same is true for ext4 too. It is very difficult to keep track of which
-uninitialized (unwritten) extents got allocated as part of the current
-syscall. This is because, as David mentions, some of them might be
-already present; and also because some of the older ones may have got
-merged with the *new* uninitialized/unwritten extents as part of the
-current syscall. 
- 
-> Given the current behaviour for posix_fallocate() in glibc, I think
-> that retaining the same error semantic and punting the cleanup to
-> userspace (where the app will fail with ENOSPC anyway) is the only
-> sane thing we can do here. Trying to undo this in the kernel leads
-> to lots of extra rarely used code in error handling paths...
-
-Right. This gives applications the free hand if they really want to use
-the partially preallocated space, OR they want to free it; without
-introducing additional complexity in the kernel.
+It's worth a look on some archs.
 
 --
-Regards,
-Amit Arora
+Abhishek Sagar
+-
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
