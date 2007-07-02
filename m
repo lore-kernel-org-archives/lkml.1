@@ -1,187 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760484AbXGBOiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760374AbXGBOkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760484AbXGBOiv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 10:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759057AbXGBOib
+	id S1760374AbXGBOkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 10:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbXGBOkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 10:38:31 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:42083 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757465AbXGBOi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 10:38:29 -0400
-Subject: Re: [PATCH 1/1] file caps: update selinux xattr hooks
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
-       Andrew Morton <akpm@google.com>, KaiGai Kohei <kaigai@kaigai.gr.jp>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070628182255.GA13144@sergelap.austin.ibm.com>
-References: <20070628182255.GA13144@sergelap.austin.ibm.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 02 Jul 2007 10:36:55 -0400
-Message-Id: <1183387015.12218.25.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jul 2007 10:40:42 -0400
+Received: from fiberbit.xs4all.nl ([213.84.224.214]:58008 "EHLO
+	fiberbit.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755699AbXGBOkm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 10:40:42 -0400
+Date: Mon, 2 Jul 2007 16:29:26 +0200
+From: Marco Roeland <marco.roeland@xs4all.nl>
+To: Alex Riesen <raa.lkml@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: why does git perpetually complain about
+	include/asm-blackfin/macros.h?
+Message-ID: <20070702142926.GB10400@fiberbit.xs4all.nl>
+References: <Pine.LNX.4.64.0707020800010.1972@localhost.localdomain> <4688EF9B.8020405@garzik.org> <9a8748490707020658t5e6542ag6edb435dbc4499ab@mail.gmail.com> <4689073D.1020802@garzik.org> <81b0412b0707020722q25e8eb41t456e7316fe4a7b40@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <81b0412b0707020722q25e8eb41t456e7316fe4a7b40@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-28 at 13:22 -0500, Serge E. Hallyn wrote:
-> This fixes a shortcoming of the cap_setfcap patch I sent earlier,
-> pointed out by Stephen Smalley.
-> 
-> Seems to compile and boot on my little systems.
-> 
-> thanks,
-> -serge
-> 
-> >From d729000b922a2877a48ce2b5a03a9366d8c65d04 Mon Sep 17 00:00:00 2001
-> From: Serge E. Hallyn <serue@us.ibm.com>
-> Date: Thu, 28 Jun 2007 11:57:19 -0400
-> Subject: [PATCH 1/1] file caps: update selinux xattr hooks
-> 
-> SELinux does not call out to it's secondary module for setxattr
-> or removexattr mediation, as the secondary module would
-> incorrectly prevent writing of selinux xattrs.  This means
-> that when selinux and capability are both loaded, admins will
-> be able to write file capabilities with CAP_SYS_ADMIN as before,
-> not with CAP_SETFCAP.
-> 
-> Update the selinux hooks to hardcode logic for the special
-> consideration for file caps.
-> 
-> I changed the flow of the removexattr hook to reduce the amount
-> of indentation I was getting.  It was probably written the way
-> it was for a reason, and if it was, I apologize and will
-> rewrite :)  If it wasn't, hopefully this way is ok.
-> 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> ---
->  security/selinux/hooks.c |   75 +++++++++++++++++++++++++++++----------------
->  1 files changed, 48 insertions(+), 27 deletions(-)
-> 
-> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index af42820..db0a4ed 100644
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -2289,6 +2289,30 @@ static int selinux_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
->  	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
->  }
->  
-> +/* called by selinux_inode_setxattr to mediate setting
-> + * of non-selinux xattrs */
-> +static int selinux_inode_setotherxattr(struct dentry *dentry, char *name)
-> +{
-> +	if (strncmp(name, XATTR_SECURITY_PREFIX,
-> +		     sizeof XATTR_SECURITY_PREFIX - 1))
-> +		return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
-> +
-> +	/* a file capability requires cap_setfcap */
-> +	if (!strcmp(name, XATTR_NAME_CAPS)) {
-> +		if (!capable(CAP_SETFCAP))
-> +			return -EPERM;
-> +		else
-> +			return 0;
-> +	}
-> +
-> +	/* A different attribute in the security namespace.
-> +	   Restrict to administrator. */
-> +	if (!capable(CAP_SYS_ADMIN))
-> +		return -EPERM;
-> +
-> +	return 0;
-> +}
+On Monday July 2nd 2007 at 16:22 Alex Riesen wrote:
 
-In reworking the flow of this code, you've changed the behavior (more so
-than you intended) - your checking above only applies the FILE__SETATTR
-check if dealing with a non-security attribute, whereas the original
-logic (below) applied that check to all non-selinux attributes.  So with
-your new logic, we don't get any process-to-object check for
-security.cap or security.<other>, and thus lose the domain-to-type check
-or the level-to-level check.
+> Do some of your branches miss the commit by which it was removed?
+> (It was removed in df30b1171714bbf0e55ffe02138be4b8447e4235)
+> Than it will reappear every time you switch to a branch which still has
+> the file.
 
-> @@ -2299,19 +2323,8 @@ static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value
->  	u32 newsid;
->  	int rc = 0;
->  
-> -	if (strcmp(name, XATTR_NAME_SELINUX)) {
-> -		if (!strncmp(name, XATTR_SECURITY_PREFIX,
-> -			     sizeof XATTR_SECURITY_PREFIX - 1) &&
-> -		    !capable(CAP_SYS_ADMIN)) {
-> -			/* A different attribute in the security namespace.
-> -			   Restrict to administrator. */
-> -			return -EPERM;
-> -		}
-
-Note that if setting a security.<non-selinux> attribute, we first check
-the capability but then fall through on success to the FILE__SETATTR
-check below.
-
-> -
-> -		/* Not an attribute we recognize, so just check the
-> -		   ordinary setattr permission. */
-> -		return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
-> -	}
-> +	if (strcmp(name, XATTR_NAME_SELINUX))
-> +		return selinux_inode_setotherxattr(dentry, name);
->  
->  	sbsec = inode->i_sb->s_security;
->  	if (sbsec->behavior == SECURITY_FS_USE_MNTPOINT)
-> @@ -2385,24 +2398,32 @@ static int selinux_inode_listxattr (struct dentry *dentry)
->  
->  static int selinux_inode_removexattr (struct dentry *dentry, char *name)
->  {
-> -	if (strcmp(name, XATTR_NAME_SELINUX)) {
-> -		if (!strncmp(name, XATTR_SECURITY_PREFIX,
-> -			     sizeof XATTR_SECURITY_PREFIX - 1) &&
-> -		    !capable(CAP_SYS_ADMIN)) {
-> -			/* A different attribute in the security namespace.
-> -			   Restrict to administrator. */
-> -			return -EPERM;
-> -		}
-> +	/* No one is allowed to remove a SELinux security label.
-> +	   You can change the label, but all data must be labeled. */
-> +	if (!strcmp(name, XATTR_NAME_SELINUX))
-> +		return -EACCES;
->  
-> -		/* Not an attribute we recognize, so just check the
-> -		   ordinary setattr permission. Might want a separate
-> -		   permission for removexattr. */
-> +	/* Not an attribute we recognize, so just check the
-> +	   ordinary setattr permission. Might want a separate
-> +	   permission for removexattr. */
-> +	if (strncmp(name, XATTR_SECURITY_PREFIX,
-> +		     sizeof XATTR_SECURITY_PREFIX - 1))
->  		return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
-
-Same problem here - when you changed the flow, you unintentionally
-changed the behavior.
-
-> +
-> +	/* a file capability requires cap_setfcap */
-> +	if (!strcmp(name, XATTR_NAME_CAPS)) {
-> +		if (!capable(CAP_SETFCAP))
-> +			return -EPERM;
-> +		else
-> +			return 0;
->  	}
->  
-> -	/* No one is allowed to remove a SELinux security label.
-> -	   You can change the label, but all data must be labeled. */
-> -	return -EACCES;
-> +	/* A different attribute in the security namespace.
-> +	   Restrict to administrator. */
-> +	if (!capable(CAP_SYS_ADMIN))
-> +		return -EPERM;
-> +
-> +	return 0;
->  }
->  
->  static const char *selinux_inode_xattr_getsuffix(void)
+The problem is that this commit didn't delete the file, but truncated it
+to zero size. How it got to be like that is another matter. Within the
+kernel zero sized files are not supposed to be there, by widely accepted
+practice. So lots of tools assume they should delete them!
 -- 
-Stephen Smalley
-National Security Agency
-
+Marco Roeland
