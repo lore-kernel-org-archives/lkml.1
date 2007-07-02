@@ -1,52 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXGBSNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbXGBSO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbXGBSNn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 14:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXGBSNg
+	id S1755398AbXGBSO6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 14:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbXGBSOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 14:13:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43956 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752566AbXGBSNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 14:13:35 -0400
-Date: Mon, 2 Jul 2007 20:13:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v18
-Message-ID: <20070702181329.GA13064@elte.hu>
-References: <20070622220202.GA16872@elte.hu> <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com> <b647ffbd0707020601r774a38d4gb62b6c07f1b5db32@mail.gmail.com> <19f34abd0707020643g6a274db5q1d25cabd85b9a25f@mail.gmail.com> <20070702155029.GA13241@elte.hu> <19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 2 Jul 2007 14:14:52 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50993 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbXGBSOv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 14:14:51 -0400
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
+	Blocksize support
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: clameter@sgi.com, lkml <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20070614130645.cabdff1b.akpm@linux-foundation.org>
+References: <20070614193839.878721298@sgi.com>
+	 <20070614130645.cabdff1b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 02 Jul 2007 11:16:20 -0700
+Message-Id: <1183400180.31959.14.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> > thx. As an initial matter, could you double-check whether your v18
-> > kernel source has the patch below applied already?
+On Thu, 2007-06-14 at 13:06 -0700, Andrew Morton wrote:
+> On Thu, 14 Jun 2007 12:38:39 -0700
+> clameter@sgi.com wrote:
 > 
-> It does.
+> > This patchset cleans up the page cache handling by replacing
+> > open coded shifts and adds through inline function calls.
+> 
 
-ok. Does the xterm slowdown get any better if you do:
+Some of us (crazy) people are trying to support read for hugetlbfs
+in order to get oprofile work on large-page-backed-executables by
+libhugetlbfs.
 
-  echo 46 > /proc/sys/kernel/sched_features
+Currently, I can't use any generic support. I have this ugly patch
+to get oprofile work. Christoph's clean ups would allow me to set
+per-mapping pagesize and get this to work, without any hacks.
 
-? The default on v18 is:
+Thanks,
+Badari
 
-  echo 14 > /proc/sys/kernel/sched_features
+ fs/hugetlbfs/inode.c |  117 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 117 insertions(+)
 
-	Ingo
+Index: linux/fs/hugetlbfs/inode.c
+===================================================================
+--- linux.orig/fs/hugetlbfs/inode.c	2007-05-18 04:16:27.000000000 -0700
++++ linux/fs/hugetlbfs/inode.c	2007-06-22 10:46:09.000000000 -0700
+@@ -160,6 +160,122 @@ full_search:
+ #endif
+ 
+ /*
++ * Support for read()
++ */
++static int
++hugetlbfs_read_actor(struct page *page, unsigned long offset,
++			char __user *buf, unsigned long count,
++			unsigned long size)
++{
++	char *kaddr;
++	unsigned long to_copy;
++	int i, chunksize;
++
++	if (size > count)
++		size = count;
++
++	/* Find which 4k chunk and offset with in that chunk */
++	i = offset >> PAGE_CACHE_SHIFT;
++	offset = offset & ~PAGE_CACHE_MASK;
++	to_copy = size;
++
++	while (to_copy) {
++		chunksize = PAGE_CACHE_SIZE;
++		if (offset)
++			chunksize -= offset;
++		if (chunksize > to_copy)
++			chunksize = to_copy;
++
++#if 0
++printk("Coping i=%d page: %p offset %d chunk %d\n", i, &page[i], offset, chunksize);
++#endif
++		kaddr = kmap(&page[i]);
++		memcpy(buf, kaddr + offset, chunksize);
++		kunmap(&page[i]);
++		offset = 0;
++		to_copy -= chunksize;
++		buf += chunksize;
++		i++;
++	}
++	return size;
++}
++
++
++ssize_t
++hugetlbfs_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
++{
++	struct address_space *mapping = filp->f_mapping;
++	struct inode *inode = mapping->host;
++	unsigned long index = *ppos >> HPAGE_SHIFT;
++	unsigned long end_index;
++	loff_t isize;
++	unsigned long offset;
++	ssize_t retval = 0;
++
++	/* validate user buffer and len */
++	if (len == 0)
++		goto out;
++
++	isize = i_size_read(inode);
++	if (!isize)
++		goto out;
++
++	offset = *ppos & ~HPAGE_MASK;
++	end_index = (isize - 1) >> HPAGE_SHIFT;
++	for (;;) {
++		struct page *page;
++		unsigned long nr, ret;
++
++		/* nr is the maximum number of bytes to copy from this page */
++		nr = HPAGE_SIZE;
++		if (index >= end_index) {
++			if (index > end_index)
++				goto out;
++			nr = ((isize - 1) & ~HPAGE_MASK) + 1;
++			if (nr <= offset) {
++				goto out;
++			}
++		}
++		nr = nr - offset;
++
++		/* Find the page */
++		page = find_get_page(mapping, index);
++		if (unlikely(page == NULL)) {
++			/*
++			 * We can't find the page in the cache - bail out
++			 * TODO - should we zero out the user buffer ?
++			 */
++			goto out;
++		}
++#if 0
++printk("Found page %p at index %d offset %d nr %d\n", page, index, offset, nr);
++#endif
++
++		/*
++		 * Ok, we have the page, so now we can copy it to user space...
++		 */
++		ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
++		if (ret < 0) {
++			retval = retval ? : ret;
++			goto out;
++		}
++
++		offset += ret;
++		retval += ret;
++		len -= ret;
++		index += offset >> HPAGE_SHIFT;
++		offset &= ~HPAGE_MASK;
++
++		page_cache_release(page);
++		if (ret == nr && len)
++			continue;
++		goto out;
++	}
++out:
++	return retval;
++}
++
++/*
+  * Read a page. Again trivial. If it didn't already exist
+  * in the page cache, it is zero-filled.
+  */
+@@ -565,6 +681,7 @@ static void init_once(void *foo, kmem_ca
+ }
+ 
+ struct file_operations hugetlbfs_file_operations = {
++ 	.read			= hugetlbfs_read,
+ 	.mmap			= hugetlbfs_file_mmap,
+ 	.fsync			= simple_sync_file,
+ 	.get_unmapped_area	= hugetlb_get_unmapped_area,
+
+
