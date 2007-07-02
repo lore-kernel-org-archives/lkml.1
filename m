@@ -1,479 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbXGBPFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbXGBPIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758042AbXGBPFZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 11:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXGBPFO
+	id S1756174AbXGBPIk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 11:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbXGBPI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 11:05:14 -0400
-Received: from styx.suse.cz ([82.119.242.94]:53709 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751325AbXGBPFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 11:05:11 -0400
-Date: Mon, 2 Jul 2007 17:05:09 +0200
-From: Michal Marek <mmarek@suse.cz>
-To: David Chinner <dgc@sgi.com>
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] Fix XFS_IOC_FSBULKSTAT{,_SINGLE} and
-	XFS_IOC_FSINUMBERS in compat mode (try3)
-Message-ID: <20070702150509.GA32192@discovery.suse.cz>
-References: <20070619132549.266927601@suse.cz> <20070619132726.893544847@suse.cz> <20070628034957.GE989688@sgi.com> <4688C812.9020200@suse.cz>
-MIME-Version: 1.0
+	Mon, 2 Jul 2007 11:08:29 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:48944 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751486AbXGBPI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 11:08:28 -0400
+Date: Mon, 2 Jul 2007 11:08:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: netdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [info] What's in netdev-2.6.git?
+Message-ID: <20070702150826.GA10610@havoc.gtf.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4688C812.9020200@suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 11:40:34AM +0200, Michal Marek wrote:
-> David Chinner wrote:
-> > I think we can remove xfs_bulkstat_one_compat() completely by using
-> > the same method you used with the xfs_inumber_fmt functions.
-> 
-> You mean xfs_ioc_bulkstat_compat() -> native xfs_bulkstat() -> native
-> xfs_bulkstat_one() -> a compat output formatter, so a
-> pointer-to-function passed to pointer-to-function? ;) I could (ab)use
-> the void *private_data arg which xfs_bulkstat passes unmodified to the
-> formatter; xfs_bulkstat_one() doesn't make use of it atm. I'll try it
-> and post the result in a while.
 
-Hi David, what about this one? It about 30 lines shorter now :)
+This is what is currently queued for 2.6.23.  There are a few patches
+in my mbox not yet applied to the git tree, but this is most of them.
 
+The following is found in the 'upstream' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
 
-Subject: Fix XFS_IOC_FSBULKSTAT{,_SINGLE} and XFS_IOC_FSINUMBERS in compat mode
+Akinobu Mita (1):
+      softmac: use list_for_each_entry
 
-* 32bit struct xfs_fsop_bulkreq has different size and layout of
-  members, no matter the alignment. Move the code out of the #else
-  branch (why was it there in the first place?). Define _32 variants of
-  the ioctl constants.
-* 32bit struct xfs_bstat is different because of time_t and on
-  i386 because of different padding. Make xfs_bulkstat_one() accept a
-  custom "output formater" in the private_data argument which takes care
-  of the xfs_bulkstat_one_compat() that takes care of the different
-  layout in the compat case.
-* i386 struct xfs_inogrp has different padding. Add a similar "output
-  formater" mecanism to xfs_inumbers().
+Bill Nottingham (1):
+      drivers/net: fix comparisons of unsigned < 0
 
-Signed-off-by: Michal Marek <mmarek@suse.cz>
----
- fs/xfs/linux-2.6/xfs_ioctl.c   |    2 
- fs/xfs/linux-2.6/xfs_ioctl32.c |  221 ++++++++++++++++++++++++++++++++++++-----
- fs/xfs/xfs_itable.c            |   41 ++++++-
- fs/xfs/xfs_itable.h            |   20 +++
- 4 files changed, 252 insertions(+), 32 deletions(-)
+Daniel Drake (4):
+      zd1211rw: Add ID for ZyXEL G-200v2
+      zd1211rw: Extend RF layer
+      zd1211rw: Add UW2453 RF support
+      zd1211rw: Make CCK gain patching conditional on RF type
 
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl32.c
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c
-@@ -28,12 +28,27 @@
- #include "xfs_vfs.h"
- #include "xfs_vnode.h"
- #include "xfs_dfrag.h"
-+#include "xfs_sb.h"
-+#include "xfs_log.h"
-+#include "xfs_trans.h"
-+#include "xfs_dmapi.h"
-+#include "xfs_mount.h"
-+#include "xfs_inum.h"
-+#include "xfs_bmap_btree.h"
-+#include "xfs_dir2.h"
-+#include "xfs_dir2_sf.h"
-+#include "xfs_attr_sf.h"
-+#include "xfs_dinode.h"
-+#include "xfs_itable.h"
-+#include "xfs_error.h"
-+#include "xfs_inode.h"
- 
- #define  _NATIVE_IOC(cmd, type) \
- 	  _IOC(_IOC_DIR(cmd), _IOC_TYPE(cmd), _IOC_NR(cmd), sizeof(type))
- 
- #if defined(CONFIG_IA64) || defined(CONFIG_X86_64)
- #define BROKEN_X86_ALIGNMENT
-+#define _PACKED __attribute__((packed))
- /* on ia32 l_start is on a 32-bit boundary */
- typedef struct xfs_flock64_32 {
- 	__s16		l_type;
-@@ -111,35 +126,196 @@ STATIC unsigned long xfs_ioctl32_geom_v1
- 	return (unsigned long)p;
- }
- 
-+typedef struct compat_xfs_inogrp {
-+	__u64		xi_startino;	/* starting inode number	*/
-+	__s32		xi_alloccount;	/* # bits set in allocmask	*/
-+	__u64		xi_allocmask;	/* mask of allocated inodes	*/
-+} __attribute__((packed)) compat_xfs_inogrp_t;
-+
-+STATIC int xfs_inumbers_fmt_compat(
-+	void __user *ubuffer,
-+	const xfs_inogrp_t *buffer,
-+	long count,
-+	long *written)
-+{
-+	compat_xfs_inogrp_t *p32 = ubuffer;
-+	long i;
-+
-+	for (i = 0; i < count; i++) {
-+		if (put_user(buffer[i].xi_startino,   &p32[i].xi_startino) ||
-+		    put_user(buffer[i].xi_alloccount, &p32[i].xi_alloccount) ||
-+		    put_user(buffer[i].xi_allocmask,  &p32[i].xi_allocmask))
-+			return -EFAULT;
-+	}
-+	*written = count * sizeof(*p32);
-+	return 0;
-+}
-+
- #else
- 
--typedef struct xfs_fsop_bulkreq32 {
-+#define xfs_inumbers_fmt_compat xfs_inumbers_fmt
-+#define _PACKED
-+
-+#endif
-+
-+/* XFS_IOC_FSBULKSTAT and friends */
-+
-+typedef struct compat_xfs_bstime {
-+	__s32		tv_sec;		/* seconds		*/
-+	__s32		tv_nsec;	/* and nanoseconds	*/
-+} compat_xfs_bstime_t;
-+
-+STATIC int xfs_bstime_store_compat(
-+	compat_xfs_bstime_t __user *p32,
-+	const xfs_bstime_t *p)
-+{
-+	__s32 sec32;
-+
-+	sec32 = p->tv_sec;
-+	if (put_user(sec32, &p32->tv_sec) ||
-+	    put_user(p->tv_nsec, &p32->tv_nsec))
-+		return -EFAULT;
-+	return 0;
-+}
-+
-+typedef struct compat_xfs_bstat {
-+	__u64		bs_ino;		/* inode number			*/
-+	__u16		bs_mode;	/* type and mode		*/
-+	__u16		bs_nlink;	/* number of links		*/
-+	__u32		bs_uid;		/* user id			*/
-+	__u32		bs_gid;		/* group id			*/
-+	__u32		bs_rdev;	/* device value			*/
-+	__s32		bs_blksize;	/* block size			*/
-+	__s64		bs_size;	/* file size			*/
-+	compat_xfs_bstime_t bs_atime;	/* access time			*/
-+	compat_xfs_bstime_t bs_mtime;	/* modify time			*/
-+	compat_xfs_bstime_t bs_ctime;	/* inode change time		*/
-+	int64_t		bs_blocks;	/* number of blocks		*/
-+	__u32		bs_xflags;	/* extended flags		*/
-+	__s32		bs_extsize;	/* extent size			*/
-+	__s32		bs_extents;	/* number of extents		*/
-+	__u32		bs_gen;		/* generation count		*/
-+	__u16		bs_projid;	/* project id			*/
-+	unsigned char	bs_pad[14];	/* pad space, unused		*/
-+	__u32		bs_dmevmask;	/* DMIG event mask		*/
-+	__u16		bs_dmstate;	/* DMIG state info		*/
-+	__u16		bs_aextents;	/* attribute number of extents	*/
-+} _PACKED compat_xfs_bstat_t;
-+
-+STATIC int xfs_bulkstat_one_fmt_compat(
-+	void			__user *ubuffer,
-+	const xfs_bstat_t	*buffer)
-+{
-+	compat_xfs_bstat_t __user *p32 = ubuffer;
-+
-+	if (put_user(buffer->bs_ino, &p32->bs_ino) ||
-+	    put_user(buffer->bs_mode, &p32->bs_mode) ||
-+	    put_user(buffer->bs_nlink, &p32->bs_nlink) ||
-+	    put_user(buffer->bs_uid, &p32->bs_uid) ||
-+	    put_user(buffer->bs_gid, &p32->bs_gid) ||
-+	    put_user(buffer->bs_rdev, &p32->bs_rdev) ||
-+	    put_user(buffer->bs_blksize, &p32->bs_blksize) ||
-+	    put_user(buffer->bs_size, &p32->bs_size) ||
-+	    xfs_bstime_store_compat(&p32->bs_atime, &buffer->bs_atime) ||
-+	    xfs_bstime_store_compat(&p32->bs_mtime, &buffer->bs_mtime) ||
-+	    xfs_bstime_store_compat(&p32->bs_ctime, &buffer->bs_ctime) ||
-+	    put_user(buffer->bs_blocks, &p32->bs_blocks) ||
-+	    put_user(buffer->bs_xflags, &p32->bs_xflags) ||
-+	    put_user(buffer->bs_extsize, &p32->bs_extsize) ||
-+	    put_user(buffer->bs_extents, &p32->bs_extents) ||
-+	    put_user(buffer->bs_gen, &p32->bs_gen) ||
-+	    put_user(buffer->bs_projid, &p32->bs_projid) ||
-+	    put_user(buffer->bs_dmevmask, &p32->bs_dmevmask) ||
-+	    put_user(buffer->bs_dmstate, &p32->bs_dmstate) ||
-+	    put_user(buffer->bs_aextents, &p32->bs_aextents))
-+		return -EFAULT;
-+	return sizeof(*p32);
-+}
-+
-+
-+
-+typedef struct compat_xfs_fsop_bulkreq {
- 	compat_uptr_t	lastip;		/* last inode # pointer		*/
- 	__s32		icount;		/* count of entries in buffer	*/
- 	compat_uptr_t	ubuffer;	/* user buffer for inode desc.	*/
--	__s32		ocount;		/* output count pointer		*/
--} xfs_fsop_bulkreq32_t;
-+	compat_uptr_t	ocount;		/* output count pointer		*/
-+} compat_xfs_fsop_bulkreq_t;
- 
--STATIC unsigned long
--xfs_ioctl32_bulkstat(
--	unsigned long		arg)
-+#define XFS_IOC_FSBULKSTAT_32 \
-+	_IOWR('X', 101, struct compat_xfs_fsop_bulkreq)
-+#define XFS_IOC_FSBULKSTAT_SINGLE_32 \
-+	_IOWR('X', 102, struct compat_xfs_fsop_bulkreq)
-+#define XFS_IOC_FSINUMBERS_32 \
-+	_IOWR('X', 103, struct compat_xfs_fsop_bulkreq)
-+
-+/* copied from xfs_ioctl.c */
-+STATIC int
-+xfs_ioc_bulkstat_compat(
-+	xfs_mount_t		*mp,
-+	unsigned int		cmd,
-+	void			__user *arg)
- {
--	xfs_fsop_bulkreq32_t	__user *p32 = (void __user *)arg;
--	xfs_fsop_bulkreq_t	__user *p = compat_alloc_user_space(sizeof(*p));
-+	compat_xfs_fsop_bulkreq_t __user *p32 = (void __user *)arg;
- 	u32			addr;
-+	xfs_fsop_bulkreq_t	bulkreq;
-+	int			count;	/* # of records returned */
-+	xfs_ino_t		inlast;	/* last inode number */
-+	int			done;
-+	int			error;
-+
-+	/* done = 1 if there are more stats to get and if bulkstat */
-+	/* should be called again (unused here, but used in dmapi) */
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	if (XFS_FORCED_SHUTDOWN(mp))
-+		return -XFS_ERROR(EIO);
- 
--	if (get_user(addr, &p32->lastip) ||
--	    put_user(compat_ptr(addr), &p->lastip) ||
--	    copy_in_user(&p->icount, &p32->icount, sizeof(s32)) ||
--	    get_user(addr, &p32->ubuffer) ||
--	    put_user(compat_ptr(addr), &p->ubuffer) ||
--	    get_user(addr, &p32->ocount) ||
--	    put_user(compat_ptr(addr), &p->ocount))
-+	if (get_user(addr, &p32->lastip))
- 		return -EFAULT;
-+	bulkreq.lastip = compat_ptr(addr);
-+	if (get_user(bulkreq.icount, &p32->icount) ||
-+	    get_user(addr, &p32->ubuffer))
-+		return -EFAULT;
-+	bulkreq.ubuffer = compat_ptr(addr);
-+	if (get_user(addr, &p32->ocount))
-+		return -EFAULT;
-+	bulkreq.ocount = compat_ptr(addr);
- 
--	return (unsigned long)p;
-+	if (copy_from_user(&inlast, bulkreq.lastip, sizeof(__s64)))
-+		return -XFS_ERROR(EFAULT);
-+
-+	if ((count = bulkreq.icount) <= 0)
-+		return -XFS_ERROR(EINVAL);
-+
-+	if (cmd == XFS_IOC_FSINUMBERS)
-+		error = xfs_inumbers(mp, &inlast, &count,
-+				bulkreq.ubuffer, xfs_inumbers_fmt_compat);
-+	else {
-+		/* declare a var to get a warning in case the type changes */
-+		bulkstat_one_fmt_pf formatter = xfs_bulkstat_one_fmt_compat;
-+		error = xfs_bulkstat(mp, &inlast, &count,
-+			xfs_bulkstat_one, formatter,
-+			sizeof(compat_xfs_bstat_t), bulkreq.ubuffer,
-+			BULKSTAT_FG_QUICK, &done);
-+	}
-+	if (error)
-+		return -error;
-+
-+	if (bulkreq.ocount != NULL) {
-+		if (copy_to_user(bulkreq.lastip, &inlast,
-+						sizeof(xfs_ino_t)))
-+			return -XFS_ERROR(EFAULT);
-+
-+		if (copy_to_user(bulkreq.ocount, &count, sizeof(count)))
-+			return -XFS_ERROR(EFAULT);
-+	}
-+
-+	return 0;
- }
--#endif
-+
-+
- 
- typedef struct compat_xfs_fsop_handlereq {
- 	__u32		fd;		/* fd for FD_TO_HANDLE		*/
-@@ -261,12 +437,13 @@ xfs_compat_ioctl(
- 	case XFS_IOC_SWAPEXT:
- 		break;
- 
--	case XFS_IOC_FSBULKSTAT_SINGLE:
--	case XFS_IOC_FSBULKSTAT:
--	case XFS_IOC_FSINUMBERS:
--		arg = xfs_ioctl32_bulkstat(arg);
--		break;
- #endif
-+	case XFS_IOC_FSBULKSTAT_32:
-+	case XFS_IOC_FSBULKSTAT_SINGLE_32:
-+	case XFS_IOC_FSINUMBERS_32:
-+		cmd = _NATIVE_IOC(cmd, struct xfs_fsop_bulkreq);
-+		return xfs_ioc_bulkstat_compat(XFS_BHVTOI(VNHEAD(vp))->i_mount,
-+				cmd, (void*)arg);
- 	case XFS_IOC_FD_TO_HANDLE_32:
- 	case XFS_IOC_PATH_TO_HANDLE_32:
- 	case XFS_IOC_PATH_TO_FSHANDLE_32:
---- linux-2.6.orig/fs/xfs/xfs_itable.h
-+++ linux-2.6/fs/xfs/xfs_itable.h
-@@ -69,6 +69,10 @@ xfs_bulkstat_single(
- 	char			__user *buffer,
- 	int			*done);
- 
-+typedef int (*bulkstat_one_fmt_pf)(  /* used size in bytes or negative error */
-+	void			__user *ubuffer, /* buffer to write to */
-+	const xfs_bstat_t	*buffer);        /* buffer to read from */
-+
- int
- xfs_bulkstat_one(
- 	xfs_mount_t		*mp,
-@@ -86,11 +90,25 @@ xfs_internal_inum(
- 	xfs_mount_t		*mp,
- 	xfs_ino_t		ino);
- 
-+typedef int (*inumbers_fmt_pf)(
-+	void			__user *ubuffer, /* buffer to write to */
-+	const xfs_inogrp_t	*buffer,	/* buffer to read from */
-+	long			count,		/* # of elements to read */
-+	long			*written);	/* # of bytes written */
-+
-+int
-+xfs_inumbers_fmt(
-+	void			__user *ubuffer, /* buffer to write to */
-+	const xfs_inogrp_t	*buffer,	/* buffer to read from */
-+	long			count,		/* # of elements to read */
-+	long			*written);	/* # of bytes written */
-+
- int					/* error status */
- xfs_inumbers(
- 	xfs_mount_t		*mp,	/* mount point for filesystem */
- 	xfs_ino_t		*last,	/* last inode returned */
- 	int			*count,	/* size of buffer/count returned */
--	xfs_inogrp_t		__user *buffer);/* buffer with inode info */
-+	void			__user *buffer, /* buffer with inode info */
-+	inumbers_fmt_pf		formatter);
- 
- #endif	/* __XFS_ITABLE_H__ */
---- linux-2.6.orig/fs/xfs/xfs_itable.c
-+++ linux-2.6/fs/xfs/xfs_itable.c
-@@ -202,6 +202,16 @@ xfs_bulkstat_one_dinode(
- 	return 0;
- }
- 
-+STATIC int
-+xfs_bulkstat_one_fmt(
-+	void			__user *ubuffer,
-+	const xfs_bstat_t	*buffer)
-+{
-+	if (copy_to_user(ubuffer, buffer, sizeof(*buffer)))
-+		return -EFAULT;
-+	return sizeof(*buffer);
-+}
-+
- /*
-  * Return stat information for one inode.
-  * Return 0 if ok, else errno.
-@@ -221,6 +231,7 @@ xfs_bulkstat_one(
- 	xfs_bstat_t	*buf;		/* return buffer */
- 	int		error = 0;	/* error value */
- 	xfs_dinode_t	*dip;		/* dinode inode pointer */
-+	bulkstat_one_fmt_pf formatter = private_data ? : xfs_bulkstat_one_fmt;
- 
- 	dip = (xfs_dinode_t *)dibuff;
- 	*stat = BULKSTAT_RV_NOTHING;
-@@ -243,14 +254,14 @@ xfs_bulkstat_one(
- 		xfs_bulkstat_one_dinode(mp, ino, dip, buf);
- 	}
- 
--	if (copy_to_user(buffer, buf, sizeof(*buf)))  {
-+	if ((error = formatter(buffer, buf)) < 0)  {
- 		error = EFAULT;
- 		goto out_free;
- 	}
- 
- 	*stat = BULKSTAT_RV_DIDONE;
- 	if (ubused)
--		*ubused = sizeof(*buf);
-+		*ubused = error;
- 
-  out_free:
- 	kmem_free(buf, sizeof(*buf));
-@@ -748,6 +759,19 @@ xfs_bulkstat_single(
- 	return 0;
- }
- 
-+int
-+xfs_inumbers_fmt(
-+	void			__user *ubuffer, /* buffer to write to */
-+	const xfs_inogrp_t	*buffer,	/* buffer to read from */
-+	long			count,		/* # of elements to read */
-+	long			*written)	/* # of bytes written */
-+{
-+	if (copy_to_user(ubuffer, buffer, count * sizeof(*buffer)))
-+		return -EFAULT;
-+	*written = count * sizeof(*buffer);
-+	return 0;
-+}
-+
- /*
-  * Return inode number table for the filesystem.
-  */
-@@ -756,7 +780,8 @@ xfs_inumbers(
- 	xfs_mount_t	*mp,		/* mount point for filesystem */
- 	xfs_ino_t	*lastino,	/* last inode returned */
- 	int		*count,		/* size of buffer/count returned */
--	xfs_inogrp_t	__user *ubuffer)/* buffer with inode descriptions */
-+	void		__user *ubuffer,/* buffer with inode descriptions */
-+	inumbers_fmt_pf	formatter)
- {
- 	xfs_buf_t	*agbp;
- 	xfs_agino_t	agino;
-@@ -835,12 +860,12 @@ xfs_inumbers(
- 		bufidx++;
- 		left--;
- 		if (bufidx == bcount) {
--			if (copy_to_user(ubuffer, buffer,
--					bufidx * sizeof(*buffer))) {
-+			long written;
-+			if (formatter(ubuffer, buffer, bufidx, &written)) {
- 				error = XFS_ERROR(EFAULT);
- 				break;
- 			}
--			ubuffer += bufidx;
-+			ubuffer += written;
- 			*count += bufidx;
- 			bufidx = 0;
- 		}
-@@ -862,8 +887,8 @@ xfs_inumbers(
- 	}
- 	if (!error) {
- 		if (bufidx) {
--			if (copy_to_user(ubuffer, buffer,
--					bufidx * sizeof(*buffer)))
-+			long written;
-+			if (formatter(ubuffer, buffer, bufidx, &written))
- 				error = XFS_ERROR(EFAULT);
- 			else
- 				*count += bufidx;
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl.c
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl.c
-@@ -1019,7 +1019,7 @@ xfs_ioc_bulkstat(
- 
- 	if (cmd == XFS_IOC_FSINUMBERS)
- 		error = xfs_inumbers(mp, &inlast, &count,
--						bulkreq.ubuffer);
-+					bulkreq.ubuffer, xfs_inumbers_fmt);
- 	else if (cmd == XFS_IOC_FSBULKSTAT_SINGLE)
- 		error = xfs_bulkstat_single(mp, &inlast,
- 						bulkreq.ubuffer, &done);
+David Brownell (1):
+      usbnet whitespace fixes
+
+David S. Miller (1):
+      r8169: kill eth_copy_and_sum()
+
+Divy Le Ray (3):
+      cxgb3 - sge page management
+      cxgb3 - Firmware update
+      cxgb3 - TP SRAM update
+
+Francois Romieu (17):
+      r8169: de-obfuscate modulo arithmetic
+      r8169: add hooks for per-device hw_start handler
+      r8169: add helpers for per-device hw_start handler
+      r8169: populate the hw_start handler for the 8168
+      r8169: populate the hw_start handler for the 8110
+      r8169: prettify mac_version
+      r8169: merge with version 6.001.00 of Realtek's r8169 driver
+      r8169: merge with version 8.001.00 of Realtek's r8168 driver
+      r8169: confusion between hardware and IP header alignment
+      r8169: small 8101 comment
+      r8169: remove the media option
+      r8169: cleanup
+      r8169: add bit description for the TxPoll register
+      r8169: align the IP header when there is no DMA constraint
+      r8169: display some extra debug information during startup
+      r8169: mac address change support
+      r8169: perform RX config change after mac filtering
+
+Geert Uytterhoeven (1):
+      acenic: SET_NETDEV_DEV is always there these days
+
+Ivo van Doorn (2):
+      Add 93cx6 eeprom library
+      eeprom_93cx6: Add comment for 1us delay after pulse
+
+Jan Engelhardt (1):
+      Use menuconfig objects II - netdev (general+100mbit)
+
+Jan-Bernd Themann (1):
+      ehea: Whitespace cleanup
+
+Jeff Garzik (2):
+      Merge branch 'upstream-fixes' into upstream
+      Merge branch 'upstream-fixes' into upstream
+
+John W. Linville (2):
+      eeprom_93cx6: shorten pulse timing to match spec
+      rtl8187: add header blocks and indicate origin of magic values
+
+Jouni Malinen (1):
+      hostap: Remove driver version number
+
+Kapil Juneja (2):
+      gianfar: add support for SGMII
+      phylib: m88e1111: enable SGMII mode
+
+Komuro (1):
+      PCMCIA-NETDEV : add new ID of lan&modem multifunction card
+
+Larry Finger (1):
+      bcm43xx: Fix deviation from specifications in set_baseband_attenuation
+
+Linas Vepstas (10):
+      s2io: add PCI error recovery support
+      s2io: add PCI error recovery support
+      spidernet: beautify error messages
+      spidernet: enhance the dump routine
+      spidernet: invalidate unused pointer.
+      spidernet: service TX later.
+      spidernet: move a block of code around
+      spidernet: fix misnamed flag
+      spidernet: driver docmentation
+      spidernet: Replace literal with const
+
+Matthias Kaehlcke (1):
+      hostap: Use list_for_each_entry
+
+Michael Barkowski (1):
+      phylib: add the ICPlus IP175C PHY driver
+
+Michael Wu (1):
+      Add rtl8187 wireless driver
+
+Olof Johansson (1):
+      pasemi_mac: Fix TX interrupt threshold
+
+Pavel Roskin (1):
+      hostap: Suppress broadcast if no stations are associated
+
+Richard Knutsson (2):
+      8139cp: Convert to generic boolean
+      tulip: Convert to generic boolean
+
+Rolf Eike Beer (1):
+      r8169: add endianess annotations to [RT]xDesc
+
+Stephen Hemminger (14):
+      b44: timer power saving
+      b44: tx bounce sizing.
+      b44: packet offset is constant
+      b44: use netdev_alloc_skb
+      qla3xxx: cleanup checksum offload code
+      sky2: avoid reserved regions on ethtool reg dump
+      sky2: Add PCI device specfic register 4 & 5
+      sky2: rename BMU register
+      sky2: enable clocks before probe
+      sky2: GPIO register
+      sky2: Yukon Extreme (88e8071) support.
+      sky2: version 1.15
+      r8169: use netdev_alloc_skb
+      r8169: Rx path update
+
+Thomas Bogendoerfer (2):
+      Extract chip specific code out of lasi_82596.c
+      Ethernet driver for EISA only SNI RM200/RM400 machines
+
+Yoichi Yuasa (1):
+      add return value check of request_irq()
+
+ Documentation/networking/spider_net.txt         |  204 +++
+ MAINTAINERS                                     |   10 
+ drivers/misc/Kconfig                            |    5 
+ drivers/misc/Makefile                           |    1 
+ drivers/misc/eeprom_93cx6.c                     |  241 +++
+ drivers/net/8139cp.c                            |   11 
+ drivers/net/Kconfig                             |  172 +-
+ drivers/net/Makefile                            |    1 
+ drivers/net/acenic.c                            |    4 
+ drivers/net/arm/Kconfig                         |   12 
+ drivers/net/b44.c                               |   56 
+ drivers/net/b44.h                               |    2 
+ drivers/net/cxgb3/adapter.h                     |   38 
+ drivers/net/cxgb3/common.h                      |   28 
+ drivers/net/cxgb3/cxgb3_main.c                  |   43 
+ drivers/net/cxgb3/regs.h                        |   11 
+ drivers/net/cxgb3/sge.c                         |  423 +++---
+ drivers/net/cxgb3/t3_hw.c                       |  128 +-
+ drivers/net/cxgb3/version.h                     |    2 
+ drivers/net/ehea/ehea.h                         |   14 
+ drivers/net/ehea/ehea_hw.h                      |   24 
+ drivers/net/ehea/ehea_main.c                    |   32 
+ drivers/net/ehea/ehea_qmr.c                     |   56 
+ drivers/net/fec_8xx/Kconfig                     |    2 
+ drivers/net/fs_enet/Kconfig                     |    2 
+ drivers/net/gianfar.c                           |   27 
+ drivers/net/gianfar.h                           |    6 
+ drivers/net/gianfar_mii.c                       |   55 
+ drivers/net/lasi_82596.c                        | 1460 ------------------------
+ drivers/net/lib82596.c                          | 1434 +++++++++++++++++++++++
+ drivers/net/mlx4/qp.c                           |    3 
+ drivers/net/netxen/netxen_nic_niu.c             |    6 
+ drivers/net/pasemi_mac.c                        |    2 
+ drivers/net/pcmcia/3c589_cs.c                   |    2 
+ drivers/net/pcmcia/axnet_cs.c                   |    7 
+ drivers/net/pcmcia/fmvj18x_cs.c                 |   23 
+ drivers/net/pcmcia/pcnet_cs.c                   |   10 
+ drivers/net/phy/Kconfig                         |    5 
+ drivers/net/phy/Makefile                        |    1 
+ drivers/net/phy/icplus.c                        |  134 ++
+ drivers/net/phy/marvell.c                       |   16 
+ drivers/net/qla3xxx.c                           |   33 
+ drivers/net/r8169.c                             |  944 ++++++++-------
+ drivers/net/s2io.c                              |  116 +
+ drivers/net/s2io.h                              |    6 
+ drivers/net/sky2.c                              |  224 ++-
+ drivers/net/sky2.h                              |  163 ++
+ drivers/net/sni_82596.c                         |  185 +++
+ drivers/net/spider_net.c                        |  184 ++-
+ drivers/net/spider_net.h                        |   21 
+ drivers/net/tulip/Kconfig                       |   27 
+ drivers/net/tulip/de2104x.c                     |    1 
+ drivers/net/tulip/de4x5.c                       |   98 -
+ drivers/net/tulip/de4x5.h                       |    9 
+ drivers/net/usb/usbnet.c                        |   76 -
+ drivers/net/usb/usbnet.h                        |   10 
+ drivers/net/wireless/Kconfig                    |   12 
+ drivers/net/wireless/Makefile                   |    3 
+ drivers/net/wireless/bcm43xx/bcm43xx_phy.c      |    2 
+ drivers/net/wireless/hostap/hostap_ap.c         |   34 
+ drivers/net/wireless/hostap/hostap_config.h     |    2 
+ drivers/net/wireless/hostap/hostap_cs.c         |    4 
+ drivers/net/wireless/hostap/hostap_ioctl.c      |    2 
+ drivers/net/wireless/hostap/hostap_main.c       |    1 
+ drivers/net/wireless/hostap/hostap_pci.c        |    5 
+ drivers/net/wireless/hostap/hostap_plx.c        |    5 
+ drivers/net/wireless/rtl8187.h                  |  145 ++
+ drivers/net/wireless/rtl8187_dev.c              |  731 ++++++++++++
+ drivers/net/wireless/rtl8187_rtl8225.c          |  745 ++++++++++++
+ drivers/net/wireless/rtl8187_rtl8225.h          |   44 
+ drivers/net/wireless/rtl818x.h                  |  226 +++
+ drivers/net/wireless/zd1211rw/Makefile          |    2 
+ drivers/net/wireless/zd1211rw/zd_chip.c         |    5 
+ drivers/net/wireless/zd1211rw/zd_chip.h         |    3 
+ drivers/net/wireless/zd1211rw/zd_rf.c           |   21 
+ drivers/net/wireless/zd1211rw/zd_rf.h           |   28 
+ drivers/net/wireless/zd1211rw/zd_rf_al2230.c    |    1 
+ drivers/net/wireless/zd1211rw/zd_rf_al7230b.c   |    1 
+ drivers/net/wireless/zd1211rw/zd_rf_uw2453.c    |  534 ++++++++
+ drivers/net/wireless/zd1211rw/zd_usb.c          |    1 
+ drivers/serial/serial_cs.c                      |    4 
+ include/linux/eeprom_93cx6.h                    |   72 +
+ include/pcmcia/ciscode.h                        |    2 
+ net/ieee80211/softmac/ieee80211softmac_module.c |   32 
+ 84 files changed, 6794 insertions(+), 2683 deletions(-)
