@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbXGBK6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXGBK7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754944AbXGBK6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 06:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbXGBK6L
+	id S1756690AbXGBK7t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 06:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbXGBK7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 06:58:11 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:6443 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbXGBK6J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 06:58:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=I8z+D4KKOX/EPCRjkyp3sNVXfaz0k+1N8z96T0QMslU3138IHnF+UFFuc+FLpc0l5SKdorSg9XE5cqckcRE8h3F0L8RhtdUkYYBCeuXGhqnLTHUxHmzIH744d/SayE2GxSiQxFlEkZorq8UPwTtTf2NMe0DVARGCfaW4Jwp3owQ=
-Message-ID: <4688D9F2.6020000@gmail.com>
-Date: Mon, 02 Jul 2007 19:56:50 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: David Greaves <david@dgreaves.com>
-CC: David Chinner <dgc@sgi.com>, David Robinson <zxvdr.au@gmail.com>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com> <4677E496.3080506@dgreaves.com> <4678DF56.1020903@gmail.com> <467ABE25.7060303@dgreaves.com> <4684C0DD.4080702@dgreaves.com>
-In-Reply-To: <4684C0DD.4080702@dgreaves.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jul 2007 06:59:41 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:49739 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751368AbXGBK7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 06:59:39 -0400
+Date: Mon, 2 Jul 2007 13:08:01 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S\. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [NETPOLL] netconsole: fix soft lockup when removing module
+Message-ID: <20070702110801.GD1639@ff.dom.local>
+References: <20070701173558.GA207@tv-sign.ru> <20070702063424.GA1639@ff.dom.local> <20070702092408.GA137@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070702092408.GA137@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
->> Tejun Heo wrote:
->>> It's really weird tho.  The PHY RDY status changed events are coming
->>> from the device which is NOT used while resuming
+On Mon, Jul 02, 2007 at 01:24:08PM +0400, Oleg Nesterov wrote:
+> On 07/02, Jarek Poplawski wrote:
+> >
+> > > > --- a/net/core/netpoll.c
+> > > > +++ b/net/core/netpoll.c
+> > > > @@ -72,7 +72,8 @@ static void queue_process(struct work_struct *work)
+> > > >  			netif_tx_unlock(dev);
+> > > >  			local_irq_restore(flags);
+> > > >  
+> > > > -			schedule_delayed_work(&npinfo->tx_work, HZ/10);
+> > > > +			if (atomic_read(&npinfo->refcnt))
+> > > > +				schedule_delayed_work(&npinfo->tx_work, HZ/10);
+> > > >  			return;
+> > > >  		}
+> >
+> > [...snip...]
+> > 
+> > So, 2.6.21 needs something better (maybe you've found it btw.?),
+> > but they weren't too interested, anyway.
 > 
-> There is an obvious problem there though Tejun (the errors even when sda
-> isn't involved in the OS boot) - can I start another thread about that
-> issue/bug later? I need to reshuffle partitions so I'd rather get the
-> hibernate working first and then go back to it if that's OK?
+> We can do a double flush trick. If queue_process() checks ->refcnt before
+> schedule_delayed_work() like above, netpoll_cleanup() can do
+> 
+> 	flush_scheduled_work();
+> 
+> 	// the next invocation of queue_process()
+> 	// must see ->refcnt == 0
+> 	if (!cancel_delayed_work(&npinfo->tx_work)) {
+> 		/* may be queued, wait for completion */
+> 		flush_scheduled_work();
+> 	}
 
-Yeah, sure.  The problem is that we don't know whether or how those two
-are related.  It would be great if there's a way to verify memory image
-read from hibernation is intact.  Rafael, any ideas?
+I'll try to think about it later, but I don't plan to do next patch,
+so feel free to send this. I didn't plan to fix netpoll at all
+(I never didn't use nor studied this before...). But couldn't stand
+this stupid lockup stays in 2.6.21. Now, I see it probably doesn't
+annoy more than 2 or 3 people around...
 
-Thanks.
+> 
+> Jarek, I don't understand net/, a silly question. Why do we need the #2 chunk?
+> Isn't it better to move skb_queue_purge(&npinfo->txq) after cancel_..._work()
+> instead?
 
--- 
-tejun
+I've thought about this too, but because I don't know netpoll/netconsole
+enough I didn't want to change more than minimum needed. 
+
+skb_queue_purge() uses heavy locking (irqsave) and I don't remember now
+if I've found the reason or simply believed somebody had to have a reason
+to do this there, anyway, if moved after cancel_ it could be done without
+this locking, and something like while () instead of my if () should be
+enough.
+
+But there was not much interest about this patch, and I'm not currently
+interested to be the main netconsole expert too, so maybe you would
+like to try...
+
+Cheers,
+Jarek P.
