@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757955AbXGBMCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbXGBMDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757955AbXGBMCr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 08:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXGBMCi
+	id S1755765AbXGBMDK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 08:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbXGBMCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 2 Jul 2007 08:02:44 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:48719 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753291AbXGBMCi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 2 Jul 2007 08:02:38 -0400
-Received: from mailfe02.tele2.dk ([212.247.154.35]:28271 "EHLO swip.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752880AbXGBMCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 08:02:37 -0400
-X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jul 2007 08:02:37 EDT
-X-Cloudmark-Score: 0.000000 []
-Subject: Forcedeth: Nvidia NIC goes up and down
-From: Anders Rune Jensen <anders@gnulinux.dk>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 02 Jul 2007 21:08:44 +0200
-Message-Id: <1183403324.11262.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+X-Originating-Ip: 72.143.66.27
+Date: Mon, 2 Jul 2007 08:00:42 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: why does git perpetually complain about include/asm-blackfin/macros.h?
+Message-ID: <Pine.LNX.4.64.0707020800010.1972@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
 
-I recently invested in a asus m2n-mx. The motherboard features a nvidia
-1gbit NIC (lspci says 00:07.0 Bridge: nVidia Corporation MCP61 Ethernet
-(rev a2)). I have it connected to my 1gbit switch together with another
-machine. The problem is that very frequently (sometimes several times
-each minute), the NIC goes down for a few seconds and then goes up
-again. In the dmesg log I can see:
+  for the umpteenth time, after doing a pull, i see this:
 
-Jul  2 21:01:26 [kernel] eth0: link down.
-Jul  2 21:01:28 [kernel] eth0: link up.
-Jul  2 21:01:57 [kernel] eth0: link down.
-Jul  2 21:01:59 [kernel] eth0: link up.
-Jul  2 21:02:34 [kernel] eth0: link down.
-Jul  2 21:02:36 [kernel] eth0: link up.
-Jul  2 21:03:15 [kernel] eth0: link down.
-Jul  2 21:03:18 [kernel] eth0: link up.
+$ git diff
+diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
+deleted file mode 100644
+index e69de29..0000000
+$
 
-I've tried changing the cable and changing the port in the switch
-without luck.
+  this happens constantly.  what's going on with this file?
 
-Sadly the motherboard only has 2 pci slots, which is already taken, so
-adding another NIC is not an option. The wireless interface is working
-perfectly fine on the machine so the problem seems related to the NIC.
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-I've tried fiddling with ethtool but I can't seem to make the NIC run at
-100mbit. If I disable autoneg nothing seems to be working. Output from
-ethtool:
-
-Settings for eth0:
-	Supported ports: [ MII ]
-	Supported link modes:   10baseT/Half 10baseT/Full 
-	                        100baseT/Half 100baseT/Full 
-	                        1000baseT/Full 
-	Supports auto-negotiation: Yes
-	Advertised link modes:  10baseT/Half 10baseT/Full 
-	                        100baseT/Half 100baseT/Full 
-	                        1000baseT/Full 
-	Advertised auto-negotiation: Yes
-	Speed: 1000Mb/s
-	Duplex: Full
-	Port: MII
-	PHYAD: 1
-	Transceiver: external
-	Auto-negotiation: on
-	Supports Wake-on: g
-	Wake-on: d
-	Link detected: yes
-
-Any idea how what I can do to debug this issue further?
-
-Please cc me as I'm not subscribed. Thanks in advance
-
---
-Anders Rune Jensen
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
