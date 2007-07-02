@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbXGBMUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbXGBMZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867AbXGBMUJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 08:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbXGBMT6
+	id S1754373AbXGBMZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 08:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbXGBMZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 08:19:58 -0400
-Received: from quark.didntduck.org ([69.55.226.66]:45594 "EHLO
-	quark.didntduck.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbXGBMT6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 08:19:58 -0400
-X-Greylist: delayed 2675 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jul 2007 08:19:58 EDT
-Message-ID: <4688E2BC.9060908@didntduck.org>
-Date: Mon, 02 Jul 2007 07:34:20 -0400
-From: Brian Gerst <bgerst@didntduck.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 2 Jul 2007 08:25:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50909 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753326AbXGBMZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 08:25:07 -0400
+Message-ID: <4688EE9E.2080005@garzik.org>
+Date: Mon, 02 Jul 2007 08:25:02 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-CC: Andreas Schwab <schwab@suse.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [i386] Questions regarding provisional page tables initialization
-References: <20070701203833.GA3498@Ahmed> <46882872.7040005@goop.org> <20070702011332.GA3503@Ahmed> <je8x9zrwof.fsf@sykes.suse.de> <20070702102303.GA17533@Ahmed>
-In-Reply-To: <20070702102303.GA17533@Ahmed>
-Content-Type: text/plain; charset=us-ascii
+To: Maik Hampel <m.hampel@gmx.de>
+CC: Brice Goglin <brice@myri.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] myri10ge: SET_NETDEV_DEV()
+References: <1183043246.2659.19.camel@c64>
+In-Reply-To: <1183043246.2659.19.camel@c64>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ahmed S. Darwish wrote:
-> now back to head.S code:
->  	leal    0x007(%edi),%ecx	/* Create PDE entry */
+Maik Hampel wrote:
+> SET_NETDEV_DEV() in myri10ge to create the "/sys/class/net/<if>/device"
+> symlink.
 > 
-> Isn't the above line the same condition (bytes, not bits displacement) ?. 
-> Thanks for your patience !.
+> Signed-off-by: Maik Hampel <m.hampel@gmx.de>
 
-The leal instruction (Load Effective Address) is often used as a way to
-add a constant to one register and store the result in another register
-in a single instruction.  The values don't even have to be addresses at
-all, since no memory is actually referenced.  Otherwise this would be
-written as:
+applied
 
-	movl %edi,%ecx
-	addl $0x007, %ecx
 
---
-				Brian Gerst
