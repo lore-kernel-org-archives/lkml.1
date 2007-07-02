@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbXGBTnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbXGBTpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbXGBTnZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 15:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXGBTnR
+	id S1756358AbXGBTpB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 15:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbXGBToy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 15:43:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38841 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752727AbXGBTnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 15:43:16 -0400
-Message-ID: <468954BD.50205@sandeen.net>
-Date: Mon, 02 Jul 2007 14:40:45 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Mon, 2 Jul 2007 15:44:54 -0400
+Received: from bizon.gios.gov.pl ([212.244.124.8]:47175 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753447AbXGBTox (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 15:44:53 -0400
+X-Greylist: delayed 1656 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jul 2007 15:44:53 EDT
+Date: Mon, 2 Jul 2007 21:16:57 +0200 (CEST)
+From: Krzysztof Oledzki <ole@ans.pl>
+X-X-Sender: ole@bizon.gios.gov.pl
+To: Phil Dibowitz <phil@ipom.com>
+cc: Andreas Steinmetz <ast@domdv.de>, Jan Engelhardt <jengelh@computergmbh.de>,
+       netfilter-devel@lists.netfilter.org,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: mss to pmtu clamping partially broken?
+In-Reply-To: <20070702182850.GB14507@ipom.com>
+Message-ID: <Pine.LNX.4.64.0707022113330.25153@bizon.gios.gov.pl>
+References: <4684E853.20900@domdv.de> <Pine.LNX.4.64.0706301034320.22579@fbirervta.pbzchgretzou.qr>
+ <4689300C.9050802@domdv.de> <20070702182850.GB14507@ipom.com>
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][XFS][resend] memory leak; allocated transaction not freed
- in xfs_inactive_free_eofblocks() in failure case.
-References: <200707010116.54884.jesper.juhl@gmail.com>
-In-Reply-To: <200707010116.54884.jesper.juhl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-2069770357-1183403817=:25153"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> (this is back from May 16 2007, resending since it doesn't look like 
-> the patch ever made it in anywhere)
-> 
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Weird, looks like it's in cvs...
+---187430788-2069770357-1183403817=:25153
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-http://oss.sgi.com/cgi-bin/cvsweb.cgi/xfs-linux/xfs_vnodeops.c.diff?r1=text&tr1=1.699&r2=text&tr2=1.698&f=h
 
-but not in git.
 
--Eric
+On Mon, 2 Jul 2007, Phil Dibowitz wrote:
 
-> Fix XFS memory leak; allocated transaction not freed in xfs_inactive_free_eofblocks() in failure case.
-> 
-> the code allocates a transaction, but in the case where 'truncate' is
-> !=0 and xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE, 0); happens to return
-> an error, we'll just return from the function without dealing with the
-> memory allocated byxfs_trans_alloc() and assigned to 'tp', thus it'll be
-> orphaned/leaked - not good.
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> --- 
->  fs/xfs/xfs_vnodeops.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/xfs/xfs_vnodeops.c b/fs/xfs/xfs_vnodeops.c
-> index de17aed..32519cf 100644
-> --- a/fs/xfs/xfs_vnodeops.c
-> +++ b/fs/xfs/xfs_vnodeops.c
-> @@ -1260,6 +1260,7 @@ xfs_inactive_free_eofblocks(
->  		error = xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE,
->  				    ip->i_size);
->  		if (error) {
-> +			xfs_trans_cancel(tp, 0);
->  			xfs_iunlock(ip, XFS_IOLOCK_EXCL);
->  			return error;
->  		}
-> 
-> 
-> 
+> On Mon, Jul 02, 2007 at 07:04:12PM +0200, Andreas Steinmetz wrote:
+>> Jan Engelhardt wrote:
+>>> Do you really need clamping? It's a hack, since TCP should do MSS negot=
+iation
+>>> itself. (Of course it may happen that some routers are broken.) But usu=
+ally not
+>>> for incoming packets.
+>>
+>> You never know when you hit ICMP blackholes, broken routers and other
+>> evil things. Better safe than sorry so clamping is the way to go for me.
+>
+> I encourage you to report PMTUD Blackholes to the MSS Initiative at
+> http://www.phildev.net/mss/
 
+Any chances for similar initiative for "SACK vandals"? ;)
+
+Best regards,
+
+ =09=09=09=09Krzysztof Ol=EAdzki
+---187430788-2069770357-1183403817=:25153--
