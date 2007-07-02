@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbXGBKXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbXGBK6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbXGBKXc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 06:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbXGBKXX
+	id S1754944AbXGBK6V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 06:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbXGBK6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 06:23:23 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:54682 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbXGBKXW (ORCPT
+	Mon, 2 Jul 2007 06:58:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:6443 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbXGBK6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 06:23:22 -0400
+	Mon, 2 Jul 2007 06:58:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=WBvbM+9QAjqqyF7gstdUvcdCtQJuZhidffzVaMTGgPitGZuVG/yO5xaLlUbCG+oCzaKFqI07H5Vl8tv4DLe4QoLMAGYft4/uA55xBhCa37n4Sg/IJ3LqbNxSvyAvyAIJCqHsQADajtKaqlsoshb4VTAZU/nFgsdeFAlD28MWKHg=
-Date: Mon, 2 Jul 2007 13:23:03 +0300
-To: Andreas Schwab <schwab@suse.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: Re: [i386] Questions regarding provisional page tables initialization
-Message-ID: <20070702102303.GA17533@Ahmed>
-References: <20070701203833.GA3498@Ahmed> <46882872.7040005@goop.org> <20070702011332.GA3503@Ahmed> <je8x9zrwof.fsf@sykes.suse.de>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=I8z+D4KKOX/EPCRjkyp3sNVXfaz0k+1N8z96T0QMslU3138IHnF+UFFuc+FLpc0l5SKdorSg9XE5cqckcRE8h3F0L8RhtdUkYYBCeuXGhqnLTHUxHmzIH744d/SayE2GxSiQxFlEkZorq8UPwTtTf2NMe0DVARGCfaW4Jwp3owQ=
+Message-ID: <4688D9F2.6020000@gmail.com>
+Date: Mon, 02 Jul 2007 19:56:50 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <je8x9zrwof.fsf@sykes.suse.de>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+To: David Greaves <david@dgreaves.com>
+CC: David Chinner <dgc@sgi.com>, David Robinson <zxvdr.au@gmail.com>,
+       LVM general discussion and development 
+	<linux-lvm@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com> <4677E496.3080506@dgreaves.com> <4678DF56.1020903@gmail.com> <467ABE25.7060303@dgreaves.com> <4684C0DD.4080702@dgreaves.com>
+In-Reply-To: <4684C0DD.4080702@dgreaves.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andreas,
-
-On Mon, Jul 02, 2007 at 11:18:08AM +0200, Andreas Schwab wrote:
-> "Ahmed S. Darwish" <darwish.07@gmail.com> writes:
+David Greaves wrote:
+>> Tejun Heo wrote:
+>>> It's really weird tho.  The PHY RDY status changed events are coming
+>>> from the device which is NOT used while resuming
 > 
-> > yes, but isn't the displacement here (0x007) a _bytes_ displacement ?. so
-> > effectively, %ecx now contains physical address of pg0 + 7bytes. Is it A 
-> > meaningful place/address ?.
-> 
-> It's not pg0 + 7bytes, it is pg0 plus 3 flag bits.  Since a page address
-> is always page aligned, the low bits are reused for flags.
-> 
+> There is an obvious problem there though Tejun (the errors even when sda
+> isn't involved in the OS boot) - can I start another thread about that
+> issue/bug later? I need to reshuffle partitions so I'd rather get the
+> hibernate working first and then go back to it if that's OK?
 
-I'm sure there's a problem in _my_ understanding, but isn't the displacement
-- as specified by AT&T syntax - represented in bytes ?. I've wrote a small
-assembly function to be sure:
+Yeah, sure.  The problem is that we don't know whether or how those two
+are related.  It would be great if there's a way to verify memory image
+read from hibernation is intact.  Rafael, any ideas?
 
-.data
-integer:
-	.string "%d\n"
-
-.text
-test_func:
-	push	%ebp
-	mov	%esp, %ebp
-	push	0x008(%ebp)   ## 8 bytes displacement (the first arg), right ?
-	push	$integer
-	call 	printf
-	mov	%ebp, %esp
-	pop	%ebp
-	ret
-
-The above method works fine and prints "5" to stdout by the code:
-
-.global	main
-main:
-	mov	$5, %eax
-	push	%eax
-	call	test_func
-
-	movl	$1, %eax
-	movl	$0, %ebx
-	int	$0x80
-
-now back to head.S code:
- 	leal    0x007(%edi),%ecx	/* Create PDE entry */
-
-Isn't the above line the same condition (bytes, not bits displacement) ?. 
-Thanks for your patience !.
-
-(For other kind replies, don't understand me wrong. I did my homework and
- studied the pte format before asking ;). It's just the bytes/bits issue 
- above that confuses me).
+Thanks.
 
 -- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+tejun
