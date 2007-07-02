@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbXGBQgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbXGBQkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbXGBQgl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 12:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbXGBQgb
+	id S1756637AbXGBQkS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 12:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbXGBQkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 12:36:31 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:52676 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753772AbXGBQga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 12:36:30 -0400
-Message-ID: <4689298B.2000407@dgreaves.com>
-Date: Mon, 02 Jul 2007 17:36:27 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+	Mon, 2 Jul 2007 12:40:06 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:40384 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754601AbXGBQkE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 12:40:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iMucJnyckCKNB2SM1X6FpKDp6XAQUqqlgWrtbjL9C8FOl04IDm/emLLbzq0YAvZnG9id3CXTdNmFomD1gA/f/8makJj4w93Mrz/qpX2dUMdH0INYxEnCOcCyh6tqhuSNGYwFeh8tqlxGfvY9MU+7mfoYBpslKoEBGRqKX35xRU8=
+Message-ID: <19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com>
+Date: Mon, 2 Jul 2007 18:40:03 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v18
+Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070702155029.GA13241@elte.hu>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Tejun Heo <htejun@gmail.com>, David Chinner <dgc@sgi.com>,
-       David Robinson <zxvdr.au@gmail.com>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-References: <46744065.6060605@dgreaves.com> <200707021608.56616.rjw@sisk.pl> <46890C7A.5040008@dgreaves.com> <200707021712.50323.rjw@sisk.pl>
-In-Reply-To: <200707021712.50323.rjw@sisk.pl>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070622220202.GA16872@elte.hu>
+	 <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com>
+	 <b647ffbd0707020601r774a38d4gb62b6c07f1b5db32@mail.gmail.com>
+	 <19f34abd0707020643g6a274db5q1d25cabd85b9a25f@mail.gmail.com>
+	 <20070702155029.GA13241@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Monday, 2 July 2007 16:32, David Greaves wrote:
->> Rafael J. Wysocki wrote:
->>> On Monday, 2 July 2007 12:56, Tejun Heo wrote:
->>>> David Greaves wrote:
->>>>>> Tejun Heo wrote:
->>>>>>> It's really weird tho.  The PHY RDY status changed events are coming
->>>>>>> from the device which is NOT used while resuming
->>>>> There is an obvious problem there though Tejun (the errors even when sda
->>>>> isn't involved in the OS boot) - can I start another thread about that
->>>>> issue/bug later? I need to reshuffle partitions so I'd rather get the
->>>>> hibernate working first and then go back to it if that's OK?
->>>> Yeah, sure.  The problem is that we don't know whether or how those two
->>>> are related.  It would be great if there's a way to verify memory image
->>>> read from hibernation is intact.  Rafael, any ideas?
->>> Well, s2disk has an option to compute an MD5 checksum of the image during
->>> the hibernation and verify it while reading the image.
->> (Assuming you mean the mainline version)
->>
->> Sounds like a good think to try next...
->> Couldn't see anything on this in ../Documentation/power/*
->> How do I enable it?
-> 
-> Add 'compute checksum = y' to the s2disk's configuration file.
+On 7/2/07, Ingo Molnar <mingo@elte.hu> wrote:
+> thx. As an initial matter, could you double-check whether your v18
+> kernel source has the patch below applied already?
+>
+>         Ingo
+>
+> Index: linux/kernel/sched_fair.c
+> ===================================================================
+> --- linux.orig/kernel/sched_fair.c
+> +++ linux/kernel/sched_fair.c
+> @@ -342,8 +342,9 @@ update_stats_enqueue(struct cfs_rq *cfs_
+>                 s64 tmp;
+>
+>                 if (se->wait_runtime < 0) {
+> -                       tmp = (0 - se->wait_runtime) << NICE_0_SHIFT;
+> -                       key += (tmp * se->load.inv_weight) >> WMULT_SHIFT;
+> +                       tmp = -se->wait_runtime;
+> +                       key += (tmp * se->load.inv_weight) >>
+> +                                       (WMULT_SHIFT - NICE_0_SHIFT);
+>                 } else {
+>                         tmp = se->wait_runtime * se->load.weight;
+>                         key -= tmp >> NICE_0_SHIFT;
+>
+>
 
-Ah, right - that's uswsusp isn't it? Which isn't what I'm having problems with 
-AFAIK?
+It does.
 
-My suspend procedure is:
-
-xfs_freeze -f /scratch
-sync
-echo platform > /sys/power/disk
-echo disk > /sys/power/state
-xfs_freeze -u /scratch
-
-Which should work (actually it should work without the sync/xfs_freeze too).
-
-So to debug the problem I'd like to minimally extend this process rather than 
-replace it with another approach.
-
-I take it there isn't an 'echo y > /sys/power/do_image_checksum'?
-
-David
-
-
+Vegard
