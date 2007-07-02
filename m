@@ -1,139 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbXGBTcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbXGBTfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbXGBTcD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 15:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbXGBTbw
+	id S1755449AbXGBTfy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 15:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbXGBTfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 15:31:52 -0400
-Received: from web36605.mail.mud.yahoo.com ([209.191.85.22]:37287 "HELO
-	web36605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753718AbXGBTbu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 15:31:50 -0400
-X-YMail-OSG: Whm74nAVM1kgiuUgE8k9xFPBIU79YRsPVSAgmXDGqwY2jnGR90scgG5JdFvFCOjfni5WuK7QTA--
-X-RocketYMMF: rancidfat
-Date: Mon, 2 Jul 2007 12:31:49 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [AppArmor 00/44] AppArmor security module overview
-To: "Eric W. Biederman" <ebiederm@xmission.com>, Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <m1sl86iwkq.fsf@ebiederm.dsl.xmission.com>
+	Mon, 2 Jul 2007 15:35:48 -0400
+Received: from mail.ipom.com ([69.73.131.218]:38097 "EHLO mail.ipom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752753AbXGBTfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 15:35:47 -0400
+Date: Mon, 2 Jul 2007 12:35:41 -0700
+From: Phil Dibowitz <phil@ipom.com>
+To: Krzysztof Oledzki <ole@ans.pl>
+Cc: Andreas Steinmetz <ast@domdv.de>, Jan Engelhardt <jengelh@computergmbh.de>,
+       netfilter-devel@lists.netfilter.org,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: mss to pmtu clamping partially broken?
+Message-ID: <20070702193541.GA14961@ipom.com>
+References: <4684E853.20900@domdv.de> <Pine.LNX.4.64.0706301034320.22579@fbirervta.pbzchgretzou.qr> <4689300C.9050802@domdv.de> <20070702182850.GB14507@ipom.com> <Pine.LNX.4.64.0707022113330.25153@bizon.gios.gov.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <997814.45234.qm@web36605.mail.mud.yahoo.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707022113330.25153@bizon.gios.gov.pl>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+--ibTvN161/egqYuK8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Jul 02, 2007 at 09:16:57PM +0200, Krzysztof Oledzki wrote:
+>
+>
+> On Mon, 2 Jul 2007, Phil Dibowitz wrote:
+>
+>> On Mon, Jul 02, 2007 at 07:04:12PM +0200, Andreas Steinmetz wrote:
+>>> Jan Engelhardt wrote:
+>>>> Do you really need clamping? It's a hack, since TCP should do MSS=20
+>>>> negotiation
+>>>> itself. (Of course it may happen that some routers are broken.) But=20
+>>>> usually not
+>>>> for incoming packets.
+>>>
+>>> You never know when you hit ICMP blackholes, broken routers and other
+>>> evil things. Better safe than sorry so clamping is the way to go for me.
+>>
+>> I encourage you to report PMTUD Blackholes to the MSS Initiative at
+>> http://www.phildev.net/mss/
+>
+> Any chances for similar initiative for "SACK vandals"? ;)
+
+There's already a counterpart for ECN blackholes, so I'm not opposed to it.
+However, keeping up with new reports, re-testing existing offenders, etc.
+takes up a good chunk of time, so I don't have the time to do it myself. I'm
+happy to reference such a site, however.
+
+Though - I'm not familiar with the problem of SACK vandals either. There
+appears to be a thread on here, I'll go read it...
+
+--=20
+Phil Dibowitz                             phil@ipom.com
+Open Source software and tech docs        Insanity Palace of Metallica
+http://www.phildev.net/                   http://www.ipom.com/
+
+"Never write it in C if you can do it in 'awk';
+ Never do it in 'awk' if 'sed' can handle it;
+ Never use 'sed' when 'tr' can do the job;
+ Never invoke 'tr' when 'cat' is sufficient;
+ Avoid using 'cat' whenever possible" -- Taylor's Laws of Programming
 
 
+--ibTvN161/egqYuK8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> A couple of random thoughts to mix up this discussion.
-> 
-> From what I have been able to observer the LSM is roughly firewalls
-> rules for in box operations.  All it can do is increase the chances
-> you will get -EPERM.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-More likely -EACCES, but otherwise not so terribly far off.
+iD8DBQFGiVONN5XoxaHnMrsRAq/sAJ9LU8QSHmWweicfOeZIH6aVnkxliACfY3P2
+Lk50bXqfRzg3G1mCZvbFbpg=
+=SomG
+-----END PGP SIGNATURE-----
 
-> Not being able to take path names into consideration is a current
-> deficiency of the LSM.
-
-It's a deficiency of the file system semantics invented by
-Kernighan, Thompson, et. al. in the later 1970's, favoring
-speed and size of implementation over a pristine namespace.
-The LSM is reasonably faithfull in presenting both the good
-and the bad of the file system semantics.
-
-> Being exported to modules is another deficiency of the current LSM
-> as it seems no serious user of the LSM can exist simply as a kernel
-> module.
-
-While that is true of SELinux and AppArmor I would suggest that
-is an artifact of the design goals of those two sophisticated
-security schemes, not an attribute of the LSM.
-
-> Not being able to mix code from different projects is also a very
-> serious limitation of the LSM.  Currently I don't think we can
-> build a kernel that supports selinux and any other LSM at the same
-> time.  Which horribly limits what we can do with the LSM.
-
-Weeeelllll ... Module stacking has been a contentious issue from
-day one of the LSM. Now that SELiunx is proposing to take over
-capability processing for it's own purposes it's easy to think
-that while other schemes may be up to stacking SELinux ain't gonna.
-
-> So it seems clear that if we are aiming at an ideal solution.  We
-> first need to enhance the LSM.
-
-I don't think so. I see much greater social/political problems
-than I see technical ones.
-
-> Then merge in the AppArmor
-> functionality.  Doing it all in one patch series looks to overwhelming
-> for a decent code review.
-
-It's true that the code review for AppArmor has proven difficult.
-That's going to be true of any change to the vfs layer, for any
-reason. Have someone who was there tell you about the original XFS
-proposals some time. Again, it's not LSM's fault.
-
-> That said is anyone interested in making the LSM more like iptables
-> with a generic table based rules structure?
-
-That's pretty close to what you get with SELinux, and one reason
-why that crowd has advocated that LSM be dumped in favor of SELinux
-as the sole interface.
-
-> That way we could fix
-> the one true LSM problem and concentrate on simpler pieces that give
-> specific bits of interesting functionality.
-
-Sort of. While the SELinux kernel code isn't much, less than 20k lines,
-the reference policy it requires is 200k lines, and the smallest policy
-I've ever heard anyone claim runs is 600. Yes, you get interesting
-functionality, but I don't recall there being many claims that policy
-development is simple of late.
-
-> Or at the very least
-> be able to compile in multiple different bits of functionality into
-> the kernel simultaneously.
-
-The LSM stacking problem, to my mind, is waiting on two modules that
-really want to work together and enough thick skin to get past those
-who don't want LSM to get better in hopes it will go away.
-
-> I'm really not familiar with the security issues the LSM addresses
-
-It addresses none, it is a tool put in place so that Linus doesn't
-have to listen to security people argue over which scheme is better.
-
-> but I do know, it encourages huge incompatible mega solutions,
-
-That's the security marketplace, not LSM.
-
-> and
-> it tends to break when I fix real security problems in the kernel.
-
-Please, examples.
-
-> So at this point I am convinced that the LSM is deficient, has very
-> limited usability, and seems to be a very fragile firewall structure
-> to me.
-
-The "additional" architecture of the LSM, as opposed to the originally
-proposed "authoritative" model is responsible for a good deal of the
-limited deficiency and uasability, but was considered necessary to
-prevent kernel "highjacking". If it's fragile, it's mostly due to the
-organic growth of security implementation in the kernel. It is under
-utilized, and there are a number of reasons for that, but recent events
-are encouraging.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+--ibTvN161/egqYuK8--
