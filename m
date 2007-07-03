@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759739AbXGCLXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759607AbXGCL2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759739AbXGCLXr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 07:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbXGCLXj
+	id S1759607AbXGCL2N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 07:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbXGCL2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 07:23:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:56845 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756770AbXGCLXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 07:23:38 -0400
+	Tue, 3 Jul 2007 07:28:00 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:51385 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756313AbXGCL17 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 07:27:59 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 13:27:55 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-pm@lists.linux-foundation.org, benh@kernel.crashing.org,
+       nigel@nigel.suspend2.net, mjg59@srcf.ucam.org,
+       linux-kernel@vger.kernel.org
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031307.41366.oliver@neukum.org> <E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18058.12724.163599.707035@cargo.ozlabs.ibm.com>
-Date: Tue, 3 Jul 2007 21:23:32 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-In-Reply-To: <200707030944.18702.oliver@neukum.org>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031608.06348.nigel@nigel.suspend2.net>
-	<1183447184.10386.102.camel@localhost.localdomain>
-	<200707030944.18702.oliver@neukum.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707031327.56577.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum writes:
+Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
+> > > > > So to summarize, the plan that makes things work with fuse is:
+> > > > > 
+> > > > >  - For STR, don't do the freezer thing.
+> > > > > 
+> > > > >  - For STD, don't sys_sync() after you froze
+> > > > > 
+> > > > > There might be -other- issues, but that should get you through some of
+> > > > 
+> > > > At the risk of repeating myself. Character device drivers are written
+> > > > with the assumption that normal io and suspend/resume do not race
+> > > > with each other due to the freezer.
+> > > > What do you intend to do about that?
+> > > 
+> > > Oliver, can you please explain your worries in a bit more detail?
+> > > 
+> > > I don't claim to know anything about how STR or hibernate works, but
+> > > neither seem to have any problem with I/O on the fuse device "racing"
+> > > with them.
+> > 
+> > The problem is not with fuse. The problem is generic in nature.
+> > 
+> > If you remove the freezer, user space remains active until the last CPU
+> > goes into suspend. It can do syscalls. Or do you know a clean way to exempt
+> > only the tasks fuse might use?
+> 
+> You are talking about hibernate, right?  Suspending (to ram) is
+> instantaneous, in that _after_ suspend no CPU is active obviously.
 
-> At the risk of repeating myself. Character device drivers are written
-> with the assumption that normal io and suspend/resume do not race
-> with each other due to the freezer.
-> What do you intend to do about that?
+If that is so, why do you care? If it is really atomic, fuse has no chance
+to call out to its component in user space either. Removing the freezer
+cannot make a difference.
 
-Going back to the old powerbook sleep code, we had a two-phase
-suspend: drivers got notified once when userspace is still running,
-with interrupts enabled, in process context; and then a second time
-with interrupts disabled and with only one CPU up, so the process
-that is initiating the suspend is the only process running (since
-interrupts are disabled and nothing it does can sleep, no other
-process can get to run).
+Something is fishy here.
 
-I still believe that is the right way to go, although we currently
-only have a single-phase suspend.
+	Regards
+		Oliver
 
-Most drivers suspended their hardware in the second call.  If they are
-in the middle of a conversation with their device that *has* to be
-completed, they can do that by polling.  If it's a character device, a
-better approach would be to set a flag or whatever in the first
-suspend call to make sure that no new conversations get started with
-the device, sleeping if necessary.
-
-I'm actually having a hard time thinking of how to test your assertion
-since there are so few things on a typical computer that are plain
-character devices driving real hardware.  A serial port would be about
-the only one; keyboards and mice (and serial ports :) are USB these
-days, or ADB on older powerbooks.
-
-Or did you mean to include drivers for pseudo-devices (e.g. ptys)?  I
-don't see why they would have a suspend method at all.
-
-Paul.
