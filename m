@@ -1,157 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760863AbXGCRni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760921AbXGCRpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760863AbXGCRni (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:43:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbXGCRnb
+	id S1760921AbXGCRpX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029AbXGCRpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:43:31 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:33902 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754711AbXGCRna (ORCPT
+	Tue, 3 Jul 2007 13:45:09 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57094 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754913AbXGCRpH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:43:30 -0400
-Date: Tue, 3 Jul 2007 18:42:47 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: akpm@linux-foundation.org, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 1/5] avoid tlb gather restarts.
-In-Reply-To: <20070703121228.254110263@de.ibm.com>
-Message-ID: <Pine.LNX.4.64.0707031829390.2111@blonde.wat.veritas.com>
-References: <20070703111822.418649776@de.ibm.com> <20070703121228.254110263@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAcGV0ZXJ6QGluZnJhZGVhZC5vcmcAc2Nod2lkZWZza3lAZGUuaWJtLmNvbQA=
-X-Brightmail-Tracker: AAAAAA==
+	Tue, 3 Jul 2007 13:45:07 -0400
+Date: Tue, 3 Jul 2007 18:51:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Libata PATA status
+Message-ID: <20070703185116.59c8f5f5@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007, Martin Schwidefsky wrote:
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> If need_resched() is false in the inner loop of unmap_vmas it is
-> unnecessary to do a full blown tlb_finish_mmu / tlb_gather_mmu for
-> each ZAP_BLOCK_SIZE ptes. Do a tlb_flush_mmu() instead. That gives
-> architectures with a non-generic tlb flush implementation room for
-> optimization. The tlb_flush_mmu primitive is a available with the
-> generic tlb flush code, the ia64_tlb_flush_mm needs to be renamed
-> and a dummy function is added to arm and arm26.
-> 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Libata General with respect to PATA
+====================================
 
-Acked-by: Hugh Dickins <hugh@veritas.com>
+Wrong port and IRQ reporting - IRQ now fixed by Tejun, port reporting
+fixes sent to Andrew. All these are cosmetic and don't harm debug.
 
-(Looking at it, I see that we could argue that there ought to be a
-need_resched() etc. check after your tlb_flush_mmu() in unmap_vmas,
-in case it's spent a long while in there on some arches; but I don't
-think we have the ZAP_BLOCK_SIZE tuned with any great precision, and
-you'd at worst be doubling the latency there, so let's not worry
-about it.  I write this merely in order to reserve myself an
-"I told you so" if anyone ever notices increased latency ;)
+Still can't user set drive speed or user issue commands at a given speed.
+Needed to allow users to bump cable rules, fix strange stuff and for some
+emulated chips to issue RAID control ATA packets in PIO0 (no I've no idea
+why they only work in PIO0 ;)).
 
-> ---
-> 
->  include/asm-arm/tlb.h   |    5 +++++
->  include/asm-arm26/tlb.h |    5 +++++
->  include/asm-ia64/tlb.h  |    6 +++---
->  mm/memory.c             |   16 ++++++----------
->  4 files changed, 19 insertions(+), 13 deletions(-)
-> 
-> diff -urpN linux-2.6/include/asm-arm/tlb.h linux-2.6-patched/include/asm-arm/tlb.h
-> --- linux-2.6/include/asm-arm/tlb.h	2006-11-08 10:45:43.000000000 +0100
-> +++ linux-2.6-patched/include/asm-arm/tlb.h	2007-07-03 12:56:46.000000000 +0200
-> @@ -52,6 +52,11 @@ tlb_gather_mmu(struct mm_struct *mm, uns
->  }
->  
->  static inline void
-> +tlb_flush_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
-> +{
-> +}
-> +
-> +static inline void
->  tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
->  {
->  	if (tlb->fullmm)
-> diff -urpN linux-2.6/include/asm-arm26/tlb.h linux-2.6-patched/include/asm-arm26/tlb.h
-> --- linux-2.6/include/asm-arm26/tlb.h	2006-11-08 10:45:43.000000000 +0100
-> +++ linux-2.6-patched/include/asm-arm26/tlb.h	2007-07-03 12:56:46.000000000 +0200
-> @@ -29,6 +29,11 @@ tlb_gather_mmu(struct mm_struct *mm, uns
->  }
->  
->  static inline void
-> +tlb_flush_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
-> +{
-> +}
-> +
-> +static inline void
->  tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
->  {
->          if (tlb->need_flush)
-> diff -urpN linux-2.6/include/asm-ia64/tlb.h linux-2.6-patched/include/asm-ia64/tlb.h
-> --- linux-2.6/include/asm-ia64/tlb.h	2006-11-08 10:45:45.000000000 +0100
-> +++ linux-2.6-patched/include/asm-ia64/tlb.h	2007-07-03 12:56:46.000000000 +0200
-> @@ -72,7 +72,7 @@ DECLARE_PER_CPU(struct mmu_gather, mmu_g
->   * freed pages that where gathered up to this point.
->   */
->  static inline void
-> -ia64_tlb_flush_mmu (struct mmu_gather *tlb, unsigned long start, unsigned long end)
-> +tlb_flush_mmu (struct mmu_gather *tlb, unsigned long start, unsigned long end)
->  {
->  	unsigned int nr;
->  
-> @@ -160,7 +160,7 @@ tlb_finish_mmu (struct mmu_gather *tlb, 
->  	 * Note: tlb->nr may be 0 at this point, so we can't rely on tlb->start_addr and
->  	 * tlb->end_addr.
->  	 */
-> -	ia64_tlb_flush_mmu(tlb, start, end);
-> +	tlb_flush_mmu(tlb, start, end);
->  
->  	/* keep the page table cache within bounds */
->  	check_pgt_cache();
-> @@ -184,7 +184,7 @@ tlb_remove_page (struct mmu_gather *tlb,
->  	}
->  	tlb->pages[tlb->nr++] = page;
->  	if (tlb->nr >= FREE_PTE_NR)
-> -		ia64_tlb_flush_mmu(tlb, tlb->start_addr, tlb->end_addr);
-> +		tlb_flush_mmu(tlb, tlb->start_addr, tlb->end_addr);
->  }
->  
->  /*
-> diff -urpN linux-2.6/mm/memory.c linux-2.6-patched/mm/memory.c
-> --- linux-2.6/mm/memory.c	2007-06-18 09:43:22.000000000 +0200
-> +++ linux-2.6-patched/mm/memory.c	2007-07-03 12:56:46.000000000 +0200
-> @@ -853,18 +853,15 @@ unsigned long unmap_vmas(struct mmu_gath
->  				break;
->  			}
->  
-> -			tlb_finish_mmu(*tlbp, tlb_start, start);
-> -
->  			if (need_resched() ||
->  				(i_mmap_lock && need_lockbreak(i_mmap_lock))) {
-> -				if (i_mmap_lock) {
-> -					*tlbp = NULL;
-> +				if (i_mmap_lock)
->  					goto out;
-> -				}
-> +				tlb_finish_mmu(*tlbp, tlb_start, start);
->  				cond_resched();
-> -			}
-> -
-> -			*tlbp = tlb_gather_mmu(vma->vm_mm, fullmm);
-> +				*tlbp = tlb_gather_mmu(vma->vm_mm, fullmm);
-> +			} else
-> +				tlb_flush_mmu(*tlbp, tlb_start, start);
->  			tlb_start_valid = 0;
->  			zap_work = ZAP_BLOCK_SIZE;
->  		}
-> @@ -892,8 +889,7 @@ unsigned long zap_page_range(struct vm_a
->  	tlb = tlb_gather_mmu(mm, 0);
->  	update_hiwater_rss(mm);
->  	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
-> -	if (tlb)
-> -		tlb_finish_mmu(tlb, address, end);
-> +	tlb_finish_mmu(tlb, address, end);
->  	return end;
->  }
->  
+No serialization of channel pairs.
+
+PATA General
+============
+
+Current kernels now support HPA (Host Protected Area) but default to
+honouring it. Probably a wrong default for PATA but we need to decide the
+right way to expose it nicely.
+
+Cable detection should now be sane. Still issues with SATA bridges. Some
+test hacks in my code base but nothing for upstream yet.
+
+My tree has global DMA control aka ide=nodma. Need to decide the best way
+to push a version of this.
+
+Ancient non IORDY capable devices need patches still in my devel tree
+
+Post SRST we need to decide what to do about mode setting - do we put the
+controller in PIO0 specifically ? My tree does and this seems to help on
+non PC systems.
+
+No PATA hotplug support yet. Need warmplug helpers for some chipsets (eg
+some intel ICH) to avoid risk of hangs.
+
+
+Chipsets
+========
+PIIX
+	Tejun should have the MWDMA bugs fixed otherwise so far so good.
+	Mostly maintained by other people.
+ACPI
+	Driver needs a rewrite based upon what has been learned about the
+	BIOS handling of the ACPI methods. On the TODO list
+ALI
+	2.6.22rc7 fixed the last known non-atapi bug. Stil some ATAPI
+	problem reports unresolved
+AMD
+	Solid. ACPI tweaks in my tree for Nvidia cable detect and pushed
+	to -mm. Target for 2.6.23
+ARTOP
+	No reports, but nobody appears to be using one
+ATIIXP
+	Rock solid. For SATA side use AHCI
+CMD640
+	Seems to work but still little testing
+CMD64X
+	Tested on x86, needs more Sparc/Alpha feedback
+CS5520
+	Solid for PIO. No virtual DMA support (and none likely unless its
+	contributed)
+CS5530
+	Obscure hang bug fix just sent to -mm tree but not observed in
+	real world use. Otherwise stable
+CS5535
+	No reports
+CYPRESS
+	Needs someone with an ancient Alpha. May drop entirely
+EFAR
+	Seems solid. Needs some PIIX updates cross checking for EFAR
+	relevance. Low priority
+GENERIC
+	Fix for "DMA set up but not used" bug in -git
+HPT366
+	Seems to be solid. Needs a backport of the chip detect changes
+	Sergei just finished for old IDE. Low priority no real impact from
+	their lack
+HPT37X
+	Working but some further work required to get it behaving on all
+	combinations
+HPT3X2N
+	Still has problems on some systems. Tracking the work being done
+	in old-ide which seems to behave similarly
+HPT3X3
+	Solid PIO support sent to -mm. DMA is problematic. Doesn't work
+	with old IDE at all so not too problematic. Doesn't work in
+	base kernel
+ISAPNP
+	Seems to work, no bug reports but not many users
+IT8212
+	Multiple fixes, should now be stable in RAID and Pass-through
+	modes thanks to driver fixes and core fixes from Tejun
+IT8213
+	No idea
+JMICRON
+	Works reliably. No recent changes
+LEGACY
+	Works ok. Complete rewrite in progress to clean up all the
+	pre-PCI support
+TRIFLEX
+	Solid, no recent changes.
+MARVELL
+	Solid, will be replaced by PATA AHCI-like support in time
+	(but not by me)
+MPIIX
+	Solid, no recent changes
+OLDPIIX
+	Solid, no recent changes
+NETCELL
+	Solid, no recent changes
+NS87410
+	Still experimental, almost no users
+OPTIPIO
+	Very much experimental but seems to work
+OPTIDMA
+	Very much experimental, but seems to work. Only one user known
+	however
+PCMCIA
+	Works reliably. Some problems with IRQ routing on some CF cards
+	that seem to be card related. Works on systems with no DMA API
+	support as of patches sent to -mm
+PDC_OLD
+	2.6.22-git has cable detection bug fixed
+QDI
+	Works, will be folded into LEGACY rewrite
+RADISYS
+	Very experimental, no changes, low priority
+RZ1000
+	Solid, works, no changes
+SC1200
+	Single channel only still. Needs work for dual channel
+	-mm has fix for a DMA hang bug
+SERVERWORKS
+	Solid, no changes of note
+SIL680
+	Solid, no recent changes
+SIS
+	Current tree fixes crash on boot some users reported, code
+	cleanups, no other major changes for pure PATA devices
+VIA
+	Solid. Sent acpi patch for -mm to try and fix the one remaining
+	mystery "how to spot VIA with onboard SATA bridges properly. If
+	you've got a VIA board with SATA ports that appear as PATA
+	channels please drop me an email as I'd like to get more info
+	on what is affected.
+WINBOND
+	No changes, still experimental
