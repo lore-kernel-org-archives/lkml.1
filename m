@@ -1,58 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbXGCRmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760863AbXGCRni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759704AbXGCRmc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbXGCRm0
+	id S1760863AbXGCRni (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbXGCRnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:42:26 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:51923 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754711AbXGCRmZ (ORCPT
+	Tue, 3 Jul 2007 13:43:31 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:33902 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754711AbXGCRna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:42:25 -0400
-To: rjw@sisk.pl
-CC: johannes@sipsolutions.net, stern@rowland.harvard.edu,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, mjg59@srcf.ucam.org, paulus@samba.org
-In-reply-to: <200707031722.13165.rjw@sisk.pl>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-References: <Pine.LNX.4.44L0.0707031026260.3720-100000@iolanthe.rowland.org> <1183474748.3722.33.camel@johannes.berg> <200707031722.13165.rjw@sisk.pl>
-Message-Id: <E1I5mKv-0004TM-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 03 Jul 2007 19:38:49 +0200
+	Tue, 3 Jul 2007 13:43:30 -0400
+Date: Tue, 3 Jul 2007 18:42:47 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: akpm@linux-foundation.org, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 1/5] avoid tlb gather restarts.
+In-Reply-To: <20070703121228.254110263@de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0707031829390.2111@blonde.wat.veritas.com>
+References: <20070703111822.418649776@de.ibm.com> <20070703121228.254110263@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAcGV0ZXJ6QGluZnJhZGVhZC5vcmcAc2Nod2lkZWZza3lAZGUuaWJtLmNvbQA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Indeed. Actually, one could argue that it's impossible to solve the
-> > problem as long as we try to call out to userspace during suspend and
-> > need to wait until that's finished, like in the case of sys_sync() and
-> > fuse filesystems, and probably other cases. Maybe we should make *those*
-> > calls return a failure so that the suspend isn't transparent inside the
-> > kernel but is transparent to userspace.
+On Tue, 3 Jul 2007, Martin Schwidefsky wrote:
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> Well, it generally needs more consideration. :-)
+> If need_resched() is false in the inner loop of unmap_vmas it is
+> unnecessary to do a full blown tlb_finish_mmu / tlb_gather_mmu for
+> each ZAP_BLOCK_SIZE ptes. Do a tlb_flush_mmu() instead. That gives
+> architectures with a non-generic tlb flush implementation room for
+> optimization. The tlb_flush_mmu primitive is a available with the
+> generic tlb flush code, the ia64_tlb_flush_mm needs to be renamed
+> and a dummy function is added to arm and arm26.
 > 
-> I think that we should introduce mechanisms that will allow us to notify all
-> kernel subsystems, including FUSE and similar, that the system is going to
-> enter a sleep state (one of those is the notifier chain introduced recently).
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Ugh, please no.
+Acked-by: Hugh Dickins <hugh@veritas.com>
 
-Believe me, fuse is doing _nothing_ out of the ordinary, and should
-not need special treatment during suspend/resume.  If suspend itself
-is doing something that triggers fuse activity, then that's a bug,
-such as the sync() thing that started this thread.
+(Looking at it, I see that we could argue that there ought to be a
+need_resched() etc. check after your tlb_flush_mmu() in unmap_vmas,
+in case it's spent a long while in there on some arches; but I don't
+think we have the ZAP_BLOCK_SIZE tuned with any great precision, and
+you'd at worst be doubling the latency there, so let's not worry
+about it.  I write this merely in order to reserve myself an
+"I told you so" if anyone ever notices increased latency ;)
 
-> Then, they may react to such a notification by entering a "suspend" mode
-> of operation in which they will return errors from some callbacks that
-> otherwise should have succeeded etc.  That depends on the subsystem in
-> question.
-
-Sounds horrible.
-
-Why do we need to deal with subsystem interdependencies during
-suspend?  Isn't it about saving device state to ram?  That definitely
-_should not_ need to trigger anything that touches filesystems or
-other subsystems.
-
-Miklos
+> ---
+> 
+>  include/asm-arm/tlb.h   |    5 +++++
+>  include/asm-arm26/tlb.h |    5 +++++
+>  include/asm-ia64/tlb.h  |    6 +++---
+>  mm/memory.c             |   16 ++++++----------
+>  4 files changed, 19 insertions(+), 13 deletions(-)
+> 
+> diff -urpN linux-2.6/include/asm-arm/tlb.h linux-2.6-patched/include/asm-arm/tlb.h
+> --- linux-2.6/include/asm-arm/tlb.h	2006-11-08 10:45:43.000000000 +0100
+> +++ linux-2.6-patched/include/asm-arm/tlb.h	2007-07-03 12:56:46.000000000 +0200
+> @@ -52,6 +52,11 @@ tlb_gather_mmu(struct mm_struct *mm, uns
+>  }
+>  
+>  static inline void
+> +tlb_flush_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
+> +{
+> +}
+> +
+> +static inline void
+>  tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
+>  {
+>  	if (tlb->fullmm)
+> diff -urpN linux-2.6/include/asm-arm26/tlb.h linux-2.6-patched/include/asm-arm26/tlb.h
+> --- linux-2.6/include/asm-arm26/tlb.h	2006-11-08 10:45:43.000000000 +0100
+> +++ linux-2.6-patched/include/asm-arm26/tlb.h	2007-07-03 12:56:46.000000000 +0200
+> @@ -29,6 +29,11 @@ tlb_gather_mmu(struct mm_struct *mm, uns
+>  }
+>  
+>  static inline void
+> +tlb_flush_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
+> +{
+> +}
+> +
+> +static inline void
+>  tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
+>  {
+>          if (tlb->need_flush)
+> diff -urpN linux-2.6/include/asm-ia64/tlb.h linux-2.6-patched/include/asm-ia64/tlb.h
+> --- linux-2.6/include/asm-ia64/tlb.h	2006-11-08 10:45:45.000000000 +0100
+> +++ linux-2.6-patched/include/asm-ia64/tlb.h	2007-07-03 12:56:46.000000000 +0200
+> @@ -72,7 +72,7 @@ DECLARE_PER_CPU(struct mmu_gather, mmu_g
+>   * freed pages that where gathered up to this point.
+>   */
+>  static inline void
+> -ia64_tlb_flush_mmu (struct mmu_gather *tlb, unsigned long start, unsigned long end)
+> +tlb_flush_mmu (struct mmu_gather *tlb, unsigned long start, unsigned long end)
+>  {
+>  	unsigned int nr;
+>  
+> @@ -160,7 +160,7 @@ tlb_finish_mmu (struct mmu_gather *tlb, 
+>  	 * Note: tlb->nr may be 0 at this point, so we can't rely on tlb->start_addr and
+>  	 * tlb->end_addr.
+>  	 */
+> -	ia64_tlb_flush_mmu(tlb, start, end);
+> +	tlb_flush_mmu(tlb, start, end);
+>  
+>  	/* keep the page table cache within bounds */
+>  	check_pgt_cache();
+> @@ -184,7 +184,7 @@ tlb_remove_page (struct mmu_gather *tlb,
+>  	}
+>  	tlb->pages[tlb->nr++] = page;
+>  	if (tlb->nr >= FREE_PTE_NR)
+> -		ia64_tlb_flush_mmu(tlb, tlb->start_addr, tlb->end_addr);
+> +		tlb_flush_mmu(tlb, tlb->start_addr, tlb->end_addr);
+>  }
+>  
+>  /*
+> diff -urpN linux-2.6/mm/memory.c linux-2.6-patched/mm/memory.c
+> --- linux-2.6/mm/memory.c	2007-06-18 09:43:22.000000000 +0200
+> +++ linux-2.6-patched/mm/memory.c	2007-07-03 12:56:46.000000000 +0200
+> @@ -853,18 +853,15 @@ unsigned long unmap_vmas(struct mmu_gath
+>  				break;
+>  			}
+>  
+> -			tlb_finish_mmu(*tlbp, tlb_start, start);
+> -
+>  			if (need_resched() ||
+>  				(i_mmap_lock && need_lockbreak(i_mmap_lock))) {
+> -				if (i_mmap_lock) {
+> -					*tlbp = NULL;
+> +				if (i_mmap_lock)
+>  					goto out;
+> -				}
+> +				tlb_finish_mmu(*tlbp, tlb_start, start);
+>  				cond_resched();
+> -			}
+> -
+> -			*tlbp = tlb_gather_mmu(vma->vm_mm, fullmm);
+> +				*tlbp = tlb_gather_mmu(vma->vm_mm, fullmm);
+> +			} else
+> +				tlb_flush_mmu(*tlbp, tlb_start, start);
+>  			tlb_start_valid = 0;
+>  			zap_work = ZAP_BLOCK_SIZE;
+>  		}
+> @@ -892,8 +889,7 @@ unsigned long zap_page_range(struct vm_a
+>  	tlb = tlb_gather_mmu(mm, 0);
+>  	update_hiwater_rss(mm);
+>  	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
+> -	if (tlb)
+> -		tlb_finish_mmu(tlb, address, end);
+> +	tlb_finish_mmu(tlb, address, end);
+>  	return end;
+>  }
+>  
