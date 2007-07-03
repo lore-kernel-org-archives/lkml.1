@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760998AbXGCQlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761149AbXGCQm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760998AbXGCQlm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 12:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760872AbXGCQlX
+	id S1761149AbXGCQm2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 12:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbXGCQmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 12:41:23 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:44671 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761034AbXGCQlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 12:41:20 -0400
-Message-Id: <20070703164031.888938670@polymtl.ca>
-References: <20070703163818.785635235@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 03 Jul 2007 12:38:22 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, prasanna@in.ibm.com,
-       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 3/3] Text Edit Lock - kprobes i386
-Content-Disposition: inline; filename=text-edit-lock-kprobes-i386.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  3 Jul 2007 16:40:33 +0000
+	Tue, 3 Jul 2007 12:42:17 -0400
+Received: from p02c11o142.mxlogic.net ([208.65.144.75]:53666 "EHLO
+	p02c11o142.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755233AbXGCQmP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 12:42:15 -0400
+X-Greylist: delayed 3723 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jul 2007 12:42:14 EDT
+Subject: receive errors
+From: Eli Cohen <eli@mellanox.co.il>
+Reply-To: eli@mellanox.co.il
+To: linux-net@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Mellanox Technologies
+Date: Tue, 03 Jul 2007 18:39:20 +0300
+Message-Id: <1183477160.25031.170.camel@mtls03>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-Spam: [F=0.0100000000; S=0.010(2007062701); SS=0.500]
+X-MAIL-FROM: <eli@mellanox.co.il>
+X-SOURCE-IP: [194.90.237.34]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kprobes can use the text edit lock to insure mutual exclusion when edition the
-code and make sure the pages are writable.
+Hi,
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: prasanna@in.ibm.com
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
----
- arch/i386/kernel/kprobes.c |   30 ++++--------------------------
- 1 file changed, 4 insertions(+), 26 deletions(-)
+I am running a benchmark that uses a UDP socket to send small packets
+(20 bytes) from on side to the other side. I experience packet loss
+reported by the benchmark and I can see that it matches what I see with
+netstat:
 
-Index: linux-2.6-lttng/arch/i386/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/kprobes.c	2007-06-29 14:15:38.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/kprobes.c	2007-06-29 14:25:08.000000000 -0400
-@@ -169,42 +169,20 @@
- 
- void __kprobes arch_arm_kprobe(struct kprobe *p)
- {
--	unsigned long addr = (unsigned long) p->addr;
--	int page_readonly = 0;
--
--	if (kernel_readonly_text(addr)) {
--		page_readonly = 1;
--		change_page_attr(virt_to_page(addr), 1, PAGE_KERNEL_RWX);
--		global_flush_tlb();
--	}
--
-+	kernel_text_lock((unsigned long)p->addr, sizeof(kprobe_opcode_t));
- 	*p->addr = BREAKPOINT_INSTRUCTION;
-+	kernel_text_unlock((unsigned long)p->addr, sizeof(kprobe_opcode_t));
- 	flush_icache_range((unsigned long) p->addr,
- 			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
--
--	if (page_readonly) {
--		change_page_attr(virt_to_page(addr), 1, PAGE_KERNEL_RX);
--		global_flush_tlb();
--	}
- }
- 
- void __kprobes arch_disarm_kprobe(struct kprobe *p)
- {
--	unsigned long addr = (unsigned long) p->addr;
--	int page_readonly = 0;
--
--	if (kernel_readonly_text(addr)) {
--		page_readonly = 1;
--		change_page_attr(virt_to_page(addr), 1, PAGE_KERNEL_RWX);
--		global_flush_tlb();
--	}
-+	kernel_text_lock((unsigned long)p->addr, sizeof(kprobe_opcode_t));
- 	*p->addr = p->opcode;
-+	kernel_text_unlock((unsigned long)p->addr, sizeof(kprobe_opcode_t));
- 	flush_icache_range((unsigned long) p->addr,
- 			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
--	if (page_readonly) {
--		change_page_attr(virt_to_page(addr), 1, PAGE_KERNEL_RX);
--		global_flush_tlb();
--	}
- }
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
+[root@sw174 opt]# netstat -us
+Udp:
+    26971289 packets received
+    7 packets to unknown port received.
+    32615 packet receive errors
+    155761284 packets sent
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Can someone please direct to the source code that detects such receive
+errors and/or suggest why such a thing could happen?
+
+Thanks
+Eli
+
