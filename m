@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbXGCGov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758474AbXGCGrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139AbXGCGov (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 02:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbXGCGoo
+	id S1758474AbXGCGrz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 02:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbXGCGrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 02:44:44 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:44587 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbXGCGoo (ORCPT
+	Tue, 3 Jul 2007 02:47:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:46164 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751953AbXGCGro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 02:44:44 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] NIKON D50 problem
-Date: Tue, 3 Jul 2007 08:44:41 +0200
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, "Ni@m" <niam.niam@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <a9e22dff0707021217r239ebcf0g8154a6e985b078f3@mail.gmail.com> <20070702155912.fe1e6834.akpm@linux-foundation.org>
-In-Reply-To: <20070702155912.fe1e6834.akpm@linux-foundation.org>
+	Tue, 3 Jul 2007 02:47:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=jTGv49tuirJkMUVIa10n//U4Teurefu689BvWg91zOp/r7KS4yVBpGhB5dOl0VBBFba34TkxhXECGOfZGvPmPStnJf5B9WciZulEJ/tSOZ4vwQkvgim/AP3e4VYMP4xQ8+Yta1CIKoDNmMbOi64/TiulWlOvUyYPhcwfhP/191c=
+Message-ID: <4689F10B.8090606@gmail.com>
+Date: Tue, 03 Jul 2007 15:47:39 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.22-rc5 2/2] sata_promise: SATA hotplug support
+References: <200706191954.l5JJsVl9002671@alkaid.it.uu.se>
+In-Reply-To: <200706191954.l5JJsVl9002671@alkaid.it.uu.se>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707030844.42119.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> It's more likely a usb-storage or scsi layer problem.
+Mikael Pettersson wrote:
+> This patch enables hotplugging of SATA devices in the
+> sata_promise driver. It's been tested successfully on
+> both first- and second-generation Promise SATA chips:
+> SATA150 TX2plus, SATAII150 TX2plus, SATA300 TX2plus,
+> and SATA300 TX4.
 > 
-> The device reports as having 1984001 sectors and the kernel is reporting IO
-> errors around the very end of the device.  Presumably an IO is straddling
-> end-of-device and we're not handling that correctly.
+> The only quirk I've seen is that hotplugging (insertion)
+> on the first-generation SATA150 TX2plus requires a lengthier
+> EH sequence than on the second-generation chips.
+> On the second-generation chips a simple soft reset seems
+> to suffice, but on the first-generation chip there's a
+> "port is slow to respond" after the initial soft reset,
+> after which libata issues a hard reset, and then the
+> device is recognised.
+> 
+> The hotplug checks are high up in the interrupt handling
+> path, not deep down in error_intr as in ahci/sata_sil24.
+> That's because the chip doesn't signal hotplug status changes
+> in the per-port status register: instead a global register
+> contains hotplug control and status flags for all ports.
+> I considered following the ahci/sata_sil24 structure, but
+> that would have required non-trivial changes to the interrupt
+> handling path, so I chose to keep the hotplug changes simple
+> and unobtrusive.
+> 
+> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 
-Can you try the work around suggested here:
+Some unlikely()'s might be helpful here and there but other than that.
 
-https://lists.one-eyed-alien.net/pipermail/usb-storage/2007-June/003053.html> 
+Acked-by: Tejun Heo <htejun@gmail.com>
 
-	Regards
-		Oliver
+-- 
+tejun
