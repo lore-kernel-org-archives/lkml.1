@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbXGCVQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761201AbXGCVRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760348AbXGCVQt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbXGCVQm
+	id S1761201AbXGCVRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbXGCVRC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:16:42 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57016 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751005AbXGCVQl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:16:41 -0400
-Date: Tue, 3 Jul 2007 17:16:37 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: linux-kernel@vger.kernel.org, <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
- pathway
-In-Reply-To: <20070703211227.GA28758@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0707031713530.8010-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Jul 2007 17:17:02 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42403 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752707AbXGCVRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:17:01 -0400
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <200707031508.45595.rjw@sisk.pl>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	 <1183441887.10386.77.camel@localhost.localdomain>
+	 <200707031508.45595.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Wed, 04 Jul 2007 07:16:24 +1000
+Message-Id: <1183497385.3388.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007, Matthew Garrett wrote:
-
-> On Tue, Jul 03, 2007 at 05:10:08PM -0400, Alan Stern wrote:
+On Tue, 2007-07-03 at 15:08 +0200, Rafael J. Wysocki wrote:
+> On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
+> > On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
+> > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
+> > > a screaming nightmare - either the suspend fails because syslog (for 
+> > > instance) can't be frozen, or the machine deadlocks for some other 
+> > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
+> > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
+> > > and just not use the freezer.
+> > 
+> > The main reason for deadlocks is because we do a sys_sync() after the
+> > freeze, which we shouldn't do.
 > 
-> > No, no -- you have it exactly backwards.  Removing the freezer turns 
-> > STR into something _less_ like runtime suspend, because it adds the 
-> > requirement that devices must not automatically be resumed when an I/O 
-> > request arrives.
-> 
-> But that's fine - "Are we undergoing a systemwide suspend" is an easy 
-> question to ask. Freezing processes instead means that most of those 
-> paths will never be tested.
+> So why don't we remove the sys_sync() from freeze_processes() instead?
 
-The question is easy to ask, but it's not so easy to figure out what
-you should do if the answer is Yes.  Freezing processes instead means
-that those "untested" paths -- in many, many drivers -- won't have to 
-exist at all.
+Or rather, move it to before freeze_processes() so that you get at least
+some level of sync'ing just in case you never wake up. Not perfect
+(things may still get dirty) but it will help the immediate issue.
 
-Alan Stern
+Ben.
+
 
