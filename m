@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761466AbXGCW1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbXGCW2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761466AbXGCW1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 18:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbXGCW1i
+	id S1761627AbXGCW2z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 18:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbXGCW2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 18:27:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:62505 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758034AbXGCW1h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 18:27:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=YEpNwF1XZBpq42BwIrZv1imRO02Kxa1z7uFUI523E6fN02OxQkInY/4S3op4QJCAfuXdZ5PwWzzLc7K3GWmGHH1FmY3r+C1vH3TCm6hgJ6I7/tbJ5DWx6+7Xob3uwFVtz8/7JwcejtPz7bxIsBodIyaZsPKcnpQuE4s2X2TTYIk=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] pata_hpt3x3: Major reworking and testing
-Date: Wed, 4 Jul 2007 00:44:27 +0200
-User-Agent: KMail/1.9.6
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jeff@garzik.org
-References: <20070703161002.1576c39d@the-village.bc.nu> <200707032212.01619.bzolnier@gmail.com> <468AB462.4090203@ru.mvista.com>
-In-Reply-To: <468AB462.4090203@ru.mvista.com>
+	Tue, 3 Jul 2007 18:28:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48619 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757734AbXGCW2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 18:28:46 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [AppArmor 01/44] Pass struct vfsmount to the inode_create LSM hook
+Date: Wed, 4 Jul 2007 00:28:30 +0200
+User-Agent: KMail/1.9.5
+Cc: jjohansen@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Tony Jones <tonyj@suse.de>,
+       Dave Hansen <hansendc@us.ibm.com>
+References: <20070626230756.519733902@suse.de> <20070626230851.325388038@suse.de> <20070630092934.GA22354@infradead.org>
+In-Reply-To: <20070630092934.GA22354@infradead.org>
 MIME-Version: 1.0
 Content-Disposition: inline
+X-Length: 1517
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707040044.27185.bzolnier@gmail.com>
+Message-Id: <200707040028.30273.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 July 2007, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> > http://www.linuxhq.com/kernel/v2.3/10/drivers/block/hpt343.c
-> 
-> > Does anybody have DOS driver for HPT343?  Google doesn't have it...
-> 
->     I have the drivers for HPT34[35] -- tried dissassembling them some years 
-> ago...
+On Saturday 30 June 2007 11:29, Christoph Hellwig wrote:
+> On Tue, Jun 26, 2007 at 04:07:57PM -0700, jjohansen@suse.de wrote:
+> > This is needed for computing pathnames in the AppArmor LSM.
+>
+> Please see the various per-mountpoint r/o thread that NACKed all the
+> vfsmount additions and have the rationale for it.
 
-/me wants
+The per-mountpoint flags can be checked at the vfs level instead of checking 
+down in the filesystems. That's all pretty nice; it avoids a number of 
+problems. (I think the latest patches of Dave Hansen are archived at 
+http://lwn.net/Articles/239630/.)
 
-Bart
+The lSM hooks are a rather different story: we cannot move LSM functionality 
+into the vfs without breaking the LSM abstraction. LSMs already are not 
+agnostic of vfsmount anymore right now. They are free to use the additional 
+vfsmounts, or just ignore them.
+
+So what are the specific issues you have with this?
+
+Thanks,
+Andreas
