@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbXGCGAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbXGCGCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759001AbXGCGAa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 02:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbXGCGAA
+	id S1758767AbXGCGCj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 02:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXGCGCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 02:00:00 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:58547 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755493AbXGCF77 (ORCPT
+	Tue, 3 Jul 2007 02:02:33 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:35569 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbXGCGCc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 01:59:59 -0400
-Date: Mon, 2 Jul 2007 23:01:55 -0700
-From: Greg KH <greg@kroah.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: linux-usb-devel@lists.sourceforge.net, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] usb: allocated usb releated dma buffer with
-	kmalloc_node
-Message-ID: <20070703060155.GB19086@kroah.com>
-References: <200706291326.43563.yinghai.lu@sun.com> <200707021536.37814.yinghai.lu@sun.com> <20070703051129.GA18420@kroah.com> <86802c440707022233g2021b49dg48534f813f628585@mail.gmail.com>
+	Tue, 3 Jul 2007 02:02:32 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] NIKON D50 problem
+Date: Tue, 3 Jul 2007 08:02:30 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Ni@m" <niam.niam@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <a9e22dff0707021217r239ebcf0g8154a6e985b078f3@mail.gmail.com> <20070702155912.fe1e6834.akpm@linux-foundation.org>
+In-Reply-To: <20070702155912.fe1e6834.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <86802c440707022233g2021b49dg48534f813f628585@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200707030802.30516.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 10:33:12PM -0700, Yinghai Lu wrote:
->  On 7/2/07, Greg KH <greg@kroah.com> wrote:
-> > On Mon, Jul 02, 2007 at 03:36:37PM -0700, Yinghai Lu wrote:
-> > > [PATCH 3/4] usb: allocated usb releated dma buffer with kmalloc_node
-> > >
-> > > For amd64 based two way system. USB always on node0. but dma buffer for 
-> > urb
-> > > allocated via kmalloc always get ram on node1. So change to kmalloc_node 
-> > to
-> > > get dma_buffer on corresponding node
-> >
-> > Are all of these changes really necessary?  You are doing this for some
-> > allocations that take a _long_ time when sending to the device due to
-> > the speed of the device.
-> >
-> > I could possibly see this making a difference on some drivers, but for
-> > the core, and for the basic USB structures, I can't imagine it is really
-> > worth it.
-> >
-> > Or do you have numbers showing the differences here?
-> >
-> > Patch included fully below for the benifit of the usb list, which you
-> > should have cc:ed...
+Am Dienstag, 3. Juli 2007 schrieb Andrew Morton:
+> > Some time ago(I really can't remember version of the kernel)
+> > everything was Ok. I'll try to find out the workable version of the
+> > kernel ... but I've already tried 2.6.20 - the same =(.
+> > I'm not sure, but It's possible that I've had ATA subsystem but not
+> > libata ... I haven't tested this case yet.
+> > 
+> > PS. I can see photos on my camera ... flash card is Ok. I have this
+> > problem even if I changed the flash card in this camera.
 > 
->  dma buffer could be allocated via alloc_pages_coherent. or
->  kmalloc/dma_map_single.
->  alloc_pages_coherent get the dma_buffer on corresponding node.
->  but kmalloc/dma_map_single always get dma_buffer on last node. or say
->  device is on HT chain node0,  it will get dma buffer on node 7 of 8
->  socket system.
->  also on two way system with 4G+4G RAM conf. device on node 0 will get
->  dma_buffer above 4G, and if the dma_mask is less 32bit, will need
->  extra iommu mapping.
->  In my mcp55+io55 system, it show dma_map_single is keepping called by
->  usb input: keyboard/mouse (8/0x40 bytes), and forcedeth. (0x670bytes)
+> It's more likely a usb-storage or scsi layer problem.
+> 
+> The device reports as having 1984001 sectors and the kernel is reporting IO
+> errors around the very end of the device.  Presumably an IO is straddling
+> end-of-device and we're not handling that correctly.
 
-Ok, so two drivers might need this, but not the whole usb core, right?
+Now I remember. We recently had a report about a buggy device, that close
+to the end of the medium could handle only requests for single sectors.
+I'll look into the archive.
 
-And even if you do have another usb mapping, is that a real problem?
-USB keyboards and mice are very slow.
+	Regards
+		Oliver
 
-thanks,
-
-greg k-h
