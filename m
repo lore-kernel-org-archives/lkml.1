@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbXGBX5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbXGCA2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbXGBX5U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 19:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbXGBX5F
+	id S1757524AbXGCA2U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 20:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbXGCA2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 19:57:05 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34379 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756811AbXGBX5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 19:57:04 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX180AVcAhdE0Qd9ZjQt1zCb5T944047YOzDJBpQorE
-	S/2kv2x1wUkno3
-Date: Tue, 3 Jul 2007 01:59:02 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Tim Boneko <tim@boneko.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Old bug in tg3 driver unfixed?
-Message-ID: <20070702235901.GA9713@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Tim Boneko <tim@boneko.de>, linux-kernel@vger.kernel.org
-References: <46864736.3090108@boneko.de>
+	Mon, 2 Jul 2007 20:28:11 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:3705 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755388AbXGCA2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 20:28:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MiIFGDTPuMeY5Y/MO3mxPAC5Ts52R24spOjKTa3gLI4dgnHxOBFtFk0NWdGTE0kbe4Agv8WFiAV9HXm79DvZcR7ybg6eKGjgnpEyvInSY/7rv8775jZc98yAmNqr0GtXcOpGcP7DWnRr7qPygx8vnRVSnEkDHqoRgrnz8zlQ48k=
+Message-ID: <a36005b50707021728q2b5cac73qde36ed063a82eb24@mail.gmail.com>
+Date: Mon, 2 Jul 2007 17:28:08 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: [patch 0/6] sys_indirect RFC - sys_indirect introduction
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.64.0707021119460.14774@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46864736.3090108@boneko.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Y-GMX-Trusted: 0
+References: <send-serie.davidel@xmailserver.org.28360.1183153732.0>
+	 <a36005b50706291848p406fbb9aw99697f609b0d5c4b@mail.gmail.com>
+	 <Pine.LNX.4.64.0706301208140.2957@alien.or.mcafeemobile.com>
+	 <a36005b50706301454j46c23760m5f0ac6088fe24a9d@mail.gmail.com>
+	 <Pine.LNX.4.64.0706301458300.2957@alien.or.mcafeemobile.com>
+	 <Pine.LNX.4.64.0706301529310.2957@alien.or.mcafeemobile.com>
+	 <a36005b50707010925k5c936c1ch2238b560c595a833@mail.gmail.com>
+	 <Pine.LNX.4.64.0707011003510.7547@alien.or.mcafeemobile.com>
+	 <a36005b50707020709s87bde71m325a4ced02eb6e2b@mail.gmail.com>
+	 <Pine.LNX.4.64.0707021119460.14774@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.30 14:06:14 +0200, Tim Boneko wrote:
-> Hello!
-> I am not subscribed to this list so please CC answers to my mail
-> address. THX!
-> 
-> I recently replaced the mainboard of one of my servers with a Tyan
-> Tomcat K8E. The onboard gigabit NIC is a Broadcom BCM5721. After
-> compiling and loading the tg3 driver in Kernel 2.6.21.5, the interface
-> could not be configured: "Device not found".
-> While searching the net i found a few other people with the same problem
-> but no solution.
-> 
-> By coincidence i found that a simpe "ifconfig eth1" worked OK and
-> afterwards the device could be configured and used as desired. After
-> searching this list, i found this posting
-> 
-> http://uwsg.iu.edu/hypermail/linux/kernel/0409.0/0224.html
-> 
-> by someone with obviously the same problem.
+On 7/2/07, Davide Libenzi <davidel@xmailserver.org> wrote:
+> Never be usable? I made you a concrete example that is like 8 months old.
+> And *that* could not have been cleanly handled with the flat structure
+> idea.
 
-Sounds more like a iftab/udev problem. Check /etc/iftab and your udev
-rules please.
+First of all, sigmasks are not widely needed.  Second, why on earth
+shouldn't it be possible with a flat structure?  Just have the sigmask
+in the same position.  It's no magic.
 
-Björn
+
+> But there are
+> examples (and the signal stuff is one of them), where you do need the
+> set_context+syscall+unset_context abstraction, for all cases where the
+> kernel already has its own internal data strctures. In those cases you'd
+> have to spread sys_internal context knowledge all around the kernel,
+> whereas the current solution allows you to confine the code inside
+> kernel/indirect.c
+
+Nonsense.  Whether you have a new word in the task structure or a
+pointer to a structure, you have to embed knowledge of this
+indirection in every affected code paths.  There is no difference
+here.  The only difference is that trying to force everything through
+an artificially complicated common entry code.
+
+I hope that Andrew+Linus will see through this.  I'm done arguing.
