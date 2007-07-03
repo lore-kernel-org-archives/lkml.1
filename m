@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbXGCWVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbXGCWZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760297AbXGCWVw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 18:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbXGCWVp
+	id S1760589AbXGCWZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 18:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbXGCWZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 18:21:45 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38651 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754443AbXGCWVo (ORCPT
+	Tue, 3 Jul 2007 18:25:22 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39954 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753077AbXGCWZV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 18:21:44 -0400
-Date: Tue, 3 Jul 2007 18:21:42 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: linux-kernel@vger.kernel.org, <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
- pathway
-In-Reply-To: <20070703212002.GA28895@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0707031814440.8010-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Jul 2007 18:25:21 -0400
+Date: Tue, 3 Jul 2007 23:31:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Morten Helgesen <morten@sourcepoet.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] genericserial: Remove bogus optimisation check and dead
+ code paths
+Message-ID: <20070703233135.502bba84@the-village.bc.nu>
+In-Reply-To: <468AC156.5040402@sourcepoet.org>
+References: <20070703152021.6eb8013d@the-village.bc.nu>
+	<468A5F89.70900@sourcepoet.org>
+	<20070703162655.6a001fdc@the-village.bc.nu>
+	<468AC156.5040402@sourcepoet.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007, Matthew Garrett wrote:
+On Tue, 03 Jul 2007 23:36:22 +0200
+Morten Helgesen <morten@sourcepoet.org> wrote:
 
-> On Tue, Jul 03, 2007 at 05:16:37PM -0400, Alan Stern wrote:
-> > On Tue, 3 Jul 2007, Matthew Garrett wrote:
-> > > But that's fine - "Are we undergoing a systemwide suspend" is an easy 
-> > > question to ask. Freezing processes instead means that most of those 
-> > > paths will never be tested.
-> > 
-> > The question is easy to ask, but it's not so easy to figure out what
-> > you should do if the answer is Yes.  Freezing processes instead means
-> > that those "untested" paths -- in many, many drivers -- won't have to 
-> > exist at all.
-> 
-> We're used to the idea of applications blocking when a resource they're 
-> using goes away - NFS has done it forever. 
 
-You persist in evading my point.  I'm not worried about applications;  
-I'm worried about drivers.
+>  /*
+>  > Problems to take into account are:
+>  >       -1- Interrupts that empty part of the buffer.
+> ->       -2- page faults on the access to userspace. 
+> +>       -2- Page faults on access to userspace. 
 
-Let me put it explicitly: You're writing a driver.  You're working on
-the read, write, or probe method.  You add code to check if a system
-sleep is underway.  Suppose the answer is Yes -- what does your driver
-do next?
+#2 no longer applies (don't before the caller)
+>  >       -3- Other processes that are also trying to do a "write".   
+#3 no longer applies (locked by tty layer)
 
-Make your answer as detailed as you reasonably can.  And be careful to 
-arrange things so that an ongoing I/O operation doesn't get messed up 
-when your suspend method is called.
+> -	/* get exclusive "write" access to this port (problem 3) */
+> +	/* Get exclusive "write" access to this port (problem 3) */
+>  	/* This is not a spinlock because we can have a disk access (page 
+> -		 fault) in copy_from_user */
 
-Alan Stern
+No copy_from_user any more. Actually that locking code wants review and
+maybe removal so is another project altogether
 
+
+Definitely an improvement
+
+Acked-by: Alan Cox <alan@redhat.com>
