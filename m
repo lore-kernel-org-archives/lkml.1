@@ -1,97 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbXGCII1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbXGCIPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758941AbXGCII1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 04:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbXGCIIR
+	id S1758813AbXGCIPU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 04:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755128AbXGCIPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 04:08:17 -0400
-Received: from mga02.intel.com ([134.134.136.20]:39497 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753862AbXGCIIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 04:08:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,491,1175497200"; 
-   d="asc'?scan'208";a="261655841"
-Subject: Re: [patch] CFS scheduler, -v18
-From: Keith Packard <keith.packard@intel.com>
-Reply-To: keith.packard@intel.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: keith.packard@intel.com, Mike Galbraith <efault@gmx.de>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070703072252.GB29984@elte.hu>
-References: <20070622220202.GA16872@elte.hu>
-	 <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com>
-	 <b647ffbd0707020601r774a38d4gb62b6c07f1b5db32@mail.gmail.com>
-	 <19f34abd0707020643g6a274db5q1d25cabd85b9a25f@mail.gmail.com>
-	 <20070702155029.GA13241@elte.hu>
-	 <19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com>
-	 <1183446743.7070.14.camel@Homer.simpson.net>
-	 <20070703072252.GB29984@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Rm8uPBwnxZqYyMbLdWU2"
-Organization: Intel Corp
-Date: Tue, 03 Jul 2007 01:08:09 -0700
-Message-Id: <1183450089.29867.36.camel@neko.keithp.com>
+	Tue, 3 Jul 2007 04:15:09 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:38944 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754274AbXGCIPI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 04:15:08 -0400
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+In-Reply-To: <20070703042916.GA17240@srcf.ucam.org>
+References: <20070703042916.GA17240@srcf.ucam.org>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Tue, 03 Jul 2007 09:37:04 +0200
+Message-Id: <1183448224.12649.14.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
+> or alternatively we  could do what we do for suspend to RAM on other
+> platforms (PPC and APM) and just not use the freezer.
 
---=-Rm8uPBwnxZqYyMbLdWU2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+As a data point, I am running with this patch on top of 2.6.21.2 the
+last 3+ weeks, with an average of 5/6 STR cycles a day, and had no
+problems at all. (Sony vaio pcg-fx701). Just normal work, I didn't try
+to stress the thing, but I have quite a few times suspended/resumed over
+a big compile without a glitch.
 
-On Tue, 2007-07-03 at 09:22 +0200, Ingo Molnar wrote:
+What are the risks of this patch supposed to be?
 
-> which allows xterm-spam (attached) to easily flood the xterm (without=20
-> any scrolling that would act as a throttle) and the xterm to flood Xorg.=20
+Romano
 
-It's just an Xterm bug.
 
-Xterm will look for X input if it ever manages to fill the input buffer
-past 32768 bytes. If it manages to get more than 4096 bytes in one read,
-it will invoke sched_yield. and then check for input. Gotta love that
-sched_yield call.
 
-As it always processes all of the incoming data before trying to read
-again, there doesn't appear to be any way it can ever have more than
-32768 characters in the buffer.=20
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
 
-And, as the kernel will not buffer more than 4095 bytes from a pty,
-there isn't any way it will ever read 4096 bytes.
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
 
-So, it sits there carefully reading every byte from the pty and painting
-them on the screen.
-
-You can 'fix' xterm with:
-
-$ xterm -xrm '*minBufSize: 4095'
-
-I hesitate to even suggest a patch to xterm that would solve this
-problem correctly. Note that xterm has kludges in several of the output
-processing steps which explicitly look for input (most vertical cursor
-motion, it seems), which is why any application which scrolls doesn't
-cause this problem.
-
-Do you need more reasons to switch to another terminal emulator?
-gnome-terminal has finally gotten reasonable; I expect rxvt or konsole
-would work just as well.
-
---=20
-keith.packard@intel.com
-
---=-Rm8uPBwnxZqYyMbLdWU2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGigPoQp8BWwlsTdMRAuoSAJ44UkGuKoiIXKSR77WqyFvltYcoGwCg5E9i
-RQUK6uk5Utx4GvU1e95LJro=
-=Xtv3
------END PGP SIGNATURE-----
-
---=-Rm8uPBwnxZqYyMbLdWU2--
