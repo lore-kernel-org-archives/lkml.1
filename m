@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbXGCOKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbXGCOKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268AbXGCOKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 10:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbXGCOKJ
+	id S1758721AbXGCOKh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 10:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXGCOK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 10:10:09 -0400
-Received: from rzcomm12.rz.tu-bs.de ([134.169.9.59]:63184 "EHLO
-	rzcomm12.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753812AbXGCOKI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 10:10:08 -0400
-X-Greylist: delayed 685 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jul 2007 10:10:07 EDT
-Message-ID: <468A560A.9050801@l4x.org>
-Date: Tue, 03 Jul 2007 15:58:34 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Thunderbird 2.0.0.5pre (Windows/20070628)
+	Tue, 3 Jul 2007 10:10:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60263 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758390AbXGCOK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 10:10:28 -0400
+Message-ID: <468A58D1.4070802@garzik.org>
+Date: Tue, 03 Jul 2007 10:10:25 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: bryan.wu@analog.com
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] Blackfin arch fixes (try #2)
-References: <1183423041.10353.8.camel@roc-laptop>
-In-Reply-To: <1183423041.10353.8.camel@roc-laptop>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: Check the right register for the DMA enabled flags
+References: <20070703151130.513fe2df@the-village.bc.nu>
+In-Reply-To: <20070703151130.513fe2df@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Wu wrote:
-> Hi Linus:
+Alan Cox wrote:
+> Mirrors change in IT821X
 > 
-> Marco's patch will kill the zero file git-pull error.
-> Jie's patch is required because we will release our new Blackfin toolchain.
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/ata_generic.c linux-2.6.22-rc6-mm1/drivers/ata/ata_generic.c
+> --- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/ata_generic.c	2007-07-02 20:50:11.000000000 +0100
+> +++ linux-2.6.22-rc6-mm1/drivers/ata/ata_generic.c	2007-07-02 21:02:10.000000000 +0100
+> @@ -50,7 +50,7 @@
+>  
+>  	/* Bits 5 and 6 indicate if DMA is active on master/slave */
+>  	if (ap->ioaddr.bmdma_addr)
+> -		dma_enabled = ioread8(ap->ioaddr.bmdma_addr + ATA_DMA_CMD);
+> +		dma_enabled = ioread8(ap->ioaddr.bmdma_addr + ATA_DMA_STATUS);
 
-So, what is the new toolchain version?
-gcc 4.1.1 (adi 07r1) / binutils 2.17 doesn't seem to work anymore:
+applied
 
-bf533-stamp_defconfig [1]:
-   CC      arch/blackfin/kernel/asm-offsets.s
-cc1: error: unrecognized command line option "-mcpu=bf533-0.3"
-make[2]: *** [arch/blackfin/kernel/asm-offsets.s] Error 1
-make[1]: *** [prepare0] Error 2
-make: *** [_all] Error 2
+Please put driver or subsystem name in subject, to disambiguate.  Email 
+subject goes straight into kernel changelog verbatim, and is in essence 
+a global namespace.
 
-bf561-ezkit_defconfig [2]:
-   CC      arch/blackfin/kernel/asm-offsets.s
-cc1: error: unrecognized command line option "-mcpu=bf561-0.3"
-make[2]: *** [arch/blackfin/kernel/asm-offsets.s] Error 1
-make[1]: *** [prepare0] Error 2
-make: *** [_all] Error 2
 
-previously, there was only this error (defconfig) [3]:
-CC      fs/binfmt_flat.o
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c: In function ‘decompress_exec’:
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:293: warning: label ‘out’ defined 
-but not used
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c: In function ‘load_flat_file’:
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:462: warning: format ‘%x’ expects 
-type ‘unsigned int’, but argument 3 has type ‘long int’
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:462: warning: format ‘%x’ expects 
-type ‘unsigned int’, but argument 4 has type ‘long int’
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:549: warning: passing argument 1 
-of ‘ksize’ makes pointer from integer without a cast
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:601: warning: passing argument 1 
-of ‘ksize’ makes pointer from integer without a cast
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:760:50: error: macro 
-"flat_get_addr_from_rp" requires 4 arguments, but only 3 given
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:760: error: 
-‘flat_get_addr_from_rp’ undeclared (first use in this function)
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:760: error: (Each undeclared 
-identifier is reported only once
-/tmp/tmp.RAuANA4724/kernel/fs/binfmt_flat.c:760: error: for each function it 
-appears in.)
-make[2]: *** [fs/binfmt_flat.o] Error 1
-make[1]: *** [fs] Error 2
-make: *** [_all] Error 2
-
-Thanks,
-
-Jan
-
-[1] http://l4x.org/k/?d=31517
-[2] http://l4x.org/k/?d=31518
-[3] http://l4x.org/k/?d=31478
