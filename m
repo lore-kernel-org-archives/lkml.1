@@ -1,118 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760630AbXGCQ3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbXGCQbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760630AbXGCQ3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 12:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbXGCQ33
+	id S1760640AbXGCQbR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 12:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbXGCQbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 12:29:29 -0400
-Received: from hu-out-0506.google.com ([72.14.214.226]:50342 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756382AbXGCQ32 (ORCPT
+	Tue, 3 Jul 2007 12:31:07 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39581 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756013AbXGCQbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 12:29:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=R2L8LRqlNAK3Y5wjhJoHvG6uS7Ih0c4yNYzDxEmYWqAmyhDbmgU9Ej1PEqEGhYqG8LRBB3ohOMt4jJkoB7QFJ1chQ6mPFwgGyHpofEuAEaOIgDaTbjjdSCdEpNJ5CbEpLyPzDEh9/XtCsK5SldE55YlKoJkfvFOWCyCkCVUQDqw=
-Date: Tue, 3 Jul 2007 18:26:40 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc6-mm1 bad_page events.
-Message-ID: <20070703162640.GA31909@slug>
-References: <20070703150656.4f618dd5@the-village.bc.nu> <20070703153747.GA28808@Krystal>
+	Tue, 3 Jul 2007 12:31:06 -0400
+Date: Tue, 3 Jul 2007 09:31:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andre Noll <maan@systemlinux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Linux 2.6.22-rc7
+In-Reply-To: <alpine.LFD.0.98.0707030908390.9434@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707030921400.4810@schroedinger.engr.sgi.com>
+References: <alpine.LFD.0.98.0707011427380.1172@woody.linux-foundation.org>
+ <20070703155519.GY22589@skl-net.de> <alpine.LFD.0.98.0707030908390.9434@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070703153747.GA28808@Krystal>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 11:37:47AM -0400, Mathieu Desnoyers wrote:
-> Hi Alan,
-> 
-> I already sent a fix to Andrew and Andi for this (hrm, forget to CC
-> lkml on the original message):
-> 
-> 
-> x86_64 mm cpa cache flush fix
-> 
-> X86_64 and i386 cpa cache flush fix:
-> 
-> list_del the deferred list entries to poison their pointers.
-> clear the flag for every page put in the list.
-> 
-Hi Mathieu,
+On Tue, 3 Jul 2007, Linus Torvalds wrote:
 
-I've tried the patch on rc6-mm1, but it doesn't seem to fix the
-problem. From what I understood, the bad_page() is called on PG_reserved
-being set (flags:0x00000400), not the lru pointer being not NULL or
-PG_arch_1 being set.
-
-Regards,
-Frederik
-
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: Andi Kleen <ak@suse.de>
-[...]
->  	flush_map(&l);
->  	list_for_each_entry_safe(pg, next, &l, lru) {
-> +		clear_bit(PG_arch_1, &pg->flags);
-> +		list_del(&pg->lru);
->  		if (page_private(pg) != 0)
->  			continue;
->  		ClearPagePrivate(pg);
-> -		clear_bit(PG_arch_1, &pg->flags);
->  		__free_page(pg);
->  	}
->  }
-[...]
-> * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > X86 32bit with lots of debug turned on I get this:
-[...]
-> > Bad page state in process 'swapper'
-> > page:c10000c0 flags:0x00000400 mapping:00000000 mapcount:0 count:0
-> > Trying to fix it up, but a reboot is needed
-> > Backtrace:
-> >  [<c024589c>] bad_page+0x6c/0x100
-> >  [<c024648d>] free_hot_cold_page+0x5d/0x140
-> >  [<c02116c2>] global_flush_tlb+0x112/0x130
-> >  [<c020102d>] init_post+0xd/0xe0
-> >  [<c047c876>] kernel_init+0x216/0x220
-> >  [<c0214c50>] schedule_tail+0x0/0xe0
-> >  [<c047c660>] kernel_init+0x0/0x220
-> >  [<c047c660>] kernel_init+0x0/0x220
-> >  [<c0204227>] kernel_thread_helper+0x7/0x10
-> >  =======================
-> > Hexdump:
-> > 000: 00 06 00 00 01 00 00 00 ff ff ff ff 0f 00 00 00
-> > 010: 00 00 00 00 00 00 00 00 78 00 00 c1 b8 00 00 c1
-> > 020: 00 06 00 00 01 00 00 00 ff ff ff ff a7 03 00 00
-> > 030: 00 00 00 00 00 00 00 00 98 00 00 c1 d8 00 00 c1
-> > 040: 00 04 00 00 00 00 00 00 ff ff ff ff 00 00 00 00
-> > 050: 00 00 00 00 00 00 00 00 b8 00 00 c1 f8 00 00 c1
-> > 060: 00 06 00 00 01 00 00 00 ff ff ff ff 00 04 00 00
-> > 070: 00 00 00 00 00 00 00 00 d8 00 00 c1 18 01 00 c1
-> > 080: 00 06 00 00 01 00 00 00 ff ff ff ff 9c 03 00 00
-> > 090: 00 00 00 00 00 00 00 00 f8 00 00 c1 38 01 00 c1
-> > 0a0: 00 06 00 00 01 00 00 00 ff ff ff ff 00 04 00 00
-> > 0b0: 00 00 00 00 00 00 00 00 18 01 00 c1 58 01 00 c1
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
+> > There seems to be a locking problem:
 > 
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Ok, I _think_ this is actually ok, and the lock validator is unhappy just 
+> because we don't disable irq's when initializing the slab, so the fact 
+> that we take the list_lock with interrupts enabled looks scary.
+
+Yes it is okay since no one else can use the slab at this point.
+
+> But the reason it seems to be ok is that it doesn't matter if interrupts 
+> are enabled or not, because nobody can *get* to the list_lock, since the 
+> thing hasn't been fully set up yet. So no interrupts will try to take the 
+> lock (and cause any deadlocks) anyway.
+
+Right.
+
+> However, it might be worth avoiding the warning, even if it seems bogus in 
+> this case. Christoph? Do you agree with the analysis? And the patch might 
+> be as simple as changing early_kmem_cache_node_alloc() to enable 
+> interrupts at the _end_ of the function, rather than immediately after 
+> calling new_slab().
+
+new_slab() enables and disables interrupts during usual operations. During 
+bootstrap interrupts are enabled and so new_slab() falsely disables 
+interrupts when we do the alloc by hand thing in early_kmem_cache_node_alloc
+for NUMA. We need to enable interrupts there since otherwise boot will 
+continue with interrupts disabled.
+
+> Andre, does that simple change fix it for you (move the 
+> "local_irq_enable()" to the end of early_kmem_cache_node_alloc)?
+
+Yes that should make the lock checker happy since interrupts are disabled 
+when calling add_partial(). local_irq_enable can be called later without a 
+problem. Useless longer interrupt hold off though.
+
+
+
+SLUB: Make lockdep happy by not calling add_partial with interrupts 
+enabled during bootstrap
+
+If we move the local_irq_enable() to the end of the function then
+add_partial() in early_kmem_cache_node_alloc() will be called
+with interrupts disabled like during regular operations.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/slub.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-07-03 09:27:00.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-07-03 09:27:45.000000000 -0700
+@@ -1798,8 +1798,6 @@ static struct kmem_cache_node * __init e
+ 	BUG_ON(kmalloc_caches->size < sizeof(struct kmem_cache_node));
+ 
+ 	page = new_slab(kmalloc_caches, gfpflags | GFP_THISNODE, node);
+-	/* new_slab() disables interupts */
+-	local_irq_enable();
+ 
+ 	BUG_ON(!page);
+ 	n = page->freelist;
+@@ -1811,6 +1809,12 @@ static struct kmem_cache_node * __init e
+ 	init_kmem_cache_node(n);
+ 	atomic_long_inc(&n->nr_slabs);
+ 	add_partial(n, page);
++
++	/*
++	 * new_slab() disables interupts. If we do not reenable interrupts here
++	 * then bootup would continue with interrupts disabled.
++	 */
++	local_irq_enable();
+ 	return n;
+ }
+ 
+
+
+
