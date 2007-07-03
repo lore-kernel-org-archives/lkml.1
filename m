@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757657AbXGCGUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbXGCGXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757657AbXGCGUl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 02:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXGCGUd
+	id S1758762AbXGCGXS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 02:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXGCGXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 02:20:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46643 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752137AbXGCGUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 02:20:32 -0400
-Date: Tue, 3 Jul 2007 02:20:20 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 00/44] AppArmor security module overview
-Message-ID: <20070703062020.GA5433@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-	linux-security-module@vger.kernel.org
-References: <20070626230756.519733902@suse.de> <20070626165202.bfe8e6df.akpm@linux-foundation.org> <20070627022403.GB14656@suse.de> <20070626194700.5b0ff477.akpm@linux-foundation.org>
+	Tue, 3 Jul 2007 02:23:10 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:37880 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbXGCGXJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 02:23:09 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH 3/4] usb: allocated usb releated dma buffer =?iso-8859-1?q?with=09kmalloc=5Fnode?=
+Date: Tue, 3 Jul 2007 08:23:07 +0200
+User-Agent: KMail/1.9.7
+Cc: Greg KH <greg@kroah.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+References: <200706291326.43563.yinghai.lu@sun.com> <86802c440707022233g2021b49dg48534f813f628585@mail.gmail.com> <20070703060155.GB19086@kroah.com>
+In-Reply-To: <20070703060155.GB19086@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070626194700.5b0ff477.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200707030823.07815.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 07:47:00PM -0700, Andrew Morton wrote:
+Am Dienstag, 3. Juli 2007 schrieb Greg KH:
+> On Mon, Jul 02, 2007 at 10:33:12PM -0700, Yinghai Lu wrote:
+> >  On 7/2/07, Greg KH <greg@kroah.com> wrote:
+> > > On Mon, Jul 02, 2007 at 03:36:37PM -0700, Yinghai Lu wrote:
+> > > > [PATCH 3/4] usb: allocated usb releated dma buffer with kmalloc_node
+> > > >
+> > > > For amd64 based two way system. USB always on node0. but dma buffer for 
+> > > urb
+> > > > allocated via kmalloc always get ram on node1. So change to kmalloc_node 
+> > > to
+> > > > get dma_buffer on corresponding node
+> > >
+> > > Are all of these changes really necessary?  You are doing this for some
+> > > allocations that take a _long_ time when sending to the device due to
+> > > the speed of the device.
+> > >
+> > > I could possibly see this making a difference on some drivers, but for
+> > > the core, and for the basic USB structures, I can't imagine it is really
+> > > worth it.
+> > >
+> > > Or do you have numbers showing the differences here?
+> > >
+> > > Patch included fully below for the benifit of the usb list, which you
+> > > should have cc:ed...
+> > 
+> >  dma buffer could be allocated via alloc_pages_coherent. or
+> >  kmalloc/dma_map_single.
+> >  alloc_pages_coherent get the dma_buffer on corresponding node.
+> >  but kmalloc/dma_map_single always get dma_buffer on last node. or say
+> >  device is on HT chain node0,  it will get dma buffer on node 7 of 8
+> >  socket system.
+> >  also on two way system with 4G+4G RAM conf. device on node 0 will get
+> >  dma_buffer above 4G, and if the dma_mask is less 32bit, will need
+> >  extra iommu mapping.
+> >  In my mcp55+io55 system, it show dma_map_single is keepping called by
+> >  usb input: keyboard/mouse (8/0x40 bytes), and forcedeth. (0x670bytes)
+> 
+> Ok, so two drivers might need this, but not the whole usb core, right?
 
- > I suspect that we're at the stage of having to decide between
- > 
- > a) set aside the technical issues and grudgingly merge this stuff as a
- >    service to Suse and to their users (both of which entities are very
- >    important to us) and leave it all as an object lesson in
- >    how-not-to-develop-kernel-features.
- > 
- >    Minimisation of the impact on the rest of the kernel is of course
- >    very important here.
- > 
- > versus
- > 
- > b) leave it out and require that Suse wear the permanent cost and
- >    quality impact of maintaining it out-of-tree.  It will still be an
- >    object lesson in how-not-to-develop-kernel-features.
+If those two drivers need the extended allocator, why not use it where
+it is beneficial, even if the benefit is small?
 
-How is this different from Red Hat wearing the permanent cost of
-carrying Execshield or other vetoed-by-upstream features ?
-
-Given the choice, I'd ship a kernel for Fedora with nothing added
-that isn't upstream, but we have something of a legacy from our
-dumber days. (Though we've managed to drop lots of the more invasive
-stuff over time thankfully.. 4g4g for eg).
-
- > Sigh.  Please don't put us in this position again.  Get stuff upstream
- > before shipping it to customers, OK?  It ain't rocket science.
-
-Indeed.  The idea of granting exceptions to our usual acceptance
-criteria just because "some distro shipped it" strikes me as wrong
-on so many levels, regardless of its technical flaws.
-
-And this isn't just because this is a patch from a competitor,
-I'd expect the exact same criteria to be applied if I tried
-to ram execshield etc down everyones throats.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+	Regards
+		Oliver
