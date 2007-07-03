@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbXGCQVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbXGCQW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbXGCQVg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 12:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbXGCQVa
+	id S1760033AbXGCQW1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 12:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbXGCQWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 12:21:30 -0400
-Received: from web32610.mail.mud.yahoo.com ([68.142.207.237]:27778 "HELO
-	web32610.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755536AbXGCQV3 (ORCPT
+	Tue, 3 Jul 2007 12:22:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55785 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755799AbXGCQWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 12:21:29 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jul 2007 12:21:29 EDT
-X-YMail-OSG: vkuNRTMVM1lzj2QLgpZkOvG8e55HwsPPOIC1y1y_FeI7nKo88RUGH_v9xxM31y.3CDExjeytn215IU7rtEtfhO4nNQ--
-X-RocketYMMF: knobi.rm
-Date: Tue, 3 Jul 2007 09:14:47 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Reply-To: knobi@knobisoft.de
-Subject: RE: Linux 2.6.22-rc7
-To: linux-kernel@vger.kernel.org
+	Tue, 3 Jul 2007 12:22:18 -0400
+Date: Tue, 3 Jul 2007 09:21:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+In-Reply-To: <20070703170734.5a25b9c5@the-village.bc.nu>
+Message-ID: <alpine.LFD.0.98.0707030919391.9434@woody.linux-foundation.org>
+References: <20070703155238.GA7344@havoc.gtf.org>
+ <20070703170734.5a25b9c5@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <389565.1744.qm@web32610.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Ok, Linux-2.6.22-rc7 is out there.
->
->It's hopefully (almost certainly) the last -rc before the final 2.6.22
->release, and we should be in pretty good shape. The flow of patches
-has
->really slowed down and the regression list has shrunk a lot.
->
->The shortlog/diffstat reflects that, with the biggest part of the -rc7
->patch being literally just a power defconfig update.
->
->The patches are mostly trivial fixes, a few new device ID's, and the
->appended shortlog really does pretty much explain it.
->
->Final testing always appreciated, of course,
->
->Linus
 
- For what it is worth - rc7 compiles and boots here
-(HP/DL380G4,2x86_64, 8GB, cciss, 2xtg3). The subjective feeling(*) is
-much better that the original RHEL4 kernel and better than 2.6.19 on
-the same box.
 
-(*) Our main problem with 2.6 kernels so far is a tendency to really
-bad responsiveness under I/O related load.
+On Tue, 3 Jul 2007, Alan Cox wrote:
+>
+> > Chuck Ebbert (1):
+> >       pata_ali: fix UDMA settings
+> 
+> Could you please fix your git tree to have the proper credits for patches
+> you pull from bugzilla. 
+> 
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242472
 
-Cheers
-Martin
+I don't think it is Jeff who needs to fix anything: it seems that it is 
+Chuck Ebbert you should talk to. He's the one that dropped the 
+attribution. Probably because of some insane system he uses (he has a 
+comment in that bugzilla about "patch from comment #14 is in CVS now.".
 
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
+CVS? What kind if insane setup do you have there at Red Hat?
+
+			Linus
