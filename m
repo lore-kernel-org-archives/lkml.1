@@ -1,121 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761330AbXGCRbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbXGCRdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761330AbXGCRbV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758388AbXGCRbN
+	id S1760561AbXGCRdf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXGCRd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:31:13 -0400
-Received: from mail.screens.ru ([213.234.233.54]:34315 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758020AbXGCRbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:31:12 -0400
-Date: Tue, 3 Jul 2007 21:31:12 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
-       Thomas Sattler <tsattler@gmx.de>
-Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-Message-ID: <20070703173112.GA108@tv-sign.ru>
-References: <1182969638.4769.56.camel@johannes.berg> <1183048429.4089.1.camel@johannes.berg> <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4> <20070630114658.GA344@tv-sign.ru> <1183381393.4089.117.camel@johannes.berg>
+	Tue, 3 Jul 2007 13:33:28 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:62434 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754263AbXGCRd1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 13:33:27 -0400
+Date: Tue, 3 Jul 2007 13:33:24 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
+Subject: [PATCH] i386 CPA fix - do not free reserved pages
+Message-ID: <20070703173324.GA1461@Krystal>
+References: <20070703150656.4f618dd5@the-village.bc.nu> <20070703153747.GA28808@Krystal> <20070703162640.GA31909@slug>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1183381393.4089.117.camel@johannes.berg>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070703162640.GA31909@slug>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:31:45 up 2 days, 12:14,  4 users,  load average: 0.60, 0.64, 0.42
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02, Johannes Berg wrote:
->
-> On Sat, 2007-06-30 at 15:46 +0400, Oleg Nesterov wrote:
->
-> > Johannes, could you change wait_on_work() as well? Most users of
-> > flush_workqueue() should be converted to use it.
+Right, there is a test missing, can you try this fix on top of my
+x86_64 mm cpa cache flush fix ?
 
-(to avoid a possible confusion: I meant, most users of flush_workqueue()
- should be converted to use cancel_work_sync/cancel_delayed_work_sync
- which in turn use wait_on_work()).
 
-> I think this could lead to false positives, but then I think we
-> shouldn't care about those. Let me explain. The thing is that with this
-> it can happen that the code using the workqueue somehow obeys an
-> ordering in the work it queues, so as far as I can tell it'd be fine to
-> have two work items A and B where only B takes a lock L1, and then have
-> a wait_on_work(A) under L1, if and only if B was always queued right
-> after A (or something like that).
+i386 CPA fix - do not free reserved pages
 
-Not sure I understand. Yes, we can have false positives, but I think the
-ordering in the workqueue doesn't matter.
+We have to use the same conditions found in change_page_attr in
+global_tlb_flush regarding the conditions that leads to free the page.
 
-If A does NOT take a lock L1, then it is OK to do cancel_work_sync(A)
-under L1, regardless of which other work_structs this workqueue has,
-before or after A.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/i386/mm/pageattr.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Now we have a false positive if some time we queue B into that workqueue,
-and this is not good.
+Index: linux-2.6-lttng/arch/i386/mm/pageattr.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/mm/pageattr.c	2007-07-03 13:25:48.000000000 -0400
++++ linux-2.6-lttng/arch/i386/mm/pageattr.c	2007-07-03 13:28:34.000000000 -0400
+@@ -247,7 +247,7 @@
+ 	list_for_each_entry_safe(pg, next, &l, lru) {
+ 		clear_bit(PG_arch_1, &pg->flags);
+ 		list_del(&pg->lru);
+-		if (page_private(pg) != 0)
++		if (PageReserved(pg) || !cpu_has_pse || page_private(pg) != 0)
+ 			continue;
+ 		ClearPagePrivate(pg);
+ 		__free_page(pg);
 
-We can avoid this problem if we put lockdep_map into work_struct, so
-that wait_on_work() "locks" work->lockdep_map, while flush_workqueue()
-takes wq->lockdep_map.
 
-But probably we don't need this right now, at least until we really
-have a lot of false positives while converting from flush_workqueue()
-to cancel_work_sync/cancel_delayed_work_sync.
+* Frederik Deweerdt (deweerdt@free.fr) wrote:
+> On Tue, Jul 03, 2007 at 11:37:47AM -0400, Mathieu Desnoyers wrote:
+> > Hi Alan,
+> > 
+> > I already sent a fix to Andrew and Andi for this (hrm, forget to CC
+> > lkml on the original message):
+> > 
+> > 
+> > x86_64 mm cpa cache flush fix
+> > 
+> > X86_64 and i386 cpa cache flush fix:
+> > 
+> > list_del the deferred list entries to poison their pointers.
+> > clear the flag for every page put in the list.
+> > 
+> Hi Mathieu,
+> 
+> I've tried the patch on rc6-mm1, but it doesn't seem to fix the
+> problem. From what I understood, the bad_page() is called on PG_reserved
+> being set (flags:0x00000400), not the lru pointer being not NULL or
+> PG_arch_1 being set.
+> 
+> Regards,
+> Frederik
+> 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > CC: Andi Kleen <ak@suse.de>
+> [...]
+> >  	flush_map(&l);
+> >  	list_for_each_entry_safe(pg, next, &l, lru) {
+> > +		clear_bit(PG_arch_1, &pg->flags);
+> > +		list_del(&pg->lru);
+> >  		if (page_private(pg) != 0)
+> >  			continue;
+> >  		ClearPagePrivate(pg);
+> > -		clear_bit(PG_arch_1, &pg->flags);
+> >  		__free_page(pg);
+> >  	}
+> >  }
+> [...]
+> > * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> > > X86 32bit with lots of debug turned on I get this:
+> [...]
+> > > Bad page state in process 'swapper'
+> > > page:c10000c0 flags:0x00000400 mapping:00000000 mapcount:0 count:0
+> > > Trying to fix it up, but a reboot is needed
+> > > Backtrace:
+> > >  [<c024589c>] bad_page+0x6c/0x100
+> > >  [<c024648d>] free_hot_cold_page+0x5d/0x140
+> > >  [<c02116c2>] global_flush_tlb+0x112/0x130
+> > >  [<c020102d>] init_post+0xd/0xe0
+> > >  [<c047c876>] kernel_init+0x216/0x220
+> > >  [<c0214c50>] schedule_tail+0x0/0xe0
+> > >  [<c047c660>] kernel_init+0x0/0x220
+> > >  [<c047c660>] kernel_init+0x0/0x220
+> > >  [<c0204227>] kernel_thread_helper+0x7/0x10
+> > >  =======================
+> > > Hexdump:
+> > > 000: 00 06 00 00 01 00 00 00 ff ff ff ff 0f 00 00 00
+> > > 010: 00 00 00 00 00 00 00 00 78 00 00 c1 b8 00 00 c1
+> > > 020: 00 06 00 00 01 00 00 00 ff ff ff ff a7 03 00 00
+> > > 030: 00 00 00 00 00 00 00 00 98 00 00 c1 d8 00 00 c1
+> > > 040: 00 04 00 00 00 00 00 00 ff ff ff ff 00 00 00 00
+> > > 050: 00 00 00 00 00 00 00 00 b8 00 00 c1 f8 00 00 c1
+> > > 060: 00 06 00 00 01 00 00 00 ff ff ff ff 00 04 00 00
+> > > 070: 00 00 00 00 00 00 00 00 d8 00 00 c1 18 01 00 c1
+> > > 080: 00 06 00 00 01 00 00 00 ff ff ff ff 9c 03 00 00
+> > > 090: 00 00 00 00 00 00 00 00 f8 00 00 c1 38 01 00 c1
+> > > 0a0: 00 06 00 00 01 00 00 00 ff ff ff ff 00 04 00 00
+> > > 0b0: 00 00 00 00 00 00 00 00 18 01 00 c1 58 01 00 c1
+> > > -
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > > 
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> 
 
-> However, since this invariant is
-> rather likely to be broken by subsequent changes to the code, I think
-> such code should probably use two workqueues instead, and I doubt it
-> ever happens anyway since then people could in most cases just put both
-> works into one function.
-
-Well, I am not sure, think about the shared workqueues like keventd_wq...
-
-> Hence I included it in my patch below.
-
-a couple of minor nits below,
-
-> @@ -257,7 +260,9 @@ static void run_workqueue(struct cpu_wor
->
->  		BUG_ON(get_wq_data(work) != cwq);
->  		work_clear_pending(work);
-> +		lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
->  		f(work);
-> +		lock_release(&cwq->wq->lockdep_map, 0, _THIS_IP_);
-                                                   ^^^
-Isn't it better to call lock_release() with nested == 1 ?
-
-> +#define create_workqueue(name) \
-> +({								\
-> +	static struct lock_class_key __key;			\
-> +	struct workqueue_struct *__wq;				\
-> +								\
-> +	__wq = __create_workqueue((name), 0, 0, &__key);	\
-> +	__wq;							\
-> +})
-
-Why do we need __wq ?
-
-	+#define create_workqueue(name) \
-	({							\
-		static struct lock_class_key __key;		\
-		__create_workqueue((name), 0, 0, &__key);	\
-	})
-
-Actually, I'd suggest to rename __create_workqueue() to __create_workqueue_key(),
-and then you need the only change in linux/workqueue.h
-
-	- extern struct workqueue_struct *__create_workqueue(...);
-	+ extern struct workqueue_struct *__create_workqueue_key(..., key);
-	+ #define __create_workqueue(...)	\
-	+	static struct lock_class_key __key;	\
-	+	__create_workqueue_key(..., key);	\
-
-but this is a matter of taste.
-
-Btw, I think your patch found a real bug in net/mac80211/, cool!
-
-Oleg.
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
