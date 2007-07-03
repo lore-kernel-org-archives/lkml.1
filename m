@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbXGCBis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbXGCD2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758652AbXGCBis (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 21:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbXGCBik
+	id S1756300AbXGCD2s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 23:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXGCD2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 21:38:40 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53668 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757201AbXGCBik (ORCPT
+	Mon, 2 Jul 2007 23:28:39 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51912 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752802AbXGCD2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 21:38:40 -0400
-Message-ID: <4689A691.9090908@vmware.com>
-Date: Mon, 02 Jul 2007 18:29:53 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 3/5] remove ptep_test_and_clear_dirty and ptep_clear_flush_dirty.
-References: <20070629135530.912094590@de.ibm.com> <20070629141528.060235678@de.ibm.com>
-In-Reply-To: <20070629141528.060235678@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 2 Jul 2007 23:28:38 -0400
+Date: Mon, 2 Jul 2007 20:28:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Chinner <dgc@sgi.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, xfs-oss <xfs@oss.sgi.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH] Teach do_mpage_readpage() about unwritten buffers
+Message-Id: <20070702202827.ffc59255.akpm@linux-foundation.org>
+In-Reply-To: <20070703011019.GQ989688@sgi.com>
+References: <20070703011019.GQ989688@sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky wrote:
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
->
-> Nobody is using ptep_test_and_clear_dirty and ptep_clear_flush_dirty.
-> Remove the functions from all architectures.
->
->
-> -static inline int
-> -ptep_test_and_clear_dirty (struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
-> -{
-> -#ifdef CONFIG_SMP
-> -	if (!pte_dirty(*ptep))
-> -		return 0;
-> -	return test_and_clear_bit(_PAGE_D_BIT, ptep);
-> -#else
-> -	pte_t pte = *ptep;
-> -	if (!pte_dirty(pte))
-> -		return 0;
-> -	set_pte_at(vma->vm_mm, addr, ptep, pte_mkclean(pte));
-> -	return 1;
-> -#endif
-> -}
+On Tue, 3 Jul 2007 11:10:19 +1000 David Chinner <dgc@sgi.com> wrote:
 
-I've not followed all the changes lately - what is the current protocol 
-for clearing dirty bit?  Is it simply pte_clear followed by set or is it 
-not done at all?  At least for i386 and virtualization, we had several 
-optimizations to the test_and_clear path that are not possible with a 
-pte_clear / set_pte approach.
+> Teach do_mpage_readpage() about unwritten extents so we can
+> always map them in get_blocks rather than they are are holes on
+> read. Allows setup_swap_extents() to use preallocated files on XFS
+> filesystems for swap files without ever needing to convert them.
+> 
+> Signed-Off-By: Dave Chinner <dgc@sgi.com>
+> 
+> ---
+>  fs/mpage.c                  |    5 +++--
+>  fs/xfs/linux-2.6/xfs_aops.c |   13 +++----------
+>  2 files changed, 6 insertions(+), 12 deletions(-)
+> 
+> Index: 2.6.x-xfs-new/fs/mpage.c
+> ===================================================================
+> --- 2.6.x-xfs-new.orig/fs/mpage.c	2007-05-29 16:17:59.000000000 +1000
+> +++ 2.6.x-xfs-new/fs/mpage.c	2007-06-27 22:39:35.568852270 +1000
+> @@ -207,7 +207,8 @@ do_mpage_readpage(struct bio *bio, struc
+>  	 * Map blocks using the result from the previous get_blocks call first.
+>  	 */
+>  	nblocks = map_bh->b_size >> blkbits;
+> -	if (buffer_mapped(map_bh) && block_in_file > *first_logical_block &&
+> +	if (buffer_mapped(map_bh) && !buffer_unwritten(map_bh) &&
+> +			block_in_file > *first_logical_block &&
+>  			block_in_file < (*first_logical_block + nblocks)) {
+>  		unsigned map_offset = block_in_file - *first_logical_block;
+>  		unsigned last = nblocks - map_offset;
+> @@ -242,7 +243,7 @@ do_mpage_readpage(struct bio *bio, struc
+>  			*first_logical_block = block_in_file;
+>  		}
+>  
+> -		if (!buffer_mapped(map_bh)) {
+> +		if (!buffer_mapped(map_bh) || buffer_unwritten(map_bh)) {
+>  			fully_mapped = 0;
+>  			if (first_hole == blocks_per_page)
+>  				first_hole = page_block;
+> Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_aops.c
+> ===================================================================
+> --- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_aops.c	2007-06-05 22:14:39.000000000 +1000
+> +++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_aops.c	2007-06-27 22:39:29.545636749 +1000
+> @@ -1340,16 +1340,9 @@ __xfs_get_blocks(
+>  		return 0;
+>  
+>  	if (iomap.iomap_bn != IOMAP_DADDR_NULL) {
+> -		/*
+> -		 * For unwritten extents do not report a disk address on
+> -		 * the read case (treat as if we're reading into a hole).
+> -		 */
+> -		if (create || !(iomap.iomap_flags & IOMAP_UNWRITTEN)) {
+> -			xfs_map_buffer(bh_result, &iomap, offset,
+> -				       inode->i_blkbits);
+> -		}
+> -		if (create && (iomap.iomap_flags & IOMAP_UNWRITTEN)) {
+> -			if (direct)
+> +		xfs_map_buffer(bh_result, &iomap, offset, inode->i_blkbits);
+> +		if (iomap.iomap_flags & IOMAP_UNWRITTEN) {
+> +			if (create && direct)
+>  				bh_result->b_private = inode;
+>  			set_buffer_unwritten(bh_result);
+>  		}
 
-Zach
+Seems sane, although one does wonder whether it's a worthy tradeoff.  We
+add additional overhead to readpage[s]() just to avoid some IO during
+mkswap?
+
+Also, I wonder what ext4 does in this situation?
