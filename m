@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbXGCRuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbXGCRz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbXGCRuz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbXGCRur
+	id S1758547AbXGCRz1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbXGCRzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:50:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48907 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755408AbXGCRuq (ORCPT
+	Tue, 3 Jul 2007 13:55:20 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:15022 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752176AbXGCRzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:50:46 -0400
-Date: Tue, 3 Jul 2007 18:56:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jeff@garzik.org
-Subject: Re: [PATCH] pata_hpt3x3: Major reworking and testing
-Message-ID: <20070703185652.0b807fcc@the-village.bc.nu>
-In-Reply-To: <200707031938.20956.bzolnier@gmail.com>
-References: <20070703161002.1576c39d@the-village.bc.nu>
-	<200707031938.20956.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Jul 2007 13:55:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kQVO7FopPgiv4UaIhr2jwr1M5GF8kVAE7wQ9+S7jQs9BLiKVC4afIaBw7ZHh5EL8hxB284FCYrLrYz7nk22mGK5MZm0FAYIs0DmBq1MLuznvsEFreWmT56jNRzNQD97Yxbwy4OlVLAUjwE2/TPtZgEHg/Tirx54zGwa4FlKkZYA=
+Message-ID: <8bd0f97a0707031055h7b97c0cerbd2314a2836f7798@mail.gmail.com>
+Date: Tue, 3 Jul 2007 13:55:17 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jan Dittmer" <jdi@l4x.org>
+Subject: Re: [GIT PULL] Blackfin arch fixes (try #2)
+Cc: bryan.wu@analog.com, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <468A560A.9050801@l4x.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1183423041.10353.8.camel@roc-laptop> <468A560A.9050801@l4x.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The new improved driver is not really better than the old one because
-> the old one is broken. :)
-> 
-> Old driver does identical configuration when it comes to PIO modes.
+On 7/3/07, Jan Dittmer <jdi@l4x.org> wrote:
+> Bryan Wu wrote:
+> > Jie's patch is required because we will release our new Blackfin toolchain.
+>
+> So, what is the new toolchain version?
+> gcc 4.1.1 (adi 07r1) / binutils 2.17 doesn't seem to work anymore:
 
-No the old driver doesn't even do that. It starts up. It spuriously
-adjusts some non writable PCI BAR registers, prints a message about
-resources being in use already then exits.
-
-I had a poke around the setup. As far as I can observe we break even if
-the ROM timing values are used as is. I suspect documentation or a good
-deal of luck is needed.
-
-Alan
+we'll post new toolchain binaries in a bit
+-mike
