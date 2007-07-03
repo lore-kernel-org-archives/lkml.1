@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761998AbXGCVgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762279AbXGCVhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761998AbXGCVgx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757045AbXGCVgn
+	id S1762279AbXGCVhg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbXGCVhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:36:43 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:33579 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760473AbXGCVgm (ORCPT
+	Tue, 3 Jul 2007 17:37:24 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:48381 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757514AbXGCVhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:36:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=NTcyzlJVk9Izmvg77scmPOof6JsPWhayTuYYo9qz2lZl5n6bK1FPmS1PrrpBKncxw/01nz3c3J7oLcpmkeSbT+hlj9erzoy4akilX5D0KHh+37p2QlCs/3FMpn9NgkkYgB0XtGa+oXESO485ZsXG8jGRD4kV0nC1pnosu4awFeM=
-Message-ID: <92a12cdb0707031436k74a10405p6d3a9976860074de@mail.gmail.com>
-Date: Tue, 3 Jul 2007 22:36:40 +0100
-From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
-To: alsa-devel@alsa-project.org
-Subject: [PATCH] Improve behaviour of Dreamcast aica ALSA driver in poor resource conditions
-Cc: linux-kernel@vger.kernel.org
+	Tue, 3 Jul 2007 17:37:23 -0400
+Date: Tue, 3 Jul 2007 22:36:39 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Message-ID: <20070703213639.GA29149@srcf.ucam.org>
+References: <20070703211227.GA28758@srcf.ucam.org> <Pine.LNX.4.44L0.0707031713530.8010-100000@iolanthe.rowland.org> <20070703212002.GA28895@srcf.ucam.org> <200707032337.52544.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200707032337.52544.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch stops the driver from crashing in certain situations (eg if
-the network fails when NFS mounted), please apply.
+On Tue, Jul 03, 2007 at 11:37:51PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, 3 July 2007 23:20, Matthew Garrett wrote:
+> > We're used to the idea of applications blocking when a resource they're 
+> > using goes away - NFS has done it forever. 
+> 
+> Now, please tell me how many driver writers even thought that something
+> might try to access their devices after .suspend() had been executed (or
+> even whilie it was being executed)?
 
-Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+Every single driver that fails under those conditions is already broken, 
+and has been forever. It's likely that they're broken under run-time 
+suspend, too.
 
---- alsa-kernel/sh/aica.c	2007-06-23 15:25:55.000000000 +0100
-+++ linux-2.6.21/sound/sh/aica.c	2007-07-03 22:28:16.000000000 +0100
-@@ -366,7 +366,9 @@
- 				 *substream)
- {
- 	struct snd_card_aica *dreamcastcard = substream->pcm->private_data;
-+	flush_workqueue(aica_queue);
- 	del_timer(&dreamcastcard->timer);
-+	aica_chn_halt();
- 	kfree(dreamcastcard->channel);
- 	spu_disable();
- 	return 0;
-@@ -402,16 +404,11 @@
- static int snd_aicapcm_pcm_trigger(struct snd_pcm_substream
- 				   *substream, int cmd)
- {
--	struct snd_card_aica *dreamcastcard;
- 	switch (cmd) {
- 	case SNDRV_PCM_TRIGGER_START:
- 		spu_begin_dma(substream);
- 		break;
- 	case SNDRV_PCM_TRIGGER_STOP:
--		dreamcastcard = substream->pcm->private_data;
--		if (dreamcastcard->timer.data)
--			del_timer(&dreamcastcard->timer);
--		aica_chn_halt();
- 		break;
- 	default:
- 		return -EINVAL;
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
