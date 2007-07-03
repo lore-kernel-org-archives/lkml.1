@@ -1,47 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762600AbXGCVsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762046AbXGCVtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762600AbXGCVsw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758196AbXGCVsm
+	id S1762046AbXGCVtr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbXGCVti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:48:42 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:45940 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757165AbXGCVsl convert rfc822-to-8bit (ORCPT
+	Tue, 3 Jul 2007 17:49:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50288 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757971AbXGCVth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:48:41 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Tue, 3 Jul 2007 23:48:42 +0200
-User-Agent: KMail/1.9.7
-Cc: Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, mjg59@srcf.ucam.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       pavel@ucw.cz, nigel@nigel.suspend2.net
-References: <20070703042916.GA17240@srcf.ucam.org> <200707032132.20731.oliver@neukum.org> <1183497615.3388.10.camel@localhost.localdomain>
-In-Reply-To: <1183497615.3388.10.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707032348.42796.oliver@neukum.org>
+	Tue, 3 Jul 2007 17:49:37 -0400
+Date: Tue, 3 Jul 2007 14:48:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] #if 0
+ mm/backing-dev.c:congestion_wait_interruptible()
+Message-Id: <20070703144843.4d402c32.akpm@linux-foundation.org>
+In-Reply-To: <20070701202051.GG10869@stusta.de>
+References: <20070701202051.GG10869@stusta.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
-> On Tue, 2007-07-03 at 21:32 +0200, Oliver Neukum wrote:
-> > > I'm not sure why this can't be made atomic, but assuming, that it
-> > > can't, fuse should still not need to be implicated.  If it is,
-> > that's
-> > > an indication about something wrong in the suspend procedure.
-> > 
-> > Nope, something's wrong in fuse. You must be able to deal with sync
-> > until every task is frozen. 
-> 
-> Pipe dream
+On Sun, 1 Jul 2007 22:20:51 +0200
+Adrian Bunk <bunk@stusta.de> wrote:
 
-Then tell me how you want to avoid that condition.
+> congestion_wait_interruptible() is no longer used.
 
-	Oliver
-
+We might as well just delete it?
