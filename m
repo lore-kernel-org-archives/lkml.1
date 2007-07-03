@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbXGCAhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbXGCAiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758592AbXGCAhk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 20:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbXGCAh1
+	id S1757346AbXGCAiU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 20:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbXGCAiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 20:37:27 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:45190 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757657AbXGCAh0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 20:37:26 -0400
-X-IronPort-AV: i="4.16,489,1175486400"; 
-   d="scan'208"; a="44198055:sNHT30483838"
-Subject: [GIT PULL] Blackfin arch fixes (try #2)
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Tue, 03 Jul 2007 08:37:21 +0800
-Message-Id: <1183423041.10353.8.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 03 Jul 2007 00:37:24.0886 (UTC) FILETIME=[5356AB60:01C7BD0A]
+	Mon, 2 Jul 2007 20:38:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58504 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756930AbXGCAiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 20:38:04 -0400
+Date: Mon, 2 Jul 2007 20:36:48 -0400
+From: Dave Jones <davej@redhat.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
+Message-ID: <20070703003648.GA31035@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Adrian Bunk <bunk@stusta.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	lenb@kernel.org, linux-acpi@vger.kernel.org
+References: <20070701202037.GC10869@stusta.de> <20070702232255.GH6403@redhat.com> <20070702234313.GB3492@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070702234313.GB3492@stusta.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+On Tue, Jul 03, 2007 at 01:43:13AM +0200, Adrian Bunk wrote:
+ > > Applying '[CPUFREQ] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI'
+ > > 
+ > > error: patch failed: arch/x86_64/kernel/cpufreq/Kconfig:65
+ > > error: arch/x86_64/kernel/cpufreq/Kconfig: patch does not apply
+ > 
+ > I made the patch against 2.6.22-rc6-mm1 (based on an older version of 
+ > this patch)  but I missed the fuzz (and GNU patch defaults to accept
+ > patches with a fuzz of 2).
+ > 
+ > Below is a version of the patch with the fuzz edited out.
 
-Marco's patch will kill the zero file git-pull error.
-Jie's patch is required because we will release our new Blackfin toolchain.
+It also has the context edited out :)
 
-Please pull from "master" branch of:
+ > @@ -65,1 +60,1 @@
+ > -	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
+ > +	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
+ > --- linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.old	2007-02-17 23:29:53.000000000 +0100
+ > +++ linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2007-02-17 23:30:44.000000000 +0100
 
-  master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git/ master
+This won't apply either.
 
-Jie Zhang (1):
-      Blackfin arch: Add proper -mcpu option according to the cpu and silicon revision configuration
+	Dave
 
-Marco Roeland (1):
-      Blackfin arch: remove zero-sized include/asm-blackfin/macros.h
-
-Mike Frysinger (1):
-      Blackfin arch: update board defconfig files
-
-Robin Getz (1):
-      Blackfin arch: Fix up remaining printks with proper log levels
-
- arch/blackfin/Kconfig                       |    6 ++++++
- arch/blackfin/Makefile                      |   21 +++++++++++++++++++++
- arch/blackfin/configs/BF533-EZKIT_defconfig |   12 +++++++++++-
- arch/blackfin/configs/BF533-STAMP_defconfig |   26 ++++++++++++++++++++++----
- arch/blackfin/configs/BF537-STAMP_defconfig |   26 ++++++++++++++++++++++----
- arch/blackfin/configs/BF561-EZKIT_defconfig |   12 ++++++++++--
- arch/blackfin/configs/PNAV-10_defconfig     |   13 +++++++++++--
- arch/blackfin/kernel/setup.c                |   18 ++++++++++++++----
- arch/blackfin/kernel/traps.c                |    3 ++-
- include/asm-blackfin/processor.h            |    4 ++++
- 10 files changed, 123 insertions(+), 18 deletions(-)
- delete mode 100644 include/asm-blackfin/macros.h
+-- 
+http://www.codemonkey.org.uk
