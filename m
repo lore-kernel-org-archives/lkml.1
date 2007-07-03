@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759753AbXGCPnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbXGCPne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759753AbXGCPnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 11:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbXGCPnM
+	id S1760635AbXGCPne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 11:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbXGCPnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 11:43:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33100 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754652AbXGCPnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 11:43:11 -0400
-Message-ID: <468A6E8C.3080802@garzik.org>
-Date: Tue, 03 Jul 2007 11:43:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] libata: Allow modular builds of drivers using ata_dumb_qc_prep
-References: <20070703161244.008fc5aa@the-village.bc.nu>
-In-Reply-To: <20070703161244.008fc5aa@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 3 Jul 2007 11:43:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42034 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757468AbXGCPnO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 11:43:14 -0400
+Date: Tue, 3 Jul 2007 16:49:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] pata_hpt3x3: Major reworking and testing
+Message-ID: <20070703164927.78596662@the-village.bc.nu>
+In-Reply-To: <468A6DDB.706@garzik.org>
+References: <20070703161002.1576c39d@the-village.bc.nu>
+	<468A6DDB.706@garzik.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> Signed-off-by: Alan Cox <alan@redhat.com>
+On Tue, 03 Jul 2007 11:40:11 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> Alan Cox wrote:
+> > The HPT343/345 (aka 363) is a bit of a warped device. For many setups you
+> > need to access the other registers via BAR4 offsets. PIO is now rock
+> > solid, DMA isn't. Unfortunately the drivers/ide hpt34x driver is
+> > completely broken so doesn't help further debug.
+> > 
+> > Signed-off-by: Alan Cox <alan@redhat.com>
 > 
-> diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/libata-core.c linux-2.6.22-rc6-mm1/drivers/ata/libata-core.c
-> --- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/libata-core.c	2007-07-02 20:50:11.000000000 +0100
-> +++ linux-2.6.22-rc6-mm1/drivers/ata/libata-core.c	2007-07-02 21:36:20.000000000 +0100
-> @@ -6842,6 +6976,7 @@
->  EXPORT_SYMBOL_GPL(ata_data_xfer);
->  EXPORT_SYMBOL_GPL(ata_data_xfer_noirq);
->  EXPORT_SYMBOL_GPL(ata_qc_prep);
-> +EXPORT_SYMBOL_GPL(ata_dumb_qc_prep);
+> OK but doesn't apply
 
-Please combine this with the previous patch and resend, otherwise 
-git-bisect is not happy.  This should be bundled with the addition of 
-this function.
+All the patches to Andrew cc you are versus -mm tree for Andrew so they
+can get tested. I'll feed you patches versus the base Linus tree at some
+point in the future when I have time to resync them (probably a couple of
+weeks) which should be about right for them having been tested well.
 
-
+Alan
