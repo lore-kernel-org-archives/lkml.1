@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbXGCM6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbXGCM74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbXGCM6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 08:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXGCM6l
+	id S1756211AbXGCM74 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 08:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbXGCM7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 08:58:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:40903 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753300AbXGCM6l (ORCPT
+	Tue, 3 Jul 2007 08:59:48 -0400
+Received: from smtp-01b.mandic.com.br ([200.225.81.136]:49064 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753198AbXGCM7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 08:58:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Py1xo+ddJkynr/3zUPJNYUOJvBU/FJAdiCon9XsbQCkD5oOkxFkAl+scKhgzkYVSSPOSqr6E2xO3M4jnbwdrj+ViHPPkjUingKS5oN5X1B12jJtsuL3IjnV2LVzb5RlHzBJGJlsgA1ClVBAjzt99ASYlGDF9Ec6HMNhPBofvDSA=
-Message-ID: <8d6898730707030558o5e110b0v257ffc6350c76069@mail.gmail.com>
-Date: Tue, 3 Jul 2007 18:28:40 +0530
-From: "Nobin Mathew" <nobin.mathew@gmail.com>
-To: "Midhun Agnihotram" <agnimidhun@gmail.com>
-Subject: Re: platform_driver_register() ??
-Cc: linux-kernel@vger.kernel.org, "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-In-Reply-To: <4dde4acb0707030028p2c078a22jd537853f145c2518@mail.gmail.com>
+	Tue, 3 Jul 2007 08:59:47 -0400
+Message-ID: <468A483E.6060207@mandic.com.br>
+Date: Tue, 03 Jul 2007 09:59:42 -0300
+From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
+To: linux-acpi <linux-acpi@vger.kernel.org>
+CC: Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       "Renato S. Yamane" <renatoyamane@mandic.com.br>,
+       Richard Hughes <hughsient@gmail.com>, John Belmonte <john@neggie.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Bastien Nocera <hadess@hadess.net>, Mathieu.Berard@crans.org,
+       mjg59@srcf.ucam.org, jaimeff@gmail.com
+Subject: Re: Add INPUT support to toshiba_acpi
+References: <1180614979.2693.26.camel@localhost.localdomain> <200706281327.29962.eike-kernel@sf-tec.de> <4683A80E.4070006@mandic.com.br> <200707030738.39980.eike-kernel@sf-tec.de>
+In-Reply-To: <200707030738.39980.eike-kernel@sf-tec.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4dde4acb0707030028p2c078a22jd537853f145c2518@mail.gmail.com>
+X-Mandic-no-Celular-to: renatoyamane@mandic.com.br
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Midhun,
-    I think mmc driver is layered modules, only top block driver
-registers driver under  "mmc_bus_type" bus, see
-drivers/mmc/mmc_sysfs.c and mmc_block.c. I think they are creating a
-tree of devices of same characteristics under that bus.
-I think your driver is linux/drivers/mmc/imxmmc.c where it registers a
-driver for device of type "platform_bus_type". This module will come
-under above mentioned block driver.
-Corresponding platform device is registered in
-linux/arch/arm/mach-imx/generic.c see platform_device imx_mmc_device.
-
-Nobin Mathew
-
-
-
-
-On 7/3/07, Midhun Agnihotram <agnimidhun@gmail.com> wrote:
-> Hi All,
+Rolf Eike Beer wrote:
+> Renato S. Yamane wrote:
+>> Rolf Eike Beer wrote:
+>>> Richard Hughes wrote:
+>>>>
+>>>> Yes, although this is out of my area or expertise, sorry.
+>>>
+>>> I've looked a bit but can't find any driver interaction of those
+>>> programs. Any further ideas welcome.
+>>
+>> Do you try omnibook driver?
+>> svn export https://svn.sourceforge.net/svnroot/omnibook/omnibook/trunk
+>>
+>> toshiba_acpi don't work on my Toshiba M45-S355 (Toshiba BIOS) and I try
+>> this module above and now I can change brightness writing in
+>> /proc/omnibook/lcd and kpowersave can change brightness too.
 >
->  I have an MMC driver for my kit (i.MX21 based cogent board
-> CSB535FS), which is supplied by Cogent (Kernel version 2.6.16).
->
->   The original driver (linux/drivers/mmc/mmc_block.c) uses
-> mmc_register_driver() method to register the driver but the one
-> supplied by Cogent uses platform_driver_register() method. What is the
-> difference between the two?
->
->
-> Thanks,
-> Midhun.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> Oh wow! Even my Multimedia keys get recognized. Thanks very much for your 
+> pointer.
+
+I think that is a good idea more support to Toshiba Laptops, so 
+omnibook+toshiba_acpi is a perfect couple, because some functions works 
+with toshiba_acpi and others works with omnibook.
+
+Jaime (in cc too) do a very useful module that work in some laptop 
+models that not work on toshiba_acpi and omnibook driver.
+
+So, I think that is a very good idea all work together to do a more 
+powerful (and compatible) module in next kernel releases.
+
+Regards,
+Renato S. Yamane
