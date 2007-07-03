@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbXGCWZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXGCW0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760589AbXGCWZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 18:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbXGCWZW
+	id S1758349AbXGCW0D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 18:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXGCWZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 18:25:22 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39954 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753077AbXGCWZV (ORCPT
+	Tue, 3 Jul 2007 18:25:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33226 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757397AbXGCWZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 18:25:21 -0400
-Date: Tue, 3 Jul 2007 23:31:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Morten Helgesen <morten@sourcepoet.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [PATCH] genericserial: Remove bogus optimisation check and dead
- code paths
-Message-ID: <20070703233135.502bba84@the-village.bc.nu>
-In-Reply-To: <468AC156.5040402@sourcepoet.org>
-References: <20070703152021.6eb8013d@the-village.bc.nu>
-	<468A5F89.70900@sourcepoet.org>
-	<20070703162655.6a001fdc@the-village.bc.nu>
-	<468AC156.5040402@sourcepoet.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 3 Jul 2007 18:25:50 -0400
+Date: Tue, 3 Jul 2007 15:25:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: bbpetkov@yahoo.de
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix error handling in ext3_create_journal
+Message-Id: <20070703152543.e58ad39a.akpm@linux-foundation.org>
+In-Reply-To: <20070701221111.GA8627@gollum.tnic>
+References: <20070701221111.GA8627@gollum.tnic>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Jul 2007 23:36:22 +0200
-Morten Helgesen <morten@sourcepoet.org> wrote:
+On Mon, 2 Jul 2007 00:11:11 +0200
+Borislav Petkov <bbpetkov@yahoo.de> wrote:
 
+> 
+> ---
+> From: Borislav Petkov <bbpetkov@yahoo.de>
+> 
+> Fix error handling in ext3_create_journal according to kernel conventions.
+> 
+> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> --
+> 
+> Index: linux-2.6.22-rc6/fs/ext3/super.c
+> ===================================================================
+> --- linux-2.6.22-rc6/fs/ext3/super.c.orig	2007-07-01 21:12:51.000000000 +0200
+> +++ linux-2.6.22-rc6/fs/ext3/super.c	2007-07-01 21:14:32.000000000 +0200
+> @@ -2075,6 +2075,7 @@
+>  			       unsigned int journal_inum)
+>  {
+>  	journal_t *journal;
+> +	int err;
+>  
+>  	if (sb->s_flags & MS_RDONLY) {
+>  		printk(KERN_ERR "EXT3-fs: readonly filesystem when trying to "
+> @@ -2082,13 +2083,15 @@
+>  		return -EROFS;
+>  	}
+>  
+> -	if (!(journal = ext3_get_journal(sb, journal_inum)))
+> +	journal = ext3_get_journal(sb, journal_inum);
+> +	if (!journal)
+>  		return -EINVAL;
+>  
+>  	printk(KERN_INFO "EXT3-fs: creating new journal on inode %u\n",
+>  	       journal_inum);
+>  
+> -	if (journal_create(journal)) {
+> +	err = journal_create(journal);
+> +	if (err) {
+>  		printk(KERN_ERR "EXT3-fs: error creating journal.\n");
+>  		journal_destroy(journal);
+>  		return -EIO;
 
->  /*
->  > Problems to take into account are:
->  >       -1- Interrupts that empty part of the buffer.
-> ->       -2- page faults on the access to userspace. 
-> +>       -2- Page faults on access to userspace. 
+Please prepare the equivalent patch for ext4.  Without that, it'd probably
+be better to avoid applying the ext3 patch: there are advantages to keeping
+the two in sync where possible.
 
-#2 no longer applies (don't before the caller)
->  >       -3- Other processes that are also trying to do a "write".   
-#3 no longer applies (locked by tty layer)
-
-> -	/* get exclusive "write" access to this port (problem 3) */
-> +	/* Get exclusive "write" access to this port (problem 3) */
->  	/* This is not a spinlock because we can have a disk access (page 
-> -		 fault) in copy_from_user */
-
-No copy_from_user any more. Actually that locking code wants review and
-maybe removal so is another project altogether
-
-
-Definitely an improvement
-
-Acked-by: Alan Cox <alan@redhat.com>
