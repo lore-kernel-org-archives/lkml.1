@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761174AbXGCTdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbXGCTlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761174AbXGCTdu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 15:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXGCTdn
+	id S1759261AbXGCTlX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbXGCTlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 15:33:43 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55361 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755276AbXGCTdm (ORCPT
+	Tue, 3 Jul 2007 15:41:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52871 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756494AbXGCTlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 15:33:42 -0400
-Date: Tue, 3 Jul 2007 15:33:40 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: linux-kernel@vger.kernel.org, <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
- pathway
-In-Reply-To: <20070703170233.GA25129@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0707031529130.7671-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Jul 2007 15:41:13 -0400
+Date: Tue, 03 Jul 2007 16:20:47 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES] V4L/DVB fixes
+Message-Id: <1183491061.3926.193.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007, Matthew Garrett wrote:
+Linus,
 
-> On Tue, Jul 03, 2007 at 12:57:17PM -0400, Alan Stern wrote:
-> > On Tue, 3 Jul 2007, Matthew Garrett wrote:
-> > > On Tue, Jul 03, 2007 at 12:03:33PM -0400, Alan Stern wrote:
-> > > > Quite apart from the sync() matter, _any_ synchronous call to a FUSE 
-> > > > filesystem during STR will cause trouble.  Even if the user task 
-> > > > implementing the filesystem isn't frozen, when it tries to carry out 
-> > > > some I/O to a suspended device it will either:
-> > > > 
-> > > > 	block until the system wakes up, or
-> > > 
-> > > For the suspend to RAM case, that sounds absolutely fine.
-> > 
-> > It's not so good when your suspend process has to wait for the call to 
-> > complete!
-> 
-> Why would it have to? Sorry, I suspect I'm missing something obvious 
-> here.
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
 
-Well, the sys_sync() that caused your original problem did exactly 
-that.  It's the reason you get deadlocks, right?
+For some fixes on V4L/DVB low-level drivers:
 
-I agree that in general the suspend process should not have to wait for 
-a userspace callback to complete.  Indeed, there's no particular 
-reason that anything running during STR should have to wait for 
-something in userspace to complete.  Given that fact, I don't see 
-anything wrong with freezing userspace when doing STR.
+   - bttv: fixes a very weird error when used with a v4l1 application;
+   - cx88-blackbird: fixes an endless loop at userspace apps, when 
+                     trying to request the list of tuners;
+   - ttpci: fixes error handling at init() function;
+   - cinergyT2: corrects bad locks on work queue.
 
-Alan Stern
+Cheers,
+Mauro.
+
+---
+
+ drivers/media/dvb/cinergyT2/cinergyT2.c   |   66 +++++++++++++++++-----------
+ drivers/media/dvb/ttpci/budget-core.c     |    2 +-
+ drivers/media/video/bt8xx/bttv-driver.c   |   13 +++---
+ drivers/media/video/cx88/cx88-blackbird.c |    2 +
+ 4 files changed, 49 insertions(+), 34 deletions(-)
+
+Hartmut Birr (1):
+      V4L/DVB (5822): Fix the return value in ttpci_budget_init()
+
+Jelle Foks (1):
+      V4L/DVB (5816): Cx88-blackbird: fix vidioc_g_tuner never ending list of tuners
+
+Oleg Nesterov (1):
+      V4L/DVB (5818): CinergyT2: fix flush_workqueue() vs work->func() deadlock
+
+Trent Piepho (1):
+      V4L/DVB (5808): Bttv: fix v4l1 breaking the driver
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
 
