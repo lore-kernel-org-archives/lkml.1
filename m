@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbXGCS7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759759AbXGCS7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbXGCS7B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 14:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXGCS6w
+	id S1759759AbXGCS7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 14:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXGCS7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 14:58:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46084 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756039AbXGCS6v (ORCPT
+	Tue, 3 Jul 2007 14:59:09 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42823 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759360AbXGCS7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 14:58:51 -0400
-Date: Tue, 3 Jul 2007 11:58:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andi Kleen <ak@suse.de>, Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
-Message-Id: <20070703115840.e05a0f47.akpm@linux-foundation.org>
-In-Reply-To: <200706291330.37070.yinghai.lu@sun.com>
-References: <200706291330.37070.yinghai.lu@sun.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jul 2007 14:59:08 -0400
+Date: Tue, 3 Jul 2007 19:58:19 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: akpm@linux-foundation.org, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 5/5] s390 tlb flush fix.
+In-Reply-To: <20070703121229.180281096@de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0707031921270.8155@blonde.wat.veritas.com>
+References: <20070703111822.418649776@de.ibm.com> <20070703121229.180281096@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAcGV0ZXJ6QGluZnJhZGVhZC5vcmcAc2Nod2lkZWZza3lAZGUuaWJtLmNvbQA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jun 2007 13:30:36 -0700
-Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+On Tue, 3 Jul 2007, Martin Schwidefsky wrote:
+> +
+> +static inline struct mmu_gather *tlb_gather_mmu(struct mm_struct *mm,
+> +						unsigned int full_mm_flush)
+> +{
+> +	struct mmu_gather *tlb = &get_cpu_var(mmu_gathers);
+> +
+> +	tlb->mm = mm;
+> +	tlb->fullmm = full_mm_flush || (num_online_cpus() == 1) ||
+> +		(atomic_read(&mm->mm_users) <= 1);
+> +	tlb->nr_ptes = 0;
+> +	tlb->nr_pmds = TLB_NR_PTRS;
+> +	if (tlb->fullmm)
+> +		__tlb_flush_mm(mm);
+> +	return tlb;
+> +}
 
-> [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
+I'm afraid that mm_users test (and probably some of your other
+mm_users tests) is not good: because this also gets called when
+a file is truncated while it is mapped - the active mm at that
+time is likely not to be one of the mm_users.  (Do any other
+arches use mm_users in that way?  No: that should be a warning.)
 
-Please copy netdev@vger.kernel.org on net patches.
+You might do better to make more use of cpu_vm_mask (though I
+didn't see where any bits get cleared from it on s390 at present).
 
-This patch modifies a net driver as well as the networking core.  These
-subsytems have different maintainers who run different development trees. 
-Consequently I must split your patch into two and change their titles and
-changelogs appropriately.
+Though it seems sensible to aim for one TLB flush at the beginning
+as you're doing, that's not what other arches do (some have to
+worry about speculative execution, but you don't?), and it
+worries me that you're taking s390 further away into its own
+implementation: which you're surely entitled to do, but then
+we're more likely to screw you over by mistake in future.
 
-Please do this for us in future, thanks.
+Is there perhaps another architecture whose procedures you
+can copy?  Changing a pte while another cpu is accessing it
+is not a problem unique to s390.
 
+Patches 1-4 looked fine to me, but I believe this 5/5
+is the rationale behind all of them.
 
-> diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-> index 42ba1c0..6d53b52 100644
-> --- a/drivers/net/forcedeth.c
-> +++ b/drivers/net/forcedeth.c
-> @@ -1383,7 +1383,7 @@ static int nv_alloc_rx(struct net_device *dev)
->  		less_rx = np->last_rx.orig;
->  
->  	while (np->put_rx.orig != less_rx) {
-> -		struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
-> +		struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
-
-If we're going to do this then it would probably make sense to change
-dev_alloc_skb_node() so that it takes a `struct net_device *' rather than a
-bare node-id.  That's a call which the net guys will need to make, which is
-why we cc them on our emails.
-
->  		if (skb) {
->  			np->put_rx_ctx->skb = skb;
->  			np->put_rx_ctx->dma = pci_map_single(np->pci_dev,
-> @@ -1415,7 +1415,7 @@ static int nv_alloc_rx_optimized(struct net_device *dev)
->  		less_rx = np->last_rx.ex;
->  
->  	while (np->put_rx.ex != less_rx) {
-> -		struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
-> +		struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
-
-It might help to edit code in an 80-col xterm.
-
-Please run scritps/checkpatch.pl across all your diffs.  Its suggestions
-are by no means compulsory, but they do provide things for you to check up
-and and have a think about, thanks.
-
-I won't apply this (these) patches because I expect API changes.
-
-
+Hugh
