@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbXGCHDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757748AbXGCHMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758845AbXGCHDX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 03:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbXGCHDQ
+	id S1757748AbXGCHMD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 03:12:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbXGCHLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 03:03:16 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:60451 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754658AbXGCHDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 03:03:16 -0400
-Date: Tue, 3 Jul 2007 00:03:12 -0700
-From: Greg KH <greg@kroah.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-usb-devel@lists.sourceforge.net, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [linux-usb-devel] [PATCH 3/4] usb: allocated usb releated dma
-	buffer with?kmalloc_node
-Message-ID: <20070703070312.GA19924@kroah.com>
-References: <200706291326.43563.yinghai.lu@sun.com> <86802c440707022233g2021b49dg48534f813f628585@mail.gmail.com> <20070703060155.GB19086@kroah.com> <200707030823.07815.oliver@neukum.org>
+	Tue, 3 Jul 2007 03:11:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35006 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752579AbXGCHLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 03:11:51 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH 3/3] ACPI autoloading - Create __mod_acpi_device_table symbol for all acpi drivers.
+Date: Tue, 3 Jul 2007 03:11:35 -0400
+User-Agent: KMail/1.9.5
+Cc: Thomas Renninger <trenn@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Kay Sievers <kasievers@suse.de>
+References: <1182111863.4204.6.camel@noname> <1182257607.28514.643.camel@queen.suse.de> <20070619212757.GB23946@khazad-dum.debian.net>
+In-Reply-To: <20070619212757.GB23946@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707030823.07815.oliver@neukum.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200707030311.36139.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 08:23:07AM +0200, Oliver Neukum wrote:
-> Am Dienstag, 3. Juli 2007 schrieb Greg KH:
-> > On Mon, Jul 02, 2007 at 10:33:12PM -0700, Yinghai Lu wrote:
-> > >  On 7/2/07, Greg KH <greg@kroah.com> wrote:
-> > > > On Mon, Jul 02, 2007 at 03:36:37PM -0700, Yinghai Lu wrote:
-> > > > > [PATCH 3/4] usb: allocated usb releated dma buffer with kmalloc_node
-> > > > >
-> > > > > For amd64 based two way system. USB always on node0. but dma buffer for 
-> > > > urb
-> > > > > allocated via kmalloc always get ram on node1. So change to kmalloc_node 
-> > > > to
-> > > > > get dma_buffer on corresponding node
-> > > >
-> > > > Are all of these changes really necessary?  You are doing this for some
-> > > > allocations that take a _long_ time when sending to the device due to
-> > > > the speed of the device.
-> > > >
-> > > > I could possibly see this making a difference on some drivers, but for
-> > > > the core, and for the basic USB structures, I can't imagine it is really
-> > > > worth it.
-> > > >
-> > > > Or do you have numbers showing the differences here?
-> > > >
-> > > > Patch included fully below for the benifit of the usb list, which you
-> > > > should have cc:ed...
-> > > 
-> > >  dma buffer could be allocated via alloc_pages_coherent. or
-> > >  kmalloc/dma_map_single.
-> > >  alloc_pages_coherent get the dma_buffer on corresponding node.
-> > >  but kmalloc/dma_map_single always get dma_buffer on last node. or say
-> > >  device is on HT chain node0,  it will get dma buffer on node 7 of 8
-> > >  socket system.
-> > >  also on two way system with 4G+4G RAM conf. device on node 0 will get
-> > >  dma_buffer above 4G, and if the dma_mask is less 32bit, will need
-> > >  extra iommu mapping.
-> > >  In my mcp55+io55 system, it show dma_map_single is keepping called by
-> > >  usb input: keyboard/mouse (8/0x40 bytes), and forcedeth. (0x670bytes)
-> > 
-> > Ok, so two drivers might need this, but not the whole usb core, right?
-> 
-> If those two drivers need the extended allocator, why not use it where
-> it is beneficial, even if the benefit is small?
+My $0.02 on thinkpad_acpi & HID's...
 
-What is the benefit?  Speed isn't an issue here, so what is?
+1. moving to DMI binding from PNP-id binding
+sounds like a step in the wrong direction.
+
+Are there thinkpads that you need to support that don't export IBM0068?
+
+There is a long tradition of DMI information being copy/pasted
+and being invalid.  While the thinkpad BIOS guys are probably
+above average here, they're probably not immune from this issue.
+
+At the end of the day, I'd be astonished if somebody told me that
+the Windows thinkpad platform driver binds via DMI strings instead
+of binding to IBM0068 -- which was likely invented for this sole purpose.
+
+2. IBM_PCI_HID = ACPI_PCI_HOST_HID = PCI_ROOT_HID_STRING = "PNP0A03"
+
+There is nothing IBM specific about a PCI root bridge.
+If you need to use this one, please call it PCI_ROOT_HID_STRING.
 
 thanks,
-
-greg k-h
+-Len
