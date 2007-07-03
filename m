@@ -1,80 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbXGCR2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761111AbXGCRaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757735AbXGCR2s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbXGCR2l
+	id S1761111AbXGCRaS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbXGCRaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:28:41 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:46035 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755161AbXGCR2k (ORCPT
+	Tue, 3 Jul 2007 13:30:06 -0400
+Received: from anchor-post-36.mail.demon.net ([194.217.242.86]:3804 "EHLO
+	anchor-post-36.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754652AbXGCRaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:28:40 -0400
-Message-ID: <468A8733.2060000@nortel.com>
-Date: Tue, 03 Jul 2007 13:28:19 -0400
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20060130 Red Hat/1.7.12-1.4.2
-X-Accept-Language: en-us, en
+	Tue, 3 Jul 2007 13:30:04 -0400
+Date: Tue, 3 Jul 2007 18:29:58 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org,
+       "Vladimir V. Saveliev" <vs@namesys.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-ide@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, linux-mm@kvack.org,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Sparc32: random invalid instruction occourances on sparc32 (sun4c)
+In-Reply-To: <468A7D14.1050505@googlemail.com>
+Message-ID: <Pine.LNX.4.61.0707031817050.29930@mtfhpc.demon.co.uk>
+References: <468A7D14.1050505@googlemail.com>
 MIME-Version: 1.0
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
-References: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca> <468A724D.6070908@nortel.com> <F1D642E5A91BC94D9504EC83AE19E6B0128A64@ecqcmtlmail3.quebec.int.ec.gc.ca> <468A734C.7030609@nortel.com>
-In-Reply-To: <468A734C.7030609@nortel.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jul 2007 17:28:21.0548 (UTC) FILETIME=[8D86C6C0:01C7BD97]
+Content-Type: MULTIPART/MIXED; BOUNDARY="1750305931-300674694-1183483798=:29930"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some more information....
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I'm trying to get a console on the affected system to query the leap second info 
-from the ntp servers.
+--1750305931-300674694-1183483798=:29930
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-However, just for kicks I queried the local servers for my desktop following the 
-instructions that I found on a thread about spurious leap second notifications. 
-  Interestingly, two of the associations show non-zero leap values...
+Hi all,
 
-Chris
+I think I have found the cause of the problem.
 
+Commit b46b8f19c9cd435ecac4d9d12b39d78c137ecd66 partially fixed alignment=
+=20
+issues but does not ensure that all 64bit alignment requirements of=20
+sparc32 are met. Tests have shown that the redzone2 word can become=20
+misallignd.
 
+I am currently working on a posible fix.
 
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -cas zcars0vr
+Regards
+ =09Mark Fortescue.
 
-ind assID status  conf reach auth condition  last_event cnt
-===========================================================
-   1 62124  b614   yes   yes  none  sys.peer   reachable  1
-   2 62125  b4f4   yes   yes  none  candidat   reachable 15
-   3 62126  b314   yes   yes  none   outlyer   reachable  1
-   4 62127  b314   yes   yes  none   outlyer   reachable  1
-   5 62128  8000   yes   yes  none    reject
-   6 62129  b434   yes   yes  none  candidat   reachable  3
-   7 62130  b424   yes   yes  none  candidat   reachable  2
-   8 62131  a0f3   yes   yes  none    reject  lost reach 15
+On Tue, 3 Jul 2007, Michal Piotrowski wrote:
 
-
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -c"rv 62124 leap" zcars0vr
-assID=62124 status=b614 reach, conf, sel_sys.peer, 1 event, event_reach,
-leap=00
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -c"rv 62125 leap" zcars0vr
-assID=62125 status=b0f4 reach, conf, 15 events, event_reach,
-leap=00
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -c"rv 62126 leap" zcars0vr
-assID=62126 status=b314 reach, conf, sel_outlyer, 1 event, event_reach,
-leap=00
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -c"rv 62127 leap" zcars0vr
-assID=62127 status=b414 reach, conf, sel_candidat, 1 event, event_reach,
-leap=00
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -c"rv 62128 leap" zcars0vr
-assID=62128 status=8000 unreach, conf, no events,
-leap=11
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -c"rv 62129 leap" zcars0vr
-assID=62129 status=b434 reach, conf, sel_candidat, 3 events, event_reach,
-leap=00
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -c"rv 62130 leap" zcars0vr
-assID=62130 status=b424 reach, conf, sel_candidat, 2 events, event_reach,
-leap=00
-[cfriesen@wcary14e ~]$ /usr/sbin/ntpq -c"rv 62131 leap" zcars0vr
-assID=62131 status=a0f3 unreach, conf, 15 events, event_unreach,
-leap=11
+> Hi all,
+>
+> Here is a list of some known regressions in 2.6.22-rc7.
+>
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+>
+> List of Aces
+>
+> Name                    Regressions fixed since 21-Jun-2007
+> Hugh Dickins                           2
+> Andi Kleen                             1
+> Andrew Morton                          1
+> Benjamin Herrenschmidt                 1
+> Bj=F6rn Steinbrink                       1
+> Bjorn Helgaas                          1
+> Jean Delvare                           1
+> Olaf Hering                            1
+> Siddha, Suresh B                       1
+> Trent Piepho                           1
+> Ville Syrj=E4l=E4                          1
+>
+>
+>
+> FS
+>
+> Subject    : 2.6.22-rc4-git5 reiserfs: null ptr deref.
+> References : http://lkml.org/lkml/2007/6/13/322
+> Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
+> Handled-By : Vladimir V. Saveliev <vs@namesys.com>
+> Status     : problem is being debugged
+>
+>
+>
+> IDE
+>
+> Subject    : 2.6.22-rcX: hda: lost interrupt
+> References : http://lkml.org/lkml/2007/6/29/121
+> Submitter  : David Chinner <dgc@sgi.com>
+> Status     : unknown
+>
+>
+>
+> Sparc64
+>
+> Subject    : random invalid instruction occourances on sparc32 (sun4c)
+> References : http://lkml.org/lkml/2007/6/17/111
+> Submitter  : Mark Fortescue <mark@mtfhpc.demon.co.uk>
+> Status     : problem is being debugged
+>
+> Subject    : 2.6.22-rc broke X on Ultra5
+> References : http://lkml.org/lkml/2007/5/22/78
+> Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+> Handled-By : David Miller <davem@davemloft.net>
+> Status     : problem is being debugged
+>
+>
+>
+> Regards,
+> Michal
+>
+> --
+> LOG
+> http://www.stardust.webpages.pl/log/
+> -
+> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+--1750305931-300674694-1183483798=:29930--
