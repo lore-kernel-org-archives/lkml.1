@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbXGCXKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760744AbXGCXL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760379AbXGCXKn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 19:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbXGCXKf
+	id S1760744AbXGCXL7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 19:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbXGCXLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 19:10:35 -0400
-Received: from gw.goop.org ([64.81.55.164]:42489 "EHLO mail.goop.org"
+	Tue, 3 Jul 2007 19:11:53 -0400
+Received: from ozlabs.org ([203.10.76.45]:37207 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755133AbXGCXKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 19:10:34 -0400
-Message-ID: <468AD767.10700@goop.org>
-Date: Tue, 03 Jul 2007 16:10:31 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	id S1755276AbXGCXLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 19:11:52 -0400
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/10] Immediate Value - i386 Optimization
-References: <20070703164046.645090494@polymtl.ca> <20070703164515.071300768@polymtl.ca> <468A9956.9050903@zytor.com> <20070703191605.GB4047@Krystal> <468AAF1F.6010909@zytor.com> <468AB390.7000608@redhat.com>
-In-Reply-To: <468AB390.7000608@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18058.55215.185633.434117@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 09:11:43 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+In-Reply-To: <200707031342.14295.oliver@neukum.org>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707030944.18702.oliver@neukum.org>
+	<18058.12724.163599.707035@cargo.ozlabs.ibm.com>
+	<200707031342.14295.oliver@neukum.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 07/03/2007 04:18 PM, H. Peter Anvin wrote:
->   
->> One could, though, use an indirect jump to achieve, if not as good, at
->> least most of the effect:
->>
->> 	movl	$<patchable>,<reg>
->> 	jmp	*<reg>
->>
->>     
->
-> Yeah, but there's this GCC bug:
->
-> 	http://gcc.gnu.org/bugzilla/show_bug.cgi?id=22448
->
-> You can't even dereference labels in an ASM statement.
+Oliver Neukum writes:
 
-I was told in absolute terms that any use of &&label other than to pass 
-it to goto was not supported, and would not be supported.
+> USB devices certainly have suspend methods.
 
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29305
+Indeed, and the USB framework has code to know when the host
+controller is suspended and avoid trying to send out urbs in that
+case.  Or at least it did last time I looked at it in any detail; it's
+been "just working" - including suspending and resuming, without the
+freezer - for quite a while now.
 
-Seems that passing to an asm() falls into the same class of problem I 
-had.  I think the underlying problem is that if the code containing the 
-label is in an inlined function or unrolled loop, the reference can't be 
-resolved properly anyway.
-
-    J
+Paul.
