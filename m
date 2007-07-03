@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbXGCA2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbXGCA2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbXGCA2U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 20:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbXGCA2L
+	id S1756405AbXGCA2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 20:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757700AbXGCA2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 20:28:11 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:3705 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755388AbXGCA2K (ORCPT
+	Mon, 2 Jul 2007 20:28:30 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:8117 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756634AbXGCA2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 20:28:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MiIFGDTPuMeY5Y/MO3mxPAC5Ts52R24spOjKTa3gLI4dgnHxOBFtFk0NWdGTE0kbe4Agv8WFiAV9HXm79DvZcR7ybg6eKGjgnpEyvInSY/7rv8775jZc98yAmNqr0GtXcOpGcP7DWnRr7qPygx8vnRVSnEkDHqoRgrnz8zlQ48k=
-Message-ID: <a36005b50707021728q2b5cac73qde36ed063a82eb24@mail.gmail.com>
-Date: Mon, 2 Jul 2007 17:28:08 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: [patch 0/6] sys_indirect RFC - sys_indirect introduction
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0707021119460.14774@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 2 Jul 2007 20:28:14 -0400
+X-IronPort-AV: i="4.16,489,1175486400"; 
+   d="scan'208"; a="33932957:sNHT25540802"
+Subject: Re: why does git perpetually complain about
+	include/asm-blackfin/macros.h?
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Marco Roeland <marco.roeland@xs4all.nl>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20070702142430.GA10400@fiberbit.xs4all.nl>
+References: <Pine.LNX.4.64.0707020800010.1972@localhost.localdomain>
+	 <4688EF9B.8020405@garzik.org>
+	 <9a8748490707020658t5e6542ag6edb435dbc4499ab@mail.gmail.com>
+	 <20070702142430.GA10400@fiberbit.xs4all.nl>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <send-serie.davidel@xmailserver.org.28360.1183153732.0>
-	 <a36005b50706291848p406fbb9aw99697f609b0d5c4b@mail.gmail.com>
-	 <Pine.LNX.4.64.0706301208140.2957@alien.or.mcafeemobile.com>
-	 <a36005b50706301454j46c23760m5f0ac6088fe24a9d@mail.gmail.com>
-	 <Pine.LNX.4.64.0706301458300.2957@alien.or.mcafeemobile.com>
-	 <Pine.LNX.4.64.0706301529310.2957@alien.or.mcafeemobile.com>
-	 <a36005b50707010925k5c936c1ch2238b560c595a833@mail.gmail.com>
-	 <Pine.LNX.4.64.0707011003510.7547@alien.or.mcafeemobile.com>
-	 <a36005b50707020709s87bde71m325a4ced02eb6e2b@mail.gmail.com>
-	 <Pine.LNX.4.64.0707021119460.14774@alien.or.mcafeemobile.com>
+Organization: Analog Devices, Ltd.
+Date: Tue, 03 Jul 2007 08:28:09 +0800
+Message-Id: <1183422489.10353.2.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 03 Jul 2007 00:28:12.0790 (UTC) FILETIME=[0A438160:01C7BD09]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/2/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> Never be usable? I made you a concrete example that is like 8 months old.
-> And *that* could not have been cleanly handled with the flat structure
-> idea.
+On Mon, 2007-07-02 at 16:24 +0200, Marco Roeland wrote:
+> On Monday July 2nd 2007 at 15:58 Jesper Juhl wrote:
+> 
+> > [obnoxious zero sized file include/asm-blackfin/macros.h that gets
+> >  zapped by toolchains and resurrected again by git]
+> >
+> > I've seen that as well, but in my case doing a
+> > $ git reset --hard master
+> > fixed it.
+> 
+> Dangerous, as it may overwrite local changes you have! A simple "git
+> checkout include/asm-blackfin/macros.h" is much safer in this case.
+> 
+> In git commit df30b11 this file got redundant. Perhaps because a normal
+> patch was applied, instead of with git, the file didn't get deleted from
+> the repository but truncated to size zero. Not strictly wrong perse, but
+> for the Linux repository highly unusual (and the only one at that).
+> 
+> Your toolchain perhaps deletes files with zero size after cleaning up or
+> something. Git then notices that you deleted this file.
+> 
+> Perhaps someone can apply something like the following to finally fix
+> this up:
+> 
+> commit 7d98740800f3d9ad2428afa8c677be9573a51b7b
+> Author: Marco Roeland <marco.roeland@xs4all.nl>
+> Date:   Mon Jul 2 16:19:49 2007 +0200
+> 
+>     Blackfin arch: remove zero-sized include/asm-blackfin/macros.h
+>     
+>     This file accidentally got truncated instead of deleted in commit df30b11.
+>     
+>     Signed-off-by: Marco Roeland <marco.roeland@xs4all.nl>
+> 
+> diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
+> deleted file mode 100644
+> index e69de29..0000000
+> -
 
-First of all, sigmasks are not widely needed.  Second, why on earth
-shouldn't it be possible with a flat structure?  Just have the sigmask
-in the same position.  It's no magic.
+Thanks, Applied to the blackfin-2.6.git tree for Linus pull.
 
+- Bryan
 
-> But there are
-> examples (and the signal stuff is one of them), where you do need the
-> set_context+syscall+unset_context abstraction, for all cases where the
-> kernel already has its own internal data strctures. In those cases you'd
-> have to spread sys_internal context knowledge all around the kernel,
-> whereas the current solution allows you to confine the code inside
-> kernel/indirect.c
-
-Nonsense.  Whether you have a new word in the task structure or a
-pointer to a structure, you have to embed knowledge of this
-indirection in every affected code paths.  There is no difference
-here.  The only difference is that trying to force everything through
-an artificially complicated common entry code.
-
-I hope that Andrew+Linus will see through this.  I'm done arguing.
+> To unsubscribe from this list: send the line "unsubscribe git" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
