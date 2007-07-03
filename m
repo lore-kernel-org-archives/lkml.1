@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbXGCLq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbXGCLrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760023AbXGCLq7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 07:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758128AbXGCLqu
+	id S1760137AbXGCLrW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 07:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758606AbXGCLrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 07:46:50 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39175 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757425AbXGCLqt (ORCPT
+	Tue, 3 Jul 2007 07:47:07 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:59085 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758128AbXGCLrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 07:46:49 -0400
-Date: Tue, 3 Jul 2007 17:16:50 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       adilger@clusterfs.com, David Chinner <dgc@sgi.com>, suparna@in.ibm.com,
-       cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070703114650.GB14936@amitarora.in.ibm.com>
-References: <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070630165246.GA5159@schatzie.adilger.int> <20070703100848.GA14936@amitarora.in.ibm.com> <20070703103107.GA29763@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 3 Jul 2007 07:47:06 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 13:46:56 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-pm@lists.linux-foundation.org,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
+References: <20070703042916.GA17240@srcf.ucam.org> <200707030944.18702.oliver@neukum.org> <1183462826.10386.107.camel@localhost.localdomain>
+In-Reply-To: <1183462826.10386.107.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070703103107.GA29763@infradead.org>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200707031346.57613.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 11:31:07AM +0100, Christoph Hellwig wrote:
-> On Tue, Jul 03, 2007 at 03:38:48PM +0530, Amit K. Arora wrote:
-> > > FA_FL_DEALLOC		0x01 /* deallocate unwritten extent (default allocate) */
-> > > FA_FL_KEEP_SIZE	0x02 /* keep size for EOF {pre,de}alloc (default change size) */
-> > > FA_FL_DEL_DATA	0x04 /* delete existing data in alloc range (default keep) */
+Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
+> On Tue, 2007-07-03 at 09:44 +0200, Oliver Neukum wrote:
+> > Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
+> > > So to summarize, the plan that makes things work with fuse is:
+> > > 
+> > >  - For STR, don't do the freezer thing.
+> > > 
+> > >  - For STD, don't sys_sync() after you froze
+> > > 
+> > > There might be -other- issues, but that should get you through some of
 > > 
-> > We now have two sets of flags - 
-> > 1) the above three with which I think no one has any issues with, and
+> > At the risk of repeating myself. Character device drivers are written
+> > with the assumption that normal io and suspend/resume do not race
+> > with each other due to the freezer.
+> > What do you intend to do about that?
 > 
-> Yes, I do.  FA_FL_DEL_DATA is plain stupid, a preallocation call should
-> never delete data.  FA_FL_DEALLOC should probably be a separate syscall
-> because it's very different functionality.
+> Ugh ... "character devices" ... that's a pretty wide statement...
+> there's lots of those and very different one from the other...
 
-Well, if you see the modes proposed using above flags :
+That is a good summary of the problem ;-(
 
-#define FA_ALLOCATE	0
-#define FA_DEALLOCATE	FA_FL_DEALLOC
-#define FA_RESV_SPACE	FA_FL_KEEP_SIZE
-#define FA_UNRESV_SPACE	(FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA)
+> Any sane device-driver will have to cope with being suspended in a
+> "live" system. I've demonstrated multiple times in the past why this is
+> necessary anyway, for things like dynamic power management, among
+> others.
 
-FA_FL_DEL_DATA is _not_ being used for preallocation. We have two modes
-for preallocation FA_ALLOCATE and FA_RESV_SPACE, which do not use this
-flag. Hence prealloction will never delete data.
-This mode is required only for FA_UNRESV_SPACE, which is a deallocation
-mode, to support any existing XFS aware applications/usage-scenarios.
+That is an interesting notion. I'd rather see device drivers reporting
+their devices idle and requsting to be suspended.
+But in any case it doesn't solve the problem.
 
-And, regarding FA_FL_DEALLOC being a separate syscall - I think then the
-very purpose of @mode argument is not justified. We have this mode so
-that we can provide more features like this. That said, I don't say that
-we should make things very complicated; but, atleast we should provide
-some basic features which we expect most of the applications wanting
-preallocation to use. To start with, we need to cater to already
-existing applications/user base who use XFS preallocation feature.
+	Regards
+		Oliver
 
-And further advanced features, like goal based preallocation, can be
-implemented as a separate syscall.
-
-> While we're at it I also dislike the FA_ prefix becuase it doesn't say
-> anything and is far too generic.  FALLOC_ is much better.
-
-Ok. This can be changed in the next take.
- 
-> > > FA_FL_ERR_FREE	0x08 /* free preallocation on error (default keep prealloc) */
-> 
-> NACK on this one.  We should have just one behaviour, and from the thread
-> that not freeing the allocation on error.
-
-I agree on this one. 
- 
-> > > FA_FL_NO_MTIME	0x10 /* keep same mtime (default change on size, data change) */
-> > > FA_FL_NO_CTIME	0x20 /* keep same ctime (default change on size, data change) */
-> 
-> NACK to these aswell.  If i_size changes c/mtime need updates, if the size
-> doesn't chamge they don't.  No need to add more flags for this.
-
-This requirement was from the point of view of HSM applications. Hope
-you saw Andreas previous post and are keeping that in mind.
-
---
-Regards,
-Amit Arora
