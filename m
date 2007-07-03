@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbXGCJtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759032AbXGCKJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759377AbXGCJtU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 05:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXGCJtO
+	id S1759032AbXGCKJH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 06:09:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbXGCKI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 05:49:14 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:39645 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756421AbXGCJtN (ORCPT
+	Tue, 3 Jul 2007 06:08:56 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:59682 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753613AbXGCKIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 05:49:13 -0400
-Date: Tue, 3 Jul 2007 12:47:02 +0300
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-To: Richard Purdie <rpurdie@openedhand.com>
-Cc: dedekind@infradead.org, linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC] oops and panic message logging to MTD
-Message-ID: <20070703094702.GA11992@angel.research.nokia.com>
-Reply-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-References: <1182184301.6074.62.camel@localhost.localdomain> <1182239749.4403.48.camel@sauron> <1182247254.5760.17.camel@localhost.localdomain>
-MIME-Version: 1.0
+	Tue, 3 Jul 2007 06:08:55 -0400
+Date: Tue, 3 Jul 2007 15:38:48 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Cc: adilger@clusterfs.com, David Chinner <dgc@sgi.com>, suparna@in.ibm.com,
+       cmm@us.ibm.com, xfs@oss.sgi.com, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070703100848.GA14936@amitarora.in.ibm.com>
+References: <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070630165246.GA5159@schatzie.adilger.int>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1182247254.5760.17.camel@localhost.localdomain>
-X-Operating-System: GNU/Linux angel.research.nokia.com
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 03 Jul 2007 09:48:40.0085 (UTC) FILETIME=[55B18450:01C7BD57]
-X-Nokia-AV: Clean
+In-Reply-To: <20070630165246.GA5159@schatzie.adilger.int>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 11:00:54AM +0100, Richard Purdie wrote:
-> Its not a case of formatting the whole partition. The whole point of
-> this code is the following use case:
+On Sat, Jun 30, 2007 at 12:52:46PM -0400, Andreas Dilger wrote:
+> The @mode flags that are currently under consideration are (AFAIK):
 > 
-> 1. Device crashes
-> 2. Device reboots
-> 3. mtdoops partition has a log of why it crashed
+> FA_FL_DEALLOC		0x01 /* deallocate unwritten extent (default allocate) */
+> FA_FL_KEEP_SIZE	0x02 /* keep size for EOF {pre,de}alloc (default change size) */
+> FA_FL_DEL_DATA	0x04 /* delete existing data in alloc range (default keep) */
 
-The oops logger uses oops_in_progress variable to detect the begin and the 
-end of an oops.  The end is detected when the first non-oops line comes and
-oops_in_progress is false.
+We now have two sets of flags - 
+1) the above three with which I think no one has any issues with, and
+2) the ones below, for which we need some discussions before finalizing
+on them.
 
-This works if the kernel is still running after the oops and gemerates some 
-non-oops messages.  But if there is no non-oops line following an oops, no
-flushing will occur and there won't be a log on flash.
+I will prefer fallocate going in mainline with the above three modes, and
+rest of the modes can be debated upon and discussed parallely. And, each
+new mode/flag can be pushed as a separate patch. This will not hold
+fallocate feature indefinitely...
 
-Jarkko Lavinen
+Please confirm if you find this approach ok. Otherwise, please object.
+Thanks!
+
+> FA_FL_ERR_FREE	0x08 /* free preallocation on error (default keep prealloc) */
+> FA_FL_NO_MTIME	0x10 /* keep same mtime (default change on size, data change) */
+> FA_FL_NO_CTIME	0x20 /* keep same ctime (default change on size, data change) */
+
+--
+Regards,
+Amit Arora
