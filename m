@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbXGCTnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbXGCTpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761347AbXGCTnP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 15:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761251AbXGCTm5
+	id S1760951AbXGCTpn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbXGCTpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 15:42:57 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:40876 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761188AbXGCTm4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 15:42:56 -0400
-Date: Tue, 3 Jul 2007 20:42:47 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Message-ID: <20070703194247.GB27098@srcf.ucam.org>
-References: <20070703170233.GA25129@srcf.ucam.org> <Pine.LNX.4.44L0.0707031529130.7671-100000@iolanthe.rowland.org>
+	Tue, 3 Jul 2007 15:45:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58784 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756012AbXGCTpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 15:45:33 -0400
+Date: Tue, 3 Jul 2007 21:45:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andre Noll <maan@systemlinux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc7
+Message-ID: <20070703194523.GC493@elte.hu>
+References: <alpine.LFD.0.98.0707011427380.1172@woody.linux-foundation.org> <20070703155519.GY22589@skl-net.de> <alpine.LFD.0.98.0707030908390.9434@woody.linux-foundation.org> <Pine.LNX.4.64.0707030921400.4810@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0707031529130.7671-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <Pine.LNX.4.64.0707030921400.4810@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 03:33:40PM -0400, Alan Stern wrote:
-> On Tue, 3 Jul 2007, Matthew Garrett wrote:
+
+* Christoph Lameter <clameter@sgi.com> wrote:
+
+> > However, it might be worth avoiding the warning, even if it seems 
+> > bogus in this case. Christoph? Do you agree with the analysis? And 
+> > the patch might be as simple as changing 
+> > early_kmem_cache_node_alloc() to enable interrupts at the _end_ of 
+> > the function, rather than immediately after calling new_slab().
 > 
-> > On Tue, Jul 03, 2007 at 12:57:17PM -0400, Alan Stern wrote:
-> > > On Tue, 3 Jul 2007, Matthew Garrett wrote:
-> > > > For the suspend to RAM case, that sounds absolutely fine.
-> > > 
-> > > It's not so good when your suspend process has to wait for the call to 
-> > > complete!
-> > 
-> > Why would it have to? Sorry, I suspect I'm missing something obvious 
-> > here.
-> 
-> Well, the sys_sync() that caused your original problem did exactly 
-> that.  It's the reason you get deadlocks, right?
+> new_slab() enables and disables interrupts during usual operations. 
+> During bootstrap interrupts are enabled and so new_slab() falsely 
+> disables interrupts when we do the alloc by hand thing in 
+> early_kmem_cache_node_alloc for NUMA. We need to enable interrupts 
+> there since otherwise boot will continue with interrupts disabled.
 
-The sys_sync is unnecessary in the first case. There shouldn't be 
-anything in the suspend path that's going to require userspace access to 
-a device after that device has been suspended.
+yeah. Your change looks good to me. You could add a 
+local_irq_enable_in_hardirq() to the original place, that will map to a 
+local_irq_enable() on non-lockdep kernels and will be a NOP on lockdep 
+kernels. (This is a bit hacky though.)
 
-> I agree that in general the suspend process should not have to wait for 
-> a userspace callback to complete.  Indeed, there's no particular 
-> reason that anything running during STR should have to wait for 
-> something in userspace to complete.  Given that fact, I don't see 
-> anything wrong with freezing userspace when doing STR.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-There's nothing wrong with it as such, it's just that our implementation 
-appears to suck in a myriad of small ways that keep cropping up and 
-biting people. Even without the sys_sync(), freezing processes results 
-in the suspend failing because syslog is stuck in D state and won't go 
-into the refrigerator.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	Ingo
