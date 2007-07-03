@@ -1,73 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbXGCQfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759087AbXGCQko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760862AbXGCQfV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 12:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbXGCQfJ
+	id S1759087AbXGCQko (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 12:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbXGCQkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 12:35:09 -0400
-Received: from ns1.coraid.com ([65.14.39.133]:26401 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753212AbXGCQfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 12:35:07 -0400
-Date: Tue, 3 Jul 2007 12:33:56 -0400
-From: "Ed L. Cashin" <ecashin@coraid.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Greg K-H <greg@kroah.com>
-Subject: [PATCH 1/1] docs: static initialization of spinlocks is OK
-Message-ID: <20070703163356.GF30089@coraid.com>
-References: <<20070702213832.8864656c.akpm@linux-foundation.org>>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <<20070702213832.8864656c.akpm@linux-foundation.org>>
-User-Agent: Mutt/1.5.11+cvs20060126
+	Tue, 3 Jul 2007 12:40:35 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:44445 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754556AbXGCQke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 12:40:34 -0400
+Message-Id: <20070703163818.785635235@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 03 Jul 2007 12:38:19 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/3] Text Edit Lock (i386)
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  3 Jul 2007 16:40:29 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Static initialization of spinlocks is preferable to dynamic
-initialization when it is practical.  This patch updates documentation
-for consistency with comments in spinlock_types.h.
+Hi,
 
-Signed-off-by: Ed L. Cashin <ecashin@coraid.com>
----
- Documentation/spinlocks.txt |   20 +++++++++++---------
- 1 files changed, 11 insertions(+), 9 deletions(-)
+This is the updated text edit lock, which protects the text segment
+modifications (paravirt, kprobes, immediate values).
 
-diff --git a/Documentation/spinlocks.txt b/Documentation/spinlocks.txt
-index a661d68..471e753 100644
---- a/Documentation/spinlocks.txt
-+++ b/Documentation/spinlocks.txt
-@@ -1,7 +1,12 @@
--UPDATE March 21 2005 Amit Gud <gud@eth.net>
-+SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED defeat lockdep state tracking and
-+are hence deprecated.
- 
--Macros SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED are deprecated and will be
--removed soon. So for any new code dynamic initialization should be used:
-+Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
-+__SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
-+initialization.
-+
-+Dynamic initialization, when necessary, may be performed as
-+demonstrated below.
- 
-    spinlock_t xxx_lock;
-    rwlock_t xxx_rw_lock;
-@@ -15,12 +20,9 @@ removed soon. So for any new code dynamic initialization should be used:
- 
-    module_init(xxx_init);
- 
--Reasons for deprecation
--  - it hurts automatic lock validators
--  - it becomes intrusive for the realtime preemption patches
--
--Following discussion is still valid, however, with the dynamic initialization
--of spinlocks instead of static.
-+The following discussion is still valid, however, with the dynamic
-+initialization of spinlocks or with DEFINE_SPINLOCK, etc., used
-+instead of SPIN_LOCK_UNLOCKED.
- 
- -----------------------
- 
+Is applies on 2.6.22-rc6-mm1. It depends on the cpa fixes I sent previously.
+
+Mathieu
+
 -- 
-1.5.2.1
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
