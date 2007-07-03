@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXGCU3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbXGCUhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761469AbXGCU3n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 16:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758059AbXGCU3e
+	id S1758842AbXGCUhy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 16:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbXGCUhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 16:29:34 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:20759 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757891AbXGCU3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 16:29:33 -0400
-Message-ID: <468AB1A7.9010201@msgid.tls.msk.ru>
-Date: Wed, 04 Jul 2007 00:29:27 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Some NCQ numbers...
-References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com>
-In-Reply-To: <468A06A0.1020802@gmail.com>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 3 Jul 2007 16:37:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36852 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756583AbXGCUho (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 16:37:44 -0400
+Date: Tue, 3 Jul 2007 13:36:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Valdis.Kletnieks@vt.edu,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc6-mm1
+Message-Id: <20070703133650.20663702.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707010350220.1818@scrub.home>
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+	<6150.1183128630@turing-police.cc.vt.edu>
+	<20070629140130.59d58c44.akpm@linux-foundation.org>
+	<15437.1183177066@turing-police.cc.vt.edu>
+	<20070629221510.95c4c8e1.akpm@linux-foundation.org>
+	<20070630211017.GA26234@uranus.ravnborg.org>
+	<20070630143914.029ce2a7.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707010350220.1818@scrub.home>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Michael Tokarev wrote:
-[]
->> A test drive is Seagate Barracuda ST3250620AS "desktop" drive,
->> 250Gb, cache size is 16Mb, 7200RPM.
-[test shows that NCQ makes no difference whatsoever]
+On Sun, 1 Jul 2007 03:53:08 +0200 (CEST)
+Roman Zippel <zippel@linux-m68k.org> wrote:
 
-> And which elevator?
+> Hi,
+> 
+> On Sat, 30 Jun 2007, Andrew Morton wrote:
+> 
+> > > > I continue to believe that kbuild's lets-trash-your-symlink behaviour is
+> > > > obnoxious, but I was unable to persuade anyone else of this.
+> > >
+> > > I thought we fixed that long time ago?!?!
+> > 
+> > Nope, a simple `make oldconfig' breaks the symlink.
+> 
+> KCONFIG_OVERWRITECONFIG was added especially for you. :-)
+> 
 
-Well.  It looks like the results does not depend on the
-elevator.  Originally I tried with deadline, and just
-re-ran the test with noop (hence the long delay with
-the answer) - changing linux elevator changes almost
-nothing in the results - modulo some random "fluctuations".
+But nobody told me!
 
-In any case, NCQ - at least in this drive - just does
-not work.  Linux with its I/O elevator may help to
-speed things up a bit, but the disk does nothing in
-this area.  NCQ doesn't slow things down either - it
-just does not work.
-
-The same's for ST3250620NS "enterprise" drives.
-
-By the way, Seagate announced Barracuda ES 2 series
-(in range 500..1200Gb if memory serves) - maybe with
-those, NCQ will work better?
-
-Or maybe it's libata which does not implement NCQ
-"properly"?  (As I shown before, with almost all
-ol'good SCSI drives TCQ helps alot - up to 2x the
-difference and more - with multiple I/O threads)
-
-/mjt
+It works, thanks ;)
