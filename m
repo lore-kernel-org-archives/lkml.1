@@ -1,201 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbXGCV1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbXGCVa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761626AbXGCV1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbXGCV1h
+	id S1761639AbXGCVa2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbXGCVaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:27:37 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:65320 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753759AbXGCV1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:27:35 -0400
-Subject: [PATCH 3/4] scsi: megaraid_sas - add module param max_sectors,
-	cmd_per_lun
-From: bo yang <bo.yang@lsi.com>
-To: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
-       sumant.patro@lsi.com
-Content-Type: text/plain
+	Tue, 3 Jul 2007 17:30:20 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:49116 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754942AbXGCVaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:30:19 -0400
+Message-ID: <468ABFE0.5090902@zytor.com>
+Date: Tue, 03 Jul 2007 14:30:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/10] Immediate Value - i386 Optimization
+References: <20070703164046.645090494@polymtl.ca> <20070703164515.071300768@polymtl.ca> <468A9956.9050903@zytor.com> <20070703191605.GB4047@Krystal> <468AAF1F.6010909@zytor.com> <20070703204347.GA8876@Krystal>
+In-Reply-To: <20070703204347.GA8876@Krystal>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Sun, 01 Jul 2007 12:48:21 -0400
-Message-Id: <1183308501.4723.14.camel@dhcp-75-197.se.lsil.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-X-OriginalArrivalTime: 03 Jul 2007 21:27:18.0334 (UTC) FILETIME=[EEEAB5E0:01C7BDB8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding module parameters to configure max sectors per request & # of cmds for each lun.
+Mathieu Desnoyers wrote:
+> 
+> If we can change the compiler, here is what we could do:
+> 
+> Tell GCC to put NOPs that could be altered by a branch alternative to
+> some specified code. We should be able to get the instruction pointers
+> (think of inlines) to these nop/branch instructions so we can change
+> them dynamically.
+> 
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+Changing the compiler should be perfectly feasible, *BUT* I think we
+need a transitional solution that works on existing compilers.
 
----
+> I suspect this would be inherently tricky. If someone is ready to do
+> this and tells me "yes, it will be there in 1 month", I am more than
+> ready to switch my markers to this and help, but since the core of my
+> work is kernel tracing, I don't have the time nor the ressources to
+> tackle this problem.
+> 
+> In the event that someone answers "we'll do this in the following 3
+> years", I might consider to change the if (immediate(var)) into an
+> immediate_if (var) so we can later proceed to the change with simple
+> ifdefs without rewriting all the kernel code that would use it.
 
-drivers/scsi/megaraid/megaraid_sas.c |   87 ++++++++++++++++++++++++-
-drivers/scsi/megaraid/megaraid_sas.h |    2
- 2 files changed, 88 insertions(+), 1 deletion(-)
+This is much more of "we'll do that in the following 1-2 years", since
+we have to deal with a full gcc development cycle.  However, I really
+want to see this being implemented in a way that would let us DTRT in
+the long run.
 
-diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
-linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c 2007-06-30
-04:02:02.000000000 -0400
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c 2007-06-30
-08:07:16.000000000 -0400
-@@ -61,6 +61,23 @@ MODULE_PARM_DESC(fast_load,
-  "megasas: Faster loading of the driver, skips physical devices! \
-   (default=0)");
- 
-+/*
-+ * Number of sectors per IO command
-+ * Will be set in megasas_init_mfi if user does not provide
-+ */
-+static unsigned int max_sectors = 0;
-+module_param_named(max_sectors, max_sectors, int, 0);
-+MODULE_PARM_DESC(max_sectors,
-+ "Maximum number of sectors per IO command");
-+
-+/*
-+ * Number of cmds per logical unit
-+ */
-+static unsigned int cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
-+module_param_named(cmd_per_lun, cmd_per_lun, int, 0);
-+MODULE_PARM_DESC(cmd_per_lun,
-+ "Maximum number of commands per logical unit (default=128)");
-+
- MODULE_LICENSE("GPL");
- MODULE_VERSION(MEGASAS_VERSION);
- MODULE_AUTHOR("megaraidlinux@lsi.com");
-@@ -2298,6 +2315,30 @@ static int megasas_start_aen(struct mega
- 				    class_locale.word);
- }
- 
-+static ssize_t
-+sysfs_max_sectors_read(struct kobject *kobj, char *buf,
-+			loff_t off, size_t count)
-+{
-+	struct Scsi_Host *host = class_to_shost(container_of(kobj,
-+					struct class_device, kobj));
-+	struct megasas_instance *instance = 
-+				(struct megasas_instance *)host->hostdata;
-+
-+	count = sprintf(buf,"%u\n", instance->max_sectors_per_req);
-+
-+	return count+1;
-+}
-+
-+static struct bin_attribute sysfs_max_sectors_attr = {
-+	.attr = {
-+		.name = "max_sectors",
-+		.mode = S_IRUSR|S_IRGRP|S_IROTH,
-+		.owner = THIS_MODULE,
-+	},
-+	.size = 7,
-+	.read = sysfs_max_sectors_read,
-+};
-+
- /**
-  * megasas_io_attach -	Attaches this driver to SCSI mid-layer
-  * @instance:		Adapter soft state
-@@ -2305,6 +2346,7 @@ static int megasas_start_aen(struct mega
- static int megasas_io_attach(struct megasas_instance *instance)
- {
- 	struct Scsi_Host *host = instance->host;
-+	int error;
- 
- 	/*
- 	 * Export parameters required by SCSI mid-layer
-@@ -2314,8 +2356,35 @@ static int megasas_io_attach(struct mega
- 	host->can_queue = instance->max_fw_cmds - MEGASAS_INT_CMDS;
- 	host->this_id = instance->init_id;
- 	host->sg_tablesize = instance->max_num_sge;
-+
-+	/*
-+	 * Check if the module parameter value for max_sectors can be used
-+	 */
-+	if (max_sectors && max_sectors <= instance->max_sectors_per_req)
-+		instance->max_sectors_per_req = max_sectors;
-+	else {
-+		if(max_sectors)
-+			printk(KERN_INFO "megasas: max_sectors should be > 0 and"
-+			 	"<= %d\n",instance->max_sectors_per_req);
-+	}
-+
- 	host->max_sectors = instance->max_sectors_per_req;
--	host->cmd_per_lun = 128;
-+
-+	/*
-+	 * Check if the module parameter value for cmd_per_lun can be used
-+	 */
-+	instance->cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
-+	if (cmd_per_lun && cmd_per_lun <= MEGASAS_DEFAULT_CMD_PER_LUN)
-+		instance->cmd_per_lun = cmd_per_lun;
-+	else
-+		printk(KERN_INFO "megasas: cmd_per_lun should be > 0 and"
-+			 	"<= %d\n",MEGASAS_DEFAULT_CMD_PER_LUN);
-+
-+	host->cmd_per_lun = instance->cmd_per_lun;
-+
-+	printk(KERN_DEBUG "megasas: max_sectors : 0x%x, cmd_per_lun : 0x%x\n",
-+			instance->max_sectors_per_req, instance->cmd_per_lun);
-+
- 	host->max_channel = MEGASAS_MAX_CHANNELS - 1;
- 	host->max_id = MEGASAS_MAX_DEV_PER_CHANNEL;
- 	host->max_lun = MEGASAS_MAX_LUN;
-@@ -2330,10 +2399,25 @@ static int megasas_io_attach(struct mega
- 	}
- 
- 	/*
-+	 * Create sysfs entries for module paramaters
-+	 */
-+	error = sysfs_create_bin_file(&instance->host->shost_classdev.kobj,
-+			&sysfs_max_sectors_attr);
-+	if (error) {
-+		printk(KERN_INFO "megasas: Error in creating the sysfs entry"
-+				" max_sectors.\n");
-+		goto out_remove_host;
-+	}
-+
-+	/*
- 	 * Trigger SCSI to scan our drives
- 	 */
- 	scsi_scan_host(host);
- 	return 0;
-+
-+out_remove_host:
-+	scsi_remove_host(host);
-+	return error;
- }
- 
- static int
-@@ -2753,6 +2837,7 @@ static void megasas_detach_one(struct pc
- 	instance = pci_get_drvdata(pdev);
- 	host = instance->host;
- 
-+	sysfs_remove_bin_file(&host->shost_classdev.kobj,
-&sysfs_max_sectors_attr);
- 	scsi_remove_host(instance->host);
- 	megasas_flush_cache(instance);
- 	megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
-diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
-linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-06-30
-04:02:03.000000000 -0400
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-06-18
-05:30:11.000000000 -0400
-@@ -537,6 +537,7 @@ struct megasas_ctrl_info {
- #define MEGASAS_DEFAULT_INIT_ID			-1
- #define MEGASAS_MAX_LUN				8
- #define MEGASAS_MAX_LD				64
-+#define MEGASAS_DEFAULT_CMD_PER_LUN		128
- 
- #define MEGASAS_DBG_LVL    1
- 
-@@ -1080,6 +1081,7 @@ struct megasas_instance {
-  u16 max_num_sge;
-  u16 max_fw_cmds;
- 	u32 max_sectors_per_req;
-+	u32 cmd_per_lun;
- 
- 	struct megasas_cmd **cmd_list;
- 	struct list_head cmd_pool;
-
+	-hpa
