@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbXGCUPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbXGCUS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbXGCUPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 16:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbXGCUPn
+	id S1759815AbXGCUS5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 16:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbXGCUSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 16:15:43 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:27884 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753331AbXGCUPn (ORCPT
+	Tue, 3 Jul 2007 16:18:50 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:55319 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756645AbXGCUSt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 16:15:43 -0400
-Date: Tue, 3 Jul 2007 13:16:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: caglar@pardus.org.tr
-Cc: "Ni@m" <niam.niam@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] for NIKON D50 as UMS
-Message-Id: <20070703131635.baf20b19.randy.dunlap@oracle.com>
-In-Reply-To: <200707032310.33106.caglar@pardus.org.tr>
-References: <a9e22dff0707031303i30c08439t3cc48fb1b95f29b8@mail.gmail.com>
-	<200707032310.33106.caglar@pardus.org.tr>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 3 Jul 2007 16:18:49 -0400
+Message-ID: <468AAF1F.6010909@zytor.com>
+Date: Tue, 03 Jul 2007 13:18:39 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/10] Immediate Value - i386 Optimization
+References: <20070703164046.645090494@polymtl.ca> <20070703164515.071300768@polymtl.ca> <468A9956.9050903@zytor.com> <20070703191605.GB4047@Krystal>
+In-Reply-To: <20070703191605.GB4047@Krystal>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007 23:10:32 +0300 S.Çağlar Onur wrote:
-
-> Hi;
+Mathieu Desnoyers wrote:
 > 
-> 03 Tem 2007 Sal tarihinde, Ni@m şunları yazmıştı: 
-> > This short patch allows NIKON D50 to be mounted as UMS on 2.6.22-rc7,
-> > some previous kernels...
-
-Patch needs a Signed-off-by: line (see Documentation/SubmittingPatches)
-and needs to be sent to linux-usb-devel@lists.sf.net and/or
-usb-storage@lists.one-eyed-alien.net .
-
-
-> > --- linux-2.6.22-rc7/drivers/usb/storage/unusual_devs.h 2007-07-03
-> > 22:54:23.000000000 +0300
-> > +++ linux-2.6.22-rc7-niam/drivers/usb/storage/unusual_devs.h
-> > 2007-07-03 22:35:39.000000000 +0300
-> > @@ -313,6 +313,13 @@
-> >                 US_SC_DEVICE, US_PR_DEVICE,NULL,
-> >                 US_FL_NOT_LOCKABLE ),
-> >
-> > +/* Reported by Niam <niam.niam@gmail.com> */
-> > +UNUSUAL_DEV(  0x04b0, 0x0409, 0x0100, 0x0100,
-> > +               "NIKON",
-> > +               "NIKON DSC D50",
-> > +               US_SC_DEVICE, US_PR_DEVICE, NULL,
-> > +               US_FL_FIX_CAPACITY),
-> > +
-> >  /* Reported by Andreas Bockhold <andreas@bockionline.de> */
-> >  UNUSUAL_DEV(  0x04b0, 0x0405, 0x0100, 0x0100,
-> >                 "NIKON",
+> Hi Peter,
 > 
-> Hmm i have NIKON D50 also and it works here without a problem with Linus's 
-> current git. 
+> I understand your concern. If you find a way to let the code be compiled
+> by gcc, put at the end of the functions (never being a branch target)
+> and then, dynamically, get the address of the branch instruction and
+> patch it, all that in cooperation with gcc, I would be glad to hear from
+> it. What I found is that gcc lets us do anything that touches
+> variables/registers in an inline assembly, but does not permit to place
+> branch instructions ourselves; it does not expect the execution flow to
+> be changed in inline asms.
+> 
 
+I believe this is correct.  It probably would require requesting a gcc
+builtin, which might be worthwhile to do if we
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+> <branch site>
+>   77:   b8 00 00 00 00          mov    $0x0,%eax
+>   7c:   85 c0                   test   %eax,%eax
+>   7e:   0f 85 16 03 00 00       jne    39a <schedule+0x39a>
+>     here, we just loaded 0 in eax (movl used to make sure we populate the
+>     whole register so we do not stall the pipeline)a
+>     When we activate the site,
+>     line 77 becomes: b8 01 00 00 00    mov    $0x1,%eax
+> </branch site>
+
+One could, though, use an indirect jump to achieve, if not as good, at
+least most of the effect:
+
+	movl	$<patchable>,<reg>
+	jmp	*<reg>
+
+Some x86 cores will be able to detect the movl...jmp forwarding, and
+collapse it into a known branch target; however, on the ones that can't,
+it might be worse, since one would have to rely on the indirect branch
+predictor.
+
+This would, however, provide infrastructure that could be combined with
+a future gcc builtin.
+
+	-hpa
+
