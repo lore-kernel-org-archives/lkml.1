@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760375AbXGCSFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbXGCSJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760375AbXGCSFb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 14:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbXGCSFY
+	id S1758201AbXGCSJh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 14:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXGCSJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 14:05:24 -0400
-Received: from www.osadl.org ([213.239.205.134]:54289 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754659AbXGCSFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 14:05:23 -0400
-Subject: [PATCH] NTP: remove clock_was_set() call to prevent deadlock
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@osdl.org>, john stultz <johnstul@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Stable Team <stable@kernel.org>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-Content-Type: text/plain
-Date: Tue, 03 Jul 2007 20:05:20 +0200
-Message-Id: <1183485920.3291.28.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jul 2007 14:09:30 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58409 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754457AbXGCSJ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 14:09:29 -0400
+Date: Tue, 3 Jul 2007 11:09:28 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ethan Solomita <solo@google.com>
+cc: Andrew Morton <akpm@google.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
+Subject: Re: [RFC 1/7] cpuset write dirty map
+In-Reply-To: <468717FF.3090401@google.com>
+Message-ID: <Pine.LNX.4.64.0707031109100.6404@schroedinger.engr.sgi.com>
+References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>
+ <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>
+ <468023CA.2090401@google.com> <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
+ <20070626152204.b6b4bc3f.akpm@google.com> <4682A9B6.8070003@google.com>
+ <Pine.LNX.4.64.0706271437410.31227@schroedinger.engr.sgi.com>
+ <468717FF.3090401@google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The clock_was_set() call in seconds_overflow() which happens only when
-leap seconds are inserted / deleted is wrong in two aspects:
+On Sat, 30 Jun 2007, Ethan Solomita wrote:
 
-1. it results in a call to on_each_cpu() with interrupts disabled
-2. it is potential deadlock source vs. call_lock in smp_call_function()
+> > I hope you will keep on updating the patchset and posting it against 
+> > current mm?
+> > 
+> 
+> 	I have no new changes, but I can update it against the current mm. Or
+> did the per-bdi throttling change get taken by Andrew?
 
-The only possible side effect of the removal might be, that an absolute
-CLOCK_REALTIME timer fires 1 second too late, in the rare case of leap
-second deletion and an absolute CLOCK_REALTIME timer which expires in
-the affected time frame. It will never fire too early.
-
-This was probably observed by the reporter of a June 30th -> July 1st
-hang: http://lkml.org/lkml/2007/7/3/
-
-A similar problem was observed by Dave Jones, who provided a screen shot
-with a lockdep back trace, which allowed to analyse the problem.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -122,7 +122,6 @@ void second_overflow(void)
- 			 */
- 			time_interpolator_update(-NSEC_PER_SEC);
- 			time_state = TIME_OOP;
--			clock_was_set();
- 			printk(KERN_NOTICE "Clock: inserting leap second "
- 					"23:59:60 UTC\n");
- 		}
-@@ -137,7 +136,6 @@ void second_overflow(void)
- 			 */
- 			time_interpolator_update(NSEC_PER_SEC);
- 			time_state = TIME_WAIT;
--			clock_was_set();
- 			printk(KERN_NOTICE "Clock: deleting leap second "
- 					"23:59:59 UTC\n");
- 		}
-
-
+Not that I am aware of. So please repost against current mm.
+ 
