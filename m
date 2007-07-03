@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbXGCSCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760375AbXGCSFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbXGCSCM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 14:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbXGCSB6
+	id S1760375AbXGCSFb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 14:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbXGCSFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 14:01:58 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:61835 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755665AbXGCSB5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 14:01:57 -0400
-Date: Tue, 3 Jul 2007 14:01:55 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/4] Linux Kernel Markers
-Message-ID: <20070703180155.GA3057@Krystal>
-References: <20070703170843.204442953@polymtl.ca>
+	Tue, 3 Jul 2007 14:05:24 -0400
+Received: from www.osadl.org ([213.239.205.134]:54289 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754659AbXGCSFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 14:05:23 -0400
+Subject: [PATCH] NTP: remove clock_was_set() call to prevent deadlock
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@osdl.org>, john stultz <johnstul@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Stable Team <stable@kernel.org>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+Content-Type: text/plain
+Date: Tue, 03 Jul 2007 20:05:20 +0200
+Message-Id: <1183485920.3291.28.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070703170843.204442953@polymtl.ca>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:01:10 up 2 days, 12:44,  3 users,  load average: 0.70, 0.31, 0.27
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please note that this release will apply on 2.6.22-rc6-mm1 and depends
-on the immediate values patch.
+The clock_was_set() call in seconds_overflow() which happens only when
+leap seconds are inserted / deleted is wrong in two aspects:
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> Hi,
-> 
-> This updated version of the Linux Kernel Markers mostly adds a unique 16 bits
-> per marker ID and a per-probe marker group.
-> 
-> Christoph, I think the only concern that I do not plan to address immediately is
-> to provide a complet in-kernel user of the markers (blktrace patch does not
-> actually use the markers full potential). I have external patches that provides
-> that, but I don't want to send too much patches at once. Between providing a
-> complete marker/tracer stack and sending small incremental patches, I think the
-> latter is the choice the better suited. This is however an uneasy problem, which
-> looks very much like the chicken and egg problem. :)
-> 
-> If you have concerns with what I recently added to the markers, or if you still
-> strongly feel that I must also send the following patches right away, please let
-> me know.
-> 
-> Mathieu
-> 
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+1. it results in a call to on_each_cpu() with interrupts disabled
+2. it is potential deadlock source vs. call_lock in smp_call_function()
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The only possible side effect of the removal might be, that an absolute
+CLOCK_REALTIME timer fires 1 second too late, in the rare case of leap
+second deletion and an absolute CLOCK_REALTIME timer which expires in
+the affected time frame. It will never fire too early.
+
+This was probably observed by the reporter of a June 30th -> July 1st
+hang: http://lkml.org/lkml/2007/7/3/
+
+A similar problem was observed by Dave Jones, who provided a screen shot
+with a lockdep back trace, which allowed to analyse the problem.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -122,7 +122,6 @@ void second_overflow(void)
+ 			 */
+ 			time_interpolator_update(-NSEC_PER_SEC);
+ 			time_state = TIME_OOP;
+-			clock_was_set();
+ 			printk(KERN_NOTICE "Clock: inserting leap second "
+ 					"23:59:60 UTC\n");
+ 		}
+@@ -137,7 +136,6 @@ void second_overflow(void)
+ 			 */
+ 			time_interpolator_update(NSEC_PER_SEC);
+ 			time_state = TIME_WAIT;
+-			clock_was_set();
+ 			printk(KERN_NOTICE "Clock: deleting leap second "
+ 					"23:59:59 UTC\n");
+ 		}
+
+
