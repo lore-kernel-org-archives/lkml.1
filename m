@@ -1,37 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760860AbXGCSMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbXGCS0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760860AbXGCSMN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 14:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbXGCSMA
+	id S1757647AbXGCS0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 14:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbXGCS0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 14:12:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:28161 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754683AbXGCSMA (ORCPT
+	Tue, 3 Jul 2007 14:26:38 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:47780 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755802AbXGCS0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 14:12:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=A/Bv9eY9C66aImaRtvlJjx/GbgqR+Bc5Ma0O5nj/ZTasLbjlgJMy9d8I8eq6p4q74hoPR3kMjE4ZgStEXBb1By2Sbw4AkWR19EWqPTD9+8hZeoIGRwHE1XJbE7cE6Iu+nwRwnLvHuVji0Kss4FU62Wc7WpRHwj79F5pC/IVaogg=
-Date: Tue, 3 Jul 2007 22:11:51 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-Message-ID: <20070703181151.GB5800@martell.zuzino.mipt.ru>
-References: <20070703164046.645090494@polymtl.ca> <20070703164516.377240547@polymtl.ca>
+	Tue, 3 Jul 2007 14:26:38 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 20:26:34 +0200
+User-Agent: KMail/1.9.7
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031508.45595.rjw@sisk.pl> <200707031709.29968.rjw@sisk.pl>
+In-Reply-To: <200707031709.29968.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070703164516.377240547@polymtl.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707032026.34649.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 12:40:56PM -0400, Mathieu Desnoyers wrote:
-> Use immediate values with lower d-cache hit in optimized version as a
-> condition for scheduler profiling call.
+Am Dienstag, 3. Juli 2007 schrieb Rafael J. Wysocki:
+> > > The main reason for deadlocks is because we do a sys_sync() after the
+> > > freeze, which we shouldn't do.
+> > 
+> > So why don't we remove the sys_sync() from freeze_processes() instead?
+> 
+> The patch follows (untested).
 
-How much difference in performance do you see?
+And a further question. The freezer is not atomic. What do you do
+if a task not yet frozen calls sys_sync(), but fuse is already frozen?
 
+	Regards
+		Oliver
