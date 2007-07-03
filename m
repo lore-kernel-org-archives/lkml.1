@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbXGCHBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbXGCHDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758665AbXGCHBy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 03:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXGCHBq
+	id S1758845AbXGCHDX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 03:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbXGCHDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 03:01:46 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:26152 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754658AbXGCHBp (ORCPT
+	Tue, 3 Jul 2007 03:03:16 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:60451 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754658AbXGCHDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 03:01:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=P5cfVW7hwNbkYTktGOdu1Zx/N41QR+28vh1Oo+yUf3KroXi9n8ZGZlAtI6h73/zpV0azYGGbu2c6VJNdwf9bE2LG61Zz6PBNR7MEGTYMhtMRZ+jTIa2VbJcL5GYrOsAhUeunx2EkblewepemF5UNkqEEmlSJXQ5rff8k8rLXZJU=
-Message-ID: <19f34abd0707030001v69b23c1eh871c19e41841290@mail.gmail.com>
-Date: Tue, 3 Jul 2007 09:01:44 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v18
-Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070702181329.GA13064@elte.hu>
+	Tue, 3 Jul 2007 03:03:16 -0400
+Date: Tue, 3 Jul 2007 00:03:12 -0700
+From: Greg KH <greg@kroah.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb-devel@lists.sourceforge.net, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [linux-usb-devel] [PATCH 3/4] usb: allocated usb releated dma
+	buffer with?kmalloc_node
+Message-ID: <20070703070312.GA19924@kroah.com>
+References: <200706291326.43563.yinghai.lu@sun.com> <86802c440707022233g2021b49dg48534f813f628585@mail.gmail.com> <20070703060155.GB19086@kroah.com> <200707030823.07815.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070622220202.GA16872@elte.hu>
-	 <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com>
-	 <b647ffbd0707020601r774a38d4gb62b6c07f1b5db32@mail.gmail.com>
-	 <19f34abd0707020643g6a274db5q1d25cabd85b9a25f@mail.gmail.com>
-	 <20070702155029.GA13241@elte.hu>
-	 <19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com>
-	 <20070702181329.GA13064@elte.hu>
+In-Reply-To: <200707030823.07815.oliver@neukum.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/2/07, Ingo Molnar <mingo@elte.hu> wrote:
-> ok. Does the xterm slowdown get any better if you do:
->
->   echo 46 > /proc/sys/kernel/sched_features
->
-> ? The default on v18 is:
->
->   echo 14 > /proc/sys/kernel/sched_features
+On Tue, Jul 03, 2007 at 08:23:07AM +0200, Oliver Neukum wrote:
+> Am Dienstag, 3. Juli 2007 schrieb Greg KH:
+> > On Mon, Jul 02, 2007 at 10:33:12PM -0700, Yinghai Lu wrote:
+> > >  On 7/2/07, Greg KH <greg@kroah.com> wrote:
+> > > > On Mon, Jul 02, 2007 at 03:36:37PM -0700, Yinghai Lu wrote:
+> > > > > [PATCH 3/4] usb: allocated usb releated dma buffer with kmalloc_node
+> > > > >
+> > > > > For amd64 based two way system. USB always on node0. but dma buffer for 
+> > > > urb
+> > > > > allocated via kmalloc always get ram on node1. So change to kmalloc_node 
+> > > > to
+> > > > > get dma_buffer on corresponding node
+> > > >
+> > > > Are all of these changes really necessary?  You are doing this for some
+> > > > allocations that take a _long_ time when sending to the device due to
+> > > > the speed of the device.
+> > > >
+> > > > I could possibly see this making a difference on some drivers, but for
+> > > > the core, and for the basic USB structures, I can't imagine it is really
+> > > > worth it.
+> > > >
+> > > > Or do you have numbers showing the differences here?
+> > > >
+> > > > Patch included fully below for the benifit of the usb list, which you
+> > > > should have cc:ed...
+> > > 
+> > >  dma buffer could be allocated via alloc_pages_coherent. or
+> > >  kmalloc/dma_map_single.
+> > >  alloc_pages_coherent get the dma_buffer on corresponding node.
+> > >  but kmalloc/dma_map_single always get dma_buffer on last node. or say
+> > >  device is on HT chain node0,  it will get dma buffer on node 7 of 8
+> > >  socket system.
+> > >  also on two way system with 4G+4G RAM conf. device on node 0 will get
+> > >  dma_buffer above 4G, and if the dma_mask is less 32bit, will need
+> > >  extra iommu mapping.
+> > >  In my mcp55+io55 system, it show dma_map_single is keepping called by
+> > >  usb input: keyboard/mouse (8/0x40 bytes), and forcedeth. (0x670bytes)
+> > 
+> > Ok, so two drivers might need this, but not the whole usb core, right?
+> 
+> If those two drivers need the extended allocator, why not use it where
+> it is beneficial, even if the benefit is small?
 
-No. The Ctrl-C still hangs between 1 and 3 seconds, again seemingly
-depending on how long the program runs before I terminate it.
+What is the benefit?  Speed isn't an issue here, so what is?
 
-Vegard
+thanks,
+
+greg k-h
