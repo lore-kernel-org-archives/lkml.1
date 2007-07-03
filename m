@@ -1,128 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760970AbXGCXgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761023AbXGCXi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760970AbXGCXgB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 19:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbXGCXfx
+	id S1761023AbXGCXi1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 19:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXGCXiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 19:35:53 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:51168 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753678AbXGCXfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 19:35:52 -0400
-Subject: Re: [PATCH] Re: Sparc32: random invalid instruction occourances on
-	sparc32 (sun4c)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Christoph Lameter <clameter@engr.sgi.com>,
-       William Lee Irwin III <wli@holomorphy.com>
-In-Reply-To: <Pine.LNX.4.61.0707032317590.30376@mtfhpc.demon.co.uk>
-References: <468A7D14.1050505@googlemail.com>
-	 <Pine.LNX.4.61.0707031817050.29930@mtfhpc.demon.co.uk>
-	 <Pine.LNX.4.61.0707031910280.29930@mtfhpc.demon.co.uk>
-	 <1183490778.29081.35.camel@shinybook.infradead.org>
-	 <Pine.LNX.4.61.0707032209230.30376@mtfhpc.demon.co.uk>
-	 <1183499781.29081.46.camel@shinybook.infradead.org>
-	 <Pine.LNX.4.61.0707032317590.30376@mtfhpc.demon.co.uk>
-Content-Type: text/plain
-Date: Tue, 03 Jul 2007 19:36:27 -0400
-Message-Id: <1183505787.29081.62.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 3 Jul 2007 19:38:20 -0400
+Received: from ns2.suse.de ([195.135.220.15]:34952 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750706AbXGCXiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 19:38:19 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: =?iso-8859-1?q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>
+Subject: Re: 2.6.22-rc7: known regressions with patches
+Date: Wed, 4 Jul 2007 01:38:13 +0200
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephane Eranian <eranian@hpl.hp.com>
+References: <468A7D24.3040004@googlemail.com> <alpine.LFD.0.98.0707031441480.9434@woody.linux-foundation.org> <20070703221210.GA29959@atjola.homenet>
+In-Reply-To: <20070703221210.GA29959@atjola.homenet>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200707040138.13538.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-03 at 23:47 +0100, Mark Fortescue wrote:
-> Hi David,
+On Wednesday 04 July 2007 00:12:10 Björn Steinbrink wrote:
+> On 2007.07.03 14:42:25 -0700, Linus Torvalds wrote:
+> > 
+> > 
+> > On Tue, 3 Jul 2007, Bj?rn Steinbrink wrote:
+> > > Andi said that one of the regression fixes wasn't critical for .22 and
+> > > that he wants to do a stopgap for the other regression (my patch
+> > > sucked), reverting the code to the .21 version. So you can drop the
+> > > patches and/or me here.
+> > 
+> > Can you say which patch should be reverted. This thing really shouldn't 
+> > have gone on this long, I would have hopef we had the oprofile thing 
+> > sorted out already..
 > 
-> I will try out your patch shortly.
+> That would be commit 09198e68501a7e34737cd9264d266f42429abcdc, for which
+> there are already a few fixes in your tree. Andi, did you intent to
+> fully revert that, or just certain parts of it?
 
-Thanks.
+Just two functions, but in a different file. Here's the patch.
 
-> I may be wrong about the size calculations but if you take a look at lines 
-> 2174 to 2188 and 2207 to 2203, reading the comments suggest to me that 
-> these need to be changed to match the changes to the RedZone words. 
-> Failing to change these means that 32bit aligned access of the 64bit 
-> RedZone words is still posible and this will kill sun4c.
+Linus, also what about the revert of the HPET reservation? That would
+fix a clear regression too.
 
-Why do we need more than the existing:
+-Andi
 
-	if (flags & SLAB_RED_ZONE || flags & SLAB_STORE_USER)
-		ralign = __alignof__(unsigned long long);
+Revert perfctr reservation to 2.6.21 state
 
-> For the 64bit RedZone word to be 64bit aligned (required by sun4c), the 
-> User word must be 64bit aligned. I don't see where in your patch, this is 
-> enforced.
+With this change it works again when the nmi watchdog is disabled.
 
-Where __alignof__(long long) > BYTES_PER_WORD my patch should lead to
-this layout (32-bit words):
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-    [ redzone1 bits 63-32 ]
-    [ redzone1 bits 31-0  ]
-    [    ... object ...   ]
-    [    ... object ...   ]
-    [ redzone2 bits 63-32 ]
-    [ redzone2 bits 31-0  ]
-    [        unused       ]
-    [      user word      ]
-
-The user word is a 32-bit value; there's no requirement for _it_ to be
-aligned.
-
-Hm, actually I think my patch may be incomplete -- I need to adjust the
-size of the actual object too. This patch should be better...
-
-diff --git a/mm/slab.c b/mm/slab.c
-index a9c4472..8081c07 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -547,7 +547,7 @@ static unsigned long long *dbg_redzone2(struct kmem_cache *cachep, void *objp)
- 	if (cachep->flags & SLAB_STORE_USER)
- 		return (unsigned long long *)(objp + cachep->buffer_size -
- 					      sizeof(unsigned long long) -
--					      BYTES_PER_WORD);
-+					      max(BYTES_PER_WORD, __alignof__(unsigned long long)));
- 	return (unsigned long long *) (objp + cachep->buffer_size -
- 				       sizeof(unsigned long long));
- }
-@@ -2223,8 +2223,11 @@ kmem_cache_create (const char *name, size_t size, size_t align,
- 	 * overridden by architecture or caller mandated alignment if either
- 	 * is greater than BYTES_PER_WORD.
- 	 */
--	if (flags & SLAB_RED_ZONE || flags & SLAB_STORE_USER)
-+	if (flags & SLAB_RED_ZONE || flags & SLAB_STORE_USER) {
- 		ralign = __alignof__(unsigned long long);
-+		size += (__alignof__(unsigned long long) - 1);
-+		size &= ~(__alignof__(unsigned long long) - 1);
+Index: linux/arch/i386/kernel/cpu/perfctr-watchdog.c
+===================================================================
+--- linux.orig/arch/i386/kernel/cpu/perfctr-watchdog.c
++++ linux/arch/i386/kernel/cpu/perfctr-watchdog.c
+@@ -55,14 +55,45 @@ static DEFINE_PER_CPU(struct nmi_watchdo
+ /* converts an msr to an appropriate reservation bit */
+ static inline unsigned int nmi_perfctr_msr_to_bit(unsigned int msr)
+ {
+-	return wd_ops ? msr - wd_ops->perfctr : 0;
++	/* returns the bit offset of the performance counter register */
++	switch (boot_cpu_data.x86_vendor) {
++	case X86_VENDOR_AMD:
++		return (msr - MSR_K7_PERFCTR0);
++	case X86_VENDOR_INTEL:
++		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
++			return (msr - MSR_ARCH_PERFMON_PERFCTR0);
++
++		switch (boot_cpu_data.x86) {
++		case 6:
++			return (msr - MSR_P6_PERFCTR0);
++		case 15:
++			return (msr - MSR_P4_BPU_PERFCTR0);
++		}
 +	}
++	return 0;
+ }
  
- 	/* 2) arch mandated alignment */
- 	if (ralign < ARCH_SLAB_MINALIGN) {
-@@ -2261,9 +2264,14 @@ kmem_cache_create (const char *name, size_t size, size_t align,
- 	}
- 	if (flags & SLAB_STORE_USER) {
- 		/* user store requires one word storage behind the end of
--		 * the real object.
-+		 * the real object. But if the second red zone must be
-+		 * aligned 'better' than that, allow for it.
- 		 */
--		size += BYTES_PER_WORD;
-+		if (flags & SLAB_RED_ZONE
-+		    && BYTES_PER_WORD < __alignof__(unsigned long long))
-+			size += __alignof__(unsigned long long);
-+		else
-+			size += BYTES_PER_WORD;
- 	}
- #if FORCED_DEBUG && defined(CONFIG_DEBUG_PAGEALLOC)
- 	if (size >= malloc_sizes[INDEX_L3 + 1].cs_size
-
-
--- 
-dwmw2
-
+ /* converts an msr to an appropriate reservation bit */
+ /* returns the bit offset of the event selection register */
+ static inline unsigned int nmi_evntsel_msr_to_bit(unsigned int msr)
+ {
+-	return wd_ops ? msr - wd_ops->evntsel : 0;
++	/* returns the bit offset of the event selection register */
++	switch (boot_cpu_data.x86_vendor) {
++	case X86_VENDOR_AMD:
++		return (msr - MSR_K7_EVNTSEL0);
++	case X86_VENDOR_INTEL:
++		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
++			return (msr - MSR_ARCH_PERFMON_EVENTSEL0);
++
++		switch (boot_cpu_data.x86) {
++		case 6:
++			return (msr - MSR_P6_EVNTSEL0);
++		case 15:
++			return (msr - MSR_P4_BSU_ESCR0);
++		}
++	}
++	return 0;
++
+ }
+ 
+ /* checks for a bit availability (hack for oprofile) */
