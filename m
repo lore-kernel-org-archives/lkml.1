@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761279AbXGCT4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbXGCT7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761279AbXGCT4k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 15:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbXGCT4d
+	id S1760473AbXGCT7a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757002AbXGCT7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 15:56:33 -0400
-Received: from www.osadl.org ([213.239.205.134]:52505 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757663AbXGCT4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 15:56:33 -0400
-Subject: Re: [PATCH] NTP: remove clock_was_set() call to prevent deadlock
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@osdl.org>, john stultz <johnstul@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Stable Team <stable@kernel.org>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-In-Reply-To: <1183485920.3291.28.camel@chaos>
-References: <1183485920.3291.28.camel@chaos>
-Content-Type: text/plain
-Date: Tue, 03 Jul 2007 21:56:30 +0200
-Message-Id: <1183492590.3291.39.camel@chaos>
+	Tue, 3 Jul 2007 15:59:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53093 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756889AbXGCT7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 15:59:20 -0400
+Date: Tue, 3 Jul 2007 12:58:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, trivial@kernel.org,
+       Rob Landley <rob@landley.net>
+Subject: Re: [PATCH][Documentation][resend] Add missing files and dirs to
+ 00-INDEX in Documentation/
+Message-Id: <20070703125852.0172a588.akpm@linux-foundation.org>
+In-Reply-To: <200707010106.00181.jesper.juhl@gmail.com>
+References: <200707010106.00181.jesper.juhl@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-03 at 20:05 +0200, Thomas Gleixner wrote:
-> The clock_was_set() call in seconds_overflow() which happens only when
-> leap seconds are inserted / deleted is wrong in two aspects:
-> 
-> 1. it results in a call to on_each_cpu() with interrupts disabled
-> 2. it is potential deadlock source vs. call_lock in smp_call_function()
-> 
-> The only possible side effect of the removal might be, that an absolute
-> CLOCK_REALTIME timer fires 1 second too late, in the rare case of leap
-> second deletion and an absolute CLOCK_REALTIME timer which expires in
-> the affected time frame. It will never fire too early.
-> 
-> This was probably observed by the reporter of a June 30th -> July 1st
-> hang: http://lkml.org/lkml/2007/7/3/
+On Sun, 1 Jul 2007 01:05:59 +0200
+Jesper Juhl <jesper.juhl@gmail.com> wrote:
 
-Ooops, missed the full reference:
+> This patch adds descriptions for a number of missing files and directories 
+> to the Documentation/00-INDEX file.
+> People really should learn to keep this file up-to-date when adding or 
+> moving documentation...
 
-http://lkml.org/lkml/2007/7/3/103
+Or just delete it.  Does anyone use it?
 
-	tglx
-
-
+That's Rob's problem, I guess.
