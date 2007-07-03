@@ -1,211 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbXGCO7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbXGCO73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758309AbXGCO7O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 10:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbXGCO67
+	id S1760087AbXGCO73 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 10:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758607AbXGCO7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 10:58:59 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36369 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754922AbXGCO67 (ORCPT
+	Tue, 3 Jul 2007 10:59:18 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:40663 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758290AbXGCO7O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 10:58:59 -0400
-Date: Tue, 3 Jul 2007 16:05:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, jeff@garzik.org
-Subject: [PATCH] libata: Support chips with 64K PRD quirk
-Message-ID: <20070703160502.685fede6@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 3 Jul 2007 10:59:14 -0400
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
+	RAM pathway
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707031026260.3720-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0707031026260.3720-100000@iolanthe.rowland.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Chr4USvrqKg1IE/8MaUU"
+Date: Tue, 03 Jul 2007 16:59:08 +0200
+Message-Id: <1183474748.3722.33.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add ata_dumb_qc_prep and supporting logic so that a driver can just
-specify it needs to be helped in this area. 64K entries are split
-as with drivers/ide.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+--=-Chr4USvrqKg1IE/8MaUU
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/libata-core.c linux-2.6.22-rc6-mm1/drivers/ata/libata-core.c
---- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/libata-core.c	2007-07-02 20:50:11.000000000 +0100
-+++ linux-2.6.22-rc6-mm1/drivers/ata/libata-core.c	2007-07-02 21:36:20.000000000 +0100
-@@ -4111,6 +4165,68 @@
- 	if (idx)
- 		ap->prd[idx - 1].flags_len |= cpu_to_le32(ATA_PRD_EOT);
- }
-+ 
-+/**
-+ *	ata_fill_sg_dumb - Fill PCI IDE PRD table
-+ *	@qc: Metadata associated with taskfile to be transferred
-+ *
-+ *	Fill PCI IDE PRD (scatter-gather) table with segments
-+ *	associated with the current disk command. Perform the fill
-+ *	so that we avoid writing any length 64K records for 
-+ *	controllers that don't follow the spec.
-+ *
-+ *	LOCKING:
-+ *	spin_lock_irqsave(host lock)
-+ *
-+ */
-+static void ata_fill_sg_dumb(struct ata_queued_cmd *qc)
-+{
-+	struct ata_port *ap = qc->ap;
-+	struct scatterlist *sg;
-+	unsigned int idx;
-+
-+	WARN_ON(qc->__sg == NULL);
-+	WARN_ON(qc->n_elem == 0 && qc->pad_len == 0);
-+
-+	idx = 0;
-+	ata_for_each_sg(sg, qc) {
-+		u32 addr, offset;
-+		u32 sg_len, len, blen;
-+
-+ 		/* determine if physical DMA addr spans 64K boundary.
-+		 * Note h/w doesn't support 64-bit, so we unconditionally
-+		 * truncate dma_addr_t to u32.
-+		 */
-+		addr = (u32) sg_dma_address(sg);
-+		sg_len = sg_dma_len(sg);
-+
-+		while (sg_len) {
-+			offset = addr & 0xffff;
-+			len = sg_len;
-+			if ((offset + sg_len) > 0x10000)
-+				len = 0x10000 - offset;
-+			
-+			blen = len & 0xffff;
-+			ap->prd[idx].addr = cpu_to_le32(addr);
-+			if (blen == 0) {
-+				/* Some PATA chipsets like the CS5530 can't
-+				   cope with 0x0000 meaning 64K as the spec says */
-+				ap->prd[idx].flags_len = cpu_to_le32(0x8000);
-+				blen = 0x8000;
-+				ap->prd[++idx].addr = cpu_to_le32(addr + 0x8000);
-+			}
-+			ap->prd[idx].flags_len = cpu_to_le32(blen);
-+			VPRINTK("PRD[%u] = (0x%X, 0x%X)\n", idx, addr, len);
-+
-+			idx++;
-+			sg_len -= len;
-+			addr += len;
-+		}
-+	}
-+
-+	if (idx)
-+		ap->prd[idx - 1].flags_len |= cpu_to_le32(ATA_PRD_EOT);
-+}
- 
- /**
-  *	ata_check_atapi_dma - Check whether ATAPI DMA can be supported
-@@ -4159,6 +4275,23 @@
- 	ata_fill_sg(qc);
- }
- 
-+/**
-+ *	ata_dumb_qc_prep - Prepare taskfile for submission
-+ *	@qc: Metadata associated with taskfile to be prepared
-+ *
-+ *	Prepare ATA taskfile for submission.
-+ *
-+ *	LOCKING:
-+ *	spin_lock_irqsave(host lock)
-+ */
-+void ata_dumb_qc_prep(struct ata_queued_cmd *qc)
-+{
-+	if (!(qc->flags & ATA_QCFLAG_DMAMAP))
-+		return;
-+
-+	ata_fill_sg_dumb(qc);
-+}
-+
- void ata_noop_qc_prep(struct ata_queued_cmd *qc) { }
- 
- /**
-diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/include/linux/libata.h linux-2.6.22-rc6-mm1/include/linux/libata.h
---- linux.vanilla-2.6.22-rc6-mm1/include/linux/libata.h	2007-07-02 20:50:14.000000000 +0100
-+++ linux-2.6.22-rc6-mm1/include/linux/libata.h	2007-07-02 21:29:18.000000000 +0100
-@@ -116,6 +116,7 @@
- enum {
- 	/* various global constants */
- 	LIBATA_MAX_PRD		= ATA_MAX_PRD / 2,
-+	LIBATA_DUMB_MAX_PRD	= ATA_MAX_PRD / 4,	/* Worst case */
- 	ATA_MAX_PORTS		= 8,
- 	ATA_DEF_QUEUE		= 1,
- 	/* tag ATA_MAX_QUEUE - 1 is reserved for internal commands */
-@@ -785,6 +789,7 @@
- 			  unsigned int buflen, int write_data);
- extern void ata_data_xfer_noirq(struct ata_device *adev, unsigned char *buf,
- 				unsigned int buflen, int write_data);
-+extern void ata_dumb_qc_prep(struct ata_queued_cmd *qc);
- extern void ata_qc_prep(struct ata_queued_cmd *qc);
- extern void ata_noop_qc_prep(struct ata_queued_cmd *qc);
- extern unsigned int ata_qc_issue_prot(struct ata_queued_cmd *qc);
-diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_cs5520.c linux-2.6.22-rc6-mm1/drivers/ata/pata_cs5520.c
---- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_cs5520.c	2007-07-02 20:48:49.000000000 +0100
-+++ linux-2.6.22-rc6-mm1/drivers/ata/pata_cs5520.c	2007-07-02 21:03:00.000000000 +0100
-@@ -146,7 +146,7 @@
- 	.queuecommand		= ata_scsi_queuecmd,
- 	.can_queue		= ATA_DEF_QUEUE,
- 	.this_id		= ATA_SHT_THIS_ID,
--	.sg_tablesize		= LIBATA_MAX_PRD,
-+	.sg_tablesize		= LIBATA_DUMB_MAX_PRD,
- 	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
- 	.emulated		= ATA_SHT_EMULATED,
- 	.use_clustering		= ATA_SHT_USE_CLUSTERING,
-@@ -178,7 +178,7 @@
- 	.bmdma_start		= ata_bmdma_start,
- 	.bmdma_stop		= ata_bmdma_stop,
- 	.bmdma_status		= ata_bmdma_status,
--	.qc_prep		= ata_qc_prep,
-+	.qc_prep		= ata_dumb_qc_prep,
- 	.qc_issue		= ata_qc_issue_prot,
- 	.data_xfer		= ata_data_xfer,
- 
-diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_cs5530.c linux-2.6.22-rc6-mm1/drivers/ata/pata_cs5530.c
---- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_cs5530.c	2007-07-02 20:50:11.000000000 +0100
-+++ linux-2.6.22-rc6-mm1/drivers/ata/pata_cs5530.c	2007-07-02 21:03:00.000000000 +0100
-@@ -167,7 +167,7 @@
- 	.queuecommand		= ata_scsi_queuecmd,
- 	.can_queue		= ATA_DEF_QUEUE,
- 	.this_id		= ATA_SHT_THIS_ID,
--	.sg_tablesize		= LIBATA_MAX_PRD,
-+	.sg_tablesize		= LIBATA_DUMB_MAX_PRD,
- 	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
- 	.emulated		= ATA_SHT_EMULATED,
- 	.use_clustering		= ATA_SHT_USE_CLUSTERING,
-@@ -201,7 +201,7 @@
- 	.post_internal_cmd = ata_bmdma_post_internal_cmd,
- 	.cable_detect	= ata_cable_40wire,
- 
--	.qc_prep 	= ata_qc_prep,
-+	.qc_prep 	= ata_dumb_qc_prep,
- 	.qc_issue	= cs5530_qc_issue_prot,
- 
- 	.data_xfer	= ata_data_xfer,
-diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_sc1200.c linux-2.6.22-rc6-mm1/drivers/ata/pata_sc1200.c
---- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_sc1200.c	2007-07-02 20:50:11.000000000 +0100
-+++ linux-2.6.22-rc6-mm1/drivers/ata/pata_sc1200.c	2007-07-02 21:04:59.000000000 +0100
-@@ -185,7 +185,7 @@
- 	.queuecommand		= ata_scsi_queuecmd,
- 	.can_queue		= ATA_DEF_QUEUE,
- 	.this_id		= ATA_SHT_THIS_ID,
--	.sg_tablesize		= LIBATA_MAX_PRD,
-+	.sg_tablesize		= LIBATA_DUMB_MAX_PRD,
- 	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
- 	.emulated		= ATA_SHT_EMULATED,
- 	.use_clustering		= ATA_SHT_USE_CLUSTERING,
-@@ -219,7 +219,7 @@
- 	.bmdma_stop	= ata_bmdma_stop,
- 	.bmdma_status 	= ata_bmdma_status,
- 
--	.qc_prep 	= ata_qc_prep,
-+	.qc_prep 	= ata_dumb_qc_prep,
- 	.qc_issue	= sc1200_qc_issue_prot,
- 
- 	.data_xfer	= ata_data_xfer,
+On Tue, 2007-07-03 at 10:50 -0400, Alan Stern wrote:
+
+> Time for me to jump in.
+
+:)
+
+> USB already implements runtime PM.  If a device is suspended at runtime
+> and a task tries to access it, the device is automatically resumed. =20
+> No problem there.
+
+Right.
+
+> The problem comes when the system is doing a STR.  Right now the code
+> doesn't keep track of the difference between a runtime suspend and a
+> system suspend -- once the device is suspended, it's suspended, period. =20
+> Consequently, a non-frozen user task trying to do I/O to a suspended
+> device during STR will cause that device to resume, thereby forcing the
+> system suspend to abort.  Something much like this has actually
+> happened and been reported as a bug on LKML (I don't have a URL handy,
+> and it was actually a non-frozen kernel thread interfering with
+> hibernate rather than a non-frozen user task interfering with STR, but
+> the principle is the same).
+
+Yeah, I can see that happen.
+
+> Yes, the code could be changed to keep track of the reason for a device
+> suspend.  But that just raises the old problem of what to do when
+> there's an I/O request for a suspended device during STR.
+>=20
+> > I think the core of the discussion isn't appreciated by everybody here
+> > yet---we need to solve both run-time and suspend-to-ram-time device
+> > suspend, not just one of them.
+>=20
+> Runtime suspend isn't a problem.  Only STR.
+
+Ah but for all those character devices people were saying are the
+problem we haven't even solved runtime suspend as far as I can tell from
+the discussion.
+
+> Consider a particularly troublesome case: During STR, a non-frozen task
+> writes to /sys/bus/BBB/drivers/DDD/bind.  The sysfs core grabs the
+> device semaphore and calls the driver's probe routine.  If the driver
+> isn't PM-aware it simply tries to initialize the device and fails
+> because the device is already suspended.  That's no good; it isn't
+> transparent.
+>=20
+> So assume the driver is PM-aware.  It tries to resume the device, which
+> fails because STR is underway.  Now what can it do?  There's only one=20
+> possibility: It must block until the resume call can succeed.  But when=20
+> is that?
+>=20
+> It has to be before the PM core tries to resume the device, because the=20
+> core will try to acquire the device semaphore and will block waiting=20
+> for the probe call to complete.  But it has to be after the PM core=20
+> resumes the device's parent, because obviously the device can't resume=20
+> until its parent is awake.
+>=20
+> As you can see, this is a very difficult problem to solve.
+
+Indeed. Actually, one could argue that it's impossible to solve the
+problem as long as we try to call out to userspace during suspend and
+need to wait until that's finished, like in the case of sys_sync() and
+fuse filesystems, and probably other cases. Maybe we should make *those*
+calls return a failure so that the suspend isn't transparent inside the
+kernel but is transparent to userspace.
+
+johannes
+
+--=-Chr4USvrqKg1IE/8MaUU
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGimQ8/ETPhpq3jKURArFaAKCjlzAbJawvkuD7GEDNlFQMcEu8AgCZAQ00
+TKYIh8DMquVMXZEqjSfUOUs=
+=5hYc
+-----END PGP SIGNATURE-----
+
+--=-Chr4USvrqKg1IE/8MaUU--
+
