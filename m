@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbXGCTmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbXGCTmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760648AbXGCTmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 15:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756428AbXGCTmF
+	id S1759645AbXGCTmz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756428AbXGCTmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 15:42:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57195 "EHLO mx3.mail.elte.hu"
+	Tue, 3 Jul 2007 15:42:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51256 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757221AbXGCTmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 15:42:03 -0400
-Date: Tue, 3 Jul 2007 21:41:06 +0200
+	id S1756042AbXGCTmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 15:42:46 -0400
+Date: Tue, 3 Jul 2007 21:42:29 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Andrew Morton <akpm@osdl.org>,
-       john stultz <johnstul@us.ibm.com>, Stable Team <stable@kernel.org>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-Subject: Re: [PATCH] NTP: remove clock_was_set() call to prevent deadlock
-Message-ID: <20070703194106.GA493@elte.hu>
-References: <1183485920.3291.28.camel@chaos>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Sattler <tsattler@gmx.de>
+Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
+Message-ID: <20070703194229.GB493@elte.hu>
+References: <1182969638.4769.56.camel@johannes.berg> <1183048429.4089.1.camel@johannes.berg> <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4> <20070630114658.GA344@tv-sign.ru> <1183381393.4089.117.camel@johannes.berg> <20070703173112.GA108@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1183485920.3291.28.camel@chaos>
+In-Reply-To: <20070703173112.GA108@tv-sign.ru>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -36,30 +38,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+* Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-> The clock_was_set() call in seconds_overflow() which happens only when 
-> leap seconds are inserted / deleted is wrong in two aspects:
+> Now we have a false positive if some time we queue B into that 
+> workqueue, and this is not good.
 > 
-> 1. it results in a call to on_each_cpu() with interrupts disabled
-> 2. it is potential deadlock source vs. call_lock in smp_call_function()
+> We can avoid this problem if we put lockdep_map into work_struct, so 
+> that wait_on_work() "locks" work->lockdep_map, while flush_workqueue() 
+> takes wq->lockdep_map.
 > 
-> The only possible side effect of the removal might be, that an 
-> absolute CLOCK_REALTIME timer fires 1 second too late, in the rare 
-> case of leap second deletion and an absolute CLOCK_REALTIME timer 
-> which expires in the affected time frame. It will never fire too 
-> early.
-> 
-> This was probably observed by the reporter of a June 30th -> July 1st 
-> hang: http://lkml.org/lkml/2007/7/3/
-> 
-> A similar problem was observed by Dave Jones, who provided a screen 
-> shot with a lockdep back trace, which allowed to analyse the problem.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> But probably we don't need this right now, at least until we really 
+> have a lot of false positives while converting from flush_workqueue() 
+> to cancel_work_sync/cancel_delayed_work_sync.
 
-looks good to me.
-
-Acked-by: Ingo Molnar <mingo@elte.hu>
+would be nice to map the real dependencies. Adding another lockdep_map 
+is really low-cost and the lack of false positives is reassuring.
 
 	Ingo
