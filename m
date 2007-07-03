@@ -1,48 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbXGCLpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbXGCLq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759877AbXGCLpx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 07:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbXGCLpq
+	id S1760023AbXGCLq7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 07:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758128AbXGCLqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 07:45:46 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55717 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755470AbXGCLpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 07:45:45 -0400
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
-	RAM pathway
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-pm@lists.linux-foundation.org,
-       nigel@nigel.suspend2.net, mjg59@srcf.ucam.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200707031327.56577.oliver@neukum.org>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	 <200707031307.41366.oliver@neukum.org>
-	 <E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
-	 <200707031327.56577.oliver@neukum.org>
-Content-Type: text/plain
-Date: Tue, 03 Jul 2007 21:45:12 +1000
-Message-Id: <1183463113.10386.114.camel@localhost.localdomain>
+	Tue, 3 Jul 2007 07:46:50 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:39175 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757425AbXGCLqt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 07:46:49 -0400
+Date: Tue, 3 Jul 2007 17:16:50 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       adilger@clusterfs.com, David Chinner <dgc@sgi.com>, suparna@in.ibm.com,
+       cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070703114650.GB14936@amitarora.in.ibm.com>
+References: <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070630165246.GA5159@schatzie.adilger.int> <20070703100848.GA14936@amitarora.in.ibm.com> <20070703103107.GA29763@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070703103107.GA29763@infradead.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-03 at 13:27 +0200, Oliver Neukum wrote:
-> > You are talking about hibernate, right?  Suspending (to ram) is
-> > instantaneous, in that _after_ suspend no CPU is active obviously.
+On Tue, Jul 03, 2007 at 11:31:07AM +0100, Christoph Hellwig wrote:
+> On Tue, Jul 03, 2007 at 03:38:48PM +0530, Amit K. Arora wrote:
+> > > FA_FL_DEALLOC		0x01 /* deallocate unwritten extent (default allocate) */
+> > > FA_FL_KEEP_SIZE	0x02 /* keep size for EOF {pre,de}alloc (default change size) */
+> > > FA_FL_DEL_DATA	0x04 /* delete existing data in alloc range (default keep) */
+> > 
+> > We now have two sets of flags - 
+> > 1) the above three with which I think no one has any issues with, and
 > 
-> If that is so, why do you care? If it is really atomic, fuse has no
-> chance
-> to call out to its component in user space either. Removing the
-> freezer
-> cannot make a difference.
+> Yes, I do.  FA_FL_DEL_DATA is plain stupid, a preallocation call should
+> never delete data.  FA_FL_DEALLOC should probably be a separate syscall
+> because it's very different functionality.
 
-It's not atomic. You will get called after suspend() in drivers. The
-thing is ... you just have to deal with it :-)
+Well, if you see the modes proposed using above flags :
 
-Ben.
+#define FA_ALLOCATE	0
+#define FA_DEALLOCATE	FA_FL_DEALLOC
+#define FA_RESV_SPACE	FA_FL_KEEP_SIZE
+#define FA_UNRESV_SPACE	(FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA)
 
+FA_FL_DEL_DATA is _not_ being used for preallocation. We have two modes
+for preallocation FA_ALLOCATE and FA_RESV_SPACE, which do not use this
+flag. Hence prealloction will never delete data.
+This mode is required only for FA_UNRESV_SPACE, which is a deallocation
+mode, to support any existing XFS aware applications/usage-scenarios.
 
+And, regarding FA_FL_DEALLOC being a separate syscall - I think then the
+very purpose of @mode argument is not justified. We have this mode so
+that we can provide more features like this. That said, I don't say that
+we should make things very complicated; but, atleast we should provide
+some basic features which we expect most of the applications wanting
+preallocation to use. To start with, we need to cater to already
+existing applications/user base who use XFS preallocation feature.
+
+And further advanced features, like goal based preallocation, can be
+implemented as a separate syscall.
+
+> While we're at it I also dislike the FA_ prefix becuase it doesn't say
+> anything and is far too generic.  FALLOC_ is much better.
+
+Ok. This can be changed in the next take.
+ 
+> > > FA_FL_ERR_FREE	0x08 /* free preallocation on error (default keep prealloc) */
+> 
+> NACK on this one.  We should have just one behaviour, and from the thread
+> that not freeing the allocation on error.
+
+I agree on this one. 
+ 
+> > > FA_FL_NO_MTIME	0x10 /* keep same mtime (default change on size, data change) */
+> > > FA_FL_NO_CTIME	0x20 /* keep same ctime (default change on size, data change) */
+> 
+> NACK to these aswell.  If i_size changes c/mtime need updates, if the size
+> doesn't chamge they don't.  No need to add more flags for this.
+
+This requirement was from the point of view of HSM applications. Hope
+you saw Andreas previous post and are keeping that in mind.
+
+--
+Regards,
+Amit Arora
