@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbXGCP67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760976AbXGCP70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbXGCP67 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 11:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760810AbXGCP6r
+	id S1760976AbXGCP70 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 11:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbXGCP7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 11:58:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36626 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760689AbXGCP6q convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 11:58:46 -0400
-Date: Tue, 3 Jul 2007 08:58:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Blaisorblade <blaisorblade@yahoo.it>
-Cc: user-mode-linux-devel@lists.sourceforge.net, Jeff Dike <jdike@addtoit.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [uml-devel] [PATCH 4/5] UML - Simplify helper stack handling
-Message-Id: <20070703085830.9b0520a1.akpm@linux-foundation.org>
-In-Reply-To: <200707031728.36472.blaisorblade@yahoo.it>
-References: <20070614202655.GA9647@c2.user-mode-linux.org>
-	<20070627233701.8e53f3cb.akpm@linux-foundation.org>
-	<200707031728.36472.blaisorblade@yahoo.it>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 3 Jul 2007 11:59:17 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:40185 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757557AbXGCP7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 11:59:16 -0400
+Message-ID: <468A724D.6070908@nortel.com>
+Date: Tue, 03 Jul 2007 11:59:09 -0400
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20060130 Red Hat/1.7.12-1.4.2
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
+References: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca>
+In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jul 2007 15:59:11.0438 (UTC) FILETIME=[189CC6E0:01C7BD8B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007 17:28:30 +0200 Blaisorblade <blaisorblade@yahoo.it> wrote:
-
-> On giovedì 28 giugno 2007, Andrew Morton wrote:
-> > So I'm running the generic version of this on i386 with 8k stacks (below),
-> > with a quick LTP run.
-> >
-> > Holy cow, either we use a _lot_ of stack or these numbers are off:
-> >
-> > vmm:/home/akpm> dmesg -s 1000000|grep 'bytes left'
-> > khelper used greatest stack depth: 7176 bytes left
-> > khelper used greatest stack depth: 7064 bytes left
-> > khelper used greatest stack depth: 6840 bytes left
-> > khelper used greatest stack depth: 6812 bytes left
-> > hostname used greatest stack depth: 6636 bytes left
-> > uname used greatest stack depth: 6592 bytes left
-> > uname used greatest stack depth: 6284 bytes left
-> > hotplug used greatest stack depth: 5568 bytes left
-> > rpc.nfsd used greatest stack depth: 5136 bytes left
-> > chown02 used greatest stack depth: 4956 bytes left
-> > fchown01 used greatest stack depth: 4892 bytes left
+Fortier,Vincent [Montreal] wrote:
+> Hi all,
 > 
-> > That's the sum of process stack and interrupt stack, but I doubt if this
-> > little box is using much interrupt stack space.
-> >
-> > No wonder people are still getting stack overflows with 4k stacks...
-> 
-> First, those numbers pretend to be _unused_ stack space.
+> All my servers and workstations running a 2.6.21.5 kernel hanged exactly
+> when the date shift from june 30th to july 1st.
 
-Yep.  So fchown01 used ~3200 bytes of stack.  Problem.
+Interesting, I just sent out an email for a similar issue, but with a pair of 
+2.6.10 machines.
 
-> Well, UML tends to use more stack space than the rest of kernel.
+I'm wondering if its related to a spurious leap second event...
 
-That was a plain old i386 kernel.
-
+Chris
