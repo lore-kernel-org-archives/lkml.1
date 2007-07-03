@@ -1,90 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbXGCPCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbXGCPCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760227AbXGCPCW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 11:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbXGCPCN
+	id S1760400AbXGCPCf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 11:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbXGCPCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 11:02:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45076 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755215AbXGCPCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 11:02:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Tue, 3 Jul 2007 17:09:29 +0200
-User-Agent: KMail/1.9.5
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>
-References: <20070703042916.GA17240@srcf.ucam.org> <1183441887.10386.77.camel@localhost.localdomain> <200707031508.45595.rjw@sisk.pl>
-In-Reply-To: <200707031508.45595.rjw@sisk.pl>
+	Tue, 3 Jul 2007 11:02:16 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:6618 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757552AbXGCPCP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 11:02:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=AYv6PDswrVGPJpr2n2vj3hhgWbViBijPbTitdUjRNUsFScE4HRl7MQBQh7ZZ7Tc/2D+E3Crqwa9u1LBXCjNdV5iO19pdws8HPLajACp2zZO/PJ1hWL3MU6gihwxShHVtbduRQapdJY6ugPIGH8ZanMmTY5+upmJ64611lV2YHRk=
+Date: Tue, 3 Jul 2007 17:02:10 +0200
+From: Florian Attenberger <valdyn@gmail.com>
+To: Arne Georg Gleditsch <argggh@dolphinics.no>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
+Message-ID: <20070703150210.GA31495@master.home>
+References: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca> <20070703135949.GB19565@master.home> <87hcol7en2.fsf@pelargir.dolphinics.no>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200707031709.29968.rjw@sisk.pl>
+In-Reply-To: <87hcol7en2.fsf@pelargir.dolphinics.no>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 3 July 2007 15:08, Rafael J. Wysocki wrote:
-> On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
-> > On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
-> > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
-> > > a screaming nightmare - either the suspend fails because syslog (for 
-> > > instance) can't be frozen, or the machine deadlocks for some other 
-> > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
-> > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
-> > > and just not use the freezer.
-> > 
-> > The main reason for deadlocks is because we do a sys_sync() after the
-> > freeze, which we shouldn't do.
+On Tue, Jul 03, 2007 at 04:20:17PM +0200, Arne Georg Gleditsch wrote:
+> Florian Attenberger <valdyn@gmail.com> writes:
+> > there was one 'special' event at that date:
+> > syslog.2.gz:Jul  1 01:59:59 master kernel: Clock: inserting leap second
+> > 23:59:60 UTC
 > 
-> So why don't we remove the sys_sync() from freeze_processes() instead?
+> As far as I can tell, no leap second was due to be inserted at 1. of
+> July this year.  Is the year set correctly for this box?
+>
+yep, controlled by ntpd.
+You're right according to
+ftp://hpiers.obspm.fr/iers/bul/bulc/bulletinc.33
+that event shouldn't have been there.
 
-The patch follows (untested).
-
-Greetings,
-Rafael
-
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-We shouldn't sync filesystems from within the freezer, because it's not needed
-for suspend to RAM and leads to problems with FUSE.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/disk.c    |    4 ++++
- kernel/power/process.c |    1 -
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.22-rc7/kernel/power/disk.c
-===================================================================
---- linux-2.6.22-rc7.orig/kernel/power/disk.c
-+++ linux-2.6.22-rc7/kernel/power/disk.c
-@@ -296,6 +296,10 @@ int hibernate(void)
- {
- 	int error;
- 
-+	printk("Syncing filesystems ... \n");
-+	sys_sync();
-+	printk("done.\n");
-+
- 	mutex_lock(&pm_mutex);
- 	/* The snapshot device should not be opened while we're running */
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-Index: linux-2.6.22-rc7/kernel/power/process.c
-===================================================================
---- linux-2.6.22-rc7.orig/kernel/power/process.c
-+++ linux-2.6.22-rc7/kernel/power/process.c
-@@ -190,7 +190,6 @@ int freeze_processes(void)
- 	if (error)
- 		return error;
- 
--	sys_sync();
- 	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
- 	if (error)
- 		return error;
