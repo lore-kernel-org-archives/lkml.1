@@ -1,254 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbXGCRW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761228AbXGCRWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758746AbXGCRW1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbXGCRVu
+	id S1761228AbXGCRWn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760977AbXGCRWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:21:50 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:37887 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760511AbXGCRVs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:21:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=S4GPSjsiwZB4ijcnSD2T0oj0ydvrjTPOU4vxTIhSXEuxNG5t5PNvTo2MoAgnMKG/JMnYNa6TKxa7uBqQzvdwVNsDkHBnQyjgSY3W5Nggw3g9jgN2Vij8i2CG4eaD8L8uFjIJDjmZqwzxcQ9i/C6y8mLkYpuxNUC3aGKT7FzLEwg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] pata_hpt3x3: Major reworking and testing
-Date: Tue, 3 Jul 2007 19:38:20 +0200
-User-Agent: KMail/1.9.6
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jeff@garzik.org
-References: <20070703161002.1576c39d@the-village.bc.nu>
-In-Reply-To: <20070703161002.1576c39d@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707031938.20956.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jul 2007 13:22:33 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56120 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756408AbXGCRWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 13:22:32 -0400
+Message-Id: <20070703172045.177542013@polymtl.ca>
+References: <20070703170843.204442953@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 03 Jul 2007 13:08:46 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 3/4] Linux Kernel Markers - Documentation
+Content-Disposition: inline; filename=linux-kernel-markers-documentation.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  3 Jul 2007 17:20:45 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here is some documentation explaining what is/how to use the Linux
+Kernel Markers.
 
-Hi,
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
 
-On Tuesday 03 July 2007, Alan Cox wrote:
-> The HPT343/345 (aka 363) is a bit of a warped device. For many setups you
-> need to access the other registers via BAR4 offsets. PIO is now rock
+ Documentation/marker.txt |  249 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 249 insertions(+)
 
-If you happen to have HPT363 you may want to check how BIOS does the DMA
-configuration.  I wouldn't be surprised if it turns out that _both_ drivers
-do it wrongly currently.
+Index: linux-2.6-lttng/Documentation/marker.txt
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/marker.txt	2007-06-15 16:14:12.000000000 -0400
+@@ -0,0 +1,249 @@
++ 	             Using the Linux Kernel Markers
++
++			    Mathieu Desnoyers
++
++
++This document introduces Linux Kernel Markers and their use. It provides
++examples of how to insert markers in the kernel and connect probe functions to
++them and provides some examples of probe functions.
++
++
++* Purpose of markers
++
++A marker placed in your code provides a hook to call a function (probe) that
++you can provide at runtime. A marker can be "on" (a probe is connected to it)
++or "off" (no probe is attached). When a marker is "off" it has no
++effect. When a marker is "on", the function you provide is called each
++time the marker is executed, in the execution context of the
++caller. When the function provided ends its execution, it returns to the
++caller (continuing from the marker site).
++
++You can put markers at important locations in the code. Markers are
++lightweight hooks that can pass an arbitrary number of parameters,
++described in a printk-like format string, to the attached probe function.
++
++They can be used for tracing and performance accounting.
++
++
++* Usage
++
++In order to use the macro trace_mark, you should include linux/marker.h.
++
++#include <linux/marker.h>
++
++Add, in your code :
++
++trace_mark(subsystem_event, "%d %s", someint, somestring);
++Where :
++- subsystem_event is an identifier unique to your event
++    - subsystem is the name of your subsystem.
++    - event is the name of the event to mark.
++- "%d %s" is the formatted string for the serializer.
++- someint is an integer.
++- somestring is a char pointer.
++
++Connecting a function (probe) to a marker is done by providing a probe
++(function to call) for the specific marker through marker_arm_probe(). It will
++automatically connect the function and enable the marker site. Removing a probe
++is done through marker_disarm_probe(). Probe removal is preempt-safe because
++preemption is disabled around the probe call. See the "Probe example" section
++below for a sample probe module.
++
++The marker mechanism supports inserting multiple instances of the same marker.
++Markers can be put in inline functions, inlined static functions, and
++unrolled loops.
++
++Note: It is safe to put markers within preempt-safe code : preempt_enable()
++will not call the scheduler due to the tests in preempt_schedule().
++
++
++* Optimization for a given architecture
++
++One can implement optimized markers for a given architecture by replacing
++asm-$ARCH/marker.h.
++
++The IF_* flags can be used to control the type of marker. See the
++include/linux/immediate.h header for the list of flags. They can be specified as
++the first parameter of the _trace_mark() macro, as in the following example,
++which is safe with respect to lockdep.c (useful for marking lockdep.c and printk
++functions).
++
++_trace_mark(IF_DEFAULT | ~IF_LOCKDEP, subsystem_eventb, MARK_NOARGS);
++
++Flag compatibility is checked before connecting the probe to the marker: the
++right flags must be given to _marker_arm_probe().
++
++
++* Probe example
++
++You can build the kernel modules, probe-example.ko and marker-example.ko,
++using the following Makefile:
++------------------------------ CUT -------------------------------------
++obj-m := probe-example.o marker-example.o
++KDIR := /lib/modules/$(shell uname -r)/build
++PWD := $(shell pwd)
++default:
++	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
++clean:
++	rm -f *.mod.c *.ko *.o
++------------------------------ CUT -------------------------------------
++/* probe-example.c
++ *
++ * Connects two functions to marker call sites.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <asm/atomic.h>
++
++struct probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
++};
++
++void probe_subsystem_event(const struct __mark_marker_c *mdata,
++		const char *format, ...)
++{
++	va_list ap;
++	/* Declare args */
++	unsigned int value;
++	const char *mystr;
++
++	/* Assign args */
++	va_start(ap, format);
++	value = va_arg(ap, typeof(value));
++	mystr = va_arg(ap, typeof(mystr));
++
++	/* Call printk */
++	printk("Value %u, string %s\n", value, mystr);
++
++	/* or count, check rights, serialize data in a buffer */
++
++	va_end(ap);
++}
++
++atomic_t eventb_count = ATOMIC_INIT(0);
++
++void probe_subsystem_eventb(const struct __mark_marker_c *mdata,
++	const char *format, ...)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++static struct probe_data probe_array[] =
++{
++	{	.name = "subsystem_event",
++		.format = "%d %s",
++		.probe_func = probe_subsystem_event },
++	{	.name = "subsystem_eventb",
++		.format = MARK_NOARGS,
++		.probe_func = probe_subsystem_eventb },
++};
++
++static int __init probe_init(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_arm_probe(probe_array[i].name,
++				probe_array[i].format,
++				probe_array[i].probe_func, &probe_array[i]);
++		if (result)
++			printk(KERN_INFO "Unable to register probe %s\n",
++				probe_array[i].name);
++	}
++	return 0;
++}
++
++static void __exit probe_fini(void)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		marker_disarm_probe(probe_array[i].name);
++	}
++	printk("Number of event b : %u\n", atomic_read(&eventb_count));
++}
++
++module_init(probe_init);
++module_exit(probe_fini);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("SUBSYSTEM Probe");
++------------------------------ CUT -------------------------------------
++/* marker-example.c
++ *
++ * Executes a marker when /proc/marker-example is opened.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <linux/sched.h>
++#include <linux/proc_fs.h>
++
++struct proc_dir_entry *pentry_example = NULL;
++
++static int my_open(struct inode *inode, struct file *file)
++{
++	int i;
++
++	trace_mark(subsystem_event, "%d %s", 123, "example string");
++	for (i=0; i<10; i++) {
++		trace_mark(subsystem_eventb, MARK_NOARGS);
++	}
++	return -EPERM;
++}
++
++static struct file_operations mark_ops = {
++	.open = my_open,
++};
++
++static int example_init(void)
++{
++	printk(KERN_ALERT "example init\n");
++	pentry_example = create_proc_entry("marker-example", 0444, NULL);
++	if (pentry_example)
++		pentry_example->proc_fops = &mark_ops;
++	else
++		return -EPERM;
++	return 0;
++}
++
++static void example_exit(void)
++{
++	printk(KERN_ALERT "example exit\n");
++	remove_proc_entry("marker-example", NULL);
++}
++
++module_init(example_init)
++module_exit(example_exit)
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Linux Trace Toolkit example");
++------------------------------ CUT -------------------------------------
++Sequence of operations : (as root)
++make
++insmod marker-example.ko
++insmod probe-example.ko
++  (it is important to load the probe after the marked code)
++cat /proc/marker-example (returns an expected error)
++rmmod marker-example probe-example
++dmesg
++------------------------------ CUT -------------------------------------
 
-> solid, DMA isn't. Unfortunately the drivers/ide hpt34x driver is
-> completely broken so doesn't help further debug.
-
-Translation:
-
-The new improved driver is not really better than the old one because
-the old one is broken. :)
-
-Old driver does identical configuration when it comes to PIO modes.
-
-For DMA modes it seem to have bug in setting DMA transfer type bits but DMA
-is _never_ enabled unless CONFIG_HPT34X_AUTODMA is set and this config option
-is marked EXPERIMENTAL with the help entry stating that enabling DMA is a
-dangerous thing to do.
-
-Old driver is a source of PCI quirk which is now propagated to the new driver.
-
-Thanks,
-Bart
-
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> 
-> diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_hpt3x3.c linux-2.6.22-rc6-mm1/drivers/ata/pata_hpt3x3.c
-> --- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_hpt3x3.c	2007-07-02 20:50:11.000000000 +0100
-> +++ linux-2.6.22-rc6-mm1/drivers/ata/pata_hpt3x3.c	2007-07-02 21:03:32.000000000 +0100
-> @@ -23,7 +23,7 @@
->  #include <linux/libata.h>
->  
->  #define DRV_NAME	"pata_hpt3x3"
-> -#define DRV_VERSION	"0.4.3"
-> +#define DRV_VERSION	"0.5.3"
->  
->  /**
->   *	hpt3x3_set_piomode		-	PIO setup
-> @@ -59,6 +59,9 @@
->   *
->   *	Set up the channel for MWDMA or UDMA modes. Much the same as with
->   *	PIO, load the mode number and then set MWDMA or UDMA flag.
-> + *
-> + *	0x44 : bit 0-2 master mode, 3-5 slave mode, etc 
-> + *	0x48 : bit 4/0 DMA/UDMA bit 5/1 for slave etc
->   */
->  
->  static void hpt3x3_set_dmamode(struct ata_port *ap, struct ata_device *adev)
-> @@ -76,14 +79,26 @@
->  	r2 &= ~(0x11 << dn);	/* Clear MWDMA and UDMA bits */
->  
->  	if (adev->dma_mode >= XFER_UDMA_0)
-> -		r2 |= 0x01 << dn;	/* Ultra mode */
-> +		r2 |= (0x10 << dn);	/* Ultra mode */
->  	else
-> -		r2 |= 0x10 << dn;	/* MWDMA */
-> +		r2 |= (0x01 << dn);	/* MWDMA */
->  
->  	pci_write_config_dword(pdev, 0x44, r1);
->  	pci_write_config_dword(pdev, 0x48, r2);
->  }
->  
-> +/**
-> + *	hpt3x3_atapi_dma	-	ATAPI DMA check
-> + *	@qc: Queued command
-> + *
-> + *	Just say no - we don't do ATAPI DMA
-> + */
-> +
-> +static int hpt3x3_atapi_dma(struct ata_queued_cmd *qc)
-> +{
-> +	return 1;
-> +}
-> +
->  static struct scsi_host_template hpt3x3_sht = {
->  	.module			= THIS_MODULE,
->  	.name			= DRV_NAME,
-> @@ -105,7 +120,6 @@
->  static struct ata_port_operations hpt3x3_port_ops = {
->  	.port_disable	= ata_port_disable,
->  	.set_piomode	= hpt3x3_set_piomode,
-> -	.set_dmamode	= hpt3x3_set_dmamode,
->  	.mode_filter	= ata_pci_default_filter,
->  
->  	.tf_load	= ata_tf_load,
-> @@ -124,8 +138,9 @@
->  	.bmdma_start 	= ata_bmdma_start,
->  	.bmdma_stop	= ata_bmdma_stop,
->  	.bmdma_status 	= ata_bmdma_status,
-> +	.check_atapi_dma= hpt3x3_atapi_dma,
->  
-> -	.qc_prep 	= ata_qc_prep,
-> +	.qc_prep 	= ata_qc_prep,
->  	.qc_issue	= ata_qc_issue_prot,
->  
->  	.data_xfer	= ata_data_xfer,
-> @@ -158,32 +173,79 @@
->  		pci_write_config_byte(dev, PCI_LATENCY_TIMER, 0x20);
->  }
->  
-> -
->  /**
->   *	hpt3x3_init_one		-	Initialise an HPT343/363
-> - *	@dev: PCI device
-> + *	@pdev: PCI device
->   *	@id: Entry in match table
->   *
-> - *	Perform basic initialisation. The chip has a quirk that it won't
-> - *	function unless it is at XX00. The old ATA driver touched this up
-> - *	but we leave it for pci quirks to do properly.
-> + *	Perform basic initialisation. We set the device up so we access all
-> + *	ports via BAR4. This is neccessary to work around errata.
->   */
->  
-> -static int hpt3x3_init_one(struct pci_dev *dev, const struct pci_device_id *id)
-> +static int hpt3x3_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
->  {
-> +	static int printed_version;
->  	static const struct ata_port_info info = {
->  		.sht = &hpt3x3_sht,
->  		.flags = ATA_FLAG_SLAVE_POSS,
->  		.pio_mask = 0x1f,
-> +#if defined(CONFIG_PATA_HPT3X3_DMA)
-> +		/* Further debug needed */		
->  		.mwdma_mask = 0x07,
->  		.udma_mask = 0x07,
-> +#endif		
->  		.port_ops = &hpt3x3_port_ops
->  	};
-> +	/* Register offsets of taskfiles in BAR4 area */
-> +	static const u8 offset_cmd[2] = { 0x20, 0x28 };
-> +	static const u8 offset_ctl[2] = { 0x36, 0x3E };
->  	const struct ata_port_info *ppi[] = { &info, NULL };
-> -
-> -	hpt3x3_init_chipset(dev);
-> -	/* Now kick off ATA set up */
-> -	return ata_pci_init_one(dev, ppi);
-> +	struct ata_host *host;
-> +	int i, rc;
-> +	void __iomem *base;
-> +
-> +	hpt3x3_init_chipset(pdev);
-> +
-> +	if (!printed_version++)
-> +		dev_printk(KERN_DEBUG, &pdev->dev, "version " DRV_VERSION "\n");
-> +
-> +	host = ata_host_alloc_pinfo(&pdev->dev, ppi, 2);
-> +	if (!host)
-> +		return -ENOMEM;
-> +	/* acquire resources and fill host */
-> +	rc = pcim_enable_device(pdev);
-> +	if (rc)
-> +		return rc;
-> +
-> +	/* Everything is relative to BAR4 if we set up this way */
-> +	rc = pcim_iomap_regions(pdev, 1 << 4, DRV_NAME);
-> +	if (rc == -EBUSY)
-> +		pcim_pin_device(pdev);
-> +	if (rc)
-> +		return rc;
-> +	host->iomap = pcim_iomap_table(pdev);
-> +	rc = pci_set_dma_mask(pdev, ATA_DMA_MASK);
-> +	if (rc)
-> +		return rc;
-> +	rc = pci_set_consistent_dma_mask(pdev, ATA_DMA_MASK);
-> +	if (rc)
-> +		return rc;
-> +
-> +	base = host->iomap[4];	/* Bus mastering base */
-> +
-> +	for (i = 0; i < host->n_ports; i++) {
-> +		struct ata_ioports *ioaddr = &host->ports[i]->ioaddr;
-> +
-> +		ioaddr->cmd_addr = base + offset_cmd[i];
-> +		ioaddr->altstatus_addr =
-> +		ioaddr->ctl_addr = base + offset_ctl[i];
-> +		ioaddr->scr_addr = NULL;
-> +		ata_std_ports(ioaddr);
-> +		ioaddr->bmdma_addr = base + 8 * i;
-> +	}
-> +	pci_set_master(pdev);
-> +	return ata_host_activate(host, pdev->irq, ata_interrupt, IRQF_SHARED,
-> +				 &hpt3x3_sht);
->  }
->  
->  #ifdef CONFIG_PM
-> diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/Kconfig linux-2.6.22-rc6-mm1/drivers/ata/Kconfig
-> --- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/Kconfig	2007-07-02 20:50:11.000000000 +0100
-> +++ linux-2.6.22-rc6-mm1/drivers/ata/Kconfig	2007-07-02 21:02:10.000000000 +0100
-> @@ -313,7 +313,7 @@
->  	  If unsure, say N.
->  
->  config PATA_HPT3X3
-> -	tristate "HPT 343/363 PATA support (Experimental)"
-> +	tristate "HPT 343/363 PATA support"
->  	depends on PCI
->  	help
->  	  This option enables support for the HPT 343/363
-> @@ -321,6 +321,14 @@
->  
->  	  If unsure, say N.
->  
-> +config PATA_HPT3X3_DMA
-> +	bool "HPT 343/363 DMA support (Experimental)"
-> +	depends on PATA_HPT3X3
-> +	help
-> +	  This option enables DMA support for the HPT343/363
-> +	  controllers. Enable with care as there are still some
-> +	  problems with DMA on this chipset.
-> +
->  config PATA_ISAPNP
->  	tristate "ISA Plug and Play PATA support (Experimental)"
->  	depends on EXPERIMENTAL && ISAPNP
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
