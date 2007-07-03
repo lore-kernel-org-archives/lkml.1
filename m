@@ -1,123 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbXGCXbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761080AbXGCXcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759371AbXGCXbr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 19:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXGCXbj
+	id S1761080AbXGCXcV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 19:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXGCXcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 19:31:39 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35342 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755017AbXGCXbi (ORCPT
+	Tue, 3 Jul 2007 19:32:11 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:36333 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754018AbXGCXcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 19:31:38 -0400
-Date: Tue, 3 Jul 2007 16:31:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chandramouli Narayanan <mouli@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, ak@suse.de,
-       "Antonino A. Daplas" <adaplas@pol.net>
-Subject: Re: [PATCH 2.6.21 3/3] x86_64 EFI64 support Try #2
-Message-Id: <20070703163125.21114ad2.akpm@linux-foundation.org>
-In-Reply-To: <20070702170708.062695000@em64tdvp.jf.intel.com>
-References: <20070702170614.769378000@em64tdvp.jf.intel.com>
-	<20070702170708.062695000@em64tdvp.jf.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 3 Jul 2007 19:32:09 -0400
+Date: Tue, 3 Jul 2007 17:32:00 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       nfsv4@linux-nfs.org
+Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
+Message-ID: <20070703233200.GL6578@schatzie.adilger.int>
+Mail-Followup-To: "J. Bruce Fields" <bfields@fieldses.org>,
+	Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	nfsv4@linux-nfs.org
+References: <1183275424.4010.126.camel@localhost.localdomain> <1183388313.3864.35.camel@localhost.localdomain> <20070703221522.GE14074@fieldses.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070703221522.GE14074@fieldses.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Jul 2007 10:06:17 -0700
-Chandramouli Narayanan <mouli@linux.intel.com> wrote:
+On Jul 03, 2007  18:15 -0400, J. Bruce Fields wrote:
+> How will nfsd tell whether it can really on a given filesystem's
+> i_version, or whether it should fall back on ctime?
 
-> EFI x86_64 support Patch 3 of 3 (try #2)
-> ----------------------------------------
-> - Fixed redundant check in efifb_init().
+Good question.
+
+> > As to performance concerns that raise before the inode version counter
+> > (at least for ext4) is done inside ext4_mark_inode_dirty), so there is
+> > no extra IO work to store this counter to disk.
 > 
-> This patch depends on the EFI x86_64 patches 1/3 and 2/3.
-> 
-> This patch adds Graphics Output Protocol support to the kernel.
-> x86_64 systems with UEFI2.0 firmware conform to UEFI 2.0 specification.
-> UEFI2.0 spec deprecates Universal Graphics Adapter (UGA) protocol and
-> only Graphics Output Protocol (GOP) is produced. Therefore, the boot loader
-> needs to query the UEFI firmware with appropriate Output Protocol and
-> pass the video information to the kernel. As a result of GOP
-> protocol, an EFI framebuffer driver is needed for displaying console messages.
-> Patch 3 of 3 adds a EFI framebuffer driver. The EFI frame buffer driver in this
-> patch is based on the Intel Mac framebuffer driver.
-> 
-> The x86_64 ELILO bootloader takes care of passing the video information
-> as appropriate for EFI firmware. 
-> 
+> So what's the motivation for the "noversion" mount option?
 
-That's more like a changelog.
+Lustre needs to be able to control the version number directly (version
+number needs to be ordered between all inodes, is set by Lustre to be a
+transaction number).  Instead of trying to incorporate this unused code
+into ext4 we just turn off the ext4 version code and let Lustre control
+this directly.  It may even be that NFSv4 will need to control the version
+numbers itself...
 
-Please cc linux-fbdev-devel@lists.sourceforge.net and "Antonino A.  Daplas"
-<adaplas@pol.net> on framebuffer driver patches.
-
->  
-> +config FB_EFI
-> +	bool "EFI-based Framebuffer Support"
-> +	depends on (FB = y) && X86 && EFI
-
-So this is selectable on i386 as well.  Has it been tested there?
-
-> +	select FB_CFB_FILLRECT
-> +	select FB_CFB_COPYAREA
-> +	select FB_CFB_IMAGEBLIT
-> +	help
-> +	  This is the EFI frame buffer device driver. If the firmware on
-> +	  your platform is UEFI2.0, select Y to add support for
-> +	  Graphics Output Protocol for early console messages to appear.
-> +
->  config FB_IMAC
->  	bool "Intel-based Macintosh Framebuffer Support"
->  	depends on (FB = y) && X86 && EFI
->
-> ...
->
-> --- linux-2.6.21-orig/drivers/video/efifb.c	1969-12-31 16:00:00.000000000 -0800
-> +++ linux-2.6.21-uefi-finaltest4/drivers/video/efifb.c	2007-06-12 16:16:12.000000000 -0700
-> @@ -0,0 +1,249 @@
-> +/*
-> + * framebuffer driver for Intel Based Mac's
-> + *
-> + * (c) 2006 Edgar Hucek <gimli@dark-green.com>
-> + * Original efi driver written by Gerd Knorr <kraxel@goldbach.in-berlin.de>
-> + *
-> + */
-> +
-> +#include <linux/delay.h>
-> +#include <linux/errno.h>
-> +#include <linux/fb.h>
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/ioport.h>
-> +#include <linux/mm.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/screen_info.h>
-> +#include <linux/slab.h>
-> +#include <linux/string.h>
-> +#include <linux/dmi.h>
-> +#include <linux/efi.h>
-> +
-> +#include <asm/io.h>
-
-checkpatch.pl will save me work.
-
-> +#ifndef __i386__
-> +	//screen_info.imacpm_seg = 0;
-> +#endif
-
-hmm.
-
-> +
-> +	if (!request_mem_region(efifb_fix.smem_start, size_total, "efifb")) {
-> +		printk(KERN_WARNING
-> +		       "efifb: cannot reserve video memory at 0x%lx\n",
-> +			efifb_fix.smem_start);
-
-KERN_ERR?
-
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
