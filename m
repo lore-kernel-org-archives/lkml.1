@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760992AbXGCUCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761424AbXGCUCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760992AbXGCUCH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 16:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757002AbXGCUBz
+	id S1761424AbXGCUCq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 16:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757002AbXGCUCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 16:01:55 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39020 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756889AbXGCUBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 16:01:54 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [AppArmor 32/44] Enable LSM hooks to distinguish operations on file descriptors from operations on pathnames
-Date: Tue, 3 Jul 2007 22:01:47 +0200
-User-Agent: KMail/1.9.5
-Cc: James Morris <jmorris@namei.org>, John Johansen <jjohansen@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Miklos Szeredi <mszeredi@suse.cz>
-References: <20070626230756.519733902@suse.de> <200706282015.51430.agruen@suse.de> <1183470580.12218.253.camel@moss-spartans.epoch.ncsc.mil>
-In-Reply-To: <1183470580.12218.253.camel@moss-spartans.epoch.ncsc.mil>
+	Tue, 3 Jul 2007 16:02:39 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:53133 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756889AbXGCUCi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 16:02:38 -0400
+Date: Tue, 3 Jul 2007 16:02:37 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Miklos Szeredi <miklos@szeredi.hu>, <mjg59@srcf.ucam.org>,
+       <linux-kernel@vger.kernel.org>, <pavel@ucw.cz>,
+       <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
+ RAM pathway
+In-Reply-To: <200707032132.20731.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0707031556160.7671-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2573
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707032201.47586.agruen@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 July 2007 15:49, Stephen Smalley wrote:
-> So you don't actually need/use the struct file pointer; you just need a
-> flag indicating whether or not access was by open file descriptor or by
-> pathname?
+On Tue, 3 Jul 2007, Oliver Neukum wrote:
 
-Yes, indeed. Given that struct iattr already defines ATTR_FILE and ia_file, I 
-didn't see a good reason to invent something new when we can just use the 
-existing mechanism.
+> Well, but you did remove sys_sync() from the freezer, which is
+> and must be called in the hibernate path.
 
-> And what does this mean for a process that has "changed hats"?  Which
-> might not be authorized to access the file anymore, even via an already
-> opened descriptor.
+That's not really true.  We _want_ to call sys_sync() in both the 
+hibernate and suspend paths (in case the batteries run down), to help 
+avoid filesystem problems if something goes wrong with the resume.  But 
+it isn't a hard requirement.
 
-If that file is still part of the namespace (i.e., not deleted), then access 
-to the file descriptor is revalidated against the new profile ("changing hat" 
-is switching to a different profile). If the file has already been deleted, 
-then access is granted. There isn't that much of a difference between a 
-deleted file and say, and anonymous pipe: both can be used by processes to 
-communicate, and both will cease their lives once no longer referenced.
+> > I'm not sure why this can't be made atomic, but assuming, that it
+> > can't, fuse should still not need to be implicated.  If it is, that's
+> > an indication about something wrong in the suspend procedure.
+> 
+> Nope, something's wrong in fuse. You must be able to deal with sync
+> until every task is frozen.
 
-Later with IPC mediation, we'll obviously have to control which profiles may 
-communicate with which other profiles. One possibility for that would be to 
-map profiles and allowed communication channels to labels and access rules.
+That's ridiculous.  FUSE itself runs partially as a user task.  How can
+you expect it to carry out a sync or anything else when it is frozen?
 
-Andreas
+I suppose you could "deal" with it by having the kernel portion return
+an error if the userspace part is frozen.  If the hibernate/suspend 
+code bothered to check the return value, it would immediately abort 
+the suspend.
+
+Alan Stern
+
