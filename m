@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761709AbXGCVZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbXGCV0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761709AbXGCVZz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbXGCVZd
+	id S1760500AbXGCV0Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbXGCV0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:25:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46533 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757998AbXGCVZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:25:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Tue, 3 Jul 2007 23:32:48 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707031456.40890.rjw@sisk.pl> <1183497290.3388.4.camel@localhost.localdomain>
-In-Reply-To: <1183497290.3388.4.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707032332.49694.rjw@sisk.pl>
+	Tue, 3 Jul 2007 17:26:13 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:42125 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755621AbXGCV0M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:26:12 -0400
+Date: Tue, 03 Jul 2007 14:28:50 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
+In-reply-to: <20070703120430.4dcbba68@freepuppy.localdomain.hemminger.net>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <468ABF92.5030800@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+References: <200706291330.37070.yinghai.lu@sun.com>
+ <20070703115840.e05a0f47.akpm@linux-foundation.org>
+ <20070703120430.4dcbba68@freepuppy.localdomain.hemminger.net>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 3 July 2007 23:14, Benjamin Herrenschmidt wrote:
+Stephen Hemminger wrote:
+> On Tue, 3 Jul 2007 11:58:40 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > >  - For STR, don't do the freezer thing.
-> > 
-> > In the long run, I agree.
-> > 
-> > Still, can you please read this post from Alan Stern:
-> > 
-> > https://lists.linux-foundation.org/pipermail/linux-pm/2007-June/012847.html
-> > 
-> > ?  I don't think I'm able to repeat the arguments given in there in a
-> > convincing way.
+>> On Fri, 29 Jun 2007 13:30:36 -0700
+>> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+>>
+>>> [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
+>> Please copy netdev@vger.kernel.org on net patches.
+>>
+>> This patch modifies a net driver as well as the networking core.  These
+>> subsytems have different maintainers who run different development trees. 
+>> Consequently I must split your patch into two and change their titles and
+>> changelogs appropriately.
+>>
+>> Please do this for us in future, thanks.
+>>
+>>
+>>> diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+>>> index 42ba1c0..6d53b52 100644
+>>> --- a/drivers/net/forcedeth.c
+>>> +++ b/drivers/net/forcedeth.c
+>>> @@ -1383,7 +1383,7 @@ static int nv_alloc_rx(struct net_device *dev)
+>>>  		less_rx = np->last_rx.orig;
+>>>  
+>>>  	while (np->put_rx.orig != less_rx) {
+>>> -		struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
+>>> +		struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
+>> If we're going to do this then it would probably make sense to change
+>> dev_alloc_skb_node() so that it takes a `struct net_device *' rather than a
+>> bare node-id.  That's a call which the net guys will need to make, which is
+>> why we cc them on our emails.
 > 
-> That's the same crackpot I've been hearing for the past 3 years or
-> so ...
-> 
-> Both Paulus and I think the freezer is just a way to try to put your
-> head in the sand and ignore the problem. It causes as many problems as
-> it solves on its own, and is just not a solution that will be of any use
-> once you start implementing dynamic PM schemes etc...
-> 
-> In many cases, having proper support for "live" suspend of devices is
-> just a matter of having a couple of helpers in whatever subsystem those
-> drivers hookup with. In the case of network, for example, it's mostly
-> trivial (stop the queue). For block, it's not terribly hard neither,
-> though you want to have some orderign/atomicity between the blocking of
-> the incoming request queue and the sending of things like spindown &
-> flush commands to the disk. For old-style IDE, that was fairly easily
-> solved by piping suspend/resume command down the request queue itself
-> and have the queue block/unblbock itself after processing them. Some of
-> that logic could maybe be moved to the block layer for all block drivers
-> to benefit.
-> 
-> But yes, overall, there is work to do on drivers and I'm doing the ones
-> I hit on the platforms I use. I don't think the freezer is any kind of
-> remotely good solution, just a way to continue avoiding the problem.
+> The driver should use netdev_alloc_skb. That routine is supposed to be overriden
+> on architecture's that need per node changes.
 
-Still, do you really think that we're ready to drop it _right_ _now_ (I'm
-referring to suspend only) and if so than on what basis (except that you
-don't like it, which falls short of being a techical argument)?
+do you mean:
+use dev_alloc_skb_node for numa arch.
+and other non numa will use macro or static inline to dev_alloc_skb
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+YH
