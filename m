@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXGCUDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbXGCUDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761477AbXGCUDg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 16:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbXGCUD2
+	id S1758895AbXGCUDt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 16:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758309AbXGCUD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 16:03:28 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:44582 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756889AbXGCUD1 (ORCPT
+	Tue, 3 Jul 2007 16:03:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55828 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757998AbXGCUD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 16:03:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=XQgJpSMmf2e1HL4Ar+rS377w/a7hfhjKmHwIn3C/scggyHoaaIgWxje6LhG8oiFEinwRf+wUjI7ipGAACZcuhLnzOW3prHqBUNxR+a0jfjni4ewOqBj7v3/GqlfBDbVkpGGnLsOIK3W6FvMUTV+d7lznqE+O3ooWKxVV0Z6Yzaw=
-Message-ID: <a9e22dff0707031303i30c08439t3cc48fb1b95f29b8@mail.gmail.com>
-Date: Tue, 3 Jul 2007 23:03:23 +0300
-From: "Ni@m" <niam.niam@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] for NIKON D50 as UMS
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 3 Jul 2007 16:03:28 -0400
+Date: Tue, 3 Jul 2007 13:03:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jaroslav Kysela <perex@suse.cz>
+Subject: Re: [PATCH][isapnp] Fix a potential NULL pointer dereference in
+ isapnp_read_tag()
+Message-Id: <20070703130318.9dbec3ac.akpm@linux-foundation.org>
+In-Reply-To: <200707010138.32075.jesper.juhl@gmail.com>
+References: <200707010138.32075.jesper.juhl@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This short patch allows NIKON D50 to be mounted as UMS on 2.6.22-rc7,
-some previous kernels...
+On Sun, 1 Jul 2007 01:38:31 +0200
+Jesper Juhl <jesper.juhl@gmail.com> wrote:
 
+> The Coverity checker spotted (as bug #809) that we dereference 'type' 
+> long before we actually test it against NULL in 
+> drivers/pnp/isapnp/core.c::isapnp_read_tag() - both branches of the 
+> 'if (tag & 0x80)' dereference type, and since this 'if' is before the test 
+> against NULL and the return of -1, this will blow up is ever type is NULL.
+> This is easy to fix by simply moving the NULL test to the beginning of 
+> the function.
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+>  drivers/pnp/isapnp/core.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+> diff --git a/drivers/pnp/isapnp/core.c b/drivers/pnp/isapnp/core.c
+> index a0b1587..5696924 100644
+> --- a/drivers/pnp/isapnp/core.c
+> +++ b/drivers/pnp/isapnp/core.c
+> @@ -356,6 +356,8 @@ static int __init isapnp_read_tag(unsigned char *type, unsigned short *size)
+>  {
+>  	unsigned char tag, tmp[2];
+>  
+> +	if (!type)	/* wrong type */
+> +		return -1;
+>  	isapnp_peek(&tag, 1);
+>  	if (tag == 0)				/* invalid tag */
+>  		return -1;
+> @@ -370,8 +372,6 @@ static int __init isapnp_read_tag(unsigned char *type, unsigned short *size)
+>  #if 0
+>  	printk(KERN_DEBUG "tag = 0x%x, type = 0x%x, size = %i\n", tag, *type, *size);
+>  #endif
+> -	if (type == 0)				/* wrong type */
+> -		return -1;
+>  	if (*type == 0xff && *size == 0xffff)	/* probably invalid data */
+>  		return -1;
+>  	return 0;
 
---- linux-2.6.22-rc7/drivers/usb/storage/unusual_devs.h 2007-07-03
-22:54:23.000000000 +0300
-+++ linux-2.6.22-rc7-niam/drivers/usb/storage/unusual_devs.h
-2007-07-03 22:35:39.000000000 +0300
-@@ -313,6 +313,13 @@
-                US_SC_DEVICE, US_PR_DEVICE,NULL,
-                US_FL_NOT_LOCKABLE ),
-
-+/* Reported by Niam <niam.niam@gmail.com> */
-+UNUSUAL_DEV(  0x04b0, 0x0409, 0x0100, 0x0100,
-+               "NIKON",
-+               "NIKON DSC D50",
-+               US_SC_DEVICE, US_PR_DEVICE, NULL,
-+               US_FL_FIX_CAPACITY),
-+
- /* Reported by Andreas Bockhold <andreas@bockionline.de> */
- UNUSUAL_DEV(  0x04b0, 0x0405, 0x0100, 0x0100,
-                "NIKON",
+dood, look at the callers.  NULL is not possible here.
