@@ -1,74 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbXGCOo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbXGCOsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbXGCOo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 10:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbXGCOoT
+	id S1757814AbXGCOsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 10:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXGCOsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 10:44:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45018 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753212AbXGCOoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 10:44:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Tue, 3 Jul 2007 16:51:09 +0200
-User-Agent: KMail/1.9.5
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
-References: <20070703042916.GA17240@srcf.ucam.org> <200707031456.40890.rjw@sisk.pl> <1183472474.3722.13.camel@johannes.berg>
-In-Reply-To: <1183472474.3722.13.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Tue, 3 Jul 2007 10:48:10 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47955 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753789AbXGCOsI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 10:48:08 -0400
+Date: Tue, 3 Jul 2007 15:54:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: [PATCH] libata_acpi: A different strategy for using ACPI
+ information
+Message-ID: <20070703155417.11d81c75@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707031651.10225.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 3 July 2007 16:21, Johannes Berg wrote:
-> On Tue, 2007-07-03 at 14:56 +0200, Rafael J. Wysocki wrote:
-> 
-> > Still, can you please read this post from Alan Stern:
-> > 
-> > https://lists.linux-foundation.org/pipermail/linux-pm/2007-June/012847.html
-> > 
-> > ?  I don't think I'm able to repeat the arguments given in there in a
-> > convincing way.
-> 
-> As I read it, Alan basically has two objections:
->  (1) drivers shouldn't need to worry about this
->  (2) suspend should be transparent to userspace
-> 
-> His proposed solution (freezing tasks when they cross the kernel
-> boundary) helps for the s-t-r case, but in fact doesn't solve (1)
-> because devices can be suspended at runtime
+Lots of BIOSen simply return the BIOS set modes via the ACPI methods and
+pass back the values you give it across suspend/resume. Thus instead of
+trying to do clever stuff with this data we instead use it as a way to
+take a sneak peak at cable type information when viable. This should help
+us catch more of the laptops that do weird stuff, the VIA SATA bridges
+and the totally horked Nvidia cable handling.
 
-This is a different thing and a different infrastructure is needed for it (not
-present at the moment).
+For now its only used by the VIA and AMD/NV driver until we get a better
+idea of whether this is a sensible idea or not.
 
-> and then you certainly do not want to freeze tasks that try to access the
-> device. 
-> 
-> (2) is related but not identical, what if you have a device suspended at
-> runtime and some tasks tries to access it; should the task block until
-> you wake up that device?
+Opinions ?
 
-I think the device should be woken up in that case.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-> I think the core of the discussion isn't appreciated by everybody here
-> yet---we need to solve both run-time and suspend-to-ram-time device
-> suspend, not just one of them.
-
-For now, we're discussing the suspend-to-ram-time suspend only, for which
-we have (some) infrastrcuture (and which should be supported by all drivers,
-IMO).
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/libata-acpi.c linux-2.6.22-rc6-mm1/drivers/ata/libata-acpi.c
+--- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/libata-acpi.c	2007-07-02 20:50:11.000000000 +0100
++++ linux-2.6.22-rc6-mm1/drivers/ata/libata-acpi.c	2007-07-02 21:02:24.000000000 +0100
+@@ -296,6 +296,44 @@
+ }
+ 
+ /**
++ * ata_acpi_cbl_80wire		-	Check for 80 wire cable
++ * @ap: Port to check
++ *
++ * Return 1 if the ACPI mode data for this port indicates the BIOS selected
++ * an 80wire mode.
++ */
++
++int ata_acpi_cbl_80wire(struct ata_port *ap)
++{
++	struct ata_acpi_gtm gtm;
++	int valid = 0;
++	
++	/* No _GTM data, no information */
++	if (ata_acpi_gtm(ap, &gtm) < 0)
++		return 0;
++		
++	/* Split timing, DMA enabled */
++	if ((gtm.flags & 0x11) == 0x11 && gtm.drive[0].dma < 55)
++		valid |= 1;
++	if ((gtm.flags & 0x14) == 0x14 && gtm.drive[1].dma < 55)
++		valid |= 2;
++	/* Shared timing, DMA enabled */
++	if ((gtm.flags & 0x11) == 0x01 && gtm.drive[0].dma < 55)
++		valid |= 1;
++	if ((gtm.flags & 0x14) == 0x04 && gtm.drive[0].dma < 55)
++		valid |= 2;
++
++	/* Drive check */
++	if ((valid & 1) && ata_dev_enabled(&ap->device[0]))
++		return 1;
++	if ((valid & 2) && ata_dev_enabled(&ap->device[1]))
++		return 1;
++	return 0;
++}
++
++EXPORT_SYMBOL_GPL(ata_acpi_cbl_80wire);
++
++/**
+  * taskfile_load_raw - send taskfile registers to host controller
+  * @dev: target ATA device
+  * @gtf: raw ATA taskfile register set (0x1f1 - 0x1f7)
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/include/linux/libata.h linux-2.6.22-rc6-mm1/include/linux/libata.h
+--- linux.vanilla-2.6.22-rc6-mm1/include/linux/libata.h	2007-07-02 20:50:14.000000000 +0100
++++ linux-2.6.22-rc6-mm1/include/linux/libata.h	2007-07-02 21:29:18.000000000 +0100
+@@ -867,6 +872,13 @@
+ 				  ATA_TIMING_CYCLE | ATA_TIMING_UDMA,
+ };
+ 
++/* libata-acpi.c */
++#ifdef CONFIG_ATA_ACPI
++extern int ata_acpi_cbl_80wire(struct ata_port *ap);
++#else
++static inline int ata_acpi_cbl_80wire(struct ata_port *ap) { return 0; }
++#endif
++
+ 
+ #ifdef CONFIG_PCI
+ struct pci_bits {
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_amd.c linux-2.6.22-rc6-mm1/drivers/ata/pata_amd.c
+--- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_amd.c	2007-07-02 20:50:11.000000000 +0100
++++ linux-2.6.22-rc6-mm1/drivers/ata/pata_amd.c	2007-07-02 21:03:00.000000000 +0100
+@@ -268,6 +268,9 @@
+  	pci_read_config_word(pdev, 0x62 - 2 * ap->port_no, &udma);
+  	if ((udma & 0xC4) == 0xC4 || (udma & 0xC400) == 0xC400)
+ 		cbl = ATA_CBL_PATA80;
++	/* And a triple check across suspend/resume with ACPI around */
++	if (ata_acpi_cbl_80wire(ap))
++		cbl = ATA_CBL_PATA80;
+ 	return cbl;
+ }
+ 
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_via.c linux-2.6.22-rc6-mm1/drivers/ata/pata_via.c
+--- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_via.c	2007-07-02 20:48:49.000000000 +0100
++++ linux-2.6.22-rc6-mm1/drivers/ata/pata_via.c	2007-07-02 21:04:59.000000000 +0100
+@@ -180,6 +180,9 @@
+ 	   two drives */
+ 	if (ata66 & (0x10100000 >> (16 * ap->port_no)))
+ 		return ATA_CBL_PATA80;
++	/* Check with ACPI so we can spot BIOS reported SATA bridges */
++	if (ata_acpi_cbl_80wire(ap))
++		return ATA_CBL_PATA80;
+ 	return ATA_CBL_PATA40;
+ }
+ 
