@@ -1,133 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbXGCUn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbXGCUpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760022AbXGCUn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 16:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbXGCUnv
+	id S1760764AbXGCUpw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 16:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbXGCUpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 16:43:51 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:48975 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751908AbXGCUnu (ORCPT
+	Tue, 3 Jul 2007 16:45:46 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:47147 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756486AbXGCUpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 16:43:50 -0400
-Date: Tue, 3 Jul 2007 16:43:47 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/10] Immediate Value - i386 Optimization
-Message-ID: <20070703204347.GA8876@Krystal>
-References: <20070703164046.645090494@polymtl.ca> <20070703164515.071300768@polymtl.ca> <468A9956.9050903@zytor.com> <20070703191605.GB4047@Krystal> <468AAF1F.6010909@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 3 Jul 2007 16:45:45 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 22:45:43 +0200
+User-Agent: KMail/1.9.7
+Cc: Miklos Szeredi <miklos@szeredi.hu>, mjg59@srcf.ucam.org,
+       linux-kernel@vger.kernel.org, pavel@ucw.cz,
+       linux-pm@lists.linux-foundation.org
+References: <Pine.LNX.4.44L0.0707031556160.7671-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707031556160.7671-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <468AAF1F.6010909@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:23:10 up 2 days, 15:06,  4 users,  load average: 0.60, 0.98, 0.69
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707032245.44087.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Mathieu Desnoyers wrote:
+Am Dienstag, 3. Juli 2007 schrieben Sie:
+> On Tue, 3 Jul 2007, Oliver Neukum wrote:
+> 
+> > Well, but you did remove sys_sync() from the freezer, which is
+> > and must be called in the hibernate path.
+> 
+> That's not really true.  We _want_ to call sys_sync() in both the 
+> hibernate and suspend paths (in case the batteries run down), to help 
+> avoid filesystem problems if something goes wrong with the resume.  But 
+> it isn't a hard requirement.
+
+But the ability to launder pages is needed. During hibernation we need
+to shrink memory. I don't see how this would be fundamentally different
+from calling sync.
+
+> > > I'm not sure why this can't be made atomic, but assuming, that it
+> > > can't, fuse should still not need to be implicated.  If it is, that's
+> > > an indication about something wrong in the suspend procedure.
 > > 
-> > Hi Peter,
-> > 
-> > I understand your concern. If you find a way to let the code be compiled
-> > by gcc, put at the end of the functions (never being a branch target)
-> > and then, dynamically, get the address of the branch instruction and
-> > patch it, all that in cooperation with gcc, I would be glad to hear from
-> > it. What I found is that gcc lets us do anything that touches
-> > variables/registers in an inline assembly, but does not permit to place
-> > branch instructions ourselves; it does not expect the execution flow to
-> > be changed in inline asms.
-> > 
+> > Nope, something's wrong in fuse. You must be able to deal with sync
+> > until every task is frozen.
 > 
-> I believe this is correct.  It probably would require requesting a gcc
-> builtin, which might be worthwhile to do if we
-> 
-> > <branch site>
-> >   77:   b8 00 00 00 00          mov    $0x0,%eax
-> >   7c:   85 c0                   test   %eax,%eax
-> >   7e:   0f 85 16 03 00 00       jne    39a <schedule+0x39a>
-> >     here, we just loaded 0 in eax (movl used to make sure we populate the
-> >     whole register so we do not stall the pipeline)
-> >     When we activate the site,
-> >     line 77 becomes: b8 01 00 00 00    mov    $0x1,%eax
-> > </branch site>
-> 
-> One could, though, use an indirect jump to achieve, if not as good, at
-> least most of the effect:
-> 
-> 	movl	$<patchable>,<reg>
-> 	jmp	*<reg>
-> 
+> That's ridiculous.  FUSE itself runs partially as a user task.  How can
+> you expect it to carry out a sync or anything else when it is frozen?
 
-Using a jmp *<reg> will instruct gcc not to inline inline functions and
-restrict loop unrolling (but the latter is not used in the linux
-kernel). We would have to compute different $<patchable> for every site
-generated by putting an immediate in an inline function.
+I don't and it might point to a fundamental problem.
+But I cannot help but notice that syscalls may happen while the system
+is partially frozen. It must be dealt with.
 
-> Some x86 cores will be able to detect the movl...jmp forwarding, and
-> collapse it into a known branch target; however, on the ones that can't,
-> it might be worse, since one would have to rely on the indirect branch
-> predictor.
-> 
-> This would, however, provide infrastructure that could be combined with
-> a future gcc builtin.
-> 
+> I suppose you could "deal" with it by having the kernel portion return
+> an error if the userspace part is frozen.  If the hibernate/suspend 
+> code bothered to check the return value, it would immediately abort 
+> the suspend.
 
-If we can change the compiler, here is what we could do:
+Where exactly would that code notice the errors?
 
-Tell GCC to put NOPs that could be altered by a branch alternative to
-some specified code. We should be able to get the instruction pointers
-(think of inlines) to these nop/branch instructions so we can change
-them dynamically.
+	Regards
+		Oliver
 
-Something like:
-
-immediate_t myfunc_cond;
-
-inline myfunction(void) {
-  static void *insn;   /* pointer to nops/branch instruction */
-  static void *target_inactive, *target_active;
-
-  __builtin_polymorphic_if(&insn, &myfunc_cond) {
-    /* Do something */
-  } else {
-    ...
-  }
-}
-
-I could then save all the insns into my immediate value section and
-later activate them by looking up all of those who refer to myfunc_cond.
-
-The default behavior would be to branch to the target_inactive, and we
-could change insn to jump to target_active dynamically.
-
-Note that we should align the jump instruction so the address could be
-changed atomically in the general case (on x86 and x86_64, we have to
-use an int3 bypass anyway, so we don't really care).
-
-Also, we should fine a way to let gcc tell us what type of jump it had
-to use depending on how far the target of the branch is.
-
-I suspect this would be inherently tricky. If someone is ready to do
-this and tells me "yes, it will be there in 1 month", I am more than
-ready to switch my markers to this and help, but since the core of my
-work is kernel tracing, I don't have the time nor the ressources to
-tackle this problem.
-
-In the event that someone answers "we'll do this in the following 3
-years", I might consider to change the if (immediate(var)) into an
-immediate_if (var) so we can later proceed to the change with simple
-ifdefs without rewriting all the kernel code that would use it.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
