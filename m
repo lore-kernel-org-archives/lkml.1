@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbXGCTlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbXGCTmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759261AbXGCTlX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 15:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbXGCTlP
+	id S1760648AbXGCTmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756428AbXGCTmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 15:41:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52871 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756494AbXGCTlN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 15:41:13 -0400
-Date: Tue, 03 Jul 2007 16:20:47 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB fixes
-Message-Id: <1183491061.3926.193.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 3 Jul 2007 15:42:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57195 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757221AbXGCTmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 15:42:03 -0400
+Date: Tue, 3 Jul 2007 21:41:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Andrew Morton <akpm@osdl.org>,
+       john stultz <johnstul@us.ibm.com>, Stable Team <stable@kernel.org>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+Subject: Re: [PATCH] NTP: remove clock_was_set() call to prevent deadlock
+Message-ID: <20070703194106.GA493@elte.hu>
+References: <1183485920.3291.28.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1183485920.3291.28.camel@chaos>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-For some fixes on V4L/DVB low-level drivers:
+> The clock_was_set() call in seconds_overflow() which happens only when 
+> leap seconds are inserted / deleted is wrong in two aspects:
+> 
+> 1. it results in a call to on_each_cpu() with interrupts disabled
+> 2. it is potential deadlock source vs. call_lock in smp_call_function()
+> 
+> The only possible side effect of the removal might be, that an 
+> absolute CLOCK_REALTIME timer fires 1 second too late, in the rare 
+> case of leap second deletion and an absolute CLOCK_REALTIME timer 
+> which expires in the affected time frame. It will never fire too 
+> early.
+> 
+> This was probably observed by the reporter of a June 30th -> July 1st 
+> hang: http://lkml.org/lkml/2007/7/3/
+> 
+> A similar problem was observed by Dave Jones, who provided a screen 
+> shot with a lockdep back trace, which allowed to analyse the problem.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-   - bttv: fixes a very weird error when used with a v4l1 application;
-   - cx88-blackbird: fixes an endless loop at userspace apps, when 
-                     trying to request the list of tuners;
-   - ttpci: fixes error handling at init() function;
-   - cinergyT2: corrects bad locks on work queue.
+looks good to me.
 
-Cheers,
-Mauro.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
----
-
- drivers/media/dvb/cinergyT2/cinergyT2.c   |   66 +++++++++++++++++-----------
- drivers/media/dvb/ttpci/budget-core.c     |    2 +-
- drivers/media/video/bt8xx/bttv-driver.c   |   13 +++---
- drivers/media/video/cx88/cx88-blackbird.c |    2 +
- 4 files changed, 49 insertions(+), 34 deletions(-)
-
-Hartmut Birr (1):
-      V4L/DVB (5822): Fix the return value in ttpci_budget_init()
-
-Jelle Foks (1):
-      V4L/DVB (5816): Cx88-blackbird: fix vidioc_g_tuner never ending list of tuners
-
-Oleg Nesterov (1):
-      V4L/DVB (5818): CinergyT2: fix flush_workqueue() vs work->func() deadlock
-
-Trent Piepho (1):
-      V4L/DVB (5808): Bttv: fix v4l1 breaking the driver
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
-
+	Ingo
