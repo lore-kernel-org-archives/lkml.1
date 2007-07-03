@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbXGCVUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbXGCVUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757734AbXGCVUD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbXGCVTw
+	id S1756821AbXGCVUZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbXGCVUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:19:52 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42427 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753129AbXGCVTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:19:52 -0400
-Subject: Re: [PATCH -mm] PM: Prevent frozen user mode helpers from failing
-	the freezing of tasks (rev. 2)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Uli Luckas <u.luckas@road.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070703174503.GB108@tv-sign.ru>
-References: <200706252352.24137.rjw@sisk.pl>
-	 <20070625215527.GE2051@elf.ucw.cz> <200706260027.02396.rjw@sisk.pl>
-	 <1183440646.10386.66.camel@localhost.localdomain>
-	 <20070703174503.GB108@tv-sign.ru>
-Content-Type: text/plain
-Date: Wed, 04 Jul 2007 07:19:12 +1000
-Message-Id: <1183497552.3388.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jul 2007 17:20:10 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:46392 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753611AbXGCVUJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:20:09 -0400
+Date: Tue, 3 Jul 2007 22:20:02 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Message-ID: <20070703212002.GA28895@srcf.ucam.org>
+References: <20070703211227.GA28758@srcf.ucam.org> <Pine.LNX.4.44L0.0707031713530.8010-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0707031713530.8010-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Actually, spinlock_t is not suitable. Because spin_unlcok() does NOT imply
-> mb(). The subsequent wait_event_timeout()->atomic_read() may leak into the
-> critical section.
+On Tue, Jul 03, 2007 at 05:16:37PM -0400, Alan Stern wrote:
+> On Tue, 3 Jul 2007, Matthew Garrett wrote:
+> > But that's fine - "Are we undergoing a systemwide suspend" is an easy 
+> > question to ask. Freezing processes instead means that most of those 
+> > paths will never be tested.
 > 
-> We can use set_mb(), if we don't want to play with smp_mb() by hand :)
+> The question is easy to ask, but it's not so easy to figure out what
+> you should do if the answer is Yes.  Freezing processes instead means
+> that those "untested" paths -- in many, many drivers -- won't have to 
+> exist at all.
 
-spin_unlock implies a smp_wmb() but yeah, not a full mb(), though having
-a read leak into a critical section is generally not an issue.
+We're used to the idea of applications blocking when a resource they're 
+using goes away - NFS has done it forever. 
 
-Ben.
-
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
