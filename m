@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbXGCVdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762080AbXGCVeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762012AbXGCVdl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbXGCVdb
+	id S1762080AbXGCVeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbXGCVeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:33:31 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33569 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbXGCVda (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:33:30 -0400
-X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jul 2007 17:33:30 EDT
-Date: Tue, 03 Jul 2007 14:36:09 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
-In-reply-to: <20070703115840.e05a0f47.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <468AC149.4020205@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-References: <200706291330.37070.yinghai.lu@sun.com>
- <20070703115840.e05a0f47.akpm@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 3 Jul 2007 17:34:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35385 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751754AbXGCVeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:34:08 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX19LdXRShcFLkcTwfknWGpWqxLz36f9vhyTC35aI9P
+	LFdoIkMXEZpaWg
+Date: Tue, 3 Jul 2007 23:36:14 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Stephane Eranian <eranian@hpl.hp.com>
+Subject: Re: 2.6.22-rc7: known regressions with patches
+Message-ID: <20070703213614.GA29175@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+	Stephane Eranian <eranian@hpl.hp.com>
+References: <468A7D24.3040004@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <468A7D24.3040004@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 29 Jun 2007 13:30:36 -0700
-> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-> 
->> [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
-> 
-> Please copy netdev@vger.kernel.org on net patches.
-> 
-> It might help to edit code in an 80-col xterm.
-> 
-> Please run scritps/checkpatch.pl across all your diffs.  Its suggestions
-> are by no means compulsory, but they do provide things for you to check up
-> and and have a think about, thanks.
+On 2007.07.03 18:45:24 +0200, Michal Piotrowski wrote:
+> Subject    : OProfile issues
+> References : http://lkml.org/lkml/2007/6/12/207
+> Submitter  : Stephane Eranian <eranian@hpl.hp.com>
+> Handled-By : Björn Steinbrink <B.Steinbrink@gmx.de>
+> Patch      : http://lkml.org/lkml/2007/6/12/392
+>              http://lkml.org/lkml/2007/6/20/275
+>              http://lkml.org/lkml/2007/6/20/276
+> Status     : patches were suggested
 
-I see. later.
+Andi said that one of the regression fixes wasn't critical for .22 and
+that he wants to do a stopgap for the other regression (my patch
+sucked), reverting the code to the .21 version. So you can drop the
+patches and/or me here.
 
-Thanks
-
-Yinghai Lu
+Thanks,
+Björn
