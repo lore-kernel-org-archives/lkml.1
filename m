@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbXGCUiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbXGCUje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760712AbXGCUiS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 16:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758222AbXGCUiA
+	id S1760886AbXGCUje (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 16:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbXGCUj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 16:38:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47437 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758971AbXGCUh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 16:37:56 -0400
-Message-ID: <468AB390.7000608@redhat.com>
-Date: Tue, 03 Jul 2007 16:37:36 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Tue, 3 Jul 2007 16:39:26 -0400
+Received: from h155.mvista.com ([63.81.120.155]:26002 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757088AbXGCUjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 16:39:25 -0400
+Message-ID: <468AB462.4090203@ru.mvista.com>
+Date: Wed, 04 Jul 2007 00:41:06 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/10] Immediate Value - i386 Optimization
-References: <20070703164046.645090494@polymtl.ca> <20070703164515.071300768@polymtl.ca> <468A9956.9050903@zytor.com> <20070703191605.GB4047@Krystal> <468AAF1F.6010909@zytor.com>
-In-Reply-To: <468AAF1F.6010909@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       jeff@garzik.org
+Subject: Re: [PATCH] pata_hpt3x3: Major reworking and testing
+References: <20070703161002.1576c39d@the-village.bc.nu> <200707031938.20956.bzolnier@gmail.com> <20070703185652.0b807fcc@the-village.bc.nu> <200707032212.01619.bzolnier@gmail.com>
+In-Reply-To: <200707032212.01619.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/03/2007 04:18 PM, H. Peter Anvin wrote:
-> 
-> One could, though, use an indirect jump to achieve, if not as good, at
-> least most of the effect:
-> 
-> 	movl	$<patchable>,<reg>
-> 	jmp	*<reg>
-> 
+Hello.
 
-Yeah, but there's this GCC bug:
+Bartlomiej Zolnierkiewicz wrote:
 
-	http://gcc.gnu.org/bugzilla/show_bug.cgi?id=22448
+> http://www.linuxhq.com/kernel/v2.3/10/drivers/block/hpt343.c
 
-You can't even dereference labels in an ASM statement.
+> Does anybody have DOS driver for HPT343?  Google doesn't have it...
+
+    I have the drivers for HPT34[35] -- tried dissassembling them some years 
+ago...
+
+> Thanks,
+> Bart
+
+MBR, Sergei
