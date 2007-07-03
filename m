@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbXGCNTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbXGCN1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbXGCNTx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 09:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbXGCNTp
+	id S1755563AbXGCN1V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 09:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbXGCN1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 09:19:45 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:41479 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbXGCNTo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 09:19:44 -0400
-Date: Tue, 3 Jul 2007 15:21:03 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <20070703132102.GS13886@enneenne.com>
-References: <20070628161450.GD13886@enneenne.com> <1183117082.1170.308.camel@pmac.infradead.org> <20070629150813.GM13886@enneenne.com> <1183132548.1170.360.camel@pmac.infradead.org> <20070629163422.GP13886@enneenne.com> <1183135253.17622.5.camel@shinybook.infradead.org> <20070630171340.GT13886@enneenne.com> <1183291392.2828.17.camel@shinybook.infradead.org> <20070703094831.GA13413@enneenne.com> <1183468191.29081.17.camel@shinybook.infradead.org>
+	Tue, 3 Jul 2007 09:27:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44737 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753256AbXGCN1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 09:27:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: Suspend2 is getting a new name.
+Date: Tue, 3 Jul 2007 15:34:05 +0200
+User-Agent: KMail/1.9.5
+Cc: Bill Davidsen <davidsen@tmr.com>, nigel@suspend2.net,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200707021730.57066.nigel@nigel.suspend2.net> <46894F8F.3070607@tmr.com> <200707030808.26802.nigel@nigel.suspend2.net>
+In-Reply-To: <200707030808.26802.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1183468191.29081.17.camel@shinybook.infradead.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Message-Id: <200707031534.06350.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 09:09:50AM -0400, David Woodhouse wrote:
-> On Tue, 2007-07-03 at 11:48 +0200, Rodolfo Giometti wrote:
-> > On Sun, Jul 01, 2007 at 01:03:11PM +0100, David Woodhouse wrote:
+Hi,
+
+On Tuesday, 3 July 2007 00:08, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Tuesday 03 July 2007 05:18:39 Bill Davidsen wrote:
+> > Nigel Cunningham wrote:
+> > > Hi all.
 > > > 
-> > > Seems reasonable enough in principle -- but whatever you do, don't use
-> > > "long" for it. That would definitely need different behaviour for 32-bit
-> > > vs. 64-bit. Use explicitly sized types such as uint32_t or uint64_t.
-> > 
-> > Here the patch to convert LinuxPPS data structs into fixed ones.
-> > 
-> > Please, take a look at it and report possible modifications.
+> > > Suspend2's name is changing to "TuxOnIce".
+> > > 
+> > > This is for a couple of reasons:
+> > > 
+> > > In recent discussions on LKML, the point was made that the word "Suspend" 
+> is 
+> > > confusing. It is used to refer to both suspending to disk and suspending 
+> to 
+> > > ram. Life will be simpler if we more clearly differentiate the two.
+> > > 
+> > > The name Suspend2 came about a couple of years ago when we made the 2.0 
+> > > release and started self-hosting. If we ever get to a 3.0 release, the 
+> name 
+> > > could become even more confusing! (And there are already problems with 
+> people 
+> > > confusing the name with swsusp and talking about uswsusp as version 3!).
+> > > 
+> > > http://www.suspend2.net is still working at the moment, but we'll shift to 
+> > > http://www.tuxonice.net over the next while. The wiki and bugzilla are 
+> > > already done; email will remain on suspend2.net for a little while and git 
+> > > trees will be renamed at the time of the next stable release.
+> > > 
+> > I guess this is "good news, bad news" time. The good news is that the 
+> > "suspend with working resume" project is still active, the bad news is 
+> > that making provisions for long term out of mainline operation sounds as 
+> > if you have no hope of getting this code into the mainline kernel. :-(
 > 
-> Looks relatively sane at first glance; busy this week so haven't looked
-> very hard yet. Two thing though... you're mixing proper C types
-> (uint32_t) and the Linux-specific legacy crap types (__u32). Pick one. I
-> won't recommend _which_ one, because if I do I'll make Andrew unhappy.
-> But pick one; don't use both at the same time.
+> Let's not turn this into a flamewar, please. This is just a name change, 
+> nothing more.
 > 
-> Also read Documentation/volatile-considered-harmful.txt and ponder
-> deeply your use of 'volatile' on certain members of struct pps_s.
+> As far as I know, the desire on Rafael's part and mine is still to get at 
+> least some of the functionality merged. The only reason this isn't happening 
+> yet is that we're both busy with other aspects of the work. Rafael is 
+> focussing on infrastructure issues, I'm focussing on minimising the diff and 
+> finishing off cleaning up and adding comments to functions.
 
-I will! Thanks a lot.
+That's correct, thanks for saying this!
 
-Rodolfo
+My first target is to introduce a framework allowing drivers to have different
+callbacks for hibernation and suspend.   Unfortunately, that turned out to
+require quite a lot of work - and time - to do.
+
+Greetings,
+Rafael
+
 
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+"Premature optimization is the root of all evil." - Donald Knuth
