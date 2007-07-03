@@ -1,109 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbXGCQbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbXGCQcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760640AbXGCQbR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 12:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbXGCQbH
+	id S1759612AbXGCQcn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 12:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbXGCQcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 12:31:07 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39581 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756013AbXGCQbG (ORCPT
+	Tue, 3 Jul 2007 12:32:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:55332 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212AbXGCQce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 12:31:06 -0400
-Date: Tue, 3 Jul 2007 09:31:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andre Noll <maan@systemlinux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux 2.6.22-rc7
-In-Reply-To: <alpine.LFD.0.98.0707030908390.9434@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707030921400.4810@schroedinger.engr.sgi.com>
-References: <alpine.LFD.0.98.0707011427380.1172@woody.linux-foundation.org>
- <20070703155519.GY22589@skl-net.de> <alpine.LFD.0.98.0707030908390.9434@woody.linux-foundation.org>
+	Tue, 3 Jul 2007 12:32:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=cY7sUeTLtATXXUq5qPFELgYh/VJloC+8JUb4eEU43cB6s5ALc6/P5wAnVTqha8wdVStJoG8N7YwS2udjdu8nbs6Q6gL62SF44b4ED9pLPTTqW6l4oE8BXLTBc2uUScslj1qf93dVjZkmCjge0Rg1TyKM6/WydZ2AEXVR9XU+a6A=
+Message-ID: <a44ae5cd0707030932h16a90ca3j8ad65b7a3ec64b03@mail.gmail.com>
+Date: Tue, 3 Jul 2007 09:32:32 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.22-rc6-mm1 -- BUG - EIP: [<c01a77a1>] sysfs_addrm_finish+0x1c2/0x226 SS:ESP 0068:c5ff9db8
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007, Linus Torvalds wrote:
+I tried to remove the ipw2200 module and hit this BUG.
 
-> > There seems to be a locking problem:
-> 
-> Ok, I _think_ this is actually ok, and the lock validator is unhappy just 
-> because we don't disable irq's when initializing the slab, so the fact 
-> that we take the list_lock with interrupts enabled looks scary.
-
-Yes it is okay since no one else can use the slab at this point.
-
-> But the reason it seems to be ok is that it doesn't matter if interrupts 
-> are enabled or not, because nobody can *get* to the list_lock, since the 
-> thing hasn't been fully set up yet. So no interrupts will try to take the 
-> lock (and cause any deadlocks) anyway.
-
-Right.
-
-> However, it might be worth avoiding the warning, even if it seems bogus in 
-> this case. Christoph? Do you agree with the analysis? And the patch might 
-> be as simple as changing early_kmem_cache_node_alloc() to enable 
-> interrupts at the _end_ of the function, rather than immediately after 
-> calling new_slab().
-
-new_slab() enables and disables interrupts during usual operations. During 
-bootstrap interrupts are enabled and so new_slab() falsely disables 
-interrupts when we do the alloc by hand thing in early_kmem_cache_node_alloc
-for NUMA. We need to enable interrupts there since otherwise boot will 
-continue with interrupts disabled.
-
-> Andre, does that simple change fix it for you (move the 
-> "local_irq_enable()" to the end of early_kmem_cache_node_alloc)?
-
-Yes that should make the lock checker happy since interrupts are disabled 
-when calling add_partial(). local_irq_enable can be called later without a 
-problem. Useless longer interrupt hold off though.
-
-
-
-SLUB: Make lockdep happy by not calling add_partial with interrupts 
-enabled during bootstrap
-
-If we move the local_irq_enable() to the end of the function then
-add_partial() in early_kmem_cache_node_alloc() will be called
-with interrupts disabled like during regular operations.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/slub.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2007-07-03 09:27:00.000000000 -0700
-+++ linux-2.6/mm/slub.c	2007-07-03 09:27:45.000000000 -0700
-@@ -1798,8 +1798,6 @@ static struct kmem_cache_node * __init e
- 	BUG_ON(kmalloc_caches->size < sizeof(struct kmem_cache_node));
- 
- 	page = new_slab(kmalloc_caches, gfpflags | GFP_THISNODE, node);
--	/* new_slab() disables interupts */
--	local_irq_enable();
- 
- 	BUG_ON(!page);
- 	n = page->freelist;
-@@ -1811,6 +1809,12 @@ static struct kmem_cache_node * __init e
- 	init_kmem_cache_node(n);
- 	atomic_long_inc(&n->nr_slabs);
- 	add_partial(n, page);
-+
-+	/*
-+	 * new_slab() disables interupts. If we do not reenable interrupts here
-+	 * then bootup would continue with interrupts disabled.
-+	 */
-+	local_irq_enable();
- 	return n;
- }
- 
-
-
-
+kernel BUG at fs/sysfs/dir.c:271!
+invalid opcode: 0000 [#1]
+PREEMPT
+Modules linked in: i915 drm cpufreq_conservative cpufreq_powersave
+cpufreq_performance firewire_sbp2 parport_pc lp parport snd_intel8x0
+snd_ac97_codec ac97_bus pcmcia snd_pcm_oss snd_mixer_oss snd_pcm
+snd_seq_dummy sdhci ipw2200 mmc_core yenta_socket rsrc_nonstatic
+pcmcia_core ieee80211 ieee80211_crypt snd_seq_oss snd_seq_midi_event
+snd_seq snd_timer snd_seq_device snd iTCO_wdt iTCO_vendor_support
+soundcore snd_page_alloc firewire_ohci firewire_core crc_itu_t
+ehci_hcd uhci_hcd usbcore
+CPU:    0
+EIP:    0060:[<c01a77a1>]    Not tainted VLI
+EFLAGS: 00010202   (2.6.22-rc6-mm1 #2)
+EIP is at sysfs_addrm_finish+0x1c2/0x226
+eax: 00000001   ebx: c5ff9dc0   ecx: c058aa40   edx: 00000001
+esi: c5ff9de8   edi: c37c3240   ebp: c5ff9e1c   esp: c5ff9db8
+ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Process modprobe (pid: 3519, ti=c5ff9000 task=c5ef15e0 task.ti=c5ff9000)
+Stack: c03a3eda c5ff9e24 00000000 00000001 dead4ead ffffffff ffffffff c0657cf0
+       00000000 c046359d c5ff9de0 c5ff9de0 00000000 00000001 dead4ead ffffffff
+       ffffffff c0657cf0 00000000 c046359d c5ff9de0 c5ff9de0 c37c3240 c5ff9e24
+Call Trace:
+ [<c01a7833>] remove_dir+0x2e/0x35
+ [<c01a7894>] __sysfs_remove_dir+0x5a/0x61
+ [<c01a78d1>] sysfs_remove_dir+0x2c/0x30
+ [<c0239386>] kobject_del+0xf/0x19
+ [<c02b76c6>] device_del+0x254/0x27a
+ [<c0321215>] netdev_unregister_sysfs+0x1b/0x1e
+ [<c03168af>] unregister_netdevice+0x1c3/0x1fe
+ [<c03168fc>] unregister_netdev+0x12/0x1a
+ [<f89b102f>] ipw_pci_remove+0x59/0x1c4 [ipw2200]
+ [<c0252c28>] pci_device_remove+0x19/0x39
+ [<c02b966e>] __device_release_driver+0x74/0x90
+ [<c02b9b23>] driver_detach+0x9a/0xd7
+ [<c02b91ef>] bus_remove_driver+0x5d/0x79
+ [<c02b9b87>] driver_unregister+0x8/0xa
+ [<c0252d92>] pci_unregister_driver+0x13/0x55
+ [<f89b1c51>] ipw_exit+0x1c/0x1e [ipw2200]
+ [<c0144427>] sys_delete_module+0x1bd/0x22a
+ [<c01040be>] sysenter_past_esp+0x5f/0x99
+ [<ffffe410>] 0xffffe410
+ =======================
+INFO: lockdep is turned off.
+Code: d8 e8 30 58 09 00 ba 01 00 00 00 83 7f 0c 00 75 0c 8b 57 1c 80
+f6 01 c1 ea 08 83 e2 01 b8 40 aa 58 c0 e8 8f 5e 0a 00 85 c0 74 04 <0f>
+0b eb fe 8d 55 a4 89 57 0c b8 00 00 00 80 0f c1 47 04 85 c0
+EIP: [<c01a77a1>] sysfs_addrm_finish+0x1c2/0x226 SS:ESP 0068:c5ff9db8
