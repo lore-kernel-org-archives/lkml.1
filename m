@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758969AbXGCKb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbXGCKcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758969AbXGCKb2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 06:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbXGCKbT
+	id S1759455AbXGCKcm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 06:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXGCKcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 06:31:19 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47416 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754006AbXGCKbR (ORCPT
+	Tue, 3 Jul 2007 06:32:36 -0400
+Received: from pne-smtpout2-sn1.fre.skanova.net ([81.228.11.159]:47000 "EHLO
+	pne-smtpout2-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756504AbXGCKcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 06:31:17 -0400
-Date: Tue, 3 Jul 2007 11:31:07 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, adilger@clusterfs.com,
-       David Chinner <dgc@sgi.com>, suparna@in.ibm.com, cmm@us.ibm.com,
-       xfs@oss.sgi.com, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070703103107.GA29763@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, adilger@clusterfs.com,
-	David Chinner <dgc@sgi.com>, suparna@in.ibm.com, cmm@us.ibm.com,
-	xfs@oss.sgi.com
-References: <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070630165246.GA5159@schatzie.adilger.int> <20070703100848.GA14936@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070703100848.GA14936@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 3 Jul 2007 06:32:35 -0400
+X-Greylist: delayed 4177 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jul 2007 06:32:35 EDT
+Date: Tue, 3 Jul 2007 11:22:43 +0200 (CEST)
+From: Peter Osterlund <petero2@telia.com>
+X-X-Sender: petero@r3000.localdomain
+To: Tejun Heo <htejun@gmail.com>
+cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, hch@infradead.org
+Subject: Re: PKTCDVD related bugzilla bugs
+In-Reply-To: <46889817.4050007@gmail.com>
+Message-ID: <Pine.LNX.4.64.0707031111320.7564@r3000.localdomain>
+References: <46889817.4050007@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 03:38:48PM +0530, Amit K. Arora wrote:
-> > FA_FL_DEALLOC		0x01 /* deallocate unwritten extent (default allocate) */
-> > FA_FL_KEEP_SIZE	0x02 /* keep size for EOF {pre,de}alloc (default change size) */
-> > FA_FL_DEL_DATA	0x04 /* delete existing data in alloc range (default keep) */
-> 
-> We now have two sets of flags - 
-> 1) the above three with which I think no one has any issues with, and
+On Mon, 2 Jul 2007, Tejun Heo wrote:
 
-Yes, I do.  FA_FL_DEL_DATA is plain stupid, a preallocation call should
-never delete data.  FA_FL_DEALLOC should probably be a separate syscall
-because it's very different functionality.
+> Hello, it's me again.
+>
+> We have another bug which reportedly is related to pktcdvd.  Please respond.
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=7547
+> http://bugzilla.kernel.org/show_bug.cgi?id=7805
 
-While we're at it I also dislike the FA_ prefix becuase it doesn't say
-anything and is far too generic.  FALLOC_ is much better.
+The problem is that when you run pktsetup, the driver will open the cdrom 
+device and keep it open. A very long time ago, the driver didn't do that, 
+but that caused other problems, see for example:
 
-> > FA_FL_ERR_FREE	0x08 /* free preallocation on error (default keep prealloc) */
+ 	http://herbie.ucs.indiana.edu/hypermail/linux/kernel/0407.0/0761.html
 
-NACK on this one.  We should have just one behaviour, and from the thread
-that not freeing the allocation on error.
+I don't know how to fix these problems in the kernel, but I know that an 
+old idea from Jens Axboe was to merge pktsetup and mount in user space so 
+that pktsetup only needs to run when you are actually going to use packet 
+writing.
 
-> > FA_FL_NO_MTIME	0x10 /* keep same mtime (default change on size, data change) */
-> > FA_FL_NO_CTIME	0x20 /* keep same ctime (default change on size, data change) */
-
-NACK to these aswell.  If i_size changes c/mtime need updates, if the size
-doesn't chamge they don't.  No need to add more flags for this.
+-- 
+Peter Osterlund - petero2@telia.com
+http://web.telia.com/~u89404340
