@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbXGCDwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757802AbXGCD6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbXGCDwp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 23:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXGCDwh
+	id S1757802AbXGCD6g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 23:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXGCD60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 23:52:37 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39876 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753615AbXGCDwg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 23:52:36 -0400
-Date: Tue, 3 Jul 2007 13:52:27 +1000
-From: David Chinner <dgc@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       xfs-oss <xfs@oss.sgi.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH] Teach do_mpage_readpage() about unwritten buffers
-Message-ID: <20070703035227.GS989688@sgi.com>
-References: <20070703011019.GQ989688@sgi.com> <20070702202827.ffc59255.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 2 Jul 2007 23:58:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42291 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751486AbXGCD6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 23:58:25 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH for 2.6.22] ACPI: fix acpi_osi=!Linux
+Date: Mon, 2 Jul 2007 23:57:45 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       a.biardi@tiscali.it
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070702202827.ffc59255.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200707022357.45836.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 08:28:27PM -0700, Andrew Morton wrote:
-> On Tue, 3 Jul 2007 11:10:19 +1000 David Chinner <dgc@sgi.com> wrote:
-> 
-> Seems sane, although one does wonder whether it's a worthy tradeoff.  We
-> add additional overhead to readpage[s]() just to avoid some IO during
-> mkswap?
+Need to check for special case "acpi_osi=!Linux"
+before general case "acpi_osi=!*",
+or it will have no effect.
 
-It removes the hidden magic from XFS that hides unwritten extents
-behind holes so that they get zero filled by readpages. With other
-filesystems starting to use unwritten extents, these sorts of tricksy
-hacks should be avoided and we should be explicitly handling unwritten
-buffers just like we explicitly handle holes.
-
-The side effect of this change is that other things (like sys_swapon)
-behave sanely when faced with unwritten extents (i.e. they are not
-detected incorrectly as holes).
-
-FWIW, using unwritten extents for swap files means you can allocate
-gigabytes of swap space on demand, even under severe memory pressure
-because you don't need to write those gigabytes of data to disk.
-Also, the only way to read the contents of the swap file is to go
-directly to the underlying device so even if you screw up the
-permissions on the swap file it will still always read as zeros.
-So there are some benefits here....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 58ceb18..2e7ba61 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -999,11 +999,11 @@ static int __init acpi_osi_setup(char *str)
+ 	if (str == NULL || *str == '\0') {
+ 		printk(KERN_INFO PREFIX "_OSI method disabled\n");
+ 		acpi_gbl_create_osi_method = FALSE;
++	} else if (!strcmp("!Linux", str)) {
++		enable_osi_linux(0);
+ 	} else if (*str == '!') {
+ 		if (acpi_osi_invalidate(++str) == AE_OK)
+ 			printk(KERN_INFO PREFIX "Deleted _OSI(%s)\n", str);
+-	} else if (!strcmp("!Linux", str)) {
+-		enable_osi_linux(0);
+ 	} else if (!strcmp("Linux", str)) {
+ 		enable_osi_linux(1);
+ 	} else if (*osi_additional_string == '\0') {
