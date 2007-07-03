@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbXGCRZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbXGCR1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760692AbXGCRZY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbXGCRZM
+	id S1760867AbXGCR1B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbXGCR0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:25:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32958 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754439AbXGCRZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:25:11 -0400
-Date: Tue, 3 Jul 2007 13:25:06 -0400
-From: Dave Jones <davej@redhat.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: "Ni@m" <niam.niam@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: pci hidden behind transparent bridge
-Message-ID: <20070703172506.GE18725@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-	"Ni@m" <niam.niam@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-	linux-pci@atrey.karlin.mff.cuni.cz
-References: <a9e22dff0707021209i13718d72p84160c4d3ff89e4@mail.gmail.com> <6bffcb0e0707030900k66defc1bi3ff8e70b23a050bf@mail.gmail.com>
-MIME-Version: 1.0
+	Tue, 3 Jul 2007 13:26:54 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:37035 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753911AbXGCR0x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 13:26:53 -0400
+Date: Tue, 3 Jul 2007 13:26:38 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: user-mode-linux-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [uml-devel] [PATCH 4/5] UML - Simplify helper stack handling
+Message-ID: <20070703172638.GA31640@c2.user-mode-linux.org>
+References: <20070614202655.GA9647@c2.user-mode-linux.org> <20070627233701.8e53f3cb.akpm@linux-foundation.org> <200707031728.36472.blaisorblade@yahoo.it>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6bffcb0e0707030900k66defc1bi3ff8e70b23a050bf@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <200707031728.36472.blaisorblade@yahoo.it>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 06:00:14PM +0200, Michal Piotrowski wrote:
- > Hi,
- > 
- > On 02/07/07, Ni@m <niam.niam@gmail.com> wrote:
- > > Hi! I noticed such message:
- > >
- > > "PCI: Bus #07 (-#0a) is hidden behind transparent bridge #06 (-#06)
- > > (try 'pci=assign-busses')
- > > Please report the result to linux-kernel to fix this permanently"
- > >
- > > on my
- > > Linux niam 2.6.22-rc6-cfs-v18 #6 Mon Jul 2 20:19:25 EEST 2007 i686
- > > Intel(R) Celeron(R) M processor 1.50GHz GenuineIntel GNU/Linux
- > >
- > > What does it mean??
- > 
- > Is this a regressions?
+On Tue, Jul 03, 2007 at 05:28:30PM +0200, Blaisorblade wrote:
+> > fchown01 used greatest stack depth: 4892 bytes left
+> 
+> > That's the sum of process stack and interrupt stack, but I doubt if this
+> > little box is using much interrupt stack space.
+> >
+> > No wonder people are still getting stack overflows with 4k stacks...
+> 
+> First, those numbers pretend to be _unused_ stack space.
 
-There's about 8 gazillion of these reports that have been in bugzilla
-since the dinosaurs roamed the lands.   Just ripping the printk out
-would be my preference.
+But on an 8K stack.  If you pretend to be on a 4K stack, and take 4K
+away from that, those numbers are 100s of bytes away from eating the
+stack.
 
-	Dave
+> Well, UML tends to use more stack space than the rest of
+> kernel. Apart it has a bit more layering (even if less than in the
+> past), we must use libc's function too, and they're not written to
+> be executed on an 8k stack.
+
+We don't use very much of libc on kernel stacks.  Also, various things
+have been done to reduce stack usage.  We no longer initialize kernel
+stacks with a signal frame on them.  We now have IRQ stacks.  I've
+also done some amount of general stack usage reduction.  I haven't
+seen anything come very close to running out of stack.
+
+				Jeff
 
 -- 
-http://www.codemonkey.org.uk
+Work email - jdike at linux dot intel dot com
