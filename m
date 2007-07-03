@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbXGCFmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbXGCFoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbXGCFmn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 01:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXGCFmg
+	id S1757813AbXGCFoi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 01:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXGCFob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 01:42:36 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:32858 "EHLO
-	asav01.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbXGCFmf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 01:42:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtYjAMd+iUZKhRO4R2dsb2JhbACBT4Vch3IBARsNBhEB
-From: Dmitry Torokhov <dtor@insightbb.com>
+	Tue, 3 Jul 2007 01:44:31 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49137 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbXGCFoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 01:44:30 -0400
+Subject: Re: [PATCH -mm] PM: Prevent frozen user mode helpers from failing
+	the freezing of tasks (rev. 2)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: blink driver power saving
-Date: Tue, 3 Jul 2007 01:42:35 -0400
-User-Agent: KMail/1.9.3
-Cc: Andi Kleen <ak@suse.de>, Indan Zupancic <indan@nul.nu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bwalle@suse.de
-References: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net> <200707021439.27357.ak@suse.de> <20070702230827.GA9071@elf.ucw.cz>
-In-Reply-To: <20070702230827.GA9071@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070626084854.GA4594@elf.ucw.cz>
+References: <200706252352.24137.rjw@sisk.pl>
+	 <20070625215527.GE2051@elf.ucw.cz> <200706260027.02396.rjw@sisk.pl>
+	 <20070626084854.GA4594@elf.ucw.cz>
+Content-Type: text/plain
+Date: Tue, 03 Jul 2007 15:31:26 +1000
+Message-Id: <1183440686.10386.68.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707030142.36252.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 July 2007 19:08, Pavel Machek wrote:
-> On Mon 2007-07-02 14:39:27, Andi Kleen wrote:
-> > 
-> > > > Perhaps one of you geniuses who all hate it can find a better way to
-> > > > solve the "video output dead after kexec; but need visual feedback to the user
-> > > > while crash dumping" problem. I'm waiting for your patches.
-> > > >
-> > > 
-> > > I don't don't like it ;) Unfortunately too many people end up enabling
-> > 
-> > Yes that's pretty weird. I admit I hadn't expected
-> > that problem. blink is equivalent to "annoy me" and it
-> > is a mystery why so many people should willingly ask their computer to 
-> > annoy them.
+On Tue, 2007-06-26 at 10:48 +0200, Pavel Machek wrote:
+> > The problem, as far as I understand it, is that the instructions can
+> get
+> > reordered if there are no barriers in there.
 > 
-> tristate "Keyboard blink driver"
-> 
-> ...drivers are not expected to act on their own. I was expecting to
-> get nice /sys/class/led* interface to my keyboard leds.
-> 
-> BTW ... I still believe we should have /sys/class/led* interface to
-> those leds. I'd like to make them blink with hdd activity on some
-> machines... of course, that needs non-buggy KBC.
+> Are you sure?  I thought atomic variables have barrirers built-in.
 
-I'll take patches. Ofcourse we'll have to keep the current EV_LED interface
-for compatibility.
+bzzzt. they don't.
 
--- 
-Dmitry
+Ben.
+
+
