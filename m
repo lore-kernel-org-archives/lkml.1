@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbXGCNFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbXGCNJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757556AbXGCNFz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 09:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbXGCNFp
+	id S1756227AbXGCNJW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 09:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbXGCNJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 09:05:45 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:51310 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756631AbXGCNFo (ORCPT
+	Tue, 3 Jul 2007 09:09:16 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:55893 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212AbXGCNJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 09:05:44 -0400
-Message-ID: <468A4994.1060603@anagramm.de>
-Date: Tue, 03 Jul 2007 15:05:24 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
-References: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca>
-In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX19WPkfNc7zLvfS/J7de8sRo1vl1fFZVCwAz1iq
- bkgInQATFP6xLgRg+Trqb9tz2DoocPb4bs4+43Bd9ELGCxwleq
- WbPpy4s6LJU2lVJeQnmnA==
+	Tue, 3 Jul 2007 09:09:15 -0400
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070703094831.GA13413@enneenne.com>
+References: <20070628084003.GQ13886@enneenne.com>
+	 <1183031060.1170.145.camel@pmac.infradead.org>
+	 <20070628161450.GD13886@enneenne.com>
+	 <1183117082.1170.308.camel@pmac.infradead.org>
+	 <20070629150813.GM13886@enneenne.com>
+	 <1183132548.1170.360.camel@pmac.infradead.org>
+	 <20070629163422.GP13886@enneenne.com>
+	 <1183135253.17622.5.camel@shinybook.infradead.org>
+	 <20070630171340.GT13886@enneenne.com>
+	 <1183291392.2828.17.camel@shinybook.infradead.org>
+	 <20070703094831.GA13413@enneenne.com>
+Content-Type: text/plain
+Date: Tue, 03 Jul 2007 09:09:50 -0400
+Message-Id: <1183468191.29081.17.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Vincent!
+On Tue, 2007-07-03 at 11:48 +0200, Rodolfo Giometti wrote:
+> On Sun, Jul 01, 2007 at 01:03:11PM +0100, David Woodhouse wrote:
+> > 
+> > Seems reasonable enough in principle -- but whatever you do, don't use
+> > "long" for it. That would definitely need different behaviour for 32-bit
+> > vs. 64-bit. Use explicitly sized types such as uint32_t or uint64_t.
+> 
+> Here the patch to convert LinuxPPS data structs into fixed ones.
+> 
+> Please, take a look at it and report possible modifications.
 
-Fortier,Vincent [Montreal] schrieb:
-> Hi all,
-> 
-> All my servers and workstations running a 2.6.21.5 kernel hanged exactly
-> when the date shift from june 30th to july 1st.
-> 
-> On my monitoring system every single station running a 2.6.21.5 kernel
-> stoped responding exactly after midnight on the date shift from June
-> 30th to July 1st.  Although, stations still running 2.6.18 to 2.6.20.11
-> worked flawlessly.
-> 
-> I first tought there had been an electricity outage but two of my
-> servers (dell PE 2950 dual-quad core) on UPS in our server room also
-> hanged:
-> Jun 30 23:55:01 urpdev1 /USR/SBIN/CRON[31298]: (root) CMD ([ -x
-> /usr/lib/sysstat/sa1 ] && { [ -r "$DEFAULT" ] && . "$DEFAULT" ; [
-> "$ENABLED" = "true" ] && exec /usr/lib/sysstat/sa1; })
-> Jul  3 11:54:03 urpdev1 syslogd 1.4.1#17: restart.
-> 
-> I could not get anything on any of the 20+ consoles...  All the systems
-> hanged at around the exact same time... When the date shifted from June
-> 30th to July 1st in UTC ...?
-> 
-> Any clue any one?
+Looks relatively sane at first glance; busy this week so haven't looked
+very hard yet. Two thing though... you're mixing proper C types
+(uint32_t) and the Linux-specific legacy crap types (__u32). Pick one. I
+won't recommend _which_ one, because if I do I'll make Andrew unhappy.
+But pick one; don't use both at the same time.
 
-No problems over here with plain 2.6.21.5 on x686
+Also read Documentation/volatile-considered-harmful.txt and ponder
+deeply your use of 'volatile' on certain members of struct pps_s.
 
-You could just reset the date back on one of these machines and
-check the transition again... and see if it was really the kernel
-who crashed.... and check your cron configuration.
-
-Regards,
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+dwmw2
+
