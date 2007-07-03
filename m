@@ -1,594 +1,1134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbXGCRVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760553AbXGCRVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbXGCRVa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbXGCRVR
+	id S1760553AbXGCRVs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbXGCRV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:21:17 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55688 "EHLO smtp.polymtl.ca"
+	Tue, 3 Jul 2007 13:21:27 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55748 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756956AbXGCRVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:21:15 -0400
-Message-Id: <20070703172044.862617647@polymtl.ca>
+	id S1759414AbXGCRVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 13:21:24 -0400
+Message-Id: <20070703172044.554306291@polymtl.ca>
 References: <20070703170843.204442953@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 03 Jul 2007 13:08:45 -0400
+Date: Tue, 03 Jul 2007 13:08:44 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Christoph Hellwig <hch@infradead.org>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: [patch 2/4] Linux Kernel Markers - Add kconfig menus for the marker code
-Content-Disposition: inline; filename=linux-kernel-markers-kconfig-menus.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  3 Jul 2007 17:20:45 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 1/4] Linux Kernel Markers, architecture independent code.
+Content-Disposition: inline; filename=linux-kernel-markers-architecture-independent-code.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  3 Jul 2007 17:20:44 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the increasing complexity of today's user-space application and the wide
-deployment of SMP systems, the users need an increasing understanding of the
-behavior and performance of a system across multiple processes/different
-execution contexts/multiple CPUs.  In applications such as large clusters
-(Google, IBM), video acquisition (Autodesk), embedded real-time systems (Wind
-River, Monta Vista, Sony) or sysadmin/programmer-type tasks (SystemTAP from
-Redhat), a tool that permits tracing of kernel-user space interaction becomes
-necessary.
+The marker activation functions sits in kernel/marker.c. A hash table is used
+to keep track of the armed/disarmed markers, so they can be activated at module
+load time.
 
-Usage of such tools have been made to successfully pinpoint problems such as:
-latency issues in a user-space video acquisition application, slowdown
-problems in large clusters due to a switch to a different filesystems with a
-different cache size, abnormal Linux scheduler latency (just to name a few
-that I have personally investigated).
+The marker IDs will be used as unique identifiers for markers. They are
+assigned by the marker infrastructure and are used to identify a marker in a
+compact representation either in a probe handler and especially in a trace.
 
-The currently existing solutions does not give a system-wide overview of what
-- and when - things are happening on the system.  Ptracing a program works
-with few processes, but quickly becomes useless when it comes to keeping track
-of many processes.
+Marker group is a parameter given by the probe provider. It can be used, for
+instance, to tell which set of buffers the information must be send to when
+recording a trace.
 
-Bugs occuring because of bad interaction of such complex systems can be very
-hard to find due to the fact that they occur rarely (sometimes once a week on
-hundreds of machines).  One can therefore only hope at having the best
-conditions to statistically reproduce the bug while extracting information
-from the system.  Some bugs have been successfully found at Google using their
-ktrace tracer only because they could enable it on production machines and
-therefore recreate the same context where the bug happened.
-
-Therefore, it makes sense to offer an instrumentation set of the most relevant
-events occurring in the Linux that can have the smallest performance cost
-possible when not active while not requiring a reboot of a production system
-to activate.  This is essentially what the markers are providing.
-
-Since we cannot limit the growth of the Linux kernel, nor can we pre-determine
-each and every "interesting" instrumentation within each subsystem and driver,
-it is sensible to let this task to the persons who knows the best their code. 
-Adding instrumentation should therefore be as easy as adding and maintaining a
-"printk" in the kernel code from the developer's point of view.
-
-Towards a complete tracing mechanism in the Linux kernel, the markers are only
-one step forward.  The following step is to connect probes to those markers
-that will record the tracing information in buffers exported to user-space,
-organized in timestamped "events".  Probe callbacks are responsible for
-serializing the information passed as parameter to the markers (described by
-the format string) into the events.  A control mechanism to activate/stop the
-tracing is required, as well as a daemon that maps the buffers to write them
-to disk or send them through the network.
-
-Keeping track of the events also requires a centralized infrastructure : the
-idea is to assign a unique ID to each event so they can be later recognized in
-the trace.  Keeping in mind that recording the complete instrumentation site
-name string for each event would be more that inefficient, assigning a numeric
-unique identifier makes sense.
-
-Finally, support for gathering events coming from user-space, with a minimal
-performance impact, is very useful to see the interaction between the system's
-execution contexts.
-
-The last steps are currently implemented in Linux Trace Toolkit Next
-Generation (LTTng).
-
-The SystemTAP project could clearly benefit from such an infrastructure for
-tracing.  In addition, they would be providing support for dynamic addition of
-kernel probes through breakpoints/jumps when possible, with the associated
-restrictions (accessing local variables, reentrancy, speed).
-
-
-
-
-This marker infrastructure is a hook-callback mechanism.  It is meant to have
-an impact as low as possible on the system performances when no callback
-(probe) is connected so markers (hooks) can be compiled into a production
-kernel without noticeable slowdown.
-
-Why use the markers instead of kprobes?
-
-The rationale behind this mechanism the following :
-
-1 - It makes sense to have instrumentation (for tracing, profiling)
-    within the kernel source tree so that it can follow its evolution.
-    Other options, such as kprobes, imply maintaining an external set of
-    instrumentation that must be adapted to each kernel version.
-    Although it may make sense for distributions, it is not well suited
-    for kernel developers, since they rarely work on a major
-    distribution image.
-2 - kprobes, although being a very good attempt at providing a dynamic
-    hooking mechanism that has no impact when disabled, suffers from
-    important limitations :
-  a - It cannot access local variables of a function at a particular
-      point within its body that will be consistent thorough the kernel
-      versions without involving a lot of recurrent hair-pulling.
-  b - Kprobes is slow, since it involves going though a trap each time
-      a probe site is executed. Even though the djprobes project made a
-      good effort to make things faster, it cannot currently instrument
-      fully-preemptible kernels and does not solve (1), (2a) and (2c).
-  c - On the reentrancy side, going though a trap (thus playing with
-      interrupt enable/disable) and taking spinlocks are not suited to
-      some code paths, i.e. :
-      kernel/lockdep.c, printk (within the lockdep_on()/lockdep_off()).
-      It must be understood that some code paths interesting for
-      instrumentation often present a particular reentrancy challenge.
-
-Some more details :
-
-The probe callback connection to its markers is done dynamically.  A predicted
-branch (see the immediate values infrastructure) is used to skip the hook stack
-setup and function call when the marker is "disabled" (no probe is connected).
-Further optimizations can be implemented for each architecture to make this
-branch faster.
-
-Instrumentation of a subsystem becomes therefore a straightforward task.  One
-has to add instrumentation within the key locations of the kernel code in the
-following form :
-
-trace_mark(subsystem_event, "%d %p", myint, myptr);
-
-
-Jim Keniston <jkenisto@us.ibm.com> adds:
-
-kprobes remains a vital foundation for SystemTap.  But markers are attactive
-as an alternate source of trace/debug info.  Here's why:
-
-1. Markers will live in the kernel and presumably be kept up to date by
-   the maintainers of the enclosing code.  We have a growing set of tapsets
-   (probe libraries), each of which "knows" the source code for a certain area
-   of the kernel.  Whenever the underlying kernel code changes (e.g., a
-   function or one of its args disappears or is renamed), there's a chance
-   that the tapset will become invalid until we bring it back in sync with the
-   kernel.  As you can imagine, maintaining tapsets separate from the kernel
-   source is a maintenance headache.  Markers could mitigate this.
-
-2. Because the kernel code is highly optimized, the kernel's dwarf info
-   doesn't always accurately reflect which variables have which values on
-   which lines (sometimes even upon entry to a function).  A marker is a way
-   to ensure that values of interest are available to SystemTap at marked
-   points.
-
-3. Sometimes the overhead of a kprobe probepoint is too much (either in
-   terms of time or locking) for the particular hotspot we want to probe.
-
-
-In OLS2006 proceedings, vol. 1
-http://www.linuxsymposium.org/2006/linuxsymposium_procv1.pdf
-
-Frank C. Eigler, from SystemTAP, presents its "static probing markers"
-(pp. 261-268) in his paper "Problem Solving With Systemtap".
-
-He explains the advantages :
-
-"In exchange for this effort, systemtap marker-based probes are faster and
- more precise than kprobes.  The better precision comes from not having to
- covet the compiler's favours.  Such fickle favours include retaining
- clean boundaries in the instruction stream between interesting statements,
- and precisely describing positions of variables in the stack frame.  Since
- markers don't rely on debugging information, neither favour is required,
- and the compiler can channel its charms into unabated optimization.  The
- speed advantage comes from using direct call instructions rather than int 3
- breakpoints to dispatch to the systemtap handlers.  We will see below just
- how big a difference this makes."
-
-He does a comparison of his "simple" marker solution with kprobes (his simple
-solution looks like my generic markers, but with a major race condition).  I
-also posted numbers about the markers performance impact a few months ago in
-the initial thread.  I can dig into my emails to find them for you if you
-consider it important for the Changelog.
-
-He concludes with :
-
-"To the extent that is true, we propose that these groups consider using a
- shared pool of static markers as the basic kernel-side instrumentation
- mechanism.  If they prove to have as low dormant cost and as high active
- performance as initial experience suggests, perhaps this could motivate the
- various tracing efforts and kernel subsystem developers to finally join
- forces.  Let's designate standard trace/probe points once and for all. 
- Tracing backends can attach to these markers the same way systemtap would. 
- There would be no need for them to maintain kernel patches any more. 
- Let's think about it."
-
-
-This patch:
-
-Add Kconfig menus for the marker code.
-
-[bunk@stusta.de: Never ever select MODULES]
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Adrian Bunk <bunk@stusta.de>
 ---
 
- arch/alpha/Kconfig       |    2 ++
- arch/arm/Kconfig         |    2 ++
- arch/arm26/Kconfig       |    2 ++
- arch/avr32/Kconfig.debug |    7 +++++++
- arch/cris/Kconfig        |    2 ++
- arch/frv/Kconfig         |    2 ++
- arch/h8300/Kconfig       |    2 ++
- arch/i386/Kconfig        |    2 ++
- arch/ia64/Kconfig        |    2 ++
- arch/m32r/Kconfig        |    2 ++
- arch/m68k/Kconfig        |    2 ++
- arch/m68knommu/Kconfig   |    2 ++
- arch/mips/Kconfig        |    2 ++
- arch/parisc/Kconfig      |    2 ++
- arch/powerpc/Kconfig     |    2 ++
- arch/ppc/Kconfig         |    2 ++
- arch/s390/Kconfig        |    2 ++
- arch/sh/Kconfig          |    2 ++
- arch/sh64/Kconfig        |    2 ++
- arch/sparc/Kconfig       |    2 ++
- arch/sparc64/Kconfig     |    2 ++
- arch/um/Kconfig          |    2 ++
- arch/v850/Kconfig        |    2 ++
- arch/x86_64/Kconfig      |    2 ++
- arch/xtensa/Kconfig      |    2 ++
- kernel/Kconfig.marker    |    7 +++++++
- 26 files changed, 62 insertions(+)
+ include/asm-generic/vmlinux.lds.h |   11 
+ include/linux/marker.h            |  159 +++++++
+ include/linux/module.h            |    5 
+ kernel/Makefile                   |    1 
+ kernel/marker.c                   |  801 ++++++++++++++++++++++++++++++++++++++
+ kernel/module.c                   |   17 
+ 6 files changed, 993 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/arch/alpha/Kconfig
+Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/alpha/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/alpha/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -657,6 +657,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/alpha/Kconfig.debug"
-Index: linux-2.6-lttng/arch/arm/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/arm/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/arm/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -1050,6 +1050,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/arm/Kconfig.debug"
-Index: linux-2.6-lttng/arch/arm26/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/arm26/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/arm26/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -248,6 +248,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/arm26/Kconfig.debug"
-Index: linux-2.6-lttng/arch/cris/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/cris/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/cris/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -202,6 +202,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/cris/Kconfig.debug"
-Index: linux-2.6-lttng/arch/frv/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/frv/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/frv/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -379,6 +379,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/frv/Kconfig.debug"
-Index: linux-2.6-lttng/arch/h8300/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/h8300/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/h8300/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -227,6 +227,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/h8300/Kconfig.debug"
-Index: linux-2.6-lttng/arch/i386/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -1237,6 +1237,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endif # INSTRUMENTATION
- 
- source "arch/i386/Kconfig.debug"
-Index: linux-2.6-lttng/arch/ia64/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/ia64/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/ia64/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -596,6 +596,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/ia64/Kconfig.debug"
-Index: linux-2.6-lttng/arch/m32r/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/m32r/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/m32r/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -412,6 +412,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/m32r/Kconfig.debug"
-Index: linux-2.6-lttng/arch/m68k/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/m68k/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -683,6 +683,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/m68k/Kconfig.debug"
-Index: linux-2.6-lttng/arch/m68knommu/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/m68knommu/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/m68knommu/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -672,6 +672,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/m68knommu/Kconfig.debug"
-Index: linux-2.6-lttng/arch/mips/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/mips/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/mips/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -1961,6 +1961,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/mips/Kconfig.debug"
-Index: linux-2.6-lttng/arch/parisc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/parisc/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/parisc/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -273,6 +273,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/parisc/Kconfig.debug"
-Index: linux-2.6-lttng/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -908,6 +908,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/powerpc/Kconfig.debug"
-Index: linux-2.6-lttng/arch/ppc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/ppc/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/ppc/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -1457,6 +1457,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/ppc/Kconfig.debug"
-Index: linux-2.6-lttng/arch/s390/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/s390/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -549,6 +549,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/s390/Kconfig.debug"
-Index: linux-2.6-lttng/arch/sh/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/sh/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/sh/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -725,6 +725,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/sh/Kconfig.debug"
-Index: linux-2.6-lttng/arch/sh64/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/sh64/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/sh64/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -288,6 +288,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/sh64/Kconfig.debug"
-Index: linux-2.6-lttng/arch/sparc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc/Kconfig	2007-06-15 16:14:10.000000000 -0400
-@@ -315,6 +315,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/sparc/Kconfig.debug"
-Index: linux-2.6-lttng/arch/sparc64/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc64/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc64/Kconfig	2007-06-15 16:14:11.000000000 -0400
-@@ -441,6 +441,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/sparc64/Kconfig.debug"
-Index: linux-2.6-lttng/arch/um/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/um/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/um/Kconfig	2007-06-15 16:14:11.000000000 -0400
-@@ -339,6 +339,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/um/Kconfig.debug"
-Index: linux-2.6-lttng/arch/v850/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/v850/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/v850/Kconfig	2007-06-15 16:14:11.000000000 -0400
-@@ -335,6 +335,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/v850/Kconfig.debug"
-Index: linux-2.6-lttng/arch/x86_64/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/Kconfig	2007-06-15 16:14:11.000000000 -0400
-@@ -795,6 +795,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/x86_64/Kconfig.debug"
-Index: linux-2.6-lttng/arch/xtensa/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/xtensa/Kconfig	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/xtensa/Kconfig	2007-06-15 16:14:11.000000000 -0400
-@@ -255,6 +255,8 @@
- 
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/xtensa/Kconfig.debug"
-Index: linux-2.6-lttng/kernel/Kconfig.marker
+--- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-07-03 12:33:20.000000000 -0400
++++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-07-03 12:33:21.000000000 -0400
+@@ -12,7 +12,11 @@
+ /* .data section */
+ #define DATA_DATA							\
+ 	*(.data)							\
+-	*(.data.init.refok)
++	*(.data.init.refok)						\
++	. = ALIGN(32);							\
++	VMLINUX_SYMBOL(__start___markers) = .;				\
++	*(__markers)							\
++	VMLINUX_SYMBOL(__stop___markers) = .;
+ 
+ #define RO_DATA(align)							\
+ 	. = ALIGN((align));						\
+@@ -129,6 +133,11 @@
+ 		VMLINUX_SYMBOL(__stop___immediate) = .;			\
+ 	}								\
+ 									\
++	/* Markers: strings */						\
++        __markers_strings : AT(ADDR(__markers_strings) - LOAD_OFFSET) {	\
++		*(__markers_strings)					\
++ 	}								\
++									\
+ 	/* Kernel symbol table: strings */				\
+         __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
+ 		*(__ksymtab_strings)					\
+Index: linux-2.6-lttng/include/linux/marker.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/kernel/Kconfig.marker	2007-06-15 16:14:11.000000000 -0400
-@@ -0,0 +1,7 @@
-+# Code markers configuration
++++ linux-2.6-lttng/include/linux/marker.h	2007-07-03 13:03:14.000000000 -0400
+@@ -0,0 +1,159 @@
++#ifndef _LINUX_MARKER_H
++#define _LINUX_MARKER_H
 +
-+config MARKERS
-+	bool "Activate markers"
-+	help
-+	  Place an empty function call at each marker site. Can be
-+	  dynamically changed for a probe function.
-Index: linux-2.6-lttng/arch/avr32/Kconfig.debug
++/*
++ * Code markup for dynamic and static tracing.
++ *
++ * See Documentation/marker.txt.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#ifdef __KERNEL__
++
++#include <linux/immediate.h>
++#include <linux/types.h>
++
++struct module;
++struct __mark_marker;
++
++/*
++ * Unique ID assigned to each registered probe.
++ */
++enum marker_id {
++	MARKER_ID_LOAD_MARKER = 0,	/* Static IDs available (range 0-7) */
++	MARKER_ID_HEARTBEAT_32,
++	MARKER_ID_HEARTBEAT_64,
++	MARKER_ID_COMPACT,		/* Compact IDs (range: 8-127)	    */
++	MARKER_ID_DYNAMIC,		/* Dynamic IDs (range: 128-65535)   */
++};
++
++/* static ids 0-7 reserved for internal use. */
++#define MARKER_CORE_IDS		8
++/* dynamic ids 8-127 reserved for compact events. */
++#define MARKER_COMPACT_IDS	128
++static inline enum marker_id marker_id_type(uint16_t id)
++{
++	if (id < MARKER_CORE_IDS)
++		return (enum marker_id)id;
++	else if (id < MARKER_COMPACT_IDS)
++		return MARKER_ID_COMPACT;
++	else
++		return MARKER_ID_DYNAMIC;
++}
++
++typedef void marker_probe_func(const struct __mark_marker *mdata,
++	const char *fmt, ...);
++
++struct __mark_marker {
++	const char *name;	/* Marker name */
++	const char *format;	/* Marker format string, describing the
++				 * variable argument list.
++				 */
++	const char *args;	/* List of arguments litteraly transformed
++				 * into a string: "arg1, arg2, arg3".
++				 */
++	immediate_t state;	/* Immediate value state. */
++	int flags;		/* Flags controlling the markers flavor.
++				 * Passed to the contidional call declaration
++				 * and used to check that the probe matches the
++				 * markers restrictions at connexion time. */
++	marker_probe_func *call;/* Probe handler function pointer */
++	void *pdata;		/* Private probe data */
++	uint16_t id;		/* Unique marker numeric ID */
++	uint16_t group;		/*
++				 * Per probe information to select to which
++				 * group the marker belongs.
++				 */
++};
++
++#ifdef CONFIG_MARKERS
++
++/*
++ * Generic marker flavor always available.
++ * Note : the empty asm volatile with read constraint is used here instead of a
++ * "used" attribute to fix a gcc 4.1.x bug.
++ * Make sure the alignment of the structure in the __markers section will
++ * not add unwanted padding between the beginning of the section and the
++ * structure. Force alignment to the same alignment as the section start.
++ * Use the natual alignment for a 32 bytes structure (32 bytes).
++ */
++#define _trace_mark(flags, name, format, args...)			\
++	do {								\
++		static const char __mstrtab_name_##name[]		\
++		__attribute__((section("__markers_strings")))		\
++		= #name;						\
++		static const char __mstrtab_format_##name[]		\
++		__attribute__((section("__markers_strings")))		\
++		= format;						\
++		static const char __mstrtab_args_##name[]		\
++		__attribute__((section("__markers_strings")))		\
++		= #args;						\
++		static struct __mark_marker __mark_##name		\
++		__attribute__((section("__markers"), aligned(32))) = 	\
++		{ __mstrtab_name_##name, __mstrtab_format_##name,	\
++		__mstrtab_args_##name, { 0 }, (flags),			\
++		__mark_empty_function, NULL, 0 };			\
++		asm volatile ( "" : : "i" (&__mark_##name));		\
++		__mark_check_format(format, ## args);			\
++		if (unlikely(_immediate((flags), __mark_##name.state))) { \
++			preempt_disable();				\
++			(*__mark_##name.call)(&__mark_##name, format, ## args);\
++			preempt_enable();				\
++		}							\
++	} while (0)
++
++extern void module_marker_update(struct module *mod);
++#else /* !CONFIG_MARKERS */
++#define _trace_mark(flags, name, format, args...) \
++		__mark_check_format(format, ## args)
++static inline void module_marker_update(struct module *mod) { }
++#endif /* CONFIG_MARKERS */
++
++/* Marker with default behavior */
++#define trace_mark(name, format, args...) \
++	_trace_mark(IF_DEFAULT, name, format, ## args)
++
++#define MARK_MAX_FORMAT_LEN	1024
++/* Pass this as a format string for a marker with no argument */
++#define MARK_NOARGS " "
++
++/* To be used for string format validity checking with gcc (TODO) */
++static inline
++void __mark_check_format(const char *fmt, ...)
++#ifdef GCC_SUPPORTS_MARKER_CHECK
++	__attribute__((format (trace_mark, 1, 2)))
++#endif
++{ }
++
++extern marker_probe_func __mark_empty_function;
++
++extern int _marker_probe_register(int flags, const char *name,
++				const char *format, marker_probe_func *probe,
++				void *pdata, enum marker_id id,
++				uint16_t group);
++extern int marker_set_group(const char *name, uint16_t group);
++extern int marker_set_id(const char *name, enum marker_id id);
++
++/*
++ * Returns the pdata given to marker_probe_register.
++ */
++extern void *marker_probe_unregister(const char *name);
++
++#define marker_probe_register(name, format, probe, pdata, group)	\
++	_marker_probe_register(IF_DEFAULT, name, format, probe, pdata, \
++				MARKER_ID_DYNAMIC, group)
++
++extern int marker_arm(const char *name);
++extern int marker_disarm(const char *name);
++extern int marker_query_probe(const char *name, marker_probe_func **probe,
++				void **pdata, uint16_t *id, uint16_t *group);
++extern int marker_list_probe(marker_probe_func *probe);
++extern const struct __mark_marker *marker_query(const char *name, int instance);
++extern void marker_probe_clean_pdata(void *pdata);
++
++#endif /* __KERNEL__ */
++#endif
+Index: linux-2.6-lttng/include/linux/module.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/avr32/Kconfig.debug	2007-06-15 16:14:02.000000000 -0400
-+++ linux-2.6-lttng/arch/avr32/Kconfig.debug	2007-06-15 16:14:11.000000000 -0400
-@@ -9,6 +9,9 @@
- menu "Instrumentation Support"
- 	depends on EXPERIMENTAL
+--- linux-2.6-lttng.orig/include/linux/module.h	2007-07-03 12:33:20.000000000 -0400
++++ linux-2.6-lttng/include/linux/module.h	2007-07-03 12:54:59.000000000 -0400
+@@ -16,6 +16,7 @@
+ #include <linux/kobject.h>
+ #include <linux/moduleparam.h>
+ #include <linux/immediate.h>
++#include <linux/marker.h>
+ #include <asm/local.h>
  
-+menu "Instrumentation Support"
-+	depends on EXPERIMENTAL
+ #include <asm/module.h>
+@@ -380,6 +381,10 @@
+ 	const struct __immediate *immediates;
+ 	unsigned int num_immediates;
+ #endif
++#ifdef CONFIG_MARKERS
++	struct __mark_marker *markers;
++	unsigned int num_markers;
++#endif
+ };
+ #ifndef MODULE_ARCH_INIT
+ #define MODULE_ARCH_INIT {}
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2007-07-03 12:33:20.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2007-07-03 12:54:59.000000000 -0400
+@@ -1726,6 +1726,10 @@
+ #ifdef CONFIG_IMMEDIATE
+ 	immediateindex = find_sec(hdr, sechdrs, secstrings, "__immediate");
+ #endif
++#ifdef CONFIG_MARKERS
++	markersindex = find_sec(hdr, sechdrs, secstrings, "__markers");
++ 	markersstringsindex = find_sec(hdr, sechdrs, secstrings, "__markers_strings");
++#endif
+ 
+ 	/* Don't keep modinfo section */
+ 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
+@@ -1885,6 +1889,10 @@
+ 			sechdrs[immediateindex].sh_size / sizeof(*mod->immediates);
+ 	}
+ #endif
++	if (markersindex)
++		sechdrs[markersindex].sh_flags |= SHF_ALLOC;
++	if (markersstringsindex)
++		sechdrs[markersstringsindex].sh_flags |= SHF_ALLOC;
+ 
+ 	mod->unused_syms = (void *)sechdrs[unusedindex].sh_addr;
+ 	if (unusedcrcindex)
+@@ -1926,6 +1934,13 @@
+ 		if (err < 0)
+ 			goto cleanup;
+ 	}
++#ifdef CONFIG_MARKERS
++	if (markersindex) {
++		mod->markers = (void *)sechdrs[markersindex].sh_addr;
++		mod->num_markers =
++			sechdrs[markersindex].sh_size / sizeof(*mod->markers);
++	}
++#endif
+ 
+         /* Find duplicate symbols */
+ 	err = verify_export_symbols(mod);
+@@ -1950,6 +1965,8 @@
+         }
+ #endif
+ 
++	module_marker_update(mod);
 +
- config KPROBES
- 	bool "Kprobes"
- 	depends on DEBUG_KERNEL
-@@ -21,6 +24,10 @@
+ 	module_immediate_setup(mod);
  
- source "kernel/Kconfig.immediate"
- 
-+source "kernel/Kconfig.marker"
+ 	err = module_finalize(hdr, sechdrs, mod);
+Index: linux-2.6-lttng/kernel/marker.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/kernel/marker.c	2007-07-03 13:03:03.000000000 -0400
+@@ -0,0 +1,801 @@
++/*
++ * Copyright (C) 2007 Mathieu Desnoyers
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/types.h>
++#include <linux/jhash.h>
++#include <linux/list.h>
++#include <linux/rcupdate.h>
++#include <linux/marker.h>
++#include <linux/err.h>
 +
-+endmenu
++static uint8_t mark_next_compact_id = MARKER_CORE_IDS;
++/* Next available ID. Dynamic range : 128-65535 */
++static uint16_t mark_next_id = MARKER_COMPACT_IDS;
 +
- endmenu
++extern struct __mark_marker __start___markers[];
++extern struct __mark_marker __stop___markers[];
++
++/*
++ * module_mutex nests inside markers_mutex. Markers mutex protects the builtin
++ * and module markers, and the hash table.
++ */
++DEFINE_MUTEX(markers_mutex);
++
++/*
++ * Marker hash table, containing the active markers.
++ * Protected by module_mutex.
++ */
++#define MARKER_HASH_BITS 6
++#define MARKER_TABLE_SIZE (1 << MARKER_HASH_BITS)
++
++struct marker_entry {
++	struct hlist_node hlist;
++	int flags;
++	char *format;
++	marker_probe_func *probe;
++	void *pdata;
++	uint16_t id;	/* 16 bits unique numeric ID */
++	uint16_t group;
++	int state;	/* Armed or disarmed */
++	char name[0];	/* Contains name'\0'format'\0' */
++};
++
++static struct hlist_head marker_table[MARKER_TABLE_SIZE];
++
++/*
++ * Empty callback provided as a probe to the markers. By providing this to a
++ * disabled marker, we makes sure the  execution flow is always valid even
++ * though the function pointer change and the marker enabling are two distinct
++ * operations that modifies the execution flow of preemptible code.
++ */
++void __mark_empty_function(const struct __mark_marker *mdata,
++	const char *fmt, ...)
++{
++}
++EXPORT_SYMBOL_GPL(__mark_empty_function);
++
++/*
++ * Get marker if the marker is present in the marker hash table.
++ * Must be called with markers_mutex held.
++ * Returns NULL if not present.
++ */
++static struct marker_entry *_get_marker(const char *name)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct marker_entry *e;
++	size_t len = strlen(name) + 1;
++	u32 hash = jhash(name, len-1, 0);
++
++	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
++	hlist_for_each_entry(e, node, head, hlist)
++		if (!strcmp(name, e->name))
++			return e;
++	return NULL;
++}
++
++/*
++ * Add the marker to the marker hash table. Must be called with markers_mutex
++ * held.
++ */
++static int _add_marker(int flags, const char *name,
++	const char *format, marker_probe_func *probe, void *pdata,
++	enum marker_id id, uint16_t group)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct marker_entry *e;
++	size_t name_len = strlen(name) + 1;
++	size_t format_len = 0;
++	u32 hash = jhash(name, name_len-1, 0);
++
++	/* First check if there are still IDs available */
++	switch (id) {
++		case MARKER_ID_DYNAMIC:
++			if (mark_next_id == 0)
++				return -ENOSPC;
++			break;
++		case MARKER_ID_COMPACT:
++			if (mark_next_compact_id == 0)
++				return -ENOSPC;
++			break;
++		default:
++			/* Only allow 0-7 range for core IDs */
++			if ((uint16_t)id >= MARKER_CORE_IDS)
++				return -EPERM;
++	}
++
++	if (format)
++		format_len = strlen(format) + 1;
++	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
++	hlist_for_each_entry(e, node, head, hlist) {
++		if (!strcmp(name, e->name)) {
++			printk(KERN_NOTICE
++				"Marker %s busy, probe %p already installed\n",
++				name, e->probe);
++			return -EBUSY;	/* Already there */
++		}
++	}
++	/*
++	 * Using kmalloc here to allocate a variable length element. Could
++	 * cause some memory fragmentation if overused.
++	 */
++	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
++			GFP_KERNEL);
++	if (!e)
++		return -ENOMEM;
++	memcpy(&e->name[0], name, name_len);
++	if (format) {
++		e->format = &e->name[name_len];
++		memcpy(e->format, format, format_len);
++	} else
++		e->format = NULL;
++	e->flags = flags;
++	e->probe = probe;
++	e->pdata = pdata;
++	e->group = group;
++	switch (id) {
++		case MARKER_ID_COMPACT:
++			e->id = mark_next_compact_id++;
++			break;
++		case MARKER_ID_DYNAMIC:
++			e->id = mark_next_id++;
++			break;
++		default:
++			e->id = (uint16_t)id;
++	}
++	e->state = 0;
++	hlist_add_head(&e->hlist, head);
++	return 0;
++}
++
++/*
++ * Remove the marker from the marker hash table. Must be called with mutex_lock
++ * held.
++ */
++static void *_remove_marker(const char *name)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct marker_entry *e;
++	int found = 0;
++	size_t len = strlen(name) + 1;
++	void *pdata = NULL;
++	u32 hash = jhash(name, len-1, 0);
++
++	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
++	hlist_for_each_entry(e, node, head, hlist) {
++		if (!strcmp(name, e->name)) {
++			found = 1;
++			break;
++		}
++	}
++	if (found) {
++		pdata = e->pdata;
++		hlist_del(&e->hlist);
++		kfree(e);
++	}
++	return pdata;
++}
++
++/*
++ * Set the mark_entry format to the format found in the element.
++ */
++static int _marker_set_format(struct marker_entry **entry, const char *format)
++{
++	struct marker_entry *e;
++	size_t name_len = strlen((*entry)->name) + 1;
++	size_t format_len = strlen(format) + 1;
++
++	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
++			GFP_KERNEL);
++	if (!e)
++		return -ENOMEM;
++	memcpy(&e->name[0], (*entry)->name, name_len);
++	e->format = &e->name[name_len];
++	memcpy(e->format, format, format_len);
++	e->flags = (*entry)->flags;
++	e->probe = (*entry)->probe;
++	e->pdata = (*entry)->pdata;
++	e->state = (*entry)->state;
++	e->id = (*entry)->id;
++	e->group = (*entry)->group;
++	hlist_add_before(&e->hlist, &(*entry)->hlist);
++	hlist_del(&(*entry)->hlist);
++	kfree(*entry);
++	*entry = e;
++	trace_mark(marker_load, "name %s format %s id %hu",
++			e->name, e->format, e->id);
++	return 0;
++}
++
++/* Sets the probe callback corresponding to one marker. */
++static int _set_marker(struct marker_entry **entry,
++			struct __mark_marker *elem)
++{
++	int ret;
++	BUG_ON(strcmp((*entry)->name, elem->name) != 0);
++
++	if ((*entry)->format) {
++		if (strcmp((*entry)->format, elem->format) != 0) {
++			printk(KERN_NOTICE
++				"Format mismatch for probe %s "
++				"(%s), marker (%s)\n",
++				(*entry)->name,
++				(*entry)->format,
++				elem->format);
++			return -EPERM;
++		}
++	} else {
++		ret = _marker_set_format(entry, elem->format);
++		if (ret)
++			return ret;
++	}
++	if ((*entry)->flags & IF_LOCKDEP
++		&& !(elem->flags & IF_LOCKDEP)) {
++		printk(KERN_NOTICE
++			"Incompatible lockdep flags for "
++			"probe %s\n",
++			(*entry)->name);
++		return -EPERM;
++	}
++	elem->call = (*entry)->probe;
++	elem->pdata = (*entry)->pdata;
++	elem->id = (*entry)->id;
++	elem->group = (*entry)->group;
++	__immediate_update(&elem->state, 1);
++	return 0;
++}
++
++static void _disable_marker(struct __mark_marker *elem)
++{
++	__immediate_update(&elem->state, 0);
++	elem->call = __mark_empty_function;
++	/*
++	 * Leave the pdata and id there, because removal is racy and should be
++	 * done only after a synchronize_sched(). There are never used until
++	 * the next initialization anyway.
++	 */
++}
++
++/*
++ * Updates the probe callback corresponding to a range of markers.
++ * Must be called with markers_mutex held.
++ */
++static void _marker_update_probe_range(
++	struct __mark_marker *begin,
++	struct __mark_marker *end,
++	struct module *probe_module,
++	int *refcount, int *nr_armed)
++{
++	struct __mark_marker *iter;
++	struct marker_entry *mark_entry;
++
++	for (iter = begin; iter < end; iter++) {
++		mark_entry = _get_marker(iter->name);
++		if (mark_entry && mark_entry->state) {
++			_set_marker(&mark_entry, iter);
++			/*
++			 * ignore error, continue
++			 */
++			if (probe_module)
++				if (probe_module ==
++			__module_text_address((unsigned long)mark_entry->probe))
++					(*refcount)++;
++			(*nr_armed)++;
++		} else {
++			_disable_marker(iter);
++		}
++	}
++}
++
++#ifdef CONFIG_MODULES
++/*
++ * Update module probes.
++ * Must be called with markers_mutex held.
++ */
++static inline void __marker_update_probes_modules(struct module *probe_module,
++	int *refcount, int *nr_armed)
++{
++	struct module *mod;
++
++	list_for_each_entry(mod, &modules, list) {
++		if (!mod->taints) {
++			_marker_update_probe_range(mod->markers,
++				mod->markers+mod->num_markers,
++				probe_module, refcount, nr_armed);
++		}
++	}
++}
++#else
++static inline void __marker_update_probes_modules(struct module *probe_module,
++	int *refcount, *nr_armed)
++{
++}
++#endif
++
++/*
++ * Defragment the markers IDs. Should only be called when the IDs are not used
++ * by anyone, typically when all probes are disarmed. Clients of the markers
++ * rely on having their code markers armed during a "session" to make sure there
++ * will be no ID compaction. (for instance, a marker ID is never reused during a
++ * trace).
++ * There is no need to synchronize the hash table entries with the section
++ * elements because none is armed.
++ */
++void _marker_id_defrag(void)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct marker_entry *e;
++	unsigned int i;
++
++	mark_next_compact_id = MARKER_CORE_IDS;
++	mark_next_id = MARKER_COMPACT_IDS;
++
++	for (i = 0; i < MARKER_TABLE_SIZE; i++) {
++		head = &marker_table[i];
++		hlist_for_each_entry(e, node, head, hlist) {
++			switch (marker_id_type(e->id)) {
++				case MARKER_ID_COMPACT:
++					e->id = mark_next_compact_id++;
++					break;
++				case MARKER_ID_DYNAMIC:
++					e->id = mark_next_id++;
++					break;
++				default:
++					/* default is to keep the static ID */
++					break;
++			}
++		}
++	}
++}
++
++/*
++ * Update probes, removing the faulty probes.
++ * Issues a synchronize_sched() when no reference to the module passed
++ * as parameter is found in the probes so the probe module can be
++ * safely unloaded from now on.
++ */
++static inline void __marker_update_probes(struct module *probe_module)
++{
++	int refcount = 0, nr_armed = 0;
++
++	/* Core kernel markers */
++	_marker_update_probe_range(__start___markers,
++			__stop___markers, probe_module, &refcount, &nr_armed);
++	/* Markers in modules. */
++	__marker_update_probes_modules(probe_module, &refcount,
++			&nr_armed);
++	if (probe_module && refcount == 0)
++		synchronize_sched();
++	if (!nr_armed)
++		_marker_id_defrag();
++}
++
++#ifdef CONFIG_MODULES
++/*
++ * Setup the marker according to the data present in the marker hash table
++ * upon module load. If an error occur during the set probe range,
++ * refuse to load the module. Must be called with module_mutex held.
++ */
++void module_marker_update(struct module *mod)
++{
++	int nr_armed = 0;
++	if (!mod->taints)
++		_marker_update_probe_range(mod->markers,
++			mod->markers+mod->num_markers, NULL, NULL, &nr_armed);
++}
++
++/*
++ * Update the system wide probes, with modules. */
++static inline void _marker_update_probes(struct module *probe_module)
++{
++	mutex_lock(&module_mutex);
++	__marker_update_probes(probe_module);
++	mutex_unlock(&module_mutex);
++}
++#else
++/* Update the system wide probes, without modules. */
++static inline void _marker_update_probes(struct module *probe_module)
++{
++	__marker_update_probes(probe_module);
++}
++#endif
++
++/*
++ * Register a probe : set the callback for each marker.
++ * Markers must be disarmed to be registered.
++ */
++int _marker_probe_register(int flags, const char *name, const char *format,
++			marker_probe_func *probe, void *pdata,
++			enum marker_id id, uint16_t group)
++{
++	struct marker_entry *entry;
++	int ret = 0;
++
++	mutex_lock(&markers_mutex);
++	entry = _get_marker(name);
++	if (entry && entry->state) {
++		ret = -EBUSY;
++		goto end;
++	}
++	ret = _add_marker(flags, name, format, probe, pdata, id, group);
++	if (ret)
++		goto end;
++	_marker_update_probes(NULL);
++end:
++	mutex_unlock(&markers_mutex);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(_marker_probe_register);
++
++/*
++ * Set the group of a marker.
++ */
++int marker_set_group(const char *name, uint16_t group)
++{
++	struct marker_entry *entry;
++	int ret = 0;
++
++	mutex_lock(&markers_mutex);
++	entry = _get_marker(name);
++	if (!entry) {
++		ret = -ENOENT;
++		goto end;
++	} else if (entry->state) {
++		ret = -EBUSY;
++		goto end;
++	}
++
++	entry->group = group;
++	_marker_update_probes(NULL);
++end:
++	mutex_unlock(&markers_mutex);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(marker_set_group);
++
++/*
++ * Set the ID of a marker.
++ */
++int marker_set_id(const char *name, enum marker_id id)
++{
++	struct marker_entry *entry;
++	int ret = 0;
++
++	mutex_lock(&markers_mutex);
++	entry = _get_marker(name);
++	if (!entry) {
++		ret = -ENOENT;
++		goto end;
++	} else if (entry->state) {
++		ret = -EBUSY;
++		goto end;
++	}
++
++	if (id == marker_id_type(entry->id)) {
++		ret = 0;
++		goto end;
++	}
++	switch (id) {
++		case MARKER_ID_COMPACT:
++			entry->id = mark_next_compact_id++;
++			break;
++		case MARKER_ID_DYNAMIC:
++			entry->id = mark_next_id++;
++			break;
++		default:
++			entry->id = (uint16_t)id;
++	}
++	_marker_update_probes(NULL);
++end:
++	mutex_unlock(&markers_mutex);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(marker_set_id);
++
++/*
++ * Unregister a probe : unset the callback for each marker.
++ * Markers must be disarmed to be unregistered.
++ * returns the pdata if ok.
++ * else, returns a ERR_PTR().
++ */
++void *marker_probe_unregister(const char *name)
++{
++	struct module *probe_module;
++	struct marker_entry *entry;
++	void *pdata;
++
++	mutex_lock(&markers_mutex);
++	entry = _get_marker(name);
++	if (!entry) {
++		pdata = ERR_PTR(-ENOENT);
++		goto end;
++	} else if (entry->state) {
++		pdata = ERR_PTR(-EBUSY);
++		goto end;
++	}
++	/* In what module is the probe handler ? */
++	probe_module = __module_text_address((unsigned long)entry->probe);
++	pdata = _remove_marker(name);
++	_marker_update_probes(probe_module);
++end:
++	mutex_unlock(&markers_mutex);
++	return pdata;
++}
++EXPORT_SYMBOL_GPL(marker_probe_unregister);
++
++/*
++ * Disarm and remove every marker referencing pdata.
++ */
++void marker_probe_clean_pdata(void *pdata)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct marker_entry *e;
++	unsigned int i;
++
++	mutex_lock(&markers_mutex);
++	for (i = 0; i < MARKER_TABLE_SIZE; i++) {
++		head = &marker_table[i];
++		hlist_for_each_entry(e, node, head, hlist) {
++			if (e->pdata == pdata) {
++				e->state = 0;
++			}
++		}
++	}
++	_marker_update_probes(NULL);
++	synchronize_sched();
++
++	for (i = 0; i < MARKER_TABLE_SIZE; i++) {
++		head = &marker_table[i];
++		hlist_for_each_entry(e, node, head, hlist) {
++			if (e->pdata == pdata) {
++				hlist_del(&e->hlist);
++				kfree(e);
++			}
++		}
++	}
++	_marker_update_probes(NULL);
++	mutex_unlock(&markers_mutex);
++}
++EXPORT_SYMBOL_GPL(marker_probe_clean_pdata);
++
++/*
++ * Arm the probe : arm the immediate values.
++ * A probe must have been previously registered.
++ */
++int marker_arm(const char *name)
++{
++	struct marker_entry * entry;
++	int ret = 0;
++
++	mutex_lock(&markers_mutex);
++	entry = _get_marker(name);
++	if (!entry) {
++		ret = -ENOENT;
++		goto end;
++	}
++	/*
++	 * The marker is known to the marker_load callback only once it provides
++	 * a format string, which can come later from the marker section,
++	 * through _marker_set_format().
++	 */
++	if (entry->format)
++		trace_mark(marker_load, "name %s format %s id %hu",
++			name, entry->format, entry->id);
++	entry->state = 1;
++	_marker_update_probes(NULL);
++end:
++	mutex_unlock(&markers_mutex);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(marker_arm);
++
++/*
++ * Disarm the probe : disarm the immediate and set the empty callback for each
++ * marker.
++ */
++int marker_disarm(const char *name)
++{
++	struct marker_entry * entry;
++	int ret = 0;
++
++	mutex_lock(&markers_mutex);
++	entry = _get_marker(name);
++	if (!entry) {
++		ret = -ENOENT;
++		goto end;
++	}
++	entry->state = 0;
++	_marker_update_probes(NULL);
++end:
++	mutex_unlock(&markers_mutex);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(marker_disarm);
++
++/*
++ * Get the callback, pdata and ID assigned to a marker.
++ * Can be used to verify if the caller module is the owner of the probe. Data
++ * returned should not be touched if the module is not owner, because no locking
++ * prevents modification of these structure by the owner.
++ * returns -ENOENT if the probe is not registered.
++ * returns 0 if ok.
++ */
++int marker_query_probe(const char *name, marker_probe_func **probe,
++				void **pdata, uint16_t *id, uint16_t *group)
++{
++	struct marker_entry * entry;
++	int ret = 0;
++
++	mutex_lock(&markers_mutex);
++	entry = _get_marker(name);
++	if (!entry) {
++		ret = -ENOENT;
++		goto end;
++	}
++	*probe = entry->probe;
++	*pdata = entry->pdata;
++	*id = entry->id;
++	*group = entry->group;
++end:
++	mutex_unlock(&markers_mutex);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(marker_query_probe);
++
++/*
++ * Looks up a marker by its name and instance number within the specificed
++ * range and returns the associated data structure.
++ */
++static const struct __mark_marker *_marker_query_range(const char *name,
++	int instance,
++	const struct __mark_marker *begin,
++	const struct __mark_marker *end)
++{
++	const struct __mark_marker *iter;
++	int found = 0;
++
++	for (iter = begin; iter < end; iter++) {
++		if (strcmp(name, iter->name) != 0)
++			continue;
++		if (found++ == instance)
++			return iter;
++	}
++	return NULL;
++}
++
++/* Query the markers in the modules */
++#ifdef CONFIG_MODULES
++static inline const struct __mark_marker *marker_query_modules(const char *name,
++			int instance)
++{
++	struct module *mod;
++	const struct __mark_marker *mdata = NULL;
++
++	mutex_lock(&module_mutex);
++	/* Markers in modules. */
++	list_for_each_entry(mod, &modules, list) {
++		if (!mod->taints) {
++			mdata = _marker_query_range(name, instance,
++				mod->markers,
++				mod->markers+mod->num_markers);
++			if (mdata)
++				break;
++		}
++	}
++	mutex_unlock(&module_mutex);
++	return mdata;
++}
++#else
++static inline const struct __mark_marker *marker_query_modules(const char *name,
++			int instance)
++{
++	return NULL;
++}
++#endif
++
++/*
++ * Looks up a marker by its name and instance number and returns the
++ * associated data structure.
++ */
++const struct __mark_marker *marker_query(const char *name, int instance)
++{
++	const struct __mark_marker *mdata;
++
++	mutex_lock(&markers_mutex);
++	/* Core kernel markers */
++	mdata = _marker_query_range(name, instance,
++			__start___markers, __stop___markers);
++	if (!mdata)
++		mdata = marker_query_modules(name, instance);
++	mutex_unlock(&markers_mutex);
++	return mdata;
++}
++EXPORT_SYMBOL_GPL(marker_query);
++
++/*
++ * Provides a listing of the markers present in the kernel along with their
++ * callback and format string.
++ */
++static int _marker_list_probe_range(marker_probe_func *probe,
++	const struct __mark_marker *begin,
++	const struct __mark_marker *end)
++{
++	const struct __mark_marker *iter;
++	int found = 0;
++
++	for (iter = begin; iter < end; iter++) {
++		if (probe)
++			if (probe != iter->call) continue;
++		printk("name %s func 0x%p format \"%s\"\n",
++			iter->name,
++			iter->call, iter->format);
++		found++;
++	}
++	return found;
++}
++
++#ifdef CONFIG_MODULES
++static inline int marker_list_probe_modules(marker_probe_func *probe)
++{
++	int found = 0;
++	struct module *mod;
++
++	printk("Listing module markers\n");
++	mutex_lock(&module_mutex);
++	list_for_each_entry(mod, &modules, list) {
++		if (!mod->taints) {
++			printk("Listing markers for module %s\n", mod->name);
++			found += _marker_list_probe_range(probe,
++				mod->markers, mod->markers+mod->num_markers);
++		}
++	}
++	mutex_unlock(&module_mutex);
++	return found;
++}
++#else
++static inline int marker_list_probe_modules(marker_probe_func *probe)
++{
++	return 0;
++}
++#endif
++
++/*
++ * Calls _marker_list_probe_range for the core markers and modules markers.
++ * Marker listing uses the modlist_lock to synchronise.
++ * TODO : should output this listing to a procfs file.
++ */
++int marker_list_probe(marker_probe_func *probe)
++{
++	int found = 0;
++
++	mutex_lock(&markers_mutex);
++	/* Core kernel markers */
++	printk("Listing kernel markers\n");
++	found += _marker_list_probe_range(probe,
++			__start___markers, __stop___markers);
++	/* Markers in modules. */
++	found += marker_list_probe_modules(probe);
++	mutex_unlock(&markers_mutex);
++	return found;
++}
++EXPORT_SYMBOL_GPL(marker_list_probe);
+Index: linux-2.6-lttng/kernel/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/kernel/Makefile	2007-07-03 12:33:20.000000000 -0400
++++ linux-2.6-lttng/kernel/Makefile	2007-07-03 12:33:21.000000000 -0400
+@@ -59,6 +59,7 @@
+ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
+ obj-$(CONFIG_IMMEDIATE) += immediate.o
++obj-$(CONFIG_MARKERS) += marker.o
  
- endmenu
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
 
 -- 
 Mathieu Desnoyers
