@@ -1,139 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761499AbXGCVV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761322AbXGCVZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761499AbXGCVV5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280AbXGCVVs
+	id S1761322AbXGCVZm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbXGCVZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:21:48 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:64995 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753851AbXGCVVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:21:46 -0400
-Subject: [PATCH 2/4] scsi: megaraid_sas -- add module param fast_load
-From: bo yang <bo.yang@lsi.com>
-To: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
-       sumant.patro@lsi.com
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 01 Jul 2007 12:42:33 -0400
-Message-Id: <1183308153.4723.8.camel@dhcp-75-197.se.lsil.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-X-OriginalArrivalTime: 03 Jul 2007 21:21:30.0199 (UTC) FILETIME=[1F698670:01C7BDB8]
+	Tue, 3 Jul 2007 17:25:30 -0400
+Received: from anchor-post-30.mail.demon.net ([194.217.242.88]:2620 "EHLO
+	anchor-post-30.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753888AbXGCVZ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:25:29 -0400
+Date: Tue, 3 Jul 2007 22:25:24 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [PATCH] Re: Sparc32: random invalid instruction occourances on
+ sparc32 (sun4c)
+In-Reply-To: <1183490778.29081.35.camel@shinybook.infradead.org>
+Message-ID: <Pine.LNX.4.61.0707032209230.30376@mtfhpc.demon.co.uk>
+References: <468A7D14.1050505@googlemail.com>  <Pine.LNX.4.61.0707031817050.29930@mtfhpc.demon.co.uk>
+  <Pine.LNX.4.61.0707031910280.29930@mtfhpc.demon.co.uk>
+ <1183490778.29081.35.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Driver will skip physical devices scan for the first time if the
-fast_load is set.
+Hi David,
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+The problem is that sun4c Sparc32 can't handle un-aligned variables so 
+having a 64bit readzone word that is not aligned on a 64bit boundary is a 
+problem.
 
----
+In addition, having looked at the size calculations, it looks to me as if 
+not all of them got updated to handle 64bit redzone words. This may be part of 
+the problem. By making BYTES_PER_WORD 64bit aligned (Sparc32) this is 
+nolonger an issue.
 
-drivers/scsi/megaraid/megaraid_sas.c |   64 +++++++++++++++++++------
- 1 files changed, 50 insertions(+), 14 deletions(-)
+Regards
+ 	Mark Fortescue.
 
-diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
-linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c 2007-06-30
-03:36:39.000000000 -0400
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c 2007-06-30
-03:59:27.000000000 -0400
-@@ -46,6 +46,21 @@
- #include <scsi/scsi_host.h>
- #include "megaraid_sas.h"
- 
-+/*
-+ * Modules parameters
-+ */
-+
-+/*
-+ * Fast driver load option, skip scanning for physical devices during
-load.
-+ * This would result in physical devices being skipped during driver
-load
-+ * time. These can be later added though, using /proc/scsi/scsi
-+ */
-+static unsigned int fast_load = 0;
-+module_param_named(fast_load, fast_load, int, 0);
-+MODULE_PARM_DESC(fast_load,
-+ "megasas: Faster loading of the driver, skips physical devices! \
-+  (default=0)");
-+
- MODULE_LICENSE("GPL");
- MODULE_VERSION(MEGASAS_VERSION);
- MODULE_AUTHOR("megaraidlinux@lsi.com");
-@@ -1094,6 +1109,40 @@ megasas_service_aen(struct megasas_insta
- 	megasas_return_cmd(instance, cmd);
- }
- 
-+static struct megasas_instance *megasas_lookup_instance(u16 host_no)
-+{
-+	int i;
-+
-+	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
-+
-+		if ((megasas_mgmt_info.instance[i]) &&
-+		    (megasas_mgmt_info.instance[i]->host->host_no == host_no))
-+			return megasas_mgmt_info.instance[i];
-+	}
-+
-+	return NULL;
-+}
-+
-+static int megasas_slave_alloc(struct scsi_device *sdev) {
-+	struct megasas_instance *instance ;
-+	int tmp_fastload = fast_load;
-+	instance = megasas_lookup_instance(sdev->host->host_no);
-+
-+	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
-+		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
-+			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1)) {
-+			/* If fast load option was set and scan for last device is
-+			 * over, reset the fast_load flag so that during a possible
-+			 * next scan, devices can be made available
-+			 */
-+			fast_load = 0;
-+		}
-+		return -ENXIO;
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * Scsi host template for megaraid_sas driver
-  */
-@@ -1103,6 +1152,7 @@ static struct scsi_host_template megasas
- 	.name = "LSI Logic SAS based MegaRAID driver",
- 	.proc_name = "megaraid_sas",
- 	.slave_configure = megasas_slave_configure,
-+	.slave_alloc = megasas_slave_alloc,
- 	.queuecommand = megasas_queue_command,
- 	.eh_device_reset_handler = megasas_reset_device,
- 	.eh_bus_reset_handler = megasas_reset_bus_host,
-@@ -2969,20 +3019,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
- 	return error;
- }
- 
--static struct megasas_instance *megasas_lookup_instance(u16 host_no)
--{
--	int i;
--
--	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
--
--		if ((megasas_mgmt_info.instance[i]) &&
--      (megasas_mgmt_info.instance[i]->host->host_no == host_no))
--   return megasas_mgmt_info.instance[i];
-- }
--
-- return NULL;
--}
--
- static int megasas_mgmt_ioctl_fw(struct file *file, unsigned long arg)
- {
- 	struct megasas_iocpacket __user *user_ioc =
+On Tue, 3 Jul 2007, David Woodhouse wrote:
 
-
-
+> On Tue, 2007-07-03 at 19:57 +0100, Mark Fortescue wrote:
+>>> Commit b46b8f19c9cd435ecac4d9d12b39d78c137ecd66 partially fixed alignment
+>>> issues but does not ensure that all 64bit alignment requirements of sparc32
+>>> are met. Tests have shown that the redzone2 word can become misallignd.
+>
+> Oops, sorry about that. I'm not sure about your patch though -- I think
+> I'd prefer to keep the redzone misaligned (and hence _right_ next to the
+> real data), and just deal with it.
+>
+> typedef unsigned long long __aligned__((BYTES_PER_WORD)) redzone_t;
+>
+> -- 
+> dwmw2
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
