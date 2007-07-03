@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbXGCRTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbXGCRVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757954AbXGCRTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 13:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbXGCRTe
+	id S1758674AbXGCRVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 13:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbXGCRVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 13:19:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59555 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754366AbXGCRTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 13:19:33 -0400
-Date: Tue, 3 Jul 2007 13:19:13 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-Cc: Arne Georg Gleditsch <argggh@dolphinics.no>,
-       Florian Attenberger <valdyn@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
-Message-ID: <20070703171913.GD18725@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
-	Arne Georg Gleditsch <argggh@dolphinics.no>,
-	Florian Attenberger <valdyn@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <87d4z97bks.fsf@pelargir.dolphinics.no> <F1D642E5A91BC94D9504EC83AE19E6B0128A63@ecqcmtlmail3.quebec.int.ec.gc.ca>
+	Tue, 3 Jul 2007 13:21:03 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:45189 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754366AbXGCRVB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 13:21:01 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 19:20:59 +0200
+User-Agent: KMail/1.9.7
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031508.45595.rjw@sisk.pl> <200707031709.29968.rjw@sisk.pl>
+In-Reply-To: <200707031709.29968.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0128A63@ecqcmtlmail3.quebec.int.ec.gc.ca>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200707031920.59940.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 11:36:42AM -0400, Fortier,Vincent [Montreal] wrote:
- > > -----Message d'origine-----
- > > De : linux-kernel-owner@vger.kernel.org 
- > > [mailto:linux-kernel-owner@vger.kernel.org] De la part de 
- > > Arne Georg Gleditsch
- > > 
- > > Florian Attenberger <valdyn@gmail.com> writes:
- > > > yep, controlled by ntpd.
- > > > You're right according to
- > > > ftp://hpiers.obspm.fr/iers/bul/bulc/bulletinc.33
- > > > that event shouldn't have been there.
- > > 
- > > I'm not all that versed in ntp-ish, but it appears that the 
- > > leap second insertion should be propagated through the ntp protocol.
- > > Whether the leap second in question came from a ntp server 
- > > giving out wrong data or from a misinterpretation or bug in 
- > > ntpd is of course hard to say, but either way turning the 
- > > clock back is unlikely to reconstruct the circumstances.  An 
- > > interesting exercise might be to code up a small program to 
- > > call adjtimex with timex.status |= STA_INS, to see if this 
- > > can trigger the problem.  (The bogus leap second might be a 
- > > red herring entirely, of course...)
- > 
- > You are probably right, I did tried to reproduce the problem without
- > success...
- > 
- > Although it is wierd that it happend only on 2.6.21 kernels... It did
- > not happend on any of my workstations/servers running either 2.6.18 or
- > 2.6.20.  
- > 
- > Could dynticks be involved?
+Am Dienstag, 3. Juli 2007 schrieb Rafael J. Wysocki:
+> On Tuesday, 3 July 2007 15:08, Rafael J. Wysocki wrote:
+> > On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
+> > > On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
+> > > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
+> > > > a screaming nightmare - either the suspend fails because syslog (for 
+> > > > instance) can't be frozen, or the machine deadlocks for some other 
+> > > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
+> > > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
+> > > > and just not use the freezer.
+> > > 
+> > > The main reason for deadlocks is because we do a sys_sync() after the
+> > > freeze, which we shouldn't do.
+> > 
+> > So why don't we remove the sys_sync() from freeze_processes() instead?
+> 
+> The patch follows (untested).
+> 
+> Greetings,
+> Rafael
+> 
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> We shouldn't sync filesystems from within the freezer, because it's not needed
+> for suspend to RAM and leads to problems with FUSE.
 
-I saw it on a box that happened to have lockdep enabled.
-(I run it everywhere thankfully).  This is what it looked like..
-http://www.codemonkey.org.uk/junk/img_0421.jpg
+This seems fishy. Swsusp needs enough clean memory to make enough
+room for the image. If you sync before you freeze, the running tasks can
+redirty memory.
+What makes you sure that you don't die as shrink_all_memory() writes out
+pages?
 
-	Dave
+	Regards
+		Oliver
 
--- 
-http://www.codemonkey.org.uk
