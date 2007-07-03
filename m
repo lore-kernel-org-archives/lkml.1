@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbXGCNJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbXGCNKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbXGCNJW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 09:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbXGCNJQ
+	id S1757345AbXGCNKU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 09:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbXGCNKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 09:09:16 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:55893 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753212AbXGCNJP (ORCPT
+	Tue, 3 Jul 2007 09:10:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:45784 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754155AbXGCNKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 09:09:15 -0400
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-From: David Woodhouse <dwmw2@infradead.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070703094831.GA13413@enneenne.com>
-References: <20070628084003.GQ13886@enneenne.com>
-	 <1183031060.1170.145.camel@pmac.infradead.org>
-	 <20070628161450.GD13886@enneenne.com>
-	 <1183117082.1170.308.camel@pmac.infradead.org>
-	 <20070629150813.GM13886@enneenne.com>
-	 <1183132548.1170.360.camel@pmac.infradead.org>
-	 <20070629163422.GP13886@enneenne.com>
-	 <1183135253.17622.5.camel@shinybook.infradead.org>
-	 <20070630171340.GT13886@enneenne.com>
-	 <1183291392.2828.17.camel@shinybook.infradead.org>
-	 <20070703094831.GA13413@enneenne.com>
-Content-Type: text/plain
-Date: Tue, 03 Jul 2007 09:09:50 -0400
-Message-Id: <1183468191.29081.17.camel@shinybook.infradead.org>
+	Tue, 3 Jul 2007 09:10:03 -0400
+Date: Tue, 3 Jul 2007 09:09:46 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: "Xin Zhao" <uszhaoxin@gmail.com>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: how do versioning filesystems take snapshot of opened files?
+Message-ID: <20070703090946.49e6062f@think.oraclecorp.com>
+In-Reply-To: <4ae3c140707022228u2b5098c5v766b9dc9a7e09ea1@mail.gmail.com>
+References: <4ae3c140707022228u2b5098c5v766b9dc9a7e09ea1@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-03 at 11:48 +0200, Rodolfo Giometti wrote:
-> On Sun, Jul 01, 2007 at 01:03:11PM +0100, David Woodhouse wrote:
-> > 
-> > Seems reasonable enough in principle -- but whatever you do, don't use
-> > "long" for it. That would definitely need different behaviour for 32-bit
-> > vs. 64-bit. Use explicitly sized types such as uint32_t or uint64_t.
+On Tue, 3 Jul 2007 01:28:57 -0400
+"Xin Zhao" <uszhaoxin@gmail.com> wrote:
+
+> Hi,
 > 
-> Here the patch to convert LinuxPPS data structs into fixed ones.
 > 
-> Please, take a look at it and report possible modifications.
+> If a file is already opened when snapshot command is issued,  the file
+> itself could be in an inconsistent state already. Before the file is
+> closed, maybe part of the file contains old data, the rest contains
+> new data.
+> How does a versioning filesystem guarantee that the file snapshot is
+> in a consistent state in this case?
+> 
+> I googled it but didn't find any answer. Can someone explain it a
+> little bit?
 
-Looks relatively sane at first glance; busy this week so haven't looked
-very hard yet. Two thing though... you're mixing proper C types
-(uint32_t) and the Linux-specific legacy crap types (__u32). Pick one. I
-won't recommend _which_ one, because if I do I'll make Andrew unhappy.
-But pick one; don't use both at the same time.
+It's the same answer as in most filesystem related questions...it
+depends ;)  Consistent state means many different things.  It may mean
+that the metadata accurately reflects the space on disk allocated to
+the file and that all data for the file is properly on disk (ie from an
+fsync).
 
-Also read Documentation/volatile-considered-harmful.txt and ponder
-deeply your use of 'volatile' on certain members of struct pps_s.
+But, even this is less than useful because very few files on the
+filesystem stand alone.  Applications spread their state across a
+number of files and so consistent means something different to
+every application.
 
--- 
-dwmw2
+Getting a snapshot that is useful with respect to application data
+requires help from the application.  The app needs to be shutdown or
+paused prior to the snapshot and then started up again after the
+snapshot is taken.
+
+-chris
+
 
