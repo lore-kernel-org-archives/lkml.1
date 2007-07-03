@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbXGCUhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbXGCUiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758842AbXGCUhy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 16:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbXGCUhp
+	id S1760712AbXGCUiS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 16:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758222AbXGCUiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 16:37:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36852 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756583AbXGCUho (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 16:37:44 -0400
-Date: Tue, 3 Jul 2007 13:36:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Valdis.Kletnieks@vt.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc6-mm1
-Message-Id: <20070703133650.20663702.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707010350220.1818@scrub.home>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-	<6150.1183128630@turing-police.cc.vt.edu>
-	<20070629140130.59d58c44.akpm@linux-foundation.org>
-	<15437.1183177066@turing-police.cc.vt.edu>
-	<20070629221510.95c4c8e1.akpm@linux-foundation.org>
-	<20070630211017.GA26234@uranus.ravnborg.org>
-	<20070630143914.029ce2a7.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0707010350220.1818@scrub.home>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Jul 2007 16:38:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47437 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758971AbXGCUh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 16:37:56 -0400
+Message-ID: <468AB390.7000608@redhat.com>
+Date: Tue, 03 Jul 2007 16:37:36 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/10] Immediate Value - i386 Optimization
+References: <20070703164046.645090494@polymtl.ca> <20070703164515.071300768@polymtl.ca> <468A9956.9050903@zytor.com> <20070703191605.GB4047@Krystal> <468AAF1F.6010909@zytor.com>
+In-Reply-To: <468AAF1F.6010909@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jul 2007 03:53:08 +0200 (CEST)
-Roman Zippel <zippel@linux-m68k.org> wrote:
-
-> Hi,
+On 07/03/2007 04:18 PM, H. Peter Anvin wrote:
 > 
-> On Sat, 30 Jun 2007, Andrew Morton wrote:
+> One could, though, use an indirect jump to achieve, if not as good, at
+> least most of the effect:
 > 
-> > > > I continue to believe that kbuild's lets-trash-your-symlink behaviour is
-> > > > obnoxious, but I was unable to persuade anyone else of this.
-> > >
-> > > I thought we fixed that long time ago?!?!
-> > 
-> > Nope, a simple `make oldconfig' breaks the symlink.
-> 
-> KCONFIG_OVERWRITECONFIG was added especially for you. :-)
+> 	movl	$<patchable>,<reg>
+> 	jmp	*<reg>
 > 
 
-But nobody told me!
+Yeah, but there's this GCC bug:
 
-It works, thanks ;)
+	http://gcc.gnu.org/bugzilla/show_bug.cgi?id=22448
+
+You can't even dereference labels in an ASM statement.
