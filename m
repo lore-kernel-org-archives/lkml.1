@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759759AbXGCS7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbXGCTB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759759AbXGCS7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 14:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXGCS7J
+	id S1759667AbXGCTB7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbXGCTBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 14:59:09 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42823 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759360AbXGCS7I (ORCPT
+	Tue, 3 Jul 2007 15:01:52 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:60759 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756855AbXGCTBv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 14:59:08 -0400
-Date: Tue, 3 Jul 2007 19:58:19 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: akpm@linux-foundation.org, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 5/5] s390 tlb flush fix.
-In-Reply-To: <20070703121229.180281096@de.ibm.com>
-Message-ID: <Pine.LNX.4.64.0707031921270.8155@blonde.wat.veritas.com>
-References: <20070703111822.418649776@de.ibm.com> <20070703121229.180281096@de.ibm.com>
+	Tue, 3 Jul 2007 15:01:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=GqoOCxoSX/va0Mi+NDaKDrST0zV0f0xTlpzWLrfGGl7eEAOs4Vs37TXlDG48PNx6tcAd58N4gT2vwz0wwxoyU6X6KXHOBMcu3bSgVLXFXd/+kaHuIUoQwIpYDfwkCeIjdZP8uujVwyFtn6whazMT2uR+m1RGkLzza83Qyw8lc5M=
+Message-ID: <3efb10970707031201y7b7eefd3x60136770fcd167fa@mail.gmail.com>
+Date: Tue, 3 Jul 2007 21:01:50 +0200
+From: "Remy Bohmer" <l.pinguin@gmail.com>
+Reply-To: linux@bohmer.net
+To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Userland PI-futex does not work on ARM (2.6.21.5-rt18)
+Cc: andrew@sanpeople.com, "Ingo Molnar" <mingo@elte.hu>,
+       "Daniel Walker" <dwalker@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAcGV0ZXJ6QGluZnJhZGVhZC5vcmcAc2Nod2lkZWZza3lAZGUuaWJtLmNvbQA=
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007, Martin Schwidefsky wrote:
-> +
-> +static inline struct mmu_gather *tlb_gather_mmu(struct mm_struct *mm,
-> +						unsigned int full_mm_flush)
-> +{
-> +	struct mmu_gather *tlb = &get_cpu_var(mmu_gathers);
-> +
-> +	tlb->mm = mm;
-> +	tlb->fullmm = full_mm_flush || (num_online_cpus() == 1) ||
-> +		(atomic_read(&mm->mm_users) <= 1);
-> +	tlb->nr_ptes = 0;
-> +	tlb->nr_pmds = TLB_NR_PTRS;
-> +	if (tlb->fullmm)
-> +		__tlb_flush_mm(mm);
-> +	return tlb;
-> +}
+Hello All,
 
-I'm afraid that mm_users test (and probably some of your other
-mm_users tests) is not good: because this also gets called when
-a file is truncated while it is mapped - the active mm at that
-time is likely not to be one of the mm_users.  (Do any other
-arches use mm_users in that way?  No: that should be a warning.)
+I am using the 2.6.21.5-rt18 kernel on the ARM core Atmel at91rm9200
+together with a Glibc 2.5+GCC4.2.0 toolchain, and I found out that the
+userland PI futexes (configured with PTHREAD_PRIO_INHERIT) do not
+work.
 
-You might do better to make more use of cpu_vm_mask (though I
-didn't see where any bits get cleared from it on s390 at present).
+What happens is:
+* Thread A claims the mutex, and gets the lock.
+* Thread B claims the mutex, and *also* gets the lock. (this is
+obviously already wrong)
+* Thread A wants to release the mutex and that fails because it does
+not own it...
 
-Though it seems sensible to aim for one TLB flush at the beginning
-as you're doing, that's not what other arches do (some have to
-worry about speculative execution, but you don't?), and it
-worries me that you're taking s390 further away into its own
-implementation: which you're surely entitled to do, but then
-we're more likely to screw you over by mistake in future.
+It looks like mutexes configured *without* PTHREAD_PRIO_INHERIT seem
+to work fine, but have not tested that thouroughly.
 
-Is there perhaps another architecture whose procedures you
-can copy?  Changing a pte while another cpu is accessing it
-is not a problem unique to s390.
+Is this problem already known, or am I the first person running into it?
 
-Patches 1-4 looked fine to me, but I believe this 5/5
-is the rationale behind all of them.
 
-Hugh
+Kind Regards,
+
+Remy Böhmer
