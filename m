@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbXGCP6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbXGCP67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760859AbXGCP6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 11:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbXGCP6l
+	id S1757931AbXGCP67 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 11:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760810AbXGCP6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 11:58:41 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:43984 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756215AbXGCP6k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 11:58:40 -0400
-Date: Tue, 3 Jul 2007 11:58:39 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Paul Mackerras <paulus@samba.org>
-cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       <linux-pm@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
- RAM pathway
-In-Reply-To: <18058.12724.163599.707035@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0707031146300.3936-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Jul 2007 11:58:47 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36626 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760689AbXGCP6q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 11:58:46 -0400
+Date: Tue, 3 Jul 2007 08:58:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: user-mode-linux-devel@lists.sourceforge.net, Jeff Dike <jdike@addtoit.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [uml-devel] [PATCH 4/5] UML - Simplify helper stack handling
+Message-Id: <20070703085830.9b0520a1.akpm@linux-foundation.org>
+In-Reply-To: <200707031728.36472.blaisorblade@yahoo.it>
+References: <20070614202655.GA9647@c2.user-mode-linux.org>
+	<20070627233701.8e53f3cb.akpm@linux-foundation.org>
+	<200707031728.36472.blaisorblade@yahoo.it>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007, Paul Mackerras wrote:
+On Tue, 3 Jul 2007 17:28:30 +0200 Blaisorblade <blaisorblade@yahoo.it> wrote:
 
-> Going back to the old powerbook sleep code, we had a two-phase
-> suspend: drivers got notified once when userspace is still running,
-> with interrupts enabled, in process context; and then a second time
-> with interrupts disabled and with only one CPU up, so the process
-> that is initiating the suspend is the only process running (since
-> interrupts are disabled and nothing it does can sleep, no other
-> process can get to run).
+> On giovedì 28 giugno 2007, Andrew Morton wrote:
+> > So I'm running the generic version of this on i386 with 8k stacks (below),
+> > with a quick LTP run.
+> >
+> > Holy cow, either we use a _lot_ of stack or these numbers are off:
+> >
+> > vmm:/home/akpm> dmesg -s 1000000|grep 'bytes left'
+> > khelper used greatest stack depth: 7176 bytes left
+> > khelper used greatest stack depth: 7064 bytes left
+> > khelper used greatest stack depth: 6840 bytes left
+> > khelper used greatest stack depth: 6812 bytes left
+> > hostname used greatest stack depth: 6636 bytes left
+> > uname used greatest stack depth: 6592 bytes left
+> > uname used greatest stack depth: 6284 bytes left
+> > hotplug used greatest stack depth: 5568 bytes left
+> > rpc.nfsd used greatest stack depth: 5136 bytes left
+> > chown02 used greatest stack depth: 4956 bytes left
+> > fchown01 used greatest stack depth: 4892 bytes left
 > 
-> I still believe that is the right way to go, although we currently
-> only have a single-phase suspend.
+> > That's the sum of process stack and interrupt stack, but I doubt if this
+> > little box is using much interrupt stack space.
+> >
+> > No wonder people are still getting stack overflows with 4k stacks...
 > 
-> Most drivers suspended their hardware in the second call.  If they are
-> in the middle of a conversation with their device that *has* to be
-> completed, they can do that by polling.
+> First, those numbers pretend to be _unused_ stack space.
 
-Ugh.  That will cause problems when you try to integrate runtime 
-suspend.  In fact this whole approach is unsuitable for runtime PM and 
-it obscures the similarities between runtime PM and STR.
+Yep.  So fchown01 used ~3200 bytes of stack.  Problem.
 
->  If it's a character device, a
-> better approach would be to set a flag or whatever in the first
-> suspend call to make sure that no new conversations get started with
-> the device, sleeping if necessary.
-> 
-> I'm actually having a hard time thinking of how to test your assertion
-> since there are so few things on a typical computer that are plain
-> character devices driving real hardware.  A serial port would be about
-> the only one; keyboards and mice (and serial ports :) are USB these
-> days, or ADB on older powerbooks.
+> Well, UML tends to use more stack space than the rest of kernel.
 
-You don't have to restrict yourself to character devices driving real 
-hardware.  The same issues apply to USB and other buses.
-
-Alan Stern
+That was a plain old i386 kernel.
 
