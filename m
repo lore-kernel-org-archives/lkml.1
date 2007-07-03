@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbXGCGCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbXGCGH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbXGCGCj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 02:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXGCGCd
+	id S1757647AbXGCGH5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 02:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbXGCGHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 02:02:33 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:35569 "EHLO
+	Tue, 3 Jul 2007 02:07:48 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:54209 "EHLO
 	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbXGCGCc convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751237AbXGCGHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 02:02:32 -0400
+	Tue, 3 Jul 2007 02:07:48 -0400
 From: Oliver Neukum <oliver@neukum.org>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] NIKON D50 problem
-Date: Tue, 3 Jul 2007 08:02:30 +0200
+To: Ondrej Zary <linux@rainbow-software.org>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH] [resend] IRTOUCHSYSTEMS support for usbtouchscreen
+Date: Tue, 3 Jul 2007 08:07:46 +0200
 User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, "Ni@m" <niam.niam@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <a9e22dff0707021217r239ebcf0g8154a6e985b078f3@mail.gmail.com> <20070702155912.fe1e6834.akpm@linux-foundation.org>
-In-Reply-To: <20070702155912.fe1e6834.akpm@linux-foundation.org>
+Cc: daniel.ritz@gmx.ch, linux-kernel@vger.kernel.org
+References: <200707022319.57322.linux@rainbow-software.org>
+In-Reply-To: <200707022319.57322.linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707030802.30516.oliver@neukum.org>
+Message-Id: <200707030807.46630.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 3. Juli 2007 schrieb Andrew Morton:
-> > Some time ago(I really can't remember version of the kernel)
-> > everything was Ok. I'll try to find out the workable version of the
-> > kernel ... but I've already tried 2.6.20 - the same =(.
-> > I'm not sure, but It's possible that I've had ATA subsystem but not
-> > libata ... I haven't tested this case yet.
-> > 
-> > PS. I can see photos on my camera ... flash card is Ok. I have this
-> > problem even if I changed the flash card in this camera.
-> 
-> It's more likely a usb-storage or scsi layer problem.
-> 
-> The device reports as having 1984001 sectors and the kernel is reporting IO
-> errors around the very end of the device.  Presumably an IO is straddling
-> end-of-device and we're not handling that correctly.
+Am Montag, 2. Juli 2007 schrieb Ondrej Zary:
+> + * IRTOUCH Part
+> + */
+> +#ifdef CONFIG_TOUCHSCREEN_USB_IRTOUCH
+> +static int irtouch_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
+> +{
+> +       dev->x = (pkt[3] << 8) | pkt[2];
+> +       dev->y = (pkt[5] << 8) | pkt[4];
+> +       dev->touch = (pkt[1] & 0x03) ? 1 : 0;
+> +
+> +       return 1;
+> +}
+> +#endif
+> +
 
-Now I remember. We recently had a report about a buggy device, that close
-to the end of the medium could handle only requests for single sectors.
-I'll look into the archive.
+Your description says the higher order byte comes first.
+And could you use le16_to_cpu() rsp. be16_to_cpu() to read the values?
+It is easier to read.
 
 	Regards
 		Oliver
-
