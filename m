@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbXGCVMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbXGCVMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758371AbXGCVMm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbXGCVMf
+	id S1752176AbXGCVMy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbXGCVMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:12:35 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:57961 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbXGCVMe (ORCPT
+	Tue, 3 Jul 2007 17:12:36 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57011 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752176AbXGCVMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:12:34 -0400
-Date: Tue, 3 Jul 2007 22:12:28 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Message-ID: <20070703211227.GA28758@srcf.ucam.org>
-References: <20070703202329.GA27927@srcf.ucam.org> <Pine.LNX.4.44L0.0707031708080.8010-100000@iolanthe.rowland.org>
+	Tue, 3 Jul 2007 17:12:35 -0400
+Date: Tue, 3 Jul 2007 17:12:34 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: =?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur <caglar@pardus.org.tr>
+cc: Oliver Neukum <oliver@neukum.org>, "Ni@m" <niam.niam@gmail.com>,
+       <linux-usb-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [PATCH] for NIKON D50 as UMS
+In-Reply-To: <200707040002.09025.caglar@pardus.org.tr>
+Message-ID: <Pine.LNX.4.44L0.0707031710570.8010-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0707031708080.8010-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 05:10:08PM -0400, Alan Stern wrote:
+On Wed, 4 Jul 2007, [utf-8] S.Çağlar Onur wrote:
 
-> No, no -- you have it exactly backwards.  Removing the freezer turns 
-> STR into something _less_ like runtime suspend, because it adds the 
-> requirement that devices must not automatically be resumed when an I/O 
-> request arrives.
+> Hi,
+> 
+> 03 Tem 2007 Sal tarihinde, Oliver Neukum şunları yazmıştı: 
+> > Am Dienstag, 3. Juli 2007 schrieb S.Çağlar Onur:
+> > > Hmm i have NIKON D50 also and it works here without a problem with
+> > > Linus's current git.
+> >
+> > Please provide the full lsusb -v for your devices, both of you.
+> > You might have different versions of the device.
+> 
+> Here it is;
+> 
+> 
+> Bus 005 Device 007: ID 04b0:0409 Nikon Corp. 
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0 
+>   bDeviceProtocol         0 
+>   bMaxPacketSize0        64
+>   idVendor           0x04b0 Nikon Corp.
+>   idProduct          0x0409 
+>   bcdDevice            1.00
 
-But that's fine - "Are we undergoing a systemwide suspend" is an easy 
-question to ask. Freezing processes instead means that most of those 
-paths will never be tested.
+The descriptors are the same.  But that doesn't mean anything.  It's 
+possible that one device has a problem and the other doesn't because 
+one computer tries to read the last sector and the other computer 
+doesn't.  Or perhaps the two cameras have different capacities.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Alan Stern
+
