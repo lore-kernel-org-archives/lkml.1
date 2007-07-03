@@ -1,106 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbXGCEi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbXGCEk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbXGCEi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 00:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbXGCEiu
+	id S1756144AbXGCEk3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 00:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbXGCEkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 00:38:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51611 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751062AbXGCEis (ORCPT
+	Tue, 3 Jul 2007 00:40:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57672
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751062AbXGCEkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 00:38:48 -0400
-Date: Mon, 2 Jul 2007 21:38:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ed L. Cashin" <ecashin@coraid.com>
-Cc: linux-kernel@vger.kernel.org, Greg K-H <greg@kroah.com>
-Subject: Re: [PATCH 09/12] remove race between use and initialization of
- locks
-Message-Id: <20070702213832.8864656c.akpm@linux-foundation.org>
-In-Reply-To: <2823ea0d22cb0a4aea5a5c22bb8e6b63b2b07441.1182883861.git.ecashin@coraid.com>
+	Tue, 3 Jul 2007 00:40:17 -0400
+Date: Mon, 02 Jul 2007 21:40:36 -0700 (PDT)
+Message-Id: <20070702.214036.42772583.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org, greg@kroah.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 07/12] use a dynamic pool of sk_buffs to keep up with
+ fast targets
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070702213636.9ca1d842.akpm@linux-foundation.org>
 References: <1d8423c28c48a6d26516cdc707dbcdf015a4e347.1182883861.git.ecashin@coraid.com>
-	<2823ea0d22cb0a4aea5a5c22bb8e6b63b2b07441.1182883861.git.ecashin@coraid.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	<bca4cec8ad679e8f8549cb78e012e54bfad1027e.1182883861.git.ecashin@coraid.com>
+	<20070702213636.9ca1d842.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 14:50:12 -0400 "Ed L. Cashin" <ecashin@coraid.com> wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 2 Jul 2007 21:36:36 -0700
 
-> This change was originally submitted by Alexey Dobriyan in an email
-> with ...
-> 
->   Message-ID: <20070325190221.GA5308@martell.zuzino.mipt.ru>
-> 
-> and the comment,
-> 
->   Some drivers do register_chrdev() before lock or semaphore used in
->   corresponding file_operations is initialized.
-> 
-> Andrew Morton commented that these locks should be initialized at
-> compile time, but Alexey Debriyan pointed out that the Documentation
-> tells us to use dynamic initialization whenever possible, and then the
-> discussion petered out.
-> 
->   http://preview.tinyurl.com/2pxq6p
-> 
-> I believe we made these locks dynamic because of the notice in
-> Documentation/spinlocks.txt, which says that static initializers are
-> deprecated:
-> 
->   UPDATE March 21 2005 Amit Gud <gud@eth.net>
-> 
->   Macros SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED are deprecated and will be
->   removed soon. So for any new code dynamic initialization should be used:
+> My initial thought is that if there is a legitimate need for this
+> new capability then it should be made available to other parts of
+> the kernel rather than being private to the AEO driver.
 
-The document is inaccurate.
+Absolutely.
 
-Yes, the use of SPIN_LOCK_UNLOCKED should be avoided because it breaks
-lockdep.  But it can be replaced with DEFINE_SPINLOCK: there is no need to
-switch to runtime initialisation.
+We even used to have something like this on a per-cpu basis but using
+generic SLAB is so much better for caching and NUMA that we got rid of
+that.
 
-
-
-> ...
-> 
-> In any case, the patch below makes the code correct and in keeping
-> with the existing documentation.  If the existing docs are wrong, I'd
-> be happy to follow up with a patch that corrects them and makes these
-> aoechr.c locks static.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> Signed-off-by: Ed L. Cashin <ecashin@coraid.com>
-> ---
->  drivers/block/aoe/aoechr.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/block/aoe/aoechr.c b/drivers/block/aoe/aoechr.c
-> index 10b38a7..2b4f873 100644
-> --- a/drivers/block/aoe/aoechr.c
-> +++ b/drivers/block/aoe/aoechr.c
-> @@ -256,13 +256,13 @@ aoechr_init(void)
->  {
->  	int n, i;
->  
-> +	sema_init(&emsgs_sema, 0);
-> +	spin_lock_init(&emsgs_lock);
->  	n = register_chrdev(AOE_MAJOR, "aoechr", &aoe_fops);
->  	if (n < 0) { 
->  		printk(KERN_ERR "aoe: can't register char device\n");
->  		return n;
->  	}
-> -	sema_init(&emsgs_sema, 0);
-> -	spin_lock_init(&emsgs_lock);
->  	aoe_class = class_create(THIS_MODULE, "aoe");
->  	if (IS_ERR(aoe_class)) {
->  		unregister_chrdev(AOE_MAJOR, "aoechr");
-> -- 
-> 1.5.2.1
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Every sk_buff private "quicklist" pool implementation you
+see should essentially be NAK'd from the get go, it's
+meaningless and if it's really needed one should investigate
+why SKB allocations become such a problem instead of papering
+over the issue. :-)
