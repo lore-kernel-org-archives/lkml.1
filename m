@@ -1,80 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbXGCOV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbXGCOWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755AbXGCOV2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 10:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbXGCOVS
+	id S1759956AbXGCOWj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 10:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbXGCOWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 10:21:18 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:48577 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754560AbXGCOVR (ORCPT
+	Tue, 3 Jul 2007 10:22:30 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52209 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754467AbXGCOW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 10:21:17 -0400
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
-	RAM pathway
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
-In-Reply-To: <200707031456.40890.rjw@sisk.pl>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	 <200707031608.06348.nigel@nigel.suspend2.net>
-	 <1183447184.10386.102.camel@localhost.localdomain>
-	 <200707031456.40890.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Mz28YY/RV4IJaS/b/uyT"
-Date: Tue, 03 Jul 2007 16:21:14 +0200
-Message-Id: <1183472474.3722.13.camel@johannes.berg>
+	Tue, 3 Jul 2007 10:22:29 -0400
+Date: Tue, 3 Jul 2007 15:28:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       paulkf@microgate.com
+Subject: [PATCH] synclink: Remove bogus 'no change' termios optimisation
+ from synclink drivers
+Message-ID: <20070703152804.5669a6d9@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Again this check is wrong now, and un-needed
 
---=-Mz28YY/RV4IJaS/b/uyT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-On Tue, 2007-07-03 at 14:56 +0200, Rafael J. Wysocki wrote:
-
-> Still, can you please read this post from Alan Stern:
->=20
-> https://lists.linux-foundation.org/pipermail/linux-pm/2007-June/012847.ht=
-ml
->=20
-> ?  I don't think I'm able to repeat the arguments given in there in a
-> convincing way.
-
-As I read it, Alan basically has two objections:
- (1) drivers shouldn't need to worry about this
- (2) suspend should be transparent to userspace
-
-His proposed solution (freezing tasks when they cross the kernel
-boundary) helps for the s-t-r case, but in fact doesn't solve (1)
-because devices can be suspended at runtime and then you certainly do
-not want to freeze tasks that try to access the device.
-
-(2) is related but not identical, what if you have a device suspended at
-runtime and some tasks tries to access it; should the task block until
-you wake up that device?
-
-I think the core of the discussion isn't appreciated by everybody here
-yet---we need to solve both run-time and suspend-to-ram-time device
-suspend, not just one of them.
-
-johannes
-
---=-Mz28YY/RV4IJaS/b/uyT
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGilta/ETPhpq3jKURAgI9AJ9B8nRTt64gNILc3I8TuoO8uT3h3QCfT9Ld
-yFDHbsAbYvE/WyS7jvRjWcA=
-=jpMN
------END PGP SIGNATURE-----
-
---=-Mz28YY/RV4IJaS/b/uyT--
-
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/char/synclink.c linux-2.6.22-rc6-mm1/drivers/char/synclink.c
+--- linux.vanilla-2.6.22-rc6-mm1/drivers/char/synclink.c	2007-07-02 20:48:49.000000000 +0100
++++ linux-2.6.22-rc6-mm1/drivers/char/synclink.c	2007-07-02 21:06:50.000000000 +0100
+@@ -160,8 +160,6 @@
+ 
+ #define IO_PIN_SHUTDOWN_LIMIT 100
+ 
+-#define RELEVANT_IFLAG(iflag) (iflag & (IGNBRK|BRKINT|IGNPAR|PARMRK|INPCK))
+-
+ struct	_input_signal_events {
+ 	int	ri_up;	
+ 	int	ri_down;
+@@ -3064,12 +3062,6 @@
+ 		printk("%s(%d):mgsl_set_termios %s\n", __FILE__,__LINE__,
+ 			tty->driver->name );
+ 	
+-	/* just return if nothing has changed */
+-	if ((tty->termios->c_cflag == old_termios->c_cflag)
+-	    && (RELEVANT_IFLAG(tty->termios->c_iflag) 
+-		== RELEVANT_IFLAG(old_termios->c_iflag)))
+-	  return;
+-
+ 	mgsl_change_params(info);
+ 
+ 	/* Handle transition to B0 status */
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/char/synclink_gt.c linux-2.6.22-rc6-mm1/drivers/char/synclink_gt.c
+--- linux.vanilla-2.6.22-rc6-mm1/drivers/char/synclink_gt.c	2007-07-02 20:48:49.000000000 +0100
++++ linux-2.6.22-rc6-mm1/drivers/char/synclink_gt.c	2007-07-02 21:06:50.000000000 +0100
+@@ -144,8 +144,6 @@
+ /*
+  * tty support and callbacks
+  */
+-#define RELEVANT_IFLAG(iflag) (iflag & (IGNBRK|BRKINT|IGNPAR|PARMRK|INPCK))
+-
+ static struct tty_driver *serial_driver;
+ 
+ static int  open(struct tty_struct *tty, struct file * filp);
+@@ -823,12 +821,6 @@
+ 
+ 	DBGINFO(("%s set_termios\n", tty->driver->name));
+ 
+-	/* just return if nothing has changed */
+-	if ((tty->termios->c_cflag == old_termios->c_cflag)
+-	    && (RELEVANT_IFLAG(tty->termios->c_iflag)
+-		== RELEVANT_IFLAG(old_termios->c_iflag)))
+-		return;
+-
+ 	change_params(info);
+ 
+ 	/* Handle transition to B0 status */
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/char/synclinkmp.c linux-2.6.22-rc6-mm1/drivers/char/synclinkmp.c
+--- linux.vanilla-2.6.22-rc6-mm1/drivers/char/synclinkmp.c	2007-07-02 20:47:23.000000000 +0100
++++ linux-2.6.22-rc6-mm1/drivers/char/synclinkmp.c	2007-07-02 21:06:50.000000000 +0100
+@@ -135,8 +135,6 @@
+ 
+ #define IO_PIN_SHUTDOWN_LIMIT 100
+ 
+-#define RELEVANT_IFLAG(iflag) (iflag & (IGNBRK|BRKINT|IGNPAR|PARMRK|INPCK))
+-
+ struct	_input_signal_events {
+ 	int	ri_up;
+ 	int	ri_down;
+@@ -927,12 +925,6 @@
+ 		printk("%s(%d):%s set_termios()\n", __FILE__,__LINE__,
+ 			tty->driver->name );
+ 
+-	/* just return if nothing has changed */
+-	if ((tty->termios->c_cflag == old_termios->c_cflag)
+-	    && (RELEVANT_IFLAG(tty->termios->c_iflag)
+-		== RELEVANT_IFLAG(old_termios->c_iflag)))
+-	  return;
+-
+ 	change_params(info);
+ 
+ 	/* Handle transition to B0 status */
