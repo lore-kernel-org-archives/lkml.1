@@ -1,116 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761023AbXGCXi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbXGCXyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761023AbXGCXi1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 19:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXGCXiU
+	id S1758291AbXGCXyr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 19:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbXGCXyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 19:38:20 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34952 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750706AbXGCXiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 19:38:19 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: =?iso-8859-1?q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>
-Subject: Re: 2.6.22-rc7: known regressions with patches
-Date: Wed, 4 Jul 2007 01:38:13 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephane Eranian <eranian@hpl.hp.com>
-References: <468A7D24.3040004@googlemail.com> <alpine.LFD.0.98.0707031441480.9434@woody.linux-foundation.org> <20070703221210.GA29959@atjola.homenet>
-In-Reply-To: <20070703221210.GA29959@atjola.homenet>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200707040138.13538.ak@suse.de>
+	Tue, 3 Jul 2007 19:54:38 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:63223 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbXGCXyh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 19:54:37 -0400
+Date: Tue, 03 Jul 2007 17:53:58 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] libata_acpi: A different strategy for using ACPI
+ information
+In-reply-to: <fa.rEwk8NvbygVfpOfb23QZ97ZMeXs@ifi.uio.no>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Message-id: <468AE196.9070202@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.rEwk8NvbygVfpOfb23QZ97ZMeXs@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 July 2007 00:12:10 Björn Steinbrink wrote:
-> On 2007.07.03 14:42:25 -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Tue, 3 Jul 2007, Bj?rn Steinbrink wrote:
-> > > Andi said that one of the regression fixes wasn't critical for .22 and
-> > > that he wants to do a stopgap for the other regression (my patch
-> > > sucked), reverting the code to the .21 version. So you can drop the
-> > > patches and/or me here.
-> > 
-> > Can you say which patch should be reverted. This thing really shouldn't 
-> > have gone on this long, I would have hopef we had the oprofile thing 
-> > sorted out already..
+Alan Cox wrote:
+> Lots of BIOSen simply return the BIOS set modes via the ACPI methods and
+> pass back the values you give it across suspend/resume. Thus instead of
+> trying to do clever stuff with this data we instead use it as a way to
+> take a sneak peak at cable type information when viable. This should help
+> us catch more of the laptops that do weird stuff, the VIA SATA bridges
+> and the totally horked Nvidia cable handling.
 > 
-> That would be commit 09198e68501a7e34737cd9264d266f42429abcdc, for which
-> there are already a few fixes in your tree. Andi, did you intent to
-> fully revert that, or just certain parts of it?
+> For now its only used by the VIA and AMD/NV driver until we get a better
+> idea of whether this is a sensible idea or not.
+> 
+> Opinions ?
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-Just two functions, but in a different file. Here's the patch.
+Looks fairly reasonable to me. However, I suspect any use of _GTM is 
+somewhat dangerous (at least after the resume) unless we use the _STM 
+and _GTF methods in the proper sequence when resuming. (Is that in the 
+-mm tree now?)
 
-Linus, also what about the revert of the HPET reservation? That would
-fix a clear regression too.
+Keep in mind that in the pata_acpi case where we don't do anything to 
+program the hardware directly, we can still use _STM to program a lower 
+speed than the BIOS chose if we decide to do this. Windows does indeed 
+do this (you can force PIO mode in the control panel, and it will also 
+reduce UDMA speeds or drop to PIO if there are too many CRC errors or 
+timeouts), so this should be safe. We just had better be sure that the 
+speed we give it is valid, since there is no sane way for the function 
+to indicate failure. (Thus the problem with the "cram in all possible 
+values to see what it supports" strategy for determining mode limits..)
 
--Andi
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Revert perfctr reservation to 2.6.21 state
-
-With this change it works again when the nmi watchdog is disabled.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/arch/i386/kernel/cpu/perfctr-watchdog.c
-===================================================================
---- linux.orig/arch/i386/kernel/cpu/perfctr-watchdog.c
-+++ linux/arch/i386/kernel/cpu/perfctr-watchdog.c
-@@ -55,14 +55,45 @@ static DEFINE_PER_CPU(struct nmi_watchdo
- /* converts an msr to an appropriate reservation bit */
- static inline unsigned int nmi_perfctr_msr_to_bit(unsigned int msr)
- {
--	return wd_ops ? msr - wd_ops->perfctr : 0;
-+	/* returns the bit offset of the performance counter register */
-+	switch (boot_cpu_data.x86_vendor) {
-+	case X86_VENDOR_AMD:
-+		return (msr - MSR_K7_PERFCTR0);
-+	case X86_VENDOR_INTEL:
-+		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
-+			return (msr - MSR_ARCH_PERFMON_PERFCTR0);
-+
-+		switch (boot_cpu_data.x86) {
-+		case 6:
-+			return (msr - MSR_P6_PERFCTR0);
-+		case 15:
-+			return (msr - MSR_P4_BPU_PERFCTR0);
-+		}
-+	}
-+	return 0;
- }
- 
- /* converts an msr to an appropriate reservation bit */
- /* returns the bit offset of the event selection register */
- static inline unsigned int nmi_evntsel_msr_to_bit(unsigned int msr)
- {
--	return wd_ops ? msr - wd_ops->evntsel : 0;
-+	/* returns the bit offset of the event selection register */
-+	switch (boot_cpu_data.x86_vendor) {
-+	case X86_VENDOR_AMD:
-+		return (msr - MSR_K7_EVNTSEL0);
-+	case X86_VENDOR_INTEL:
-+		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
-+			return (msr - MSR_ARCH_PERFMON_EVENTSEL0);
-+
-+		switch (boot_cpu_data.x86) {
-+		case 6:
-+			return (msr - MSR_P6_EVNTSEL0);
-+		case 15:
-+			return (msr - MSR_P4_BSU_ESCR0);
-+		}
-+	}
-+	return 0;
-+
- }
- 
- /* checks for a bit availability (hack for oprofile) */
