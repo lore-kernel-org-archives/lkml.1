@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbXGCT1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760870AbXGCT26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760745AbXGCT1w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 15:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbXGCT1p
+	id S1760870AbXGCT26 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXGCT2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 15:27:45 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48298 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756020AbXGCT1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 15:27:44 -0400
-Date: Tue, 3 Jul 2007 21:27:29 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Message-ID: <20070703192729.GA2125@elf.ucw.cz>
-References: <20070703042916.GA17240@srcf.ucam.org> <1183441887.10386.77.camel@localhost.localdomain> <200707031508.45595.rjw@sisk.pl> <200707031709.29968.rjw@sisk.pl>
+	Tue, 3 Jul 2007 15:28:51 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:63933 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757323AbXGCT2u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 15:28:50 -0400
+Message-ID: <468AA364.2010000@nortel.com>
+Date: Tue, 03 Jul 2007 15:28:36 -0400
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20060130 Red Hat/1.7.12-1.4.2
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707031709.29968.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Arne Georg Gleditsch <argggh@dolphinics.no>
+CC: Florian Attenberger <valdyn@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
+References: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca> <20070703135949.GB19565@master.home> <87hcol7en2.fsf@pelargir.dolphinics.no> <20070703150210.GA31495@master.home> <87d4z97bks.fsf@pelargir.dolphinics.no>
+In-Reply-To: <87d4z97bks.fsf@pelargir.dolphinics.no>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jul 2007 19:28:39.0550 (UTC) FILETIME=[5BCA79E0:01C7BDA8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Arne Georg Gleditsch wrote:
 
-> > > The main reason for deadlocks is because we do a sys_sync() after the
-> > > freeze, which we shouldn't do.
-> > 
-> > So why don't we remove the sys_sync() from freeze_processes() instead?
-> 
-> The patch follows (untested).
-> 
-> Greetings,
-> Rafael
-> 
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> We shouldn't sync filesystems from within the freezer, because it's not needed
-> for suspend to RAM and leads to problems with FUSE.
+> An interesting exercise might be to
+> code up a small program to call adjtimex with timex.status |= STA_INS,
+> to see if this can trigger the problem.
 
-Actually... It is not _needed_ for suspend to disk, either. Snapshot is
-atomic, so it should be okay to suspend with filesystems dirty.
+Setting the date to just before midnight June 30 UTC and then running the 
+following as root triggered the crash on a modified 2.6.10.  Anyone see anything 
+wrong with the code below, or is this a valid indication of a bug in the leap 
+second code?
 
-_But_, if anything goes wrong, we'd prefer to have at least
-filesystems synced. Battery running out during s2ram is not quite
-uncommon, so we perhaps should do sync somewhere there. (But we can do
-it before freezer just fine).
-								Pavel
+Chris
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+#include <sys/timex.h>
+#include <stdio.h>
+#include <errno.h>
+
+struct timex buf;
+int main(void)
+{
+	int rc = adjtimex(&buf);
+	printf("initial status: 0x%x\n", buf.status);
+	buf.status |= STA_INS;
+	buf.modes = ADJ_STATUS;
+	rc = adjtimex(&buf);
+	if (rc == -1) {
+		printf("unable to set status: %m\n");
+		return -1;
+	} else
+		printf("rc: %d\n", rc);
+	printf("final status: 0x%x\n", buf.status);
+	return 0;
+}
