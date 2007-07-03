@@ -1,48 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbXGCJBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbXGCJJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758557AbXGCJBs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 05:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbXGCJBl
+	id S1758753AbXGCJJz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 05:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbXGCJJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 05:01:41 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38840 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753841AbXGCJBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 05:01:40 -0400
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4BEFAFC6-3346-4F29-B1C5-377952E3FBBF@kernel.crashing.org>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>
+	Tue, 3 Jul 2007 05:09:48 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:33654 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753613AbXGCJJr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 05:09:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LyLiBYhgextSKEOcJHyA2HEmsH9IET2O2YqbBLRgOFyE3XnVG07oYH83u0oaOBnn9ciV/WJgav39QZ5QKY4EyiUE42WTL4olKZAbgIMMGdN5eUrVhO940gDwhuZvadezhACkDG9L+5iak70XAC9PN7+Cc9TZLd5+8KjHkZfZxfo=
+Message-ID: <4dde4acb0707030209n7b3b9236q2619a67f5c4dad5e@mail.gmail.com>
+Date: Tue, 3 Jul 2007 14:39:40 +0530
+From: "Midhun Agnihotram" <agnimidhun@gmail.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Subject: Re: Fwd: Mounting MMC card
+Cc: "=?ISO-8859-1?Q?Hans-J=FCrgen_Koch?=" <hjk@linutronix.de>, jdi@l4x.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4684E8C2.7050109@drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: How to handle patches that cross maintainers?
-Date: Tue, 3 Jul 2007 04:01:20 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
+Content-Disposition: inline
+References: <4dde4acb0706261146s5906d8f3vb787d5aecb429116@mail.gmail.com>
+	 <4684CDCC.9030202@drzeus.cx>
+	 <4dde4acb0706290230g6a38f0cds47b0d76216f861e6@mail.gmail.com>
+	 <4684D358.9090402@drzeus.cx>
+	 <4dde4acb0706290245t5810b9ebrbb682ecb72f21830@mail.gmail.com>
+	 <4684DEF3.5060103@drzeus.cx>
+	 <4dde4acb0706290357x54d3ea32vaf75d5cfe638cb25@mail.gmail.com>
+	 <4684E65F.2070202@drzeus.cx>
+	 <4dde4acb0706290406v204fb87eif0e5fbae17636593@mail.gmail.com>
+	 <4684E8C2.7050109@drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+Hi All,
 
-I was hoping to get your input on how to handle patches that cross  
-maintainers.  I've got a patch that is pretty PPC specific, but  
-happens to touch some drivers as well.
+   This is referring to my problem - not able to mount MMC card. I
+have some output from dmesg when I remove and put the card back (I
+have changes the kernel config to include i.MX SPI and disabled the
+generic SPI). DOes this give any clue as to why the MMC card is not
+appaering in /proc/partions and /sysfs/block ??  Any help will of
+great use. The output of dmesg is as follows. I have removed and
+inserted the card twice.
 
-Here's the diffstat to get a rough idea:
 
-arch/powerpc/kernel/io.c                |   12 ++++++------
-arch/powerpc/mm/hash_native_64.c        |    2 +-
-arch/powerpc/mm/stab.c                  |    4 ++--
-drivers/ide/pci/scc_pata.c              |    4 ++--
-drivers/media/dvb/bt8xx/bt878.h         |    5 ++---
-drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
-include/asm-powerpc/system.h            |    2 +-
-7 files changed, 15 insertions(+), 16 deletions(-)
+<6>imx-mmc imx-mmc.0: card removed
+<7>imx-mmc imx-mmc.0: clock 0 power 1 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>MMC: starting cmd 00 arg 00000000 flags 00000040
+<7>imx-mmc imx-mmc.0: CMD00 (0x00) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (00): 1: 00000000 00000000 00000000 00000000
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x80000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 80000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 01 arg 00000000 flags 00000061
+<7>imx-mmc imx-mmc.0: CMD01 (0x01) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (01): 1: 00000000 00000000 00000000 00000000
+<7>imx-mmc imx-mmc.0: clock 0 power 0 vdd 0 width 1
+<6>imx-mmc imx-mmc.0: card inserted
+<7>imx-mmc imx-mmc.0: clock 0 power 1 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>MMC: starting cmd 00 arg 00000000 flags 00000040
+<7>imx-mmc imx-mmc.0: CMD00 (0x00) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 0
+<7>MMC: req done (00): 0: 00000000 00000000 00000000 00000000
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00008000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00008000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 01 arg 00000000 flags 00000061
+<7>imx-mmc imx-mmc.0: CMD01 (0x01) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 0
+<7>MMC: req done (01): 0: 00000000 00000000 00000000 00000000
+<7>imx-mmc imx-mmc.0: clock 0 power 0 vdd 0 width 1
+<6>imx-mmc imx-mmc.0: card removed
+<7>imx-mmc imx-mmc.0: clock 0 power 1 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>MMC: starting cmd 00 arg 00000000 flags 00000040
+<7>imx-mmc imx-mmc.0: CMD00 (0x00) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (00): 1: 00000000 00000000 00000000 00000000
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 01 arg 00000000 flags 00000061
+<7>imx-mmc imx-mmc.0: CMD01 (0x01) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (01): 1: 00000000 00000000 00000000 00000000
+<7>imx-mmc imx-mmc.0: clock 0 power 0 vdd 0 width 1
+<6>imx-mmc imx-mmc.0: card inserted
+<7>imx-mmc imx-mmc.0: clock 0 power 1 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>MMC: starting cmd 00 arg 00000000 flags 00000040
+<7>imx-mmc imx-mmc.0: CMD00 (0x00) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 0
+<7>MMC: req done (00): 0: 00000000 00000000 00000000 00000000
+<7>imx-mmc imx-mmc.0: clock 150000 power 2 vdd 20 width 1
+<7>imx-mmc imx-mmc.0: PERCLK2 265977856 MHz -> prescaler 5
+<7>imx-mmc imx-mmc.0: MMC_CLK_RATE: 0x00000057
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 37 arg 00000000 flags 00000015
+<7>imx-mmc imx-mmc.0: CMD55 (0x37) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: CMD TIMEOUT
+<7>imx-mmc imx-mmc.0: RESP 0x00000000, 0x00000000, 0x00000000,
+0x00000000, error 1
+<7>MMC: req done (37): 1: 00000000 00000000 00000000 00000000
+<7>MMC: starting cmd 01 arg 00000000 flags 00000061
+<7>imx-mmc imx-mmc.0: CMD01 (0x01) mask set to 0x003b
+<7>imx-mmc imx-mmc.0: RESP 0x00008000, 0x00000000, 0x00000000,
+0x00000000, error 0
+<7>MMC: req done (01): 0: 00008000 00000000 00000000 00000000
+<7>imx-mmc imx-mmc.0: clock 0 power 0 vdd 0 width 1
 
-Now, I've had this issue before w/o any good sense on how to handle it.
 
-Suggestions?
-
-- k
+Thanks,
+Midhun.
