@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbXGCM74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbXGCNAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbXGCM74 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 08:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbXGCM7s
+	id S1754642AbXGCNAT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 09:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXGCNAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 08:59:48 -0400
-Received: from smtp-01b.mandic.com.br ([200.225.81.136]:49064 "EHLO
-	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753198AbXGCM7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 08:59:47 -0400
-Message-ID: <468A483E.6060207@mandic.com.br>
-Date: Tue, 03 Jul 2007 09:59:42 -0300
-From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 3 Jul 2007 09:00:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44558 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756380AbXGCM77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 08:59:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 15:07:15 +0200
+User-Agent: KMail/1.9.5
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-pm@lists.linux-foundation.org,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
+References: <20070703042916.GA17240@srcf.ucam.org> <1183462826.10386.107.camel@localhost.localdomain> <200707031346.57613.oliver@neukum.org>
+In-Reply-To: <200707031346.57613.oliver@neukum.org>
 MIME-Version: 1.0
-To: linux-acpi <linux-acpi@vger.kernel.org>
-CC: Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       "Renato S. Yamane" <renatoyamane@mandic.com.br>,
-       Richard Hughes <hughsient@gmail.com>, John Belmonte <john@neggie.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Bastien Nocera <hadess@hadess.net>, Mathieu.Berard@crans.org,
-       mjg59@srcf.ucam.org, jaimeff@gmail.com
-Subject: Re: Add INPUT support to toshiba_acpi
-References: <1180614979.2693.26.camel@localhost.localdomain> <200706281327.29962.eike-kernel@sf-tec.de> <4683A80E.4070006@mandic.com.br> <200707030738.39980.eike-kernel@sf-tec.de>
-In-Reply-To: <200707030738.39980.eike-kernel@sf-tec.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mandic-no-Celular-to: renatoyamane@mandic.com.br
+Content-Disposition: inline
+Message-Id: <200707031507.16700.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rolf Eike Beer wrote:
-> Renato S. Yamane wrote:
->> Rolf Eike Beer wrote:
->>> Richard Hughes wrote:
->>>>
->>>> Yes, although this is out of my area or expertise, sorry.
->>>
->>> I've looked a bit but can't find any driver interaction of those
->>> programs. Any further ideas welcome.
->>
->> Do you try omnibook driver?
->> svn export https://svn.sourceforge.net/svnroot/omnibook/omnibook/trunk
->>
->> toshiba_acpi don't work on my Toshiba M45-S355 (Toshiba BIOS) and I try
->> this module above and now I can change brightness writing in
->> /proc/omnibook/lcd and kpowersave can change brightness too.
->
-> Oh wow! Even my Multimedia keys get recognized. Thanks very much for your 
-> pointer.
+On Tuesday, 3 July 2007 13:46, Oliver Neukum wrote:
+> Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
+> > On Tue, 2007-07-03 at 09:44 +0200, Oliver Neukum wrote:
+> > > Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
+> > > > So to summarize, the plan that makes things work with fuse is:
+> > > > 
+> > > >  - For STR, don't do the freezer thing.
+> > > > 
+> > > >  - For STD, don't sys_sync() after you froze
+> > > > 
+> > > > There might be -other- issues, but that should get you through some of
+> > > 
+> > > At the risk of repeating myself. Character device drivers are written
+> > > with the assumption that normal io and suspend/resume do not race
+> > > with each other due to the freezer.
+> > > What do you intend to do about that?
+> > 
+> > Ugh ... "character devices" ... that's a pretty wide statement...
+> > there's lots of those and very different one from the other...
+> 
+> That is a good summary of the problem ;-(
+> 
+> > Any sane device-driver will have to cope with being suspended in a
+> > "live" system. I've demonstrated multiple times in the past why this is
+> > necessary anyway, for things like dynamic power management, among
+> > others.
+> 
+> That is an interesting notion. I'd rather see device drivers reporting
+> their devices idle and requsting to be suspended.
+> But in any case it doesn't solve the problem.
 
-I think that is a good idea more support to Toshiba Laptops, so 
-omnibook+toshiba_acpi is a perfect couple, because some functions works 
-with toshiba_acpi and others works with omnibook.
+Agreed.
 
-Jaime (in cc too) do a very useful module that work in some laptop 
-models that not work on toshiba_acpi and omnibook driver.
+What I think will solve the problem in the long run is to:
 
-So, I think that is a very good idea all work together to do a more 
-powerful (and compatible) module in next kernel releases.
+1) Separate the hibernation code from the suspend code (ie. hibernation-related
+callbacks should generally be different from suspend-related callback for each
+driver).
+2) Remove the freezing of kernel threads from each of them (in the hibernation
+case, if possible) an fix the things that get broken.
+3) Remove the freezing of user space from the suspend code path and fix the
+things that get broken.
 
-Regards,
-Renato S. Yamane
+Going to step 3) before doing 1) and 2) doesn't seem to be the right thing to
+me.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
