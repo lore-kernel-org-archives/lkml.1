@@ -1,222 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760539AbXGCPE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXGCPEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760539AbXGCPE3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 11:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756532AbXGCPEU
+	id S1760716AbXGCPEm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 11:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760629AbXGCPEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 11:04:20 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40496 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754644AbXGCPES (ORCPT
+	Tue, 3 Jul 2007 11:04:33 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:11348 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760625AbXGCPEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 11:04:18 -0400
-Date: Tue, 3 Jul 2007 16:10:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jeff@garzik.org
-Subject: [PATCH] pata_hpt3x3: Major reworking and testing
-Message-ID: <20070703161002.1576c39d@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 3 Jul 2007 11:04:32 -0400
+Date: Tue, 3 Jul 2007 17:04:30 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg K-H <greg@kroah.com>,
+       Adrian Bunk <bunk@stusta.de>, david@lang.hm,
+       David Miller <davem@davemloft.net>,
+       Duncan Sands <duncan.sands@math.u-psud.fr>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] driver core: multithreaded probing - more parallelism
+ control
+Message-ID: <20070703170430.751f4f93@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1182505958.12161.0.camel@caritas-dev.intel.com>
+References: <9D7649D18729DE4BB2BD7B494F7FEDC218022B@pdsmsx415.ccr.corp.intel.com>
+	<467AA596.5030509@s5r6.in-berlin.de>
+	<1182505958.12161.0.camel@caritas-dev.intel.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The HPT343/345 (aka 363) is a bit of a warped device. For many setups you
-need to access the other registers via BAR4 offsets. PIO is now rock
-solid, DMA isn't. Unfortunately the drivers/ide hpt34x driver is
-completely broken so doesn't help further debug.
+On Fri, 22 Jun 2007 09:52:38 +0000,
+"Huang, Ying" <ying.huang@intel.com> wrote:
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+> On Thu, 2007-06-21 at 18:21 +0200, Stefan Richter wrote:
+> > Parallelism between subsystems may be interesting during boot ==
+> > "coldplug", /if/ the machine has time-consuming devices to probe on
+> > /different/ types of buses.  Of course some machines do the really
+> > time-consuming stuff on only one type of bus.  Granted, parallelism
+> > betwen subsystems is not very interesting anymore later after boot ==
+> > "hotplug".
+> 
+> Yes. So I think there are two possible solution.
+> 
+> 1. Creating one set of probing queues for each subsystem (maybe just the
+> subsystems need it), so the probing queue IDs are local to each
+> subsystem.
+> 2. There is only one set of probing queues in whole system. The probing
+> queue IDs are shared between subsystems. The subsystem can select a
+> random starting queue ID (maybe named as start_queue_id), and allocate
+> the queue IDs from that point on (start_queue_id + private_queue_id). So
+> the probability of queue ID sharing will be reduced.
 
-diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_hpt3x3.c linux-2.6.22-rc6-mm1/drivers/ata/pata_hpt3x3.c
---- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/pata_hpt3x3.c	2007-07-02 20:50:11.000000000 +0100
-+++ linux-2.6.22-rc6-mm1/drivers/ata/pata_hpt3x3.c	2007-07-02 21:03:32.000000000 +0100
-@@ -23,7 +23,7 @@
- #include <linux/libata.h>
- 
- #define DRV_NAME	"pata_hpt3x3"
--#define DRV_VERSION	"0.4.3"
-+#define DRV_VERSION	"0.5.3"
- 
- /**
-  *	hpt3x3_set_piomode		-	PIO setup
-@@ -59,6 +59,9 @@
-  *
-  *	Set up the channel for MWDMA or UDMA modes. Much the same as with
-  *	PIO, load the mode number and then set MWDMA or UDMA flag.
-+ *
-+ *	0x44 : bit 0-2 master mode, 3-5 slave mode, etc 
-+ *	0x48 : bit 4/0 DMA/UDMA bit 5/1 for slave etc
-  */
- 
- static void hpt3x3_set_dmamode(struct ata_port *ap, struct ata_device *adev)
-@@ -76,14 +79,26 @@
- 	r2 &= ~(0x11 << dn);	/* Clear MWDMA and UDMA bits */
- 
- 	if (adev->dma_mode >= XFER_UDMA_0)
--		r2 |= 0x01 << dn;	/* Ultra mode */
-+		r2 |= (0x10 << dn);	/* Ultra mode */
- 	else
--		r2 |= 0x10 << dn;	/* MWDMA */
-+		r2 |= (0x01 << dn);	/* MWDMA */
- 
- 	pci_write_config_dword(pdev, 0x44, r1);
- 	pci_write_config_dword(pdev, 0x48, r2);
- }
- 
-+/**
-+ *	hpt3x3_atapi_dma	-	ATAPI DMA check
-+ *	@qc: Queued command
-+ *
-+ *	Just say no - we don't do ATAPI DMA
-+ */
-+
-+static int hpt3x3_atapi_dma(struct ata_queued_cmd *qc)
-+{
-+	return 1;
-+}
-+
- static struct scsi_host_template hpt3x3_sht = {
- 	.module			= THIS_MODULE,
- 	.name			= DRV_NAME,
-@@ -105,7 +120,6 @@
- static struct ata_port_operations hpt3x3_port_ops = {
- 	.port_disable	= ata_port_disable,
- 	.set_piomode	= hpt3x3_set_piomode,
--	.set_dmamode	= hpt3x3_set_dmamode,
- 	.mode_filter	= ata_pci_default_filter,
- 
- 	.tf_load	= ata_tf_load,
-@@ -124,8 +138,9 @@
- 	.bmdma_start 	= ata_bmdma_start,
- 	.bmdma_stop	= ata_bmdma_stop,
- 	.bmdma_status 	= ata_bmdma_status,
-+	.check_atapi_dma= hpt3x3_atapi_dma,
- 
--	.qc_prep 	= ata_qc_prep,
-+	.qc_prep 	= ata_qc_prep,
- 	.qc_issue	= ata_qc_issue_prot,
- 
- 	.data_xfer	= ata_data_xfer,
-@@ -158,32 +173,79 @@
- 		pci_write_config_byte(dev, PCI_LATENCY_TIMER, 0x20);
- }
- 
--
- /**
-  *	hpt3x3_init_one		-	Initialise an HPT343/363
-- *	@dev: PCI device
-+ *	@pdev: PCI device
-  *	@id: Entry in match table
-  *
-- *	Perform basic initialisation. The chip has a quirk that it won't
-- *	function unless it is at XX00. The old ATA driver touched this up
-- *	but we leave it for pci quirks to do properly.
-+ *	Perform basic initialisation. We set the device up so we access all
-+ *	ports via BAR4. This is neccessary to work around errata.
-  */
- 
--static int hpt3x3_init_one(struct pci_dev *dev, const struct pci_device_id *id)
-+static int hpt3x3_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
- {
-+	static int printed_version;
- 	static const struct ata_port_info info = {
- 		.sht = &hpt3x3_sht,
- 		.flags = ATA_FLAG_SLAVE_POSS,
- 		.pio_mask = 0x1f,
-+#if defined(CONFIG_PATA_HPT3X3_DMA)
-+		/* Further debug needed */		
- 		.mwdma_mask = 0x07,
- 		.udma_mask = 0x07,
-+#endif		
- 		.port_ops = &hpt3x3_port_ops
- 	};
-+	/* Register offsets of taskfiles in BAR4 area */
-+	static const u8 offset_cmd[2] = { 0x20, 0x28 };
-+	static const u8 offset_ctl[2] = { 0x36, 0x3E };
- 	const struct ata_port_info *ppi[] = { &info, NULL };
--
--	hpt3x3_init_chipset(dev);
--	/* Now kick off ATA set up */
--	return ata_pci_init_one(dev, ppi);
-+	struct ata_host *host;
-+	int i, rc;
-+	void __iomem *base;
-+
-+	hpt3x3_init_chipset(pdev);
-+
-+	if (!printed_version++)
-+		dev_printk(KERN_DEBUG, &pdev->dev, "version " DRV_VERSION "\n");
-+
-+	host = ata_host_alloc_pinfo(&pdev->dev, ppi, 2);
-+	if (!host)
-+		return -ENOMEM;
-+	/* acquire resources and fill host */
-+	rc = pcim_enable_device(pdev);
-+	if (rc)
-+		return rc;
-+
-+	/* Everything is relative to BAR4 if we set up this way */
-+	rc = pcim_iomap_regions(pdev, 1 << 4, DRV_NAME);
-+	if (rc == -EBUSY)
-+		pcim_pin_device(pdev);
-+	if (rc)
-+		return rc;
-+	host->iomap = pcim_iomap_table(pdev);
-+	rc = pci_set_dma_mask(pdev, ATA_DMA_MASK);
-+	if (rc)
-+		return rc;
-+	rc = pci_set_consistent_dma_mask(pdev, ATA_DMA_MASK);
-+	if (rc)
-+		return rc;
-+
-+	base = host->iomap[4];	/* Bus mastering base */
-+
-+	for (i = 0; i < host->n_ports; i++) {
-+		struct ata_ioports *ioaddr = &host->ports[i]->ioaddr;
-+
-+		ioaddr->cmd_addr = base + offset_cmd[i];
-+		ioaddr->altstatus_addr =
-+		ioaddr->ctl_addr = base + offset_ctl[i];
-+		ioaddr->scr_addr = NULL;
-+		ata_std_ports(ioaddr);
-+		ioaddr->bmdma_addr = base + 8 * i;
-+	}
-+	pci_set_master(pdev);
-+	return ata_host_activate(host, pdev->irq, ata_interrupt, IRQF_SHARED,
-+				 &hpt3x3_sht);
- }
- 
- #ifdef CONFIG_PM
-diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.22-rc6-mm1/drivers/ata/Kconfig linux-2.6.22-rc6-mm1/drivers/ata/Kconfig
---- linux.vanilla-2.6.22-rc6-mm1/drivers/ata/Kconfig	2007-07-02 20:50:11.000000000 +0100
-+++ linux-2.6.22-rc6-mm1/drivers/ata/Kconfig	2007-07-02 21:02:10.000000000 +0100
-@@ -313,7 +313,7 @@
- 	  If unsure, say N.
- 
- config PATA_HPT3X3
--	tristate "HPT 343/363 PATA support (Experimental)"
-+	tristate "HPT 343/363 PATA support"
- 	depends on PCI
- 	help
- 	  This option enables support for the HPT 343/363
-@@ -321,6 +321,14 @@
- 
- 	  If unsure, say N.
- 
-+config PATA_HPT3X3_DMA
-+	bool "HPT 343/363 DMA support (Experimental)"
-+	depends on PATA_HPT3X3
-+	help
-+	  This option enables DMA support for the HPT343/363
-+	  controllers. Enable with care as there are still some
-+	  problems with DMA on this chipset.
-+
- config PATA_ISAPNP
- 	tristate "ISA Plug and Play PATA support (Experimental)"
- 	depends on EXPERIMENTAL && ISAPNP
+What should also be considered here is that we may want to have
+different numbers of queues per subsystem (fewer for those where
+probing is resource-heavy), but may want to restrict the total number
+of queues as well. Some throttling mechanism may be helpful here (so
+that a single subsystem cannot hog all queues while another is stuck
+with a single queue, or double usage of queues). In fact, throttling
+may be interesting for any subsystem using parallelism, especially if
+the number of devices may be huge and/or probing resource hungry.
+
+Cornelia
