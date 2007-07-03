@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbXGCTcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761174AbXGCTdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761029AbXGCTcc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 15:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757450AbXGCTcY
+	id S1761174AbXGCTdu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXGCTdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 15:32:24 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:45112 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757351AbXGCTcX (ORCPT
+	Tue, 3 Jul 2007 15:33:43 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55361 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755276AbXGCTdm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 15:32:23 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Tue, 3 Jul 2007 21:32:20 +0200
-User-Agent: KMail/1.9.7
-Cc: rjw@sisk.pl, benh@kernel.crashing.org, mjg59@srcf.ucam.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       pavel@ucw.cz, nigel@nigel.suspend2.net
-References: <20070703042916.GA17240@srcf.ucam.org> <200707032026.34649.oliver@neukum.org> <E1I5no4-0004fU-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I5no4-0004fU-00@dorka.pomaz.szeredi.hu>
+	Tue, 3 Jul 2007 15:33:42 -0400
+Date: Tue, 3 Jul 2007 15:33:40 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: linux-kernel@vger.kernel.org, <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
+ pathway
+In-Reply-To: <20070703170233.GA25129@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.44L0.0707031529130.7671-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707032132.20731.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
-> > And a further question. The freezer is not atomic. What do you do
-> > if a task not yet frozen calls sys_sync(), but fuse is already frozen?
+On Tue, 3 Jul 2007, Matthew Garrett wrote:
+
+> On Tue, Jul 03, 2007 at 12:57:17PM -0400, Alan Stern wrote:
+> > On Tue, 3 Jul 2007, Matthew Garrett wrote:
+> > > On Tue, Jul 03, 2007 at 12:03:33PM -0400, Alan Stern wrote:
+> > > > Quite apart from the sync() matter, _any_ synchronous call to a FUSE 
+> > > > filesystem during STR will cause trouble.  Even if the user task 
+> > > > implementing the filesystem isn't frozen, when it tries to carry out 
+> > > > some I/O to a suspended device it will either:
+> > > > 
+> > > > 	block until the system wakes up, or
+> > > 
+> > > For the suspend to RAM case, that sounds absolutely fine.
+> > 
+> > It's not so good when your suspend process has to wait for the call to 
+> > complete!
 > 
-> What do you do if a task not yet frozen writes to a pipe, on the other
-> end of which is a task already frozen?
+> Why would it have to? Sorry, I suspect I'm missing something obvious 
+> here.
 
-The same as you do with a pipe when the reader is not ready.
+Well, the sys_sync() that caused your original problem did exactly 
+that.  It's the reason you get deadlocks, right?
 
-> It doesn't matter.  The only thing that should matter during suspend
-> (not hibernate) is saving the state of devices to ram, and putting the
-> devices to sleep.
+I agree that in general the suspend process should not have to wait for 
+a userspace callback to complete.  Indeed, there's no particular 
+reason that anything running during STR should have to wait for 
+something in userspace to complete.  Given that fact, I don't see 
+anything wrong with freezing userspace when doing STR.
 
-Well, but you did remove sys_sync() from the freezer, which is
-and must be called in the hibernate path.
- 
-> I'm not sure why this can't be made atomic, but assuming, that it
-> can't, fuse should still not need to be implicated.  If it is, that's
-> an indication about something wrong in the suspend procedure.
-
-Nope, something's wrong in fuse. You must be able to deal with sync
-until every task is frozen.
-
-	Regards
-		Oliver
+Alan Stern
 
