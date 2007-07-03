@@ -1,52 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbXGCQFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbXGCQMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761274AbXGCQFl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 12:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbXGCQFf
+	id S1757917AbXGCQMw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 12:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbXGCQMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 12:05:35 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:55454 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755342AbXGCQFe (ORCPT
+	Tue, 3 Jul 2007 12:12:42 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:43123 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754551AbXGCQMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 12:05:34 -0400
-Date: Tue, 3 Jul 2007 17:05:26 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Message-ID: <20070703160526.GA24334@srcf.ucam.org>
-References: <20070703042916.GA17240@srcf.ucam.org> <Pine.LNX.4.44L0.0707031200240.3936-100000@iolanthe.rowland.org>
+	Tue, 3 Jul 2007 12:12:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fT/oCtVuDwp3IbxLBZZ/b9FYA663hc3HYqENjiCabpj/0SEfjgQ/AFwLLcLwAW6gbs+fNTDWjCGWp4PA82f6PyDE2eKC5NBw5HFZDgnfaYzod5zKWVJFYx4dXWXGlhuDjKHVhK5nBuPWqy2MUMwNv+atbou4fTMEm3rY8EdkWF8=
+Message-ID: <4ae3c140707030912m59fc956k9e4da94e173fa171@mail.gmail.com>
+Date: Tue, 3 Jul 2007 12:12:40 -0400
+From: "Xin Zhao" <uszhaoxin@gmail.com>
+To: "Chris Mason" <chris.mason@oracle.com>
+Subject: Re: how do versioning filesystems take snapshot of opened files?
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070703090946.49e6062f@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0707031200240.3936-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+References: <4ae3c140707022228u2b5098c5v766b9dc9a7e09ea1@mail.gmail.com>
+	 <20070703090946.49e6062f@think.oraclecorp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 12:03:33PM -0400, Alan Stern wrote:
-> On Tue, 3 Jul 2007, Matthew Garrett wrote:
-> 
-> > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
-> > a screaming nightmare - either the suspend fails because syslog (for 
-> > instance) can't be frozen, or the machine deadlocks for some other 
-> > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
-> > could do what we do for suspend to RAM on other platforms (PPC and APM) 
-> > and just not use the freezer.
-> 
-> Quite apart from the sync() matter, _any_ synchronous call to a FUSE 
-> filesystem during STR will cause trouble.  Even if the user task 
-> implementing the filesystem isn't frozen, when it tries to carry out 
-> some I/O to a suspended device it will either:
-> 
-> 	block until the system wakes up, or
+Thanks for your reply.
 
-For the suspend to RAM case, that sounds absolutely fine.
+Sounds like one has to stop or pause the applications to get
+consistent snapshot?  But you look around, you may find that many
+systems claim that they can take snapshot without shutdown the
+application. Actually, I think it is impractical to require that app
+to be shutdown before taking snapshot in a commercial environment.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Pausing apps is possible from the filesystem perspective. A simple
+solution is that the filesystem stop writing any data to disk from the
+point that the snapshotting command is received. But as we discussed
+earlier, this is not sufficient to prevent a file from containing part
+of old data and part of new data.
+
+That's why I am so confused how can these systems provide consistent
+snapshotting capability without sacrificing system performance much.
+
+
+
+On 7/3/07, Chris Mason <chris.mason@oracle.com> wrote:
+> On Tue, 3 Jul 2007 01:28:57 -0400
+> "Xin Zhao" <uszhaoxin@gmail.com> wrote:
+>
+> > Hi,
+> >
+> >
+> > If a file is already opened when snapshot command is issued,  the file
+> > itself could be in an inconsistent state already. Before the file is
+> > closed, maybe part of the file contains old data, the rest contains
+> > new data.
+> > How does a versioning filesystem guarantee that the file snapshot is
+> > in a consistent state in this case?
+> >
+> > I googled it but didn't find any answer. Can someone explain it a
+> > little bit?
+>
+> It's the same answer as in most filesystem related questions...it
+> depends ;)  Consistent state means many different things.  It may mean
+> that the metadata accurately reflects the space on disk allocated to
+> the file and that all data for the file is properly on disk (ie from an
+> fsync).
+>
+> But, even this is less than useful because very few files on the
+> filesystem stand alone.  Applications spread their state across a
+> number of files and so consistent means something different to
+> every application.
+>
+> Getting a snapshot that is useful with respect to application data
+> requires help from the application.  The app needs to be shutdown or
+> paused prior to the snapshot and then started up again after the
+> snapshot is taken.
+>
+> -chris
+>
+>
+>
