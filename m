@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbXGCVa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761921AbXGCVan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761639AbXGCVa2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbXGCVaU
+	id S1761921AbXGCVan (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760623AbXGCVa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:30:20 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:49116 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754942AbXGCVaT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:30:19 -0400
-Message-ID: <468ABFE0.5090902@zytor.com>
-Date: Tue, 03 Jul 2007 14:30:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 3 Jul 2007 17:30:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46557 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760470AbXGCVaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:30:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 23:37:51 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <20070703211227.GA28758@srcf.ucam.org> <Pine.LNX.4.44L0.0707031713530.8010-100000@iolanthe.rowland.org> <20070703212002.GA28895@srcf.ucam.org>
+In-Reply-To: <20070703212002.GA28895@srcf.ucam.org>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/10] Immediate Value - i386 Optimization
-References: <20070703164046.645090494@polymtl.ca> <20070703164515.071300768@polymtl.ca> <468A9956.9050903@zytor.com> <20070703191605.GB4047@Krystal> <468AAF1F.6010909@zytor.com> <20070703204347.GA8876@Krystal>
-In-Reply-To: <20070703204347.GA8876@Krystal>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707032337.52544.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
+On Tuesday, 3 July 2007 23:20, Matthew Garrett wrote:
+> On Tue, Jul 03, 2007 at 05:16:37PM -0400, Alan Stern wrote:
+> > On Tue, 3 Jul 2007, Matthew Garrett wrote:
+> > > But that's fine - "Are we undergoing a systemwide suspend" is an easy 
+> > > question to ask. Freezing processes instead means that most of those 
+> > > paths will never be tested.
+> > 
+> > The question is easy to ask, but it's not so easy to figure out what
+> > you should do if the answer is Yes.  Freezing processes instead means
+> > that those "untested" paths -- in many, many drivers -- won't have to 
+> > exist at all.
 > 
-> If we can change the compiler, here is what we could do:
-> 
-> Tell GCC to put NOPs that could be altered by a branch alternative to
-> some specified code. We should be able to get the instruction pointers
-> (think of inlines) to these nop/branch instructions so we can change
-> them dynamically.
-> 
+> We're used to the idea of applications blocking when a resource they're 
+> using goes away - NFS has done it forever. 
 
-Changing the compiler should be perfectly feasible, *BUT* I think we
-need a transitional solution that works on existing compilers.
+Now, please tell me how many driver writers even thought that something
+might try to access their devices after .suspend() had been executed (or
+even whilie it was being executed)?
 
-> I suspect this would be inherently tricky. If someone is ready to do
-> this and tells me "yes, it will be there in 1 month", I am more than
-> ready to switch my markers to this and help, but since the core of my
-> work is kernel tracing, I don't have the time nor the ressources to
-> tackle this problem.
-> 
-> In the event that someone answers "we'll do this in the following 3
-> years", I might consider to change the if (immediate(var)) into an
-> immediate_if (var) so we can later proceed to the change with simple
-> ifdefs without rewriting all the kernel code that would use it.
+Greetings,
+Rafael
 
-This is much more of "we'll do that in the following 1-2 years", since
-we have to deal with a full gcc development cycle.  However, I really
-want to see this being implemented in a way that would let us DTRT in
-the long run.
 
-	-hpa
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
