@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbXGCFVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbXGCFWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbXGCFVs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 01:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbXGCFVl
+	id S1757759AbXGCFWm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 01:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXGCFWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 01:21:41 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:45465 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbXGCFVk (ORCPT
+	Tue, 3 Jul 2007 01:22:35 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:19223 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbXGCFWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 01:21:40 -0400
-Date: Tue, 3 Jul 2007 06:21:30 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Message-ID: <20070703052130.GA17605@srcf.ucam.org>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707031454.42078.nigel@nigel.suspend2.net>
+	Tue, 3 Jul 2007 01:22:34 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CABN6iUarR7MV/2dsb2JhbAA
+X-IronPort-AV: i="4.16,490,1175497200"; 
+   d="scan'208"; a="499615364:sNHT407265076"
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Greg KH" <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/4] net: add usb_alloc_urb_node to use use kmalloc_node
+X-Message-Flag: Warning: May contain useful information
+References: <200706291326.43563.yinghai.lu@sun.com>
+	<200707021537.13840.yinghai.lu@sun.com>
+	<20070703051336.GF18420@kroah.com>
+	<86802c440707022217w40d67b40o9f533a1f93b4807f@mail.gmail.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 02 Jul 2007 22:22:17 -0700
+In-Reply-To: <86802c440707022217w40d67b40o9f533a1f93b4807f@mail.gmail.com> (Yinghai Lu's message of "Mon, 2 Jul 2007 22:17:56 -0700")
+Message-ID: <adafy466oza.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707031454.42078.nigel@nigel.suspend2.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+X-OriginalArrivalTime: 03 Jul 2007 05:22:19.0555 (UTC) FILETIME=[208E2730:01C7BD32]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 02:54:41PM +1000, Nigel Cunningham wrote:
+ > [PATCH 4/4] usb: add usb_alloc_urb_node to use use kmalloc_node
 
-> Note, though, that this won't help at all when people use the "suspend-to-ram 
-> instead of powering down after writing a hibernation image" feature in 
-> (uswsusp | tuxonice). Fuse is just a broken idea in the first place, but 
-> given that it exists, we still need to find the underlying cause.
-
-If / is on fuse it's unlikely that hibernation is high on your list of 
-priorities right now.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+If you're fixing things up, change "use use" to "use" while you're at it...
