@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758826AbXGCFpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbXGCFsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758826AbXGCFpj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 01:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757748AbXGCFpK
+	id S1758276AbXGCFsr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 01:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbXGCFsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 01:45:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37962 "EHLO mx1.redhat.com"
+	Tue, 3 Jul 2007 01:48:40 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58019 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758381AbXGCFpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 01:45:08 -0400
-Date: Tue, 3 Jul 2007 01:44:55 -0400
-From: Dave Jones <davej@redhat.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Fix empty macros in acpi.
-Message-ID: <20070703054455.GB32110@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Len Brown <lenb@kernel.org>, Al Viro <viro@ftp.linux.org.uk>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20070612233309.GA24251@redhat.com> <20070613002115.GA28778@redhat.com> <20070613002631.GL21478@ftp.linux.org.uk> <200707030122.47747.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707030122.47747.lenb@kernel.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1752439AbXGCFsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 01:48:40 -0400
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <200707031454.42078.nigel@nigel.suspend2.net>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	 <200707031454.42078.nigel@nigel.suspend2.net>
+Content-Type: text/plain
+Date: Tue, 03 Jul 2007 15:48:26 +1000
+Message-Id: <1183441706.10386.73.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 01:22:47AM -0400, Len Brown wrote:
 
- > whelp, it seems that the reason for this patch is this:
- > 
- > #define DBG()
- > 
- > if(...)
- > 	DBG();
- > next_c_statement
- > 
- > which turns into
- > if(...) ;
- > next_c_statement
- > 
- > But since there is an intervening ';', this code is still functionally correct
- > and a decent compiler will delete the test altogether, yes?
+> Note, though, that this won't help at all when people use the "suspend-to-ram 
+> instead of powering down after writing a hibernation image" feature in 
+> (uswsusp | tuxonice). Fuse is just a broken idea in the first place, but 
+> given that it exists, we still need to find the underlying cause.
 
-Right, gcc does generate the correct code.
+No, Fuse is not a broken idea in the first place. It's the freezer that
+is a totally broken idea. It has proven many times to be racy by design
+and cannot be made right. Ther usermode helper mess is just part of
+that, fuse is another example, etc etc ...
 
- > So is there some real problem here that I missed,
- > or is this to make some code-checking tool that I don't have happy?
+So I think Matthew is totally right. In fact, the presence of the
+freezer is the main reason why Paulus so far NACKed Johannes attempts at
+merging the PPC PM code with the generic code in kernel/power.c
 
-Out of curiousity, I thought I'd see what was lurking in a -Wextra
-build a while back. It's 99.9% noise, but a lot of it is trivial stuff
-like this.
+We've been doing fine without it so far and intend to continue to do so.
 
-	Dave
+As for suspend-to-disk, I refer you to the discussions we had in the
+past with Linus, where he explains I think quite clearly how wrong the
+current implementation of STR is :-)
 
--- 
-http://www.codemonkey.org.uk
+Thing is, if you're going to do snapshots, you should probably not sync
+after you have "frozen" anyway.
+
+Cheers,
+Ben.
+
+
