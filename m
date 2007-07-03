@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbXGCPCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbXGCPDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760400AbXGCPCf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 11:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbXGCPCQ
+	id S1760222AbXGCPDI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 11:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760512AbXGCPCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 11:02:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:6618 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757552AbXGCPCP (ORCPT
+	Tue, 3 Jul 2007 11:02:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49738 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760492AbXGCPCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 11:02:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=AYv6PDswrVGPJpr2n2vj3hhgWbViBijPbTitdUjRNUsFScE4HRl7MQBQh7ZZ7Tc/2D+E3Crqwa9u1LBXCjNdV5iO19pdws8HPLajACp2zZO/PJ1hWL3MU6gihwxShHVtbduRQapdJY6ugPIGH8ZanMmTY5+upmJ64611lV2YHRk=
-Date: Tue, 3 Jul 2007 17:02:10 +0200
-From: Florian Attenberger <valdyn@gmail.com>
-To: Arne Georg Gleditsch <argggh@dolphinics.no>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
-Message-ID: <20070703150210.GA31495@master.home>
-References: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca> <20070703135949.GB19565@master.home> <87hcol7en2.fsf@pelargir.dolphinics.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <87hcol7en2.fsf@pelargir.dolphinics.no>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 3 Jul 2007 11:02:41 -0400
+Subject: Re: How to handle patches that cross maintainers?
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <4BEFAFC6-3346-4F29-B1C5-377952E3FBBF@kernel.crashing.org>
+References: <4BEFAFC6-3346-4F29-B1C5-377952E3FBBF@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 03 Jul 2007 12:01:50 -0300
+Message-Id: <1183474910.3926.134.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 04:20:17PM +0200, Arne Georg Gleditsch wrote:
-> Florian Attenberger <valdyn@gmail.com> writes:
-> > there was one 'special' event at that date:
-> > syslog.2.gz:Jul  1 01:59:59 master kernel: Clock: inserting leap second
-> > 23:59:60 UTC
+Em Ter, 2007-07-03 às 04:01 -0500, Kumar Gala escreveu:
+> Andrew,
 > 
-> As far as I can tell, no leap second was due to be inserted at 1. of
-> July this year.  Is the year set correctly for this box?
->
-yep, controlled by ntpd.
-You're right according to
-ftp://hpiers.obspm.fr/iers/bul/bulc/bulletinc.33
-that event shouldn't have been there.
+> I was hoping to get your input on how to handle patches that cross  
+> maintainers.  I've got a patch that is pretty PPC specific, but  
+> happens to touch some drivers as well.
+> 
+> Here's the diffstat to get a rough idea:
+> 
+> arch/powerpc/kernel/io.c                |   12 ++++++------
+> arch/powerpc/mm/hash_native_64.c        |    2 +-
+> arch/powerpc/mm/stab.c                  |    4 ++--
+> drivers/ide/pci/scc_pata.c              |    4 ++--
+> drivers/media/dvb/bt8xx/bt878.h         |    5 ++---
+> drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+> include/asm-powerpc/system.h            |    2 +-
+> 7 files changed, 15 insertions(+), 16 deletions(-)
+> 
+> Now, I've had this issue before w/o any good sense on how to handle it.
+
+The better is to copy all of us and wait for some time to allow each
+maintainer to ack or comment the changeset, if needed.
+
+Please c/c me for any changes on /drivers/media stuff.
+
+Cheers,
+Mauro
 
