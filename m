@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760484AbXGCQBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760976AbXGCQDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760484AbXGCQBg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 12:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761106AbXGCQBY
+	id S1760976AbXGCQDl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 12:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756419AbXGCQDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 12:01:24 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46063 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760955AbXGCQBW (ORCPT
+	Tue, 3 Jul 2007 12:03:35 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49719 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755342AbXGCQDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 12:01:22 -0400
-Date: Tue, 3 Jul 2007 17:07:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata fixes
-Message-ID: <20070703170734.5a25b9c5@the-village.bc.nu>
-In-Reply-To: <20070703155238.GA7344@havoc.gtf.org>
-References: <20070703155238.GA7344@havoc.gtf.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jul 2007 12:03:34 -0400
+Date: Tue, 3 Jul 2007 12:03:33 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: linux-kernel@vger.kernel.org, <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
+ pathway
+In-Reply-To: <20070703042916.GA17240@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.44L0.0707031200240.3936-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Chuck Ebbert (1):
->       pata_ali: fix UDMA settings
+On Tue, 3 Jul 2007, Matthew Garrett wrote:
 
-Could you please fix your git tree to have the proper credits for patches
-you pull from bugzilla. 
+> Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
+> a screaming nightmare - either the suspend fails because syslog (for 
+> instance) can't be frozen, or the machine deadlocks for some other 
+> reason I haven't tracked down. We could "fix" fuse, or alternatively we 
+> could do what we do for suspend to RAM on other platforms (PPC and APM) 
+> and just not use the freezer.
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242472
+Quite apart from the sync() matter, _any_ synchronous call to a FUSE 
+filesystem during STR will cause trouble.  Even if the user task 
+implementing the filesystem isn't frozen, when it tries to carry out 
+some I/O to a suspended device it will either:
 
-Alan
+	block until the system wakes up, or
+
+	cause the suspend to abort.
+
+Neither outcome is desirable.
+
+Alan Stern
+
