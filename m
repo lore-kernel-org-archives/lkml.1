@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbXGCAiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbXGCAje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbXGCAiU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jul 2007 20:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbXGCAiH
+	id S1758670AbXGCAje (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jul 2007 20:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbXGCAjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jul 2007 20:38:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58504 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756930AbXGCAiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jul 2007 20:38:04 -0400
-Date: Mon, 2 Jul 2007 20:36:48 -0400
-From: Dave Jones <davej@redhat.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cpufreq@lists.linux.org.uk,
-       linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
-Message-ID: <20070703003648.GA31035@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Adrian Bunk <bunk@stusta.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	lenb@kernel.org, linux-acpi@vger.kernel.org
-References: <20070701202037.GC10869@stusta.de> <20070702232255.GH6403@redhat.com> <20070702234313.GB3492@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070702234313.GB3492@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 2 Jul 2007 20:39:25 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:33696 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756405AbXGCAjY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jul 2007 20:39:24 -0400
+X-IronPort-AV: i="4.16,489,1175486400"; 
+   d="scan'208"; a="44198314:sNHT25531065"
+Subject: Re: [PATCH] Blackfin arch: include/asm-blackfin/macros.h die die
+	die
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Marco Roeland <marco.roeland@xs4all.nl>
+Cc: Alex Riesen <raa.lkml@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20070702150915.GC10400@fiberbit.xs4all.nl>
+References: <Pine.LNX.4.64.0707020800010.1972@localhost.localdomain>
+	 <4688EF9B.8020405@garzik.org>
+	 <9a8748490707020658t5e6542ag6edb435dbc4499ab@mail.gmail.com>
+	 <4689073D.1020802@garzik.org>
+	 <81b0412b0707020722q25e8eb41t456e7316fe4a7b40@mail.gmail.com>
+	 <20070702142926.GB10400@fiberbit.xs4all.nl>
+	 <20070702150915.GC10400@fiberbit.xs4all.nl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Tue, 03 Jul 2007 08:39:19 +0800
+Message-Id: <1183423159.10353.10.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 03 Jul 2007 00:39:22.0586 (UTC) FILETIME=[997E43A0:01C7BD0A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 01:43:13AM +0200, Adrian Bunk wrote:
- > > Applying '[CPUFREQ] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI'
- > > 
- > > error: patch failed: arch/x86_64/kernel/cpufreq/Kconfig:65
- > > error: arch/x86_64/kernel/cpufreq/Kconfig: patch does not apply
- > 
- > I made the patch against 2.6.22-rc6-mm1 (based on an older version of 
- > this patch)  but I missed the fuzz (and GNU patch defaults to accept
- > patches with a fuzz of 2).
- > 
- > Below is a version of the patch with the fuzz edited out.
+On Mon, 2007-07-02 at 17:09 +0200, Marco Roeland wrote:
+> This file accidentally got truncated instead of deleted in commit df30b11.
+> Doing a "make distclean" or "make mrproper" deletes this file because of
+> its zero size. Git then sees this as an uncommitted local change.
+> 
+> Signed-off-by: Marco Roeland <marco.roeland@xs4all.nl>
+> ---
+>  0 files changed, 0 insertions(+), 0 deletions(-)
+>  delete mode 100644 include/asm-blackfin/macros.h
+> 
+> diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
+> deleted file mode 100644
+> index e69de29..0000000
 
-It also has the context edited out :)
-
- > @@ -65,1 +60,1 @@
- > -	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
- > +	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
- > --- linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.old	2007-02-17 23:29:53.000000000 +0100
- > +++ linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2007-02-17 23:30:44.000000000 +0100
-
-This won't apply either.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+Thanks already in blackfin-2.6.git tree for Linus pull
+Acked by: Bryan Wu <bryan.wu@analog.com>
