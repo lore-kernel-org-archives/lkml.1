@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbXGCVMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbXGCVN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752176AbXGCVMy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 17:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbXGCVMg
+	id S1760696AbXGCVN1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 17:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbXGCVNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 17:12:36 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57011 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752176AbXGCVMf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 17:12:35 -0400
-Date: Tue, 3 Jul 2007 17:12:34 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: =?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur <caglar@pardus.org.tr>
-cc: Oliver Neukum <oliver@neukum.org>, "Ni@m" <niam.niam@gmail.com>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] [PATCH] for NIKON D50 as UMS
-In-Reply-To: <200707040002.09025.caglar@pardus.org.tr>
-Message-ID: <Pine.LNX.4.44L0.0707031710570.8010-100000@iolanthe.rowland.org>
+	Tue, 3 Jul 2007 17:13:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46447 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750981AbXGCVNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 17:13:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 23:20:19 +0200
+User-Agent: KMail/1.9.5
+Cc: stern@rowland.harvard.edu, oliver@neukum.org, mjg59@srcf.ucam.org,
+       linux-kernel@vger.kernel.org, pavel@ucw.cz,
+       linux-pm@lists.linux-foundation.org
+References: <Pine.LNX.4.44L0.0707031556160.7671-100000@iolanthe.rowland.org> <E1I5oq4-0004sc-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I5oq4-0004sc-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707032320.20334.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, [utf-8] S.Çağlar Onur wrote:
+On Tuesday, 3 July 2007 22:19, Miklos Szeredi wrote:
+> > > Well, but you did remove sys_sync() from the freezer, which is
+> > > and must be called in the hibernate path.
+> > 
+> > That's not really true.  We _want_ to call sys_sync() in both the 
+> > hibernate and suspend paths (in case the batteries run down), to help 
+> > avoid filesystem problems if something goes wrong with the resume.  But 
+> > it isn't a hard requirement.
+> > 
+> > > > I'm not sure why this can't be made atomic, but assuming, that it
+> > > > can't, fuse should still not need to be implicated.  If it is, that's
+> > > > an indication about something wrong in the suspend procedure.
+> > > 
+> > > Nope, something's wrong in fuse. You must be able to deal with sync
+> > > until every task is frozen.
+> > 
+> > That's ridiculous.  FUSE itself runs partially as a user task.  How can
+> > you expect it to carry out a sync or anything else when it is frozen?
+> > 
+> > I suppose you could "deal" with it by having the kernel portion return
+> > an error if the userspace part is frozen.  If the hibernate/suspend 
+> > code bothered to check the return value, it would immediately abort 
+> > the suspend.
 
-> Hi,
-> 
-> 03 Tem 2007 Sal tarihinde, Oliver Neukum şunları yazmıştı: 
-> > Am Dienstag, 3. Juli 2007 schrieb S.Çağlar Onur:
-> > > Hmm i have NIKON D50 also and it works here without a problem with
-> > > Linus's current git.
-> >
-> > Please provide the full lsusb -v for your devices, both of you.
-> > You might have different versions of the device.
-> 
-> Here it is;
-> 
-> 
-> Bus 005 Device 007: ID 04b0:0409 Nikon Corp. 
-> Device Descriptor:
->   bLength                18
->   bDescriptorType         1
->   bcdUSB               2.00
->   bDeviceClass            0 (Defined at Interface level)
->   bDeviceSubClass         0 
->   bDeviceProtocol         0 
->   bMaxPacketSize0        64
->   idVendor           0x04b0 Nikon Corp.
->   idProduct          0x0409 
->   bcdDevice            1.00
+Er, do_sync() doesn't return a result.
 
-The descriptors are the same.  But that doesn't mean anything.  It's 
-possible that one device has a problem and the other doesn't because 
-one computer tries to read the last sector and the other computer 
-doesn't.  Or perhaps the two cameras have different capacities.
+> I strongly believe, that we don't want to deal with it.  If we want to
+> call sync(), do it while the system is fully operational.  It's a best
+> effort thing anyway, and you can loose data in other ways if resume
+> fails.
 
-Alan Stern
+The requirement of syncing when the system (including the user space) is fully
+operational is FUSE-specific.  Thus we'd rather like to sync FUSE filesystems
+before freezing the user space and freeze the other filesystems after freezing
+the user space.
 
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
