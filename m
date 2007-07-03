@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbXGCWPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbXGCWQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759498AbXGCWPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 18:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbXGCWPg
+	id S1760823AbXGCWQA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 18:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759452AbXGCWPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 18:15:36 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:50463 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbXGCWPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 18:15:35 -0400
-Date: Tue, 3 Jul 2007 18:15:22 -0400
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       nfsv4@linux-nfs.org
-Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
-Message-ID: <20070703221522.GE14074@fieldses.org>
-References: <1183275424.4010.126.camel@localhost.localdomain> <1183388313.3864.35.camel@localhost.localdomain>
+	Tue, 3 Jul 2007 18:15:46 -0400
+Received: from styx.suse.cz ([82.119.242.94]:60357 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759386AbXGCWPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 18:15:44 -0400
+Date: Wed, 4 Jul 2007 00:15:18 +0200
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: "Zephaniah E. Hull" <warp@aehallh.com>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: Support for a less exclusive grab.
+Message-ID: <20070703221518.GA5013@suse.cz>
+References: <20070609084800.GR6362@aehallh.com> <200706120120.00494.dtor@insightbb.com> <20070612052316.GX6362@aehallh.com> <200706120135.06428.dtor@insightbb.com> <20070612054031.GY6362@aehallh.com> <20070702152044.GA24665@suse.cz> <20070703164555.GA20370@aehallh.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1183388313.3864.35.camel@localhost.localdomain>
+In-Reply-To: <20070703164555.GA20370@aehallh.com>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 10:58:33AM -0400, Mingming Cao wrote:
-> Trond or Bruce, can you please review these patch series and ack if you
-> agrees?
+On Tue, Jul 03, 2007 at 12:45:55PM -0400, Zephaniah E. Hull wrote:
 
-Thanks, looks like what we need!
+> Not really, what happens when the user presses alt-F1?
 
-How will nfsd tell whether it can really on a given filesystem's
-i_version, or whether it should fall back on ctime?
+Well, if the console is switched to medium raw or raw mode, nothing
+happens.
 
-> As to performance concerns that raise before the inode version counter
-> (at least for ext4) is done inside ext4_mark_inode_dirty), so there is
-> no extra IO work to store this counter to disk.
+> A way to tell the kernel that events from a given input device should
+> not go to the console has been needed since the very first time an X
+> driver allowed keyboard events from /dev/input/event<n>, and that
+> still has not changed.
 
-So what's the motivation for the "noversion" mount option?
+And the ages old method that X has been using before the existence of
+the input layer still works fine, as far as I know.
 
---b.
+> We just want a more flexible approach then what we are already using[0].
+
+I'm fine with that, I just wonder whether attacking it on the input
+layer side is the right way to do it: If you want to disable the
+console, tell the console.
+
+That way, we don't have to figure out which exact kernel input handlers
+are console and which are not.
+
+> I'll see about writing something up when I get back to my computers[1]
+> and have things set back up[2].
+
+Enjoy whatever computerless period you're planning!
+
+-- 
+Vojtech Pavlik
+Director SuSE Labs
