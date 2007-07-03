@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbXGCFoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbXGCFov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757813AbXGCFoi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 01:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXGCFob
+	id S1758557AbXGCFov (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 01:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbXGCFoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 01:44:31 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49137 "EHLO gate.crashing.org"
+	Tue, 3 Jul 2007 01:44:32 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49138 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbXGCFoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751499AbXGCFoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 3 Jul 2007 01:44:30 -0400
 Subject: Re: [PATCH -mm] PM: Prevent frozen user mode helpers from failing
 	the freezing of tasks (rev. 2)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
        Nigel Cunningham <nigel@nigel.suspend2.net>,
        Uli Luckas <u.luckas@road.de>, Oleg Nesterov <oleg@tv-sign.ru>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20070626084854.GA4594@elf.ucw.cz>
+In-Reply-To: <200706260027.02396.rjw@sisk.pl>
 References: <200706252352.24137.rjw@sisk.pl>
-	 <20070625215527.GE2051@elf.ucw.cz> <200706260027.02396.rjw@sisk.pl>
-	 <20070626084854.GA4594@elf.ucw.cz>
+	 <20070625215527.GE2051@elf.ucw.cz>  <200706260027.02396.rjw@sisk.pl>
 Content-Type: text/plain
-Date: Tue, 03 Jul 2007 15:31:26 +1000
-Message-Id: <1183440686.10386.68.camel@localhost.localdomain>
+Date: Tue, 03 Jul 2007 15:30:46 +1000
+Message-Id: <1183440646.10386.66.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-26 at 10:48 +0200, Pavel Machek wrote:
-> > The problem, as far as I understand it, is that the instructions can
-> get
-> > reordered if there are no barriers in there.
+On Tue, 2007-06-26 at 00:27 +0200, Rafael J. Wysocki wrote:
+> > >     case PM_HIBERNATION_PREPARE:
+> > >     case PM_SUSPEND_PREPARE:
+> > >             usermodehelper_disabled = 1;
+> > > -           return NOTIFY_OK;
+> > > +           smp_mb();
+> > 
+> > usermodehelper_disabled should be atomic variable, too, so we don't
+> > have to play these ugly tricks by hand? This should not be
+> > performance-critical, right?
 > 
-> Are you sure?  I thought atomic variables have barrirers built-in.
+> Well, I think we'd need to add the barriers anyway.
+> 
+> The problem, as far as I understand it, is that the instructions can
+> get
+> reordered if there are no barriers in there.
 
-bzzzt. they don't.
+That seems dodgy either way to me :-)
+
+Just use a spinlock.
 
 Ben.
-
 
