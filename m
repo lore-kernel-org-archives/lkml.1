@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbXGCNPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbXGCNQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757881AbXGCNPA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 09:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbXGCNOw
+	id S1757881AbXGCNQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 09:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbXGCNQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 09:14:52 -0400
-Received: from lazybastard.de ([212.112.238.170]:37121 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753181AbXGCNOv (ORCPT
+	Tue, 3 Jul 2007 09:16:06 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:50762 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754206AbXGCNQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 09:14:51 -0400
-Date: Tue, 3 Jul 2007 14:25:22 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Jared Hulbert <jaredeh@gmail.com>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: vm/fs meetup in september?
-Message-ID: <20070703122522.GB11942@lazybastard.org>
-References: <20070624042345.GB20033@wotan.suse.de> <6934efce0706251708h7ab8d7dal6682def601a82073@mail.gmail.com> <20070626060528.GA15134@infradead.org> <6934efce0706261007x5e402eebvc528d2d39abd03a3@mail.gmail.com> <20070630093243.GD22354@infradead.org> <6934efce0707021044x44f51337ofa046c85e342a973@mail.gmail.com> <20070702230418.GA5630@lazybastard.org> <6934efce0707021746q133c62f5l803e5fa78b3535d9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6934efce0707021746q133c62f5l803e5fa78b3535d9@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 3 Jul 2007 09:16:05 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Tue, 3 Jul 2007 09:13:54 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Bodo Eggert <7eggert@gmx.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: shouldn't LVM support be selected by default?
+In-Reply-To: <E1I5htd-0000ix-SE@be1.lrz>
+Message-ID: <Pine.LNX.4.64.0707030913380.21919@localhost.localdomain>
+References: <8CNXF-47r-3@gated-at.bofh.it> <E1I5htd-0000ix-SE@be1.lrz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 July 2007 17:46:40 -0700, Jared Hulbert wrote:
-> 
-> Right, the solution to swap problem is identical to the rw XIP
-> filesystem problem.    Jörn, that's why you're the self-appointed
-> subject matter expert!
+On Tue, 3 Jul 2007, Bodo Eggert wrote:
 
-All right.  I'll try to make an important face whenever the subject
-comes up.
+> Robert P. J. Day <rpjday@mindspring.com> wrote:
+>
+> >   just built a new kernel and didn't notice that support for LVM
+> > wasn't selected by default for x86.  given what i thought was fairly
+> > widespread use of LVM2, wouldn't it make sense to have this option as
+> > part of the default config?
+>
+> If you don't know about LVM, you don't need it. Do you?
 
-Nick, do you have a problem if LogFS occupies two brainslots at the
-meeting?
+well, ok, i can go with that.  thanks.
 
-Jörn
-
+rday
 -- 
-Eighty percent of success is showing up.
--- Woody Allen
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
