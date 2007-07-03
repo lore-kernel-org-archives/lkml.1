@@ -1,76 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759963AbXGCPBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbXGCPCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759963AbXGCPBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 11:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbXGCPBG
+	id S1760227AbXGCPCW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 11:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbXGCPCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 11:01:06 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:41558 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756010AbXGCPBE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 11:01:04 -0400
-Subject: Re: [patch 2/3] audit: rework execve audit
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, linux-audit@redhat.com
-In-Reply-To: <20070626155541.9708eded.akpm@linux-foundation.org>
-References: <20070613100334.635756997@chello.nl>
-	 <20070613100834.897301179@chello.nl>
-	 <20070626155541.9708eded.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 03 Jul 2007 17:00:55 +0200
-Message-Id: <1183474855.7054.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 3 Jul 2007 11:02:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45076 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755215AbXGCPCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 11:02:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 17:09:29 +0200
+User-Agent: KMail/1.9.5
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+References: <20070703042916.GA17240@srcf.ucam.org> <1183441887.10386.77.camel@localhost.localdomain> <200707031508.45595.rjw@sisk.pl>
+In-Reply-To: <200707031508.45595.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707031709.29968.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-26 at 15:55 -0700, Andrew Morton wrote:
-> On Wed, 13 Jun 2007 12:03:36 +0200
-> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Tuesday, 3 July 2007 15:08, Rafael J. Wysocki wrote:
+> On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
+> > On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
+> > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
+> > > a screaming nightmare - either the suspend fails because syslog (for 
+> > > instance) can't be frozen, or the machine deadlocks for some other 
+> > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
+> > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
+> > > and just not use the freezer.
+> > 
+> > The main reason for deadlocks is because we do a sys_sync() after the
+> > freeze, which we shouldn't do.
 > 
-> > +#ifdef CONFIG_AUDITSYSCALL
-> > +	{
-> > +		.ctl_name	= CTL_UNNUMBERED,
-> > +		.procname	= "audit_argv_kb",
-> > +		.data		= &audit_argv_kb,
-> > +		.maxlen		= sizeof(int),
-> > +		.mode		= 0644,
-> > +		.proc_handler	= &proc_dointvec,
-> > +	},
-> > +#endif
-> 
-> Please document /proc entries in Documentation/filesystems/proc.txt
+> So why don't we remove the sys_sync() from freeze_processes() instead?
+
+The patch follows (untested).
+
+Greetings,
+Rafael
 
 
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- Documentation/filesystems/proc.txt |    7 +++++++
- 1 file changed, 7 insertions(+)
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Index: linux-2.6/Documentation/filesystems/proc.txt
+We shouldn't sync filesystems from within the freezer, because it's not needed
+for suspend to RAM and leads to problems with FUSE.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c    |    4 ++++
+ kernel/power/process.c |    1 -
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.22-rc7/kernel/power/disk.c
 ===================================================================
---- linux-2.6.orig/Documentation/filesystems/proc.txt
-+++ linux-2.6/Documentation/filesystems/proc.txt
-@@ -1075,6 +1075,13 @@ check the amount of free space (value is
- resume it  if we have a value of 3 or more percent; consider information about
- the amount of free space valid for 30 seconds
+--- linux-2.6.22-rc7.orig/kernel/power/disk.c
++++ linux-2.6.22-rc7/kernel/power/disk.c
+@@ -296,6 +296,10 @@ int hibernate(void)
+ {
+ 	int error;
  
-+audit_argv_kb
-+-------------
++	printk("Syncing filesystems ... \n");
++	sys_sync();
++	printk("done.\n");
 +
-+The file contains a single value denoting the limit on the argv array size
-+for execve (in KiB). This limit is only applied when system call auditing for
-+execve is enabled, otherwise the value is ignored.
-+
- ctrl-alt-del
- ------------
+ 	mutex_lock(&pm_mutex);
+ 	/* The snapshot device should not be opened while we're running */
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
+Index: linux-2.6.22-rc7/kernel/power/process.c
+===================================================================
+--- linux-2.6.22-rc7.orig/kernel/power/process.c
++++ linux-2.6.22-rc7/kernel/power/process.c
+@@ -190,7 +190,6 @@ int freeze_processes(void)
+ 	if (error)
+ 		return error;
  
-
-
+-	sys_sync();
+ 	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
+ 	if (error)
+ 		return error;
