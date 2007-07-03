@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbXGCHXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbXGCHYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759318AbXGCHXP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 03:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbXGCHXB
+	id S1759401AbXGCHYe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 03:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbXGCHY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 03:23:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46329 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754705AbXGCHXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 03:23:00 -0400
-Date: Tue, 3 Jul 2007 09:22:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Keith Packard <keith.packard@intel.com>
-Subject: Re: [patch] CFS scheduler, -v18
-Message-ID: <20070703072252.GB29984@elte.hu>
-References: <20070622220202.GA16872@elte.hu> <19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com> <b647ffbd0707020601r774a38d4gb62b6c07f1b5db32@mail.gmail.com> <19f34abd0707020643g6a274db5q1d25cabd85b9a25f@mail.gmail.com> <20070702155029.GA13241@elte.hu> <19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com> <1183446743.7070.14.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="SLDf9lqlvOQaIe6s"
-Content-Disposition: inline
-In-Reply-To: <1183446743.7070.14.camel@Homer.simpson.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 3 Jul 2007 03:24:27 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:42719 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754837AbXGCHY1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 03:24:27 -0400
+Subject: Re: [patch 3/5] remove ptep_test_and_clear_dirty and
+	ptep_clear_flush_dirty.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Zachary Amsden <zach@vmware.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <4689A691.9090908@vmware.com>
+References: <20070629135530.912094590@de.ibm.com>
+	 <20070629141528.060235678@de.ibm.com>  <4689A691.9090908@vmware.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 03 Jul 2007 09:26:38 +0200
+Message-Id: <1183447598.9766.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-07-02 at 18:29 -0700, Zachary Amsden wrote:
+> > -static inline int
+> > -ptep_test_and_clear_dirty (struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
+> > -{
+> > -#ifdef CONFIG_SMP
+> > -	if (!pte_dirty(*ptep))
+> > -		return 0;
+> > -	return test_and_clear_bit(_PAGE_D_BIT, ptep);
+> > -#else
+> > -	pte_t pte = *ptep;
+> > -	if (!pte_dirty(pte))
+> > -		return 0;
+> > -	set_pte_at(vma->vm_mm, addr, ptep, pte_mkclean(pte));
+> > -	return 1;
+> > -#endif
+> > -}
+> 
+> I've not followed all the changes lately - what is the current protocol 
+> for clearing dirty bit?  Is it simply pte_clear followed by set or is it 
+> not done at all?  At least for i386 and virtualization, we had several 
+> optimizations to the test_and_clear path that are not possible with a 
+> pte_clear / set_pte approach.
 
---SLDf9lqlvOQaIe6s
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Imho with a sequence of ptep_get_and_clear, pte_wrprotect, set_pte_at.
+One of the reasons why ptep_test_and_clear_dirty doesn't make sense
+anymore is the shared dirty page tracking. You never just test and clear
+the dirty bit, the latest code always sets the write protect bit as
+well.
 
+-- 
+blue skies,
+  Martin.
 
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> This doesn't appear to be a CFS problem.  I can reproduce the problem 
-> easily in virgin 2.6.22-rc7 by starting xterm-spam at nice -1 or 
-> better. As soon as xterm-spam can get enough CPU to keep the xterm 
-> fully busy, it's game over, the xterm freezes.  The more accurate 
-> fairness of CFS to sleepers just tips the balance quicker.  In 
-> mainline, the xterm has an unfair advantage and maintains it 
-> indefinitely... until you tip the scales just a wee bit, at which time 
-> it inverts.
-
-ah. That indeed makes sense. It seems like the xterm doesnt process the 
-Ctrl-C/Z keypresses _at all_ when it is 'spammed' with output. Normally, 
-output 'spam' is throttled by the scroll buffer's overhead. But in 
-Vegard's case, the printout involves a \r carriage return:
-
-       printf("%ld\r", 1000 * clock() / CLOCKS_PER_SEC);
-
-which allows xterm-spam (attached) to easily flood the xterm (without 
-any scrolling that would act as a throttle) and the xterm to flood Xorg. 
-
-I suspect we need the help of an xterm/Xorg expert? (maybe Keith can 
-give us further pointers? I can reproduce the problem on a T60 with i940 
-and Core2Duo running Fedora 7 + Xorg 7.1.)
-
-	Ingo
-
---SLDf9lqlvOQaIe6s
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="xterm-spam.c"
+"Reality continues to ruin my life." - Calvin.
 
 
-#include <time.h>
-
-main ()
-{
-   while(1)
-       printf("%ld\r", 1000 * clock() / CLOCKS_PER_SEC);
-}
-
---SLDf9lqlvOQaIe6s--
