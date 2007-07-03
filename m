@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbXGCHYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbXGCH2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759401AbXGCHYe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 03:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbXGCHY1
+	id S1759089AbXGCH2F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 03:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbXGCH1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 03:24:27 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:42719 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754837AbXGCHY1 (ORCPT
+	Tue, 3 Jul 2007 03:27:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:56325 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753371AbXGCH1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 03:24:27 -0400
-Subject: Re: [patch 3/5] remove ptep_test_and_clear_dirty and
-	ptep_clear_flush_dirty.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Zachary Amsden <zach@vmware.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <4689A691.9090908@vmware.com>
-References: <20070629135530.912094590@de.ibm.com>
-	 <20070629141528.060235678@de.ibm.com>  <4689A691.9090908@vmware.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Tue, 03 Jul 2007 09:26:38 +0200
-Message-Id: <1183447598.9766.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Tue, 3 Jul 2007 03:27:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=a4g4lJx8mnnsen17T+10nKqzrSEt0sButFZrjH+TFkWOHhPzBeeEFU3/Q/xDW4olfm+MQnJ2nVjV3vXCETkPuUILhpzPC1Sqg2d9JAeyROey61yYlMIwmVuHDGXSR9VgpqM4cJZQZ+ry432v0Zt0WlYzcw12ndKBarHLGmIowQ8=
+Message-ID: <4689FA27.6040706@gmail.com>
+Date: Tue, 03 Jul 2007 16:26:31 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: William Thompson <wt@electro-mechanical.com>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Error in syslog on 2.6.20
+References: <20070622184018.GA20301@electro-mechanical.com>
+In-Reply-To: <20070622184018.GA20301@electro-mechanical.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-02 at 18:29 -0700, Zachary Amsden wrote:
-> > -static inline int
-> > -ptep_test_and_clear_dirty (struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
-> > -{
-> > -#ifdef CONFIG_SMP
-> > -	if (!pte_dirty(*ptep))
-> > -		return 0;
-> > -	return test_and_clear_bit(_PAGE_D_BIT, ptep);
-> > -#else
-> > -	pte_t pte = *ptep;
-> > -	if (!pte_dirty(pte))
-> > -		return 0;
-> > -	set_pte_at(vma->vm_mm, addr, ptep, pte_mkclean(pte));
-> > -	return 1;
-> > -#endif
-> > -}
+William Thompson wrote:
+> I'm not on either list, keep me in CC.
 > 
-> I've not followed all the changes lately - what is the current protocol 
-> for clearing dirty bit?  Is it simply pte_clear followed by set or is it 
-> not done at all?  At least for i386 and virtualization, we had several 
-> optimizations to the test_and_clear path that are not possible with a 
-> pte_clear / set_pte approach.
+> I noticed the following error on a cdrom device:
+> ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata2.00: cmd a0/00:00:00:00:20/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0
+>          res 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> ata2: soft resetting port
+> ata2.00: configured for MWDMA2
+> ata2: EH complete
+> 
+> This is the device when it was found:
+> libata version 2.00 loaded.
+> ata_piix 0000:00:1f.1: version 2.00ac7
+> ata1: PATA max UDMA/100 cmd 0x1F0 ctl 0x3F6 bmdma 0xFFA0 irq 14
+> ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xFFA8 irq 15
+> scsi0 : ata_piix
+> ata1.00: ATA-4, max UDMA/66, 16514064 sectors: LBA
+> ata1.00: ata1: dev 0 multi count 8
+> ata1.00: configured for UDMA/66
+> scsi1 : ata_piix
+> ata2.00: ATAPI, max MWDMA2
+> ata2.00: configured for MWDMA2
+> scsi 0:0:0:0: Direct-Access     ATA      WDC WD84AA       05.0 PQ: 0 ANSI: 5
+> scsi 1:0:0:0: CD-ROM            LITEON   CD-ROM LTN486S   YQSM PQ: 0 ANSI: 5
+> 
+> I have a program that does a scsi TEST UNIT READY on many devices once every
+> .1 second.  The problem occured when I ejected the cdrom and closed the tray
+> again with valid media in the drive.  My program noticed media removed and
+> inserted, then said the device was dead/unpollable.  This is when I saw this
+> error.
 
-Imho with a sequence of ptep_get_and_clear, pte_wrprotect, set_pte_at.
-One of the reasons why ptep_test_and_clear_dirty doesn't make sense
-anymore is the shared dirty page tracking. You never just test and clear
-the dirty bit, the latest code always sets the write protect bit as
-well.
+Your cd rom failed to complete the TUR command your program issued in
+the specified timeout.  ODDs sometimes take quite long to finish TUR or
+any other command when media is changed.  Did you use sg command or
+cdrom ioctl?
+
+Anyways, after timing out, libata EH kicked the cdrom in the ass and
+world peace is restored.
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+tejun
