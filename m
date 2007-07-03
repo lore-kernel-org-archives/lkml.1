@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbXGCTXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759883AbXGCTZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758972AbXGCTXO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 15:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbXGCTXA
+	id S1759883AbXGCTZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 15:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbXGCTZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 15:23:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40742 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755507AbXGCTW7 (ORCPT
+	Tue, 3 Jul 2007 15:25:46 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:53262 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755805AbXGCTZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 15:22:59 -0400
-Date: Tue, 3 Jul 2007 12:21:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: Don't miss the ARM-scsi fix.
-Message-Id: <20070703122145.447c7d2c.akpm@linux-foundation.org>
-In-Reply-To: <200707031503.56561.rob@landley.net>
-References: <200707031503.56561.rob@landley.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 3 Jul 2007 15:25:46 -0400
+Subject: Re: [PATCH] Re: Sparc32: random invalid instruction occourances on
+	sparc32 (sun4c)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       William Lee Irwin III <wli@holomorphy.com>
+In-Reply-To: <Pine.LNX.4.61.0707031910280.29930@mtfhpc.demon.co.uk>
+References: <468A7D14.1050505@googlemail.com>
+	 <Pine.LNX.4.61.0707031817050.29930@mtfhpc.demon.co.uk>
+	 <Pine.LNX.4.61.0707031910280.29930@mtfhpc.demon.co.uk>
+Content-Type: text/plain
+Date: Tue, 03 Jul 2007 15:26:18 -0400
+Message-Id: <1183490778.29081.35.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007 15:03:56 -0400
-Rob Landley <rob@landley.net> wrote:
+On Tue, 2007-07-03 at 19:57 +0100, Mark Fortescue wrote:
+> > Commit b46b8f19c9cd435ecac4d9d12b39d78c137ecd66 partially fixed alignment 
+> > issues but does not ensure that all 64bit alignment requirements of sparc32 
+> > are met. Tests have shown that the redzone2 word can become misallignd.
 
-> Just making sure this fix winds up in 2.6.23:
+Oops, sorry about that. I'm not sure about your patch though -- I think
+I'd prefer to keep the redzone misaligned (and hence _right_ next to the
+real data), and just deal with it.
 
-2.6.22?
+typedef unsigned long long __aligned__((BYTES_PER_WORD)) redzone_t;
 
-> http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=4454/1
-> 
-> It fixes a regression that occurred between 2.6.20 and 2.6.20-rc1.  Without 
-> it, qemu-system-arm can't use emulated SCSI drives.  It wasn't in -rc7, and 
-> the attached patch Works For Me (tm).
+-- 
+dwmw2
 
-Should have cc'ed Russell?
- 
-> Signed-off-by: Rob Landley <rob@landley.net>
-> 
-> Rob
-> -- 
-> "One of my most productive days was throwing away 1000 lines of code."
->   - Ken Thompson.
-> 
-> 
-> [linux-armfix.patch  text/x-diff (1.1KB)]
-> ARM Versatile PCI config reads of one byte width have the lowest two<br />
-> bits of the address cleared and result in reading from a wrong place<br />
-
-html gunk in changelog
-
-> in the config space.  This change is to use word size accesses like it is done for halfword reads.
-> 
-> Byte reads are used for retrieving the IRQ number of a PCI device and the problem was not exposed until 2.6.20 because the value read was discarded in drivers/pci/setup-irq.c (recently fixed).
-> 
-> Signed-off-by: Andrzej Zaborowski  &lt;(address hidden)&gt;<br />
-> Acked-by: Paul Brook  &lt;(address hidden)&gt;
-
-more
- 
-> Note 2 submitted by Russell King on 02 Jul 2007 12:39:41 (UTC)
-> Moved to applied
-> Applied to git-curr.
-> 
-> diff --git a/arch/arm/mach-versatile/pci.c b/arch/arm/mach-versatile/pci.c
-> index ba58223..ca82901 100644
-> --- a/arch/arm/mach-versatile/pci.c
-> +++ b/arch/arm/mach-versatile/pci.c
-> @@ -117,7 +117,10 @@ static int versatile_read_config(struct pci_bus *bus, unsigned int devfn, int wh
->  	} else {
->  		switch (size) {
->  		case 1:
-> -			v = __raw_readb(addr);
-> +			v = __raw_readl(addr);
-> +			if (where & 2) v >>= 16;
-> +			if (where & 1) v >>= 8;
-
-Someone's enter key broke?
-
-> + 			v &= 0xff;
->  			break;
->  
->  		case 2:
-> 
