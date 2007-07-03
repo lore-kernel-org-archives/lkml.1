@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbXGCQsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761557AbXGCQs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761569AbXGCQsk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 12:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761267AbXGCQqE
+	id S1761557AbXGCQs7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 12:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140AbXGCQqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 12:46:04 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:45944 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761221AbXGCQqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 12:46:01 -0400
-Message-Id: <20070703164514.682667810@polymtl.ca>
-References: <20070703164046.645090494@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 03 Jul 2007 12:40:51 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, prasanna@in.ibm.com,
-       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 05/10] Immediate Values - kprobe header fix
-Content-Disposition: inline; filename=immediate-values-kprobes-headers.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  3 Jul 2007 16:45:15 +0000
+	Tue, 3 Jul 2007 12:46:07 -0400
+Received: from spock.bluecherry.net ([66.138.159.248]:3155 "EHLO
+	spock.bluecherry.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760132AbXGCQqD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 12:46:03 -0400
+Date: Tue, 3 Jul 2007 12:45:55 -0400
+From: "Zephaniah E. Hull" <warp@aehallh.com>
+To: Vojtech Pavlik <vojtech@suse.cz>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: Support for a less exclusive grab.
+Message-ID: <20070703164555.GA20370@aehallh.com>
+Mail-Followup-To: Vojtech Pavlik <vojtech@suse.cz>,
+	Dmitry Torokhov <dtor@insightbb.com>,
+	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+References: <20070609084800.GR6362@aehallh.com> <200706120120.00494.dtor@insightbb.com> <20070612052316.GX6362@aehallh.com> <200706120135.06428.dtor@insightbb.com> <20070612054031.GY6362@aehallh.com> <20070702152044.GA24665@suse.cz>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="y0ulUmNC+osPPQO6"
+Content-Disposition: inline
+In-Reply-To: <20070702152044.GA24665@suse.cz>
+X-Notice-1: Unsolicited Commercial Email (Aka SPAM) to ANY systems under
+X-Notice-2: our control constitutes a $US500 Administrative Fee, payable
+X-Notice-3: immediately.  By sending us mail, you hereby acknowledge that
+X-Notice-4: policy and agree to the fee.
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the immediate values depend on the same int3 handler as kprobes implements
-for i386, we have to get architecture specific defines available for the kprobes
-trap handler (especially restore_interrupts()) wven when CONFIG_KPROBES is not
-selected.
 
-That kind of ifdef around a whole header does not make sense in the first place
-anyway.
+--y0ulUmNC+osPPQO6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: prasanna@in.ibm.com
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
----
- include/linux/kprobes.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Jul 02, 2007 at 05:20:44PM +0200, Vojtech Pavlik wrote:
+> On Tue, Jun 12, 2007 at 01:40:31AM -0400, Zephaniah E. Hull wrote:
+> > On Tue, Jun 12, 2007 at 01:35:05AM -0400, Dmitry Torokhov wrote:
+> > > On Tuesday 12 June 2007 01:23, Zephaniah E. Hull wrote:
+> > > > On Tue, Jun 12, 2007 at 01:19:59AM -0400, Dmitry Torokhov wrote:
+> > > > > 
+> > > > > Like I said I would love if xf86-input-evdev did not grab the
+> > > > > device at all.
+> > > > 
+> > > > We have to disable the legacy input handlers somehow, not doing so
+> > > > simply isn't an option.
+> > > 
+> > > I do not follow. If user's xorg.conf does not use /dev/input/mice and
+> > > does not use "kbd" driver then grabbing is not required, is it? Now,
+> > > as far as I understand, lack of hotplug support in X is the main
+> > > obstacle for removing "mouse" and "kbd" drivers, correct?
+> > 
+> > Sadly, not quite.
+> > 
+> > The problem is that if the user is not using the mouse and kbd drivers
+> > at all, but is instead using xf86-input-evdev, and no grabbing is done,
+> > then all key presses end up going to the console.
+> 
+> X still switches to its own VT, so those keys go to the X server via the
+> console, and GPM also knows about console switching ...
+> 
+> That is a sane way how to prevent the regular console from getting
+> keypresses/mouse movements.
 
-Index: linux-2.6-lttng/include/linux/kprobes.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/kprobes.h	2007-06-17 13:41:35.000000000 -0400
-+++ linux-2.6-lttng/include/linux/kprobes.h	2007-06-17 13:41:55.000000000 -0400
-@@ -37,9 +37,9 @@
- #include <linux/rcupdate.h>
- #include <linux/mutex.h>
- 
--#ifdef CONFIG_KPROBES
- #include <asm/kprobes.h>
- 
-+#ifdef CONFIG_KPROBES
- /* kprobe_status settings */
- #define KPROBE_HIT_ACTIVE	0x00000001
- #define KPROBE_HIT_SS		0x00000002
+Not really, what happens when the user presses alt-F1?  A way to tell
+the kernel that events from a given input device should not go to the
+console has been needed since the very first time an X driver allowed
+keyboard events from /dev/input/event<n>, and that still has not
+changed.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+We just want a more flexible approach then what we are already using[0].
+
+I'll see about writing something up when I get back to my computers[1]
+and have things set back up[2].
+
+Zephaniah E. Hull.
+
+0: EVIOCGRAB.
+1: The night of the 10th.
+2: It could be a few days after I get back.
+
+--y0ulUmNC+osPPQO6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGin1DRFMAi+ZaeAERAnPqAKDUhMRhvdaUx5NfJq5YvItvW2wbRwCfQhW1
+/HumpiswhnnG2/Ju3+29Dtc=
+=FzM3
+-----END PGP SIGNATURE-----
+
+--y0ulUmNC+osPPQO6--
