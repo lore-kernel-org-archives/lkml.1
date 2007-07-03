@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbXGCFXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbXGCFZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbXGCFXS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 01:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbXGCFXG
+	id S1757980AbXGCFZK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 01:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXGCFY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 01:23:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40986 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbXGCFXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 01:23:05 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Al Viro <viro@ftp.linux.org.uk>, Dave Jones <davej@redhat.com>
-Subject: Re: Fix empty macros in acpi.
-Date: Tue, 3 Jul 2007 01:22:47 -0400
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20070612233309.GA24251@redhat.com> <20070613002115.GA28778@redhat.com> <20070613002631.GL21478@ftp.linux.org.uk>
-In-Reply-To: <20070613002631.GL21478@ftp.linux.org.uk>
+	Tue, 3 Jul 2007 01:24:59 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:43486 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751780AbXGCFY6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jul 2007 01:24:58 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Tue, 3 Jul 2007 15:24:57 +1000
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031454.42078.nigel@nigel.suspend2.net> <20070703052130.GA17605@srcf.ucam.org>
+In-Reply-To: <20070703052130.GA17605@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed;
+  boundary="nextPart2457010.14VC3PiVMA";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707030122.47747.lenb@kernel.org>
+Message-Id: <200707031524.57572.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 June 2007 20:26, Al Viro wrote:
-> On Tue, Jun 12, 2007 at 08:21:15PM -0400, Dave Jones wrote:
-> > On Wed, Jun 13, 2007 at 01:00:29AM +0100, Al Viro wrote:
-> >  > On Tue, Jun 12, 2007 at 07:33:09PM -0400, Dave Jones wrote:
-> >  > > +#define DBG(x...) do { } while(0)
-> >  > 
-> >  > Eh...  Please, stop it - if you want a function-call-like no-op returning void,
-> >  > use ((void)0).  At least that way one can say DBG(....),foo(), etc.
-> > 
-> > They both end up compiled to nothing anyway, so I'm not bothered
-> > either way..   I'm not sure I follow why the syntax of that last part
-> > is a good thing.  It looks like something we'd want to avoid rather
-> > than promote?
-> 
-> If on one side of ifdef it's a void-valued expression, so it should be
-> on another; the reason is that we don't get surprise differences between
-> the builds...
+--nextPart2457010.14VC3PiVMA
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-true, DBG() in this case would expand to printk(), which returns int.
+Hi.
 
-But in practice, DBG isn't used in any expressions -- and the other zillion
-places in the kernel where it is used, it is used as in dave's patch.
+On Tuesday 03 July 2007 15:21:30 Matthew Garrett wrote:
+> On Tue, Jul 03, 2007 at 02:54:41PM +1000, Nigel Cunningham wrote:
+>=20
+> > Note, though, that this won't help at all when people use=20
+the "suspend-to-ram=20
+> > instead of powering down after writing a hibernation image" feature in=
+=20
+> > (uswsusp | tuxonice). Fuse is just a broken idea in the first place, bu=
+t=20
+> > given that it exists, we still need to find the underlying cause.
+>=20
+> If / is on fuse it's unlikely that hibernation is high on your list of=20
+> priorities right now.
 
-Indeed, I don't see printk used in expressions either...
+Yeah, well... what can you say to that? :)
 
-While I know it is common Linux style, and by default it is okay with gcc,
-it seems somewhat half-baked to call functions and not check their return
-value by default.  IMHO, if they return something, it should be checked,
-or explicitly ignored -- or it shouldn't return anything in the first place...
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
 
-> IOW, if it doesn't build in some context, it should consistently fail to
-> build in that context.
+--nextPart2457010.14VC3PiVMA
+Content-Type: application/pgp-signature
 
-whelp, it seems that the reason for this patch is this:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-#define DBG()
+iD8DBQBGid2pN0y+n1M3mo0RAmg9AJ9/zdXo11SYrq8FEYbkaJIF81BiKACeNyYv
+NLrrYA9cmsw4R1bdi1Ka8Xo=
+=3P8T
+-----END PGP SIGNATURE-----
 
-if(...)
-	DBG();
-next_c_statement
-
-which turns into
-if(...) ;
-next_c_statement
-
-But since there is an intervening ';', this code is still functionally correct
-and a decent compiler will delete the test altogether, yes?
-
-So is there some real problem here that I missed,
-or is this to make some code-checking tool that I don't have happy?
-
-thanks,
--Len
+--nextPart2457010.14VC3PiVMA--
