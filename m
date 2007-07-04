@@ -1,46 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXGDJnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbXGDJoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759635AbXGDJnt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 05:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbXGDJnk
+	id S1757891AbXGDJoN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 05:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbXGDJnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 05:43:40 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45787 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757019AbXGDJnj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 05:43:39 -0400
-Date: Wed, 4 Jul 2007 10:49:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
-Subject: Re: [PATCH] libata_acpi: A different strategy for using ACPI
- information
-Message-ID: <20070704104954.16812248@the-village.bc.nu>
-In-Reply-To: <468AE196.9070202@shaw.ca>
-References: <fa.rEwk8NvbygVfpOfb23QZ97ZMeXs@ifi.uio.no>
-	<468AE196.9070202@shaw.ca>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Jul 2007 05:43:55 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:21890 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759928AbXGDJny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 05:43:54 -0400
+Message-ID: <468B6BD7.9010108@msgid.tls.msk.ru>
+Date: Wed, 04 Jul 2007 13:43:51 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Some NCQ numbers...
+References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com> <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com>
+In-Reply-To: <468AF5BB.10005@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Looks fairly reasonable to me. However, I suspect any use of _GTM is 
-> somewhat dangerous (at least after the resume) unless we use the _STM 
-> and _GTF methods in the proper sequence when resuming. (Is that in the 
-> -mm tree now?)
+Tejun Heo wrote:
+> Hello,
+> 
+> Michael Tokarev wrote:
+>> Well.  It looks like the results does not depend on the
+>> elevator.  Originally I tried with deadline, and just
+>> re-ran the test with noop (hence the long delay with
+>> the answer) - changing linux elevator changes almost
+>> nothing in the results - modulo some random "fluctuations".
+> 
+> I see.  Thanks for testing.
 
-Yes - and we only use it in these drivers to check for cable evidence not
-for anything more serious.
+Here are actual results - the tests were still running when
+I replied yesterday.
 
-> speed we give it is valid, since there is no sane way for the function 
-> to indicate failure. (Thus the problem with the "cram in all possible 
-> values to see what it supports" strategy for determining mode limits..)
+Again, this is Seagate ST3250620AS "desktop" drive, 7200RPM,
+16Mb cache, 250Gb capacity.  The tests were performed with
+queue depth = 64 (on mptsas), drive write cache is turned
+off.
 
-The spec I have says it'll hand back the mode it actually uses which is
-effectively a solution for 'failure'
+noop scheduler:
+
+BlkSz Trd linRd rndRd linWr rndWr  rndR/W
+   4k   1  12.8   0.3   0.4   0.3   0.1/ 0.1
+        4         0.3         0.3   0.1/ 0.1
+       32         0.3         0.3   0.1/ 0.1
+   8k   1  24.6   0.6   0.9   0.6   0.3/ 0.3
+        4         0.6         0.6   0.3/ 0.3
+       32         0.6         0.6   0.3/ 0.3
+  16k   1  41.3   1.2   1.8   1.1   0.6/ 0.6
+        4         1.2         1.1   0.6/ 0.6
+       32         1.2         1.1   0.6/ 0.6
+  32k   1  58.4   2.2   3.5   2.1   1.1/ 1.1
+        4         2.3         2.1   1.1/ 1.1
+       32         2.3         2.1   1.1/ 1.1
+ 128k   1  80.4   8.1  12.5   7.2   3.8/ 3.8
+        4         8.1         7.2   3.8/ 3.8
+       32         8.1         7.2   3.8/ 3.8
+1024k   1  80.5  33.9  33.8  24.5  14.3/14.3
+        4        34.1        24.6  14.3/14.2
+       32        34.2        24.6  14.4/14.2
+
+deadline scheduler:
+
+BlkSz Trd linRd rndRd linWr rndWr  rndR/W
+   4k   1  12.8   0.3   0.4   0.3   0.1/ 0.1
+        4         0.3         0.3   0.1/ 0.1
+       32         0.3         0.3   0.1/ 0.1
+   8k   1  24.5   0.6   0.9   0.6   0.3/ 0.3
+        4         0.6         0.6   0.3/ 0.3
+       32         0.6         0.6   0.3/ 0.3
+  16k   1  41.3   1.2   1.8   1.1   0.6/ 0.6
+        4         1.2         1.1   0.6/ 0.6
+       32         1.2         1.1   0.6/ 0.6
+  32k   1  57.7   2.3   3.4   2.1   1.1/ 1.1
+        4         2.3         2.1   1.1/ 1.1
+       32         2.3         2.1   1.1/ 1.1
+ 128k   1  79.4   8.1  12.5   7.2   3.8/ 3.8
+        4         8.1         7.3   3.8/ 3.8
+       32         8.2         7.3   3.9/ 3.8
+1024k   1  79.4  33.7  33.8  24.5  14.2/14.2
+        4        33.9        24.6  14.3/14.2
+       32        33.4        24.4  17.0/10.5
+
+[]
+>> By the way, Seagate announced Barracuda ES 2 series
+>> (in range 500..1200Gb if memory serves) - maybe with
+>> those, NCQ will work better?
+> 
+> No one would know without testing.
+
+Sure thing.  I guess I'll set up a web page with all
+the results so far, in a hope someday it will be more
+complete (we don't have many different drives to test,
+but others do).
+
+By the way.  Both SATA drives we have are single-platter
+ones (with 500Gb models they've 2 platters, and 750Gb
+ones are with 3 platters), while all SCSI drives I
+tested have more than one platters.  Maybe this is
+yet another reason for NCQ failing.
+
+And another note.  I heard somewhere that Seagate for
+one prohibits publishing of tests like this, however
+I haven't signed any NDAs and somesuch when purchased
+their drives in a nearest computer store... ;)
+
+>> Or maybe it's libata which does not implement NCQ
+>> "properly"?  (As I shown before, with almost all
+>> ol'good SCSI drives TCQ helps alot - up to 2x the
+>> difference and more - with multiple I/O threads)
+> 
+> Well, what the driver does is minimal.  It just passes through all the
+> commands to the harddrive.  After all, NCQ/TCQ gives the harddrive more
+> responsibility regarding request scheduling.
+
+Oh well, I see.... :(
+
+/mjt
