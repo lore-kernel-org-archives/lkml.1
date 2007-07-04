@@ -1,33 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbXGDETH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbXGDFCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbXGDETH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 00:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbXGDESz
+	id S1755469AbXGDFCk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 01:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbXGDFCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 00:18:55 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:47962 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbXGDESy (ORCPT
+	Wed, 4 Jul 2007 01:02:34 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:41194 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbXGDFCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 00:18:54 -0400
-Date: Tue, 3 Jul 2007 21:14:11 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Wed, 4 Jul 2007 01:02:33 -0400
+Date: Tue, 03 Jul 2007 23:01:25 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: pci hidden behind transparent bridge
+In-reply-to: <fa.BRGomInBDtxE2DKxyvhORbn8494@ifi.uio.no>
+To: Dave Jones <davej@redhat.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        "Ni@m" <niam.niam@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
        linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: pci hidden behind transparent bridge
-Message-ID: <20070704041411.GC27776@kroah.com>
-References: <a9e22dff0707021209i13718d72p84160c4d3ff89e4@mail.gmail.com> <6bffcb0e0707030900k66defc1bi3ff8e70b23a050bf@mail.gmail.com> <20070703172506.GE18725@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070703172506.GE18725@redhat.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-id: <468B29A5.3000201@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.d29hqUdPsUGcrpl+X3rShdseFNo@ifi.uio.no>
+ <fa.zZbHfQyoIpHFWfUDTJdMQaanTE4@ifi.uio.no>
+ <fa.BRGomInBDtxE2DKxyvhORbn8494@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 01:25:06PM -0400, Dave Jones wrote:
+Dave Jones wrote:
 > On Tue, Jul 03, 2007 at 06:00:14PM +0200, Michal Piotrowski wrote:
 >  > Hi,
 >  > 
@@ -49,10 +51,16 @@ On Tue, Jul 03, 2007 at 01:25:06PM -0400, Dave Jones wrote:
 > There's about 8 gazillion of these reports that have been in bugzilla
 > since the dinosaurs roamed the lands.   Just ripping the printk out
 > would be my preference.
+> 
+> 	Dave
 
-There is a patch in -mm and in my queue for 2.6.23 to revise the message
-to send the information to the correct person responsible for it.
+It seems like whoever added the message saying to report this to LKML 
+hasn't responded to these reports. Any patches adding such messages in 
+the future should really include details of what they expect to be done 
+with the reports..
 
-thanks,
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-greg k-h
