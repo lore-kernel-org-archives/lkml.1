@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbXGDRuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbXGDRw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758663AbXGDRuh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 13:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXGDRu2
+	id S1759104AbXGDRw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 13:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbXGDRwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 13:50:28 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:44428 "EHLO mail4.iitk.ac.in"
+	Wed, 4 Jul 2007 13:52:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39501 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753882AbXGDRu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 13:50:27 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Wed, 4 Jul 2007 23:41:51 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Matt Mackall <mpm@selenic.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 6/9] netconsole: Update documentation for multiple
- target support
-In-Reply-To: <20070704140127.GD11115@waste.org>
-Message-ID: <Pine.LNX.4.64.0707042340240.757@cselinux1.cse.iitk.ac.in>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704110809.28520.1141.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704140127.GD11115@waste.org>
+	id S1755014AbXGDRwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 13:52:20 -0400
+Date: Wed, 4 Jul 2007 13:51:42 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, patches@x86-64.org
+Subject: Re: [PATCH] x86: make SMP locks handling interact properly with
+	CONFIG_DEBUG_RODATA (2nd try)
+Message-ID: <20070704175142.GA3795@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Jan Beulich <jbeulich@novell.com>,
+	Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+	linux-kernel@vger.kernel.org, patches@x86-64.org
+References: <468B5B54.76E4.0078.0@novell.com> <468BBFB3.9080303@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <468BBFB3.9080303@goop.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
+On Wed, Jul 04, 2007 at 08:41:39AM -0700, Jeremy Fitzhardinge wrote:
+ 
+ > I'd already posted a patch to remove smp alternatives.  I thought it had 
+ > been merged already, but I guess it's in Andi's queue.
 
-On Wed, 4 Jul 2007, Matt Mackall wrote:
-> On Wed, Jul 04, 2007 at 04:38:09PM +0530, Satyam Sharma wrote:
-> > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> > 
-> > [6/9] netconsole: Update documentation for multiple target support
-> > 
-> > ... and add a few useful general purpose tips as well while we're at it.
-> 
-> The tips are fine and should go in their own patch at the beginning of
-> the series. The docs for multiple interfaces should go either in the
-> patch that adds that (ideally) or after.
+What was the rationale behind that?  Given many distros have now
+moved to shipping just an SMP kernel, this seems like a step backwards?
 
-Ok, will do that in the next iteration -- along with the change to get
-rid of the redundant ->dev_status member, as you mentioned.
+	Dave
 
-Thanks a lot for reviewing this, Matt.
-
-Satyam
+-- 
+http://www.codemonkey.org.uk
