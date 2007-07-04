@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760654AbXGDKPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760522AbXGDKRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760654AbXGDKPU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757697AbXGDKPI
+	id S1760522AbXGDKRh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757697AbXGDKR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:15:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44814 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757669AbXGDKPG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:15:06 -0400
-Subject: Re: [Intel IOMMU 01/10] DMAR detection and parsing logic
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de,
-       muli@il.ibm.com, suresh.b.siddha@intel.com, arjan@linux.intel.com,
-       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
-In-Reply-To: <20070704030440.3f863ecd.akpm@linux-foundation.org>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
-	 <20070619213808.398170000@askeshav-devel.jf.intel.com>
-	 <1183540736.7054.7.camel@twins>
-	 <20070704030440.3f863ecd.akpm@linux-foundation.org>
+	Wed, 4 Jul 2007 06:17:29 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58747 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757539AbXGDKR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:17:28 -0400
+Subject: Re: [PATCH 3/3] ACPI autoloading - Create __mod_acpi_device_table
+	symbol for all acpi drivers.
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Mattia Dongili <malattia@linux.it>
+Cc: Len Brown <lenb@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       acpi4asus-user <acpi4asus-user@lists.sourceforge.net>
+In-Reply-To: <20070704073342.GC8338@inferi.kami.home>
+References: <1182112047.4204.12.camel@noname>
+	 <20070620170617.GA3226@inferi.kami.home>
+	 <1182361643.28514.708.camel@queen.suse.de>
+	 <200707030315.33526.lenb@kernel.org>
+	 <20070704073342.GC8338@inferi.kami.home>
 Content-Type: text/plain
-Date: Wed, 04 Jul 2007 12:14:58 +0200
-Message-Id: <1183544098.7054.9.camel@twins>
+Organization: Novell/SUSE
+Date: Wed, 04 Jul 2007 12:17:06 +0200
+Message-Id: <1183544226.16639.142.camel@queen.suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-04 at 03:04 -0700, Andrew Morton wrote:
-> On Wed, 04 Jul 2007 11:18:56 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Tue, 2007-06-19 at 14:37 -0700, Keshavamurthy, Anil S wrote:
-> > > plain text document attachment (dmar_detection.patch)
+On Wed, 2007-07-04 at 16:33 +0900, Mattia Dongili wrote:
+> On Tue, Jul 03, 2007 at 03:15:33AM -0400, Len Brown wrote:
 > > 
-> > > +/**
-> > > + * parse_dmar_table - parses the DMA reporting table
-> > > + */
-> > > +static int __init
-> > > +parse_dmar_table(void)
-> > > +{
-> > > +	struct acpi_table_dmar *dmar;
-> > > +	struct acpi_dmar_header *entry_header;
-> > > +	int ret = 0;
-> > > +
-> > > +	dmar = (struct acpi_table_dmar *)dmar_tbl;
-> > > +
-> > > +	if (!dmar->width) {
-> >           ^^^^^^^^^^^^^^^^^^^
+> > > BTW: I also saw a laptop (IIRC it was a sony) with asus and sony ACPI
+> > > device.
+> > > When both drivers got loaded things broke.
+> > > A solution was to only let the asus driver get active if the device is
+> > > known. Currently, not sure whether still (I sent a patch a while ago),
+> > > the Asus driver falls back to a default ("M6N"?) configuration. IMO this
+> > > is a bit too dangerous and instead a message like "unsupported ASUS
+> > > model found, please send acpidump to linux-acpi@vger.kernel.org".
 > > 
-> > That goes *splat* on my opteron box.
+> > This is pretty scary.
+> > Can you drop the acpidump output into a bugzilla?
 > 
-> This?
-> 
-> From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-> 
-> Check for dmar_tbl pointer as this can be NULL on systems with no Intel
-> VT-d support.
-> 
-> Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> and add myself to the cc-list?
+I don't have such a machine, opening a bug does not make much sense.
+Acpidump and more info is here:
+https://bugzilla.novell.com/show_bug.cgi?id=166920
 
-Ah, that does look sane, I'll test it whenever the next -mm comes
-around.
+Thanks,
+
+   Thomas
 
