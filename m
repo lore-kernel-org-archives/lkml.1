@@ -1,56 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762089AbXGDLQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761749AbXGDLSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762089AbXGDLQj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbXGDLQb
+	id S1761749AbXGDLSp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbXGDLSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:16:31 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33931 "EHLO mx2.suse.de"
+	Wed, 4 Jul 2007 07:18:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48782 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756338AbXGDLQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:16:30 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Keith Packard <keith.packard@intel.com>
-Subject: Re: [patch] CFS scheduler, -v18
-References: <20070622220202.GA16872@elte.hu>
-	<19f34abd0707020444r47221944tf7f33b2a0d17c367@mail.gmail.com>
-	<b647ffbd0707020601r774a38d4gb62b6c07f1b5db32@mail.gmail.com>
-	<19f34abd0707020643g6a274db5q1d25cabd85b9a25f@mail.gmail.com>
-	<20070702155029.GA13241@elte.hu>
-	<19f34abd0707020940r517cbe42sa443d191439e5f54@mail.gmail.com>
-	<1183446743.7070.14.camel@Homer.simpson.net>
-	<20070703072252.GB29984@elte.hu>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 04 Jul 2007 14:11:54 +0200
-In-Reply-To: <20070703072252.GB29984@elte.hu>
-Message-ID: <p73odis2ws5.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1756338AbXGDLSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 07:18:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Wed, 4 Jul 2007 13:25:55 +0200
+User-Agent: KMail/1.9.5
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <20070703211227.GA28758@srcf.ucam.org> <200707041242.59552.rjw@sisk.pl> <18059.32111.58643.97174@cargo.ozlabs.ibm.com>
+In-Reply-To: <18059.32111.58643.97174@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707041325.55779.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Wednesday, 4 July 2007 12:58, Paul Mackerras wrote:
+> Rafael J. Wysocki writes:
 > 
-> ah. That indeed makes sense. It seems like the xterm doesnt process the 
-> Ctrl-C/Z keypresses _at all_ when it is 'spammed' with output. Normally, 
-> output 'spam' is throttled by the scroll buffer's overhead. But in 
-> Vegard's case, the printout involves a \r carriage return:
+> > Okay, so in fact you don't know.
 > 
->        printf("%ld\r", 1000 * clock() / CLOCKS_PER_SEC);
-> 
-> which allows xterm-spam (attached) to easily flood the xterm (without 
-> any scrolling that would act as a throttle) and the xterm to flood Xorg. 
-> 
-> I suspect we need the help of an xterm/Xorg expert? (maybe Keith can 
-> give us further pointers? I can reproduce the problem on a T60 with i940 
-> and Core2Duo running Fedora 7 + Xorg 7.1.)
+> Don't know what exactly?
 
-Xorg seems to have a couple of starvation issues. e.g. I found
-the Gantt view in icemon during a busy compile session can starve all
-other X clients for tenths of seconds.
+How many drivers will be adversely affected by the $subject change.
 
--Andi
+> It has been a while since I had my head in the USB code.  I assume
+> it's being maintained by competent people. :)
+
+I'm not talking about USB.
+ 
+> > And that's my point in this thread.
+> 
+> Well, I'd be interested in hearing from Matthew whether he has
+> actually been using his patch in Ubuntu, and if so, what bug reports
+> he has been receiving related to it?
+
+Me too.
+
+> > I won't fight for the freezer for what it's worth, but let's do things in the
+> > _right_ _order_.  For example, let's make sure that by making the $subject
+> > change we won't introduce (too many) regressions and fix the frameworks
+> > that don't get it right.
+> > 
+> > Using the problems with FUSE as an argument for making this change immediately
+> > doesn't seem to be right to me.
+> 
+> I can see your point, but I won't be moving powermac over to use the
+> generic suspend path until the freezer is gone, since I am pretty
+> confident that the drivers we care about behave sensibly, and I have
+> seen a lot of traffic on linux-pm and lkml about problems caused by
+> the freezer.
+
+They are mostly related to kernel threads, that we've already agreed no to
+freeze (except for the ones that want that, but they will be responsible for
+getting everything right).  The initial patches for that are in -mm and more
+will come.
+
+> Also, no-one has yet answered my fundamental objection to the freezer,
+> which is that the very kernel threads we would want to freeze are
+> often the same ones that we must not freeze, namely the threads that
+> issue I/O requests in order to satisfy incoming I/O requests.
+
+See above.  We're moving away from freezing kernel threads.
+
+> If there was an automatic way to construct the graph of dependencies
+> (including data flows) between tasks, and derive an ordering for
+> freezing that guarantees that all I/Os will get completed without
+> deadlocks, then I could accept the freezer.  But we don't have
+> anything like that.
+
+No we don't.
+
+Still, my position is this:
+
+1) The freezer (in the modified form, with the freezing of kernel threads
+limited to the ones that want to be frozen) is needed for hibernation.
+
+2) The freezer is generally not needed for suspend, _but_ there are drivers
+in the tree that rely on it being used.  Thus, at some point in time we can
+remove the freezer from the suspend code path, _but_ no sooner than we are
+sure that the majority of drivers is prepared for that.
+
+3) In the meantime, if there are freezer-related problems, they should be
+fixed rather than used as arguments for immediate removal of it, because of 2).
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
