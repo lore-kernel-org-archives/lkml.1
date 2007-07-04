@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbXGDLro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760800AbXGDLsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760166AbXGDLro (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758500AbXGDLrh
+	id S1760800AbXGDLsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbXGDLsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:47:37 -0400
-Received: from merkurneu.hrz.uni-giessen.de ([134.176.2.3]:34594 "EHLO
-	merkurneu.hrz.uni-giessen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757644AbXGDLrg (ORCPT
+	Wed, 4 Jul 2007 07:48:01 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:53732 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757644AbXGDLsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:47:36 -0400
-X-Greylist: delayed 900 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jul 2007 07:47:36 EDT
-From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Libata PATA status
-Date: Wed, 4 Jul 2007 13:31:47 +0200
-User-Agent: KMail/1.9.5
-References: <20070703185116.59c8f5f5@the-village.bc.nu> <1D2B5126-1238-48F8-B841-E8F77C9A0F1B@mac.com> <20070704102129.44945ea8@the-village.bc.nu>
-In-Reply-To: <20070704102129.44945ea8@the-village.bc.nu>
-Cc: kernel list <linux-kernel@vger.kernel.org>
+	Wed, 4 Jul 2007 07:48:00 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Wed, 4 Jul 2007 07:45:49 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: finding "dead" CONFIG variables:  an ongoing 5-year mission ...
+Message-ID: <Pine.LNX.4.64.0707040732230.5817@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707041332.00769.marc.dietrich@ap.physik.uni-giessen.de>
-X-HRZ-JLUG-MailScanner-Information: Passed JLUG virus check
-X-HRZ-JLUG-MailScanner: No virus found
-X-MailScanner-From: marc.dietrich@ap.physik.uni-giessen.de
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Alan,
+  as i'm sure a few folks are aware, i occasionally run a script to
+scan the tree, looking for potentially "dead" CONFIG variables -- that
+is, variables of the form CONFIG_FUBAR for which there is no
+corresponding FUBAR in any Kconfig file.
 
-Am Wednesday 04 July 2007 11:21 schrieben Sie:
-> > I'd love to try to poke holes in the libata PATA support, but sadly
-> > it doesn't look like any of my systems built-in ATA chipsets are
-> > supported yet.  Has anyone started a rewrite of the PPC/PowerMac IDE
-> > driver?  The current one is in "drivers/ide/ppc/pmac.c", and supports
-> > these chipsets:
+  i know there are some cleanups queued for post-2.6.22, and i'm going
+to run the script again after andrew releases what's queued in his
+tree, but if anyone is interested in checking any part of the tree
+before then, the script i use is here:
 
-I'm using pata-cmd64x for a few month now on my G3 powermac. So far no 
-problems except it only runs in UDMA/25 mode instead of UDMA/33 as the ide 
-driver does. And of course - no cdrom or zip because they are connected to 
-the Heathrow controller...
+  http://fsdev.net/wiki/index.php?title=Misspelled_CONFIG_variables
 
-scsi0 : pata_cmd64x
-scsi1 : pata_cmd64x
-ata1: PATA max UDMA/25 cmd 0xfd63d090 ctl 0xfd63d082 bmdma 0xfd63d050 irq 0
-ata2: PATA max UDMA/25 cmd 0xfd63d070 ctl 0xfd63d062 bmdma 0xfd63d058 irq 0
-ata1.00: ata_hpa_resize 1: sectors = 312581808, hpa_sectors = 312581808
-ata1.00: ATA-7: SAMSUNG SP1654N, BV100-50, max UDMA/100
-ata1.00: 312581808 sectors, multi 16: LBA48
-pata_cmd64x: active 3 recovery 1 setup 1.
-ata1.00: ata_hpa_resize 1: sectors = 312581808, hpa_sectors = 312581808
-ata1.00: configured for UDMA/25
-scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG SP1654N  BV10 PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
- sda: [mac] sda1 sda2 sda3 sda4 sda5 sda6 sda7
-sd 0:0:0:0: [sda] Attached SCSI disk
+  yes, it generates a number of false positives (would you folks
+*please* stop using a prefix of "CONFIG_" for your non-Kconfig
+variables??  argh. :-)  but sometimes the output is informative:
 
-> I'm not aware of anyone having done any PPC ports yet, although a couple
-> of people have asked and said they would look at it. Currently our
-> coverage is incomplete for some embedded and obscure platforms, of which
-> the macintrash is probably the least 'obscure'.
->
-> Alan
 
-Marc
+$ dead_config.sh fs
+========== BEFS_RW ==========
+fs/befs/linuxvfs.c:776:#ifndef CONFIG_BEFS_RW
+fs/befs/linuxvfs.c:782:#endif                           /* CONFIG_BEFS_RW */
+...
+========== HAS_COMPAT_EPOLL_EVENT ==========
+fs/compat.c:2112:#ifdef CONFIG_HAS_COMPAT_EPOLL_EVENT
+fs/compat.c:2155:#endif /* CONFIG_HAS_COMPAT_EPOLL_EVENT */
+fs/compat.c:2182:#ifdef CONFIG_HAS_COMPAT_EPOLL_EVENT
+========== KDB_MODULES ==========
+fs/xfs/linux-2.6/xfs_buf.h:414:#ifdef CONFIG_KDB_MODULES
+fs/xfs/linux-2.6/xfs_buf.c:1871:#ifdef CONFIG_KDB_MODULES
+========== NCPFS_DEBUGDENTRY ==========
+fs/ncpfs/ncplib_kernel.c:729:#ifdef CONFIG_NCPFS_DEBUGDENTRY
+========== XFS_DEBUG ==========
+fs/xfs/xfs.h:21:#ifdef CONFIG_XFS_DEBUG
+fs/xfs/Makefile-linux-2.6:23:ifeq ($(CONFIG_XFS_DEBUG),y)
+... etc etc ...
 
+
+$ dead_config.sh drivers
+...
+========== 68328_SERIAL_UART2 ==========
+drivers/serial/68328serial.h:184:#ifndef CONFIG_68328_SERIAL_UART2
+...
+========== ALMA_ANS ==========
+drivers/serial/68328serial.c:109:#if defined(CONFIG_M68EZ328ADS) || defined(CONFIG_ALMA_ANS) || defined(CONFIG_DRAGONIXVZ)
+...
+========== BLK_DEV_MAC_MEDIABAY ==========
+drivers/ide/legacy/macide.c:80:#ifdef CONFIG_BLK_DEV_MAC_MEDIABAY
+drivers/ide/legacy/macide.c:131:#ifdef CONFIG_BLK_DEV_MAC_MEDIABAY
+...
+
+and on and on and tediously on.  i'll do a more complete run during
+the next merge window, but feel free to check things out for yourself
+before then.
+
+rday
 -- 
-	"It is a noble cause that we defend and not particular interests."
-		 Lord Arthur Ponsonby, "Falsehood in Wartime: Propaganda Lies of the First 
-World War", 1928
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
