@@ -1,16 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbXGDMWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbXGDMZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760828AbXGDMWW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 08:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757420AbXGDMWM
+	id S1760693AbXGDMZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 08:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbXGDMZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 08:22:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40537 "EHLO mx2.mail.elte.hu"
+	Wed, 4 Jul 2007 08:25:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41014 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756338AbXGDMWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 08:22:11 -0400
-X-Greylist: delayed 59966 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jul 2007 08:22:11 EDT
-Date: Wed, 4 Jul 2007 14:21:59 +0200
+	id S1756433AbXGDMZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 08:25:16 -0400
+Date: Wed, 4 Jul 2007 14:25:05 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Johannes Berg <johannes@sipsolutions.net>
 Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@redhat.com>,
@@ -20,7 +19,7 @@ Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@redhat.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Sattler <tsattler@gmx.de>
 Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-Message-ID: <20070704122159.GA21813@elte.hu>
+Message-ID: <20070704122505.GB21813@elte.hu>
 References: <1182969638.4769.56.camel@johannes.berg> <1183048429.4089.1.camel@johannes.berg> <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4> <20070630114658.GA344@tv-sign.ru> <1183381393.4089.117.camel@johannes.berg> <20070703173112.GA108@tv-sign.ru> <1183549772.3812.10.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -41,30 +40,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Johannes Berg <johannes@sipsolutions.net> wrote:
 
-> > > @@ -257,7 +260,9 @@ static void run_workqueue(struct cpu_wor
-> > >
-> > >  		BUG_ON(get_wq_data(work) != cwq);
-> > >  		work_clear_pending(work);
-> > > +		lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
-> > >  		f(work);
-> > > +		lock_release(&cwq->wq->lockdep_map, 0, _THIS_IP_);
-> >                                                    ^^^
-> > Isn't it better to call lock_release() with nested == 1 ?
+> > > +#define create_workqueue(name) \
+> > > +({								\
+> > > +	static struct lock_class_key __key;			\
+> > > +	struct workqueue_struct *__wq;				\
+> > > +								\
+> > > +	__wq = __create_workqueue((name), 0, 0, &__key);	\
+> > > +	__wq;							\
+> > > +})
+> > 
+> > Why do we need __wq ?
 > 
-> Not sure, Ingo?
+> No particular reason I think, I copied some other code doing it that 
+> way.
 
-well, in this case the lock/unlock should nest perfectly (i.e. it should 
-always be balanced perfectly), so indeed calling with nested==1 leads to 
-stricter checking.
+yep, should be fine doing this:
 
-non-nested unlocks occur when people do stuff like:
+ #define create_workqueue(name)				\
+ ({							\
+	static struct lock_class_key __key;		\
+							\
+	__create_workqueue((name), 0, 0, &__key);	\
+ })
 
-	spin_lock(&lock1);
-	spin_lock(&lock2);
-	spin_unlock(&lock1);
-	spin_unlock(&lock2);
+(and the return value of __create_workqueue() will be the 'return value' 
+of the macro as well.)
 
-the first unlock is not 'nested perfectly'. Now for the workqueue 
-dep_map this shouldnt be a legal combination, right?
+> > 	+ extern struct workqueue_struct *__create_workqueue_key(..., key);
+> > 	+ #define __create_workqueue(...)	\
+> > 	+	static struct lock_class_key __key;	\
+> > 	+	__create_workqueue_key(..., key);	\
+> > 
+> > but this is a matter of taste.
+
+the above macro should at minimum be encapsulated with
+do { ... } while (0) so that __create_workqueue() is a single C 
+statement.
 
 	Ingo
