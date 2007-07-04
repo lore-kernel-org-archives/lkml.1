@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbXGDM3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761549AbXGDM33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760049AbXGDM3F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 08:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761715AbXGDM2t
+	id S1761549AbXGDM33 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 08:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761884AbXGDM3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 08:28:49 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:59006 "EHLO
+	Wed, 4 Jul 2007 08:29:03 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:59018 "EHLO
 	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761684AbXGDM2s (ORCPT
+	with ESMTP id S1759699AbXGDM3B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 08:28:48 -0400
-Date: Wed, 4 Jul 2007 15:28:43 +0300
+	Wed, 4 Jul 2007 08:29:01 -0400
+Date: Wed, 4 Jul 2007 15:28:55 +0300
 From: Dan Aloni <da-x@monatomic.org>
 To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/11] net/ipv4/netfilter/ip_tables.c: lower printk severity
-Message-ID: <c2dd2c6f0209c2d5396c69470588e0411b520e1d.1183551644.git.da-x@monatomic.org>
+Subject: [PATCH 5/11] drivers/char/ipmi/ipmi_poweroff.c: lower printk severity
+Message-ID: <7f232225f5956dee4a8b9f7e5edcf4cd962286a6.1183551644.git.da-x@monatomic.org>
 References: <6789b0ff288d584d640ee65f8e1e5e27bf040862.1183551644.git.da-x@monatomic.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -34,22 +34,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Dan Aloni <da-x@monatomic.org>
 ---
- net/ipv4/netfilter/ip_tables.c |    2 +-
+ drivers/char/ipmi/ipmi_poweroff.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/ipv4/netfilter/ip_tables.c b/net/ipv4/netfilter/ip_tables.c
-index 9bacf1a..9a6354e 100644
---- a/net/ipv4/netfilter/ip_tables.c
-+++ b/net/ipv4/netfilter/ip_tables.c
-@@ -2230,7 +2230,7 @@ static int __init ip_tables_init(void)
- 	if (ret < 0)
- 		goto err5;
+diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
+index e02893b..b86186d 100644
+--- a/drivers/char/ipmi/ipmi_poweroff.c
++++ b/drivers/char/ipmi/ipmi_poweroff.c
+@@ -679,7 +679,7 @@ static int ipmi_poweroff_init (void)
+ {
+ 	int rv;
  
--	printk("ip_tables: (C) 2000-2006 Netfilter Core Team\n");
-+	printk(KERN_INFO "ip_tables: (C) 2000-2006 Netfilter Core Team\n");
- 	return 0;
+-	printk ("Copyright (C) 2004 MontaVista Software -"
++	printk (KERN_INFO "Copyright (C) 2004 MontaVista Software -"
+ 		" IPMI Powerdown via sys_reboot.\n");
  
- err5:
+ 	if (poweroff_powercycle)
 -- 
 1.4.4.3
 
