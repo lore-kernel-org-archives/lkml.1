@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbXGDRbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbXGDRcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbXGDRbj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 13:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbXGDRbd
+	id S1759013AbXGDRcQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 13:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbXGDRcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 13:31:33 -0400
-Received: from styx.suse.cz ([82.119.242.94]:49350 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751500AbXGDRbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 13:31:32 -0400
-Date: Wed, 4 Jul 2007 19:35:17 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kratochvil <honza@jikos.cz>,
-       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+	Wed, 4 Jul 2007 13:32:03 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:50575 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755713AbXGDRcB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 13:32:01 -0400
+Date: Wed, 4 Jul 2007 19:32:29 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Darren <kernel@da4.org>
+Cc: Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RESEND] PIE randomization
-In-Reply-To: <20070704082554.GQ7012@devserv.devel.redhat.com>
-Message-ID: <Pine.LNX.4.64.0707041927090.11634@jikos.suse.cz>
-References: <alpine.LRH.0.98.0705111338230.22353@twin.jikos.cz>
- <20070511125629.3df919cf.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
- <20070511133651.63f8a14d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz>
- <Pine.LNX.4.64.0705161851120.25986@twin.jikos.cz>
- <alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
- <20070522161642.b71ddacb.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231044540.22906@jikos.suse.cz> <20070704082554.GQ7012@devserv.devel.redhat.com>
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Message-ID: <20070704173228.GK3492@stusta.de>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <468B3FBB.9050006@da4.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <468B3FBB.9050006@da4.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Jakub Jelinek wrote:
+On Wed, Jul 04, 2007 at 02:35:39AM -0400, Darren wrote:
+>
+> I know this may sound kind of stupid, but how about not deprecating either, 
+> and fully supporting both sound systems? Maybe we can get them to work 
+> together, and the distro or user can choose whether they would like to use 
+> alsa or oss for that particular card (or have the distro choose the sound 
+> drivers that are best supported for that particular card). As it is now, 
+> most apps already support oss and alsa.
 
-> The above highlighted changes are the cause of random segfaults of PIE 
-> binaries.  See 
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=246623 
+It does not sound stupid and sounds good at first sight.
 
-Thanks a lot for pointing this out. Andrew, could this be folded into 
-pie-randomization.patch please?
+But there are problems we've already seen with similar situations in 
+different parts of the kernel:
 
+They would have different hardware support, features and bugs.
 
-From: Jiri Kosina <jkosina@suse.cz>
+And then a user user whose sound card is only supported by sound system A
+needs a feature only available in sound system B.
 
-pie randomization: fix BAD_ADDR macro
+And the quality decreases since people will often not report bugs in 
+sound system A if sound system B works for them.
 
-pie-randomization.patch makes the load_addr in load_elf_interp() the load 
-bias of ld.so (difference between the actual load base address and first 
-PT_LOAD segment's p_vaddr). If the difference equals (on x86) to 
-0xfffff000 (which is valid [1]), SIGSEGV is incorrectly sent.
+OTOH, for a user it shouldn't matter whether there's OSS or ALSA, that's 
+mostly a difference for application developers. And since (as you say) 
+most applications already support both, there's no compelling reason for 
+providing more than one of them.
 
-This patch changes the BAD_ADDR so that it catches the mappings to the 
-error-area properly.
+cu
+Adrian
 
-[1] https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=246623
+-- 
 
-Reported-by: Jakub Jelinek <jakub@redhat.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index da270d1..466477d 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -80,7 +80,7 @@ static struct linux_binfmt elf_format = {
- 		.hasvdso	= 1
- };
- 
--#define BAD_ADDR(x) ((unsigned long)(x) >= PAGE_MASK)
-+#define BAD_ADDR(x) IS_ERR_VALUE(x)
- 
- static int set_brk(unsigned long start, unsigned long end)
- {
