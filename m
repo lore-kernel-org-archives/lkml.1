@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbXGDLMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762244AbXGDLNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762179AbXGDLMn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761107AbXGDLI0
+	id S1762244AbXGDLNG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759833AbXGDLIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:08:26 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:57173 "EHLO mail4.iitk.ac.in"
+	Wed, 4 Jul 2007 07:08:53 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:57175 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761020AbXGDLIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:08:06 -0400
+	id S1761171AbXGDLIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 07:08:07 -0400
 X-Virus-Scanner: This message was checked by NOD32 Antivirus system
 	for Linux Server. For more information on NOD32 Antivirus System,
 	please, visit our website: http://www.nod32.com/.
@@ -19,66 +19,137 @@ Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>,
        Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>
-Date: Wed, 04 Jul 2007 16:37:39 +0530
-Message-Id: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
-Subject: [RFC][PATCH -mm 0/9] netconsole: Multiple targets and dynamic reconfigurability
+Date: Wed, 04 Jul 2007 16:38:19 +0530
+Message-Id: <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+Subject: [PATCH -mm 8/9] netconsole: Update documentation for dynamic reconfigurability
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-[0/9] netconsole: Multiple targets and dynamic reconfigurability
-
-This patchset is a rework of the original idea and patches posted by
-Keiichi Kii and Takayoshi Kochi at: http://lkml.org/lkml/2007/6/13/72
-
-[ I had initially thought about only modifying Keiichi's patches to
-incorporate the suggested stuff, sysfs+ioctl->configfs conversion, etc,
-but the changes became too much and I ultimately ended up rewriting the
-patchset. This also gave the flexibility to make other changes possible.
-Keiichi, Takayoshi, kindly review this, and if OK, please give your
-Signed-off-by:'s to the patches herein. ]
-
-This patchset depends upon the earlier netpoll fixlet and the configfs
-cleanup patches. Diffed against 2.6.22-rc6-mm1.
-
-[1/9] netconsole: Cleanups, codingstyle, prettyfication
-[2/9] netconsole: Code simplification
-[3/9] netconsole: Introduce netconsole_target
-[4/9] netconsole: Introduce netconsole_netdev_notifier
-[5/9] netconsole: Introduce dev_status member
-[6/9] netconsole: Update documentation for multiple target support
-[7/9] netconsole: Support multiple logging targets
 [8/9] netconsole: Update documentation for dynamic reconfigurability
-[9/9] netconsole: Support dynamic reconfiguration using configfs
+
+Add myself to parties interested in receiving bug reports, and give lots
+of examples. Also fix some whitespace inconsistencies I introduced earlier.
 
 Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+Cc: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
 
-About this patchset:
-====================
+---
 
-What?
+ Documentation/networking/netconsole.txt |   70 +++++++++++++++++++++++++++++++-
+ 1 file changed, 68 insertions(+), 2 deletions(-)
 
-Support multiple remote logging targets in netconsole. Also, ability to
-dynamically add or remove targets or modify parameters (IP, port, remote
-MAC address) of targets at runtime, from userspace, using configfs.
+---
 
-Why?
-
->From Keiichi Kii's original post:
-
-[...] current netconsole is not flexible. For example, if you want to change
-ip address for logging agent, in the case of built-in netconsole, you can't
-change config except for changing boot parameter and rebooting your system,
-or in the case of module netconsole, you need to remove it and reload
-with different parameters. [...] and we have been losing serial console
-port with PCs and Servers.
-
-(... and especially laptops, I would add.)
-
-The patchset is heavily commented and verbosely changelogged, so hope you
-have as much fun reading and reviewing it as I had writing it :-)
-
-Kindly review and comment.
-
-Satyam
+diff -ruNp a/Documentation/networking/netconsole.txt b/Documentation/networking/netconsole.txt
+--- a/Documentation/networking/netconsole.txt	2007-07-04 03:12:25.000000000 +0530
++++ b/Documentation/networking/netconsole.txt	2007-07-04 12:24:44.000000000 +0530
+@@ -3,6 +3,10 @@ started by Ingo Molnar <mingo@redhat.com
+ 2.6 port and netpoll api by Matt Mackall <mpm@selenic.com>, Sep 9 2003
+ 
+ Please send bug reports to Matt Mackall <mpm@selenic.com>
++and Satyam Sharma <satyam.sharma@gmail.com>
++
++Introduction:
++=============
+ 
+ This module logs kernel printk messages over UDP allowing debugging of
+ problem where disk logging fails and serial consoles are impractical.
+@@ -13,6 +17,9 @@ the specified interface as soon as possi
+ capture of early kernel panics, it does capture most of the boot
+ process.
+ 
++Sender and receiver configuration:
++==================================
++
+ It takes a string configuration parameter "netconsole" in the
+ following format:
+ 
+@@ -38,7 +45,7 @@ It also supports logging to multiple rem
+ parameters for the multiple agents separated by semicolons and the
+ complete string enclosed in "quotes", thusly:
+ 
+-modprobe netconsole netconsole="@/,@10.0.0.2/;@/eth1,6892@10.0.0.3/"
++ modprobe netconsole netconsole="@/,@10.0.0.2/;@/eth1,6892@10.0.0.3/"
+ 
+ Built-in netconsole starts immediately after the TCP stack is
+ initialized and attempts to bring up the supplied dev at the supplied
+@@ -46,6 +53,64 @@ address.
+ 
+ The remote host can run either 'netcat -u -l -p <port>' or syslogd.
+ 
++Dynamic reconfiguration:
++========================
++
++Dynamic reconfigurability is a useful addition to netconsole that enables
++remote logging targets to be dynamically added, removed, or have their
++parameters reconfigured at runtime from a configfs-based userspace interface.
++
++To include this feature, select CONFIG_NETCONSOLE_DYNAMIC when building the
++netconsole module (or kernel, if netconsole is built-in).
++
++Some examples follow (configfs is mounted at the /config mountpoint, say).
++
++To add a remote logging target (target names can be arbitrary):
++
++ cd /config/netconsole/
++ mkdir target1
++
++Note that newly created targets have default parameter values (as mentioned
++above) and are disabled by default -- they must first be enabled by writing
++"1" to the "enabled" attribute (usually after setting parameters accordingly)
++as described below.
++
++To remove a target:
++
++ rmdir /config/netconsole/othertarget/
++
++The interface exposes these parameters of a netconsole target to userspace:
++
++	id		Unique identifier for this target	(read-only)
++	enabled		Is this target currently enabled?	(read-write)
++	dev_name	Local network interface name		(read-only)
++	local_ip	Source IP address to use		(read-write)
++	remote_ip	Remote agent's IP address		(read-write)
++	local_port	Source UDP port to use			(read-write)
++	remote_port	Remote agent's UDP port			(read-write)
++	local_mac	Local interface's MAC address		(read-only)
++	remote_mac	Remote agent's MAC address		(read-write)
++
++The "enabled" attribute is also used to control whether the parameters of
++a target can be updated or not -- you can modify the parameters of only
++disabled targets (i.e. if "enabled" is 0).
++
++To update a target's parameters:
++
++ cat enabled				# check if enabled is 1
++ echo 0 > enabled			# disable the target (if required)
++ echo eth2 > dev_name			# set local interface
++ echo 10.0.0.4 > remote_ip		# update some parameter
++ echo cb:a9:87:65:43:21 > remote_mac	# update more parameters
++ echo 1 > enabled			# enable target again
++
++Note that you can even update the local interface dynamically. This is
++especially useful if you want to use interfaces that have newly come up
++and didn't even exist when netconsole was loaded / initialized.
++
++Miscellaneous notes:
++====================
++
+ WARNING: the default target ethernet setting uses the broadcast
+ ethernet address to send packets, which can cause increased load on
+ other systems on the same ethernet segment.
+@@ -55,7 +120,8 @@ so it is advised to explicitly specify t
+ from the config parameters passed to netconsole.
+ 
+ TIP: to find out the MAC address of 10.0.0.2, you may try using:
+-ping -c 1 10.0.0.2 ; /sbin/arp -n | grep 10.0.0.2
++
++ ping -c 1 10.0.0.2 ; /sbin/arp -n | grep 10.0.0.2
+ 
+ TIP: in case the remote logging agent is on a separate LAN subnet than
+ the sender, it is suggested to try specifying the default gateway's
