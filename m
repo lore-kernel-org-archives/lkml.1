@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbXGDF3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbXGDFhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756582AbXGDF3Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 01:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbXGDF3G
+	id S1757299AbXGDFhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 01:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbXGDFh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 01:29:06 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34598 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751331AbXGDF3F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 01:29:05 -0400
-Message-ID: <468B301D.7010807@vmware.com>
-Date: Tue, 03 Jul 2007 22:29:01 -0700
-From: Petr Vandrovec <petr@vmware.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.4) Gecko/20070509 Iceape/1.1.2 (Debian-1.1.2-1)
+	Wed, 4 Jul 2007 01:37:29 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54893 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751565AbXGDFh1 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 01:37:27 -0400
+Message-ID: <468B31FD.2020703@sgi.com>
+Date: Wed, 04 Jul 2007 15:37:01 +1000
+From: Timothy Shimmin <tes@sgi.com>
+User-Agent: Thunderbird 2.0.0.4 (Macintosh/20070604)
 MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Fusion MPT regression, fixed or not?
-References: <4689F886.6070000@genesi-usa.com>
-In-Reply-To: <4689F886.6070000@genesi-usa.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+CC: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       adilger@clusterfs.com, David Chinner <dgc@sgi.com>, suparna@in.ibm.com,
+       cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+References: <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070630165246.GA5159@schatzie.adilger.int> <20070703100848.GA14936@amitarora.in.ibm.com> <20070703103107.GA29763@infradead.org> <20070703114650.GB14936@amitarora.in.ibm.com>
+In-Reply-To: <20070703114650.GB14936@amitarora.in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Sealey wrote:
-> Hello World,
+Amit K. Arora wrote:
+>>>> FA_FL_NO_MTIME	0x10 /* keep same mtime (default change on size, data change) */
+>>>> FA_FL_NO_CTIME	0x20 /* keep same ctime (default change on size, data change) */
+>> NACK to these aswell.  If i_size changes c/mtime need updates, if the size
+>> doesn't chamge they don't.  No need to add more flags for this.
 > 
-> I re-stumbled on this installing Gentoo on VMware today;
+> This requirement was from the point of view of HSM applications. Hope
+> you saw Andreas previous post and are keeping that in mind.
 > 
-> http://lkml.org/lkml/2007/3/23/312
-> 
-> It doesn't seem to be fixed in 2.6.22-rc7, but I might be mistaken
-> somehow. Has anyone done any work on this or looked at the problem
-> in more detail? The trail seems to die at that thread.
+We use this capability in XFS at the moment.
+I think this is mainly for DMF (HSM) but is done via the xfs handle interface
+(xfs_open_by_handle) AFAICT.
 
-Not that it is relevant to LKML, but you need either upgrade to VMware 
-Workstation 6.0, or you need patch later in that thread: 
-http://lkml.org/lkml/2007/3/23/345
+This sets up a set of invisible operations (xfs_invis_file_operations).
+xfs_file_ioctl_invis goes on to set IO_INVIS which goes on to set ATTR_DMI
+which is then tested in xfs_change_file_space() (which handles XFS_IOC_RESVSP & friends)
+for whether xfs_ichgtime(ip, XFS_ICHGTIME_MOD | XFS_ICHGTIME_CHG)
+is called or not.
 
-> It is affecting VMware for me mainly but a lot of heavy server
-> hardware seems to use the chip, in fact some I am looking at right
-> now to recommend purchasing on.. I'd really like to use the latest
-> kernel because virtualisation is the key (dynamic ticks and
-> tickless hz and the latest virtualisation options would help eke out
-> more value ;)
-
-It affects only VMware's emulation, not real hardware (at least unless 
-you hit one with broken firmware).
-							Petr
+--Tim
