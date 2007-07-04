@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbXGEKDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbXGEKK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbXGEKDL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 06:03:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbXGEKDA
+	id S1759461AbXGEKK1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 06:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbXGEKKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 06:03:00 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:46197 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754191AbXGEKDA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 06:03:00 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 12:02:58 +0200
-User-Agent: KMail/1.9.7
-Cc: paulus@samba.org, stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz, mjg59@srcf.ucam.org,
-       benh@kernel.crashing.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051048.46202.oliver@neukum.org> <E1I6NAH-00008t-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I6NAH-00008t-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 06:10:17 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4818 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753813AbXGEKKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 06:10:16 -0400
+Date: Wed, 4 Jul 2007 17:59:52 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Suspend2 is getting a new name.
+Message-ID: <20070704175951.GC3984@ucw.cz>
+References: <200707021730.57066.nigel@nigel.suspend2.net> <a781481a0707020123y25129aachf9de53c670e98342@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707051202.59375.oliver@neukum.org>
+In-Reply-To: <a781481a0707020123y25129aachf9de53c670e98342@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
-> > > And teach VFS to block suspension, while waiting on a mutex held by
-> > > another process performing a fuse operation.
-> > > 
-> > > I can already hear the beautiful praise from Al Viro at the sight of
-> > > that ;)
-> > 
-> > There is that.
-> > 
-> > OK, bite the bullet. Tasks involved in fuse are special. Give them a flag
-> > and teach the freezer to put them on ice only after all other task are
-> > frozen. In a way they are kernel, there's no use denying that.
+Hi!
+
+> [ Shamelessly off-topic, but SCNR myself ]
 > 
-> And flag every other process, that the flagged process is
-> communicating with?  How are you proposing to do that?
+> On 7/2/07, Nigel Cunningham <nigel@nigel.suspend2.net> 
+> wrote:
+> >Hi all.
+> >
+> >Suspend2's name is changing to "TuxOnIce".
 > 
-> Quoting Paul:
+> Hmm, FunkyMixedCase name ...
 > 
-> "1. The freezer cannot be guaranteed deadlock-free without constructing
->    a dependency graph between tasks (both user and kernel), which is
->    virtually impossible since the dependencies are not externally
->    observable."
+> <tongue-firmly-in-cheek>
+> ... hope this'll make it work on my laptop too :-)
+> 
+> [ Is there a prize for posting waaay off-topic messages? 
+> ]
+> 
+> BTW, TuxOnIce is a better choice for name than some 
+> variation of
+> "Hibernate", from a biological perspective too -- as 
+> everybody already
+> knows, penguins never quite hibernate, but spend the 
+> entire rough
+> Antarctic winter bunched up in a group on the surface 
+> (ice) itself ...
 
-A deadlock requires that the circular wait is uninterruptible. Normal IPC
-isn't.
+Ugh, can I use it as an excuse for broken hibernation?
 
-What are you doing in the userland portions of fuse? Some kind of IPC
-with other tasks? There is a limit to which you can push kernel functionality
-into user space.
+Linus is responsible when he used the penguin logo! Penguins just do
+not hibernate! :-).
 
-	Regards
-		Oliver
+...OTOH penguins do sleep, so I guess I should be working hard on
+fixing that :-).
 
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
