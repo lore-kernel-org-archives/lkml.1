@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758148AbXGDHD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbXGDHIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758148AbXGDHD2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 03:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbXGDHDV
+	id S1758023AbXGDHIp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 03:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbXGDHIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 03:03:21 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:39662 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753727AbXGDHDU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 03:03:20 -0400
-To: paulus@samba.org
-CC: oliver@neukum.org, benh@kernel.crashing.org, mjg59@srcf.ucam.org,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu
-In-reply-to: <18058.56956.595143.15424@cargo.ozlabs.ibm.com> (message from
-	Paul Mackerras on Wed, 4 Jul 2007 09:40:44 +1000)
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031307.41366.oliver@neukum.org>
-	<1183463053.10386.112.camel@localhost.localdomain>
-	<200707031355.51028.oliver@neukum.org> <18058.56956.595143.15424@cargo.ozlabs.ibm.com>
-Message-Id: <E1I5ysv-0005xf-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 04 Jul 2007 09:02:45 +0200
+	Wed, 4 Jul 2007 03:08:35 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50390 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753346AbXGDHIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 03:08:34 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: sata_sil, writing bug with multiple cards?
+Date: Wed, 4 Jul 2007 09:08:21 +0200
+User-Agent: KMail/1.9.6
+Cc: 7091@blargh.com, linux-ide@vger.kernel.org, jgarzik@pobox.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <courier.4689EFD9.0000589A@blargh.com> <courier.468B17B1.00001A78@blargh.com> <468B19BA.6030202@gmail.com>
+In-Reply-To: <468B19BA.6030202@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707040908.21512.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > That's why we have the problem of freezing the kernel threads or not.
+On Wednesday 04 July 2007 05:53:30 Tejun Heo wrote:
+> 7091@blargh.com wrote:
+> > Apologies for the chain-replying to myself, just replying as I think of
+> > things to try.
+> > 7091@blargh.com writes:
+> >> Here's an odd data point. 
+> >> I just broke that array, formatted all three of those partitions
+> >> seperately, mounted and did my ISO copy test. 
+> >> All three drives, run one at a time, function fine.  No corruption.
+> > 
+> > Here's another odd one.  I did the following:
+> > # Mount all 3 drives as individuals...
+> > mount /dev/sda1 /mnt/a
+> > mount /dev/sdb1 /mnt/b
+> > mount /dev/sdc1 /mnt/c
+> > # Copy the same file to all three drives at the same time
+> > cp KNOPPIX_V5.1.0CD-2006-12-30-EN.iso a/kn10.iso &
+> > cp KNOPPIX_V5.1.0CD-2006-12-30-EN.iso b/kn10.iso &
+> > cp KNOPPIX_V5.1.0CD-2006-12-30-EN.iso c/kn10.iso &
+> > Got massive corruption.
 > 
-> That problem is a symptom of the deeper conceptual problem, as is the
-> problem with FUSE.
+> Hmmm... I don't think this is sata_sil driver bug.  cc'ing Andi Kleen
+> and lkml.  Andi, the original thread can be read from
 > 
-> > You want to have all that pain for fuse?
-> 
-> I'd certainly rather get the drivers right, and maybe have an
-> occasional deadlock if I miss something, than have a GUARANTEED
-> deadlock every time I suspend with a FUSE filesystem mounted (which is
-> pretty much every time, since I use encfs regularly).
+> http://thread.gmane.org/gmane.linux.ide/20213
 
-That's weird, I never had a suspend problem due to a fuse mount,
-though I have them all the time.  And I suspect, that even the sync()
-thing that suspend does is not the real cause, because sync() actually
-does nothing in fuse filesystems.
+It seems to be a 32bit system. There is no IOMMU. 
 
-So there's something else going on, which obviously has to do with
-freezing user processes, but it's not clear what.
+If it has >2GB or so it might be worth trying booting it with mem=2G
+and see if it goes away. However if it was the standard VIA DAC issue
+you should get problems even with a single interface, so probably
+that's not it either.
 
-Miklos
+Most likely it is some sort of hardware bug that we might
+not be able to do much about. Have you tried contacting SIL or VIA? 
+e.g. if you have some other system with a different chipset it might
+be useful to test the SIL controllers in those.
+
+I would perhaps also try a newer kernel.
+
+-Andi
