@@ -1,94 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXGDLIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbXGDLJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761341AbXGDLIf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759738AbXGDLID
+	id S1761539AbXGDLJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761457AbXGDLIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:08:03 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:57157 "EHLO mail4.iitk.ac.in"
+	Wed, 4 Jul 2007 07:08:05 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:57159 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761446AbXGDLIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761447AbXGDLIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Jul 2007 07:08:01 -0400
+X-Greylist: delayed 1360 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jul 2007 07:08:01 EDT
 X-Virus-Scanner: This message was checked by NOD32 Antivirus system
 	for Linux Server. For more information on NOD32 Antivirus System,
 	please, visit our website: http://www.nod32.com/.
 From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Joel Becker <joel.becker@oracle.com>,
-       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       David Teigland <david.teigland@redhat.com>,
+Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Date: Wed, 04 Jul 2007 16:37:06 +0530
-Message-Id: <20070704110706.28503.65615.sendpatchset@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <20070704110701.28503.95359.sendpatchset@cselinux1.cse.iitk.ac.in>
-References: <20070704110701.28503.95359.sendpatchset@cselinux1.cse.iitk.ac.in>
-Subject: [PATCH -mm 1/3] configfs+dlm: Separate out __CONFIGFS_ATTR into configfs.h
+       David Miller <davem@davemloft.net>
+Date: Wed, 04 Jul 2007 16:37:59 +0530
+Message-Id: <20070704110759.28520.37301.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+Subject: [PATCH -mm 4/9] netconsole: Introduce netconsole_netdev_notifier
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-[1/3] configfs+dlm: Separate out __CONFIGFS_ATTR into configfs.h
+[4/9] netconsole: Introduce netconsole_netdev_notifier
 
-fs/dlm/config.c contains a useful generic macro called __CONFIGFS_ATTR
-that is similar to sysfs' __ATTR macro that makes defining attributes
-easy for any user of configfs. Separate it out into configfs.h so that
-other users (forthcoming in dynamic netconsole patchset) can use it too.
+To update fields of underlying netpoll structure at runtime on
+corresponding NETDEV_CHANGEADDR or NETDEV_CHANGENAME notifications.
 
 Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Cc: Joel Becker <joel.becker@oracle.com>
-Cc: David Teigland <teigland@redhat.com>
+Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+Cc: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
 
 ---
 
- fs/dlm/config.c          |    8 --------
- include/linux/configfs.h |   16 ++++++++++++++++
- 2 files changed, 16 insertions(+), 8 deletions(-)
+ drivers/net/netconsole.c |   36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
 ---
 
-diff -ruNp a/fs/dlm/config.c b/fs/dlm/config.c
---- a/fs/dlm/config.c	2007-06-28 17:32:57.000000000 +0530
-+++ b/fs/dlm/config.c	2007-07-03 16:56:35.000000000 +0530
-@@ -133,14 +133,6 @@ static ssize_t cluster_set(struct cluste
- 	return len;
- }
- 
--#define __CONFIGFS_ATTR(_name,_mode,_read,_write) {                           \
--	.attr   = { .ca_name = __stringify(_name),                            \
--		    .ca_mode = _mode,                                         \
--		    .ca_owner = THIS_MODULE },                                \
--	.show   = _read,                                                      \
--	.store  = _write,                                                     \
--}
--
- #define CLUSTER_ATTR(name, check_zero)                                        \
- static ssize_t name##_write(struct cluster *cl, const char *buf, size_t len)  \
- {                                                                             \
-diff -ruNp a/include/linux/configfs.h b/include/linux/configfs.h
---- a/include/linux/configfs.h	2007-06-28 17:33:19.000000000 +0530
-+++ b/include/linux/configfs.h	2007-07-03 16:56:35.000000000 +0530
-@@ -130,6 +130,22 @@ struct configfs_attribute {
- 	mode_t			ca_mode;
+diff -ruNp a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+--- a/drivers/net/netconsole.c	2007-07-03 21:51:40.000000000 +0530
++++ b/drivers/net/netconsole.c	2007-07-03 22:02:11.000000000 +0530
+@@ -81,6 +81,37 @@ static struct netconsole_target default_
+ 	},
  };
  
-+/*
-+ * Users often need to create attribute structures for their configurable
-+ * attributes, containing a configfs_attribute member and function pointers
-+ * for the show() and store() operations on that attribute. They can use
-+ * this macro (similar to sysfs' __ATTR) to make defining attributes easier.
-+ */
-+#define __CONFIGFS_ATTR(_name, _mode, _show, _store)			\
-+{									\
-+	.attr	= {							\
-+			.ca_name = __stringify(_name),			\
-+			.ca_mode = _mode,				\
-+			.ca_owner = THIS_MODULE,			\
-+	},								\
-+	.show	= _show,						\
-+	.store	= _store,						\
++/* Handle network interface device notifications */
++static int netconsole_netdev_event(struct notifier_block *this,
++				   unsigned long event,
++				   void *ptr)
++{
++	struct net_device *dev = ptr;
++	struct netconsole_target *nt = &default_target;
++
++	if (!(event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
++		goto done;
++
++	if (nt->np.dev == dev) {
++		switch (event) {
++		case NETDEV_CHANGEADDR:
++			memcpy(nt->np.local_mac, dev->dev_addr, ETH_ALEN);
++			break;
++
++		case NETDEV_CHANGENAME:
++			strlcpy(nt->np.dev_name, dev->name, IFNAMSIZ);
++			break;
++		}
++	}
++
++done:
++	return NOTIFY_DONE;
 +}
++
++static struct notifier_block netconsole_netdev_notifier = {
++	.notifier_call  = netconsole_netdev_event,
++};
++
+ static void write_msg(struct console *con, const char *msg, unsigned int len)
+ {
+ 	int frag, left;
+@@ -123,6 +154,10 @@ static int __init init_netconsole(void)
+ 	if (err)
+ 		goto out;
  
- /*
-  * If allow_link() exists, the item can symlink(2) out to other
++	err = register_netdevice_notifier(&netconsole_netdev_notifier);
++	if (err)
++		return err;
++
+ 	register_console(&netconsole);
+ 	printk(KERN_INFO "netconsole: network logging started\n");
+ 
+@@ -135,6 +170,7 @@ static void __exit cleanup_netconsole(vo
+ 	struct netconsole_target *nt = &default_target;
+ 
+ 	unregister_console(&netconsole);
++	unregister_netdevice_notifier(&netconsole_netdev_notifier);
+ 	netpoll_cleanup(&nt->np);
+ }
+ 
