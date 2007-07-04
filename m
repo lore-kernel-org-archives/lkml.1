@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760491AbXGDLA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbXGDLDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760491AbXGDLA1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbXGDLAQ
+	id S1760565AbXGDLDP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbXGDLDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:00:16 -0400
-Received: from ozlabs.org ([203.10.76.45]:54513 "EHLO ozlabs.org"
+	Wed, 4 Jul 2007 07:03:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48635 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756727AbXGDLAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:00:15 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18059.32169.906914.258802@cargo.ozlabs.ibm.com>
-Date: Wed, 4 Jul 2007 20:59:53 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
+	id S1757433AbXGDLDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 07:03:00 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-In-Reply-To: <200707041253.33154.oliver@neukum.org>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707041208.40735.oliver@neukum.org>
-	<18059.31346.806801.871454@cargo.ozlabs.ibm.com>
-	<200707041253.33154.oliver@neukum.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Date: Wed, 4 Jul 2007 13:10:10 +0200
+User-Agent: KMail/1.9.5
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+References: <20070703042916.GA17240@srcf.ucam.org> <200707041233.18199.rjw@sisk.pl> <18059.31464.183382.358931@cargo.ozlabs.ibm.com>
+In-Reply-To: <18059.31464.183382.358931@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707041310.11336.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum writes:
+On Wednesday, 4 July 2007 12:48, Paul Mackerras wrote:
+> Rafael J. Wysocki writes:
+> 
+> > So, I gather, you're volunteering to handle suspend-related bug reports
+> > from the point in which we drop the freezer from the suspend code path?
+> 
+> Ben and I are happy to handle all the ones for the platform we
+> maintain, which currently does suspend without freezing processes. :)
 
-> They can't. Device specific protocols are known to the drivers only.
-> The fact remains, remove the freezer and you need to go through
-> all drivers.
+I mean all platforms.  After all, the $subject change won't affect yours.
 
-The freezer does not actually mean that you don't have to get the
-drivers right, because kernel threads can issue I/O requests.
+BTW, does your platform's suspend work on SMP systems?
 
-Paul.
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
