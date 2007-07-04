@@ -1,223 +1,403 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbXGDVlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbXGDVnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760118AbXGDVlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 17:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXGDVlM
+	id S1760697AbXGDVnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 17:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbXGDVnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 17:41:12 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37233 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755833AbXGDVlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 17:41:11 -0400
-Date: Wed, 4 Jul 2007 23:40:47 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: Andi Kleen <ak@suse.de>, Indan Zupancic <indan@nul.nu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bwalle@suse.de
-Subject: Re: blink driver power saving
-Message-ID: <20070704214047.GB1836@elf.ucw.cz>
-References: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net> <200707021439.27357.ak@suse.de> <20070702230827.GA9071@elf.ucw.cz> <200707030142.36252.dtor@insightbb.com>
+	Wed, 4 Jul 2007 17:43:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50986 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757646AbXGDVnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 17:43:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
+Date: Wed, 4 Jul 2007 23:50:24 +0200
+User-Agent: KMail/1.9.5
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+References: <200706192118.23706.nigel@nigel.suspend2.net> <200706302230.19040.rjw@sisk.pl> <20070704212907.GA3213@elf.ucw.cz>
+In-Reply-To: <20070704212907.GA3213@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707030142.36252.dtor@insightbb.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Message-Id: <200707042350.25117.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi,
 
-> > > > > Perhaps one of you geniuses who all hate it can find a better way to
-> > > > > solve the "video output dead after kexec; but need visual feedback to the user
-> > > > > while crash dumping" problem. I'm waiting for your patches.
-> > > > >
-> > > > 
-> > > > I don't don't like it ;) Unfortunately too many people end up enabling
-> > > 
-> > > Yes that's pretty weird. I admit I hadn't expected
-> > > that problem. blink is equivalent to "annoy me" and it
-> > > is a mystery why so many people should willingly ask their computer to 
-> > > annoy them.
-> > 
-> > tristate "Keyboard blink driver"
-> > 
-> > ...drivers are not expected to act on their own. I was expecting to
-> > get nice /sys/class/led* interface to my keyboard leds.
-> > 
-> > BTW ... I still believe we should have /sys/class/led* interface to
-> > those leds. I'd like to make them blink with hdd activity on some
-> > machines... of course, that needs non-buggy KBC.
+On Wednesday, 4 July 2007 23:29, Pavel Machek wrote:
+> Hi!
 > 
-> I'll take patches. Ofcourse we'll have to keep the current EV_LED interface
-> for compatibility.
+> > > > > > Sorry, but I can't resist the opportunity to say "Send a patch!" :)
+> > > > > > 
+> > > > > > Seriously, though, I'd prefer not to. If we rename that acpi video flags 
+> > > > > > variable (I assume this is what you're thinking of), we only create cause for 
+> > > > > > confusion. A variable should for debugging or for controlling quirks, not for 
+> > > > > > both at the same time.
+> > > > > 
+> > > > > Cause for confusion? We are currently using 2 bits of that variable,
+> > > > > and we want to add one more bit. I seriously doubt that can confuse
+> > > > > anyone.
+> > > > 
+> > > > Well, indeed it would be more elegant to rename the existing flags variable
+> > > > and use another bit out of it, but I personally don't think it's _that_
+> > > > important.  At least, I don't think we should block the patch
+> > > > because of that.
+> > > 
+> > > It is not _that_ important.
+> > > 
+> > > > BTW, has anyone confirmed that it works on i386?
+> > > 
+> > > If you have patch somewhere nearby, I can test it on i386 and make it
+> > > use just one flags variable.
+> > 
+> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc6/patches/28-Optional-Beeping-During-Resume-From-RAM.patch
+> > 
+> 
+> I can confirm that (Nigel's patch) works on i386; but it causes a warning:
+> 
+> kernel/power/main.c: In function 's2ram_beep_show':
+> kernel/power/main.c:319: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
 
-It was simpler then I thought... but it has one small problem. It does
-not actually work :-(..
+Yes, I've fixed the warning in the 2.6.22-rc7 series, but that's not a big
+deal.
 
-it reaches the 
+> Here's the version that uses just one variable, relative to Nigel's
+> patch. Hmm, and it also closes nasty trap for the user in
+> acpi_sleep_setup; order of parameters actually mattered there,
+> acpi_sleep=s3_bios,s3_mode doing something different from
+> acpi_sleep=s3_mode,s3_bios .  It actually works here.
+> 
+> Will you fold it into  patch28, or should I create a changelog?
 
-        printk("Setting led to %d\n", blinker->state);
-        input_inject_event(&blinker->handle, EV_LED, LED_NUML, blinker->state);
+Hmm, I think we should keep the record straight.  Please add a changelog
+if that's not a problem.
 
-code, but my numlock led does not actually change. Any ideas?
-									Pavel
-
-(leds-input.c:)
-
-/*
- * LED <-> input subsystem glue
- *
- * Copyright 2007 Pavel Machek <pavel@suse.cz>
- * Copyright 2007 Dmitry Torokhov
- * Copyright 2005-2006 Openedhand Ltd.
- *
- * Author: Pavel Machek <pavel@suse.cz>
- * Based on code by: Richard Purdie <rpurdie@openedhand.com>
- * 		     
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- */
-
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/platform_device.h>
-#include <linux/leds.h>
-
-#include <linux/module.h>
-#include <linux/input.h>
-#include <linux/slab.h>
-#include <linux/workqueue.h>
-#include <linux/init.h>
-
-struct blinker {
-	struct delayed_work work;
-	struct input_handle handle;
-	int state;
-};
-
-struct blinker *blinker;
-
-static void inputled_set(struct led_classdev *led_cdev, enum led_brightness value)
-{
-	blinker->state = value;
-	schedule_delayed_work(&blinker->work, 0);
-}
-
-static struct led_classdev input_led = {
-	.name			= "input",
-	.default_trigger	= "sharpsl-charge",
-	.brightness_set		= inputled_set,
-};
-
-static void blink_task_handler(struct work_struct *work)
-{
-	struct blinker *blinker = container_of(work, struct blinker, work.work);
-	printk("Setting led to %d\n", blinker->state);
-	input_inject_event(&blinker->handle, EV_LED, LED_NUML, blinker->state);
-}
-
-static void blink_event(struct input_handle *handle, unsigned int type,
-		        unsigned int code, int down)
-{
-	/*
-	 * This is a very rare handler that does not process any input
-	 * events; just injects them.
-	 */
-}
-
-static int blink_connect(struct input_handler *handler, struct input_dev *dev,
-			  const struct input_device_id *id)
-{
-	struct input_handle *handle;
-	int error;
-
-	blinker = kzalloc(sizeof(struct blinker), GFP_KERNEL);
-	if (!blinker)
-		return -ENOMEM;
-
-	INIT_DELAYED_WORK(&blinker->work, blink_task_handler);
-
-	handle = &blinker->handle;
-	handle->dev = dev;
-	handle->handler = handler;
-	handle->name = "blink";
-	handle->private = blinker;
-
-	error = input_register_handle(handle);
-	if (error)
-		goto err_free_handle;
-
-	error = input_open_device(handle);
-	if (error)
-		goto err_unregister_handle;
-
-	error = led_classdev_register(NULL, &input_led);
-	if (error < 0)
-		goto err_input_close_device;
-
-	return 0;
-
- err_input_close_device:
-	input_close_device(handle);
- err_unregister_handle:
-	input_unregister_handle(handle);
- err_free_handle:
-	kfree(handle);
-	return error;
-}
-
-static void blink_disconnect(struct input_handle *handle)
-{
-	struct blinker *blinker = handle->private;
-
-	led_classdev_unregister(&input_led);
-	cancel_rearming_delayed_work(&blinker->work);
-	input_close_device(handle);
-	input_unregister_handle(handle);
-	kfree(blinker);
-}
-
-static const struct input_device_id blink_ids[] = {
-	{
-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_LEDBIT,
-		.evbit = { BIT(EV_LED) },
-		.ledbit = { [LONG(LED_NUML)] = BIT(LED_NUML) },
-	},
-	{ }
-};
-
-static struct input_handler blink_handler = {
-	.event		= blink_event,
-	.connect	= blink_connect,
-	.disconnect	= blink_disconnect,
-	.name		= "blink",
-	.id_table	= blink_ids,
-};
-
-static int __init blink_handler_init(void)
-{
-	return input_register_handler(&blink_handler);
-}
-
-static void __exit blink_handler_exit(void)
-{
-	input_unregister_handler(&blink_handler);
-	flush_scheduled_work();
-}
-
-module_init(blink_handler_init);
-module_exit(blink_handler_exit);
-
-
-
+> Testing welcome :-).
+> 								Pavel
+> 
+> diff --git a/arch/i386/kernel/acpi/sleep.c b/arch/i386/kernel/acpi/sleep.c
+> index 4ee8357..5b67866 100644
+> --- a/arch/i386/kernel/acpi/sleep.c
+> +++ b/arch/i386/kernel/acpi/sleep.c
+> @@ -14,7 +14,7 @@ #include <asm/smp.h>
+>  
+>  /* address in low memory of the wakeup routine. */
+>  unsigned long acpi_wakeup_address = 0;
+> -unsigned long acpi_video_flags;
+> +unsigned long acpi_realmode_flags;
+>  extern char wakeup_start, wakeup_end;
+>  
+>  extern unsigned long FASTCALL(acpi_copy_wakeup_routine(unsigned long));
+> @@ -68,9 +68,11 @@ static int __init acpi_sleep_setup(char 
+>  {
+>  	while ((str != NULL) && (*str != '\0')) {
+>  		if (strncmp(str, "s3_bios", 7) == 0)
+> -			acpi_video_flags = 1;
+> +			acpi_realmode_flags |= 1;
+>  		if (strncmp(str, "s3_mode", 7) == 0)
+> -			acpi_video_flags |= 2;
+> +			acpi_realmode_flags |= 2;
+> +		if (strncmp(str, "s3_beep", 7) == 0)
+> +			acpi_realmode_flags |= 4;
+>  		str = strchr(str, ',');
+>  		if (str != NULL)
+>  			str += strspn(str, ", \t");
+> @@ -80,9 +82,11 @@ static int __init acpi_sleep_setup(char 
+>  
+>  __setup("acpi_sleep=", acpi_sleep_setup);
+>  
+> +/* Ouch, we want to delete this. We already have better version in userspace, in 
+> +   s2ram from suspend.sf.net project */
+>  static __init int reset_videomode_after_s3(struct dmi_system_id *d)
+>  {
+> -	acpi_video_flags |= 2;
+> +	acpi_realmode_flags |= 2;
+>  	return 0;
+>  }
+>  
+> diff --git a/arch/i386/kernel/acpi/wakeup.S b/arch/i386/kernel/acpi/wakeup.S
+> index 68e58f1..443fe85 100644
+> --- a/arch/i386/kernel/acpi/wakeup.S
+> +++ b/arch/i386/kernel/acpi/wakeup.S
+> @@ -50,7 +50,7 @@ #	BEEP
+>  	movw	%ax, %ds					# Make ds:0 point to wakeup_start
+>  	movw	%ax, %ss
+>  
+> -	testl   $1, beep_flags - wakeup_code
+> +	testl   $4, realmode_flags - wakeup_code
+>  	jz      1f
+>  	BEEP
+>  1:
+> @@ -64,7 +64,7 @@ #	BEEP
+>  	cmpl	$0x12345678, %eax
+>  	jne	bogus_real_magic
+>  
+> -	testl	$1, video_flags - wakeup_code
+> +	testl	$1, realmode_flags - wakeup_code
+>  	jz	1f
+>  	lcall   $0xc000,$3
+>  	movw	%cs, %ax
+> @@ -72,7 +72,7 @@ #	BEEP
+>  	movw	%ax, %ss
+>  1:
+>  
+> -	testl	$2, video_flags - wakeup_code
+> +	testl	$2, realmode_flags - wakeup_code
+>  	jz	1f
+>  	mov	video_mode - wakeup_code, %ax
+>  	call	mode_set
+> @@ -111,11 +111,11 @@ #	BEEP
+>  	cmpl	$0x12345678, %eax
+>  	jne	bogus_real_magic
+>  
+> -	testl   $2, beep_flags - wakeup_code
+> +	testl   $8, realmode_flags - wakeup_code
+>  	jz      1f
+>  	BEEP
+>  1:
+> -	ljmpl	$__KERNEL_CS,$wakeup_pmode_return
+> +	ljmpl	$__KERNEL_CS, $wakeup_pmode_return
+>  
+>  real_save_gdt:	.word 0
+>  		.long 0
+> @@ -124,7 +124,7 @@ real_save_cr3:	.long 0
+>  real_save_cr4:	.long 0
+>  real_magic:	.long 0
+>  video_mode:	.long 0
+> -video_flags:	.long 0
+> +realmode_flags:	.long 0
+>  beep_flags:	.long 0
+>  real_efer_save_restore:	.long 0
+>  real_save_efer_edx: 	.long 0
+> @@ -288,10 +288,8 @@ ENTRY(acpi_copy_wakeup_routine)
+>  
+>  	movl	saved_videomode, %edx
+>  	movl	%edx, video_mode - wakeup_start (%eax)
+> -	movl	acpi_video_flags, %edx
+> -	movl	%edx, video_flags - wakeup_start (%eax)
+> -	movl	s2ram_beep, %edx
+> -	movl	%edx, beep_flags - wakeup_start (%eax)
+> +	movl	acpi_realmode_flags, %edx
+> +	movl	%edx, realmode_flags - wakeup_start (%eax)
+>  	movl	$0x12345678, real_magic - wakeup_start (%eax)
+>  	movl	$0x12345678, saved_magic
+>  	popl	%ebx
+> diff --git a/arch/x86_64/kernel/acpi/sleep.c b/arch/x86_64/kernel/acpi/sleep.c
+> index 195b703..4277f2b 100644
+> --- a/arch/x86_64/kernel/acpi/sleep.c
+> +++ b/arch/x86_64/kernel/acpi/sleep.c
+> @@ -55,7 +55,7 @@ #ifdef CONFIG_ACPI_SLEEP
+>  
+>  /* address in low memory of the wakeup routine. */
+>  unsigned long acpi_wakeup_address = 0;
+> -unsigned long acpi_video_flags;
+> +unsigned long acpi_realmode_flags;
+>  extern char wakeup_start, wakeup_end;
+>  
+>  extern unsigned long acpi_copy_wakeup_routine(unsigned long);
+> @@ -103,9 +103,11 @@ static int __init acpi_sleep_setup(char 
+>  {
+>  	while ((str != NULL) && (*str != '\0')) {
+>  		if (strncmp(str, "s3_bios", 7) == 0)
+> -			acpi_video_flags = 1;
+> +			acpi_realmode_flags |= 1;
+>  		if (strncmp(str, "s3_mode", 7) == 0)
+> -			acpi_video_flags |= 2;
+> +			acpi_realmode_flags |= 2;
+> +		if (strncmp(str, "s3_beep", 7) == 0)
+> +			acpi_realmode_flags |= 4;
+>  		str = strchr(str, ',');
+>  		if (str != NULL)
+>  			str += strspn(str, ", \t");
+> diff --git a/arch/x86_64/kernel/acpi/wakeup.S b/arch/x86_64/kernel/acpi/wakeup.S
+> index ed63d18..13f1480 100644
+> --- a/arch/x86_64/kernel/acpi/wakeup.S
+> +++ b/arch/x86_64/kernel/acpi/wakeup.S
+> @@ -50,7 +50,7 @@ # Running in *copy* of this code, somewh
+>  	movw	%ax, %ss
+>  
+>  	# Data segment must be set up before we can see whether to beep.
+> -	testl   $1, beep_flags - wakeup_code
+> +	testl   $4, realmode_flags - wakeup_code
+>  	jz      1f
+>  	BEEP
+>  1:
+> @@ -70,7 +70,7 @@ # Running in *copy* of this code, somewh
+>  	testl	%eax, %eax
+>  	jnz	no_longmode
+>  
+> -	testl	$1, video_flags - wakeup_code
+> +	testl	$1, realmode_flags - wakeup_code
+>  	jz	1f
+>  	lcall   $0xc000,$3
+>  	movw	%cs, %ax
+> @@ -78,7 +78,7 @@ # Running in *copy* of this code, somewh
+>  	movw	%ax, %ss
+>  1:
+>  
+> -	testl	$2, video_flags - wakeup_code
+> +	testl	$2, realmode_flags - wakeup_code
+>  	jz	1f
+>  	mov	video_mode - wakeup_code, %ax
+>  	call	mode_seta
+> @@ -251,9 +251,8 @@ gdt_48a:
+>  	.long   gdta - wakeup_code              # gdt base (relocated in later)
+>  	
+>  real_magic:	.quad 0
+> -beep_flags:	.quad 0
+>  video_mode:	.quad 0
+> -video_flags:	.quad 0
+> +realmode_flags:	.quad 0
+>  
+>  .code16
+>  bogus_real_magic:
+> @@ -367,12 +366,10 @@ ENTRY(acpi_copy_wakeup_routine)
+>  	pushq	%rax
+>  	pushq	%rdx
+>  
+> -	movl	s2ram_beep, %edx
+> -	movl	%edx, beep_flags - wakeup_start (,%rdi)
+>  	movl	saved_video_mode, %edx
+>  	movl	%edx, video_mode - wakeup_start (,%rdi)
+> -	movl	acpi_video_flags, %edx
+> -	movl	%edx, video_flags - wakeup_start (,%rdi)
+> +	movl	acpi_realmode_flags, %edx
+> +	movl	%edx, realmode_flags - wakeup_start (,%rdi)
+>  	movq	$0x12345678, real_magic - wakeup_start (,%rdi)
+>  	movq	$0x123456789abcdef0, %rdx
+>  	movq	%rdx, saved_magic
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index f26df82..9287d89 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -122,8 +122,7 @@ extern struct acpi_mcfg_allocation *pci_
+>  extern int pci_mmcfg_config_num;
+>  
+>  extern int sbf_port;
+> -extern unsigned long acpi_video_flags;
+> -extern unsigned long s2ram_beep;
+> +extern unsigned long acpi_realmode_flags;
+>  
+>  #else	/* !CONFIG_ACPI */
+>  
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 516c24e..fc45ed2 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -312,27 +312,6 @@ static ssize_t state_store(struct kset *
+>  
+>  power_attr(state);
+>  
+> -unsigned long s2ram_beep = 0;
+> -
+> -static ssize_t s2ram_beep_show(struct kset *kset, char *buf)
+> -{
+> -	return sprintf(buf, "%d\n", s2ram_beep);
+> -}
+> -
+> -static ssize_t
+> -s2ram_beep_store(struct kset *kset, const char *buf, size_t n)
+> -{
+> -	int val;
+> -
+> -	if (sscanf(buf, "%d", &val) > 0) {
+> -		s2ram_beep = val;
+> -		return n;
+> -	}
+> -	return -EINVAL;
+> -}
+> -
+> -power_attr(s2ram_beep);
+> -
+>  #ifdef CONFIG_PM_TRACE
+>  int pm_trace_enabled;
+>  
+> @@ -358,13 +337,11 @@ power_attr(pm_trace);
+>  static struct attribute * g[] = {
+>  	&state_attr.attr,
+>  	&pm_trace_attr.attr,
+> -	&s2ram_beep_attr.attr,
+>  	NULL,
+>  };
+>  #else
+>  static struct attribute * g[] = {
+>  	&state_attr.attr,
+> -	&s2ram_beep_attr.attr,
+>  	NULL,
+>  };
+>  #endif /* CONFIG_PM_TRACE */
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 30ee462..40d616b 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -569,7 +569,7 @@ #ifdef CONFIG_ACPI_SLEEP
+>  	{
+>  		.ctl_name	= KERN_ACPI_VIDEO_FLAGS,
+>  		.procname	= "acpi_video_flags",
+> -		.data		= &acpi_video_flags,
+> +		.data		= &acpi_realmode_flags,
+>  		.maxlen		= sizeof (unsigned long),
+>  		.mode		= 0644,
+>  		.proc_handler	= &proc_doulongvec_minmax,
+> 
+> 
+> (s2ram patch for testing follows)
+> 
+> Index: s2ram.c
+> ===================================================================
+> RCS file: /cvsroot/suspend/suspend/s2ram.c,v
+> retrieving revision 1.46
+> diff -u -u -r1.46 s2ram.c
+> --- s2ram.c	10 Jan 2007 08:04:55 -0000	1.46
+> +++ s2ram.c	4 Jul 2007 21:28:22 -0000
+> @@ -35,13 +35,14 @@
+>  /* flags for the whitelist */
+>  #define S3_BIOS     0x01	/* machine needs acpi_sleep=s3_bios */
+>  #define S3_MODE     0x02	/* machine needs acpi_sleep=s3_mode */
+> -#define VBE_SAVE    0x04	/* machine needs "vbetool save / restore" */
+> -#define VBE_POST    0x08	/* machine needs "vbetool post" */
+> -#define RADEON_OFF  0x10	/* machine needs "radeontool light off" */
+> -#define UNSURE      0x20	/* unverified entries from acpi-support 0.59 */
+> -#define NOFB        0x40	/* must not use a frame buffer */
+> -#define VBE_MODE    0x80	/* machine needs "vbetool vbemode get / set" */
+> -#define PCI_SAVE   0x100	/* we need to save the VGA PCI registers */
+> +#define S3_BEEP     0x04	/* debugging beep */
+> +#define VBE_SAVE    0x08	/* machine needs "vbetool save / restore" */
+> +#define VBE_POST    0x10	/* machine needs "vbetool post" */
+> +#define RADEON_OFF  0x20	/* machine needs "radeontool light off" */
+> +#define UNSURE      0x40	/* unverified entries from acpi-support 0.59 */
+> +#define NOFB        0x80	/* must not use a frame buffer */
+> +#define VBE_MODE    0x100	/* machine needs "vbetool vbemode get / set" */
+> +#define PCI_SAVE   0x200	/* we need to save the VGA PCI registers */
+>  
+>  #include "whitelist.c"
+>  
+> @@ -188,8 +189,8 @@
+>  	int ret = 0;
+>  
+>  	/* 0 means: don't touch what was set on kernel commandline */
+> -	if (flags & (S3_BIOS | S3_MODE))
+> -		ret = set_acpi_video_mode(flags & (S3_BIOS | S3_MODE));
+> +	if (flags & (S3_BIOS | S3_MODE | S3_BEEP))
+> +		ret = set_acpi_video_mode(flags & (S3_BIOS | S3_MODE | S3_BEEP));
+>  
+>  	if (ret)
+>  		return ret;
+> @@ -368,7 +369,7 @@
+>  			flags |= RADEON_OFF;
+>  			break;
+>  		case 'a':
+> -			flags |= (atoi(optarg) & (S3_BIOS | S3_MODE));
+> +			flags |= (atoi(optarg) & (S3_BIOS | S3_MODE | S3_BEEP));
+>  			break;
+>  		case 'v':
+>  			flags |= PCI_SAVE;
+> 
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
