@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbXGDN6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXGDN73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761918AbXGDN6I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 09:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759122AbXGDN5x
+	id S1762011AbXGDN73 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 09:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759364AbXGDN7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 09:57:53 -0400
-Received: from waste.org ([66.93.16.53]:49038 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758188AbXGDN5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 09:57:52 -0400
-Date: Wed, 4 Jul 2007 08:56:42 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 5/9] netconsole: Introduce dev_status member
-Message-ID: <20070704135642.GB11115@waste.org>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 4 Jul 2007 09:59:21 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:49699 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759122AbXGDN7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 09:59:20 -0400
+Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Sattler <tsattler@gmx.de>
+In-Reply-To: <20070704122159.GA21813@elte.hu>
+References: <1182969638.4769.56.camel@johannes.berg>
+	 <1183048429.4089.1.camel@johannes.berg>
+	 <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4>
+	 <20070630114658.GA344@tv-sign.ru> <1183381393.4089.117.camel@johannes.berg>
+	 <20070703173112.GA108@tv-sign.ru> <1183549772.3812.10.camel@johannes.berg>
+	 <20070704122159.GA21813@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rIGjZruKXStOknjyWCV3"
+Date: Wed, 04 Jul 2007 15:59:54 +0200
+Message-Id: <1183557594.3812.29.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 04, 2007 at 04:38:04PM +0530, Satyam Sharma wrote:
-> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> 
-> [5/9] netconsole: Introduce dev_status member
-> 
-> Introduce a new member in netconsole_target that tracks the status (up or
-> down) of the underlying interface network device that the specific logging
-> target netpoll is attached to.
-> 
-> We then join this up with the just-introduced net_device notifier, and
-> introduce NETDEV_UP and NETDEV_DOWN notifications. By disabling the target
-> when the corresponding local interface is down, we save the overhead of
-> unnecessarily disabling interrupts and calling into the netpoll stack in
-> console->write().
 
-Yuck. 
+--=-rIGjZruKXStOknjyWCV3
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> +/*
-> + * Why no net_dev_is_up() in netdevice.h? The kernel could lose a lot of
-> + * weight if only netdevice.h had the good sense to export such a function.
-> + * Oh well ...
-> + */
-> +static inline int net_dev_is_up(struct net_device *net_dev)
-> +{
-> +	return ((net_dev->flags & IFF_UP) == IFF_UP);
-> +}
+On Wed, 2007-07-04 at 14:21 +0200, Ingo Molnar wrote:
 
-Why editorialize? Why not just add this to netdevice.h?
+> well, in this case the lock/unlock should nest perfectly (i.e. it should=20
+> always be balanced perfectly), so indeed calling with nested=3D=3D1 leads=
+ to=20
+> stricter checking.
+>=20
+> non-nested unlocks occur when people do stuff like:
+>=20
+> 	spin_lock(&lock1);
+> 	spin_lock(&lock2);
+> 	spin_unlock(&lock1);
+> 	spin_unlock(&lock2);
+>=20
+> the first unlock is not 'nested perfectly'. Now for the workqueue=20
+> dep_map this shouldnt be a legal combination, right?
 
-> +	if (nt->dev_status) {
+I don't think so, will change to use nested=3D=3D1.
 
-Why not simply call net_dev_is_up?
+johannes
 
--- 
-Mathematics is the supreme nostalgia of our time.
+--=-rIGjZruKXStOknjyWCV3
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGi6fa/ETPhpq3jKURAiowAJwIVgAhX8IH9prYRp3w5LLeAvO7owCeKYRC
+j3r0BA8ruLbDjyAm9hrYabk=
+=Ei2t
+-----END PGP SIGNATURE-----
+
+--=-rIGjZruKXStOknjyWCV3--
+
