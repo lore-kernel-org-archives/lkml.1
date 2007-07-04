@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761000AbXGDNAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbXGDNDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761000AbXGDNAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 09:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758142AbXGDNAV
+	id S1761280AbXGDNDR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 09:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759355AbXGDNDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 09:00:21 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:50053 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753617AbXGDNAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 09:00:20 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Wed, 4 Jul 2007 18:51:36 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 9/9] netconsole: Support dynamic reconfiguration
- using configfs
-In-Reply-To: <20070704110824.28520.11661.sendpatchset@cselinux1.cse.iitk.ac.in>
-Message-ID: <Pine.LNX.4.64.0707041829220.30225@cselinux1.cse.iitk.ac.in>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704110824.28520.11661.sendpatchset@cselinux1.cse.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Jul 2007 09:03:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:32905 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759339AbXGDNDA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 09:03:00 -0400
+Date: Wed, 4 Jul 2007 15:02:58 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: Libata PATA status
+Message-ID: <20070704130258.GA10904@one.firstfloor.org>
+References: <20070703185116.59c8f5f5@the-village.bc.nu> <p73k5tg2uj9.fsf@bingen.suse.de> <20070704131746.4bbe4d0e@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070704131746.4bbe4d0e@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Some more thoughts I had on this, for those interested. ]
+On Wed, Jul 04, 2007 at 01:17:46PM +0100, Alan Cox wrote:
+> On 04 Jul 2007 15:00:26 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+> > > 
+> > > Post SRST 
+> > What is SRST?
+> > 
+> > My personal wish list feature would be a little forwarder driver
+> > to forward /dev/hd* to /dev/sd* for this; then old IDE could be
+> > disabled without risking breaking old root file systems.
+> 
+> That would be udevd for new systems or "ln -s" for old ones ? 
 
-> +#ifdef	CONFIG_NETCONSOLE_DYNAMIC
-> +
-> +/*
-> + * Targets that were created by parsing the boot/module option string
-> + * do not exist in the configfs hierarchy and will never go away (and
-> + * have zeroed-out config_item members). So make these a no-op for them.
-> + */
-> +static void netconsole_target_get(struct netconsole_target *nt)
-> +{
-> +	static struct config_item empty_item;	/* Zeroed-out config_item */
-> +
-> +	if (memcmp(&nt->item, &empty_item, sizeof(struct config_item)))
-> +		config_item_get(&nt->item);
-> +}
-> +
-> +static void netconsole_target_put(struct netconsole_target *nt)
-> +{
-> +	static struct config_item empty_item;	/* Zeroed-out config_item */
-> +
-> +	if (memcmp(&nt->item, &empty_item, sizeof(struct config_item)))
-> +		config_item_put(&nt->item);
-> +}
-> +
-> +#else	/* !CONFIG_NETCONSOLE_DYNAMIC */
-> +
->  /*
-> - * Allocate new target and setup netpoll for it.
-> + * No danger of targets going away from under us when dynamic
-> + * reconfigurability is off.
-> + */
-> +static void netconsole_target_get(struct netconsole_target *nt)
-> +{
-> +}
-> +
-> +static void netconsole_target_put(struct netconsole_target *nt)
-> +{
-> +}
-> +
-> +#endif	/* CONFIG_NETCONSOLE_DYNAMIC */
+Then old kernels couldn't be booted anymore.
 
-This whole stuff (and calls to netconsole_target_get and _put from code
-below) is not necessary. All the access to the netconsole_target objects
-(that are present in the target_list) happens inside
-spin_lock_irqsave(target_list_lock), so there's no need to do a
-config_item_get() on these as there is no race window in which userspace
-can delete (and thus release) these items from under us. Note that
-drop_netconsole_target() removes target-to-delete from target_list
-(under spin_lock_irqsave) _before_ free'ing the objects, and that both
-_get() and _put() are balanced *inside* a spin_lock_irqsave /
-spin_unlock_irqrestore pair -- so all this business is quite pointless.
+> 
+> I don't see a way to build that "simple" forwarder because the device
+> allocation is now dynamic rather than tied to specific device on specific
+> port - a concept with really no meaning any more.
 
-I've kept this stuff in for now, but would like to get rid of it, really.
-It's an unnecessary #ifdef-#else-#endif kludge. Comments?
+Sure for SATA. But surely for PATA it would be possible to fake
+the mapping of the old driver? Doing it simple minded (e.g. only
+for the builtin devices) would be probably sufficient.
 
-> +	if (nt->enabled) {
-> +		printk(KERN_ERR "netconsole: target (id %d) is enabled, "
-> +				"disable to update parameters\n", nt->id);
-> +		return -EINVAL;
-> +	}
+-Andi
 
-[ Such code exists in all the store() operations for all attributes other
-than "enabled" itself. ]
-
-Anyway, the problem is that the error does not show up violently in the
-shell. The write fails, of course, values are unchanged, and dmesg shows
-the diagnostic outputted above -- but "echo" does not complain about
--EINVAL returning from write(2) for some reason, neither did -EACCES.
-I guess "echo" needs to be fixed. BTW would -EACCES be more appropriate?
-
-Satyam
