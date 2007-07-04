@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbXGDRAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbXGDRGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbXGDRAl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 13:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbXGDRAc
+	id S1757064AbXGDRGo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 13:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbXGDRGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 13:00:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:8923 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754110AbXGDRAb (ORCPT
+	Wed, 4 Jul 2007 13:06:36 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:33067 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753621AbXGDRGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 13:00:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CkE5LtnuuP/ij83hqm8sEPipaVUOnccHzk9N6lIahes1H5qtXST+lv7oxN0Xe7B9qzGOWlGt2v0vYmOCnDpjs8JmRYF2XSSJ0XrX6gblpvTU0UWsST8026s7KZso+40i99V7abStDANEOCsa/2aYSXctIrzUZmh6hrzx/y8W0QA=
-Message-ID: <86802c440707041000m1378823dwff25ace3e93e54fe@mail.gmail.com>
-Date: Wed, 4 Jul 2007 10:00:29 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Yinghai Lu" <Yinghai.Lu@sun.com>, "Andi Kleen" <ak@suse.de>,
-       "Greg KH" <greg@kroah.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] net: make net and forcedeth to use kmalloc_node
-In-Reply-To: <20070704084938.GA19515@infradead.org>
+	Wed, 4 Jul 2007 13:06:36 -0400
+Date: Wed, 4 Jul 2007 19:07:53 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: linux-kernel@vger.kernel.org
+Message-ID: <20070704170753.GO10397@enneenne.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200706291330.37070.yinghai.lu@sun.com>
-	 <20070703115840.e05a0f47.akpm@linux-foundation.org>
-	 <20070704084938.GA19515@infradead.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [RFC] disabling RTC irq during release
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/4/07, Christoph Hellwig <hch@infradead.org> wrote:
-> On Tue, Jul 03, 2007 at 11:58:40AM -0700, Andrew Morton wrote:
-> > >
-> > >     while (np->put_rx.orig != less_rx) {
-> > > -           struct sk_buff *skb = dev_alloc_skb(np->rx_buf_sz + NV_RX_ALLOC_PAD);
-> > > +           struct sk_buff *skb = dev_alloc_skb_node(np->rx_buf_sz + NV_RX_ALLOC_PAD, dev_to_node(&dev->dev));
-> >
-> > If we're going to do this then it would probably make sense to change
-> > dev_alloc_skb_node() so that it takes a `struct net_device *' rather than a
-> > bare node-id.  That's a call which the net guys will need to make, which is
-> > why we cc them on our emails.
->
-> That thing is called netdev_alloc_skb and already exists.  And it's indeed
-> what they should be using in the rx path.
->
-> -
-please check
-http://lkml.org/lkml/2007/7/3/418
+Hello,
 
-[PATCH 3/4] net: make forcedeth to use kmalloc_node and
-__netdev_alloc_skb for skb allocation
+Looking at other rtc drivers I noticed that during the release()
+method we should disable IRQs as follow:
 
-but need to replace __netdev_alloc_skb to netdev_alloc_skb.
+static void ds1307_release(struct device *dev)
+{
+        struct ds1307   *ds1307 = dev_get_drvdata(dev);
 
-YH
+        if (ds1307->irq >= 0) {
+                ds1307->irqen = 0;
+                ds1307_update_alarm(ds1307);
+        }
+}
+
+that's the code I put into my patch for ds1339.
+
+But if I wish using RTC IRQ line to turn also the board ON, not just
+to put to sleep it, I should leave the IRQ line on!
+
+I think we should add a configuration option who allows developers to
+choose if the RTC IRQ line should be disabled or not during release().
+
+Ciao,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
