@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbXGDLyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbXGDMBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761317AbXGDLyW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759212AbXGDLyN
+	id S1760637AbXGDMBQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 08:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbXGDMBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:54:13 -0400
-Received: from nn7.de ([85.214.94.156]:54574 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758886AbXGDLyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:54:12 -0400
-Subject: Re: ata1: soft resetting port
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux-ide <linux-ide@vger.kernel.org>
-In-Reply-To: <4689EF48.8090506@gmail.com>
-References: <1182260902.14805.60.camel@localhost>
-	 <4689EF48.8090506@gmail.com>
-Content-Type: text/plain
+	Wed, 4 Jul 2007 08:01:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:11389 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756338AbXGDMBA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 08:01:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Y1e69pKKIGy6DyYmpT+8yyoxtgFAMv9829mGkAIJ5Yx19g8N3NOogY5k2f9fLl1DqQhv0TIw83eo3tzxFQ4Bilb0RJ9oywLJTEB7UpRp2KDaqUpaEzxWY92UYNx5rrT/4Yn4r4TjSluAl2qQrWVXSN2GKnjCEt0AFaFTyIcXZDc=
+Message-ID: <fb249edb0707040500o42e945afr9040cbd268942555@mail.gmail.com>
+Date: Wed, 4 Jul 2007 14:00:58 +0200
+From: "andrzej zaborowski" <balrogg@gmail.com>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: Don't miss the ARM-scsi fix.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20070703193104.GA27542@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 04 Jul 2007 12:40:57 +0200
-Message-Id: <1183545657.22999.15.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+Content-Disposition: inline
+References: <200707031503.56561.rob@landley.net>
+	 <20070703122145.447c7d2c.akpm@linux-foundation.org>
+	 <20070703193104.GA27542@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-03 at 15:40 +0900, Tejun Heo wrote:
-> Soeren Sonnenburg wrote:
-> > Dear List,
-> > 
-> > since the switch to 
-> > 
-> > CONFIG_ATA=y
-> > CONFIG_ATA_ACPI=y
-> > CONFIG_ATA_PIIX=y,
-> > 
-> > the ATA_PIIX driver manages both, internal sata disk aswell as cd/dvd
-> > rom. However I am being flooded with the error messages below (well they
-> > appear from time to time, dominating dmesg). 
-> > 
-> > This happens on kernel 2.6.22-rc5, I am copying relevant parts from dmesg:
-> 
-> Does 2.6.22-rc7 fare better?
+On 03/07/07, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> On Tue, Jul 03, 2007 at 12:21:45PM -0700, Andrew Morton wrote:
+> > On Tue, 3 Jul 2007 15:03:56 -0400
+> > Rob Landley <rob@landley.net> wrote:
+> > > diff --git a/arch/arm/mach-versatile/pci.c b/arch/arm/mach-versatile/pci.c
+> > > index ba58223..ca82901 100644
+> > > --- a/arch/arm/mach-versatile/pci.c
+> > > +++ b/arch/arm/mach-versatile/pci.c
+> > > @@ -117,7 +117,10 @@ static int versatile_read_config(struct pci_bus *bus, unsigned int devfn, int wh
+> > >     } else {
+> > >             switch (size) {
+> > >             case 1:
+> > > -                   v = __raw_readb(addr);
+> > > +                   v = __raw_readl(addr);
+> > > +                   if (where & 2) v >>= 16;
+> > > +                   if (where & 1) v >>= 8;
+> >
+> > Someone's enter key broke?
+>
+> Probably, but I'd rather have the fix in than worry about that at this
+> stage.
 
-Yes indeed. The only thing I've seen in the last two days was the
-following on resume:
+It's just the case of being consistent with the already broken style
+in a function vs. correct style and inconsistency. I can never decide.
 
-pci_express 0000:00:1c.2:pcie03: resuming
-sr 0:0:0:0: resuming
-sd 2:0:1:0: resuming
-sd 2:0:1:0: [sda] Starting disk
-ata1.00: configured for UDMA/33
-ata3.01: revalidation failed (errno=-2)
-ata3: failed to recover some devices, retrying in 5 secs
-ata3.01: configured for UDMA/133
-
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+Regards,
