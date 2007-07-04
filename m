@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbXGDUye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbXGDVNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759561AbXGDUye (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 16:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXGDUy1
+	id S1758625AbXGDVNy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 17:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXGDVNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 16:54:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:33791 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755126AbXGDUy0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 16:54:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=skAT1f81HrjH1pactXL9NH4+BDEsLaRiLPSIfA77YOdbKGiPfiUd0hDmR3G7lIByITcj5In+7EC+ih8+7qKErf5hhyEenEOmmA5PSo4mMseVysy0INIa6MQNXcQWLYpoSWqfpDwtNVj7FU/SBp4YlOyfUgn0GEA12KAHZfLaosc=
-Message-ID: <3ae72650707041354j566ee2caj33aeb70cf87955c4@mail.gmail.com>
-Date: Wed, 4 Jul 2007 22:54:25 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Ingo Freund" <linux-kernel-news@e-dict.net>
-Subject: Re: md device files missing at boot time
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <468BA187.3080703@e-dict.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 4 Jul 2007 17:13:46 -0400
+Received: from main.gmane.org ([80.91.229.2]:55050 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755048AbXGDVNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 17:13:45 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Thomas Backlund <tmb@mandriva.org>
+Subject: Re: speed trends in pata world.
+Date: Thu, 05 Jul 2007 00:13:50 +0300
+Message-ID: <f6h2ho$b44$1@sea.gmane.org>
+References: <200707041550.22533.gene.heskett@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <468BA187.3080703@e-dict.net>
-X-Google-Sender-Auth: 93b8778ea7aba031
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: ndn243.bob.fi
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+In-Reply-To: <200707041550.22533.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/4/07, Ingo Freund <linux-kernel-news@e-dict.net> wrote:
-> one of the systems I'm working with was changed (copied) from single (scsi - sda1)
-> to multiple disk (raid1) (sdb1,sdc1 --> md0).
-> When I try to boot from the new created md-device it stops with:
-> ...
-> loading reiserfs
-> "Waiting for device /dev/md0 to appear: ........ not found -- Exiting to /bin/sh
->
-> # ls -la /dev/md*
-> shows nothing, so I understand why the "/" cannot be mounted, but
-> where are the /dev/md* files (I found them in "/lib/udev/devices")?
->
-> The kernel is vanilla 2.6.21.5, the (I think) needed hardware and filesystem
-> drivers are built in modules and put into an initrd file for loading at boot time.
->
-> Does anyone have an idea what I might do wrong?
+Gene Heskett skrev:
+> Greetings;
+> 
+> The drive speeds seem to be going the wrong way.  Its an nforce2 equipt mobo, 
+> and I have 3 drives currently in this box.  Running 2.6.22-rc6-cfs-v18 + the 
+> ftdi_sio.c patch.
+> 
+> hda, the primary on cable 0, is running at around 28MB/Sec.  Its a 200GB WD 
+> about 2 years old.
+> 
 
-How did you build the initramfs image? /sbin/mkinitrd?
+Looks like this one is stuck at UDMA/33
 
-Did you add md support to the image?
+Check the dmesg what the kernel detects, and why it ends up at low speed...
 
-Kay
+> hdb, is running at around 79MB/Sec, its a 4 year old 120GB WD.
+> hdd is running at about 75MB/Sec, is a nearly new 300GB WD.
+> 
+> Can I read anything into the fact that the 2 fast drives are on the slave end 
+> of the cables, whereas the slow one is master in the middle of the cable?
+> 
+
+--
+Thomas
+
