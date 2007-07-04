@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbXGDMba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbXGDMmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762326AbXGDMba (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 08:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761510AbXGDMak
+	id S1760829AbXGDMmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 08:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbXGDMmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 08:30:40 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:59095 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762154AbXGDMaj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 08:30:39 -0400
-Date: Wed, 4 Jul 2007 15:30:35 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 11/11] kernel/sched.c: lower printk severity
-Message-ID: <79339a0c95c2dc008d60b7f70accd2d379203a08.1183551645.git.da-x@monatomic.org>
-References: <6789b0ff288d584d640ee65f8e1e5e27bf040862.1183551644.git.da-x@monatomic.org>
+	Wed, 4 Jul 2007 08:42:00 -0400
+Received: from thunk.org ([69.25.196.29]:48880 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753617AbXGDMmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 08:42:00 -0400
+Date: Wed, 4 Jul 2007 08:41:33 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Paul Mackerras <paulus@samba.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+Message-ID: <20070704124133.GA5836@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Paul Mackerras <paulus@samba.org>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070703211227.GA28758@srcf.ucam.org> <200707041242.59552.rjw@sisk.pl> <18059.32111.58643.97174@cargo.ozlabs.ibm.com> <200707041325.55779.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6789b0ff288d584d640ee65f8e1e5e27bf040862.1183551644.git.da-x@monatomic.org>
+In-Reply-To: <200707041325.55779.rjw@sisk.pl>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dan Aloni <da-x@monatomic.org>
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Wed, Jul 04, 2007 at 01:25:55PM +0200, Rafael J. Wysocki wrote:
+> > Don't know what exactly?
+> 
+> How many drivers will be adversely affected by the $subject change.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 50e1a31..45e9534 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6249,7 +6249,7 @@ static void calibrate_migration_costs(const cpumask_t *cpu_map)
- #endif
- 		);
- 	if (system_state == SYSTEM_BOOTING && num_online_cpus() > 1) {
--		printk("migration_cost=");
-+		printk(KERN_INFO "migration_cost=");
- 		for (distance = 0; distance <= max_distance; distance++) {
- 			if (distance)
- 				printk(",");
--- 
-1.4.4.3
+Ok, so how about a CONFIG option which removes the freezer, so we can
+find out experimentally how many people without it?  We can make it be
+experimental at first, or (my preference) make it be the default
+initially, and if people complain that their laptop's suspend feature
+is broken, we can tell them how to turn back on the
+CONFIG_FREEZER_DEPRECATED option.
 
-
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+							- Ted
