@@ -1,123 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760113AbXGDBey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbXGDBhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760113AbXGDBey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 21:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbXGDBer
+	id S1757997AbXGDBhm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 21:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXGDBhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 21:34:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55581 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753423AbXGDBeq (ORCPT
+	Tue, 3 Jul 2007 21:37:35 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:58717 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbXGDBhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 21:34:46 -0400
-Date: Tue, 3 Jul 2007 18:34:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc6-mm1 -- Problems with suspend/resume.
-Message-Id: <20070703183406.3cd17bc6.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0707031809p3d7c3b68gf2d5633736bb4f3@mail.gmail.com>
-References: <a44ae5cd0707031809p3d7c3b68gf2d5633736bb4f3@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Jul 2007 21:37:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=UrH6khVckNdVCA+qJCLEYUB8UNfNek7L2xoE638eXdwbcRRE+AiVLRn6ZVO3FNXxiva0KfLnN7DMYuT5dsYjfeknmffBZWNapQrrehwNv0hO0QRm/9+ZXao43gcqEbN9zaAxUG8flYNc81bolfz4SkN5jMRGSdB9Py1khroiMxU=
+Message-ID: <468AF9D9.4060609@gmail.com>
+Date: Wed, 04 Jul 2007 10:37:29 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Peter Osterlund <petero2@telia.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, hch@infradead.org
+Subject: Re: PKTCDVD related bugzilla bugs
+References: <46889817.4050007@gmail.com> <Pine.LNX.4.64.0707031111320.7564@r3000.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707031111320.7564@r3000.localdomain>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007 18:09:29 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+Hello, Peter.
 
-> Sorry.  I don't know who else to include in the To: list.  Should I
-> send this again with .config information?  Would ps -Af help?
+Peter Osterlund wrote:
+> On Mon, 2 Jul 2007, Tejun Heo wrote:
+> 
+>> Hello, it's me again.
+>>
+>> We have another bug which reportedly is related to pktcdvd.  Please
+>> respond.
+>>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=7547
+>> http://bugzilla.kernel.org/show_bug.cgi?id=7805
+> 
+> The problem is that when you run pktsetup, the driver will open the
+> cdrom device and keep it open. A very long time ago, the driver didn't
+> do that, but that caused other problems, see for example:
+> 
+>     http://herbie.ucs.indiana.edu/hypermail/linux/kernel/0407.0/0761.html
+> 
+> I don't know how to fix these problems in the kernel, but I know that an
+> old idea from Jens Axboe was to merge pktsetup and mount in user space
+> so that pktsetup only needs to run when you are actually going to use
+> packet writing.
 
-Gosh, what a lot of output we generated.  It's pretty digestible though.
+In bug 7547[1], somebody is issuing START_STOP to the ODD repeatedly
+which times out if the drive is empty.  Is this coming from PKTCDVD or
+from userland polling?  Also, do you mind adding yourself to the bug so
+that I don't have to relay?
 
-It looks like these are the problem:
+Thanks.
 
-cat           D 0000002B     0  5603      1 (NOTLB)
-       c8102e4c 00000096 80cc15ad 0000002b c1176c2c c8102e38 00000046 c7fb2bc0
-       c7fb2d50 c265c100 80cc15ad 0000002b 00000000 c8102e4c c7f12d00 c014b438
-       00000001 c036759c c63b6914 c8102e68 c63b68e0 00000246 c8102e88 c0367416
-Call Trace:
- [<c0367416>] __mutex_lock_slowpath+0x1c7/0x32c
- [<c036759c>] mutex_lock+0x21/0x24
- [<f8ac10ca>] drm_vma_info+0x1f/0x310 [drm]
- [<c01b514d>] proc_file_read+0x108/0x222
- [<c01b19ed>] proc_reg_read+0x63/0x76
- [<c01834aa>] vfs_read+0xb0/0x139
- [<c018390e>] sys_read+0x3d/0x72
- [<c0108162>] sysenter_past_esp+0x6b/0xb5
- [<ffffe410>] 0xffffe410
- =======================
-INFO: lockdep is turned off.
-tail          D 0000002C     0  5646      1 (NOTLB)
-       c811ce4c 00000096 7137dc36 0000002c c1175f98 c811ce38 00000046 c80e15e0
-       c80e1770 c265c100 7137dc36 0000002c 00000000 c811ce4c c7f11e00 c014b438
-       00000001 c036759c c63b6914 c811ce68 c63b68e0 00000246 c811ce88 c0367416
-Call Trace:
- [<c0367416>] __mutex_lock_slowpath+0x1c7/0x32c
- [<c036759c>] mutex_lock+0x21/0x24
- [<f8ac10ca>] drm_vma_info+0x1f/0x310 [drm]
- [<c01b514d>] proc_file_read+0x108/0x222
- [<c01b19ed>] proc_reg_read+0x63/0x76
- [<c01834aa>] vfs_read+0xb0/0x139
- [<c018390e>] sys_read+0x3d/0x72
- [<c0108162>] sysenter_past_esp+0x6b/0xb5
- [<ffffe410>] 0xffffe410
- =======================
-INFO: lockdep is turned off.
-cat           D 00000033     0  5910      1 (NOTLB)
-       c8107e4c 00000096 24ccdd52 00000033 c014b438 00000001 c8107e14 c7e9ed60
-       c7e9eef0 c265c100 24ccdd52 00000033 00000000 c8107e4c c7f11b80 c014b438
-       00000001 c036759c c63b6914 c8107e68 c63b68e0 00000246 c8107e88 c0367416
-Call Trace:
- [<c0367416>] __mutex_lock_slowpath+0x1c7/0x32c
- [<c036759c>] mutex_lock+0x21/0x24
- [<f8ac10ca>] drm_vma_info+0x1f/0x310 [drm]
- [<c01b514d>] proc_file_read+0x108/0x222
- [<c01b19ed>] proc_reg_read+0x63/0x76
- [<c01834aa>] vfs_read+0xb0/0x139
- [<c018390e>] sys_read+0x3d/0x72
- [<c0108162>] sysenter_past_esp+0x6b/0xb5
- [<ffffe410>] 0xffffe410
- =======================
-INFO: lockdep is turned off.
-cat           D 00000033     0  5926      1 (NOTLB)
-       c8160e4c 00000096 8cc85f27 00000033 c117483c c8160e38 00000046 c80e0af0
-       c80e0c80 c265c100 8cc85f27 00000033 00000000 c8160e4c c7f13480 c014b438
-       00000001 c036759c c63b6914 c8160e68 c63b68e0 00000246 c8160e88 c0367416
-Call Trace:
- [<c0367416>] __mutex_lock_slowpath+0x1c7/0x32c
- [<c036759c>] mutex_lock+0x21/0x24
- [<f8ac10ca>] drm_vma_info+0x1f/0x310 [drm]
- [<c01b514d>] proc_file_read+0x108/0x222
- [<c01b19ed>] proc_reg_read+0x63/0x76
- [<c01834aa>] vfs_read+0xb0/0x139
- [<c018390e>] sys_read+0x3d/0x72
- [<c0108162>] sysenter_past_esp+0x6b/0xb5
- [<ffffe410>] 0xffffe410
- =======================
-INFO: lockdep is turned off.
-cat           D 00000034     0  5950      1 (NOTLB)
-       c8084e4c 00000096 39b9c536 00000034 c117afbc c8084e38 00000046 c6ce15e0
-       c6ce1770 c265c100 39b9c536 00000034 00000000 c8084e4c c7f13200 c014b438
-       00000001 c036759c c63b6914 c8084e68 c63b68e0 00000246 c8084e88 c0367416
-Call Trace:
- [<c0367416>] __mutex_lock_slowpath+0x1c7/0x32c
- [<c036759c>] mutex_lock+0x21/0x24
- [<f8ac10ca>] drm_vma_info+0x1f/0x310 [drm]
- [<c01b514d>] proc_file_read+0x108/0x222
- [<c01b19ed>] proc_reg_read+0x63/0x76
- [<c01834aa>] vfs_read+0xb0/0x139
- [<c018390e>] sys_read+0x3d/0x72
- [<c0108162>] sysenter_past_esp+0x6b/0xb5
- [<ffffe410>] 0xffffe410
- =======================
+-- 
+tejun
 
-and I'm guessing that this kernel is one which has already oopsed in
-drm_vma_info()?
-
-If so, then problem solved: it oopsed with the lock held.  If not, then
-perhaps we have another problem in DRM.  Or the same one remanifesting.
-
-
+[1] http://bugzilla.kernel.org/show_bug.cgi?id=7547
