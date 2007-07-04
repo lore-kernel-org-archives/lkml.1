@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbXGDSBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbXGDSJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757894AbXGDSBc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 14:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbXGDSBX
+	id S1757543AbXGDSJT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 14:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbXGDSJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 14:01:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:39310 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753882AbXGDSBW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 14:01:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ozds8CNIe1FYSPK1ZwvOLsaD0JmgvTNaSNUmoFBSHMl5biid1Djm2hwfUs3cMPH8be/KH2seVet0DAcslTa0pe+HdPhXgP7M87klSC9qW4DVK+0d+PHnHltyZJZNx6abeqNae6AZc0dGlNkyRY21hG1a1tXSEFAnYPuvGX0hfqI=
-Message-ID: <468BE06D.4010507@gmail.com>
-Date: Thu, 05 Jul 2007 03:01:17 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 4 Jul 2007 14:09:10 -0400
+Received: from gw.goop.org ([64.81.55.164]:45477 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755438AbXGDSJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 14:09:10 -0400
+Message-ID: <468BE240.60909@goop.org>
+Date: Wed, 04 Jul 2007 11:09:04 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Soeren Sonnenburg <kernel@nn7.de>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: ata1: soft resetting port
-References: <1182260902.14805.60.camel@localhost>	 <4689EF48.8090506@gmail.com> <1183545657.22999.15.camel@localhost>
-In-Reply-To: <1183545657.22999.15.camel@localhost>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, patches@x86-64.org
+Subject: Re: [PATCH] x86: make SMP locks handling interact properly with	CONFIG_DEBUG_RODATA
+ (2nd try)
+References: <468B5B54.76E4.0078.0@novell.com> <468BBFB3.9080303@goop.org> <20070704175142.GA3795@redhat.com>
+In-Reply-To: <20070704175142.GA3795@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soeren Sonnenburg wrote:
-> On Tue, 2007-07-03 at 15:40 +0900, Tejun Heo wrote:
->> Soeren Sonnenburg wrote:
->>> Dear List,
->>>
->>> since the switch to 
->>>
->>> CONFIG_ATA=y
->>> CONFIG_ATA_ACPI=y
->>> CONFIG_ATA_PIIX=y,
->>>
->>> the ATA_PIIX driver manages both, internal sata disk aswell as cd/dvd
->>> rom. However I am being flooded with the error messages below (well they
->>> appear from time to time, dominating dmesg). 
->>>
->>> This happens on kernel 2.6.22-rc5, I am copying relevant parts from dmesg:
->> Does 2.6.22-rc7 fare better?
-> 
-> Yes indeed. The only thing I've seen in the last two days was the
-> following on resume:
-> 
-> pci_express 0000:00:1c.2:pcie03: resuming
-> sr 0:0:0:0: resuming
-> sd 2:0:1:0: resuming
-> sd 2:0:1:0: [sda] Starting disk
-> ata1.00: configured for UDMA/33
-> ata3.01: revalidation failed (errno=-2)
-> ata3: failed to recover some devices, retrying in 5 secs
-> ata3.01: configured for UDMA/133
+Dave Jones wrote:
+> On Wed, Jul 04, 2007 at 08:41:39AM -0700, Jeremy Fitzhardinge wrote:
+>  
+>  > I'd already posted a patch to remove smp alternatives.  I thought it had 
+>  > been merged already, but I guess it's in Andi's queue.
+>
+> What was the rationale behind that?  Given many distros have now
+> moved to shipping just an SMP kernel, this seems like a step backwards?
+>   
 
-Hmmm... That's NODEV_HINT being triggered after resume.  Probably the
-device isn't ready to respond yet at that point.  How reproducible is
-the problem?
+No, there's two mechanisms.  There's the clobber the lock prefix thing, 
+which is unaffected.  And there's smp_alternatives, which was a more 
+ambitious mechanism to completely replace instructions in the SMP vs 
+non-SMP cases, which is completely unused and therefore removed.
 
--- 
-tejun
+    J
