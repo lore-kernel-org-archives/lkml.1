@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXGDN73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762174AbXGDN7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762011AbXGDN73 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 09:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759364AbXGDN7V
+	id S1762174AbXGDN7t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 09:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760547AbXGDN7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 09:59:21 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:49699 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759122AbXGDN7U (ORCPT
+	Wed, 4 Jul 2007 09:59:40 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:56470 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760047AbXGDN7j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 09:59:20 -0400
-Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Sattler <tsattler@gmx.de>
-In-Reply-To: <20070704122159.GA21813@elte.hu>
-References: <1182969638.4769.56.camel@johannes.berg>
-	 <1183048429.4089.1.camel@johannes.berg>
-	 <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4>
-	 <20070630114658.GA344@tv-sign.ru> <1183381393.4089.117.camel@johannes.berg>
-	 <20070703173112.GA108@tv-sign.ru> <1183549772.3812.10.camel@johannes.berg>
-	 <20070704122159.GA21813@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rIGjZruKXStOknjyWCV3"
-Date: Wed, 04 Jul 2007 15:59:54 +0200
-Message-Id: <1183557594.3812.29.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Wed, 4 Jul 2007 09:59:39 -0400
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: jim.houston@ccur.com
+Subject: Re: idr_get_new_above() limitation?
+Date: Wed, 4 Jul 2007 16:11:29 +0200
+User-Agent: KMail/1.8.2
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org, Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+       raisch@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>
+References: <200707021919.27251.hnguyen@linux.vnet.ibm.com> <1183422700.3130.27.camel@localhost.localdomain>
+In-Reply-To: <1183422700.3130.27.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707041611.30056.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 03 July 2007 02:31, Jim Houston wrote:
+> The problem is in idr_get_new_above_int() in the loop which
+> adds new layers to the top of the radix tree.  It is failing
+> the "layers < (MAX_LEVEL - 1)" test.  It doesn't allocate the
+> new layer but still calls sub_alloc() which relies on having
+> the new layer properly constructed.  I believe that it is
+> allocating the slot which corresponds to id = 0.
+Hi Jim,
+Thanks for your quick reply.
+Yes, I realized that while condition too and have tried with a tiny
+change like (layers < MAX_LEVEL), but without success with idr_find(), 
+even though 6 layers were created and the object was added at proper
+location. After several debug cycles I think to find the root cause 
+in the if-condition in idr_find():
+void *idr_find(struct idr *idp, int id)
+{
+	int n;
+	struct idr_layer *p;
 
---=-rIGjZruKXStOknjyWCV3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+	n = idp->layers * IDR_BITS;
+	p = idp->top;
 
-On Wed, 2007-07-04 at 14:21 +0200, Ingo Molnar wrote:
+	/* Mask off upper bits we don't use for the search. */
+	id &= MAX_ID_MASK;
 
-> well, in this case the lock/unlock should nest perfectly (i.e. it should=20
-> always be balanced perfectly), so indeed calling with nested=3D=3D1 leads=
- to=20
-> stricter checking.
->=20
-> non-nested unlocks occur when people do stuff like:
->=20
-> 	spin_lock(&lock1);
-> 	spin_lock(&lock2);
-> 	spin_unlock(&lock1);
-> 	spin_unlock(&lock2);
->=20
-> the first unlock is not 'nested perfectly'. Now for the workqueue=20
-> dep_map this shouldnt be a legal combination, right?
+	if (id >= (1 << n))
+		return NULL;
+...
+}
+Since idp->layers is now 6, n is equal 36, ie out of 32-bit-range,
+and therefore
+	(1 << n) = (1 << 36) = 0
+causing that if-cond to be true ie idr_find() fails.
+Replacing that if-line by
+	if ((long)id >= (1L << n))
+makes idr_find() working properly until MAX_ID_MASK.
+Since there are other places to be changed like above as well eg.
+idr_replace() and because you're creating a patch too, I'm waiting
+first for your comment. Let me know if you prefer me to send a
+patch.
+Regards
+Nam
 
-I don't think so, will change to use nested=3D=3D1.
-
-johannes
-
---=-rIGjZruKXStOknjyWCV3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGi6fa/ETPhpq3jKURAiowAJwIVgAhX8IH9prYRp3w5LLeAvO7owCeKYRC
-j3r0BA8ruLbDjyAm9hrYabk=
-=Ei2t
------END PGP SIGNATURE-----
-
---=-rIGjZruKXStOknjyWCV3--
 
