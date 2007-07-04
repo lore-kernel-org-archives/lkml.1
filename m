@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbXGDRGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbXGDRIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064AbXGDRGo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 13:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbXGDRGg
+	id S1758782AbXGDRIk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 13:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbXGDRIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 13:06:36 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:33067 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753621AbXGDRGg (ORCPT
+	Wed, 4 Jul 2007 13:08:32 -0400
+Received: from post.kiewel-online.de ([85.214.49.162]:33059 "EHLO
+	post.kiewel-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754328AbXGDRIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 13:06:36 -0400
-Date: Wed, 4 Jul 2007 19:07:53 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20070704170753.GO10397@enneenne.com>
+	Wed, 4 Jul 2007 13:08:31 -0400
+X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jul 2007 13:08:30 EDT
+Message-ID: <468BD145.5040100@kiewel-online.de>
+Date: Wed, 04 Jul 2007 18:56:37 +0200
+From: Uwe Kiewel <mailing-list@kiewel-online.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [RFC] disabling RTC irq during release
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: Gabriel C <nix.or.die@googlemail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com
+Subject: Re: [SCSI] SD driver question
+References: <468BCE5C.6000707@googlemail.com>
+In-Reply-To: <468BCE5C.6000707@googlemail.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Looking at other rtc drivers I noticed that during the release()
-method we should disable IRQs as follow:
+Gabriel C schrieb:
+> Hello,
+> 
+> Is there any reason why sd is printing the driver informations for each
+> disk twice in dmesg ?
+> 
+> ...
+> 
+> sd 0:0:0:0: [sda] 35843670 512-byte hardware sectors (18352 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 9f 00 10 08
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports
+> DPO and FUA
+> sd 0:0:0:0: [sda] 35843670 512-byte hardware sectors (18352 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 9f 00 10 08
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports
+> DPO and FUA
+> sda: sda1
+> sd 0:0:0:0: [sda] Attached SCSI disk
+> sd 0:0:0:0: Attached scsi generic sg0 type 0
 
-static void ds1307_release(struct device *dev)
-{
-        struct ds1307   *ds1307 = dev_get_drvdata(dev);
+the samne here.
+...
+scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HM080HC  AM10 PQ: 0 ANSI: 5
+SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
+sda: Write Protect is off
+sda: Mode Sense: 00 3a 00 00
+SCSI device sda: write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
+sda: Write Protect is off
+sda: Mode Sense: 00 3a 00 00
+SCSI device sda: write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+...
 
-        if (ds1307->irq >= 0) {
-                ds1307->irqen = 0;
-                ds1307_update_alarm(ds1307);
-        }
-}
+Please, can you tell the version of the kernel you use? I use:
+[abkie@config-lappi ~]$ uname -r
+2.6.21-1.3228.fc7
+It is the current Fedora 7 kernel.
 
-that's the code I put into my patch for ds1339.
 
-But if I wish using RTC IRQ line to turn also the board ON, not just
-to put to sleep it, I should leave the IRQ line on!
+Regards,
+Uwe
 
-I think we should add a configuration option who allows developers to
-choose if the RTC IRQ line should be disabled or not during release().
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-Ciao,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+iD8DBQFGi9FFr6SFaBB7DLURAtb0AJ0YWiuBsEcOLChPvQcx6dOwvmPOxACfUsGT
+3glIHhUVpqBOcizMaTcqU5M=
+=xTfs
+-----END PGP SIGNATURE-----
