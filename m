@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbXGDQMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbXGDQQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755315AbXGDQMD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 12:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbXGDQLv
+	id S1755976AbXGDQQR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 12:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbXGDQQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 12:11:51 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:35833 "EHLO mail4.iitk.ac.in"
+	Wed, 4 Jul 2007 12:16:07 -0400
+Received: from ns.suse.de ([195.135.220.2]:48378 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752057AbXGDQLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 12:11:50 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Wed, 4 Jul 2007 22:03:13 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Matt Mackall <mpm@selenic.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 5/9] netconsole: Introduce dev_status member
-In-Reply-To: <20070704135642.GB11115@waste.org>
-Message-ID: <Pine.LNX.4.64.0707042158001.757@cselinux1.cse.iitk.ac.in>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704135642.GB11115@waste.org>
+	id S1752007AbXGDQQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 12:16:06 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] x86: make SMP locks handling interact properly =?iso-8859-1?q?with=09CONFIG=5FDEBUG=5FRODATA?= (2nd try)
+Date: Wed, 4 Jul 2007 18:15:58 +0200
+User-Agent: KMail/1.9.6
+Cc: Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+References: <468B5B54.76E4.0078.0@novell.com> <468BBFB3.9080303@goop.org>
+In-Reply-To: <468BBFB3.9080303@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200707041815.58923.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Matt Mackall wrote:
-> On Wed, Jul 04, 2007 at 04:38:04PM +0530, Satyam Sharma wrote:
-> > [...]
-> > +/*
-> > + * Why no net_dev_is_up() in netdevice.h? The kernel could lose a lot of
-> > + * weight if only netdevice.h had the good sense to export such a function.
-> > + * Oh well ...
-> > + */
-> > +static inline int net_dev_is_up(struct net_device *net_dev)
-> > +{
-> > +	return ((net_dev->flags & IFF_UP) == IFF_UP);
-> > +}
+On Wednesday 04 July 2007 17:41:39 Jeremy Fitzhardinge wrote:
+> Jan Beulich wrote:
+> > Instead of suppressing the change of .text to become readonly, make
+> > the SMP locks patching code properly adjust/restore the page access
+> > rights.
+> >   
 > 
-> Why editorialize? Why not just add this to netdevice.h?
+> I guess we'll need to do the same thing for paravirt_ops patching?
 
-Hmm, I wanted to keep all changes local to netconsole, but ...
-ok, will do that.
+Not if the patching happens early enough at boot. That's true for Xen
+and lguest, but I'm not sure about VMI
 
-> > +	if (nt->dev_status) {
-> 
-> Why not simply call net_dev_is_up?
+-Andi
 
-Yes, I did consider just calling the function here instead of
-introducing another member ... again, ok will do that ...
-
-> > We then join this up with the just-introduced net_device notifier, and
-> > introduce NETDEV_UP and NETDEV_DOWN notifications. By disabling the target
-> > when the corresponding local interface is down, we save the overhead of
-> > unnecessarily disabling interrupts and calling into the netpoll stack in
-> > console->write().
-> 
-> Yuck. 
-
-... so all this will go too.
-
-Satyam
