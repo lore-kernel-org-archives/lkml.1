@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbXGDMZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbXGDM2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760693AbXGDMZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 08:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbXGDMZR
+	id S1760886AbXGDM2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 08:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757328AbXGDM2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 08:25:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41014 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756433AbXGDMZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 08:25:16 -0400
-Date: Wed, 4 Jul 2007 14:25:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Sattler <tsattler@gmx.de>
-Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-Message-ID: <20070704122505.GB21813@elte.hu>
-References: <1182969638.4769.56.camel@johannes.berg> <1183048429.4089.1.camel@johannes.berg> <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4> <20070630114658.GA344@tv-sign.ru> <1183381393.4089.117.camel@johannes.berg> <20070703173112.GA108@tv-sign.ru> <1183549772.3812.10.camel@johannes.berg>
+	Wed, 4 Jul 2007 08:28:05 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:58959 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756669AbXGDM2E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 08:28:04 -0400
+Date: Wed, 4 Jul 2007 15:27:59 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/11] arch/x86_64/kernel/aperture.c: lower printk severity
+Message-ID: <6789b0ff288d584d640ee65f8e1e5e27bf040862.1183551644.git.da-x@monatomic.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1183549772.3812.10.camel@johannes.berg>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Users that use kernel log filtering (e.g. via syslogd or a proprietry
+method) wouldn't like to see warning prints that are not really warnings.
 
-* Johannes Berg <johannes@sipsolutions.net> wrote:
+Signed-off-by: Dan Aloni <da-x@monatomic.org>
+---
+ arch/x86_64/kernel/aperture.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > > +#define create_workqueue(name) \
-> > > +({								\
-> > > +	static struct lock_class_key __key;			\
-> > > +	struct workqueue_struct *__wq;				\
-> > > +								\
-> > > +	__wq = __create_workqueue((name), 0, 0, &__key);	\
-> > > +	__wq;							\
-> > > +})
-> > 
-> > Why do we need __wq ?
-> 
-> No particular reason I think, I copied some other code doing it that 
-> way.
+diff --git a/arch/x86_64/kernel/aperture.c b/arch/x86_64/kernel/aperture.c
+index a3d450d..3b63074 100644
+--- a/arch/x86_64/kernel/aperture.c
++++ b/arch/x86_64/kernel/aperture.c
+@@ -214,7 +214,7 @@ void __init iommu_hole_init(void)
+ 	if (iommu_aperture_disabled || !fix_aperture || !early_pci_allowed())
+ 		return;
+ 
+-	printk("Checking aperture...\n"); 
++	printk(KERN_INFO  "Checking aperture...\n");
+ 
+ 	fix = 0;
+ 	for (num = 24; num < 32; num++) {		
+-- 
+1.4.4.3
 
-yep, should be fine doing this:
 
- #define create_workqueue(name)				\
- ({							\
-	static struct lock_class_key __key;		\
-							\
-	__create_workqueue((name), 0, 0, &__key);	\
- })
-
-(and the return value of __create_workqueue() will be the 'return value' 
-of the macro as well.)
-
-> > 	+ extern struct workqueue_struct *__create_workqueue_key(..., key);
-> > 	+ #define __create_workqueue(...)	\
-> > 	+	static struct lock_class_key __key;	\
-> > 	+	__create_workqueue_key(..., key);	\
-> > 
-> > but this is a matter of taste.
-
-the above macro should at minimum be encapsulated with
-do { ... } while (0) so that __create_workqueue() is a single C 
-statement.
-
-	Ingo
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
