@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbXGDN5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbXGDN6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761410AbXGDN5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 09:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759014AbXGDN5L
+	id S1761918AbXGDN6I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 09:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759122AbXGDN5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 09:57:11 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:47015 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757152AbXGDN5J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 09:57:09 -0400
-Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
-       Thomas Sattler <tsattler@gmx.de>
-In-Reply-To: <20070704125219.GA98@tv-sign.ru>
-References: <1182969638.4769.56.camel@johannes.berg>
-	 <1183048429.4089.1.camel@johannes.berg>
-	 <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4>
-	 <20070630114658.GA344@tv-sign.ru> <1183381393.4089.117.camel@johannes.berg>
-	 <20070703173112.GA108@tv-sign.ru> <1183549772.3812.10.camel@johannes.berg>
-	 <20070704125219.GA98@tv-sign.ru>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-m+hT3DQbhhX5ablwaXk5"
-Date: Wed, 04 Jul 2007 15:57:59 +0200
-Message-Id: <1183557479.3812.24.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Wed, 4 Jul 2007 09:57:53 -0400
+Received: from waste.org ([66.93.16.53]:49038 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758188AbXGDN5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 09:57:52 -0400
+Date: Wed, 4 Jul 2007 08:56:42 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH -mm 5/9] netconsole: Introduce dev_status member
+Message-ID: <20070704135642.GB11115@waste.org>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 04, 2007 at 04:38:04PM +0530, Satyam Sharma wrote:
+> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> 
+> [5/9] netconsole: Introduce dev_status member
+> 
+> Introduce a new member in netconsole_target that tracks the status (up or
+> down) of the underlying interface network device that the specific logging
+> target netpoll is attached to.
+> 
+> We then join this up with the just-introduced net_device notifier, and
+> introduce NETDEV_UP and NETDEV_DOWN notifications. By disabling the target
+> when the corresponding local interface is down, we save the overhead of
+> unnecessarily disabling interrupts and calling into the netpoll stack in
+> console->write().
 
---=-m+hT3DQbhhX5ablwaXk5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yuck. 
 
-On Wed, 2007-07-04 at 16:52 +0400, Oleg Nesterov wrote:
+> +/*
+> + * Why no net_dev_is_up() in netdevice.h? The kernel could lose a lot of
+> + * weight if only netdevice.h had the good sense to export such a function.
+> + * Oh well ...
+> + */
+> +static inline int net_dev_is_up(struct net_device *net_dev)
+> +{
+> +	return ((net_dev->flags & IFF_UP) == IFF_UP);
+> +}
 
-> Yes. And no other work (except a barrier) can run before the caller of
-> wait_on_work() is woken.
+Why editorialize? Why not just add this to netdevice.h?
 
-Alright, thanks. Yes, then what you proposed makes a lot of sense, I'll
-implement it.
+> +	if (nt->dev_status) {
 
-> Aha, now I see where I was confused. Yes, we can't avoid the false positi=
-ves
-> with flush_workqueue().
->=20
-> I hope this won't be a problem, because almost every usage of flush_workq=
-ueue()
-> is pointless nowadays. So even if we have a false positive, it probably
-> means the code needs cleanups anyway.
->=20
-> But see below,
+Why not simply call net_dev_is_up?
 
-[...]
-
-> If you are going to do this, may I suggest you to make 2 separate patches=
-?
-> Exactly because we can't avoid the false positives with flush_workqueue()=
-,
-> it would be nice if we have an option to revert the 2-nd patch if there a=
-re
-> too many false positives (I hope this won't happen).
-
-I've run this patch on my system for a few days now and only seen
-exactly one warning; however, it's *not* actually a *false* positive,
-it's a positive but it's also perfectly possible to deadlock if the
-system is loaded more than one work item is stuck on the workqueue for
-some reason. Say A takes L1 and B runs without locks, and then you flush
-the workqueue under L1; you'll get a real deadlock when both A and B are
-actually scheduled to run!
-
-johannes
-
---=-m+hT3DQbhhX5ablwaXk5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGi6dn/ETPhpq3jKURAgNRAKCUrmlsmzRsfXH5LuMa5HMG1VQi6ACfahtK
-3c56nbo5z7Buto/SIk6D3rs=
-=Xezd
------END PGP SIGNATURE-----
-
---=-m+hT3DQbhhX5ablwaXk5--
-
+-- 
+Mathematics is the supreme nostalgia of our time.
