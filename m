@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbXGDThf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbXGDTun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759587AbXGDThf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 15:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXGDTh2
+	id S1758956AbXGDTun (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 15:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXGDTuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 15:37:28 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48838 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755109AbXGDTh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 15:37:27 -0400
-Date: Wed, 4 Jul 2007 21:37:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andi Kleen <ak@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Indan Zupancic <indan@nul.nu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: blink driver power saving
-Message-ID: <20070704193711.GG2728@elf.ucw.cz>
-References: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net> <200707021351.57965.ak@suse.de> <d120d5000707020531y43d41b6fl46e05c8343dbbeae@mail.gmail.com> <200707021439.27357.ak@suse.de> <20070702230827.GA9071@elf.ucw.cz> <20070703071237.GA17476@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070703071237.GA17476@suse.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Wed, 4 Jul 2007 15:50:35 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:46779 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755913AbXGDTue (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 15:50:34 -0400
+Date: Wed, 04 Jul 2007 15:50:22 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: speed trends in pata world.
+To: linux-kernel@vger.kernel.org
+Message-id: <200707041550.22533.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Greetings;
 
-> > > > > Perhaps one of you geniuses who all hate it can find a better way to
-> > > > > solve the "video output dead after kexec; but need visual feedback to the user
-> > > > > while crash dumping" problem. I'm waiting for your patches.
-> > > > >
-> > > > 
-> > > > I don't don't like it ;) Unfortunately too many people end up enabling
-> > > 
-> > > Yes that's pretty weird. I admit I hadn't expected
-> > > that problem. blink is equivalent to "annoy me" and it
-> > > is a mystery why so many people should willingly ask their computer to 
-> > > annoy them.
-> > 
-> > tristate "Keyboard blink driver"
-> > 
-> > ...drivers are not expected to act on their own. I was expecting to
-> > get nice /sys/class/led* interface to my keyboard leds.
-> 
-> What's the benefit of such an interface? If you're able to trigger
-> keyboard LEDs via that interface, you're also able to use the ioctl()
-> on /dev/console.
+The drive speeds seem to be going the wrong way.  Its an nforce2 equipt mobo, 
+and I have 3 drives currently in this box.  Running 2.6.22-rc6-cfs-v18 + the 
+ftdi_sio.c patch.
 
-Well, at least it is standartized interface... plus it can do stuff
-like "blink that led on disk access".
+hda, the primary on cable 0, is running at around 28MB/Sec.  Its a 200GB WD 
+about 2 years old.
 
-> I think the intention of the blink driver was to have a *early* blink,
-> i.e. before initrd (and on systems without intrd, before the first
-> init script runs).
+hdb, is running at around 79MB/Sec, its a 4 year old 120GB WD.
+hdd is running at about 75MB/Sec, is a nearly new 300GB WD.
 
-...and yes, it can autoblink, too. It should be even possible to set
-default behaviour of led to blink, doing what the blink driver does,
-but in a clean way.
-									Pavel
+Can I read anything into the fact that the 2 fast drives are on the slave end 
+of the cables, whereas the slow one is master in the middle of the cable?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Dumb terminal
