@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759895AbXGDKxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbXGDK7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759895AbXGDKxm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756976AbXGDKxd
+	id S1760037AbXGDK7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbXGDK7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:53:33 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:39057 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755534AbXGDKxc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:53:32 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 12:53:32 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707041208.40735.oliver@neukum.org> <18059.31346.806801.871454@cargo.ozlabs.ibm.com>
-In-Reply-To: <18059.31346.806801.871454@cargo.ozlabs.ibm.com>
+	Wed, 4 Jul 2007 06:59:03 -0400
+Received: from ozlabs.org ([203.10.76.45]:42472 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756976AbXGDK7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:59:01 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707041253.33154.oliver@neukum.org>
+Message-ID: <18059.31464.183382.358931@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 20:48:08 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+In-Reply-To: <200707041233.18199.rjw@sisk.pl>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707032332.49694.rjw@sisk.pl>
+	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
+	<200707041233.18199.rjw@sisk.pl>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
-> Oliver Neukum writes:
-> 
-> > You cannot simply restart the URB without thinking.
-> > The device after resumption may or may not be in the stage
-> > you left it. It needs to be rechecked and some settings must be
-> > renewed. You cannot simple throw an URB from an arbitrary
-> > stage of the protocol at it.
-> > Suspension of devices can only happen at some points
-> > in the protocol.
-> 
-> Yeah, and?
-> 
-> I said "the higher-level driver needs to do the sensible thing".
+Rafael J. Wysocki writes:
 
-They can't. Device specific protocols are known to the drivers only.
-The fact remains, remove the freezer and you need to go through
-all drivers.
+> So, I gather, you're volunteering to handle suspend-related bug reports
+> from the point in which we drop the freezer from the suspend code path?
 
-	Oliver
+Ben and I are happy to handle all the ones for the platform we
+maintain, which currently does suspend without freezing processes. :)
 
+Paul.
