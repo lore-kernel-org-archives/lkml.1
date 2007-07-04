@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXGDA6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbXGDBEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758157AbXGDA6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 20:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXGDA6b
+	id S1758873AbXGDBEX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 21:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbXGDBEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 20:58:31 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56107
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753933AbXGDA6a (ORCPT
+	Tue, 3 Jul 2007 21:04:15 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:45614 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754415AbXGDBEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 20:58:30 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][Documentation][resend] Add missing files and dirs to 00-INDEX in Documentation/
-Date: Tue, 3 Jul 2007 20:58:25 -0400
-User-Agent: KMail/1.9.6
-Cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, trivial@kernel.org
-References: <200707010106.00181.jesper.juhl@gmail.com> <20070703125852.0172a588.akpm@linux-foundation.org>
-In-Reply-To: <20070703125852.0172a588.akpm@linux-foundation.org>
+	Tue, 3 Jul 2007 21:04:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LROYGMk+6ieAgsjBGpa1DZX0kt1GdAsGQbsg7Map9PDp8aL6K7bwPJsFj85DfkYF/bwfp9pgp4kjDxHE2BgMma19R2ukoXZ3rodVSLvuVnQSK/QCTY6Dv3q7RMotjOTxpdBuYQXtcAabSEeVe0vX6kR+ha7Yh8yHYKhBwKMqWPQ=
+Message-ID: <9a8748490707031804v51ca1c79kdf55150c47b01b3d@mail.gmail.com>
+Date: Wed, 4 Jul 2007 03:04:13 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH][isapnp] Fix a potential NULL pointer dereference in isapnp_read_tag()
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jaroslav Kysela" <perex@suse.cz>
+In-Reply-To: <20070703130318.9dbec3ac.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707032058.26512.rob@landley.net>
+References: <200707010138.32075.jesper.juhl@gmail.com>
+	 <20070703130318.9dbec3ac.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 July 2007 15:58:52 Andrew Morton wrote:
-> On Sun, 1 Jul 2007 01:05:59 +0200
->
+On 03/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sun, 1 Jul 2007 01:38:31 +0200
 > Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> > This patch adds descriptions for a number of missing files and
-> > directories to the Documentation/00-INDEX file.
-> > People really should learn to keep this file up-to-date when adding or
-> > moving documentation...
 >
-> Or just delete it.  Does anyone use it?
+> > The Coverity checker spotted (as bug #809) that we dereference 'type'
+> > long before we actually test it against NULL in
+> > drivers/pnp/isapnp/core.c::isapnp_read_tag() - both branches of the
+> > 'if (tag & 0x80)' dereference type, and since this 'if' is before the test
+> > against NULL and the return of -1, this will blow up is ever type is NULL.
+> > This is easy to fix by simply moving the NULL test to the beginning of
+> > the function.
+> >
+[snip]
 >
-> That's Rob's problem, I guess.
+> dood, look at the callers.  NULL is not possible here.
+>
+You are right, there's absolutely no way that we could get a NULL
+pointer there - that was sloppy of me :-(
 
-Documentation/* is a gigantic mess, currently organized based on where random 
-passers-by put things down last.  I posted a couple of patches to do minor 
-cleanups to it last month, but since then I've put that on the back burner, 
-because Documentation/* can't do what I need.
+I guess we should just get rid of the check completely.  I'll cook up
+a patch for that tomorrow.
 
-I spent the first month of the documentation fellowship trying to find all the 
-kernel documentation I could, and figure out how to organize it.  It would be 
-easy to pile up a big heap (that's sort of what http://kernel.org/docs has 
-now, and that's less than half of what I've tracked down), but the hard part 
-is _organizing_ it.  I can't figure out what _isn't_ documented until I have 
-a handle on what _is_ documented.  (And then I can worry about documentation 
-being stale, incomplete, or simply wrong...)
-
-I was looking at the Documentation directory in the kernel as the primary 
-source of documentation and the core around which the rest could be 
-organized: but it isn't.  Out on the internet there are 8 gazillion other 
-sources of documentation for the Linux kernel: OLS papers, the LWN kernel 
-article index, wikis, developer blogs, specifications, online books, things 
-on sourceforge...  most of that is NEVER getting indexed into Documentation/* 
-because it's HTML or PDF under various different non-gpl licenses, and the 
-Documentation directory contains text files.
-
-The fact that Documentation is text means it can't easily link out to 
-resources that live on the web.  The index I need to organize all this stuff 
-with must be HTML because huge chunks of it simply aren't local.  The kernel 
-generates HTML documentation via "make htmldocs", but that can't even 
-coherently link to everything in the Documentation directory today, let alone 
-the whole web, because it's generated by grepping through the kernel sources 
-and that imposes a strong structure on it that makes it bad for indexing 
-things outside itself.  It can be linked _into_ by an external index, but it 
-can't easily BE an index composed primarily of external references.  That's 
-not what it's for.  So that's out too.
-
-I intend to integrate the existing 00-index into the new index (the bare 
-skeleton of which just went up at http://kernel.org/doc earlier today, 
-although expect it to change a lot as links and sub-pages get added and I 
-generally go "what was I THINKING?").  And I'll be adding in all the stuff 
-that ISN'T in 00-index, too.  I need to set up a link checker to detect 404 
-and also detect files that aren't linked from anywhere in my local set of 
-directories...
-
-I have a mercurial archive at http://landley.net/hg/kdocs which I'll accept 
-patches into (it's deeply unimpressive at the moment, I'm working on it), and 
-I'd like said patches cc:'d to linux-doc@vger.kernel.org which I'm trying to 
-resurrect.  I also might shuffle all the stuff I'm mirroring (like 
-http://kernel.org/doc/ols) into its own mirror/* subdirectory for easier 
-mirroring if other people want a local copy of this stuff, I'm still trying 
-to figure out the best way to organize all this.  (I'd prefer not to confuse 
-google by having multiple live mirrors out on the web, but hey: it's a free 
-country.)  
-
-Keep in mind my previous laptop died a month ago, and my new one arrived the 
-monday before OLS, at which my todo list got much longer.  I'm still catching 
-up.  Organizing is the hard part.  Just _writing_ documentation is 
-comparatively easy...
-
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
