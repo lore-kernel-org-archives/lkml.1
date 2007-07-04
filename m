@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbXGDTun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbXGDTwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758956AbXGDTun (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 15:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXGDTuf
+	id S1759704AbXGDTwI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 15:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbXGDTv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 15:50:35 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:46779 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755913AbXGDTue (ORCPT
+	Wed, 4 Jul 2007 15:51:57 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:42399 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756610AbXGDTv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 15:50:34 -0400
-Date: Wed, 04 Jul 2007 15:50:22 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: speed trends in pata world.
-To: linux-kernel@vger.kernel.org
-Message-id: <200707041550.22533.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.7
+	Wed, 4 Jul 2007 15:51:56 -0400
+Message-ID: <468BFA34.5020007@zytor.com>
+Date: Wed, 04 Jul 2007 12:51:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: New systems: eu.kernel.org
+References: <468AD8B1.8060005@zytor.com> <20070704113507.3658a52e@frecb000686.frec.bull.fr>
+In-Reply-To: <20070704113507.3658a52e@frecb000686.frec.bull.fr>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings;
+Sébastien Dugué wrote:
+>   
+>   One last thing, is there a git server as well for eu?
+> 
 
-The drive speeds seem to be going the wrong way.  Its an nforce2 equipt mobo, 
-and I have 3 drives currently in this box.  Running 2.6.22-rc6-cfs-v18 + the 
-ftdi_sio.c patch.
+FWIW, I've set up git.eu.kernel.org; right now it's an alias to
+git.kernel.org, but that might change in the future.
 
-hda, the primary on cable 0, is running at around 28MB/Sec.  Its a 200GB WD 
-about 2 years old.
-
-hdb, is running at around 79MB/Sec, its a 4 year old 120GB WD.
-hdd is running at about 75MB/Sec, is a nearly new 300GB WD.
-
-Can I read anything into the fact that the 2 fast drives are on the slave end 
-of the cables, whereas the slow one is master in the middle of the cable?
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Dumb terminal
+	-hpa
