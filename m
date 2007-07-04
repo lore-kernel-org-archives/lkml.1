@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762008AbXGDM3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758986AbXGDMaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762008AbXGDM3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 08:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761899AbXGDM3S
+	id S1758986AbXGDMaA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 08:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761844AbXGDM3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 08:29:18 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:59032 "EHLO
+	Wed, 4 Jul 2007 08:29:43 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:59043 "EHLO
 	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761803AbXGDM3Q (ORCPT
+	with ESMTP id S1761650AbXGDM3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 08:29:16 -0400
-Date: Wed, 4 Jul 2007 15:29:10 +0300
+	Wed, 4 Jul 2007 08:29:41 -0400
+Date: Wed, 4 Jul 2007 15:29:37 +0300
 From: Dan Aloni <da-x@monatomic.org>
 To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 6/11] drivers/char/ipmi/ipmi_si_intf.c: lower printk severity
-Message-ID: <40de8243be3a16cea3de203d02518d2d3be3c026.1183551644.git.da-x@monatomic.org>
+Subject: [PATCH 7/11] mm/page_alloc.c: lower printk severity
+Message-ID: <0b503b78b62d54cf61063ca12a6040ace083e16e.1183551645.git.da-x@monatomic.org>
 References: <6789b0ff288d584d640ee65f8e1e5e27bf040862.1183551644.git.da-x@monatomic.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -34,22 +34,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Dan Aloni <da-x@monatomic.org>
 ---
- drivers/char/ipmi/ipmi_si_intf.c |    2 +-
+ mm/page_alloc.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
-index 78e1b96..4edfdda 100644
---- a/drivers/char/ipmi/ipmi_si_intf.c
-+++ b/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2857,7 +2857,7 @@ static int try_smi_init(struct smi_info *new_smi)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 05ace44..b324bc2 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3361,7 +3361,7 @@ void *__init alloc_large_system_hash(const char *tablename,
+ 	if (!table)
+ 		panic("Failed to allocate %s hash table\n", tablename);
  
- 	mutex_unlock(&smi_infos_lock);
- 
--	printk(" IPMI %s interface initialized\n",si_to_str[new_smi->si_type]);
-+	printk(KERN_INFO "IPMI %s interface initialized\n",si_to_str[new_smi->si_type]);
- 
- 	return 0;
- 
+-	printk("%s hash table entries: %d (order: %d, %lu bytes)\n",
++	printk(KERN_INFO "%s hash table entries: %d (order: %d, %lu bytes)\n",
+ 	       tablename,
+ 	       (1U << log2qty),
+ 	       ilog2(size) - PAGE_SHIFT,
 -- 
 1.4.4.3
 
