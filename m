@@ -1,105 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbXGDO5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbXGDO6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761431AbXGDO5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbXGDO5P
+	id S1762115AbXGDO6i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbXGDO6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:57:15 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4213 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753816AbXGDO5P (ORCPT
+	Wed, 4 Jul 2007 10:58:32 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:37490 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbXGDO6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:57:15 -0400
-Date: Wed, 4 Jul 2007 10:57:14 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Paul Mackerras <paulus@samba.org>
-cc: Johannes Berg <johannes@sipsolutions.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
- RAM pathway
-In-Reply-To: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
+	Wed, 4 Jul 2007 10:58:31 -0400
+Date: Wed, 4 Jul 2007 15:58:18 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Message-ID: <20070704145818.GA7784@srcf.ucam.org>
+References: <20070703224215.GA30081@srcf.ucam.org> <Pine.LNX.4.44L0.0707041030540.25704-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0707041030540.25704-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Paul Mackerras wrote:
+On Wed, Jul 04, 2007 at 10:38:47AM -0400, Alan Stern wrote:
 
-> Alan Stern writes:
-> 
-> > I disagree.  The problem isn't the kernel calling userspace; it's
-> > userspace trying to do I/O at a time when everything is supposed to be
-> > quiescing.  Detecting that and blocking it in drivers is hard and
-> > error-prone; preventing it by freezing userspace is easy and cheap.
-> 
-> And unreliable, and prone to deadlocks, and invasive - requiring
-> changes to kernel threads that have nothing to do with drivers or
-> suspend/resume.
+> Okay, I agree that (1) can be handled without too much effort.  But 
+> doing it adds an extra test to _every_ driver's I/O pathway.  Freezing 
+> userspace does not incur all this additional overhead.
 
-Let's agree the kernel threads and the freezer are a separate issue.  
-In the most recent kernels, the freezer does not suspend kernel threads 
-by default.
+For runtime PM to work it's already necessary to have a test in that 
+path to check if the device is suspended. I can't see how this adds any 
+overhead to the common case.
 
-I agree the kernel threads which try to do I/O during a suspend will 
-need extra attention.  However if these threads are necessary for the 
-suspend procedure, then blocking them (which is how people on this 
-thread have been saying driver should treat I/O requests during a 
-suspend) will cause additional problems.  There's no way around it; 
-these threads _will_ require more work.
-
-> > The reasons why the PPC people dislike the whole idea aren't clear to
-> > me. 
-> 
-> Our experience is that it isn't necessary.  It's extra code that in
-> practice causes deadlocks and added maintenance burden for no
-> discernable benefit.
-
-I have discussed the benefits elsewhere.  As for the deadlocks -- do 
-you still observe them if you use the version of the freezer which 
-doesn't freeze kernel threads?
-
-> The freezer doesn't achieve its stated goal of preventing drivers from
-> getting I/O requests after suspend, since kernel threads can (and do)
-> initiate I/O.  So then we say that some kernel threads need to be
-> frozen and others don't, but making that decision is difficult and
-> error-prone.
-
-No -- we say that the kernel threads which generate I/O requests during 
-suspend need to be changed.
-
-> In fact I believe that making a distinction between user and kernel
-> threads is wrong and likely to lead to problems, since userspace can
-> be involved in doing I/O (e.g. FUSE or the user-space driver
-> framework).  So the argument of the previous paragraph also applies to
-> some userspace processes.
-
-Userspace cannot do I/O directly on its own, apart from some
-exceptional situations where a privileged task directly twiddles some
-I/O ports or the equivalent.
-
-There remains the problem of user tasks whose assistance is required to 
-carry out some I/O (as with FUSE).  If the I/O can be deferred until 
-after the resume, then there's no problem.  If the I/O can be carried 
-out before the suspend, then it should be.  And finally, if the I/O 
-must be done during the suspend, you're in real trouble -- how do you 
-do I/O to a suspended device?
-
-> I remain convinced that the right approach is to fix the drivers to do
-> one of two things; either do something in the suspend call to block
-> further requests to the device, or use a late-suspend call to put
-> their device into a low-power state.  Of course, correctly-written
-> frameworks can do a lot to help the chipset drivers here.
-
-The first alternative is a possibility.  My argument all along has been 
-that it is difficult and error-prone, and it adds more overhead to 
-system operation (even when not suspending!) than simply freezing 
-userspace.
-
-Alan Stern
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
