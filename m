@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbXGDIjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbXGDIjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758713AbXGDIjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 04:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbXGDIjL
+	id S1759764AbXGDIjj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 04:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbXGDIjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 04:39:11 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54260 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756359AbXGDIjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 04:39:10 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: 7091@blargh.com
-Subject: Re: sata_sil, writing bug with multiple cards?
-Date: Wed, 4 Jul 2007 10:38:57 +0200
-User-Agent: KMail/1.9.6
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org, jgarzik@pobox.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <courier.4689EFD9.0000589A@blargh.com> <200707040908.21512.ak@suse.de> <courier.468B579E.00002ECF@blargh.com>
-In-Reply-To: <courier.468B579E.00002ECF@blargh.com>
+	Wed, 4 Jul 2007 04:39:31 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:40285 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757299AbXGDIja convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 04:39:30 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Wed, 4 Jul 2007 10:39:29 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707041011.33279.oliver@neukum.org> <18059.23015.860618.268754@cargo.ozlabs.ibm.com>
+In-Reply-To: <18059.23015.860618.268754@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200707041038.57677.ak@suse.de>
+Message-Id: <200707041039.30015.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 July 2007 10:17:34 7091@blargh.com wrote:
-
-> > Most likely it is some sort of hardware bug that we might
-> > not be able to do much about. Have you tried contacting SIL or VIA? 
+Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
+> Oliver Neukum writes:
 > 
-> No, I haven't.  Like I mentioned above, the OpenBSD drivers seemed to work, 
-> or at least did with similar tests.  I would need to run the more extensive 
-> checks to be positive, but those take a lot of time, obviously.  And 
-> downtime for the box, a lot of which isn't really manageable, at the moment. 
-
-Perhaps the OpenBSD drivers program the SIL chip in a different way
-that avoids this problem. 
-
+> > > Indeed, and the USB framework has code to know when the host
+> > > controller is suspended and avoid trying to send out urbs in that
+> > > case.  Or at least it did last time I looked at it in any detail; it's
+> > > been "just working" - including suspending and resuming, without the
+> > > freezer - for quite a while now.
+> > 
+> > And what happens to that IO? I suspended and lost data is not an
+> > acceptable behavior.
 > 
-> > e.g. if you have some other system with a different chipset it might
-> > be useful to test the SIL controllers in those.
-> 
-> The previous motherboard was an AMD 760 chipset, and it had the same 
-> problem. 
+> It's not lost, it's sitting in RAM, and will be sent out when you
+> resume.
 
-Ok this means it's likely a SIL issue, not a chipset issue.
+Unfortunately this is not the case. The URB will error out.
 
--Andi
+	Oliver
+
