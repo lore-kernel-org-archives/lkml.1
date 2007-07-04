@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbXGDXBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758876AbXGDXBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758449AbXGDXBJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 19:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbXGDXA4
+	id S1758876AbXGDXBZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 19:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXGDXBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 19:00:56 -0400
-Received: from web36614.mail.mud.yahoo.com ([209.191.85.31]:35480 "HELO
-	web36614.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754949AbXGDXAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 19:00:55 -0400
-X-YMail-OSG: bX.Ar9oVM1nLK.yvJVV_cnTGmRUB4pSWb5owJiFpzrC4GV7Y1CDuDfPxa1LUOImLLX4pMrOF2g--
-X-RocketYMMF: rancidfat
-Date: Wed, 4 Jul 2007 16:00:54 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: implement-file-posix-capabilities.patch
-To: Andrew Morgan <morgan@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <468C1157.70905@kernel.org>
+	Wed, 4 Jul 2007 19:01:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34041 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758510AbXGDXBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 19:01:13 -0400
+Date: Thu, 5 Jul 2007 01:01:09 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: nigel@suspend2.net
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
+Message-ID: <20070704230109.GA1770@elf.ucw.cz>
+References: <200706192118.23706.nigel@nigel.suspend2.net> <200707050834.17747.nigel@nigel.suspend2.net> <20070704224859.GC2491@elf.ucw.cz> <200707050856.25570.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <989837.80686.qm@web36614.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707050856.25570.nigel@nigel.suspend2.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
---- Andrew Morgan <morgan@kernel.org> wrote:
+> > > > @@ -80,9 +82,11 @@ static int __init acpi_sleep_setup(char 
+> > > >  
+> > > >  __setup("acpi_sleep=", acpi_sleep_setup);
+> > > >  
+> > > > +/* Ouch, we want to delete this. We already have better version in 
+> > > userspace, in 
+> > > > +   s2ram from suspend.sf.net project */
+> > > 
+> > > Do we? This version has advantages in not requiring any userspace app and 
+> in 
+> > > being able to work even if you can't yet get as far as having
+> > 
+> > Take a look at the file. It has whitelist with just one entry, too
+> > bad.
+> 
+> The contents of the whitelist are irrelevant. My laptop needs this 
+> functionality, but I haven't bothered to send you a whitelist entry, in part 
+> because I don't use s2ram.
+> 
+> Regardless of that, if you had read the whole comment (you've deleted half of 
+> it), you would have noticed that I ended up changing my mind and instead 
+> saying "Why not just delete the __setup now, or at least put it in the 
+> deprecated file?"
 
-> no one has yet actually
-> given an example of where fE being richer than a simple binary helps
-> anything. Until I see an example, I'm going to hold the position that
-> this is needless "complexity".
+That should be  certainly done in separate patch, right? It is on my
+todolist somewhere now.
 
-The only counter to this argument is that you now have a different
-structure on files than on processes. Not a major issue, but one 
-structure to describe capability sets is less complex than two.
-That way you can have one function to print a capset, regardless
-of its coming off a file or a process.
+> > > > @@ -124,7 +124,7 @@ real_save_cr3:	.long 0
+> > > >  real_save_cr4:	.long 0
+> > > >  real_magic:	.long 0
+> > > >  video_mode:	.long 0
+> > > > -video_flags:	.long 0
+> > > > +realmode_flags:	.long 0
+> > > >  beep_flags:	.long 0
+> > > >  real_efer_save_restore:	.long 0
+> > > >  real_save_efer_edx: 	.long 0
+> > > 
+> > > Beep_flags should be removed too if you're sticking with /proc.
+> > 
+> > Fixed.
+> 
+> Ta.  But you didn't answer the question - why /proc and not sysfs?
 
-Just a thought.
+Do you seriously advocate setting two bits of one variable from /proc,
+and one more bit from /sys?
+									Pavel
 
-
-Casey Schaufler
-casey@schaufler-ca.com
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
