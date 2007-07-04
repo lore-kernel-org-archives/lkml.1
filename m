@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbXGDQfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbXGDQo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbXGDQfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 12:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXGDQff
+	id S1756652AbXGDQo1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 12:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbXGDQoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 12:35:35 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:62196 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbXGDQfe (ORCPT
+	Wed, 4 Jul 2007 12:44:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:31897 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753497AbXGDQoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 12:35:34 -0400
+	Wed, 4 Jul 2007 12:44:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
-        b=NYhFRSNeXiqBBk+/s9aJV/Swzbn1IsWHTqwd3nN1uxY3Nc5kbynMwIaea1felxiF/C+CZopdYAmllaNJRXJ5QH2AhNRC35z0pEL2/k4mcrCtgBDBq4bTLHut16LgiLv+VMkunMz02rnQWnTOhf1C8Ylv/EKT+o6s5gcIH6FyPmg=
-Date: Thu, 5 Jul 2007 00:37:41 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: rolandd@cisco.com, mshefty@ichips.intel.com, halr@voltaire.com
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [-mm Patch] INFINIBAND: check the return value of kmalloc
-Message-ID: <20070704163741.GA2510@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=JT4Z29HNcSaBxk0nfy9YyVe51O946RCvOHuszvHD7xf41lFwbYO76YU5IihjZ3ITZ9mfbTT8FXsNX5w/Y35tW5p0vk+/sK4rQC8ezY5STDzRggfC35OjWQQ749lv4iaJII27nqOe5CGvoo3oUsDnolP15LoRg/QwvPV0f/LdCEI=
+Message-ID: <468BCE5C.6000707@googlemail.com>
+Date: Wed, 04 Jul 2007 18:44:12 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com
+Subject: [SCSI] SD driver question
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-Don't forget to check the return value of kmalloc().
+Is there any reason why sd is printing the driver informations for each 
+disk twice in dmesg ?
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+...
 
----
+sd 0:0:0:0: [sda] 35843670 512-byte hardware sectors (18352 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 9f 00 10 08
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports 
+DPO and FUA
+sd 0:0:0:0: [sda] 35843670 512-byte hardware sectors (18352 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 9f 00 10 08
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports 
+DPO and FUA
+sda: sda1
+sd 0:0:0:0: [sda] Attached SCSI disk
+sd 0:0:0:0: Attached scsi generic sg0 type 0
 
-Index: linux-2.6.22-rc6-mm1/drivers/infiniband/hw/cxgb3/iwch_provider.c
-===================================================================
---- a/drivers/infiniband/hw/cxgb3/iwch_provider.c	2007-06-29 13:18:20.000000000 +0800
-+++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c	2007-07-04 23:17:02.000000000 +0800
-@@ -1166,6 +1166,10 @@
- 	dev->ibdev.iwcm =
- 	    (struct iw_cm_verbs *) kmalloc(sizeof(struct iw_cm_verbs),
- 					   GFP_KERNEL);
-+	if (!dev->ibdev.iwcm) {
-+		ret = -1;
-+		goto bail1;
-+	}
- 	dev->ibdev.iwcm->connect = iwch_connect;
- 	dev->ibdev.iwcm->accept = iwch_accept_cr;
- 	dev->ibdev.iwcm->reject = iwch_reject_cr;
+etc
+...
+
+
+Is a bit annoying and floodish ;) on boxes with a lot SCSI , *ATA disks.
+
+
+Regards,
+
+Gabriel C
+
+
