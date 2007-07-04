@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761942AbXGDOX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762077AbXGDOYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761942AbXGDOX5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759845AbXGDOXu
+	id S1762077AbXGDOYq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760505AbXGDOYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:23:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49427 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758184AbXGDOXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:23:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 16:30:29 +0200
-User-Agent: KMail/1.9.5
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
-References: <20070703042916.GA17240@srcf.ucam.org> <200707041310.11336.rjw@sisk.pl> <18059.33636.66185.902453@cargo.ozlabs.ibm.com>
-In-Reply-To: <18059.33636.66185.902453@cargo.ozlabs.ibm.com>
+	Wed, 4 Jul 2007 10:24:38 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56275 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758497AbXGDOYh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 10:24:37 -0400
+Message-ID: <468BADA6.9050609@bull.net>
+Date: Wed, 04 Jul 2007 16:24:38 +0200
+From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
+X-Accept-Language: en-us, en, fr, hu
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 04/07/2007 16:28:48,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 04/07/2007 16:28:49,
+	Serialize complete at 04/07/2007 16:28:49
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707041630.30048.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 4 July 2007 13:24, Paul Mackerras wrote:
-> Rafael J. Wysocki writes:
-> 
-> > BTW, does your platform's suspend work on SMP systems?
-> 
-> Yes; currently we require userspace to offline all cpus other than the
-> boot cpu before initiating the suspend.
+Could you please confirm that I understand correctly what is in the:
 
-This is incompatible with the code in kernel/power/main.c, since we only
-disable the nonboot CPUs after devices have been suspended.  Do you think that
-your framework can be modified to work without disabling the nonboot CPUs
-by the user space?
+Dual-Core Update to the Intel Itanium 2 Processor Reference Manual...
 
-> The main difficulty is actually that SMP powermacs that can suspend
-> tend to have video cards that get powered off in suspend.  We know how
-> to re-initialize one (the Radeon RV100 QW) but not others.  That's an
-> orthogonal issue to the issues we have been discussing, though.
+"2.3.3.2 L2 Caches
+...
+Any coherence request to identify whether a cache line is in the processor
+will invalidate that line from the L2I cache."
 
-Sure.
+This makes sure that the DMAs invalidate the L2L cache.
 
-Greetings,
-Rafael
+"2.7.4 Instruction Cache Coherence Optimization
+Coherence requests of the L1I and L2I caches will invalidate the line if
+it is in the cache. Montecito allows instruction requests on the system
+interface to be filtered such that they will not initiate coherence
+requests of the L1I and L2I caches. This will allow instructions to be
+cached at the L1I and L2I levels across multiple processors in a coherent
+domain. This optimization is enabled by default, but may be disabled by
+PAL_SET_PROC_FEATURES bit 5 of the Montecito feature_set (18)."
+
+Machines star up whit bit 5 = 0, reading instruction pages via
+NFS has to flush them from L2I.
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+I was wondering if instead of modifying do_no_page() and Co., should
+not we make nfs_readpage() be DMA-like?
+(No possible regression for most of the page I/O-s.)
+I.e. it should be the responsibility of a file system to make sure it
+supports instruction pages correctly. The base kernel should provide
+such file systems with an architecture dependent macro...
+
+Thanks,
+
+Zoltan Menyhart
