@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbXGDHh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbXGDID3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759420AbXGDHh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 03:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbXGDHhO
+	id S1757499AbXGDID3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 04:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbXGDIDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 03:37:14 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33338 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754817AbXGDHhL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 03:37:11 -0400
-Date: Wed, 4 Jul 2007 16:38:26 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "tony.luck@intel.com" <tony.luck@intel.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Christoph Lameter <clameter@sgi.com>, Mike.stroya@hp.com,
-       GOTO <y-goto@jp.fujitsu.com>, dmosberger@gmail.com, hugh@veritas.com
-Subject: Re: [BUGFIX][PATCH] DO flush icache before set_pte() on ia64.
-Message-Id: <20070704163826.d0b7465b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <468B3EAA.9070905@yahoo.com.au>
-References: <20070704150504.423f6c54.kamezawa.hiroyu@jp.fujitsu.com>
-	<468B3EAA.9070905@yahoo.com.au>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Jul 2007 04:03:10 -0400
+Received: from ozlabs.org ([203.10.76.45]:45449 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754570AbXGDIDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 04:03:08 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18059.21555.317415.928416@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 18:02:59 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: oliver@neukum.org, benh@kernel.crashing.org, mjg59@srcf.ucam.org,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+In-Reply-To: <E1I5ysv-0005xf-00@dorka.pomaz.szeredi.hu>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707031307.41366.oliver@neukum.org>
+	<1183463053.10386.112.camel@localhost.localdomain>
+	<200707031355.51028.oliver@neukum.org>
+	<18058.56956.595143.15424@cargo.ozlabs.ibm.com>
+	<E1I5ysv-0005xf-00@dorka.pomaz.szeredi.hu>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Jul 2007 16:31:06 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> The only thing I noticed when I looked at the code is that some places
-> may not have flushed icache when they should have? Did you get them all?
+Miklos Szeredi writes:
 
-I think that I added flush_icache_page() to the place where any flush_(i)cache_xxx
-is not called and lazy_mmu_prot_update was used instead of them.
-But I want good review, of course.
+> That's weird, I never had a suspend problem due to a fuse mount,
+> though I have them all the time.  And I suspect, that even the sync()
 
-> Minor nitpick: you have one place where you test VM_EXEC before flushing,
-> but the flush routine itself contains the same test I think?
-> 
-Ah, yes...in do_anonymous_page(). my mistake.
+Well, I don't either, because we don't freeze processes on
+powerbooks.  But I have heard that other people have problems with
+suspending with a fuse filesystem mounted.  Maybe the difference is
+whether or not the filesystem is writable?
 
-> Regarding the ia64 code -- I'm not an expert so I can't say whether it
-> is the right thing to do or not. However I still can't work out what it's
-> rationale for the PG_arch_1 bit is, exactly. Does it assume that
-> flush_dcache_page sites would only ever be encountered by pages that are
-> not faulted in? A faulted in page kind of is "special" because it is
-> guaranteed uptodate, but is the ia64 arch code relying on that? Should it?
+> thing that suspend does is not the real cause, because sync() actually
+> does nothing in fuse filesystems.
 
-(I'm sorry if I misses point.)
-ia64's D-cache is coherent but I-cache and D-cache is not coherent and any
-invalidation against d-cache will invalidate I-cache.
+It's not the filesystem sync method, as I understand it, it's that if
+there are dirty pages in the page cache for files on the fuse
+filesystem, the system will initiate a write-out on them and wait for
+it to finish.  But if the fuse userspace is frozen, the write-out will
+never complete.
 
-In my understanding :
-PG_arch_1 is used for showing "there is no inconsistent data on any level of
-cache". PG_uptodate is used for showing "this page includes the newest data
-and contents are valid."
-...maybe not used for the same purpose.
-
-BTW, a page filled by DMA should have PG_arch_1 :(
-
--Kame
-
+Paul.
