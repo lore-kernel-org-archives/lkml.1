@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbXGDBEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbXGDBEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758873AbXGDBEX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 21:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbXGDBEP
+	id S1760049AbXGDBEw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 21:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbXGDBEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 21:04:15 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:45614 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754415AbXGDBEO (ORCPT
+	Tue, 3 Jul 2007 21:04:44 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49838 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755276AbXGDBEn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 21:04:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LROYGMk+6ieAgsjBGpa1DZX0kt1GdAsGQbsg7Map9PDp8aL6K7bwPJsFj85DfkYF/bwfp9pgp4kjDxHE2BgMma19R2ukoXZ3rodVSLvuVnQSK/QCTY6Dv3q7RMotjOTxpdBuYQXtcAabSEeVe0vX6kR+ha7Yh8yHYKhBwKMqWPQ=
-Message-ID: <9a8748490707031804v51ca1c79kdf55150c47b01b3d@mail.gmail.com>
-Date: Wed, 4 Jul 2007 03:04:13 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH][isapnp] Fix a potential NULL pointer dereference in isapnp_read_tag()
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jaroslav Kysela" <perex@suse.cz>
-In-Reply-To: <20070703130318.9dbec3ac.akpm@linux-foundation.org>
+	Tue, 3 Jul 2007 21:04:43 -0400
+Date: Wed, 4 Jul 2007 03:05:10 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove mm/backing-dev.c:congestion_wait_interruptible()
+Message-ID: <20070704010509.GG3492@stusta.de>
+References: <20070701202051.GG10869@stusta.de> <20070703144843.4d402c32.akpm@linux-foundation.org> <1183502136.6494.74.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <200707010138.32075.jesper.juhl@gmail.com>
-	 <20070703130318.9dbec3ac.akpm@linux-foundation.org>
+In-Reply-To: <1183502136.6494.74.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sun, 1 Jul 2007 01:38:31 +0200
-> Jesper Juhl <jesper.juhl@gmail.com> wrote:
->
-> > The Coverity checker spotted (as bug #809) that we dereference 'type'
-> > long before we actually test it against NULL in
-> > drivers/pnp/isapnp/core.c::isapnp_read_tag() - both branches of the
-> > 'if (tag & 0x80)' dereference type, and since this 'if' is before the test
-> > against NULL and the return of -1, this will blow up is ever type is NULL.
-> > This is easy to fix by simply moving the NULL test to the beginning of
-> > the function.
-> >
-[snip]
->
-> dood, look at the callers.  NULL is not possible here.
->
-You are right, there's absolutely no way that we could get a NULL
-pointer there - that was sloppy of me :-(
+On Tue, Jul 03, 2007 at 06:35:36PM -0400, Trond Myklebust wrote:
+> On Tue, 2007-07-03 at 14:48 -0700, Andrew Morton wrote:
+> > On Sun, 1 Jul 2007 22:20:51 +0200
+> > Adrian Bunk <bunk@stusta.de> wrote:
+> > 
+> > > congestion_wait_interruptible() is no longer used.
+> > 
+> > We might as well just delete it?
+> 
+> I agree. We're better off deleting it, but either would be fine by me.
 
-I guess we should just get rid of the check completely.  I'll cook up
-a patch for that tomorrow.
+Updated patch below.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+> Trond
+
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+congestion_wait_interruptible() is no longer used.
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Acked-by: Trond Myklebust <trond.myklebust@fys.uio.no>
+
+---
+
+ include/linux/backing-dev.h |    1 -
+ mm/backing-dev.c            |   16 ----------------
+ 2 files changed, 17 deletions(-)
+
+--- linux-2.6.22-rc4-mm2/include/linux/backing-dev.h.old	2007-06-12 01:21:52.000000000 +0200
++++ linux-2.6.22-rc4-mm2/include/linux/backing-dev.h	2007-06-12 01:22:00.000000000 +0200
+@@ -93,7 +93,6 @@
+ void clear_bdi_congested(struct backing_dev_info *bdi, int rw);
+ void set_bdi_congested(struct backing_dev_info *bdi, int rw);
+ long congestion_wait(int rw, long timeout);
+-long congestion_wait_interruptible(int rw, long timeout);
+ void congestion_end(int rw);
+ 
+ #define bdi_cap_writeback_dirty(bdi) \
+--- linux-2.6.22-rc6-mm1/mm/backing-dev.c.old	2007-07-04 00:44:10.000000000 +0200
++++ linux-2.6.22-rc6-mm1/mm/backing-dev.c	2007-07-04 00:44:24.000000000 +0200
+@@ -55,22 +55,6 @@
+ }
+ EXPORT_SYMBOL(congestion_wait);
+ 
+-long congestion_wait_interruptible(int rw, long timeout)
+-{
+-	long ret;
+-	DEFINE_WAIT(wait);
+-	wait_queue_head_t *wqh = &congestion_wqh[rw];
+-
+-	prepare_to_wait(wqh, &wait, TASK_INTERRUPTIBLE);
+-	if (signal_pending(current))
+-		ret = -ERESTARTSYS;
+-	else
+-		ret = io_schedule_timeout(timeout);
+-	finish_wait(wqh, &wait);
+-	return ret;
+-}
+-EXPORT_SYMBOL(congestion_wait_interruptible);
+-
+ /**
+  * congestion_end - wake up sleepers on a congested backing_dev_info
+  * @rw: READ or WRITE
+
