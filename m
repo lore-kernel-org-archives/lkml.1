@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759381AbXGDGdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbXGDGfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759381AbXGDGdo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 02:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbXGDGde
+	id S1758962AbXGDGfr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 02:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXGDGfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 02:33:34 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:41572 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751565AbXGDGdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 02:33:33 -0400
-Date: Wed, 4 Jul 2007 08:41:59 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S\. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Re: [NETPOLL] netconsole: fix soft lockup when removing module
-Message-ID: <20070704064159.GA2057@ff.dom.local>
-References: <20070701173558.GA207@tv-sign.ru> <20070702075226.GB1639@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070702075226.GB1639@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 4 Jul 2007 02:35:40 -0400
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:37106 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbXGDGfk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 02:35:40 -0400
+Date: Wed, 04 Jul 2007 02:35:39 -0400
+From: Darren <kernel@da4.org>
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+In-reply-to: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+To: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <468B3FBB.9050006@da4.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-2; format=flowed
+Content-transfer-encoding: 8BIT
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 09:52:26AM +0200, Jarek Poplawski wrote:
-> 
-> From my recent patch:
-> 
-> > >    #1
-> > >    Until kernel ver. 2.6.21 (including) cancel_rearming_delayed_work()
-> > >    required a work function should always (unconditionally) rearm with
-> > >    delay > 0 - otherwise it would endlessly loop. This patch replaces
-> > >    this function with cancel_delayed_work(). Later kernel versions don't
-> > >    require this, so here it's only for uniformity.
-> 
-> But Oleg Nesterov <oleg@tv-sign.ru> found:
-> 
-> > But 2.6.22 doesn't need this change, why it was merged?
-> > 
-> > In fact, I suspect this change adds a race,
-> ...
-> 
-> His description was right (thanks), so this patch reverts #1.
-> 
-> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+Tomasz K³oczko wrote:
+>
+> Few dayas ago OSS source code was oppened uder CDDL for Solaris and 
+> GLPv2 for Linux:
+>
+> http://www.opensound.com/press/2007/oss-gpl-cddl.txt
+>
+> So this source without problems code can be integragrated in Linus 
+> tree and after this Linux can provide much better soud supoport than 
+> with current ALSA.
+>
+> Any plans for doing this ?
+>
+> kloczek
 
-Oleg,
-
-I think maybe you could ack these 2 netconsole patches...
-They were done on your request but it looks like Andrew
-is waiting on something...
-
-Thanks,
-Jarek P.
+I know this may sound kind of stupid, but how about not deprecating 
+either, and fully supporting both sound systems? Maybe we can get them 
+to work together, and the distro or user can choose whether they would 
+like to use alsa or oss for that particular card (or have the distro 
+choose the sound drivers that are best supported for that particular 
+card). As it is now, most apps already support oss and alsa.
