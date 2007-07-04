@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbXGDVyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbXGDV5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbXGDVyE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 17:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXGDVxz
+	id S1760954AbXGDV5R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 17:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXGDV5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 17:53:55 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:12908 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755564AbXGDVxy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 17:53:54 -0400
-Date: Wed, 4 Jul 2007 14:53:53 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Rik van Riel <riel@redhat.com>, Ulrich Drepper <drepper@gmail.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/4] MAP_NOZERO v2 - VM_NOZERO/MAP_NOZERO early summer madness
-Message-ID: <20070704215353.GW9157@hexapodia.org>
-References: <D65DCB84-F812-4C3B-8E68-EACA0CA8A0C0@mac.com> <Pine.LNX.4.64.0706291711320.31176@alien.or.mcafeemobile.com> <8F40BE4A-BD38-4C3F-B77D-35661E84C553@mac.com> <Pine.LNX.4.64.0706301652050.2957@alien.or.mcafeemobile.com> <B04FEDC9-A315-4374-843E-DD81E52C5772@mac.com> <20070702190043.GN9157@hexapodia.org> <46894BE6.1040302@redhat.com> <a36005b50707021206t417d69ddqcaa8d140e24fa3e3@mail.gmail.com> <Pine.LNX.4.64.0707021540560.14774@alien.or.mcafeemobile.com> <4689826C.5050800@redhat.com>
-Mime-Version: 1.0
+	Wed, 4 Jul 2007 17:57:09 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40517 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755636AbXGDV5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 17:57:08 -0400
+Date: Wed, 4 Jul 2007 23:57:01 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: Andi Kleen <ak@suse.de>, Indan Zupancic <indan@nul.nu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bwalle@suse.de
+Subject: Re: blink driver power saving
+Message-ID: <20070704215701.GA1896@elf.ucw.cz>
+References: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net> <200707021439.27357.ak@suse.de> <20070702230827.GA9071@elf.ucw.cz> <200707030142.36252.dtor@insightbb.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4689826C.5050800@redhat.com>
-User-Agent: Mutt/1.4.2.2i
-X-PGP-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-PGP-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+In-Reply-To: <200707030142.36252.dtor@insightbb.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 06:55:40PM -0400, Rik van Riel wrote:
-> You could easily replace the cookie with a pointer to a free
-> page pool.
+On Tue 2007-07-03 01:42:35, Dmitry Torokhov wrote:
+> On Monday 02 July 2007 19:08, Pavel Machek wrote:
+> > On Mon 2007-07-02 14:39:27, Andi Kleen wrote:
+> > > 
+> > > > > Perhaps one of you geniuses who all hate it can find a better way to
+> > > > > solve the "video output dead after kexec; but need visual feedback to the user
+> > > > > while crash dumping" problem. I'm waiting for your patches.
+> > > > >
+> > > > 
+> > > > I don't don't like it ;) Unfortunately too many people end up enabling
+> > > 
+> > > Yes that's pretty weird. I admit I hadn't expected
+> > > that problem. blink is equivalent to "annoy me" and it
+> > > is a mystery why so many people should willingly ask their computer to 
+> > > annoy them.
+> > 
+> > tristate "Keyboard blink driver"
+> > 
+> > ...drivers are not expected to act on their own. I was expecting to
+> > get nice /sys/class/led* interface to my keyboard leds.
+> > 
+> > BTW ... I still believe we should have /sys/class/led* interface to
+> > those leds. I'd like to make them blink with hdd activity on some
+> > machines... of course, that needs non-buggy KBC.
+> 
+> I'll take patches. Ofcourse we'll have to keep the current EV_LED interface
+> for compatibility.
 
-It just occurred to me that something like this is *required* to get the
-performance benefit from MAP_NOZERO on a busy system.  With Davide's
-current proposal, if there are N jobs with different "nozero cookies"
-busy allocating and deallocating pages on a single-NUMA-node system,
-then there's only a 1/N chance that the page returned by __alloc_pages
-will have the correct cookie, so (N-1)/N percent of the time MAP_NOZERO
-will have no positive effect -- 90% of the time for the case of N=10.
+Update.. both your and mine code seem to do something here -- but they
+only keep turning the led off. If I press numlock to turn it on, they
+will turn it off. Strange.
+								Pavel
 
-(Of course on NUMA systems node affinity will probably make the
-situation a bit better.)
-
-So I'm afraid that it sounds like additional complexity would be
-required so that __alloc_pages could track and preferentially return
-pages with the correct "nozero cookie".
-
-
-In a mostly unrelated complaint, I note that having a function named
-"alloc_zeroed_page_vma" which returns a potentially nonzero page is, um,
-unintuitive.  It needs a name which does not claim it returns zeroed
-pages.  I'm no good at names, but perhaps "alloc_available_page_vma"?
-
--andy
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
