@@ -1,104 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761749AbXGDLSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbXGDLYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761749AbXGDLSp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbXGDLSh
+	id S1760922AbXGDLYu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbXGDLYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:18:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48782 "EHLO ogre.sisk.pl"
+	Wed, 4 Jul 2007 07:24:43 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:41268 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756338AbXGDLSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:18:36 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 13:25:55 +0200
-User-Agent: KMail/1.9.5
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20070703211227.GA28758@srcf.ucam.org> <200707041242.59552.rjw@sisk.pl> <18059.32111.58643.97174@cargo.ozlabs.ibm.com>
-In-Reply-To: <18059.32111.58643.97174@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707041325.55779.rjw@sisk.pl>
+	id S1755964AbXGDLYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 07:24:42 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Joel Becker <joel.becker@oracle.com>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       David Teigland <david.teigland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Date: Wed, 04 Jul 2007 16:37:16 +0530
+Message-Id: <20070704110716.28503.52627.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070704110701.28503.95359.sendpatchset@cselinux1.cse.iitk.ac.in>
+References: <20070704110701.28503.95359.sendpatchset@cselinux1.cse.iitk.ac.in>
+Subject: [PATCH -mm 3/3] configfs+dlm: Rename config_group_find_obj and state semantics clearly
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 4 July 2007 12:58, Paul Mackerras wrote:
-> Rafael J. Wysocki writes:
-> 
-> > Okay, so in fact you don't know.
-> 
-> Don't know what exactly?
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-How many drivers will be adversely affected by the $subject change.
+[3/3] configfs+dlm: Rename config_group_find_obj and state semantics clearly
 
-> It has been a while since I had my head in the USB code.  I assume
-> it's being maintained by competent people. :)
+[ Ok, this might sound like a gratuitous patch, but I believe there are
+good reasons for it. ]
 
-I'm not talking about USB.
+Configfs being based upon sysfs code, config_group_find_obj() is probably
+so named because of the similar kset_find_obj() in sysfs. However,
+"kobject"s in sysfs become "config_item"s in configfs, so let's call it
+config_group_find_item() instead, for sake of uniformity, and make
+corresponding change in the users of this function.
+
+BTW a crucial difference between kset_find_obj and config_group_find_item
+is in locking expectations. kset_find_obj does its locking by itself, but
+config_group_find_item expects the *caller* to do the locking. The reason
+for this: kset's have their own locks, config_group's don't but instead
+rely on the subsystem mutex. And, subsystem needn't necessarily be around
+when config_group_find_item() is called.
+
+So let's state these locking semantics explicitly, and rectify the comment,
+otherwise bugs could continue to occur in future, as they did in the past
+(refer commit d82b8191e238 in gfs2-2.6-fixes.git).
+
+[ I also took the opportunity to fix some bad whitespace and
+double-empty lines. ]
+
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Joel Becker <joel.becker@oracle.com>
+Cc: David Teigland <teigland@redhat.com>
+
+---
+
+ fs/configfs/item.c       |   18 ++++++++----------
+ fs/dlm/config.c          |    2 +-
+ include/linux/configfs.h |    8 ++------
+ 3 files changed, 11 insertions(+), 17 deletions(-)
+
+---
+
+diff -ruNp a/fs/configfs/item.c b/fs/configfs/item.c
+--- a/fs/configfs/item.c	2007-06-28 17:32:57.000000000 +0530
++++ b/fs/configfs/item.c	2007-07-03 19:42:00.000000000 +0530
+@@ -183,27 +183,25 @@ void config_group_init(struct config_gro
+ 	INIT_LIST_HEAD(&group->cg_children);
+ }
  
-> > And that's my point in this thread.
-> 
-> Well, I'd be interested in hearing from Matthew whether he has
-> actually been using his patch in Ubuntu, and if so, what bug reports
-> he has been receiving related to it?
-
-Me too.
-
-> > I won't fight for the freezer for what it's worth, but let's do things in the
-> > _right_ _order_.  For example, let's make sure that by making the $subject
-> > change we won't introduce (too many) regressions and fix the frameworks
-> > that don't get it right.
-> > 
-> > Using the problems with FUSE as an argument for making this change immediately
-> > doesn't seem to be right to me.
-> 
-> I can see your point, but I won't be moving powermac over to use the
-> generic suspend path until the freezer is gone, since I am pretty
-> confident that the drivers we care about behave sensibly, and I have
-> seen a lot of traffic on linux-pm and lkml about problems caused by
-> the freezer.
-
-They are mostly related to kernel threads, that we've already agreed no to
-freeze (except for the ones that want that, but they will be responsible for
-getting everything right).  The initial patches for that are in -mm and more
-will come.
-
-> Also, no-one has yet answered my fundamental objection to the freezer,
-> which is that the very kernel threads we would want to freeze are
-> often the same ones that we must not freeze, namely the threads that
-> issue I/O requests in order to satisfy incoming I/O requests.
-
-See above.  We're moving away from freezing kernel threads.
-
-> If there was an automatic way to construct the graph of dependencies
-> (including data flows) between tasks, and derive an ordering for
-> freezing that guarantees that all I/Os will get completed without
-> deadlocks, then I could accept the freezer.  But we don't have
-> anything like that.
-
-No we don't.
-
-Still, my position is this:
-
-1) The freezer (in the modified form, with the freezing of kernel threads
-limited to the ones that want to be frozen) is needed for hibernation.
-
-2) The freezer is generally not needed for suspend, _but_ there are drivers
-in the tree that rely on it being used.  Thus, at some point in time we can
-remove the freezer from the suspend code path, _but_ no sooner than we are
-sure that the majority of drivers is prepared for that.
-
-3) In the meantime, if there are freezer-related problems, they should be
-fixed rather than used as arguments for immediate removal of it, because of 2).
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+-
+ /**
+- *	config_group_find_obj - search for item in group.
++ *	config_group_find_item - search for item in group.
+  *	@group:	group we're looking in.
+  *	@name:	item's name.
+  *
+- *	Lock group via @group->cg_subsys, and iterate over @group->cg_list,
+- *	looking for a matching config_item. If matching item is found
+- *	take a reference and return the item.
++ *	Iterate over @group->cg_list, looking for a matching config_item.
++ *	If matching item is found take a reference and return the item.
++ *	Caller must have locked group via @group->cg_subsys->su_mtx.
+  */
+-struct config_item *config_group_find_obj(struct config_group *group,
+-					  const char * name)
++struct config_item *config_group_find_item(struct config_group *group,
++					   const char *name)
+ {
+ 	struct list_head * entry;
+ 	struct config_item * ret = NULL;
+ 
+-        /* XXX LOCKING! */
+ 	list_for_each(entry,&group->cg_children) {
+ 		struct config_item * item = to_item(entry);
+ 		if (config_item_name(item) &&
+-                    !strcmp(config_item_name(item), name)) {
++		    !strcmp(config_item_name(item), name)) {
+ 			ret = config_item_get(item);
+ 			break;
+ 		}
+@@ -215,4 +213,4 @@ EXPORT_SYMBOL(config_item_init);
+ EXPORT_SYMBOL(config_group_init);
+ EXPORT_SYMBOL(config_item_get);
+ EXPORT_SYMBOL(config_item_put);
+-EXPORT_SYMBOL(config_group_find_obj);
++EXPORT_SYMBOL(config_group_find_item);
+diff -ruNp a/fs/dlm/config.c b/fs/dlm/config.c
+--- a/fs/dlm/config.c	2007-07-03 18:52:25.000000000 +0530
++++ b/fs/dlm/config.c	2007-07-03 19:43:57.000000000 +0530
+@@ -752,7 +752,7 @@ static struct space *get_space(char *nam
+ 		return NULL;
+ 
+ 	mutex_lock(&space_list->cg_subsys->su_mtx);
+-	i = config_group_find_obj(space_list, name);
++	i = config_group_find_item(space_list, name);
+ 	mutex_unlock(&space_list->cg_subsys->su_mtx);
+ 
+ 	return to_space(i);
+diff -ruNp a/include/linux/configfs.h b/include/linux/configfs.h
+--- a/include/linux/configfs.h	2007-07-03 18:52:25.000000000 +0530
++++ b/include/linux/configfs.h	2007-07-03 19:46:56.000000000 +0530
+@@ -85,12 +85,10 @@ struct config_item_type {
+ 	struct configfs_attribute		**ct_attrs;
+ };
+ 
+-
+ /**
+  *	group - a group of config_items of a specific type, belonging
+  *	to a specific subsystem.
+  */
+-
+ struct config_group {
+ 	struct config_item		cg_item;
+ 	struct list_head		cg_children;
+@@ -98,13 +96,11 @@ struct config_group {
+ 	struct config_group		**default_groups;
+ };
+ 
+-
+ extern void config_group_init(struct config_group *group);
+ extern void config_group_init_type_name(struct config_group *group,
+ 					const char *name,
+ 					struct config_item_type *type);
+ 
+-
+ static inline struct config_group *to_config_group(struct config_item *item)
+ {
+ 	return item ? container_of(item,struct config_group,cg_item) : NULL;
+@@ -120,8 +116,8 @@ static inline void config_group_put(stru
+ 	config_item_put(&group->cg_item);
+ }
+ 
+-extern struct config_item *config_group_find_obj(struct config_group *, const char *);
+-
++extern struct config_item *config_group_find_item(struct config_group *,
++						  const char *);
+ 
+ struct configfs_attribute {
+ 	const char		*ca_name;
