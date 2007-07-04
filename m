@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762062AbXGDOkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762123AbXGDOmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762062AbXGDOkr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759529AbXGDOkh
+	id S1762123AbXGDOmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760241AbXGDOmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:40:37 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:40267 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758850AbXGDOkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:40:36 -0400
-Subject: Re: Some NCQ numbers...
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <468AF5BB.10005@gmail.com>
-References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com>
-	 <468AB1A7.9010201@msgid.tls.msk.ru>  <468AF5BB.10005@gmail.com>
-Content-Type: text/plain
-Date: Wed, 04 Jul 2007 09:40:34 -0500
-Message-Id: <1183560034.3418.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jul 2007 10:42:14 -0400
+Received: from relay.heise.de ([193.99.145.50]:52655 "EHLO relay.heise.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759529AbXGDOmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 10:42:13 -0400
+X-Greylist: delayed 2301 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jul 2007 10:42:13 EDT
+Message-ID: <468BA8B0.8030606@ct.heise.de>
+Date: Wed, 04 Jul 2007 16:03:28 +0200
+From: Thorsten Leemhuis <thl@ct.heise.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Chr <chunkeey@web.de>
+CC: Thorsten Leemhuis <fedora@leemhuis.info>,
+       Chuck Ebbert <cebbert@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jason Gaston <jason.d.gaston@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2.6.22-rc6] ATA: add a PCI ID for Intel Santa Rosa PATA
+ controller
+References: <468408F1.3080307@redhat.com> <200707021324.17250.chunkeey@web.de> <4688E519.7040308@leemhuis.info> <200707021636.25192.chunkeey@web.de>
+In-Reply-To: <200707021636.25192.chunkeey@web.de>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-04 at 10:19 +0900, Tejun Heo wrote:
-> Michael Tokarev wrote:
-> > Well.  It looks like the results does not depend on the
-> > elevator.  Originally I tried with deadline, and just
-> > re-ran the test with noop (hence the long delay with
-> > the answer) - changing linux elevator changes almost
-> > nothing in the results - modulo some random "fluctuations".
+
+
+On 02.07.2007 16:36, Chr wrote:
+> On Monday, 2. July 2007, Thorsten Leemhuis wrote:
+>>> but Alan Cox wrote:
+>>> http://www.mail-archive.com/linux-ide%40vger.kernel.org/msg07417.html
+>>>> Its ich_pata_133 - all the newer chips are.
+>> Intel afaik never supported Ultra ATA 133 officially in any of the
+>> mainstream desktop or mobile chipsets.
+> You're probably right! But, what about Intel's ICH5 and ICH7/7-R (i945, i975)?
 > 
-> I see.  Thanks for testing.
-> 
-> > In any case, NCQ - at least in this drive - just does
-> > not work.  Linux with its I/O elevator may help to
-> > speed things up a bit, but the disk does nothing in
-> > this area.  NCQ doesn't slow things down either - it
-> > just does not work.
-> > 
-> > The same's for ST3250620NS "enterprise" drives.
-> > 
-> > By the way, Seagate announced Barracuda ES 2 series
-> > (in range 500..1200Gb if memory serves) - maybe with
-> > those, NCQ will work better?
-> 
-> No one would know without testing.
-> 
-> > Or maybe it's libata which does not implement NCQ
-> > "properly"?  (As I shown before, with almost all
-> > ol'good SCSI drives TCQ helps alot - up to 2x the
-> > difference and more - with multiple I/O threads)
-> 
-> Well, what the driver does is minimal.  It just passes through all the
-> commands to the harddrive.  After all, NCQ/TCQ gives the harddrive more
-> responsibility regarding request scheduling.
+> see ata_piix.c: line 193ff
+> 	{ 0x8086, 0x24DB, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_133 },
+> [...]
+> 	{ 0x8086, 0x27DF, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_133 },
 
-Actually, in many ways the result support a theory of SCSI TCQ Jens used
-when designing the block layer.  The original TCQ theory held that the
-drive could make much better head scheduling decisions than the
-Operating System, so you just used TCQ to pass all the outstanding I/O
-unfiltered down to the drive to let it schedule.  However, the I/O
-results always seemed to indicate that the effect of TCQ was negligible
-at around 4 outstanding commands, leading to the second theory that all
-TCQ was good for was saturating the transport, and making scheduling
-decisions was, indeed, better left to the OS (hence all our I/O
-schedulers).
+Maybe Alan or someone from Intel can answer that and thus tell us how to
+move forward; it would be really nice to get the patch that started this
+thread (it got posted by Chuck again today) could go into 2.6.22, but I
+assume the time runs away...
 
-The key difference between NCQ and TCQ is that NCQ allows a non
-interlock setup and completion, but there can't be overlapping (or
-interrupted) data transfers.  TCQ and Disconnect (for SPI although there
-are equivalents for most other transports) allow any style of overlap
-you can construct, so NCQ was really designed more to allow the drive to
-make the head scheduling decisions.
+> On the other hand, we can leave it, because of a "off-by-one error" in ata_piix.c, 
+> do_pata_set_dmamode, line ~770:
+> [...]
 
-Where SCSI TCQ seems to win is that most devices pull the incoming TCQ
-commands into a (usually quite large) pre-execute cache, which gives
-them streaming command execution (usually they're executing command n-2
-or 3 while accepting the data for command n), so they're using the cache
-actually to smooth out internal latencies.
+/me gets confused by that stuff and leaves the answer to that part to
+more knowledged people...
 
-One final question: have you tried SAS devices for comparison?  The
-figures that give TCQ a 2x performance boost were with SPI and FC ...
-I'm not aware that anyone has actually done a SAS test.
+CU
+thl
+-- 
+Thorsten Leemhuis
+ c't- Magazin für Computertechnik       web    http://www.heise.de/ct/
+ Heise Zeitschriften Verlag GmbH&Co.KG  phone  +49 (0)511 5352 666
+ Helstorfer Str. 7                      icq    140593172
+ D-30625 Hannover, Germany              jabber thl_at_work@jabber.ccc.de
 
-James
-
-
+/* Heise Zeitschriften Verlag GmbH & Co. KG, Registergericht:
+   Amtsgericht Hannover HRA 26709; Persönlich haftende Gesellschafterin:
+   Heise Zeitschriften Verlag Geschäftsführung GmbH, Registergericht:
+   Amtsgericht Hannover, HRB 60405 Geschäftsführer: Ansgar Heise,
+   Steven P. Steinkraus, Dr. Alfons Schräder                          */
