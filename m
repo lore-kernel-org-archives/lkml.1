@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbXGDLZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761703AbXGDLZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761280AbXGDLZg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758828AbXGDLZ2
+	id S1761703AbXGDLZs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759360AbXGDLZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:25:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:42664 "EHLO ozlabs.org"
+	Wed, 4 Jul 2007 07:25:29 -0400
+Received: from ozlabs.org ([203.10.76.45]:42670 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756338AbXGDLZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757740AbXGDLZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Jul 2007 07:25:27 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18059.33695.858520.478179@cargo.ozlabs.ibm.com>
-Date: Wed, 4 Jul 2007 21:25:19 +1000
+Message-ID: <18059.33636.66185.902453@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 21:24:20 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -31,15 +31,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Rafael J. Wysocki writes:
 
-> > > So, I gather, you're volunteering to handle suspend-related bug reports
-> > > from the point in which we drop the freezer from the suspend code path?
-> > 
-> > Ben and I are happy to handle all the ones for the platform we
-> > maintain, which currently does suspend without freezing processes. :)
-> 
-> I mean all platforms.  After all, the $subject change won't affect yours.
+> BTW, does your platform's suspend work on SMP systems?
 
-Well, I can't commit to handling all bug reports, but I am happy to
-help out where I can...
+Yes; currently we require userspace to offline all cpus other than the
+boot cpu before initiating the suspend.
+
+The main difficulty is actually that SMP powermacs that can suspend
+tend to have video cards that get powered off in suspend.  We know how
+to re-initialize one (the Radeon RV100 QW) but not others.  That's an
+orthogonal issue to the issues we have been discussing, though.
 
 Paul.
