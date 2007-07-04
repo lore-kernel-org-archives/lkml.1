@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbXGDIKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbXGDILq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbXGDIKg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 04:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbXGDIKS
+	id S1758916AbXGDILq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 04:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbXGDILc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 04:10:18 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:42190 "EHLO
+	Wed, 4 Jul 2007 04:11:32 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:42560 "EHLO
 	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755301AbXGDIKQ (ORCPT
+	with ESMTP id S1755936AbXGDILb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 04:10:16 -0400
+	Wed, 4 Jul 2007 04:11:31 -0400
 From: Oliver Neukum <oliver@neukum.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 10:10:10 +0200
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Wed, 4 Jul 2007 10:11:33 +0200
 User-Agent: KMail/1.9.7
-Cc: Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, mjg59@srcf.ucam.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       pavel@ucw.cz, nigel@nigel.suspend2.net
-References: <20070703042916.GA17240@srcf.ucam.org> <200707040004.16357.oliver@neukum.org> <1183504112.3388.45.camel@localhost.localdomain>
-In-Reply-To: <1183504112.3388.45.camel@localhost.localdomain>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031342.14295.oliver@neukum.org> <18058.55215.185633.434117@cargo.ozlabs.ibm.com>
+In-Reply-To: <18058.55215.185633.434117@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200707041010.11221.oliver@neukum.org>
+Message-Id: <200707041011.33279.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 4. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > > > > > Nope, something's wrong in fuse. You must be able to deal with sync
-> > > > > > until every task is frozen. 
-> > > > > 
-> > > > > Pipe dream
-> > > > 
-> > > > Then tell me how you want to avoid that condition.
-> > > 
-> > > Don't freeze :-)
-> > 
-> > Then you will have to deal with all syscalls unfrozen tasks can make.
+Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
+> Oliver Neukum writes:
 > 
-> Yup, and the majority of them is totally harmless. Looks like people
-> around here have a problem with the idea of writing robust drivers ...
+> > USB devices certainly have suspend methods.
+> 
+> Indeed, and the USB framework has code to know when the host
+> controller is suspended and avoid trying to send out urbs in that
+> case.  Or at least it did last time I looked at it in any detail; it's
+> been "just working" - including suspending and resuming, without the
+> freezer - for quite a while now.
 
-The majority is meaningless here. The subsystem works or works not.
-Reliably failing to work is better than working most of the time.
-
-What I am having a problem with is the rest of the system changing its
-behavior and expecting the drivers to cope with that out of the blue.
+And what happens to that IO? I suspended and lost data is not an
+acceptable behavior.
 
 	Oliver
+
+
