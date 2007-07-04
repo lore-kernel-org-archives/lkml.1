@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbXGDK0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbXGDK2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbXGDK0N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758171AbXGDKZ7
+	id S1760272AbXGDK2i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757601AbXGDK2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:25:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48469 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757955AbXGDKZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:25:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 12:33:17 +0200
-User-Agent: KMail/1.9.5
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
-References: <20070703042916.GA17240@srcf.ucam.org> <200707032332.49694.rjw@sisk.pl> <18059.5165.861038.392332@cargo.ozlabs.ibm.com>
-In-Reply-To: <18059.5165.861038.392332@cargo.ozlabs.ibm.com>
+	Wed, 4 Jul 2007 06:28:30 -0400
+Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:1488 "EHLO
+	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753617AbXGDK23 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:28:29 -0400
+Date: Wed, 4 Jul 2007 11:27:32 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [PATCH] Re: Sparc32: random invalid instruction occourances on
+ sparc32 (sun4c)
+In-Reply-To: <1183520006.29081.79.camel@shinybook.infradead.org>
+Message-ID: <Pine.LNX.4.61.0707041121290.31752@mtfhpc.demon.co.uk>
+References: <468A7D14.1050505@googlemail.com>  <Pine.LNX.4.61.0707031817050.29930@mtfhpc.demon.co.uk>
+  <Pine.LNX.4.61.0707031910280.29930@mtfhpc.demon.co.uk> 
+ <1183490778.29081.35.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.61.0707032209230.30376@mtfhpc.demon.co.uk> 
+ <1183499781.29081.46.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.61.0707032317590.30376@mtfhpc.demon.co.uk> 
+ <1183505787.29081.62.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.61.0707040335230.30946@mtfhpc.demon.co.uk>
+ <1183520006.29081.79.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707041233.18199.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 4 July 2007 05:29, Paul Mackerras wrote:
-> Rafael J. Wysocki writes:
-> 
-> > Still, do you really think that we're ready to drop it _right_ _now_ (I'm
-> > referring to suspend only) and if so than on what basis (except that you
-> > don't like it, which falls short of being a techical argument)?
-> 
-> The basis is that it (the freezer) causes more deadlocks and other
-> problems than it avoids, so it's a net win to remove it.
+Hi David,
 
-So, I gather, you're volunteering to handle suspend-related bug reports
-from the point in which we drop the freezer from the suspend code path?
+Another related point that may also need to be considered is that I think 
+I am correct in saying that on ARM and on the 64bit platforms, sizeof 
+(unsigned long long) is 16 (128bits).
 
-Greetings,
-Rafael
+Should the RedZone words be specified as __u64 not the unsigned long long 
+used or does the alignment need to be that of unsigned long long ?
 
+Regards
+ 	Mark Fortescue.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+  On Tue, 3 Jul 2007, David Woodhouse wrote:
+
+> On Wed, 2007-07-04 at 04:27 +0100, Mark Fortescue wrote:
+>> I tried the previous patch and it looks like it fixes the issue however
+>> one of the test builds I did caused depmod to use up all available memory
+>> (40M - kernel memory) before taking out the kernel with the oom killer.
+>> At present, I do not know if it is a depmod issue or a kernel issue.
+>> I will have to do some more tests later on to day.
+>
+> That's almost certain to be an unrelated issue.
+>
+>> I have looked at the latest patch below and am I am still not sure about
+>> two areas. Please take a look at my offering based on your latest
+>> patch (included here to it will probably get mangled).
+>>
+>> Note the change to lines 2178 to 2185. I have also changed/moved the
+>> alignment of size (see lines 2197 to 2206) based on your changes.
+>
+> The first looks correct; well spotted. The second is just cosmetic but
+> also seems correct. I might be inclined to make the #define
+> 'RED_ZONE_ALIGN' and use it in the other places too.
+>
+> -- 
+> dwmw2
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
