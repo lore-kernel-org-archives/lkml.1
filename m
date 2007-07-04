@@ -1,100 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbXGDHc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbXGDHer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbXGDHc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 03:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXGDHcU
+	id S1758145AbXGDHer (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 03:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXGDHej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 03:32:20 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:33236 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbXGDHcT (ORCPT
+	Wed, 4 Jul 2007 03:34:39 -0400
+Received: from mtoichi14.ns.itscom.net ([219.110.2.184]:40169 "EHLO
+	mtoichi14.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754032AbXGDHei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 03:32:19 -0400
-Subject: Re: [patch 5/5] s390 tlb flush fix.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Hugh Dickins <hugh@veritas.com>
-Cc: akpm@linux-foundation.org, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0707031921270.8155@blonde.wat.veritas.com>
-References: <20070703111822.418649776@de.ibm.com>
-	 <20070703121229.180281096@de.ibm.com>
-	 <Pine.LNX.4.64.0707031921270.8155@blonde.wat.veritas.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 04 Jul 2007 09:34:34 +0200
-Message-Id: <1183534474.1208.20.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jul 2007 03:34:38 -0400
+Date: Wed, 4 Jul 2007 16:33:42 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Len Brown <lenb@kernel.org>
+Cc: trenn@suse.de, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       acpi4asus-user <acpi4asus-user@lists.sourceforge.net>
+Subject: Re: [PATCH 3/3] ACPI autoloading - Create __mod_acpi_device_table symbol for all acpi drivers.
+Message-ID: <20070704073342.GC8338@inferi.kami.home>
+References: <1182112047.4204.12.camel@noname> <20070620170617.GA3226@inferi.kami.home> <1182361643.28514.708.camel@queen.suse.de> <200707030315.33526.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707030315.33526.lenb@kernel.org>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.22-rc4-mm2-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-03 at 19:58 +0100, Hugh Dickins wrote:
-> On Tue, 3 Jul 2007, Martin Schwidefsky wrote:
-> > +
-> > +static inline struct mmu_gather *tlb_gather_mmu(struct mm_struct *mm,
-> > +						unsigned int full_mm_flush)
-> > +{
-> > +	struct mmu_gather *tlb = &get_cpu_var(mmu_gathers);
-> > +
-> > +	tlb->mm = mm;
-> > +	tlb->fullmm = full_mm_flush || (num_online_cpus() == 1) ||
-> > +		(atomic_read(&mm->mm_users) <= 1);
-> > +	tlb->nr_ptes = 0;
-> > +	tlb->nr_pmds = TLB_NR_PTRS;
-> > +	if (tlb->fullmm)
-> > +		__tlb_flush_mm(mm);
-> > +	return tlb;
-> > +}
+On Tue, Jul 03, 2007 at 03:15:33AM -0400, Len Brown wrote:
 > 
-> I'm afraid that mm_users test (and probably some of your other
-> mm_users tests) is not good: because this also gets called when
-> a file is truncated while it is mapped - the active mm at that
-> time is likely not to be one of the mm_users.  (Do any other
-> arches use mm_users in that way?  No: that should be a warning.)
+> > BTW: I also saw a laptop (IIRC it was a sony) with asus and sony ACPI
+> > device.
+> > When both drivers got loaded things broke.
+> > A solution was to only let the asus driver get active if the device is
+> > known. Currently, not sure whether still (I sent a patch a while ago),
+> > the Asus driver falls back to a default ("M6N"?) configuration. IMO this
+> > is a bit too dangerous and instead a message like "unsupported ASUS
+> > model found, please send acpidump to linux-acpi@vger.kernel.org".
+> 
+> This is pretty scary.
+> Can you drop the acpidump output into a bugzilla?
 
-Good catch, that would have caused me some headache. So I need to add a
-current->active_mm==mm check if mm_users==1.
+and add myself to the cc-list?
 
-> You might do better to make more use of cpu_vm_mask (though I
-> didn't see where any bits get cleared from it on s390 at present).
-
-We don't clear any of the bits in cpu_vm_mask. I though about it for a
-while and got tangled in race conditions. The cpu_vm_mask optimization
-works for short-lived processes which always executed on the same cpu.
-
-> Though it seems sensible to aim for one TLB flush at the beginning
-> as you're doing, that's not what other arches do (some have to
-> worry about speculative execution, but you don't?), and it
-> worries me that you're taking s390 further away into its own
-> implementation: which you're surely entitled to do, but then
-> we're more likely to screw you over by mistake in future.
-
-We do not have to worry about speculative execution because s390 uses
-special instruction to do user access (mvcs, mvcp and mvcos) and the
-kernel has its own address space. The compiler doesn't know about these
-instruction and cannot "accidentally" access a user space address over
-the user page table when it shouldn't.
-
-> Is there perhaps another architecture whose procedures you
-> can copy?  Changing a pte while another cpu is accessing it
-> is not a problem unique to s390.
-
-No, I don't think so. s390 is quite unique with the restriction that you
-may not do a set_pte_at .. flush_tlb_xxx while a pte might get accessed
-by a different cpu.
-
-> Patches 1-4 looked fine to me, but I believe this 5/5
-> is the rationale behind all of them.
-
-Yes, indeed the tlb flush fix and the 1K/2K page tables are my reasons
-for all these patches.
-
+thanks
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+mattia
+:wq!
