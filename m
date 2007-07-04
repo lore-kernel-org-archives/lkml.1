@@ -1,127 +1,497 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbXGDJoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760007AbXGDJu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891AbXGDJoN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 05:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbXGDJnz
+	id S1760007AbXGDJu3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 05:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757098AbXGDJuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 05:43:55 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:21890 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759928AbXGDJny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 05:43:54 -0400
-Message-ID: <468B6BD7.9010108@msgid.tls.msk.ru>
-Date: Wed, 04 Jul 2007 13:43:51 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Some NCQ numbers...
-References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com> <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com>
-In-Reply-To: <468AF5BB.10005@gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jul 2007 05:50:13 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:57984 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756420AbXGDJuK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 05:50:10 -0400
+To: netdev@vger.kernel.org
+CC: ebiederm@xmission.com, akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       alan@lxorguk.ukuu.org.uk, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH resend] rewrite AF_UNIX garbage collector, fixes race
+Message-Id: <E1I61UT-0006Gk-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 04 Jul 2007 11:49:41 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
-> 
-> Michael Tokarev wrote:
->> Well.  It looks like the results does not depend on the
->> elevator.  Originally I tried with deadline, and just
->> re-ran the test with noop (hence the long delay with
->> the answer) - changing linux elevator changes almost
->> nothing in the results - modulo some random "fluctuations".
-> 
-> I see.  Thanks for testing.
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-Here are actual results - the tests were still running when
-I replied yesterday.
+Throw out the old mark & sweep garbage collector and put in a
+refcounting cycle detecting one.
 
-Again, this is Seagate ST3250620AS "desktop" drive, 7200RPM,
-16Mb cache, 250Gb capacity.  The tests were performed with
-queue depth = 64 (on mptsas), drive write cache is turned
-off.
+The old one had a race with recvmsg, that resulted in false positives
+and hence data loss.  The old algorithm operated on all unix sockets
+in the system, so any additional locking would have meant performance
+problems for all users of these.
 
-noop scheduler:
+The new algorithm instead only operates on "in flight" sockets, which
+are very rare, and the additional locking for these doesn't negatively
+impact the vast majority of users.
 
-BlkSz Trd linRd rndRd linWr rndWr  rndR/W
-   4k   1  12.8   0.3   0.4   0.3   0.1/ 0.1
-        4         0.3         0.3   0.1/ 0.1
-       32         0.3         0.3   0.1/ 0.1
-   8k   1  24.6   0.6   0.9   0.6   0.3/ 0.3
-        4         0.6         0.6   0.3/ 0.3
-       32         0.6         0.6   0.3/ 0.3
-  16k   1  41.3   1.2   1.8   1.1   0.6/ 0.6
-        4         1.2         1.1   0.6/ 0.6
-       32         1.2         1.1   0.6/ 0.6
-  32k   1  58.4   2.2   3.5   2.1   1.1/ 1.1
-        4         2.3         2.1   1.1/ 1.1
-       32         2.3         2.1   1.1/ 1.1
- 128k   1  80.4   8.1  12.5   7.2   3.8/ 3.8
-        4         8.1         7.2   3.8/ 3.8
-       32         8.1         7.2   3.8/ 3.8
-1024k   1  80.5  33.9  33.8  24.5  14.3/14.3
-        4        34.1        24.6  14.3/14.2
-       32        34.2        24.6  14.4/14.2
+In fact it's probable, that there weren't *any* heavy senders of
+sockets over sockets, otherwise the above race would have been
+discovered long ago.
 
-deadline scheduler:
+The patch works OK with the app that exposed the race with the old
+code.  The garbage collection has also been verified to work in a few
+simple cases.
 
-BlkSz Trd linRd rndRd linWr rndWr  rndR/W
-   4k   1  12.8   0.3   0.4   0.3   0.1/ 0.1
-        4         0.3         0.3   0.1/ 0.1
-       32         0.3         0.3   0.1/ 0.1
-   8k   1  24.5   0.6   0.9   0.6   0.3/ 0.3
-        4         0.6         0.6   0.3/ 0.3
-       32         0.6         0.6   0.3/ 0.3
-  16k   1  41.3   1.2   1.8   1.1   0.6/ 0.6
-        4         1.2         1.1   0.6/ 0.6
-       32         1.2         1.1   0.6/ 0.6
-  32k   1  57.7   2.3   3.4   2.1   1.1/ 1.1
-        4         2.3         2.1   1.1/ 1.1
-       32         2.3         2.1   1.1/ 1.1
- 128k   1  79.4   8.1  12.5   7.2   3.8/ 3.8
-        4         8.1         7.3   3.8/ 3.8
-       32         8.2         7.3   3.9/ 3.8
-1024k   1  79.4  33.7  33.8  24.5  14.2/14.2
-        4        33.9        24.6  14.3/14.2
-       32        33.4        24.4  17.0/10.5
+See comments inside patch for the description of the algorithm.
 
-[]
->> By the way, Seagate announced Barracuda ES 2 series
->> (in range 500..1200Gb if memory serves) - maybe with
->> those, NCQ will work better?
-> 
-> No one would know without testing.
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ include/net/af_unix.h |    3
+ net/unix/af_unix.c    |    6
+ net/unix/garbage.c    |  329 ++++++++++++++++++++++++++++----------------------
+ 3 files changed, 192 insertions(+), 146 deletions(-)
 
-Sure thing.  I guess I'll set up a web page with all
-the results so far, in a hope someday it will be more
-complete (we don't have many different drives to test,
-but others do).
+Index: linux-2.6.22-rc6/include/net/af_unix.h
+===================================================================
+--- linux-2.6.22-rc6.orig/include/net/af_unix.h	2007-06-27 22:53:53.000000000 +0200
++++ linux-2.6.22-rc6/include/net/af_unix.h	2007-06-27 22:53:55.000000000 +0200
+@@ -79,9 +79,10 @@ struct unix_sock {
+ 	struct mutex		readlock;
+         struct sock		*peer;
+         struct sock		*other;
+-        struct sock		*gc_tree;
++	struct list_head	link;
+         atomic_t                inflight;
+         spinlock_t		lock;
++	unsigned int		gc_candidate : 1;
+         wait_queue_head_t       peer_wait;
+ };
+ #define unix_sk(__sk) ((struct unix_sock *)__sk)
+Index: linux-2.6.22-rc6/net/unix/af_unix.c
+===================================================================
+--- linux-2.6.22-rc6.orig/net/unix/af_unix.c	2007-06-27 22:53:53.000000000 +0200
++++ linux-2.6.22-rc6/net/unix/af_unix.c	2007-06-27 22:53:55.000000000 +0200
+@@ -592,7 +592,8 @@ static struct sock * unix_create1(struct
+ 	u->dentry = NULL;
+ 	u->mnt	  = NULL;
+ 	spin_lock_init(&u->lock);
+-	atomic_set(&u->inflight, sock ? 0 : -1);
++	atomic_set(&u->inflight, 0);
++	INIT_LIST_HEAD(&u->link);
+ 	mutex_init(&u->readlock); /* single task reading lock */
+ 	init_waitqueue_head(&u->peer_wait);
+ 	unix_insert_socket(unix_sockets_unbound, sk);
+@@ -1134,9 +1135,6 @@ restart:
+ 	/* take ten and and send info to listening sock */
+ 	spin_lock(&other->sk_receive_queue.lock);
+ 	__skb_queue_tail(&other->sk_receive_queue, skb);
+-	/* Undo artificially decreased inflight after embrion
+-	 * is installed to listening socket. */
+-	atomic_inc(&newu->inflight);
+ 	spin_unlock(&other->sk_receive_queue.lock);
+ 	unix_state_unlock(other);
+ 	other->sk_data_ready(other, 0);
+Index: linux-2.6.22-rc6/net/unix/garbage.c
+===================================================================
+--- linux-2.6.22-rc6.orig/net/unix/garbage.c	2007-06-27 22:53:53.000000000 +0200
++++ linux-2.6.22-rc6/net/unix/garbage.c	2007-06-27 22:53:55.000000000 +0200
+@@ -62,6 +62,10 @@
+  *	AV		1 Mar 1999
+  *		Damn. Added missing check for ->dead in listen queues scanning.
+  *
++ *	Miklos Szeredi 25 Jun 2007
++ *		Reimplement with a cycle collecting algorithm. This should
++ *		solve several problems with the previous code, like being racy
++ *		wrt receive and holding up unrelated socket operations.
+  */
+ 
+ #include <linux/kernel.h>
+@@ -84,10 +88,9 @@
+ 
+ /* Internal data structures and random procedures: */
+ 
+-#define GC_HEAD		((struct sock *)(-1))
+-#define GC_ORPHAN	((struct sock *)(-3))
+-
+-static struct sock *gc_current = GC_HEAD; /* stack of objects to mark */
++static LIST_HEAD(gc_inflight_list);
++static LIST_HEAD(gc_candidates);
++static DEFINE_SPINLOCK(unix_gc_lock);
+ 
+ atomic_t unix_tot_inflight = ATOMIC_INIT(0);
+ 
+@@ -122,8 +125,16 @@ void unix_inflight(struct file *fp)
+ {
+ 	struct sock *s = unix_get_socket(fp);
+ 	if(s) {
+-		atomic_inc(&unix_sk(s)->inflight);
++		struct unix_sock *u = unix_sk(s);
++		spin_lock(&unix_gc_lock);
++		if (atomic_inc_return(&u->inflight) == 1) {
++			BUG_ON(!list_empty(&u->link));
++			list_add_tail(&u->link, &gc_inflight_list);
++		} else {
++			BUG_ON(list_empty(&u->link));
++		}
+ 		atomic_inc(&unix_tot_inflight);
++		spin_unlock(&unix_gc_lock);
+ 	}
+ }
+ 
+@@ -131,182 +142,218 @@ void unix_notinflight(struct file *fp)
+ {
+ 	struct sock *s = unix_get_socket(fp);
+ 	if(s) {
+-		atomic_dec(&unix_sk(s)->inflight);
++		struct unix_sock *u = unix_sk(s);
++		spin_lock(&unix_gc_lock);
++		BUG_ON(list_empty(&u->link));
++		if (atomic_dec_and_test(&u->inflight))
++			list_del_init(&u->link);
+ 		atomic_dec(&unix_tot_inflight);
++		spin_unlock(&unix_gc_lock);
+ 	}
+ }
+ 
++static inline struct sk_buff *sock_queue_head(struct sock *sk)
++{
++	return (struct sk_buff *) &sk->sk_receive_queue;
++}
+ 
+-/*
+- *	Garbage Collector Support Functions
+- */
++#define receive_queue_for_each_skb(sk, next, skb) \
++	for (skb = sock_queue_head(sk)->next, next = skb->next; \
++	     skb != sock_queue_head(sk); skb = next, next = skb->next)
+ 
+-static inline struct sock *pop_stack(void)
++static void scan_inflight(struct sock *x, void (*func)(struct sock *),
++			  struct sk_buff_head *hitlist)
+ {
+-	struct sock *p = gc_current;
+-	gc_current = unix_sk(p)->gc_tree;
+-	return p;
++	struct sk_buff *skb;
++	struct sk_buff *next;
++
++	spin_lock(&x->sk_receive_queue.lock);
++	receive_queue_for_each_skb(x, next, skb) {
++		/*
++		 *	Do we have file descriptors ?
++		 */
++		if (UNIXCB(skb).fp) {
++			bool hit = false;
++			/*
++			 *	Process the descriptors of this socket
++			 */
++			int nfd = UNIXCB(skb).fp->count;
++			struct file **fp = UNIXCB(skb).fp->fp;
++			while (nfd--) {
++				/*
++				 *	Get the socket the fd matches
++				 *	if it indeed does so
++				 */
++				struct sock *sk = unix_get_socket(*fp++);
++				if(sk) {
++					hit = true;
++					func(sk);
++				}
++			}
++			if (hit && hitlist != NULL) {
++				__skb_unlink(skb, &x->sk_receive_queue);
++				__skb_queue_tail(hitlist, skb);
++			}
++		}
++	}
++	spin_unlock(&x->sk_receive_queue.lock);
+ }
+ 
+-static inline int empty_stack(void)
++static void scan_children(struct sock *x, void (*func)(struct sock *),
++			  struct sk_buff_head *hitlist)
+ {
+-	return gc_current == GC_HEAD;
++	if (x->sk_state != TCP_LISTEN)
++		scan_inflight(x, func, hitlist);
++	else {
++		struct sk_buff *skb;
++		struct sk_buff *next;
++		struct unix_sock *u;
++		LIST_HEAD(embryos);
++
++		/*
++		 * For a listening socket collect the queued embryos
++		 * and perform a scan on them as well.
++		 */
++		spin_lock(&x->sk_receive_queue.lock);
++		receive_queue_for_each_skb(x, next, skb) {
++			u = unix_sk(skb->sk);
++
++			/*
++			 * An embryo cannot be in-flight, so it's safe
++			 * to use the list link.
++			 */
++			BUG_ON(!list_empty(&u->link));
++			list_add_tail(&u->link, &embryos);
++		}
++		spin_unlock(&x->sk_receive_queue.lock);
++
++		while (!list_empty(&embryos)) {
++			u = list_entry(embryos.next, struct unix_sock, link);
++			scan_inflight(&u->sk, func, hitlist);
++			list_del_init(&u->link);
++		}
++	}
+ }
+ 
+-static void maybe_unmark_and_push(struct sock *x)
++static void dec_inflight(struct sock *sk)
+ {
+-	struct unix_sock *u = unix_sk(x);
++	atomic_dec(&unix_sk(sk)->inflight);
++}
+ 
+-	if (u->gc_tree != GC_ORPHAN)
+-		return;
+-	sock_hold(x);
+-	u->gc_tree = gc_current;
+-	gc_current = x;
++static void inc_inflight(struct sock *sk)
++{
++	atomic_inc(&unix_sk(sk)->inflight);
+ }
+ 
++static void inc_inflight_move_tail(struct sock *sk)
++{
++	struct unix_sock *u = unix_sk(sk);
++
++	atomic_inc(&u->inflight);
++	/*
++	 * If this is still a candidate, move it to the end of the
++	 * list, so that it's checked even if it was already passed
++	 * over
++	 */
++	if (u->gc_candidate)
++		list_move_tail(&u->link, &gc_candidates);
++}
+ 
+ /* The external entry point: unix_gc() */
+ 
+ void unix_gc(void)
+ {
+-	static DEFINE_MUTEX(unix_gc_sem);
+-	int i;
+-	struct sock *s;
+-	struct sk_buff_head hitlist;
+-	struct sk_buff *skb;
++	static bool gc_in_progress = false;
+ 
+-	/*
+-	 *	Avoid a recursive GC.
+-	 */
++	struct unix_sock *u;
++	struct unix_sock *next;
++	struct sk_buff_head hitlist;
++	struct list_head cursor;
+ 
+-	if (!mutex_trylock(&unix_gc_sem))
+-		return;
++	spin_lock(&unix_gc_lock);
+ 
+-	spin_lock(&unix_table_lock);
++	/* Avoid a recursive GC. */
++	if (gc_in_progress)
++		goto out;
+ 
+-	forall_unix_sockets(i, s)
+-	{
+-		unix_sk(s)->gc_tree = GC_ORPHAN;
+-	}
++	gc_in_progress = true;
+ 	/*
+-	 *	Everything is now marked
+-	 */
+-
+-	/* Invariant to be maintained:
+-		- everything unmarked is either:
+-		-- (a) on the stack, or
+-		-- (b) has all of its children unmarked
+-		- everything on the stack is always unmarked
+-		- nothing is ever pushed onto the stack twice, because:
+-		-- nothing previously unmarked is ever pushed on the stack
++	 * First, select candidates for garbage collection.  Only
++	 * in-flight sockets are considered, and from those only ones
++	 * which don't have any external reference.
++	 *
++	 * Holding unix_gc_lock will protect these candidates from
++	 * being detached, and hence from gaining an external
++	 * reference.  This also means, that since there are no
++	 * possible receivers, the receive queues of these sockets are
++	 * static during the GC, even though the dequeue is done
++	 * before the detach without atomicity guarantees.
+ 	 */
++	list_for_each_entry_safe(u, next, &gc_inflight_list, link) {
++		int total_refs;
++		int inflight_refs;
++
++		total_refs = file_count(u->sk.sk_socket->file);
++		inflight_refs = atomic_read(&u->inflight);
++
++		BUG_ON(inflight_refs < 1);
++		BUG_ON(total_refs < inflight_refs);
++		if (total_refs == inflight_refs) {
++			list_move_tail(&u->link, &gc_candidates);
++			u->gc_candidate = 1;
++		}
++	}
+ 
+ 	/*
+-	 *	Push root set
++	 * Now remove all internal in-flight reference to children of
++	 * the candidates.
+ 	 */
+-
+-	forall_unix_sockets(i, s)
+-	{
+-		int open_count = 0;
+-
+-		/*
+-		 *	If all instances of the descriptor are not
+-		 *	in flight we are in use.
+-		 *
+-		 *	Special case: when socket s is embrion, it may be
+-		 *	hashed but still not in queue of listening socket.
+-		 *	In this case (see unix_create1()) we set artificial
+-		 *	negative inflight counter to close race window.
+-		 *	It is trick of course and dirty one.
+-		 */
+-		if (s->sk_socket && s->sk_socket->file)
+-			open_count = file_count(s->sk_socket->file);
+-		if (open_count > atomic_read(&unix_sk(s)->inflight))
+-			maybe_unmark_and_push(s);
+-	}
++	list_for_each_entry(u, &gc_candidates, link)
++		scan_children(&u->sk, dec_inflight, NULL);
+ 
+ 	/*
+-	 *	Mark phase
++	 * Restore the references for children of all candidates,
++	 * which have remaining references.  Do this recursively, so
++	 * only those remain, which form cyclic references.
++	 *
++	 * Use a "cursor" link, to make the list traversal safe, even
++	 * though elements might be moved about.
+ 	 */
+-
+-	while (!empty_stack())
+-	{
+-		struct sock *x = pop_stack();
+-		struct sock *sk;
+-
+-		spin_lock(&x->sk_receive_queue.lock);
+-		skb = skb_peek(&x->sk_receive_queue);
+-
+-		/*
+-		 *	Loop through all but first born
+-		 */
+-
+-		while (skb && skb != (struct sk_buff *)&x->sk_receive_queue) {
+-			/*
+-			 *	Do we have file descriptors ?
+-			 */
+-			if(UNIXCB(skb).fp)
+-			{
+-				/*
+-				 *	Process the descriptors of this socket
+-				 */
+-				int nfd=UNIXCB(skb).fp->count;
+-				struct file **fp = UNIXCB(skb).fp->fp;
+-				while(nfd--)
+-				{
+-					/*
+-					 *	Get the socket the fd matches if
+-					 *	it indeed does so
+-					 */
+-					if((sk=unix_get_socket(*fp++))!=NULL)
+-					{
+-						maybe_unmark_and_push(sk);
+-					}
+-				}
+-			}
+-			/* We have to scan not-yet-accepted ones too */
+-			if (x->sk_state == TCP_LISTEN)
+-				maybe_unmark_and_push(skb->sk);
+-			skb=skb->next;
++	list_add(&cursor, &gc_candidates);
++	while (cursor.next != &gc_candidates) {
++		u = list_entry(cursor.next, struct unix_sock, link);
++
++		/* Move cursor to after the current position. */
++		list_move(&cursor, &u->link);
++
++		if (atomic_read(&u->inflight) > 0) {
++			list_move_tail(&u->link, &gc_inflight_list);
++			u->gc_candidate = 0;
++			scan_children(&u->sk, inc_inflight_move_tail, NULL);
+ 		}
+-		spin_unlock(&x->sk_receive_queue.lock);
+-		sock_put(x);
+ 	}
++	list_del(&cursor);
+ 
++	/*
++	 * Now gc_candidates contains only garbage.  Restore original
++	 * inflight counters for these as well, and remove the skbuffs
++	 * which are creating the cycle(s).
++	 */
+ 	skb_queue_head_init(&hitlist);
++	list_for_each_entry(u, &gc_candidates, link)
++		scan_children(&u->sk, inc_inflight, &hitlist);
+ 
+-	forall_unix_sockets(i, s)
+-	{
+-		struct unix_sock *u = unix_sk(s);
++	spin_unlock(&unix_gc_lock);
+ 
+-		if (u->gc_tree == GC_ORPHAN) {
+-			struct sk_buff *nextsk;
++	/* Here we are. Hitlist is filled. Die. */
++	__skb_queue_purge(&hitlist);
+ 
+-			spin_lock(&s->sk_receive_queue.lock);
+-			skb = skb_peek(&s->sk_receive_queue);
+-			while (skb &&
+-			       skb != (struct sk_buff *)&s->sk_receive_queue) {
+-				nextsk = skb->next;
+-				/*
+-				 *	Do we have file descriptors ?
+-				 */
+-				if (UNIXCB(skb).fp) {
+-					__skb_unlink(skb,
+-						     &s->sk_receive_queue);
+-					__skb_queue_tail(&hitlist, skb);
+-				}
+-				skb = nextsk;
+-			}
+-			spin_unlock(&s->sk_receive_queue.lock);
+-		}
+-		u->gc_tree = GC_ORPHAN;
+-	}
+-	spin_unlock(&unix_table_lock);
++	spin_lock(&unix_gc_lock);
+ 
+-	/*
+-	 *	Here we are. Hitlist is filled. Die.
+-	 */
++	/* All candidates should have been detached by now. */
++	BUG_ON(!list_empty(&gc_candidates));
++	gc_in_progress = false;
+ 
+-	__skb_queue_purge(&hitlist);
+-	mutex_unlock(&unix_gc_sem);
++ out:
++	spin_unlock(&unix_gc_lock);
+ }
 
-By the way.  Both SATA drives we have are single-platter
-ones (with 500Gb models they've 2 platters, and 750Gb
-ones are with 3 platters), while all SCSI drives I
-tested have more than one platters.  Maybe this is
-yet another reason for NCQ failing.
-
-And another note.  I heard somewhere that Seagate for
-one prohibits publishing of tests like this, however
-I haven't signed any NDAs and somesuch when purchased
-their drives in a nearest computer store... ;)
-
->> Or maybe it's libata which does not implement NCQ
->> "properly"?  (As I shown before, with almost all
->> ol'good SCSI drives TCQ helps alot - up to 2x the
->> difference and more - with multiple I/O threads)
-> 
-> Well, what the driver does is minimal.  It just passes through all the
-> commands to the harddrive.  After all, NCQ/TCQ gives the harddrive more
-> responsibility regarding request scheduling.
-
-Oh well, I see.... :(
-
-/mjt
