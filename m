@@ -1,74 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761768AbXGDLMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761854AbXGDLM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761768AbXGDLMD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760903AbXGDLIj
+	id S1761854AbXGDLM0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760261AbXGDLIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:08:39 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:57174 "EHLO mail4.iitk.ac.in"
+	Wed, 4 Jul 2007 07:08:37 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:57177 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761243AbXGDLIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:08:07 -0400
+	id S1761446AbXGDLII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 07:08:08 -0400
 X-Virus-Scanner: This message was checked by NOD32 Antivirus system
 	for Linux Server. For more information on NOD32 Antivirus System,
 	please, visit our website: http://www.nod32.com/.
 From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Satyam Sharma <ssatyam@cse.iitk.ac.in>, Netdev <netdev@vger.kernel.org>,
+Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>
-Date: Wed, 04 Jul 2007 16:36:41 +0530
-Message-Id: <20070704110641.28497.92035.sendpatchset@cselinux1.cse.iitk.ac.in>
-Subject: [PATCH -rc7 1/1] netpoll: Fix a leak-n-bug in netpoll_cleanup()
+Date: Wed, 04 Jul 2007 16:38:04 +0530
+Message-Id: <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+Subject: [PATCH -mm 5/9] netconsole: Introduce dev_status member
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-[1/1] netpoll: Fix a leak-n-bug in netpoll_cleanup()
+[5/9] netconsole: Introduce dev_status member
 
-93ec2c723e3f8a216dde2899aeb85c648672bc6b applied excessive duct tape to
-the netpoll beast's netpoll_cleanup(), thus substituting one leak with
-another, and opening up a little buglet :-)
+Introduce a new member in netconsole_target that tracks the status (up or
+down) of the underlying interface network device that the specific logging
+target netpoll is attached to.
 
-net_device->npinfo (netpoll_info) is a shared and refcounted object and
-cannot simply be set NULL the first time netpoll_cleanup() is called.
-Otherwise, further netpoll_cleanup()'s see np->dev->npinfo == NULL and
-become no-ops, thus leaking. And it's a bug too: the first call to
-netpoll_cleanup() would thus (annoyingly) "disable" other (still alive)
-netpolls too. Maybe nobody noticed this because netconsole (only user
-of netpoll) never supported multiple netpoll objects earlier.
-
-This is a trivial and obvious one-line fixlet.
+We then join this up with the just-introduced net_device notifier, and
+introduce NETDEV_UP and NETDEV_DOWN notifications. By disabling the target
+when the corresponding local interface is down, we save the overhead of
+unnecessarily disabling interrupts and calling into the netpoll stack in
+console->write().
 
 Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-
-[ Andrew, this is diffed against 2.6.22-rc7 but applies successfully to
-the 2.6.22-rc6-mm1 tree also. ]
-
----
-
- net/core/netpoll.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+Cc: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
 
 ---
 
-diff -ruNp a/net/core/netpoll.c b/net/core/netpoll.c
---- a/net/core/netpoll.c	2007-07-02 22:11:21.000000000 +0530
-+++ b/net/core/netpoll.c	2007-07-03 16:28:10.000000000 +0530
-@@ -782,7 +782,6 @@ void netpoll_cleanup(struct netpoll *np)
- 				spin_unlock_irqrestore(&npinfo->rx_lock, flags);
- 			}
+ drivers/net/netconsole.c |   42 +++++++++++++++++++++++++++++++-----------
+ 1 file changed, 31 insertions(+), 11 deletions(-)
+
+---
+
+diff -ruNp a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+--- a/drivers/net/netconsole.c	2007-07-03 22:05:51.000000000 +0530
++++ b/drivers/net/netconsole.c	2007-07-04 03:04:45.000000000 +0530
+@@ -63,11 +63,23 @@ static int __init option_setup(char *opt
+ __setup("netconsole=", option_setup);
+ #endif
  
--			np->dev->npinfo = NULL;
- 			if (atomic_dec_and_test(&npinfo->refcnt)) {
- 				skb_queue_purge(&npinfo->arp_tx);
- 				skb_queue_purge(&npinfo->txq);
-@@ -796,6 +795,7 @@ void netpoll_cleanup(struct netpoll *np)
- 					kfree_skb(skb);
- 				}
- 				kfree(npinfo);
-+				np->dev->npinfo = NULL;
- 			}
- 		}
++/*
++ * Why no net_dev_is_up() in netdevice.h? The kernel could lose a lot of
++ * weight if only netdevice.h had the good sense to export such a function.
++ * Oh well ...
++ */
++static inline int net_dev_is_up(struct net_device *net_dev)
++{
++	return ((net_dev->flags & IFF_UP) == IFF_UP);
++}
++
+ /**
+  * struct netconsole_target - Represents a configured netconsole target.
++ * @dev_status:	Tracks whether the underlying interface is up or down.
+  * @np:		The netpoll structure for this target.
+  */
+ struct netconsole_target {
++	int			dev_status;
+ 	struct netpoll		np;
+ };
  
+@@ -89,11 +101,17 @@ static int netconsole_netdev_event(struc
+ 	struct net_device *dev = ptr;
+ 	struct netconsole_target *nt = &default_target;
+ 
+-	if (!(event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
+-		goto done;
++	if (!(event == NETDEV_UP || event == NETDEV_DOWN ||
++	      event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
++	      	goto done;
+ 
+ 	if (nt->np.dev == dev) {
+ 		switch (event) {
++		case NETDEV_UP:
++		case NETDEV_DOWN:
++			nt->dev_status = net_dev_is_up(nt->np.dev);
++			break;
++
+ 		case NETDEV_CHANGEADDR:
+ 			memcpy(nt->np.local_mac, dev->dev_addr, ETH_ALEN);
+ 			break;
+@@ -118,16 +136,16 @@ static void write_msg(struct console *co
+ 	unsigned long flags;
+ 	struct netconsole_target *nt = &default_target;
+ 
+-	local_irq_save(flags);
+-
+-	for (left = len; left;) {
+-		frag = min(left, MAX_PRINT_CHUNK);
+-		netpoll_send_udp(&nt->np, msg, frag);
+-		msg += frag;
+-		left -= frag;
++	if (nt->dev_status) {
++		local_irq_save(flags);
++		for (left = len; left;) {
++			frag = min(left, MAX_PRINT_CHUNK);
++			netpoll_send_udp(&nt->np, msg, frag);
++			msg += frag;
++			left -= frag;
++		}
++		local_irq_restore(flags);
+ 	}
+-
+-	local_irq_restore(flags);
+ }
+ 
+ static struct console netconsole = {
+@@ -154,6 +172,8 @@ static int __init init_netconsole(void)
+ 	if (err)
+ 		goto out;
+ 
++	nt->dev_status = net_dev_is_up(nt->np.dev);
++
+ 	err = register_netdevice_notifier(&netconsole_netdev_notifier);
+ 	if (err)
+ 		return err;
