@@ -1,71 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbXGDK72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760491AbXGDLA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760652AbXGDK72 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbXGDK7E
+	id S1760491AbXGDLA1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbXGDLAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:59:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:42474 "EHLO ozlabs.org"
+	Wed, 4 Jul 2007 07:00:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:54513 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757059AbXGDK7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:59:01 -0400
+	id S1756727AbXGDLAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 07:00:15 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18059.32111.58643.97174@cargo.ozlabs.ibm.com>
-Date: Wed, 4 Jul 2007 20:58:55 +1000
+Message-ID: <18059.32169.906914.258802@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 20:59:53 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-In-Reply-To: <200707041242.59552.rjw@sisk.pl>
-References: <20070703211227.GA28758@srcf.ucam.org>
-	<200707032337.52544.rjw@sisk.pl>
-	<18059.5690.908102.273897@cargo.ozlabs.ibm.com>
-	<200707041242.59552.rjw@sisk.pl>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+In-Reply-To: <200707041253.33154.oliver@neukum.org>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707041208.40735.oliver@neukum.org>
+	<18059.31346.806801.871454@cargo.ozlabs.ibm.com>
+	<200707041253.33154.oliver@neukum.org>
 X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki writes:
+Oliver Neukum writes:
 
-> Okay, so in fact you don't know.
+> They can't. Device specific protocols are known to the drivers only.
+> The fact remains, remove the freezer and you need to go through
+> all drivers.
 
-Don't know what exactly?
-
-It has been a while since I had my head in the USB code.  I assume
-it's being maintained by competent people. :)
-
-> And that's my point in this thread.
-
-Well, I'd be interested in hearing from Matthew whether he has
-actually been using his patch in Ubuntu, and if so, what bug reports
-he has been receiving related to it?
-
-> I won't fight for the freezer for what it's worth, but let's do things in the
-> _right_ _order_.  For example, let's make sure that by making the $subject
-> change we won't introduce (too many) regressions and fix the frameworks
-> that don't get it right.
-> 
-> Using the problems with FUSE as an argument for making this change immediately
-> doesn't seem to be right to me.
-
-I can see your point, but I won't be moving powermac over to use the
-generic suspend path until the freezer is gone, since I am pretty
-confident that the drivers we care about behave sensibly, and I have
-seen a lot of traffic on linux-pm and lkml about problems caused by
-the freezer.
-
-Also, no-one has yet answered my fundamental objection to the freezer,
-which is that the very kernel threads we would want to freeze are
-often the same ones that we must not freeze, namely the threads that
-issue I/O requests in order to satisfy incoming I/O requests.
-
-If there was an automatic way to construct the graph of dependencies
-(including data flows) between tasks, and derive an ordering for
-freezing that guarantees that all I/Os will get completed without
-deadlocks, then I could accept the freezer.  But we don't have
-anything like that.
+The freezer does not actually mean that you don't have to get the
+drivers right, because kernel threads can issue I/O requests.
 
 Paul.
