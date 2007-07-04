@@ -1,62 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761749AbXGDOi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762062AbXGDOkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761749AbXGDOi6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760420AbXGDOiw
+	id S1762062AbXGDOkr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759529AbXGDOkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:38:52 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3980 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760047AbXGDOiv (ORCPT
+	Wed, 4 Jul 2007 10:40:37 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:40267 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758850AbXGDOkg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:38:51 -0400
-Date: Wed, 4 Jul 2007 10:38:47 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: linux-kernel@vger.kernel.org, <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
- pathway
-In-Reply-To: <20070703224215.GA30081@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0707041030540.25704-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Jul 2007 10:40:36 -0400
+Subject: Re: Some NCQ numbers...
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Michael Tokarev <mjt@tls.msk.ru>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <468AF5BB.10005@gmail.com>
+References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com>
+	 <468AB1A7.9010201@msgid.tls.msk.ru>  <468AF5BB.10005@gmail.com>
+Content-Type: text/plain
+Date: Wed, 04 Jul 2007 09:40:34 -0500
+Message-Id: <1183560034.3418.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007, Matthew Garrett wrote:
-
-> On Tue, Jul 03, 2007 at 06:21:42PM -0400, Alan Stern wrote:
-> > On Tue, 3 Jul 2007, Matthew Garrett wrote:
-> > > We're used to the idea of applications blocking when a resource they're 
-> > > using goes away - NFS has done it forever. 
-> > 
-> > You persist in evading my point.  I'm not worried about applications;  
-> > I'm worried about drivers.
-> > 
-> > Let me put it explicitly: You're writing a driver.  You're working on
-> > the read, write, or probe method.  You add code to check if a system
-> > sleep is underway.  Suppose the answer is Yes -- what does your driver
-> > do next?
+On Wed, 2007-07-04 at 10:19 +0900, Tejun Heo wrote:
+> Michael Tokarev wrote:
+> > Well.  It looks like the results does not depend on the
+> > elevator.  Originally I tried with deadline, and just
+> > re-ran the test with noop (hence the long delay with
+> > the answer) - changing linux elevator changes almost
+> > nothing in the results - modulo some random "fluctuations".
 > 
-> Leave the process blocked and defer any i/o until after resume. Why does 
-> it need to be any more complicated than that?
+> I see.  Thanks for testing.
+> 
+> > In any case, NCQ - at least in this drive - just does
+> > not work.  Linux with its I/O elevator may help to
+> > speed things up a bit, but the disk does nothing in
+> > this area.  NCQ doesn't slow things down either - it
+> > just does not work.
+> > 
+> > The same's for ST3250620NS "enterprise" drives.
+> > 
+> > By the way, Seagate announced Barracuda ES 2 series
+> > (in range 500..1200Gb if memory serves) - maybe with
+> > those, NCQ will work better?
+> 
+> No one would know without testing.
+> 
+> > Or maybe it's libata which does not implement NCQ
+> > "properly"?  (As I shown before, with almost all
+> > ol'good SCSI drives TCQ helps alot - up to 2x the
+> > difference and more - with multiple I/O threads)
+> 
+> Well, what the driver does is minimal.  It just passes through all the
+> commands to the harddrive.  After all, NCQ/TCQ gives the harddrive more
+> responsibility regarding request scheduling.
 
-(1) The driver will undoubtedly hold some mutex or semaphore at the 
-time it checks whether a system sleep is underway.  You will have to 
-drop it before blocking and then reacquire it afterward.
+Actually, in many ways the result support a theory of SCSI TCQ Jens used
+when designing the block layer.  The original TCQ theory held that the
+drive could make much better head scheduling decisions than the
+Operating System, so you just used TCQ to pass all the outstanding I/O
+unfiltered down to the drive to let it schedule.  However, the I/O
+results always seemed to indicate that the effect of TCQ was negligible
+at around 4 outstanding commands, leading to the second theory that all
+TCQ was good for was saturating the transport, and making scheduling
+decisions was, indeed, better left to the OS (hence all our I/O
+schedulers).
 
-(2) The driver may have been called by some other routine which holds a 
-mutex needed for resuming the device.  In this case the driver _can't_ 
-drop the mutex and so the resume will deadlock.
+The key difference between NCQ and TCQ is that NCQ allows a non
+interlock setup and completion, but there can't be overlapping (or
+interrupted) data transfers.  TCQ and Disconnect (for SPI although there
+are equivalents for most other transports) allow any style of overlap
+you can construct, so NCQ was really designed more to allow the drive to
+make the head scheduling decisions.
 
+Where SCSI TCQ seems to win is that most devices pull the incoming TCQ
+commands into a (usually quite large) pre-execute cache, which gives
+them streaming command execution (usually they're executing command n-2
+or 3 while accepting the data for command n), so they're using the cache
+actually to smooth out internal latencies.
 
-Okay, I agree that (1) can be handled without too much effort.  But 
-doing it adds an extra test to _every_ driver's I/O pathway.  Freezing 
-userspace does not incur all this additional overhead.
+One final question: have you tried SAS devices for comparison?  The
+figures that give TCQ a 2x performance boost were with SPI and FC ...
+I'm not aware that anyone has actually done a SAS test.
 
-(2) shouldn't arise during normal read and write operations, but it
-certainly _will_ arise during probe.
+James
 
-Alan Stern
 
