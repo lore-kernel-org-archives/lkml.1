@@ -1,122 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbXGDWeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbXGDWdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbXGDWeY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 18:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbXGDWeN
+	id S1756499AbXGDWdz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 18:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXGDWdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 18:34:13 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:59994 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756968AbXGDWeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 18:34:12 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@suspend2.net
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
-Date: Thu, 5 Jul 2007 08:34:17 +1000
-User-Agent: KMail/1.9.6
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-References: <200706192118.23706.nigel@nigel.suspend2.net> <200706302230.19040.rjw@sisk.pl> <20070704212907.GA3213@elf.ucw.cz>
-In-Reply-To: <20070704212907.GA3213@elf.ucw.cz>
+	Wed, 4 Jul 2007 18:33:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44081 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750730AbXGDWdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 18:33:45 -0400
+Date: Thu, 5 Jul 2007 00:32:00 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: Andi Kleen <ak@suse.de>, Indan Zupancic <indan@nul.nu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bwalle@suse.de, rpurdie@rpsys.net
+Subject: Re: blink driver power saving
+Message-ID: <20070704223200.GA2053@elf.ucw.cz>
+References: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net> <200707021439.27357.ak@suse.de> <20070702230827.GA9071@elf.ucw.cz> <200707030142.36252.dtor@insightbb.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2893916.ujJ5CPrF6u";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707050834.17747.nigel@nigel.suspend2.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707030142.36252.dtor@insightbb.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2893916.ujJ5CPrF6u
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi!
 
-Hi.
+> > tristate "Keyboard blink driver"
+> > 
+> > ...drivers are not expected to act on their own. I was expecting to
+> > get nice /sys/class/led* interface to my keyboard leds.
+> > 
+> > BTW ... I still believe we should have /sys/class/led* interface to
+> > those leds. I'd like to make them blink with hdd activity on some
+> > machines... of course, that needs non-buggy KBC.
+> 
+> I'll take patches. Ofcourse we'll have to keep the current EV_LED interface
+> for compatibility.
 
-On Thursday 05 July 2007 07:29:07 Pavel Machek wrote:
-> Here's the version that uses just one variable, relative to Nigel's
-> patch. Hmm, and it also closes nasty trap for the user in
-> acpi_sleep_setup; order of parameters actually mattered there,
-> acpi_sleep=3Ds3_bios,s3_mode doing something different from
-> acpi_sleep=3Ds3_mode,s3_bios .  It actually works here.
+Actually here's one that does not immediately oops when I plug USB
+keyboard in.
 
-Good catch.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-> Will you fold it into  patch28, or should I create a changelog?
-> Testing welcome :-).
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 87d2046..716620c 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -95,6 +95,13 @@ config LEDS_COBALT
+ 	help
+ 	  This option enables support for the front LED on Cobalt Server
+ 
++config LEDS_INPUT
++	tristate "LED Support for input layer keyboards"
++	depends on LEDS_CLASS
++	help
++	  This option enables support for LEDs on keyboards handled by
++	  input layer.
++
+ comment "LED Triggers"
+ 
+ config LEDS_TRIGGERS
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index aa2c18e..ea58020 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -16,8 +16,10 @@ obj-$(CONFIG_LEDS_NET48XX)		+= leds-net4
+ obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
+ obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
+ obj-$(CONFIG_LEDS_COBALT)		+= leds-cobalt.o
++obj-$(CONFIG_LEDS_INPUT)		+= leds-input.o
+ 
+ # LED Triggers
+ obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
+ obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
+ obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)	+= ledtrig-heartbeat.o
++
+diff --git a/drivers/leds/leds-input.c b/drivers/leds/leds-input.c
+new file mode 100644
+index 0000000..8caca35
+--- /dev/null
++++ b/drivers/leds/leds-input.c
+@@ -0,0 +1,153 @@
++/*
++ * LED <-> input subsystem glue
++ *
++ * Copyright 2007 Pavel Machek <pavel@suse.cz>
++ * Copyright 2007 Dmitry Torokhov
++ * Copyright 2005-2006 Openedhand Ltd.
++ *
++ * Author: Pavel Machek <pavel@suse.cz>
++ * Based on code by: Richard Purdie <rpurdie@openedhand.com>
++ * 		     
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/leds.h>
++
++#include <linux/module.h>
++#include <linux/input.h>
++#include <linux/slab.h>
++#include <linux/workqueue.h>
++#include <linux/init.h>
++
++struct blinker {
++	struct delayed_work work;
++	struct input_handle handle;
++	int state;
++
++	struct led_classdev dev;
++};
++
++struct blinker *blinker;
++
++static void inputled_set(struct led_classdev *led_cdev, enum led_brightness value)
++{
++	struct blinker *blinker = container_of(led_cdev, struct blinker, dev);
++	blinker->state = value;
++	schedule_delayed_work(&blinker->work, 0);
++}
++
++static void blink_task_handler(struct work_struct *work)
++{
++	struct blinker *blinker = container_of(work, struct blinker, work.work);
++	printk("Setting led to %d\n", blinker->state);
++	input_inject_event(&blinker->handle, EV_LED, LED_CAPSL, !!blinker->state);
++}
++
++static void blink_event(struct input_handle *handle, unsigned int type,
++		        unsigned int code, int down)
++{
++	/*
++	 * This is a very rare handler that does not process any input
++	 * events; just injects them.
++	 */
++}
++
++static int blink_connect(struct input_handler *handler, struct input_dev *dev,
++			  const struct input_device_id *id)
++{
++	struct input_handle *handle;
++	struct led_classdev *led_dev;
++	static int counter;
++	int error;
++
++	blinker = kzalloc(sizeof(struct blinker), GFP_KERNEL);
++	if (!blinker) {
++		return -ENOMEM;
++	}
++
++	INIT_DELAYED_WORK(&blinker->work, blink_task_handler);
++
++	led_dev = &blinker->dev;
++	led_dev->name = kmalloc(10, GFP_KERNEL);
++	sprintf(led_dev->name, "input%d", counter++);
++	led_dev->brightness_set = inputled_set;
++
++	handle = &blinker->handle;
++	handle->dev = dev;
++	handle->handler = handler;
++	handle->name = "blink";
++	handle->private = blinker;
++
++	error = input_register_handle(handle);
++	if (error)
++		goto err_free_handle;
++
++	error = input_open_device(handle);
++	if (error)
++		goto err_unregister_handle;
++
++	error = led_classdev_register(NULL, led_dev);
++	if (error < 0)
++		goto err_input_close_device;
++
++	return 0;
++
++ err_input_close_device:
++	input_close_device(handle);
++ err_unregister_handle:
++	input_unregister_handle(handle);
++ err_free_handle:
++	kfree(handle);
++	return error;
++}
++
++static void blink_disconnect(struct input_handle *handle)
++{
++	struct blinker *blinker = handle->private;
++
++	led_classdev_unregister(&blinker->dev);
++	cancel_rearming_delayed_work(&blinker->work);
++	input_close_device(handle);
++	input_unregister_handle(handle);
++	kfree(blinker);
++}
++
++static const struct input_device_id blink_ids[] = {
++	{
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_LEDBIT,
++		.evbit = { BIT(EV_LED) },
++		.ledbit = { [LONG(LED_CAPSL)] = BIT(LED_CAPSL) },
++	},
++	{ }
++};
++
++static struct input_handler blink_handler = {
++	.event		= blink_event,
++	.connect	= blink_connect,
++	.disconnect	= blink_disconnect,
++	.name		= "blink",
++	.id_table	= blink_ids,
++};
++
++static int __init blink_handler_init(void)
++{
++	return input_register_handler(&blink_handler);
++}
++
++static void __exit blink_handler_exit(void)
++{
++	input_unregister_handler(&blink_handler);
++	flush_scheduled_work();
++}
++
++module_init(blink_handler_init);
++module_exit(blink_handler_exit);
++
++
+diff --git a/drivers/leds/leds-spitz.c b/drivers/leds/leds-spitz.c
+index 126d09c..8d10274 100644
+--- a/drivers/leds/leds-spitz.c
++++ b/drivers/leds/leds-spitz.c
+@@ -1,5 +1,5 @@
+ /*
+- * LED Triggers Core
++ * SPITZ LED Driver
+  *
+  * Copyright 2005-2006 Openedhand Ltd.
+  *
 
-I really dislike the overloading of acpi video flags in this way. You yours=
-elf=20
-have said in the past that new functionality should use /sys instead=20
-of /proc, and here you are overloading an existing variable for the sake of=
-=20
-expediency. Please, stick with a new /sys/power entry.
 
-Documentation is also an issue. Your patch should update the kernel_paramet=
-ers=20
-file so users can know how to get the beeping to happen. It would be nice i=
-f=20
-it mentioned the proc entry too.
 
-[...]
 
-> @@ -80,9 +82,11 @@ static int __init acpi_sleep_setup(char=20
-> =20
->  __setup("acpi_sleep=3D", acpi_sleep_setup);
-> =20
-> +/* Ouch, we want to delete this. We already have better version in=20
-userspace, in=20
-> +   s2ram from suspend.sf.net project */
 
-Do we? This version has advantages in not requiring any userspace app and i=
-n=20
-being able to work even if you can't yet get as far as having userspace=20
-working. [Reads more] Oh, do you mean a better way of setting this paramete=
-r=20
-(ie requiring the userspace app and then having it echo $VALUE=20
-> /proc/sys/kernel/acpi_video_flags? Considering we're not going to suspend=
-=20
-to ram during init scripts, we have a way of setting/resetting it post-boot=
-=20
-with or without s2m and the flag doesn't therefore need to be command line=
-=20
-option, I can go with that. Does it need a patch to mark it as deprecated?
 
-[...]
-
-> @@ -124,7 +124,7 @@ real_save_cr3:	.long 0
->  real_save_cr4:	.long 0
->  real_magic:	.long 0
->  video_mode:	.long 0
-> -video_flags:	.long 0
-> +realmode_flags:	.long 0
->  beep_flags:	.long 0
->  real_efer_save_restore:	.long 0
->  real_save_efer_edx: 	.long 0
-
-Beep_flags should be removed too if you're sticking with /proc.
-
-Regards,
-
-Nigel
-=2D-=20
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
-
---nextPart2893916.ujJ5CPrF6u
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGjCBpN0y+n1M3mo0RAoLFAKCRO7ja5n5B3N3baAfo+M4YDi/glACg0GDV
-V4ti6PmnrJbMbH4gZQE1jNQ=
-=Vt+z
------END PGP SIGNATURE-----
-
---nextPart2893916.ujJ5CPrF6u--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
