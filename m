@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbXGDLJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761826AbXGDLJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761650AbXGDLJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbXGDLIH
+	id S1761826AbXGDLJm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761098AbXGDLIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:08:07 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:57161 "EHLO mail4.iitk.ac.in"
+	Wed, 4 Jul 2007 07:08:09 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:57163 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761448AbXGDLIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761449AbXGDLIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Jul 2007 07:08:02 -0400
 X-Virus-Scanner: This message was checked by NOD32 Antivirus system
 	for Linux Server. For more information on NOD32 Antivirus System,
@@ -19,19 +19,21 @@ Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>,
        Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>
-Date: Wed, 04 Jul 2007 16:38:09 +0530
-Message-Id: <20070704110809.28520.1141.sendpatchset@cselinux1.cse.iitk.ac.in>
+Date: Wed, 04 Jul 2007 16:37:44 +0530
+Message-Id: <20070704110744.28520.57466.sendpatchset@cselinux1.cse.iitk.ac.in>
 In-Reply-To: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
 References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
-Subject: [PATCH -mm 6/9] netconsole: Update documentation for multiple target support
+Subject: [PATCH -mm 1/9] netconsole: Cleanups, codingstyle, prettyfication
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-[6/9] netconsole: Update documentation for multiple target support
+[1/9] netconsole: Cleanups, codingstyle, prettyfication
 
-... and add a few useful general purpose tips as well while we're at it.
+(1) Remove unwanted headers.
+(2) Mark __init and __exit as appropriate.
+(3) Various trivial codingstyle and prettification stuffs.
 
 Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
@@ -39,43 +41,124 @@ Cc: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
 
 ---
 
- Documentation/networking/netconsole.txt |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/net/netconsole.c |   55 +++++++++++++++++++++++------------------------
+ 1 file changed, 27 insertions(+), 28 deletions(-)
 
 ---
 
-diff -ruNp a/Documentation/networking/netconsole.txt b/Documentation/networking/netconsole.txt
---- a/Documentation/networking/netconsole.txt	2007-04-26 08:38:32.000000000 +0530
-+++ b/Documentation/networking/netconsole.txt	2007-07-02 11:44:53.000000000 +0530
-@@ -34,6 +34,12 @@ Examples:
+diff -ruNp a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+--- a/drivers/net/netconsole.c	2007-04-26 08:38:32.000000000 +0530
++++ b/drivers/net/netconsole.c	2007-07-03 20:27:17.000000000 +0530
+@@ -35,35 +35,32 @@
+  ****************************************************************/
  
-  insmod netconsole netconsole=@/,@10.0.0.2/
+ #include <linux/mm.h>
+-#include <linux/tty.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/console.h>
+-#include <linux/tty_driver.h>
+ #include <linux/moduleparam.h>
+ #include <linux/string.h>
+-#include <linux/sysrq.h>
+-#include <linux/smp.h>
+ #include <linux/netpoll.h>
  
-+It also supports logging to multiple remote agents by specifying
-+parameters for the multiple agents separated by semicolons and the
-+complete string enclosed in "quotes", thusly:
-+
-+modprobe netconsole netconsole="@/,@10.0.0.2/;@/eth1,6892@10.0.0.3/"
-+
- Built-in netconsole starts immediately after the TCP stack is
- initialized and attempts to bring up the supplied dev at the supplied
- address.
-@@ -44,6 +50,18 @@ WARNING: the default target ethernet set
- ethernet address to send packets, which can cause increased load on
- other systems on the same ethernet segment.
+ MODULE_AUTHOR("Maintainer: Matt Mackall <mpm@selenic.com>");
+ MODULE_DESCRIPTION("Console driver for network interfaces");
+ MODULE_LICENSE("GPL");
  
-+TIP: some LAN switches may be configured to suppress ethernet broadcasts
-+so it is advised to explicitly specify the remote agents' MAC addresses
-+from the config parameters passed to netconsole.
+-static char config[256];
+-module_param_string(netconsole, config, 256, 0);
++#define MAX_PARAM_LENGTH	256
++#define MAX_PRINT_CHUNK		1000
 +
-+TIP: to find out the MAC address of 10.0.0.2, you may try using:
-+ping -c 1 10.0.0.2 ; /sbin/arp -n | grep 10.0.0.2
++static char config[MAX_PARAM_LENGTH];
++module_param_string(netconsole, config, MAX_PARAM_LENGTH, 0);
+ MODULE_PARM_DESC(netconsole, " netconsole=[src-port]@[src-ip]/[dev],[tgt-port]@<tgt-ip>/[tgt-macaddr]\n");
+ 
+ static struct netpoll np = {
+-	.name = "netconsole",
+-	.dev_name = "eth0",
+-	.local_port = 6665,
+-	.remote_port = 6666,
+-	.remote_mac = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
++	.name		= "netconsole",
++	.dev_name	= "eth0",
++	.local_port	= 6665,
++	.remote_port	= 6666,
++	.remote_mac	= {0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+ };
+-static int configured = 0;
+-
+-#define MAX_PRINT_CHUNK 1000
++static int configured;
+ 
+ static void write_msg(struct console *con, const char *msg, unsigned int len)
+ {
+@@ -75,7 +72,7 @@ static void write_msg(struct console *co
+ 
+ 	local_irq_save(flags);
+ 
+-	for(left = len; left; ) {
++	for (left = len; left;) {
+ 		frag = min(left, MAX_PRINT_CHUNK);
+ 		netpoll_send_udp(&np, msg, frag);
+ 		msg += frag;
+@@ -86,12 +83,12 @@ static void write_msg(struct console *co
+ }
+ 
+ static struct console netconsole = {
+-	.name = "netcon",
+-	.flags = CON_ENABLED | CON_PRINTBUFFER,
+-	.write = write_msg
++	.name	= "netcon",
++	.flags	= CON_ENABLED | CON_PRINTBUFFER,
++	.write	= write_msg,
+ };
+ 
+-static int option_setup(char *opt)
++static int __init option_setup(char *opt)
+ {
+ 	configured = !netpoll_parse_options(&np, opt);
+ 	return 1;
+@@ -99,28 +96,30 @@ static int option_setup(char *opt)
+ 
+ __setup("netconsole=", option_setup);
+ 
+-static int init_netconsole(void)
++static int __init init_netconsole(void)
+ {
+-	int err;
++	int err = 0;
+ 
+-	if(strlen(config))
++	if (strnlen(config, MAX_PARAM_LENGTH))
+ 		option_setup(config);
+ 
+-	if(!configured) {
+-		printk("netconsole: not configured, aborting\n");
+-		return 0;
++	if (!configured) {
++		printk(KERN_INFO "netconsole: not configured, aborting\n");
++		goto out;
+ 	}
+ 
+ 	err = netpoll_setup(&np);
+ 	if (err)
+-		return err;
++		goto out;
+ 
+ 	register_console(&netconsole);
+ 	printk(KERN_INFO "netconsole: network logging started\n");
+-	return 0;
 +
-+TIP: in case the remote logging agent is on a separate LAN subnet than
-+the sender, it is suggested to try specifying the default gateway's
-+(you may use /sbin/route -n to find out) MAC address as the remote MAC
-+address instead.
-+
- NOTE: the network device (eth1 in the above case) can run any kind
- of other network traffic, netconsole is not intrusive. Netconsole
- might cause slight delays in other traffic if the volume of kernel
++out:
++	return err;
+ }
+ 
+-static void cleanup_netconsole(void)
++static void __exit cleanup_netconsole(void)
+ {
+ 	unregister_console(&netconsole);
+ 	netpoll_cleanup(&np);
