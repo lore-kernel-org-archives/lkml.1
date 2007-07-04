@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbXGDJL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbXGDJPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759418AbXGDJL1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 05:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbXGDJLU
+	id S1758789AbXGDJPU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 05:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbXGDJPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 05:11:20 -0400
-Received: from ihemail1.lucent.com ([135.245.0.33]:56208 "EHLO
-	ihemail1.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755215AbXGDJLT (ORCPT
+	Wed, 4 Jul 2007 05:15:09 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:34257 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755183AbXGDJPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 05:11:19 -0400
-Message-ID: <468B642D.9030109@alcatel-lucent.com>
-Date: Wed, 04 Jul 2007 17:11:09 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 4 Jul 2007 05:15:08 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "jidong xiao" <jidong.xiao@gmail.com>
+Subject: Re: [linux-kernel]Why there are so many struct rw_semaphore being defined?
+Date: Wed, 4 Jul 2007 11:15:06 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <4104961b0707040207r7fd9054bvfd33830827102acf@mail.gmail.com>
+In-Reply-To: <4104961b0707040207r7fd9054bvfd33830827102acf@mail.gmail.com>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Big sized packets have been dropped strangly
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Jul 2007 09:11:14.0456 (UTC) FILETIME=[459B7980:01C7BE1B]
+Content-Disposition: inline
+Message-Id: <200707041115.06233.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Guys,
+Am Mittwoch, 4. Juli 2007 schrieb jidong xiao:
+> I see struct rw_semaphore is defined in
+> include/linux/rwsem-spinlock.h,in the meanwhile, I also can find it in
 
-I got a strange problem recently but no ideas, so to post the question 
-here. We have a FPGA what finish ATM AAL5 to ethernet frame, and CPU 
-receives IP packets from it. The interface based on the FPGA (called 
-sar0) has been bound with several IP addresses. When the MTU of the 
-interface is configurated to 1500, trivial packets can be received, but 
-big-sized packets are dropped. If the MTU is increased to 9500, 
-everything is ok except the NFS connection. We mounted with another 
-machine through sar0. When the MTU is 9500, the speed of the NFS becomes 
-very very slow (it almost took 10 minutes to transfer 100KB files).
+Quote:
 
-I don't know why it is and how to solve it. Any suggestions are appreciated!
+#ifndef _LINUX_RWSEM_H
+#error "please don't include linux/rwsem-spinlock.h directly, use linux/rwsem.h instead"
+#endif
 
-Thanks,
-Gavin
+> include/asm-**/rwsem.h,for
+> example,include/asm-i386/rwsem.h,include/asm-x86_64/rwsem.h,why?which
+> one should be used?
+
+This structure is so important to performance that some architectures
+have version optimized to their features.
+
+	Regards
+		Oliver
