@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761148AbXGDAf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXGDA6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761148AbXGDAf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 20:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760888AbXGDAef
+	id S1758157AbXGDA6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 20:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXGDA6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 20:34:35 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:45627 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760855AbXGDAee (ORCPT
+	Tue, 3 Jul 2007 20:58:31 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56107
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753933AbXGDA6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 20:34:34 -0400
-Date: Wed, 4 Jul 2007 01:34:24 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Message-ID: <20070704003424.GA30958@srcf.ucam.org>
-References: <fa.ftLWBLCc+XqdYjiuxoPg+qyuUOE@ifi.uio.no> <fa.Oxrm8HYXTOF4jv5LrTjEe16lCE0@ifi.uio.no> <fa.d3GOse+YbAb42uYwLymWkJiH9Fw@ifi.uio.no> <468AE700.7080102@shaw.ca>
+	Tue, 3 Jul 2007 20:58:30 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][Documentation][resend] Add missing files and dirs to 00-INDEX in Documentation/
+Date: Tue, 3 Jul 2007 20:58:25 -0400
+User-Agent: KMail/1.9.6
+Cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, trivial@kernel.org
+References: <200707010106.00181.jesper.juhl@gmail.com> <20070703125852.0172a588.akpm@linux-foundation.org>
+In-Reply-To: <20070703125852.0172a588.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <468AE700.7080102@shaw.ca>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Message-Id: <200707032058.26512.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 06:17:04PM -0600, Robert Hancock wrote:
-> Matthew Garrett wrote:
-> >Leave the process blocked and defer any i/o until after resume. Why does 
-> >it need to be any more complicated than that?
-> 
-> It gets complicated when this has to be added and TESTED in EVERY 
-> driver. The implied contract for drivers previously was that their 
-> device would not get accessed after it was suspended until it had been 
-> resumed first. This proposed change violates that.
+On Tuesday 03 July 2007 15:58:52 Andrew Morton wrote:
+> On Sun, 1 Jul 2007 01:05:59 +0200
+>
+> Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> > This patch adds descriptions for a number of missing files and
+> > directories to the Documentation/00-INDEX file.
+> > People really should learn to keep this file up-to-date when adding or
+> > moving documentation...
+>
+> Or just delete it.  Does anyone use it?
+>
+> That's Rob's problem, I guess.
 
-No, that's only ever been true for ACPI systems. It's never been true 
-elsewhere, and it won't be true for anything implementing any sort of 
-runtime power management.
+Documentation/* is a gigantic mess, currently organized based on where random 
+passers-by put things down last.  I posted a couple of patches to do minor 
+cleanups to it last month, but since then I've put that on the back burner, 
+because Documentation/* can't do what I need.
 
-> I don't think this sort of handling is something that individual drivers 
-> should have to deal with (at least not ones that are part of a framework 
-> like USB, libata, etc.)
+I spent the first month of the documentation fellowship trying to find all the 
+kernel documentation I could, and figure out how to organize it.  It would be 
+easy to pile up a big heap (that's sort of what http://kernel.org/docs has 
+now, and that's less than half of what I've tracked down), but the hard part 
+is _organizing_ it.  I can't figure out what _isn't_ documented until I have 
+a handle on what _is_ documented.  (And then I can worry about documentation 
+being stale, incomplete, or simply wrong...)
 
-I'd agree there. Driver midlayers (where they exist) are the appropriate 
-place to handle this.
+I was looking at the Documentation directory in the kernel as the primary 
+source of documentation and the core around which the rest could be 
+organized: but it isn't.  Out on the internet there are 8 gazillion other 
+sources of documentation for the Linux kernel: OLS papers, the LWN kernel 
+article index, wikis, developer blogs, specifications, online books, things 
+on sourceforge...  most of that is NEVER getting indexed into Documentation/* 
+because it's HTML or PDF under various different non-gpl licenses, and the 
+Documentation directory contains text files.
 
+The fact that Documentation is text means it can't easily link out to 
+resources that live on the web.  The index I need to organize all this stuff 
+with must be HTML because huge chunks of it simply aren't local.  The kernel 
+generates HTML documentation via "make htmldocs", but that can't even 
+coherently link to everything in the Documentation directory today, let alone 
+the whole web, because it's generated by grepping through the kernel sources 
+and that imposes a strong structure on it that makes it bad for indexing 
+things outside itself.  It can be linked _into_ by an external index, but it 
+can't easily BE an index composed primarily of external references.  That's 
+not what it's for.  So that's out too.
+
+I intend to integrate the existing 00-index into the new index (the bare 
+skeleton of which just went up at http://kernel.org/doc earlier today, 
+although expect it to change a lot as links and sub-pages get added and I 
+generally go "what was I THINKING?").  And I'll be adding in all the stuff 
+that ISN'T in 00-index, too.  I need to set up a link checker to detect 404 
+and also detect files that aren't linked from anywhere in my local set of 
+directories...
+
+I have a mercurial archive at http://landley.net/hg/kdocs which I'll accept 
+patches into (it's deeply unimpressive at the moment, I'm working on it), and 
+I'd like said patches cc:'d to linux-doc@vger.kernel.org which I'm trying to 
+resurrect.  I also might shuffle all the stuff I'm mirroring (like 
+http://kernel.org/doc/ols) into its own mirror/* subdirectory for easier 
+mirroring if other people want a local copy of this stuff, I'm still trying 
+to figure out the best way to organize all this.  (I'd prefer not to confuse 
+google by having multiple live mirrors out on the web, but hey: it's a free 
+country.)  
+
+Keep in mind my previous laptop died a month ago, and my new one arrived the 
+monday before OLS, at which my todo list got much longer.  I'm still catching 
+up.  Organizing is the hard part.  Just _writing_ documentation is 
+comparatively easy...
+
+Rob
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
