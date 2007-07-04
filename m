@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbXGDPmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbXGDPoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755735AbXGDPmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 11:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbXGDPmH
+	id S1755179AbXGDPoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 11:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXGDPoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 11:42:07 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4775 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752934AbXGDPmG (ORCPT
+	Wed, 4 Jul 2007 11:44:12 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:23517 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751347AbXGDPoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 11:42:06 -0400
-Date: Wed, 4 Jul 2007 11:42:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Paul Mackerras <paulus@samba.org>
-cc: Miklos Szeredi <miklos@szeredi.hu>, <rjw@sisk.pl>, <mjg59@srcf.ucam.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
- pathway
-In-Reply-To: <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
-Message-ID: <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org>
+	Wed, 4 Jul 2007 11:44:11 -0400
+Date: Wed, 4 Jul 2007 18:44:05 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Some NCQ numbers...
+Message-ID: <20070704154405.GA27166@localdomain>
+References: <468392CE.6010206@msgid.tls.msk.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <468392CE.6010206@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Miklos Szeredi wrote:
-
-> And we won't know if drivers are OK until we remove the freezer,
-> catch-22.
+On Thu, Jun 28, 2007 at 02:51:58PM +0400, Michael Tokarev wrote:
+>[..]
+> Test machine was using MPTSAS driver for the following card:
+>   SCSI storage controller: LSI Logic / Symbios Logic SAS1064E PCI-Express Fusion-MPT SAS (rev 02)
 > 
-> So I think we need to disable the freezer at least in -mm and/or
-> optionally in -linus.
-> 
-> I applied Matthew's patch, and suspend did in fact stop working
-> (thinkpad t60), but there was nothing catastrophic.  Here's the dmesg
-> if somebody is interested:
-> 
-> Suspending console(s)
-> usb_endpoint usbdev5.3_ep83: PM: suspend 0->2, parent 5-2:1.0 already 2
-> usb_endpoint usbdev5.3_ep02: PM: suspend 0->2, parent 5-2:1.0 already 2
-> usb_endpoint usbdev5.3_ep81: PM: suspend 0->2, parent 5-2:1.0 already 2
-> hub 2-0:1.0: suspend error -16
-> suspend_device(): usb_suspend+0x0/0x1c() returns -16
-> Could not suspend device usb2: error -16
-> usb_endpoint usbdev5.3_ep81: PM: resume from 0, parent 5-2:1.0 still 2
-> usb_endpoint usbdev5.3_ep02: PM: resume from 0, parent 5-2:1.0 still 2
-> usb_endpoint usbdev5.3_ep83: PM: resume from 0, parent 5-2:1.0 still 2
-> Some devices failed to suspend
+> Pretty similar results were obtained on an AHCI controller:
+>   SATA controller: Intel Corporation 82801GR/GH (ICH7 Family) Serial ATA Storage Controller AHCI (rev 01)
+> on another machines.
 
-Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-wanting to resume devices during a system suspend transition?  This is
-exactly what happens when those threads aren't frozen.
+Are you sure that NCQ was enabled between the controller and drive? 
+Did you verify this? I know about some versions that disable NCQ 
+support internally in their firmware (something to do with bugs in
+error handling).
 
-Alan Stern
-
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
