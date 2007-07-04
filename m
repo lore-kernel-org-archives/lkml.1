@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759786AbXGDKIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbXGDKNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759786AbXGDKIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758318AbXGDKIk
+	id S1759983AbXGDKNd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757669AbXGDKN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:08:40 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:52194 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757266AbXGDKIk convert rfc822-to-8bit (ORCPT
+	Wed, 4 Jul 2007 06:13:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:10659 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757539AbXGDKNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:08:40 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 12:08:40 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707041039.30015.oliver@neukum.org> <18059.26259.765791.62319@cargo.ozlabs.ibm.com>
-In-Reply-To: <18059.26259.765791.62319@cargo.ozlabs.ibm.com>
+	Wed, 4 Jul 2007 06:13:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AOPC/4RmYuRW/aj7z1sUUggwxXKlGXjIvArUfXaJBMyMympdjJe6QsumJb1iK5eMmv+iF/d3NcHJCrJF8YfZWYbEFHy/5hJLJ0YsjaNwnDme1J8eBddxatANyQ37Z71AO5IyigveMZM6VO1xYJfdpZYCmtAFiJkjr2OTMPjkw1o=
+Message-ID: <9a8748490707040313g4f89dfe2obf9ff73d5ef22307@mail.gmail.com>
+Date: Wed, 4 Jul 2007 12:13:24 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Turbo Fredriksson" <turbo@bayour.com>
+Subject: Re: Forcibly remove broken disk from LV
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <87lkdwa4sb.fsf@pumba.bayour.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707041208.40735.oliver@neukum.org>
+References: <87lkdwa4sb.fsf@pumba.bayour.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
-> Oliver Neukum writes:
-> 
-> > > It's not lost, it's sitting in RAM, and will be sent out when you
-> > > resume.
-> > 
-> > Unfortunately this is not the case. The URB will error out.
-> 
-> So the higher-level driver needs to do the sensible thing, i.e.,
-> resubmit the URB after resume.  It's not rocket science.  The data is
-> not lost, it's sitting in RAM, and the higher-level driver will send
-> it out when you resume.  If not, then we fix the higher-level driver.
+On 04/07/07, Turbo Fredriksson <turbo@bayour.com> wrote:
+> I have a disk that only gives SCSI errors etc which
+> I want to remove from the VG. But vgreduce only hangs
+> and so does pvremove...
+>
+> If I physically remove the disk, the vg/pv/lv etc isn't
+> accessible so the vgreduce won't work (claims that it
+> can't find any PV's etc).
+>
+> So how do I remove the disk?
 
-You cannot simply restart the URB without thinking.
-The device after resumption may or may not be in the stage
-you left it. It needs to be rechecked and some settings must be
-renewed. You cannot simple throw an URB from an arbitrary
-stage of the protocol at it.
-Suspension of devices can only happen at some points
-in the protocol.
+vgreduce --removemissing
 
-	Oliver
+should do the trick I'd say.
 
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
