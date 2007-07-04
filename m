@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbXGDVNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757826AbXGDVOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625AbXGDVNy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 17:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXGDVNq
+	id S1757826AbXGDVOU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 17:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXGDVOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 17:13:46 -0400
-Received: from main.gmane.org ([80.91.229.2]:55050 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755048AbXGDVNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 17:13:45 -0400
-X-Injected-Via-Gmane: http://gmane.org/
+	Wed, 4 Jul 2007 17:14:05 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41067 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759372AbXGDVOB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 17:14:01 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 4 Jul 2007 23:13:53 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] ieee1394: raw1394: fix a 32/64-bits compat fix
 To: linux-kernel@vger.kernel.org
-From: Thomas Backlund <tmb@mandriva.org>
-Subject: Re: speed trends in pata world.
-Date: Thu, 05 Jul 2007 00:13:50 +0300
-Message-ID: <f6h2ho$b44$1@sea.gmane.org>
-References: <200707041550.22533.gene.heskett@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: ndn243.bob.fi
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-In-Reply-To: <200707041550.22533.gene.heskett@gmail.com>
+cc: linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.b9bdb16d8ffd3fd1@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett skrev:
-> Greetings;
-> 
-> The drive speeds seem to be going the wrong way.  Its an nforce2 equipt mobo, 
-> and I have 3 drives currently in this box.  Running 2.6.22-rc6-cfs-v18 + the 
-> ftdi_sio.c patch.
-> 
-> hda, the primary on cable 0, is running at around 28MB/Sec.  Its a 200GB WD 
-> about 2 years old.
-> 
+I was told that only i386 aligns 64 bit integers at 4 bytes boundaries
+while all other architectures (32 bit architectures with 64 bit
+siblings) align it on 8 bytes boundaries.
 
-Looks like this one is stuck at UDMA/33
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/raw1394.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Check the dmesg what the kernel detects, and why it ends up at low speed...
+Index: linux/drivers/ieee1394/raw1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/raw1394.c
++++ linux/drivers/ieee1394/raw1394.c
+@@ -434,7 +434,11 @@ struct compat_raw1394_req {
+ 
+ 	__u64 sendb;
+ 	__u64 recvb;
+-} __attribute__((packed));
++}
++#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
++__attribute__((packed))
++#endif
++;
+ 
+ static const char __user *raw1394_compat_write(const char __user *buf)
+ {
 
-> hdb, is running at around 79MB/Sec, its a 4 year old 120GB WD.
-> hdd is running at about 75MB/Sec, is a nearly new 300GB WD.
-> 
-> Can I read anything into the fact that the 2 fast drives are on the slave end 
-> of the cables, whereas the slow one is master in the middle of the cable?
-> 
-
---
-Thomas
+-- 
+Stefan Richter
+-=====-=-=== -=== --=--
+http://arcgraph.de/sr/
 
