@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbXGDKqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760686AbXGDKq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758276AbXGDKqN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbXGDKp4
+	id S1760686AbXGDKq1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbXGDKqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:45:56 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60469 "EHLO mx2.suse.de"
+	Wed, 4 Jul 2007 06:46:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:44428 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754330AbXGDKpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:45:55 -0400
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: neilb@suse.de, raziebe@gmail.com, akpm@linux-foundation.org,
-       davidsen@tmr.com, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: [RFC PATCH 0/2] raid5: 65% sequential-write performance improvement, stripe-queue take2
-References: <20070703231838.17500.34505.stgit@dwillia2-linux.ch.intel.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 04 Jul 2007 13:41:26 +0200
-In-Reply-To: <20070703231838.17500.34505.stgit@dwillia2-linux.ch.intel.com>
-Message-ID: <p73wsxg2y6x.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1759973AbXGDKqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:46:16 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18059.31346.806801.871454@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 20:46:10 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+In-Reply-To: <200707041208.40735.oliver@neukum.org>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707041039.30015.oliver@neukum.org>
+	<18059.26259.765791.62319@cargo.ozlabs.ibm.com>
+	<200707041208.40735.oliver@neukum.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams <dan.j.williams@intel.com> writes:
+Oliver Neukum writes:
 
-> The write performance numbers are better than I expected and would seem
-> to address the concerns raised in the thread "Odd (slow) RAID
-> performance"[2].  The read performance drop was not expected.  However,
-> the numbers suggest some additional changes to be made to the queuing
-> model.
+> You cannot simply restart the URB without thinking.
+> The device after resumption may or may not be in the stage
+> you left it. It needs to be rechecked and some settings must be
+> renewed. You cannot simple throw an URB from an arbitrary
+> stage of the protocol at it.
+> Suspension of devices can only happen at some points
+> in the protocol.
 
-Have you considered supporting copy-xor in MD for non accelerated
-RAID? I've been looking at fixing the old dubious slow crufty x86 SSE
-XOR functions. One thing I discovered is that it seems fairly
-pointless to make them slower with cache avoidance when most of the data is
-copied before anyways. I think much more advantage could be gotten by
-supporting copy-xor because XORing during a copy should be nearly
-free.
+Yeah, and?
 
-On the other hand ext3 write() also uses a cache avoiding copy now
-and for the XOR it would need to load the data from memory again.
-Perhaps this could be also optimized somehow (e.g. setting a flag
-somewhere and using a normal copy for the RAID-5 case)
+I said "the higher-level driver needs to do the sensible thing".
 
--Andi
-
+Paul.
