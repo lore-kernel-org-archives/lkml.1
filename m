@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbXGDImW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbXGDItW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759333AbXGDImW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 04:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbXGDImN
+	id S1758270AbXGDItW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 04:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbXGDItN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 04:42:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34253 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756052AbXGDImM (ORCPT
+	Wed, 4 Jul 2007 04:49:13 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39905 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755301AbXGDItN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 04:42:12 -0400
-Date: Wed, 4 Jul 2007 09:42:11 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Karel Zak <kzak@redhat.com>
-Cc: List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-Message-ID: <20070704084211.GA19128@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Karel Zak <kzak@redhat.com>,
-	List util-linux-ng <util-linux-ng@vger.kernel.org>,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20070703221156.GY14825@petra.dvoda.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 4 Jul 2007 04:49:13 -0400
+From: MUNEDA Takahiro <muneda.takahiro@jp.fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.22-rc7] remove duplicate header include line
+Date: Wed, 4 Jul 2007 17:48:32 +0900
+User-Agent: KMail/1.9.7
+Cc: muneda.takahiro@jp.fujitsu.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070703221156.GY14825@petra.dvoda.cz>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200707041748.35104.muneda.takahiro@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 04, 2007 at 12:11:56AM +0200, Karel Zak wrote:
->  mount(8) doesn't include filesystem detection code anymore. You
->  have to compile --with-fsprobe={blkid,volume_id}, and libblkid
->  (e2fsprogs) or libvolume_id (udev >= v110) is required.
+Hi,
 
-Sorry, but it's really annoying to pull in a filesystem-specific devel
-package for that.  Having a library is fine, but please move the library
-into util-linux so it's always available without another dependency.  That
-way xfsprogs could for example drop it's own detection library aswell.
+<linux/pci.h> is included twice. This patch removes the duplication.
+I've confirmed the binary file with/without patch is completely same.
 
->  The package build system is now based on autotools. The build system
->  supports  separate CFLAGS and LDFLAGS for suid programs (SUID_CFLAGS,
->  SUID_LDFLAGS). For more details see the README file
+Thanks,
+MUNE
 
-And this is really dumb.  autotools is a completely pain in the ass and
-not useful at all for linux-only tools.
+Remove duplicate header include line from arch/i386/kernel/pci-dma.c
+
+Signed-off-by: MUNEDA Takahiro <muneda.takahiro@jp.fujitsu.com>
+
+---
+ arch/i386/kernel/pci-dma.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+Index: linux-2.6.22-rc7/arch/i386/kernel/pci-dma.c
+===================================================================
+--- linux-2.6.22-rc7.orig/arch/i386/kernel/pci-dma.c	2007-07-04 17:09:03.000000000 +0900
++++ linux-2.6.22-rc7/arch/i386/kernel/pci-dma.c	2007-07-04 17:09:14.000000000 +0900
+@@ -12,7 +12,6 @@
+ #include <linux/string.h>
+ #include <linux/pci.h>
+ #include <linux/module.h>
+-#include <linux/pci.h>
+ #include <asm/io.h>
+ 
+ struct dma_coherent_mem {
 
