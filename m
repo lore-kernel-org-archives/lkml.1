@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762273AbXGDOpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762345AbXGDOqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762273AbXGDOpm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760241AbXGDOpe
+	id S1762345AbXGDOqZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760692AbXGDOqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:45:34 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:50416 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758422AbXGDOpd (ORCPT
+	Wed, 4 Jul 2007 10:46:17 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:54896 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758422AbXGDOqQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:45:33 -0400
-Subject: Re: [PATCH] Re: Sparc32: random invalid instruction occourances on
-	sparc32 (sun4c)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Christoph Lameter <clameter@engr.sgi.com>,
-       William Lee Irwin III <wli@holomorphy.com>
-In-Reply-To: <Pine.LNX.4.61.0707041121290.31752@mtfhpc.demon.co.uk>
-References: <468A7D14.1050505@googlemail.com>
-	 <Pine.LNX.4.61.0707031817050.29930@mtfhpc.demon.co.uk>
-	 <Pine.LNX.4.61.0707031910280.29930@mtfhpc.demon.co.uk>
-	 <1183490778.29081.35.camel@shinybook.infradead.org>
-	 <Pine.LNX.4.61.0707032209230.30376@mtfhpc.demon.co.uk>
-	 <1183499781.29081.46.camel@shinybook.infradead.org>
-	 <Pine.LNX.4.61.0707032317590.30376@mtfhpc.demon.co.uk>
-	 <1183505787.29081.62.camel@shinybook.infradead.org>
-	 <Pine.LNX.4.61.0707040335230.30946@mtfhpc.demon.co.uk>
-	 <1183520006.29081.79.camel@shinybook.infradead.org>
-	 <Pine.LNX.4.61.0707041121290.31752@mtfhpc.demon.co.uk>
-Content-Type: text/plain
-Date: Wed, 04 Jul 2007 10:46:03 -0400
-Message-Id: <1183560364.29081.106.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 4 Jul 2007 10:46:16 -0400
+To: rjw@sisk.pl
+CC: paulus@samba.org, mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <200707041641.58883.rjw@sisk.pl>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+References: <20070703211227.GA28758@srcf.ucam.org> <200707041325.55779.rjw@sisk.pl> <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu> <200707041641.58883.rjw@sisk.pl>
+Message-Id: <E1I666o-0006wu-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 04 Jul 2007 16:45:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-04 at 11:27 +0100, Mark Fortescue wrote:
-> Another related point that may also need to be considered is that I think 
-> I am correct in saying that on ARM and on the 64bit platforms, sizeof 
-> (unsigned long long) is 16 (128bits).
+> On Wednesday, 4 July 2007 13:51, Miklos Szeredi wrote:
+> > > Still, my position is this:
+> > > 
+> > > 1) The freezer (in the modified form, with the freezing of kernel threads
+> > > limited to the ones that want to be frozen) is needed for hibernation.
+> > > 
+> > > 2) The freezer is generally not needed for suspend, _but_ there are drivers
+> > > in the tree that rely on it being used.  Thus, at some point in time we can
+> > > remove the freezer from the suspend code path, _but_ no sooner than we are
+> > > sure that the majority of drivers is prepared for that.
+> > 
+> > And we won't know if drivers are OK until we remove the freezer,
+> > catch-22.
+> 
+> I disagree.  We can learn that by auditing the drivers.
 
-No, it's always 64 bits.
+In theory, yes.  But it scales far worse than letting everyone
+experiment/report/fix problems as they crop up.
 
-> Should the RedZone words be specified as __u64 not the unsigned long long 
-> used or does the alignment need to be that of unsigned long long ?
+> > So I think we need to disable the freezer at least in -mm and/or
+> > optionally in -linus.
+> > 
+> > I applied Matthew's patch, and suspend did in fact stop working
+> > (thinkpad t60), but there was nothing catastrophic.  Here's the dmesg
+> > if somebody is interested:
+> > 
+> > Suspending console(s)
+> > usb_endpoint usbdev5.3_ep83: PM: suspend 0->2, parent 5-2:1.0 already 2
+> > usb_endpoint usbdev5.3_ep02: PM: suspend 0->2, parent 5-2:1.0 already 2
+> > usb_endpoint usbdev5.3_ep81: PM: suspend 0->2, parent 5-2:1.0 already 2
+> > hub 2-0:1.0: suspend error -16
+> > suspend_device(): usb_suspend+0x0/0x1c() returns -16
+> > Could not suspend device usb2: error -16
+> > usb_endpoint usbdev5.3_ep81: PM: resume from 0, parent 5-2:1.0 still 2
+> > usb_endpoint usbdev5.3_ep02: PM: resume from 0, parent 5-2:1.0 still 2
+> > usb_endpoint usbdev5.3_ep83: PM: resume from 0, parent 5-2:1.0 still 2
+> > Some devices failed to suspend
+> 
+> No, it's not catastrophic, but something like this will result in a
+> bug report with "regression" in the subject.
 
-You have to play silly buggers with printk formats (%lx vs. %llx) if you
-do that. And you have to make a choice about using proper C types or the
-Linux-specific nonsense. 'unsigned long long' is just easier all round.
+If it was due to a config option marked experimental, then it's not a
+regression.
 
--- 
-dwmw2
+It's a bug, and it needs looking at, but while the freezer is not
+completely removed, it's not a serious problem.
 
+So I agree with Ted, a config option (or maybe a runtime sysctl
+tunable) to turn off the freezer for suspend should only have positive
+effects.
+
+Miklos
