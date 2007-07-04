@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbXGDMBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbXGDMEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760637AbXGDMBQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 08:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbXGDMBB
+	id S1761370AbXGDMEI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 08:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbXGDMDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 08:01:01 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:11389 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756338AbXGDMBA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 08:01:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Y1e69pKKIGy6DyYmpT+8yyoxtgFAMv9829mGkAIJ5Yx19g8N3NOogY5k2f9fLl1DqQhv0TIw83eo3tzxFQ4Bilb0RJ9oywLJTEB7UpRp2KDaqUpaEzxWY92UYNx5rrT/4Yn4r4TjSluAl2qQrWVXSN2GKnjCEt0AFaFTyIcXZDc=
-Message-ID: <fb249edb0707040500o42e945afr9040cbd268942555@mail.gmail.com>
-Date: Wed, 4 Jul 2007 14:00:58 +0200
-From: "andrzej zaborowski" <balrogg@gmail.com>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: Don't miss the ARM-scsi fix.
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <20070703193104.GA27542@flint.arm.linux.org.uk>
+	Wed, 4 Jul 2007 08:03:54 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:48858 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757152AbXGDMDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 08:03:53 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Wed, 4 Jul 2007 17:55:15 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
+       Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC][PATCH -mm 0/9] netconsole: Multiple targets and dynamic
+ reconfigurability
+In-Reply-To: <468B8952.9030205@bx.jp.nec.com>
+Message-ID: <Pine.LNX.4.64.0707041752210.29756@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <468B8952.9030205@bx.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200707031503.56561.rob@landley.net>
-	 <20070703122145.447c7d2c.akpm@linux-foundation.org>
-	 <20070703193104.GA27542@flint.arm.linux.org.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/07/07, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> On Tue, Jul 03, 2007 at 12:21:45PM -0700, Andrew Morton wrote:
-> > On Tue, 3 Jul 2007 15:03:56 -0400
-> > Rob Landley <rob@landley.net> wrote:
-> > > diff --git a/arch/arm/mach-versatile/pci.c b/arch/arm/mach-versatile/pci.c
-> > > index ba58223..ca82901 100644
-> > > --- a/arch/arm/mach-versatile/pci.c
-> > > +++ b/arch/arm/mach-versatile/pci.c
-> > > @@ -117,7 +117,10 @@ static int versatile_read_config(struct pci_bus *bus, unsigned int devfn, int wh
-> > >     } else {
-> > >             switch (size) {
-> > >             case 1:
-> > > -                   v = __raw_readb(addr);
-> > > +                   v = __raw_readl(addr);
-> > > +                   if (where & 2) v >>= 16;
-> > > +                   if (where & 1) v >>= 8;
-> >
-> > Someone's enter key broke?
->
-> Probably, but I'd rather have the fix in than worry about that at this
-> stage.
+Hi Keiichi,
 
-It's just the case of being consistent with the already broken style
-in a function vs. correct style and inconsistency. I can never decide.
+On Wed, 4 Jul 2007, Keiichi KII wrote:
+> [...]
+> At first, thank you for your helping.
+> I'm going to try/review your patches.
+> 
+> >[ I had initially thought about only modifying Keiichi's patches to
+> >incorporate the suggested stuff, sysfs+ioctl->configfs conversion, etc,
+> >but the changes became too much and I ultimately ended up rewriting the
+> >patchset. This also gave the flexibility to make other changes possible.
+> >Keiichi, Takayoshi, kindly review this, and if OK, please give your
+> >Signed-off-by:'s to the patches herein. ]
+> 
+> By the way, how can I add Signed-off-by:'s to your patches?
+> Should I add it to each patch and submit them to this list again?
+> 
+> Anybody could give me an advice?
 
-Regards,
+I think you could just individually reply to all the mails and replace
+the "Cc:" in front of your name + email ID with "Signed-off-by:" --
+after reviewing & testing this, of course!
+
+Thanks,
+Satyam
