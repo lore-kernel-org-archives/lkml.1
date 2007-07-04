@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbXGDMLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761231AbXGDMNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760764AbXGDMLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 08:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbXGDMLf
+	id S1761231AbXGDMNO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 08:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758558AbXGDMM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 08:11:35 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47146 "EHLO
+	Wed, 4 Jul 2007 08:12:59 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47150 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754849AbXGDMLe (ORCPT
+	with ESMTP id S1756773AbXGDMM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 08:11:34 -0400
-Date: Wed, 4 Jul 2007 13:17:46 +0100
+	Wed, 4 Jul 2007 08:12:58 -0400
+Date: Wed, 4 Jul 2007 13:19:14 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Andi Kleen <andi@firstfloor.org>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
 Subject: Re: Libata PATA status
-Message-ID: <20070704131746.4bbe4d0e@the-village.bc.nu>
+Message-ID: <20070704131914.2d892800@the-village.bc.nu>
 In-Reply-To: <p73k5tg2uj9.fsf@bingen.suse.de>
 References: <20070703185116.59c8f5f5@the-village.bc.nu>
 	<p73k5tg2uj9.fsf@bingen.suse.de>
@@ -36,15 +36,11 @@ Andi Kleen <andi@firstfloor.org> wrote:
 > > 
 > > Post SRST 
 > What is SRST?
-> 
-> My personal wish list feature would be a little forwarder driver
-> to forward /dev/hd* to /dev/sd* for this; then old IDE could be
-> disabled without risking breaking old root file systems.
 
-That would be udevd for new systems or "ln -s" for old ones ? 
 
-I don't see a way to build that "simple" forwarder because the device
-allocation is now dynamic rather than tied to specific device on specific
-port - a concept with really no meaning any more.
+Sorry missed the first question.
 
-Alan
+SRST is the reset signal used when you want to set up (or beat back into
+sanity) an IDE bus. It causes a specific set of actions that put the
+drives back into a partly known state and hopefully lets you sort
+problems out - much like a SCS bus reset.
