@@ -1,36 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbXGDEEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbXGDETH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbXGDEEo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 00:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbXGDEEf
+	id S1754875AbXGDETH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 00:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbXGDESz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 00:04:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55779 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750707AbXGDEEe (ORCPT
+	Wed, 4 Jul 2007 00:18:55 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47962 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbXGDESy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 00:04:34 -0400
-Date: Tue, 3 Jul 2007 21:04:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc6-mm1 -- Problems with suspend/resume.
-Message-Id: <20070703210426.9d1ec62f.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0707032045wa35095dg794608c2fd6d6633@mail.gmail.com>
-References: <a44ae5cd0707031809p3d7c3b68gf2d5633736bb4f3@mail.gmail.com>
-	<20070703183406.3cd17bc6.akpm@linux-foundation.org>
-	<a44ae5cd0707032045wa35095dg794608c2fd6d6633@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jul 2007 00:18:54 -0400
+Date: Tue, 3 Jul 2007 21:14:11 -0700
+From: Greg KH <greg@kroah.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       "Ni@m" <niam.niam@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: pci hidden behind transparent bridge
+Message-ID: <20070704041411.GC27776@kroah.com>
+References: <a9e22dff0707021209i13718d72p84160c4d3ff89e4@mail.gmail.com> <6bffcb0e0707030900k66defc1bi3ff8e70b23a050bf@mail.gmail.com> <20070703172506.GE18725@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070703172506.GE18725@redhat.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jul 2007 20:45:41 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+On Tue, Jul 03, 2007 at 01:25:06PM -0400, Dave Jones wrote:
+> On Tue, Jul 03, 2007 at 06:00:14PM +0200, Michal Piotrowski wrote:
+>  > Hi,
+>  > 
+>  > On 02/07/07, Ni@m <niam.niam@gmail.com> wrote:
+>  > > Hi! I noticed such message:
+>  > >
+>  > > "PCI: Bus #07 (-#0a) is hidden behind transparent bridge #06 (-#06)
+>  > > (try 'pci=assign-busses')
+>  > > Please report the result to linux-kernel to fix this permanently"
+>  > >
+>  > > on my
+>  > > Linux niam 2.6.22-rc6-cfs-v18 #6 Mon Jul 2 20:19:25 EEST 2007 i686
+>  > > Intel(R) Celeron(R) M processor 1.50GHz GenuineIntel GNU/Linux
+>  > >
+>  > > What does it mean??
+>  > 
+>  > Is this a regressions?
+> 
+> There's about 8 gazillion of these reports that have been in bugzilla
+> since the dinosaurs roamed the lands.   Just ripping the printk out
+> would be my preference.
 
-> Should I not report stuff like this when it is
-> generated after an OOPS?
+There is a patch in -mm and in my queue for 2.6.23 to revise the message
+to send the information to the correct person responsible for it.
 
-All bets are off if the kernel has oopsed.  Reboot, see if
-the bug still happens without the earlier oops, perhaps.
+thanks,
+
+greg k-h
