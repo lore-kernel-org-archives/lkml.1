@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbXGDKdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759808AbXGDKdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760745AbXGDKdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbXGDKdI
+	id S1759808AbXGDKdz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbXGDKdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:33:08 -0400
-Received: from lucidpixels.com ([75.144.35.66]:46186 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754911AbXGDKdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:33:07 -0400
-Date: Wed, 4 Jul 2007 06:33:06 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Michael Tokarev <mjt@tls.msk.ru>
-cc: Tejun Heo <htejun@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Some NCQ numbers...
-In-Reply-To: <Pine.LNX.4.64.0707040621170.32656@p34.internal.lan>
-Message-ID: <Pine.LNX.4.64.0707040631370.32656@p34.internal.lan>
-References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com>
- <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com>
- <468B6BD7.9010108@msgid.tls.msk.ru> <Pine.LNX.4.64.0707040621170.32656@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 4 Jul 2007 06:33:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45479
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757433AbXGDKdn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:33:43 -0400
+Date: Wed, 04 Jul 2007 03:34:03 -0700 (PDT)
+Message-Id: <20070704.033403.35875194.davem@davemloft.net>
+To: hch@infradead.org
+Cc: kzak@redhat.com, util-linux-ng@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070704084211.GA19128@infradead.org>
+References: <20070703221156.GY14825@petra.dvoda.cz>
+	<20070704084211.GA19128@infradead.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Christoph Hellwig <hch@infradead.org>
+Date: Wed, 4 Jul 2007 09:42:11 +0100
 
-
-On Wed, 4 Jul 2007, Justin Piszcz wrote:
-
-> On Wed, 4 Jul 2007, Michael Tokarev wrote:
+> On Wed, Jul 04, 2007 at 12:11:56AM +0200, Karel Zak wrote:
+> >  mount(8) doesn't include filesystem detection code anymore. You
+> >  have to compile --with-fsprobe={blkid,volume_id}, and libblkid
+> >  (e2fsprogs) or libvolume_id (udev >= v110) is required.
 > 
-> > Tejun Heo wrote:
-> >> Hello,
-> >>
-> >> Michael Tokarev wrote:
-> >>> Well.  It looks like the results does not depend on the
-> >>> elevator.  Originally I tried with deadline, and just
-> >>> re-ran the test with noop (hence the long delay with
-> >>> the answer) - changing linux elevator changes almost
-> >>> nothing in the results - modulo some random "fluctuations".
-> >>
-> >> I see.  Thanks for testing.
-> >
-> > Here are actual results - the tests were still running when
-> > I replied yesterday.
-> >
-> > Again, this is Seagate ST3250620AS "desktop" drive, 7200RPM,
-> > 16Mb cache, 250Gb capacity.  The tests were performed with
-> > queue depth = 64 (on mptsas), drive write cache is turned
-> > off.
+> Sorry, but it's really annoying to pull in a filesystem-specific devel
+> package for that.  Having a library is fine, but please move the library
+> into util-linux so it's always available without another dependency.  That
+> way xfsprogs could for example drop it's own detection library aswell.
+
+I totally agree with Christophe, this dependency is a complete
+pain for trying to do util-linux-ng development.  I meant to
+complain about this myself.
+
+> >  The package build system is now based on autotools. The build system
+> >  supports  separate CFLAGS and LDFLAGS for suid programs (SUID_CFLAGS,
+> >  SUID_LDFLAGS). For more details see the README file
 > 
-> I found AS scheduler to be the premium and best for single-user performance.
-> 
-> You want speed? Use AS.
-> 
-> http://home.comcast.net/~jpiszcz/sched/cfq_vs_as_vs_deadline_vs_noop.html
-> 
->
+> And this is really dumb.  autotools is a completely pain in the ass and
+> not useful at all for linux-only tools.
 
-Does not include noop-- tested the main three though, renamed :)
+I second this sentiment as well.  It's not like we expect this stuff
+to get used on other systems at all, and the only thing it's getting
+used for really is to detect the awful external blkid/volume_id
+dependencies.
 
-http://home.comcast.net/~jpiszcz/sched/cfq_vs_as_vs_deadline.html
-
-And for the archives:
-
-p34-cfq,15696M,77114.3,99,311683,55.3333,184947,38.6667,79842.7,99,524065,41.3333,634.033,0.333333,16:100000:16/64,1043.33,8.33333,4419.33,11.6667,2942,17.3333,1178,10.3333,4192.67,12.3333,2619.33,19
-p34-as,15696M,76202.3,99,443103,85,189716,34.6667,79552,99,507271,39.6667,607.067,0,16:100000:16/64,1153,10,13434,36,2769.67,16.3333,1201.67,10.6667,3951.33,12,2665.67,19
-p34-deadline,15696M,76933.3,98.6667,386852,72,183016,29.6667,79530.7,99,512082,39.6667,678.567,0,16:100000:16/64,1230.33,10.3333,12349,32.3333,2945,17.3333,1258,11,8183,22.3333,2867,20.3333
-
-Justin.
+I totally think this stuff can and should be completely eliminated.
