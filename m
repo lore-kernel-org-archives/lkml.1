@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbXGDPEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761864AbXGDPKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762115AbXGDPEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 11:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758262AbXGDPEe
+	id S1761864AbXGDPKH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 11:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760542AbXGDPJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 11:04:34 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4318 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753816AbXGDPEd (ORCPT
+	Wed, 4 Jul 2007 11:09:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49669 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760450AbXGDPJx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 11:04:33 -0400
-Date: Wed, 4 Jul 2007 11:04:04 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Paul Mackerras <paulus@samba.org>
-cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       <linux-pm@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
- RAM pathway
-In-Reply-To: <18059.7151.841436.329553@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0707041057230.25704-100000@netrider.rowland.org>
+	Wed, 4 Jul 2007 11:09:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Wed, 4 Jul 2007 17:17:04 +0200
+User-Agent: KMail/1.9.5
+Cc: Miklos Szeredi <miklos@szeredi.hu>, paulus@samba.org, mjg59@srcf.ucam.org,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070703211227.GA28758@srcf.ucam.org> <E1I666o-0006wu-00@dorka.pomaz.szeredi.hu> <200707041703.21808.oliver@neukum.org>
+In-Reply-To: <200707041703.21808.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707041717.05149.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Paul Mackerras wrote:
-
-> Alan Stern writes:
-> 
-> > > Most drivers suspended their hardware in the second call.  If they are
-> > > in the middle of a conversation with their device that *has* to be
-> > > completed, they can do that by polling.
+On Wednesday, 4 July 2007 17:03, Oliver Neukum wrote:
+> Am Mittwoch, 4. Juli 2007 schrieb Miklos Szeredi:
+> > > > And we won't know if drivers are OK until we remove the freezer,
+> > > > catch-22.
+> > > 
+> > > I disagree.  We can learn that by auditing the drivers.
 > > 
-> > Ugh.  That will cause problems when you try to integrate runtime 
-> > suspend.  In fact this whole approach is unsuitable for runtime PM and 
-> > it obscures the similarities between runtime PM and STR.
+> > In theory, yes.  But it scales far worse than letting everyone
+> > experiment/report/fix problems as they crop up.
 > 
-> Yes there are similarities, but it would be a big mistake to say that
-> a requirement for STR is that all drivers do runtime PM.
+> You will open many but small races. This would be very painfull
+> to debug.
 
-That's not what I'm saying.  What I'm saying is that it would be a big 
-mistake to force all drivers which implement runtime PM to do it using 
-a separate code path from system PM.
+Agreed.
 
-> The main attraction of the late-suspend call is that it really does,
-> reliably, guarantee that the driver's I/O request methods won't get
-> called between the late-suspend call and the early-resume call.
+They will not trigger 100% of the time, but sporadically and generally at
+random.
 
-For some drivers (like USB), carrying out an actual suspend requires a
-delay.  Right now we implement those delays using wait_event(),
-wait_for_completion(), and so on.  Would you have us check at runtime
-whether or not a system suspend is underway and in each case use a
-busy-loop instead if it is?
+At least the freezer problems are reproducible. ;-)
 
-What happens if, in order to carry out the late-suspend, a driver needs
-to acquire a mutex which happens to be held by some other task?  That
-other task won't be able to run and release the mutex, so you will
-deadlock.
+Greetings,
+Rafael
 
-Alan Stern
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
