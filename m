@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760454AbXGDKW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760917AbXGDKXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760454AbXGDKW7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757955AbXGDKWu
+	id S1760917AbXGDKXb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757955AbXGDKXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:22:50 -0400
-Received: from lucidpixels.com ([75.144.35.66]:51477 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757433AbXGDKWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:22:49 -0400
-Date: Wed, 4 Jul 2007 06:22:48 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Michael Tokarev <mjt@tls.msk.ru>
-cc: Tejun Heo <htejun@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Some NCQ numbers...
-In-Reply-To: <468B6BD7.9010108@msgid.tls.msk.ru>
-Message-ID: <Pine.LNX.4.64.0707040621170.32656@p34.internal.lan>
-References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com>
- <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com>
- <468B6BD7.9010108@msgid.tls.msk.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 4 Jul 2007 06:23:23 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:40991 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752237AbXGDKXW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:23:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:user-agent;
+	b=r4BdjLFgtIEEbR43B2yiCAKKH0qJU21MPbA+Rt+u52EVeB7Mbr60RyNBsBZGl
+	2n7ILej3VJGaWhwkcRKb9U+rA==
+Date: Wed, 4 Jul 2007 12:23:18 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: tglx@linutronix.de, mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux@arm.linux.org.uk
+Subject: handle_futex_death() infinite loop on ARM (fwd)
+Message-ID: <20070704102318.GA18634@xi.wantstofly.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Michael Tokarev wrote:
+----- Forwarded message from Lennert Buytenhek <buytenh@wantstofly.org> -----
 
-> Tejun Heo wrote:
->> Hello,
->>
->> Michael Tokarev wrote:
->>> Well.  It looks like the results does not depend on the
->>> elevator.  Originally I tried with deadline, and just
->>> re-ran the test with noop (hence the long delay with
->>> the answer) - changing linux elevator changes almost
->>> nothing in the results - modulo some random "fluctuations".
->>
->> I see.  Thanks for testing.
->
-> Here are actual results - the tests were still running when
-> I replied yesterday.
->
-> Again, this is Seagate ST3250620AS "desktop" drive, 7200RPM,
-> 16Mb cache, 250Gb capacity.  The tests were performed with
-> queue depth = 64 (on mptsas), drive write cache is turned
-> off.
+Date: Wed, 13 Jun 2007 20:40:40 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Subject: handle_futex_death() infinite loop
+User-Agent: Mutt/1.4.1i
 
-I found AS scheduler to be the premium and best for single-user performance.
+Hi,
 
-You want speed? Use AS.
+If you're also running into glibc's tst-robust1 test suite test
+locking up your ARM machine, you're probably running into the fact
+that asm-arm/futex.h includes asm-generic/futex.h, and
+asm-generic/futex.h defines futex_atomic_cmpxchg_inatomic() to
+return -ENOSYS.  This causes handle_futex_death() to loop forever.
 
-http://home.comcast.net/~jpiszcz/sched/cfq_vs_as_vs_deadline_vs_noop.html
 
+cheers,
+Lennert
+
+----- End forwarded message -----
