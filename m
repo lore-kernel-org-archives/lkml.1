@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbXGDIvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760164AbXGDIw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760219AbXGDIvo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 04:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758996AbXGDIv1
+	id S1760164AbXGDIw3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 04:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbXGDIwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 04:51:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33920 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758635AbXGDIvZ (ORCPT
+	Wed, 4 Jul 2007 04:52:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:39204 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757299AbXGDIwT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 04:51:25 -0400
-Date: Wed, 4 Jul 2007 09:51:20 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/4] net: use numa_node in net_devcice->dev instead of parent
-Message-ID: <20070704085120.GB19515@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Yinghai Lu <Yinghai.Lu@Sun.COM>,
-	Stephen Hemminger <shemminger@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-	Greg KH <greg@kroah.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	netdev@vger.kernel.org
-References: <200706291330.37070.yinghai.lu@sun.com> <468ABF92.5030800@sun.com> <20070703143407.7e4232f8@freepuppy.localdomain.hemminger.net> <200707031730.51677.yinghai.lu@sun.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707031730.51677.yinghai.lu@sun.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 4 Jul 2007 04:52:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=heJ2lKnseGZopxRXFKkPgFx3QFtxJLveQVHb2QmPb7nov1GYVci9hklp34dvsQzUBERt8bYwFyndi/opN2qfLqlvQc8Ueypk4cPvnoKnKYYWUClMMvdB1mbzqATrTOR3HUQ2GDQJiiEbEtYsRFUr2havNO7hUktzcL9tIhkzLq4=
+Message-ID: <468B5FBD.3040104@gmail.com>
+Date: Wed, 04 Jul 2007 17:52:13 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: 7091@blargh.com, linux-ide@vger.kernel.org, jgarzik@pobox.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sata_sil, writing bug with multiple cards?
+References: <courier.4689EFD9.0000589A@blargh.com> <200707040908.21512.ak@suse.de> <courier.468B579E.00002ECF@blargh.com> <200707041038.57677.ak@suse.de>
+In-Reply-To: <200707041038.57677.ak@suse.de>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 05:30:51PM -0700, Yinghai Lu wrote:
-> [PATCH 2/4] net: use numa_node in net_devcice->dev instead of parent
+Andi Kleen wrote:
+> On Wednesday 04 July 2007 10:17:34 7091@blargh.com wrote:
 > 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-> index 27cfe5f..005cc1c 100644
-> --- a/net/core/skbuff.c
-> +++ b/net/core/skbuff.c
-> @@ -217,7 +217,7 @@ nodata:
->  struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
->  		unsigned int length, gfp_t gfp_mask)
->  {
-> -	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
-> +	int node = dev_to_node(&dev->dev);
+>>> Most likely it is some sort of hardware bug that we might
+>>> not be able to do much about. Have you tried contacting SIL or VIA? 
+>> No, I haven't.  Like I mentioned above, the OpenBSD drivers seemed to work, 
+>> or at least did with similar tests.  I would need to run the more extensive 
+>> checks to be positive, but those take a lot of time, obviously.  And 
+>> downtime for the box, a lot of which isn't really manageable, at the moment. 
+> 
+> Perhaps the OpenBSD drivers program the SIL chip in a different way
+> that avoids this problem. 
+> 
+>>> e.g. if you have some other system with a different chipset it might
+>>> be useful to test the SIL controllers in those.
+>> The previous motherboard was an AMD 760 chipset, and it had the same 
+>> problem. 
+> 
+> Ok this means it's likely a SIL issue, not a chipset issue.
 
-This looks wrong to me unless the device model has once again changed
-silently.  When I wrote this code &dev->dev was a device allocated
-as part of the netdevice and the parent is the pci (or whatever) device
-that has the node information.
+Hmmmm... okay.  I'll take look at the openBSD driver.  I still have no
+idea what it can be tho.  Maybe, FIFO setup?
 
+Thanks.
+
+-- 
+tejun
