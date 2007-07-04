@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbXGDK2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbXGDKdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760272AbXGDK2i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757601AbXGDK2a
+	id S1760745AbXGDKdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbXGDKdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:28:30 -0400
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:1488 "EHLO
-	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753617AbXGDK23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:28:29 -0400
-Date: Wed, 4 Jul 2007 11:27:32 +0100 (BST)
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Christoph Lameter <clameter@engr.sgi.com>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [PATCH] Re: Sparc32: random invalid instruction occourances on
- sparc32 (sun4c)
-In-Reply-To: <1183520006.29081.79.camel@shinybook.infradead.org>
-Message-ID: <Pine.LNX.4.61.0707041121290.31752@mtfhpc.demon.co.uk>
-References: <468A7D14.1050505@googlemail.com>  <Pine.LNX.4.61.0707031817050.29930@mtfhpc.demon.co.uk>
-  <Pine.LNX.4.61.0707031910280.29930@mtfhpc.demon.co.uk> 
- <1183490778.29081.35.camel@shinybook.infradead.org> 
- <Pine.LNX.4.61.0707032209230.30376@mtfhpc.demon.co.uk> 
- <1183499781.29081.46.camel@shinybook.infradead.org> 
- <Pine.LNX.4.61.0707032317590.30376@mtfhpc.demon.co.uk> 
- <1183505787.29081.62.camel@shinybook.infradead.org> 
- <Pine.LNX.4.61.0707040335230.30946@mtfhpc.demon.co.uk>
- <1183520006.29081.79.camel@shinybook.infradead.org>
+	Wed, 4 Jul 2007 06:33:08 -0400
+Received: from lucidpixels.com ([75.144.35.66]:46186 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754911AbXGDKdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:33:07 -0400
+Date: Wed, 4 Jul 2007 06:33:06 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Michael Tokarev <mjt@tls.msk.ru>
+cc: Tejun Heo <htejun@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Some NCQ numbers...
+In-Reply-To: <Pine.LNX.4.64.0707040621170.32656@p34.internal.lan>
+Message-ID: <Pine.LNX.4.64.0707040631370.32656@p34.internal.lan>
+References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com>
+ <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com>
+ <468B6BD7.9010108@msgid.tls.msk.ru> <Pine.LNX.4.64.0707040621170.32656@p34.internal.lan>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
 
-Another related point that may also need to be considered is that I think 
-I am correct in saying that on ARM and on the 64bit platforms, sizeof 
-(unsigned long long) is 16 (128bits).
 
-Should the RedZone words be specified as __u64 not the unsigned long long 
-used or does the alignment need to be that of unsigned long long ?
+On Wed, 4 Jul 2007, Justin Piszcz wrote:
 
-Regards
- 	Mark Fortescue.
+> On Wed, 4 Jul 2007, Michael Tokarev wrote:
+> 
+> > Tejun Heo wrote:
+> >> Hello,
+> >>
+> >> Michael Tokarev wrote:
+> >>> Well.  It looks like the results does not depend on the
+> >>> elevator.  Originally I tried with deadline, and just
+> >>> re-ran the test with noop (hence the long delay with
+> >>> the answer) - changing linux elevator changes almost
+> >>> nothing in the results - modulo some random "fluctuations".
+> >>
+> >> I see.  Thanks for testing.
+> >
+> > Here are actual results - the tests were still running when
+> > I replied yesterday.
+> >
+> > Again, this is Seagate ST3250620AS "desktop" drive, 7200RPM,
+> > 16Mb cache, 250Gb capacity.  The tests were performed with
+> > queue depth = 64 (on mptsas), drive write cache is turned
+> > off.
+> 
+> I found AS scheduler to be the premium and best for single-user performance.
+> 
+> You want speed? Use AS.
+> 
+> http://home.comcast.net/~jpiszcz/sched/cfq_vs_as_vs_deadline_vs_noop.html
+> 
+>
 
-  On Tue, 3 Jul 2007, David Woodhouse wrote:
+Does not include noop-- tested the main three though, renamed :)
 
-> On Wed, 2007-07-04 at 04:27 +0100, Mark Fortescue wrote:
->> I tried the previous patch and it looks like it fixes the issue however
->> one of the test builds I did caused depmod to use up all available memory
->> (40M - kernel memory) before taking out the kernel with the oom killer.
->> At present, I do not know if it is a depmod issue or a kernel issue.
->> I will have to do some more tests later on to day.
->
-> That's almost certain to be an unrelated issue.
->
->> I have looked at the latest patch below and am I am still not sure about
->> two areas. Please take a look at my offering based on your latest
->> patch (included here to it will probably get mangled).
->>
->> Note the change to lines 2178 to 2185. I have also changed/moved the
->> alignment of size (see lines 2197 to 2206) based on your changes.
->
-> The first looks correct; well spotted. The second is just cosmetic but
-> also seems correct. I might be inclined to make the #define
-> 'RED_ZONE_ALIGN' and use it in the other places too.
->
-> -- 
-> dwmw2
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+http://home.comcast.net/~jpiszcz/sched/cfq_vs_as_vs_deadline.html
+
+And for the archives:
+
+p34-cfq,15696M,77114.3,99,311683,55.3333,184947,38.6667,79842.7,99,524065,41.3333,634.033,0.333333,16:100000:16/64,1043.33,8.33333,4419.33,11.6667,2942,17.3333,1178,10.3333,4192.67,12.3333,2619.33,19
+p34-as,15696M,76202.3,99,443103,85,189716,34.6667,79552,99,507271,39.6667,607.067,0,16:100000:16/64,1153,10,13434,36,2769.67,16.3333,1201.67,10.6667,3951.33,12,2665.67,19
+p34-deadline,15696M,76933.3,98.6667,386852,72,183016,29.6667,79530.7,99,512082,39.6667,678.567,0,16:100000:16/64,1230.33,10.3333,12349,32.3333,2945,17.3333,1258,11,8183,22.3333,2867,20.3333
+
+Justin.
