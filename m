@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbXGDDrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbXGDDtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759515AbXGDDrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 23:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbXGDDrJ
+	id S1759460AbXGDDtd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 23:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbXGDDtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 23:47:09 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:60690 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755215AbXGDDrI (ORCPT
+	Tue, 3 Jul 2007 23:49:25 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:44907 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754358AbXGDDtY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 23:47:08 -0400
-Date: Tue, 3 Jul 2007 23:47:06 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Tom Zanussi <zanussi@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, dwilder@us.ibm.com,
-       hunt@redhat.com
-Subject: Re: [RFC PATCH 2/3] Generic Trace Setup and Control (GTSC) code
-Message-ID: <20070704034706.GA26381@Krystal>
-References: <1183173872.24291.144.camel@ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 3 Jul 2007 23:49:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Ct5WtR9ZkQrSxCWvraEJuczXIw7qjakxhJhrqi/AkXbCNAVk4BgjEHSq2YaXYEF8ovrXXEhd52c983eoBOHpImt/3xzGQSYEv+IDX8un1JefF8LuABUEFseqrzFWZFuvjuHnL+rSrya+FAlS4yixpv7n+mCcwHGXyTZaYImwwN0=
+Message-ID: <468B18BF.6040207@gmail.com>
+Date: Wed, 04 Jul 2007 12:49:19 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH] libata_acpi: A different strategy for using ACPI information
+References: <20070703155417.11d81c75@the-village.bc.nu>
+In-Reply-To: <20070703155417.11d81c75@the-village.bc.nu>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1183173872.24291.144.camel@ubuntu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:43:54 up 2 days, 22:26,  2 users,  load average: 0.54, 0.57, 0.38
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tom Zanussi (zanussi@us.ibm.com) wrote:
-> The Generic Tracing and Control Interface (GTSC) code.
+Alan Cox wrote:
+> Lots of BIOSen simply return the BIOS set modes via the ACPI methods and
+> pass back the values you give it across suspend/resume. Thus instead of
+> trying to do clever stuff with this data we instead use it as a way to
+> take a sneak peak at cable type information when viable. This should help
+> us catch more of the laptops that do weird stuff, the VIA SATA bridges
+> and the totally horked Nvidia cable handling.
 > 
-> Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
-> Signed-off-by: David Wilder <dwilder@us.ibm.com>
-> ---
->  include/linux/gtsc.h |  104 +++++++++
->  lib/Kconfig          |   10 
->  lib/Makefile         |    2 
->  lib/gtsc.c           |  558 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 674 insertions(+)
+> For now its only used by the VIA and AMD/NV driver until we get a better
+> idea of whether this is a sensible idea or not.
 > 
-....
-> +static ssize_t reset_consumed_write(struct file *filp,
-> +				    const char __user *buffer,
-> +				    size_t count,
-> +				    loff_t *ppos)
-> +{
-> +	struct trace_info *trace = filp->private_data;
-> +
-> +	relay_reset_consumed(trace->rchan);
-> +
-> +	return count;
-> +}
-> +
-> +struct file_operations reset_consumed_fops = {
-> +	.owner	= THIS_MODULE,
-> +	.open	= reset_consumed_open,
-> +	.write	= reset_consumed_write
-> +};
-> +
+> Opinions ?
 
-Quoting the header of relay_reset_consumed:
-
-+ *     NOTE: Care should be taken that the channel isn't actually
-+ *     being used by anything when this call is made.
-
-I can imagine relay saying "locking is not my problem", while GTSC
-whistle and looks away... ;)
-
+If you don't do _STM first, it basically boils down to reading BIOS
+setting during boot.  Over suspend/resume cycle, the values are
+preserved by libata-acpi.  At this point, I think honoring the BIOS
+setting is the right thing to do.  It just took us too long and I'm not
+too sure about using ACPI for this.  It's generic so it's certainly
+better in some aspect.  It's just a bit obfuscating, IMHO.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+tejun
