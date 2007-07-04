@@ -1,37 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbXGDTwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbXGDURk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759704AbXGDTwI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 15:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbXGDTv5
+	id S1758754AbXGDURk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 16:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbXGDURc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 15:51:57 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:42399 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756610AbXGDTv4 (ORCPT
+	Wed, 4 Jul 2007 16:17:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:24748 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754408AbXGDURa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 15:51:56 -0400
-Message-ID: <468BFA34.5020007@zytor.com>
-Date: Wed, 04 Jul 2007 12:51:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 4 Jul 2007 16:17:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=d9/EktSeEleYXveLZT55HgFuKzdqT1OX5s7jggqpVqyK9DoHuIpIUTrWdOvNXBg52bhxiPZ9MzG2i/ywo1gFlc85i4VDB6zn7rvLpTYZ6zCRQMV1BnnpLqE94Cnv3bUT07ktc8DNJBUNxm23pL95EKoR/IzwJsl4qau2JwqQeWk=
+Date: Thu, 5 Jul 2007 00:17:25 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Borislav Petkov <bbpetkov@yahoo.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext4: fix error handling in ext4_create_journal
+Message-ID: <20070704201725.GA5812@martell.zuzino.mipt.ru>
+References: <20070701221111.GA8627@gollum.tnic> <20070703152543.e58ad39a.akpm@linux-foundation.org> <20070704193024.GA6802@gollum.tnic>
 MIME-Version: 1.0
-To: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: New systems: eu.kernel.org
-References: <468AD8B1.8060005@zytor.com> <20070704113507.3658a52e@frecb000686.frec.bull.fr>
-In-Reply-To: <20070704113507.3658a52e@frecb000686.frec.bull.fr>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070704193024.GA6802@gollum.tnic>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sébastien Dugué wrote:
->   
->   One last thing, is there a git server as well for eu?
-> 
+On Wed, Jul 04, 2007 at 09:30:24PM +0200, Borislav Petkov wrote:
+> Fix error handling in ext4_create_journal according to kernel conventions.
 
-FWIW, I've set up git.eu.kernel.org; right now it's an alias to
-git.kernel.org, but that might change in the future.
+> --- linux-2.6.22-rc7/fs/ext4/super.c.orig
+> +++ linux-2.6.22-rc7/fs/ext4/super.c
+> @@ -2150,6 +2150,7 @@
+>  			       unsigned int journal_inum)
+>  {
+>  	journal_t *journal;
+> +	int err;
+>  
+>  	if (sb->s_flags & MS_RDONLY) {
+>  		printk(KERN_ERR "EXT4-fs: readonly filesystem when trying to "
+> @@ -2157,13 +2158,15 @@
+>  		return -EROFS;
+>  	}
+>  
+> -	if (!(journal = ext4_get_journal(sb, journal_inum)))
+> +	journal = ext4_get_journal(sb, journal_inum);
+> +	if (!journal)
+>  		return -EINVAL;
 
-	-hpa
+OK.
+
+>  	printk(KERN_INFO "EXT4-fs: creating new journal on inode %u\n",
+>  	       journal_inum);
+>  
+> -	if (jbd2_journal_create(journal)) {
+> +	err = jbd2_journal_create(journal);
+> +	if (err) {
+>  		printk(KERN_ERR "EXT4-fs: error creating journal.\n");
+>  		jbd2_journal_destroy(journal);
+>  		return -EIO;
+
+Original code is fine.
+
