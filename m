@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbXGDO1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbXGDOcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761963AbXGDO1S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758750AbXGDO1H
+	id S1761393AbXGDOcp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759529AbXGDOch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:27:07 -0400
-Received: from h155.mvista.com ([63.81.120.155]:31815 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759483AbXGDO1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:27:05 -0400
-Message-ID: <468BAEAB.3070909@ru.mvista.com>
-Date: Wed, 04 Jul 2007 18:28:59 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Wed, 4 Jul 2007 10:32:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49485 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759411AbXGDOch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 10:32:37 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Wed, 4 Jul 2007 16:40:12 +0200
+User-Agent: KMail/1.9.5
+Cc: Paul Mackerras <paulus@samba.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070703211227.GA28758@srcf.ucam.org> <200707041325.55779.rjw@sisk.pl> <20070704124133.GA5836@thunk.org>
+In-Reply-To: <20070704124133.GA5836@thunk.org>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jeff@garzik.org
-Subject: Re: [PATCH] pata_hpt3x3: Major reworking and testing
-References: <20070703161002.1576c39d@the-village.bc.nu> <200707032212.01619.bzolnier@gmail.com> <468AB462.4090203@ru.mvista.com> <200707040044.27185.bzolnier@gmail.com>
-In-Reply-To: <200707040044.27185.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707041640.12832.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Wednesday, 4 July 2007 14:41, Theodore Tso wrote:
+> On Wed, Jul 04, 2007 at 01:25:55PM +0200, Rafael J. Wysocki wrote:
+> > > Don't know what exactly?
+> > 
+> > How many drivers will be adversely affected by the $subject change.
+> 
+> Ok, so how about a CONFIG option which removes the freezer, so we can
+> find out experimentally how many people without it?  We can make it be
+> experimental at first, or (my preference) make it be the default
+> initially, and if people complain that their laptop's suspend feature
+> is broken, we can tell them how to turn back on the
+> CONFIG_FREEZER_DEPRECATED option.
 
-Bartlomiej Zolnierkiewicz wrote:
+The freezer is generally still necessary for hibernation, so I won't call
+it "DEPRECATED'.
 
->>>Does anybody have DOS driver for HPT343?  Google doesn't have it...
+Moreover, I'd prefer to make drivers use different callbacks for hibernation
+and suspend before we do that.
 
->>    I have the drivers for HPT34[35] -- tried dissassembling them some years 
->>ago...
+Greetings,
+Rafael
 
-> /me wants
 
-    I tried sending binaries as is but GMail bounced them off. :-/
-    Will try to tar and feather them... ;-)
-
-> Bart
-
-MBR, Sergei
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
