@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760375AbXGDKNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbXGDKOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760375AbXGDKNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbXGDKNq
+	id S1760565AbXGDKOf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758845AbXGDKO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:13:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48412 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757669AbXGDKNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:13:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 12:21:04 +0200
-User-Agent: KMail/1.9.5
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
-References: <fa.ftLWBLCc+XqdYjiuxoPg+qyuUOE@ifi.uio.no> <468AE700.7080102@shaw.ca> <20070704003424.GA30958@srcf.ucam.org>
-In-Reply-To: <20070704003424.GA30958@srcf.ucam.org>
+	Wed, 4 Jul 2007 06:14:28 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:42526 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758842AbXGDKO1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:14:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jIR55fQNwjS48kcxuQ1sEbDdrKWIwMnQN62RJwHQ42fV73am42glVIuku+jbpTzPjRv7FsLZ2vmq90dHOwBPLCH5AE4YoOnCbE4+7SNG2k4gQToJ/D9yStJthoZG60qeMZ5aqOGZVfTFCWDnVVTFyzNAadcoLd3OPRvl479h2oQ=
+Message-ID: <9a8748490707040314l3166bdacy75c9394ca017c0ec@mail.gmail.com>
+Date: Wed, 4 Jul 2007 12:14:26 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Turbo Fredriksson" <turbo@bayour.com>
+Subject: Re: Forcibly remove broken disk from LV
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <9a8748490707040313g4f89dfe2obf9ff73d5ef22307@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707041221.04708.rjw@sisk.pl>
+References: <87lkdwa4sb.fsf@pumba.bayour.com>
+	 <9a8748490707040313g4f89dfe2obf9ff73d5ef22307@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 4 July 2007 02:34, Matthew Garrett wrote:
-> On Tue, Jul 03, 2007 at 06:17:04PM -0600, Robert Hancock wrote:
-> > Matthew Garrett wrote:
-> > >Leave the process blocked and defer any i/o until after resume. Why does 
-> > >it need to be any more complicated than that?
-> > 
-> > It gets complicated when this has to be added and TESTED in EVERY 
-> > driver. The implied contract for drivers previously was that their 
-> > device would not get accessed after it was suspended until it had been 
-> > resumed first. This proposed change violates that.
-> 
-> No, that's only ever been true for ACPI systems.
-
-Sorry, but you're mistaken.
-
-Some ARM platforms also use the suspend code in kernel/power and the 52xx
-powerpc too (BTW, I don't know of any ARM platforms that support suspend and
-don't use it).
-
-> It's never been true elsewhere, and it won't be true for anything
-> implementing any sort of runtime power management.
-
-There are not many drivers in the tree supporting that right now.
-
-> > I don't think this sort of handling is something that individual drivers 
-> > should have to deal with (at least not ones that are part of a framework 
-> > like USB, libata, etc.)
-> 
-> I'd agree there. Driver midlayers (where they exist) are the appropriate 
-> place to handle this.
-
-So perhaps we should modify them first and we can drop the freezer?
-
-Perhaps we can schedule the freezer removal (from the suspend code path), so
-that people have the time to rework the driver midlayers to take that into
-account?
-
-Greetings,
-Rafael
+On 04/07/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> On 04/07/07, Turbo Fredriksson <turbo@bayour.com> wrote:
+> > I have a disk that only gives SCSI errors etc which
+> > I want to remove from the VG. But vgreduce only hangs
+> > and so does pvremove...
+> >
+> > If I physically remove the disk, the vg/pv/lv etc isn't
+> > accessible so the vgreduce won't work (claims that it
+> > can't find any PV's etc).
+> >
+> > So how do I remove the disk?
+>
+> vgreduce --removemissing
+>
+> should do the trick I'd say.
+>
+Ohh and by the way, pvremove also has a --force option - if needed.
 
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
