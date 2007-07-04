@@ -1,79 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbXGDGDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbXGDGEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbXGDGDG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 02:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbXGDGC4
+	id S1757689AbXGDGEX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 02:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbXGDGEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 02:02:56 -0400
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:43081 "HELO
-	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751331AbXGDGCz (ORCPT
+	Wed, 4 Jul 2007 02:04:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49182 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbXGDGEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 02:02:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oLtWFLdpUYTBj8wIAHdYHBspGnkQLbuFaSn8VmUkM9rlWby+oNMV8gKa0vDs+J6UpNE8p0f2T73gAqLHcJndi7MpivhfoVcb3NCOcT2tJLljpsbW90MKwaYD1X4kLJOHk8+BPWRT/ElC4UN2sOsN+HMo3wYaLKfgX59eXPmUj+M=  ;
-X-YMail-OSG: VCD_AkcVM1kywHuzIJcFPQLmiSBb51Zez2WMycKl1En.h4u_Gkz8xzSmK17QXrEPTWs53Ztd_w--
-From: David Brownell <david-b@pacbell.net>
-To: rtc-linux@googlegroups.com
-Subject: Re: Does the kernel HPET support has problems or the hwclock from util-linux?
-Date: Tue, 3 Jul 2007 23:02:52 -0700
-User-Agent: KMail/1.9.6
-Cc: Luca Tettamanti <kronos.it@gmail.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 4 Jul 2007 02:04:13 -0400
+Date: Wed, 4 Jul 2007 15:05:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Christoph Lameter <clameter@sgi.com>, Mike.stroya@hp.com,
+       GOTO <y-goto@jp.fujitsu.com>, dmosberger@gmail.com, hugh@veritas.com,
+       nickpiggin@yahoo.com.au
+Subject: [BUGFIX][PATCH] DO flush icache before set_pte() on ia64.
+Message-Id: <20070704150504.423f6c54.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707032302.52612.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not that I think it matters, but I understand that util-linux-ng
-now has a 2.13-rc1 release out, so you're not using the latest
-version of "hwclock".  That shouldn't affect HPET though.
+This is a experimental patch for fixing icache flush race of ia64(Montecito).
 
-That said, this situation is likely going to be a mess until
-some new HPET support gets merged.  Issues include:
+Problem Description:
+Montecito, new ia64 processor, has separated L2 i-cache and d-cache,
+and i-cache and d-cache is not consistent in automatic way.
 
- - There are two drivers for the "cmos rtc" ... the legacy
-   version (/dev/rtc), and the one using the new RTC framework
-   ("rtc-cmos" driver, likely /dev/rtc0 on your system).
+L1 cache is also separated but L1 D-cache is write-through. Then, before
+Montecito, any changes in L1-dcache is visible in L2-mixed-cache consistently.
 
-   To use the new one, you'll probably want the latest hwclock,
-   which understands that not ever RTC uses /dev/rtc0.  (Or you
-   can symlink /dev/rtc to /dev/rtc0 ...)
+Montecito has separated L2 cache and Mixed L3 cache. But...L2 D-cache is
+*write back*. (See http://download.intel.com/design/Itanium2/manuals/
+30806501.pdf section 2.3.3)
 
- - HPET itself has two modes.  I think of them as "break things
-   mode" and "sane mode"; but I think they have official names
-   that make the first one sound like it might be reasonable to
-   use.  (Yet it isn't; and I suspect that's a big reason why
-   HPET isn't enabled by default on most systems.)
+Assume : valid data is in L2 d-cache and old data in L3 mixed cache.
+If write-back L2->L3 is delayed, at L2 i-cache miss cpu will fetch old data
+in L3 mixed cache. 
+By this, L2-icache-miss will read wrong instruction from L3-mixed cache.
+(Just I think so, is this correct ?)
 
-   The difference is that the "break things" mode overrides
-   the RTC interrupt line so the RTC can't use it, where the
-   "sane" mode just routes HPET irqs like other IRQs.
+Anyway, there is SIGILL problem in NFS/ia64 and icache flush can fix
+SIGILL problem (in our HPC team test.)
 
- - Until the new HPET stuff gets merged (and I don't know what
-   schedule that's on), Linux uses the "break things" mode.
-   Which means that it breaks rtc-cmos ... but the legacy RTC
-   driver has some fairly ugly hacks to cope with it.
+Following SIGILL issue occurs in current kernel.
+(This was a discussion in this April)
+- http://www.gelato.unsw.edu.au/archives/linux-ia64/0704/20323.html
+Usual file systems uses DMA and it purges cache. But NFS uses copy-by-cpu.
 
-   The new HPET stuff will among other things let HPET be used
-   to provide per-CPU clockevent sources (assuming there are as
-   many HPET instances as there are CPUs).  That's on top of
-   other advantages, like "not breaking things".
+This is HP-UX's errata comment:
+- http://h50221.www5.hp.com/upassist/itrc_japan/assist2/patchdigest/PHKL_36120.html
+(Sorry for Japanese page...but English comments also written. See PHKL_36120)
 
-So for the short term, I think there might be some set of config
-options using the legacy (drivers/char/rtc.c) driver that will
-let you enable HPET, with minimal breakage.  I don't know what
-those options are, or what hwclock would need to do (or not do).
+Now, I think icache should be flushed before set_pte().
+This is a patch to try that.
 
-And longer term, the rtc framework version (rtc-cmos) will work
-just fine with new HPET code, since Linux will be able to use
-HPET in "sane mode" not "break things" mode.
+1. remove all lazy_mmu_prot_update()...which is used by only ia64.
+2. implements flush_cache_page()/flush_icache_page() for ia64.
 
-- Dave
+Something unsure....
+3. mprotect() flushes cache before removing pte. Is this sane ?
+   I added flush_icache_range() before set_pte() here.
+
+Any comments and advices ?
+ 
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+ arch/ia64/mm/init.c           |    7 +------
+ include/asm-generic/pgtable.h |    4 ----
+ include/asm-ia64/cacheflush.h |   24 ++++++++++++++++++++++--
+ include/asm-ia64/pgtable.h    |    9 ---------
+ mm/fremap.c                   |    1 -
+ mm/memory.c                   |   13 ++++++-------
+ mm/migrate.c                  |    6 +++++-
+ mm/mprotect.c                 |   10 +++++++++-
+ mm/rmap.c                     |    1 -
+ 9 files changed, 43 insertions(+), 32 deletions(-)
+
+Index: linux-2.6.22-rc7/include/asm-ia64/cacheflush.h
+===================================================================
+--- linux-2.6.22-rc7.orig/include/asm-ia64/cacheflush.h
++++ linux-2.6.22-rc7/include/asm-ia64/cacheflush.h
+@@ -10,18 +10,38 @@
+ 
+ #include <asm/bitops.h>
+ #include <asm/page.h>
++#include <linux/mm.h>
+ 
+ /*
+  * Cache flushing routines.  This is the kind of stuff that can be very expensive, so try
+  * to avoid them whenever possible.
+  */
++extern void __flush_icache_page_ia64(struct page *page);
+ 
+ #define flush_cache_all()			do { } while (0)
+ #define flush_cache_mm(mm)			do { } while (0)
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+-#define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
+-#define flush_icache_page(vma,page)		do { } while (0)
++
++static inline void
++flush_cache_page(struct vm_area_struct *vma, unsigned long vmaddr,
++		unsigned long pfn)
++{
++	if (vma->vm_flags & VM_EXEC) {
++		struct page *page;
++		if (!pfn_valid(pfn))
++			return;
++		page = pfn_to_page(pfn);
++		__flush_icache_page_ia64(page);
++	}
++}
++
++static inline void
++flush_icache_page(struct vm_area_struct *vma,struct page *page) {
++	if (vma->vm_flags & VM_EXEC)
++		__flush_icache_page_ia64(page);
++}
++
+ #define flush_cache_vmap(start, end)		do { } while (0)
+ #define flush_cache_vunmap(start, end)		do { } while (0)
+ 
+Index: linux-2.6.22-rc7/arch/ia64/mm/init.c
+===================================================================
+--- linux-2.6.22-rc7.orig/arch/ia64/mm/init.c
++++ linux-2.6.22-rc7/arch/ia64/mm/init.c
+@@ -105,16 +105,11 @@ check_pgt_cache(void)
+ }
+ 
+ void
+-lazy_mmu_prot_update (pte_t pte)
++__flush_icache_page_ia64 (struct page *page)
+ {
+ 	unsigned long addr;
+-	struct page *page;
+ 	unsigned long order;
+ 
+-	if (!pte_exec(pte))
+-		return;				/* not an executable page... */
+-
+-	page = pte_page(pte);
+ 	addr = (unsigned long) page_address(page);
+ 
+ 	if (test_bit(PG_arch_1, &page->flags))
+Index: linux-2.6.22-rc7/include/asm-ia64/pgtable.h
+===================================================================
+--- linux-2.6.22-rc7.orig/include/asm-ia64/pgtable.h
++++ linux-2.6.22-rc7/include/asm-ia64/pgtable.h
+@@ -151,7 +151,6 @@
+ 
+ #include <linux/sched.h>	/* for mm_struct */
+ #include <asm/bitops.h>
+-#include <asm/cacheflush.h>
+ #include <asm/mmu_context.h>
+ #include <asm/processor.h>
+ 
+@@ -506,13 +505,6 @@ extern struct page *zero_page_memmap_ptr
+ #define HUGETLB_PGDIR_MASK	(~(HUGETLB_PGDIR_SIZE-1))
+ #endif
+ 
+-/*
+- * IA-64 doesn't have any external MMU info: the page tables contain all the necessary
+- * information.  However, we use this routine to take care of any (delayed) i-cache
+- * flushing that may be necessary.
+- */
+-extern void lazy_mmu_prot_update (pte_t pte);
+-
+ #define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+ /*
+  * Update PTEP with ENTRY, which is guaranteed to be a less
+@@ -593,7 +585,6 @@ do {											\
+ #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+ #define __HAVE_ARCH_PTE_SAME
+ #define __HAVE_ARCH_PGD_OFFSET_GATE
+-#define __HAVE_ARCH_LAZY_MMU_PROT_UPDATE
+ 
+ #ifndef CONFIG_PGTABLE_4
+ #include <asm-generic/pgtable-nopud.h>
+Index: linux-2.6.22-rc7/include/asm-generic/pgtable.h
+===================================================================
+--- linux-2.6.22-rc7.orig/include/asm-generic/pgtable.h
++++ linux-2.6.22-rc7/include/asm-generic/pgtable.h
+@@ -154,10 +154,6 @@ static inline void ptep_set_wrprotect(st
+ #define pgd_offset_gate(mm, addr)	pgd_offset(mm, addr)
+ #endif
+ 
+-#ifndef __HAVE_ARCH_LAZY_MMU_PROT_UPDATE
+-#define lazy_mmu_prot_update(pte)	do { } while (0)
+-#endif
+-
+ #ifndef __HAVE_ARCH_MOVE_PTE
+ #define move_pte(pte, prot, old_addr, new_addr)	(pte)
+ #endif
+Index: linux-2.6.22-rc7/mm/memory.c
+===================================================================
+--- linux-2.6.22-rc7.orig/mm/memory.c
++++ linux-2.6.22-rc7/mm/memory.c
+@@ -1599,7 +1599,6 @@ static int do_wp_page(struct mm_struct *
+ 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+ 		ptep_set_access_flags(vma, address, page_table, entry, 1);
+ 		update_mmu_cache(vma, address, entry);
+-		lazy_mmu_prot_update(entry);
+ 		ret |= VM_FAULT_WRITE;
+ 		goto unlock;
+ 	}
+@@ -1640,7 +1639,6 @@ gotten:
+ 		flush_cache_page(vma, address, pte_pfn(orig_pte));
+ 		entry = mk_pte(new_page, vma->vm_page_prot);
+ 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+-		lazy_mmu_prot_update(entry);
+ 		/*
+ 		 * Clear the pte entry and flush it first, before updating the
+ 		 * pte with the new entry. This will avoid a race condition
+@@ -2105,7 +2103,6 @@ static int do_swap_page(struct mm_struct
+ 
+ 	/* No need to invalidate - it was non-present before */
+ 	update_mmu_cache(vma, address, pte);
+-	lazy_mmu_prot_update(pte);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ out:
+@@ -2162,12 +2159,16 @@ static int do_anonymous_page(struct mm_s
+ 		inc_mm_counter(mm, file_rss);
+ 		page_add_file_rmap(page);
+ 	}
+-
++	/*
++	 * new page is zero-filled, but we have to guarantee icache-dcache
++	 * synchronization before setting pte on some processor.
++	 */
++	if (write_access && (vma->vm_flags & VM_EXEC))
++		flush_icache_page(vma, page);
+ 	set_pte_at(mm, address, page_table, entry);
+ 
+ 	/* No need to invalidate - it was non-present before */
+ 	update_mmu_cache(vma, address, entry);
+-	lazy_mmu_prot_update(entry);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ 	return VM_FAULT_MINOR;
+@@ -2312,7 +2313,6 @@ retry:
+ 
+ 	/* no need to invalidate: a not-present page shouldn't be cached */
+ 	update_mmu_cache(vma, address, entry);
+-	lazy_mmu_prot_update(entry);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ 	if (dirty_page) {
+@@ -2470,7 +2470,6 @@ static inline int handle_pte_fault(struc
+ 	if (!pte_same(old_entry, entry)) {
+ 		ptep_set_access_flags(vma, address, pte, entry, write_access);
+ 		update_mmu_cache(vma, address, entry);
+-		lazy_mmu_prot_update(entry);
+ 	} else {
+ 		/*
+ 		 * This is needed only for protection faults but the arch code
+Index: linux-2.6.22-rc7/mm/migrate.c
+===================================================================
+--- linux-2.6.22-rc7.orig/mm/migrate.c
++++ linux-2.6.22-rc7/mm/migrate.c
+@@ -172,6 +172,11 @@ static void remove_migration_pte(struct 
+ 	pte = pte_mkold(mk_pte(new, vma->vm_page_prot));
+ 	if (is_write_migration_entry(entry))
+ 		pte = pte_mkwrite(pte);
++	/*
++	 * If the processor doesn't guarantee icache-dicache synchronization.
++	 * We need to flush icache before set_pte.
++	 */
++	flush_icache_page(vma, new);
+ 	set_pte_at(mm, addr, ptep, pte);
+ 
+ 	if (PageAnon(new))
+@@ -181,7 +186,6 @@ static void remove_migration_pte(struct 
+ 
+ 	/* No need to invalidate - it was non-present before */
+ 	update_mmu_cache(vma, addr, pte);
+-	lazy_mmu_prot_update(pte);
+ 
+ out:
+ 	pte_unmap_unlock(ptep, ptl);
+Index: linux-2.6.22-rc7/mm/mprotect.c
+===================================================================
+--- linux-2.6.22-rc7.orig/mm/mprotect.c
++++ linux-2.6.22-rc7/mm/mprotect.c
+@@ -52,8 +52,16 @@ static void change_pte_range(struct mm_s
+ 			 */
+ 			if (dirty_accountable && pte_dirty(ptent))
+ 				ptent = pte_mkwrite(ptent);
++#ifdef CONFIG_SMP
++			/* we already flushed cache before reach here.
++			 * But that flush was done before removing pte.
++			 * we confirm i-cache consitency here again.
++			 * This is rare case.
++			 */
++			if (pte_exec(ptent))
++				flush_icache_range(addr, addr + PAGE_SIZE);
++#endif
+ 			set_pte_at(mm, addr, pte, ptent);
+-			lazy_mmu_prot_update(ptent);
+ #ifdef CONFIG_MIGRATION
+ 		} else if (!pte_file(oldpte)) {
+ 			swp_entry_t entry = pte_to_swp_entry(oldpte);
+Index: linux-2.6.22-rc7/mm/rmap.c
+===================================================================
+--- linux-2.6.22-rc7.orig/mm/rmap.c
++++ linux-2.6.22-rc7/mm/rmap.c
+@@ -461,7 +461,6 @@ static int page_mkclean_one(struct page 
+ 		entry = pte_wrprotect(entry);
+ 		entry = pte_mkclean(entry);
+ 		set_pte_at(mm, address, pte, entry);
+-		lazy_mmu_prot_update(entry);
+ 		ret = 1;
+ 	}
+ 
+Index: linux-2.6.22-rc7/mm/fremap.c
+===================================================================
+--- linux-2.6.22-rc7.orig/mm/fremap.c
++++ linux-2.6.22-rc7/mm/fremap.c
+@@ -83,7 +83,6 @@ int install_page(struct mm_struct *mm, s
+ 	set_pte_at(mm, addr, pte, pte_val);
+ 	page_add_file_rmap(page);
+ 	update_mmu_cache(vma, addr, pte_val);
+-	lazy_mmu_prot_update(pte_val);
+ 	err = 0;
+ unlock:
+ 	pte_unmap_unlock(pte, ptl);
 
