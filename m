@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760827AbXGDLuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760996AbXGDLvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760827AbXGDLuh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbXGDLu1
+	id S1760996AbXGDLvo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbXGDLvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:50:27 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:38298 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757712AbXGDLu0 (ORCPT
+	Wed, 4 Jul 2007 07:51:37 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:44250 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754849AbXGDLvg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:50:26 -0400
-Message-ID: <468B8952.9030205@bx.jp.nec.com>
-Date: Wed, 04 Jul 2007 20:49:38 +0900
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC][PATCH -mm 0/9] netconsole: Multiple targets and dynamic
- reconfigurability
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jul 2007 07:51:36 -0400
+To: rjw@sisk.pl
+CC: paulus@samba.org, mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <200707041325.55779.rjw@sisk.pl>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+References: <20070703211227.GA28758@srcf.ucam.org> <200707041242.59552.rjw@sisk.pl> <18059.32111.58643.97174@cargo.ozlabs.ibm.com> <200707041325.55779.rjw@sisk.pl>
+Message-Id: <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 04 Jul 2007 13:51:03 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Satyam,
- 
-At first, thank you for your helping.
-I'm going to try/review your patches.
+> Still, my position is this:
+> 
+> 1) The freezer (in the modified form, with the freezing of kernel threads
+> limited to the ones that want to be frozen) is needed for hibernation.
+> 
+> 2) The freezer is generally not needed for suspend, _but_ there are drivers
+> in the tree that rely on it being used.  Thus, at some point in time we can
+> remove the freezer from the suspend code path, _but_ no sooner than we are
+> sure that the majority of drivers is prepared for that.
 
->[ I had initially thought about only modifying Keiichi's patches to
->incorporate the suggested stuff, sysfs+ioctl->configfs conversion, etc,
->but the changes became too much and I ultimately ended up rewriting the
->patchset. This also gave the flexibility to make other changes possible.
->Keiichi, Takayoshi, kindly review this, and if OK, please give your
->Signed-off-by:'s to the patches herein. ]
+And we won't know if drivers are OK until we remove the freezer,
+catch-22.
 
-By the way, how can I add Signed-off-by:'s to your patches?
-Should I add it to each patch and submit them to this list again?
+So I think we need to disable the freezer at least in -mm and/or
+optionally in -linus.
 
-Anybody could give me an advice?
--- 
-Keiichi KII
-NEC Corporation OSS Platform Development Division
-E-mail: k-keiichi@bx.jp.nec.com
+I applied Matthew's patch, and suspend did in fact stop working
+(thinkpad t60), but there was nothing catastrophic.  Here's the dmesg
+if somebody is interested:
+
+Suspending console(s)
+usb_endpoint usbdev5.3_ep83: PM: suspend 0->2, parent 5-2:1.0 already 2
+usb_endpoint usbdev5.3_ep02: PM: suspend 0->2, parent 5-2:1.0 already 2
+usb_endpoint usbdev5.3_ep81: PM: suspend 0->2, parent 5-2:1.0 already 2
+hub 2-0:1.0: suspend error -16
+suspend_device(): usb_suspend+0x0/0x1c() returns -16
+Could not suspend device usb2: error -16
+usb_endpoint usbdev5.3_ep81: PM: resume from 0, parent 5-2:1.0 still 2
+usb_endpoint usbdev5.3_ep02: PM: resume from 0, parent 5-2:1.0 still 2
+usb_endpoint usbdev5.3_ep83: PM: resume from 0, parent 5-2:1.0 still 2
+Some devices failed to suspend
+
+Miklos
