@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757988AbXGDIzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760466AbXGDIzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757988AbXGDIzS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 04:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760317AbXGDIyo
+	id S1760466AbXGDIzk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 04:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760591AbXGDIyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 04:54:44 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:43613 "EHLO tim.rpsys.net"
+	Wed, 4 Jul 2007 04:54:55 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:58644 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760063AbXGDIyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 04:54:41 -0400
-Subject: Re: [PATCH/RFC] oops and panic message logging to MTD
-From: Richard Purdie <rpurdie@openedhand.com>
-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: dedekind@infradead.org, linux-mtd <linux-mtd@lists.infradead.org>
-In-Reply-To: <20070703094702.GA11992@angel.research.nokia.com>
-References: <1182184301.6074.62.camel@localhost.localdomain>
-	 <1182239749.4403.48.camel@sauron>
-	 <1182247254.5760.17.camel@localhost.localdomain>
-	 <20070703094702.GA11992@angel.research.nokia.com>
-Content-Type: text/plain
-Date: Wed, 04 Jul 2007 09:54:21 +0100
-Message-Id: <1183539261.4538.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	id S1760564AbXGDIyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 04:54:54 -0400
+X-Greylist: delayed 1896 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jul 2007 04:54:53 EDT
+Date: Wed, 4 Jul 2007 11:23:15 +0300 (EEST)
+From: Meelis Roos <mroos@ut.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc6: NMI oops and long pauses during boot
+In-Reply-To: <Pine.SOC.4.64.0706260833480.19044@math>
+Message-ID: <Pine.SOC.4.64.0707041120270.18295@math>
+References: <Pine.SOC.4.64.0706260833480.19044@math>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-03 at 12:47 +0300, Jarkko Lavinen wrote:
-> On Tue, Jun 19, 2007 at 11:00:54AM +0100, Richard Purdie wrote:
-> > Its not a case of formatting the whole partition. The whole point of
-> > this code is the following use case:
-> > 
-> > 1. Device crashes
-> > 2. Device reboots
-> > 3. mtdoops partition has a log of why it crashed
+> First boot hung with oops/bug dump. I did not have a camera ready but it 
+> was an oops-like dump that included die_nmi or something similar about 
+> NMI.
 > 
-> The oops logger uses oops_in_progress variable to detect the begin and the 
-> end of an oops.  The end is detected when the first non-oops line comes and
-> oops_in_progress is false.
+> Second boot booted fine until INIT had started and then came a long 
+> pause (tens of seconds). When I pressed Ctrl-Alt-Del it became alive and 
+> continued the bootup until it noticed the Ctrl-Alt-Del.
 > 
-> This works if the kernel is still running after the oops and gemerates some 
-> non-oops messages.  But if there is no non-oops line following an oops, no
-> flushing will occur and there won't be a log on flash.
+> Third boot was similar but the pause appeared before INIT: line and 
+> after mounting root and writeprotecting kernel text and readonly 
+> data. Ctrl-Alt-Del revived it again.
 
-There was a printk within bust_spinlocks which flushed the klogd queues
-and hence flushed the mtd_oops queue too.
+Tried it again with 2.6.22-rc7 + todays git. Still the same, this time 
+it waited after loading PC speaker driver and before announcing tsc 
+clocksource as not good enough, and pressing Enter made it continue.
 
-I've noticed this has recently been removed and replaced with a wait
-queue [1] and hence the problem mentioned above now exists (but didn't
-when the driver was developed).
+Unfortunately I will be away from this computer for about 2 weeks so 
+I can't test anything with it. It's still a regression but not worth 
+holding up 2.6.22 for me if no one other sees it.
 
-[1] http://git.o-hand.com/?p=linux-rpurdie;a=commitdiff;h=e3e8a75d2acfc61ebf25524666a0a2c6abb0620c
-
-This raises the question of how to known when the oops has completed.
-The neatest solution I can see would be to add some kind of optional
-sync function pointer to struct console. Would that be acceptable?
-
-Richard
-
+-- 
+Meelis Roos <mroos@linux.ee>
