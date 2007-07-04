@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbXGDP5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbXGDQMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbXGDP5Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 11:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbXGDP5Q
+	id S1755315AbXGDQMD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 12:12:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbXGDQLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 11:57:16 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:1117 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752609AbXGDP5P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 11:57:15 -0400
-Date: Wed, 4 Jul 2007 11:57:14 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: linux-kernel@vger.kernel.org, <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
- pathway
-In-Reply-To: <20070704145818.GA7784@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0707041152350.25704-100000@netrider.rowland.org>
+	Wed, 4 Jul 2007 12:11:51 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:35833 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752057AbXGDQLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 12:11:50 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Wed, 4 Jul 2007 22:03:13 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Matt Mackall <mpm@selenic.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH -mm 5/9] netconsole: Introduce dev_status member
+In-Reply-To: <20070704135642.GB11115@waste.org>
+Message-ID: <Pine.LNX.4.64.0707042158001.757@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070704135642.GB11115@waste.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Matthew Garrett wrote:
-
-> On Wed, Jul 04, 2007 at 10:38:47AM -0400, Alan Stern wrote:
+On Wed, 4 Jul 2007, Matt Mackall wrote:
+> On Wed, Jul 04, 2007 at 04:38:04PM +0530, Satyam Sharma wrote:
+> > [...]
+> > +/*
+> > + * Why no net_dev_is_up() in netdevice.h? The kernel could lose a lot of
+> > + * weight if only netdevice.h had the good sense to export such a function.
+> > + * Oh well ...
+> > + */
+> > +static inline int net_dev_is_up(struct net_device *net_dev)
+> > +{
+> > +	return ((net_dev->flags & IFF_UP) == IFF_UP);
+> > +}
 > 
-> > Okay, I agree that (1) can be handled without too much effort.  But 
-> > doing it adds an extra test to _every_ driver's I/O pathway.  Freezing 
-> > userspace does not incur all this additional overhead.
+> Why editorialize? Why not just add this to netdevice.h?
+
+Hmm, I wanted to keep all changes local to netconsole, but ...
+ok, will do that.
+
+> > +	if (nt->dev_status) {
 > 
-> For runtime PM to work it's already necessary to have a test in that 
-> path to check if the device is suspended. I can't see how this adds any 
-> overhead to the common case.
+> Why not simply call net_dev_is_up?
 
-Actually it isn't necessary to have a test to check if the device is 
-suspended.  We simply call the autoresume routine; if the device isn't 
-suspended that routine doesn't have to do anything.
+Yes, I did consider just calling the function here instead of
+introducing another member ... again, ok will do that ...
 
-I agree that that the extra test (for system-wide suspend underway) is
-needed only if the autoresume fails, which isn't part of the main
-pathway.  So it doesn't add runtime overhead -- but handling it does
-add code overhead.
+> > We then join this up with the just-introduced net_device notifier, and
+> > introduce NETDEV_UP and NETDEV_DOWN notifications. By disabling the target
+> > when the corresponding local interface is down, we save the overhead of
+> > unnecessarily disabling interrupts and calling into the netpoll stack in
+> > console->write().
+> 
+> Yuck. 
 
-Alan Stern
+... so all this will go too.
 
+Satyam
