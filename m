@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbXGDGdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759381AbXGDGdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758916AbXGDGdO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 02:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbXGDGc4
+	id S1759381AbXGDGdo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 02:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbXGDGde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 02:32:56 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53499 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753379AbXGDGcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 02:32:54 -0400
-Subject: Re: [EXT4 set 3][PATCH 1/1] ext4 nanosecond timestamp
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Kalpak Shah <kalpak@clusterfs.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-In-Reply-To: <1183458506.4102.5.camel@garfield.linsyssoft.com>
-References: <1183275416.4010.125.camel@localhost.localdomain>
-	 <1183458506.4102.5.camel@garfield.linsyssoft.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 03 Jul 2007 23:32:55 -0400
-Message-Id: <1183519975.3922.7.camel@localhost.localdomain>
+	Wed, 4 Jul 2007 02:33:34 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:41572 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751565AbXGDGdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 02:33:33 -0400
+Date: Wed, 4 Jul 2007 08:41:59 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S\. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Re: [NETPOLL] netconsole: fix soft lockup when removing module
+Message-ID: <20070704064159.GA2057@ff.dom.local>
+References: <20070701173558.GA207@tv-sign.ru> <20070702075226.GB1639@ff.dom.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070702075226.GB1639@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-03 at 15:58 +0530, Kalpak Shah wrote:
-> On Sun, 2007-07-01 at 03:36 -0400, Mingming Cao wrote:
-> > +
-> > +#define EXT4_INODE_GET_XTIME(xtime, inode, raw_inode)			       \
-> > +do {									       \
-> > +	(inode)->xtime.tv_sec = le32_to_cpu((raw_inode)->xtime);	       \
-> > +	if (EXT4_FITS_IN_INODE(raw_inode, EXT4_I(inode), xtime ## _extra))     \
-> > +		ext4_decode_extra_time(&(inode)->xtime,			       \
-> > +				       raw_inode->xtime ## _extra);	       \
-> > +} while (0)
-> > +
-> > +#define EXT4_EINODE_GET_XTIME(xtime, einode, raw_inode)			       \
-> > +do {									       \
-> > +	if (EXT4_FITS_IN_INODE(raw_inode, einode, xtime))		       \
-> > +		(einode)->xtime.tv_sec = le32_to_cpu((raw_inode)->xtime);      \
-> > +	if (EXT4_FITS_IN_INODE(raw_inode, einode, xtime ## _extra))	       \
-> > +		ext4_decode_extra_time(&(einode)->xtime,		       \
-> > +				       raw_inode->xtime ## _extra);	       \
-> > +} while (0)
-> > +
+On Mon, Jul 02, 2007 at 09:52:26AM +0200, Jarek Poplawski wrote:
 > 
-> This nanosecond patch seems to be missing the fix below which is required for http://bugzilla.kernel.org/show_bug.cgi?id=5079
+> From my recent patch:
 > 
-> If the timestamp is set to before epoch i.e. a negative timestamp then the file may have its date set into the future on 64-bit systems. So when the timestamp is read it must be cast as signed.
+> > >    #1
+> > >    Until kernel ver. 2.6.21 (including) cancel_rearming_delayed_work()
+> > >    required a work function should always (unconditionally) rearm with
+> > >    delay > 0 - otherwise it would endlessly loop. This patch replaces
+> > >    this function with cancel_delayed_work(). Later kernel versions don't
+> > >    require this, so here it's only for uniformity.
+> 
+> But Oleg Nesterov <oleg@tv-sign.ru> found:
+> 
+> > But 2.6.22 doesn't need this change, why it was merged?
+> > 
+> > In fact, I suspect this change adds a race,
+> ...
+> 
+> His description was right (thanks), so this patch reverts #1.
+> 
+> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
 
-Missed this one.
-Thanks. Will update ext4 patch queue tonight with this fix.
+Oleg,
 
-Mingming
+I think maybe you could ack these 2 netconsole patches...
+They were done on your request but it looks like Andrew
+is waiting on something...
 
+Thanks,
+Jarek P.
