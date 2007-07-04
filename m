@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760983AbXGDBUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbXGDBVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760983AbXGDBUQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jul 2007 21:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbXGDBUF
+	id S1761332AbXGDBVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jul 2007 21:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbXGDBVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jul 2007 21:20:05 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:51807 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755744AbXGDBUA (ORCPT
+	Tue, 3 Jul 2007 21:21:17 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:53869
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757114AbXGDBVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jul 2007 21:20:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=TwY+EvAxCqqC/pvBsXIg+ojI9OTdH910EQirUO+gy4k8dSWXO9FUQr0Ptw3ZT6RVunDU13iWKXW9jzoQIX/G2scMrxAYsVWSosL732y/nbjUbJ66K+7Xt+6M26sChAkpIuKp6s4ctdsu4onR96BZKqs4cWlQ3fq1++738EhnoUs=
-Message-ID: <468AF5BB.10005@gmail.com>
-Date: Wed, 04 Jul 2007 10:19:55 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Tue, 3 Jul 2007 21:21:16 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH][Documentation][resend] Add missing files and dirs to 00-INDEX in Documentation/
+Date: Tue, 3 Jul 2007 21:21:02 -0400
+User-Agent: KMail/1.9.6
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, trivial@kernel.org
+References: <200707010106.00181.jesper.juhl@gmail.com> <20070703125852.0172a588.akpm@linux-foundation.org> <9a8748490707031808m73093345i141b772b283a9d04@mail.gmail.com>
+In-Reply-To: <9a8748490707031808m73093345i141b772b283a9d04@mail.gmail.com>
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Some NCQ numbers...
-References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com> <468AB1A7.9010201@msgid.tls.msk.ru>
-In-Reply-To: <468AB1A7.9010201@msgid.tls.msk.ru>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707032121.02333.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tuesday 03 July 2007 21:08:32 Jesper Juhl wrote:
+> > That's Rob's problem, I guess.
+>
+> Let's leave final judgement of the patch to Rob then. That's fine by me.
 
-Michael Tokarev wrote:
-> Well.  It looks like the results does not depend on the
-> elevator.  Originally I tried with deadline, and just
-> re-ran the test with noop (hence the long delay with
-> the answer) - changing linux elevator changes almost
-> nothing in the results - modulo some random "fluctuations".
+I plan to obsolete it within the next month, but for 2.6.22 you might as well 
+update it.  I'll integrate that data that's there into http://kernel.org/doc 
+when I get a little less buried.  (I might set up a git tree and queue up 
+Documentation reorganization patches too.  But probably not this week.)
 
-I see.  Thanks for testing.
+So:
+Signed-off-by: Rob Landley <rob@landley.net>
 
-> In any case, NCQ - at least in this drive - just does
-> not work.  Linux with its I/O elevator may help to
-> speed things up a bit, but the disk does nothing in
-> this area.  NCQ doesn't slow things down either - it
-> just does not work.
-> 
-> The same's for ST3250620NS "enterprise" drives.
-> 
-> By the way, Seagate announced Barracuda ES 2 series
-> (in range 500..1200Gb if memory serves) - maybe with
-> those, NCQ will work better?
+Thanks,
 
-No one would know without testing.
-
-> Or maybe it's libata which does not implement NCQ
-> "properly"?  (As I shown before, with almost all
-> ol'good SCSI drives TCQ helps alot - up to 2x the
-> difference and more - with multiple I/O threads)
-
-Well, what the driver does is minimal.  It just passes through all the
-commands to the harddrive.  After all, NCQ/TCQ gives the harddrive more
-responsibility regarding request scheduling.
-
+Rob
 -- 
-tejun
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
