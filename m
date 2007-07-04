@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762077AbXGDOYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbXGDO1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762077AbXGDOYq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760505AbXGDOYi
+	id S1761963AbXGDO1S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758750AbXGDO1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:24:38 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56275 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758497AbXGDOYh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:24:37 -0400
-Message-ID: <468BADA6.9050609@bull.net>
-Date: Wed, 04 Jul 2007 16:24:38 +0200
-From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
-X-Accept-Language: en-us, en, fr, hu
+	Wed, 4 Jul 2007 10:27:07 -0400
+Received: from h155.mvista.com ([63.81.120.155]:31815 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759483AbXGDO1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 10:27:05 -0400
+Message-ID: <468BAEAB.3070909@ru.mvista.com>
+Date: Wed, 04 Jul 2007 18:28:59 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 04/07/2007 16:28:48,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 04/07/2007 16:28:49,
-	Serialize complete at 04/07/2007 16:28:49
-Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       jeff@garzik.org
+Subject: Re: [PATCH] pata_hpt3x3: Major reworking and testing
+References: <20070703161002.1576c39d@the-village.bc.nu> <200707032212.01619.bzolnier@gmail.com> <468AB462.4090203@ru.mvista.com> <200707040044.27185.bzolnier@gmail.com>
+In-Reply-To: <200707040044.27185.bzolnier@gmail.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Could you please confirm that I understand correctly what is in the:
+Hello.
 
-Dual-Core Update to the Intel Itanium 2 Processor Reference Manual...
+Bartlomiej Zolnierkiewicz wrote:
 
-"2.3.3.2 L2 Caches
-...
-Any coherence request to identify whether a cache line is in the processor
-will invalidate that line from the L2I cache."
+>>>Does anybody have DOS driver for HPT343?  Google doesn't have it...
 
-This makes sure that the DMAs invalidate the L2L cache.
+>>    I have the drivers for HPT34[35] -- tried dissassembling them some years 
+>>ago...
 
-"2.7.4 Instruction Cache Coherence Optimization
-Coherence requests of the L1I and L2I caches will invalidate the line if
-it is in the cache. Montecito allows instruction requests on the system
-interface to be filtered such that they will not initiate coherence
-requests of the L1I and L2I caches. This will allow instructions to be
-cached at the L1I and L2I levels across multiple processors in a coherent
-domain. This optimization is enabled by default, but may be disabled by
-PAL_SET_PROC_FEATURES bit 5 of the Montecito feature_set (18)."
+> /me wants
 
-Machines star up whit bit 5 = 0, reading instruction pages via
-NFS has to flush them from L2I.
+    I tried sending binaries as is but GMail bounced them off. :-/
+    Will try to tar and feather them... ;-)
 
+> Bart
 
-I was wondering if instead of modifying do_no_page() and Co., should
-not we make nfs_readpage() be DMA-like?
-(No possible regression for most of the page I/O-s.)
-I.e. it should be the responsibility of a file system to make sure it
-supports instruction pages correctly. The base kernel should provide
-such file systems with an architecture dependent macro...
-
-Thanks,
-
-Zoltan Menyhart
+MBR, Sergei
