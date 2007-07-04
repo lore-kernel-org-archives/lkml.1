@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbXGDKfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbXGDKf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761488AbXGDKfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761400AbXGDKfN
+	id S1761581AbXGDKf7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbXGDKf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:35:13 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45486
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760949AbXGDKfL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:35:11 -0400
-Date: Wed, 04 Jul 2007 03:35:30 -0700 (PDT)
-Message-Id: <20070704.033530.105423846.davem@davemloft.net>
-To: hch@infradead.org
-Cc: Yinghai.Lu@Sun.COM, shemminger@linux-foundation.org,
-       akpm@linux-foundation.org, ak@suse.de, greg@kroah.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/4] net: use numa_node in net_devcice->dev instead of
- parent
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070704085120.GB19515@infradead.org>
-References: <20070703143407.7e4232f8@freepuppy.localdomain.hemminger.net>
-	<200707031730.51677.yinghai.lu@sun.com>
-	<20070704085120.GB19515@infradead.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 4 Jul 2007 06:35:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48513 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760570AbXGDKfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:35:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Wed, 4 Jul 2007 12:42:59 +0200
+User-Agent: KMail/1.9.5
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <20070703211227.GA28758@srcf.ucam.org> <200707032337.52544.rjw@sisk.pl> <18059.5690.908102.273897@cargo.ozlabs.ibm.com>
+In-Reply-To: <18059.5690.908102.273897@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707041242.59552.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Hellwig <hch@infradead.org>
-Date: Wed, 4 Jul 2007 09:51:20 +0100
-
-> On Tue, Jul 03, 2007 at 05:30:51PM -0700, Yinghai Lu wrote:
-> > [PATCH 2/4] net: use numa_node in net_devcice->dev instead of parent
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-> > diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-> > index 27cfe5f..005cc1c 100644
-> > --- a/net/core/skbuff.c
-> > +++ b/net/core/skbuff.c
-> > @@ -217,7 +217,7 @@ nodata:
-> >  struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
-> >  		unsigned int length, gfp_t gfp_mask)
-> >  {
-> > -	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
-> > +	int node = dev_to_node(&dev->dev);
+On Wednesday, 4 July 2007 05:38, Paul Mackerras wrote:
+> Rafael J. Wysocki writes:
 > 
-> This looks wrong to me unless the device model has once again changed
-> silently.  When I wrote this code &dev->dev was a device allocated
-> as part of the netdevice and the parent is the pci (or whatever) device
-> that has the node information.
+> > Now, please tell me how many driver writers even thought that something
+> > might try to access their devices after .suspend() had been executed (or
+> > even whilie it was being executed)?
+> 
+> Well, I believe that the USB framework copes with this, except
+> possibly for some corner cases like the example that Alan Stern
+> posted.  The fact that powerbooks suspend and resume without the
+> freezer implies that the IDE framework, the console code and the
+> framebuffer code cope correctly (though possibly not all chipset
+> drivers).
 
-Correct, this change is completely bogus.
+Okay, so in fact you don't know.
+
+And that's my point in this thread.
+
+I won't fight for the freezer for what it's worth, but let's do things in the
+_right_ _order_.  For example, let's make sure that by making the $subject
+change we won't introduce (too many) regressions and fix the frameworks
+that don't get it right.
+
+Using the problems with FUSE as an argument for making this change immediately
+doesn't seem to be right to me.
+
+> So I think that a lot of the frameworks already get it right.  Of
+> course the quality of the low-level chipset drivers has always been
+> pretty variable. :)
+
+Yes, but that's another issue.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
