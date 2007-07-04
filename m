@@ -1,110 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbXGDHZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbXGDHc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757674AbXGDHZN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 03:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXGDHZB
+	id S1757253AbXGDHc2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 03:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXGDHcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 03:25:01 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:37303 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbXGDHY7 (ORCPT
+	Wed, 4 Jul 2007 03:32:20 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:33236 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753346AbXGDHcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 03:24:59 -0400
-Message-ID: <468B4B22.7040605@linux.vnet.ibm.com>
-Date: Wed, 04 Jul 2007 12:54:18 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-CC: cmm@us.ibm.com, Kalpak Shah <kalpak@clusterfs.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [EXT4 set 3][PATCH 1/1] ext4 nanosecond timestamp
-References: <1183275416.4010.125.camel@localhost.localdomain> <1183458506.4102.5.camel@garfield.linsyssoft.com> <1183519975.3922.7.camel@localhost.localdomain> <468B3FDA.7060809@linux.vnet.ibm.com>
-In-Reply-To: <468B3FDA.7060809@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 4 Jul 2007 03:32:19 -0400
+Subject: Re: [patch 5/5] s390 tlb flush fix.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Hugh Dickins <hugh@veritas.com>
+Cc: akpm@linux-foundation.org, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0707031921270.8155@blonde.wat.veritas.com>
+References: <20070703111822.418649776@de.ibm.com>
+	 <20070703121229.180281096@de.ibm.com>
+	 <Pine.LNX.4.64.0707031921270.8155@blonde.wat.veritas.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Wed, 04 Jul 2007 09:34:34 +0200
+Message-Id: <1183534474.1208.20.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Aneesh Kumar K.V wrote:
+On Tue, 2007-07-03 at 19:58 +0100, Hugh Dickins wrote:
+> On Tue, 3 Jul 2007, Martin Schwidefsky wrote:
+> > +
+> > +static inline struct mmu_gather *tlb_gather_mmu(struct mm_struct *mm,
+> > +						unsigned int full_mm_flush)
+> > +{
+> > +	struct mmu_gather *tlb = &get_cpu_var(mmu_gathers);
+> > +
+> > +	tlb->mm = mm;
+> > +	tlb->fullmm = full_mm_flush || (num_online_cpus() == 1) ||
+> > +		(atomic_read(&mm->mm_users) <= 1);
+> > +	tlb->nr_ptes = 0;
+> > +	tlb->nr_pmds = TLB_NR_PTRS;
+> > +	if (tlb->fullmm)
+> > +		__tlb_flush_mm(mm);
+> > +	return tlb;
+> > +}
 > 
-> 
-> Mingming Cao wrote:
->> On Tue, 2007-07-03 at 15:58 +0530, Kalpak Shah wrote:
->>> On Sun, 2007-07-01 at 03:36 -0400, Mingming Cao wrote:
->>>> +
->>>> +#define EXT4_INODE_GET_XTIME(xtime, inode, 
->>>> raw_inode)                   \
->>>> +do {                                           \
->>>> +    (inode)->xtime.tv_sec = 
->>>> le32_to_cpu((raw_inode)->xtime);           \
->>>> +    if (EXT4_FITS_IN_INODE(raw_inode, EXT4_I(inode), xtime ## 
->>>> _extra))     \
->>>> +        ext4_decode_extra_time(&(inode)->xtime,                   \
->>>> +                       raw_inode->xtime ## _extra);           \
->>>> +} while (0)
->>>> +
->>>> +#define EXT4_EINODE_GET_XTIME(xtime, einode, 
->>>> raw_inode)                   \
->>>> +do {                                           \
->>>> +    if (EXT4_FITS_IN_INODE(raw_inode, einode, xtime))               \
->>>> +        (einode)->xtime.tv_sec = 
->>>> le32_to_cpu((raw_inode)->xtime);      \
->>>> +    if (EXT4_FITS_IN_INODE(raw_inode, einode, xtime ## 
->>>> _extra))           \
->>>> +        ext4_decode_extra_time(&(einode)->xtime,               \
->>>> +                       raw_inode->xtime ## _extra);           \
->>>> +} while (0)
->>>> +
->>> This nanosecond patch seems to be missing the fix below which is 
->>> required for http://bugzilla.kernel.org/show_bug.cgi?id=5079
->>>
->>> If the timestamp is set to before epoch i.e. a negative timestamp 
->>> then the file may have its date set into the future on 64-bit 
->>> systems. So when the timestamp is read it must be cast as signed.
->>
->> Missed this one.
->> Thanks. Will update ext4 patch queue tonight with this fix.
->>
->>
-> 
-> 
-> IIRC in the conference call it was decided to not to apply this patch. 
-> Andreas may be able to update better.
-> 
+> I'm afraid that mm_users test (and probably some of your other
+> mm_users tests) is not good: because this also gets called when
+> a file is truncated while it is mapped - the active mm at that
+> time is likely not to be one of the mm_users.  (Do any other
+> arches use mm_users in that way?  No: that should be a warning.)
+
+Good catch, that would have caused me some headache. So I need to add a
+current->active_mm==mm check if mm_users==1.
+
+> You might do better to make more use of cpu_vm_mask (though I
+> didn't see where any bits get cleared from it on s390 at present).
+
+We don't clear any of the bits in cpu_vm_mask. I though about it for a
+while and got tangled in race conditions. The cpu_vm_mask optimization
+works for short-lived processes which always executed on the same cpu.
+
+> Though it seems sensible to aim for one TLB flush at the beginning
+> as you're doing, that's not what other arches do (some have to
+> worry about speculative execution, but you don't?), and it
+> worries me that you're taking s390 further away into its own
+> implementation: which you're surely entitled to do, but then
+> we're more likely to screw you over by mistake in future.
+
+We do not have to worry about speculative execution because s390 uses
+special instruction to do user access (mvcs, mvcp and mvcos) and the
+kernel has its own address space. The compiler doesn't know about these
+instruction and cannot "accidentally" access a user space address over
+the user page table when it shouldn't.
+
+> Is there perhaps another architecture whose procedures you
+> can copy?  Changing a pte while another cpu is accessing it
+> is not a problem unique to s390.
+
+No, I don't think so. s390 is quite unique with the restriction that you
+may not do a set_pte_at .. flush_tlb_xxx while a pte might get accessed
+by a different cpu.
+
+> Patches 1-4 looked fine to me, but I believe this 5/5
+> is the rationale behind all of them.
+
+Yes, indeed the tlb flush fix and the 1K/2K page tables are my reasons
+for all these patches.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
 
-Looking at the git log i understand the core patch got applied to ext4 tree with the comment
-from Andreas. So may be we can apply this patch also.
-
-
-commit 4d7bf11d649c72621ca31b8ea12b9c94af380e63
-
-Andreas says:
-    
-    This patch is now treating timestamps with the high bit set as negative
-    times (before Jan 1, 1970).  This means we lose 1/2 of the possible range
-    of timestamps (lopping off 68 years before unix timestamp overflow -
-    now only 30 years away :-) to handle the extremely rare case of setting
-    timestamps into the distant past.
-    
-    If we are only interested in fixing the underflow case, we could just
-    limit the values to 0 instead of storing negative values.  At worst this
-    will skew the timestamp by a few hours for timezones in the far east
-    (files would still show Jan 1, 1970 in "ls -l" output).
-    
-    That said, it seems 32-bit systems (mine at least) allow files to be set
-    into the past (01/01/1907 works fine) so it seems this patch is bringing
-    the x86_64 behaviour into sync with other kernels.
-    
-    On the plus side, we have a patch that is ready to add nanosecond timestamps
-    to ext3 and as an added bonus adds 2 high bits to the on-disk timestamp so
-    this extends the maximum date to 2242.
-    
-NOTE: The conference call i mentioned above is http://ext4.wiki.kernel.org/index.php/Ext4_Developer%27s_Conference_Call
-
-
--aneesh
