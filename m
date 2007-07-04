@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXGDOR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761723AbXGDOTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761341AbXGDOR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbXGDORs
+	id S1761723AbXGDOTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbXGDOTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:17:48 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49255 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758750AbXGDORr (ORCPT
+	Wed, 4 Jul 2007 10:19:13 -0400
+Received: from merkurneu.hrz.uni-giessen.de ([134.176.2.3]:46422 "EHLO
+	merkurneu.hrz.uni-giessen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759144AbXGDOTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:17:47 -0400
-Date: Wed, 4 Jul 2007 15:23:59 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jeff@garzik.org
+	Wed, 4 Jul 2007 10:19:13 -0400
+From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: Libata PATA status
-Message-ID: <20070704152359.1ad8d194@the-village.bc.nu>
-In-Reply-To: <20070704132930.GB10904@one.firstfloor.org>
-References: <20070703185116.59c8f5f5@the-village.bc.nu>
-	<p73k5tg2uj9.fsf@bingen.suse.de>
-	<20070704131746.4bbe4d0e@the-village.bc.nu>
-	<20070704130258.GA10904@one.firstfloor.org>
-	<20070704141819.01a357fa@the-village.bc.nu>
-	<20070704132930.GB10904@one.firstfloor.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 4 Jul 2007 16:18:45 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel list <linux-kernel@vger.kernel.org>
+References: <20070703185116.59c8f5f5@the-village.bc.nu> <200707041332.00769.marc.dietrich@ap.physik.uni-giessen.de> <20070704131023.66a3cca7@the-village.bc.nu>
+In-Reply-To: <20070704131023.66a3cca7@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707041618.52249.marc.dietrich@ap.physik.uni-giessen.de>
+X-HRZ-JLUG-MailScanner-Information: Passed JLUG virus check
+X-HRZ-JLUG-MailScanner: No virus found
+X-MailScanner-From: marc.dietrich@ap.physik.uni-giessen.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007 15:29:30 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
 
-> > You could probably reliably map "hda/b/c/d" initially with some kind of
-> > forwarder providing nobody hot plugged them.  Just not sure I see the
-> 
-> PATA hotplug? 
-> 
-> SATA systems typically already use /dev/sda*, it just applies to PATA.
+Hi,
 
-We support PATA warm plugging sort of already and it'll go further in
-time. Mostly this is relevant to laptops
+Am Wednesday 04 July 2007 14:10 schrieb Alan Cox:
+> > I'm using pata-cmd64x for a few month now on my G3 powermac. So far no
+> > problems except it only runs in UDMA/25 mode instead of UDMA/33 as the
+> > ide driver does. And of course - no cdrom or zip because they are
+> > connected to
+>
+> That looks like a dumb bug actually. What chip variant do you have ?
+
+lspci -vnn gives
+
+01:01.0 IDE interface [0101]: Silicon Image, Inc. PCI0646 [1095:0646] (rev 07) 
+(prog-if 8f [Master SecP SecO PriP PriO])
+        Subsystem: Silicon Image, Inc. PCI0646 [1095:0646]
+        Flags: bus master, medium devsel, latency 64, IRQ 26
+        I/O ports at 1090 [size=8]
+        I/O ports at 1080 [size=4]
+        I/O ports at 1070 [size=8]
+        I/O ports at 1060 [size=4]
+        I/O ports at 1050 [size=16]
+        Capabilities: [60] Power Management version 1
+
+
+Marc
+
+-- 
+	"Our cause has a sacred nature."
+		 Lord Arthur Ponsonby, "Falsehood in Wartime: Propaganda Lies of the First 
+World War", 1928
