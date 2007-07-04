@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761723AbXGDOTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbXGDOWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761723AbXGDOTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 10:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbXGDOTN
+	id S1761514AbXGDOWx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 10:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759845AbXGDOWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 10:19:13 -0400
-Received: from merkurneu.hrz.uni-giessen.de ([134.176.2.3]:46422 "EHLO
-	merkurneu.hrz.uni-giessen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759144AbXGDOTN (ORCPT
+	Wed, 4 Jul 2007 10:22:46 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:50366 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759565AbXGDOWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 10:19:13 -0400
-From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Libata PATA status
-Date: Wed, 4 Jul 2007 16:18:45 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel list <linux-kernel@vger.kernel.org>
-References: <20070703185116.59c8f5f5@the-village.bc.nu> <200707041332.00769.marc.dietrich@ap.physik.uni-giessen.de> <20070704131023.66a3cca7@the-village.bc.nu>
-In-Reply-To: <20070704131023.66a3cca7@the-village.bc.nu>
+	Wed, 4 Jul 2007 10:22:45 -0400
+Date: Wed, 4 Jul 2007 16:23:13 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
+Message-ID: <20070704142313.GI3492@stusta.de>
+References: <20070703164046.645090494@polymtl.ca> <20070703164516.377240547@polymtl.ca> <20070703181151.GB5800@martell.zuzino.mipt.ru> <20070703185748.GA4047@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200707041618.52249.marc.dietrich@ap.physik.uni-giessen.de>
-X-HRZ-JLUG-MailScanner-Information: Passed JLUG virus check
-X-HRZ-JLUG-MailScanner: No virus found
-X-MailScanner-From: marc.dietrich@ap.physik.uni-giessen.de
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070703185748.GA4047@Krystal>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 03, 2007 at 02:57:48PM -0400, Mathieu Desnoyers wrote:
+> * Alexey Dobriyan (adobriyan@gmail.com) wrote:
+> > On Tue, Jul 03, 2007 at 12:40:56PM -0400, Mathieu Desnoyers wrote:
+> > > Use immediate values with lower d-cache hit in optimized version as a
+> > > condition for scheduler profiling call.
+> > 
+> > How much difference in performance do you see?
+> > 
+> 
+> Hi Alexey,
+> 
+> Please have a look at Documentation/immediate.txt for that information.
+> Also note that the main advantage of the load immediate is to free a
+> cache line. Therefore, I guess the best way to quantify the improvement
+> it brings at one single site is not in terms of cycles, but in terms of
+> number of cache lines used by the scheduler code. Since memory bandwidth
+> seems to be an increasing bottleneck (CPU frequency increases faster
+> than the available memory bandwidth), it makes sense to free as much
+> cache lines as we can.
+> 
+> Measuring the overall impact on the system of this single modification
+> results in the difference brought by one site within the standard
+> deviation of the normal samples. It will become significant when the
+> number of immediate values used instead of global variables at hot
+> kernel paths (need to ponder with the frequency at which the data is
+> accessed) will start to be significant compared to the L1 data cache
+> size. We could characterize this in memory to L1 cache transfers per
+> seconds.
+> 
+> On 3GHz P4:
+> 
+> memory read: ~48 cycles
+> 
+> So we can definitely say that 48*HZ (approximation of the frequency at
+> which the scheduler is called) won't make much difference, but as it
+> grows, it will.
+> 
+> On a 1000HZ system, it results in:
+> 
+> 48000 cycles/second, or 16µs/second, or 0.000016% speedup.
+> 
+> However, if we place this in code called much more often, such as
+> do_page_fault, we get, with an hypotetical scenario of approximation
+> of 100000 page faults per second:
+> 
+> 4800000 cycles/s, 1.6ms/second or 0.0016% speedup.
+> 
+> So as the number of immediate values used increase, the overall memory
+> bandwidth required by the kernel will go down.
 
-Hi,
+Might make a nice scientific paper, but even according to your own 
+optimistic numbers it's not realistic that you will ever achieve any 
+visible improvement even if you'd find 100 places in hotpaths you could 
+mark this way.
 
-Am Wednesday 04 July 2007 14:10 schrieb Alan Cox:
-> > I'm using pata-cmd64x for a few month now on my G3 powermac. So far no
-> > problems except it only runs in UDMA/25 mode instead of UDMA/33 as the
-> > ide driver does. And of course - no cdrom or zip because they are
-> > connected to
->
-> That looks like a dumb bug actually. What chip variant do you have ?
+And a better direction for hotpaths seems to be Andi's __cold/COLD in 
+-mm without adding an own framework for doing such things.
 
-lspci -vnn gives
+> Mathieu
 
-01:01.0 IDE interface [0101]: Silicon Image, Inc. PCI0646 [1095:0646] (rev 07) 
-(prog-if 8f [Master SecP SecO PriP PriO])
-        Subsystem: Silicon Image, Inc. PCI0646 [1095:0646]
-        Flags: bus master, medium devsel, latency 64, IRQ 26
-        I/O ports at 1090 [size=8]
-        I/O ports at 1080 [size=4]
-        I/O ports at 1070 [size=8]
-        I/O ports at 1060 [size=4]
-        I/O ports at 1050 [size=16]
-        Capabilities: [60] Power Management version 1
-
-
-Marc
+cu
+Adrian
 
 -- 
-	"Our cause has a sacred nature."
-		 Lord Arthur Ponsonby, "Falsehood in Wartime: Propaganda Lies of the First 
-World War", 1928
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
