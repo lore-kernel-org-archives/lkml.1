@@ -1,41 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbXGDSVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbXGDSiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757972AbXGDSVu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 14:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbXGDSVl
+	id S1757640AbXGDSiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 14:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbXGDSil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 14:21:41 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59578 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755140AbXGDSVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 14:21:40 -0400
-Date: Wed, 4 Jul 2007 20:21:36 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: bo yang <bo.yang@lsi.com>
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neela.kolli@lsi.com, sumant.patro@lsi.com
-Subject: Re: [PATCH 1/4] scsi: megaraid_sas -- add hibernation support
-Message-ID: <20070704182136.GA2731@elf.ucw.cz>
-References: <1183307483.4723.2.camel@dhcp-75-197.se.lsil.com>
+	Wed, 4 Jul 2007 14:38:41 -0400
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:3074 "EHLO
+	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755723AbXGDSij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 14:38:39 -0400
+Date: Wed, 4 Jul 2007 19:38:31 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [PATCH] Re: Sparc32: random invalid instruction occourances on
+ sparc32 (sun4c)
+In-Reply-To: <1183560364.29081.106.camel@shinybook.infradead.org>
+Message-ID: <Pine.LNX.4.61.0707041918160.32544@mtfhpc.demon.co.uk>
+References: <468A7D14.1050505@googlemail.com>  <Pine.LNX.4.61.0707031817050.29930@mtfhpc.demon.co.uk>
+  <Pine.LNX.4.61.0707031910280.29930@mtfhpc.demon.co.uk> 
+ <1183490778.29081.35.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.61.0707032209230.30376@mtfhpc.demon.co.uk> 
+ <1183499781.29081.46.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.61.0707032317590.30376@mtfhpc.demon.co.uk> 
+ <1183505787.29081.62.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.61.0707040335230.30946@mtfhpc.demon.co.uk> 
+ <1183520006.29081.79.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.61.0707041121290.31752@mtfhpc.demon.co.uk>
+ <1183560364.29081.106.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1183307483.4723.2.camel@dhcp-75-197.se.lsil.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: MULTIPART/MIXED; BOUNDARY="1750305931-1144574762-1183574311=:32544"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> The megaraid_sas driver doesn't support the hibernation, the
-> suspend/resume routine implemented to support the hibernation.
-> 
-> Signed-off-by: Bo Yang <bo.yang@lsi.com>
+--1750305931-1144574762-1183574311=:32544
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
-I'm glad to see first scsi driver to have hibernation support
-:-). Appart for whitespace, patch looks ok to me.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hi David,
+
+I have sucessfully tested the attached patch on Sparc32:sun4c.
+
+Is there any chance of this getting sufficiantly tested on other 
+architectures to get in into v2.6.22 ?
+
+Regards
+ 	Mark Fortescue.
+--1750305931-1144574762-1183574311=:32544
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="slab_fix2.patch"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.61.0707041938290.32544@mtfhpc.demon.co.uk>
+Content-Description: 
+Content-Disposition: attachment; filename="slab_fix2.patch"
+
+RnJvbTogTWFyayBGb3J0ZXNjdWUgPG1hcmtAbXRmaHBjLmRlbW9uLmNvLnVr
+PiwgRGF2aWQgV29vZGhvdXNlIDxkd213MkBpbmZyYWRlYWQub3JnPg0KDQpW
+ZXJpb3VzIGFsaWdubWVudCBmaXhlcyBpbiB0aGUgU0xBQiBhbG9jYXRvciB0
+aGF0IGluY3JlYXNlZCB0aGUgc2l6ZQ0Kb2YgdGhlIFJlZFpvbmUgd29yZHMg
+ZmFpbGVkIHRvIGVuc3VyZSB0aGF0IFJlZFpvbmUgd29yZCAyIGlzIGFsaWdu
+ZWQNCm9uIGEgNjRiaXQgYm91bmRhcnkuIFRoaXMgcmVzdWx0ZWQgaW4gcmFu
+ZG9tIGludmFsaWQgaW5zdHJ1Y3Rpb24NCm9jY291cmFuY2VzIG9uIFNwYXJj
+MzIgKHN1bjRjKS4NClRoZXNlIGFkZGl0aW9uYWwgY2hhbmdlcyBzaG91bGQg
+ZW5zdXJlIHRoYXQgdGhlIFJlZFpvbmUgd29yZHMgYXJlDQpjb3JyZWN0bHkg
+YWxpZ25lZCBvbiBhIDY0Yml0IGJvdW5kYXJ5IGZvciBhcmNoaXRlY3R1cmVz
+IHRoYXQgcmVxdWlyZSB0aGlzLg0KDQpTaWduZWQtb2ZmLWJ5OiBNYXJrIEZv
+cnRlc2N1ZSA8bWFya0BtdGZocGMuZGVtb24uY28udWs+DQotLS0NClRlc3Rl
+ZCBvbiBTcGFyYzMyOnN1bjRjDQpBZGRpdGlvbmFsIHRlc3RpbmcgZGVzaXJh
+YmxlIG9uIFBvd2VyUEMzMiwgU3BhcmM2NCwgUG93ZXJQQzY0IGFuZCBhbnkN
+Cm90aGVyIHBsYXRmb3JtcyB3aGVyZSBhbGlnbm1lbnQgY2hhbmdlcyBtYXkg
+YmUgb2YgY29uY2lybi4NCi0tLSBsaW51eC0yLjYvbW0vc2xhYi5jCTIwMDct
+MDctMDMgMTk6MDk6NDguMDAwMDAwMDAwICswMTAwDQorKysgbGludXgtdGVz
+dC9tbS9zbGFiLmMJMjAwNy0wNy0wNCAwNDoxNDoxNS4wMDAwMDAwMDAgKzAx
+MDANCkBAIC0xMzcsNiArMTM3LDcgQEANCiANCiAvKiBTaG91bGRuJ3QgdGhp
+cyBiZSBpbiBhIGhlYWRlciBmaWxlIHNvbWV3aGVyZT8gKi8NCiAjZGVmaW5l
+CUJZVEVTX1BFUl9XT1JECQlzaXplb2Yodm9pZCAqKQ0KKyNkZWZpbmUJUkVE
+X1pPTkVfQUxJR04JCShtYXgoX19hbGlnbm9mX18odm9pZCAqKSwgX19hbGln
+bm9mKHVuc2lnbmVkIGxvbmcgbG9uZykpIC0gMSkNCiANCiAjaWZuZGVmIGNh
+Y2hlX2xpbmVfc2l6ZQ0KICNkZWZpbmUgY2FjaGVfbGluZV9zaXplKCkJTDFf
+Q0FDSEVfQllURVMNCkBAIC01NDcsNyArNTQ4LDcgQEAgc3RhdGljIHVuc2ln
+bmVkIGxvbmcgbG9uZyAqZGJnX3JlZHpvbmUyKA0KIAlpZiAoY2FjaGVwLT5m
+bGFncyAmIFNMQUJfU1RPUkVfVVNFUikNCiAJCXJldHVybiAodW5zaWduZWQg
+bG9uZyBsb25nICopKG9ianAgKyBjYWNoZXAtPmJ1ZmZlcl9zaXplIC0NCiAJ
+CQkJCSAgICAgIHNpemVvZih1bnNpZ25lZCBsb25nIGxvbmcpIC0NCi0JCQkJ
+CSAgICAgIEJZVEVTX1BFUl9XT1JEKTsNCisJCQkJCSAgICAgIG1heChCWVRF
+U19QRVJfV09SRCwgX19hbGlnbm9mX18odW5zaWduZWQgbG9uZyBsb25nKSkp
+Ow0KIAlyZXR1cm4gKHVuc2lnbmVkIGxvbmcgbG9uZyAqKSAob2JqcCArIGNh
+Y2hlcC0+YnVmZmVyX3NpemUgLQ0KIAkJCQkgICAgICAgc2l6ZW9mKHVuc2ln
+bmVkIGxvbmcgbG9uZykpOw0KIH0NCkBAIC0yMTc4LDcgKzIxNzksOCBAQCBr
+bWVtX2NhY2hlX2NyZWF0ZSAoY29uc3QgY2hhciAqbmFtZSwgc2l6DQogCSAq
+IGFib3ZlIHRoZSBuZXh0IHBvd2VyIG9mIHR3bzogY2FjaGVzIHdpdGggb2Jq
+ZWN0IHNpemVzIGp1c3QgYWJvdmUgYQ0KIAkgKiBwb3dlciBvZiB0d28gaGF2
+ZSBhIHNpZ25pZmljYW50IGFtb3VudCBvZiBpbnRlcm5hbCBmcmFnbWVudGF0
+aW9uLg0KIAkgKi8NCi0JaWYgKHNpemUgPCA0MDk2IHx8IGZscyhzaXplIC0g
+MSkgPT0gZmxzKHNpemUtMSArIDMgKiBCWVRFU19QRVJfV09SRCkpDQorCWlm
+IChzaXplIDwgNDA5NiB8fCBmbHMoc2l6ZSAtIDEpID09IGZscyhzaXplLTEg
+KyAyICogc2l6ZW9mKHVuc2lnbmVkIGxvbmcgbG9uZykgKw0KKwkJCQkJCW1h
+eChCWVRFU19QRVJfV09SRCwgX19hbGlnbm9mX18odW5zaWduZWQgbG9uZyBs
+b25nKSkpKQ0KIAkJZmxhZ3MgfD0gU0xBQl9SRURfWk9ORSB8IFNMQUJfU1RP
+UkVfVVNFUjsNCiAJaWYgKCEoZmxhZ3MgJiBTTEFCX0RFU1RST1lfQllfUkNV
+KSkNCiAJCWZsYWdzIHw9IFNMQUJfUE9JU09OOw0KQEAgLTIxOTcsOSArMjE5
+OSw5IEBAIGttZW1fY2FjaGVfY3JlYXRlIChjb25zdCBjaGFyICpuYW1lLCBz
+aXoNCiAJICogdW5hbGlnbmVkIGFjY2Vzc2VzIGZvciBzb21lIGFyY2hzIHdo
+ZW4gcmVkem9uaW5nIGlzIHVzZWQsIGFuZCBtYWtlcw0KIAkgKiBzdXJlIGFu
+eSBvbi1zbGFiIGJ1ZmN0bCdzIGFyZSBhbHNvIGNvcnJlY3RseSBhbGlnbmVk
+Lg0KIAkgKi8NCi0JaWYgKHNpemUgJiAoQllURVNfUEVSX1dPUkQgLSAxKSkg
+ew0KLQkJc2l6ZSArPSAoQllURVNfUEVSX1dPUkQgLSAxKTsNCi0JCXNpemUg
+Jj0gfihCWVRFU19QRVJfV09SRCAtIDEpOw0KKwlpZiAoc2l6ZSAmIFJFRF9a
+T05FX0FMSUdOKSB7DQorCQlzaXplICs9IFJFRF9aT05FX0FMSUdOOw0KKwkJ
+c2l6ZSAmPSB+UkVEX1pPTkVfQUxJR047DQogCX0NCiANCiAJLyogY2FsY3Vs
+YXRlIHRoZSBmaW5hbCBidWZmZXIgYWxpZ25tZW50OiAqLw0KQEAgLTIyNjEs
+OSArMjI2MywxNCBAQCBrbWVtX2NhY2hlX2NyZWF0ZSAoY29uc3QgY2hhciAq
+bmFtZSwgc2l6DQogCX0NCiAJaWYgKGZsYWdzICYgU0xBQl9TVE9SRV9VU0VS
+KSB7DQogCQkvKiB1c2VyIHN0b3JlIHJlcXVpcmVzIG9uZSB3b3JkIHN0b3Jh
+Z2UgYmVoaW5kIHRoZSBlbmQgb2YNCi0JCSAqIHRoZSByZWFsIG9iamVjdC4N
+CisJCSAqIHRoZSByZWFsIG9iamVjdC4gQnV0IGlmIHRoZSBzZWNvbmQgcmVk
+IHpvbmUgbXVzdCBiZQ0KKwkJICogYWxpZ25lZCAnYmV0dGVyJyB0aGFuIHRo
+YXQsIGFsbG93IGZvciBpdC4NCiAJCSAqLw0KLQkJc2l6ZSArPSBCWVRFU19Q
+RVJfV09SRDsNCisJCWlmIChmbGFncyAmIFNMQUJfUkVEX1pPTkUNCisJCSAg
+ICAmJiBCWVRFU19QRVJfV09SRCA8IF9fYWxpZ25vZl9fKHVuc2lnbmVkIGxv
+bmcgbG9uZykpDQorCQkJc2l6ZSArPSBfX2FsaWdub2ZfXyh1bnNpZ25lZCBs
+b25nIGxvbmcpOw0KKwkJZWxzZQ0KKwkJCXNpemUgKz0gQllURVNfUEVSX1dP
+UkQ7DQogCX0NCiAjaWYgRk9SQ0VEX0RFQlVHICYmIGRlZmluZWQoQ09ORklH
+X0RFQlVHX1BBR0VBTExPQykNCiAJaWYgKHNpemUgPj0gbWFsbG9jX3NpemVz
+W0lOREVYX0wzICsgMV0uY3Nfc2l6ZQ0K
+
+--1750305931-1144574762-1183574311=:32544--
