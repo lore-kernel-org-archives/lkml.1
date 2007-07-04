@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbXGDIjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbXGDImW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759764AbXGDIjj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 04:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbXGDIjb
+	id S1759333AbXGDImW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 04:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbXGDImN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 04:39:31 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:40285 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757299AbXGDIja convert rfc822-to-8bit (ORCPT
+	Wed, 4 Jul 2007 04:42:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34253 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756052AbXGDImM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 04:39:30 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 10:39:29 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707041011.33279.oliver@neukum.org> <18059.23015.860618.268754@cargo.ozlabs.ibm.com>
-In-Reply-To: <18059.23015.860618.268754@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Jul 2007 04:42:12 -0400
+Date: Wed, 4 Jul 2007 09:42:11 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Karel Zak <kzak@redhat.com>
+Cc: List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+Message-ID: <20070704084211.GA19128@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Karel Zak <kzak@redhat.com>,
+	List util-linux-ng <util-linux-ng@vger.kernel.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070703221156.GY14825@petra.dvoda.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707041039.30015.oliver@neukum.org>
+In-Reply-To: <20070703221156.GY14825@petra.dvoda.cz>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
-> Oliver Neukum writes:
-> 
-> > > Indeed, and the USB framework has code to know when the host
-> > > controller is suspended and avoid trying to send out urbs in that
-> > > case.  Or at least it did last time I looked at it in any detail; it's
-> > > been "just working" - including suspending and resuming, without the
-> > > freezer - for quite a while now.
-> > 
-> > And what happens to that IO? I suspended and lost data is not an
-> > acceptable behavior.
-> 
-> It's not lost, it's sitting in RAM, and will be sent out when you
-> resume.
+On Wed, Jul 04, 2007 at 12:11:56AM +0200, Karel Zak wrote:
+>  mount(8) doesn't include filesystem detection code anymore. You
+>  have to compile --with-fsprobe={blkid,volume_id}, and libblkid
+>  (e2fsprogs) or libvolume_id (udev >= v110) is required.
 
-Unfortunately this is not the case. The URB will error out.
+Sorry, but it's really annoying to pull in a filesystem-specific devel
+package for that.  Having a library is fine, but please move the library
+into util-linux so it's always available without another dependency.  That
+way xfsprogs could for example drop it's own detection library aswell.
 
-	Oliver
+>  The package build system is now based on autotools. The build system
+>  supports  separate CFLAGS and LDFLAGS for suid programs (SUID_CFLAGS,
+>  SUID_LDFLAGS). For more details see the README file
+
+And this is really dumb.  autotools is a completely pain in the ass and
+not useful at all for linux-only tools.
 
