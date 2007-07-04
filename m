@@ -1,15 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbXGDLJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbXGDLJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761539AbXGDLJG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 07:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761457AbXGDLIF
+	id S1761650AbXGDLJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 07:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbXGDLIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 07:08:05 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:57159 "EHLO mail4.iitk.ac.in"
+	Wed, 4 Jul 2007 07:08:07 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:57161 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761447AbXGDLIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 07:08:01 -0400
-X-Greylist: delayed 1360 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jul 2007 07:08:01 EDT
+	id S1761448AbXGDLIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 07:08:02 -0400
 X-Virus-Scanner: This message was checked by NOD32 Antivirus system
 	for Linux Server. For more information on NOD32 Antivirus System,
 	please, visit our website: http://www.nod32.com/.
@@ -20,20 +19,19 @@ Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>,
        Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>
-Date: Wed, 04 Jul 2007 16:37:59 +0530
-Message-Id: <20070704110759.28520.37301.sendpatchset@cselinux1.cse.iitk.ac.in>
+Date: Wed, 04 Jul 2007 16:38:09 +0530
+Message-Id: <20070704110809.28520.1141.sendpatchset@cselinux1.cse.iitk.ac.in>
 In-Reply-To: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
 References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
-Subject: [PATCH -mm 4/9] netconsole: Introduce netconsole_netdev_notifier
+Subject: [PATCH -mm 6/9] netconsole: Update documentation for multiple target support
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-[4/9] netconsole: Introduce netconsole_netdev_notifier
+[6/9] netconsole: Update documentation for multiple target support
 
-To update fields of underlying netpoll structure at runtime on
-corresponding NETDEV_CHANGEADDR or NETDEV_CHANGENAME notifications.
+... and add a few useful general purpose tips as well while we're at it.
 
 Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
@@ -41,68 +39,43 @@ Cc: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
 
 ---
 
- drivers/net/netconsole.c |   36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ Documentation/networking/netconsole.txt |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 ---
 
-diff -ruNp a/drivers/net/netconsole.c b/drivers/net/netconsole.c
---- a/drivers/net/netconsole.c	2007-07-03 21:51:40.000000000 +0530
-+++ b/drivers/net/netconsole.c	2007-07-03 22:02:11.000000000 +0530
-@@ -81,6 +81,37 @@ static struct netconsole_target default_
- 	},
- };
+diff -ruNp a/Documentation/networking/netconsole.txt b/Documentation/networking/netconsole.txt
+--- a/Documentation/networking/netconsole.txt	2007-04-26 08:38:32.000000000 +0530
++++ b/Documentation/networking/netconsole.txt	2007-07-02 11:44:53.000000000 +0530
+@@ -34,6 +34,12 @@ Examples:
  
-+/* Handle network interface device notifications */
-+static int netconsole_netdev_event(struct notifier_block *this,
-+				   unsigned long event,
-+				   void *ptr)
-+{
-+	struct net_device *dev = ptr;
-+	struct netconsole_target *nt = &default_target;
-+
-+	if (!(event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
-+		goto done;
-+
-+	if (nt->np.dev == dev) {
-+		switch (event) {
-+		case NETDEV_CHANGEADDR:
-+			memcpy(nt->np.local_mac, dev->dev_addr, ETH_ALEN);
-+			break;
-+
-+		case NETDEV_CHANGENAME:
-+			strlcpy(nt->np.dev_name, dev->name, IFNAMSIZ);
-+			break;
-+		}
-+	}
-+
-+done:
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block netconsole_netdev_notifier = {
-+	.notifier_call  = netconsole_netdev_event,
-+};
-+
- static void write_msg(struct console *con, const char *msg, unsigned int len)
- {
- 	int frag, left;
-@@ -123,6 +154,10 @@ static int __init init_netconsole(void)
- 	if (err)
- 		goto out;
+  insmod netconsole netconsole=@/,@10.0.0.2/
  
-+	err = register_netdevice_notifier(&netconsole_netdev_notifier);
-+	if (err)
-+		return err;
++It also supports logging to multiple remote agents by specifying
++parameters for the multiple agents separated by semicolons and the
++complete string enclosed in "quotes", thusly:
 +
- 	register_console(&netconsole);
- 	printk(KERN_INFO "netconsole: network logging started\n");
++modprobe netconsole netconsole="@/,@10.0.0.2/;@/eth1,6892@10.0.0.3/"
++
+ Built-in netconsole starts immediately after the TCP stack is
+ initialized and attempts to bring up the supplied dev at the supplied
+ address.
+@@ -44,6 +50,18 @@ WARNING: the default target ethernet set
+ ethernet address to send packets, which can cause increased load on
+ other systems on the same ethernet segment.
  
-@@ -135,6 +170,7 @@ static void __exit cleanup_netconsole(vo
- 	struct netconsole_target *nt = &default_target;
- 
- 	unregister_console(&netconsole);
-+	unregister_netdevice_notifier(&netconsole_netdev_notifier);
- 	netpoll_cleanup(&nt->np);
- }
- 
++TIP: some LAN switches may be configured to suppress ethernet broadcasts
++so it is advised to explicitly specify the remote agents' MAC addresses
++from the config parameters passed to netconsole.
++
++TIP: to find out the MAC address of 10.0.0.2, you may try using:
++ping -c 1 10.0.0.2 ; /sbin/arp -n | grep 10.0.0.2
++
++TIP: in case the remote logging agent is on a separate LAN subnet than
++the sender, it is suggested to try specifying the default gateway's
++(you may use /sbin/route -n to find out) MAC address as the remote MAC
++address instead.
++
+ NOTE: the network device (eth1 in the above case) can run any kind
+ of other network traffic, netconsole is not intrusive. Netconsole
+ might cause slight delays in other traffic if the volume of kernel
