@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbXGDKTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760783AbXGDKUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760635AbXGDKTN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 06:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbXGDKTA
+	id S1760783AbXGDKUZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 06:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758767AbXGDKUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 06:19:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48441 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757433AbXGDKS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 06:18:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Wed, 4 Jul 2007 12:26:33 +0200
-User-Agent: KMail/1.9.5
-Cc: paulus@samba.org, oliver@neukum.org, benh@kernel.crashing.org,
-       mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20070703042916.GA17240@srcf.ucam.org> <18059.21555.317415.928416@cargo.ozlabs.ibm.com> <E1I60CR-00066n-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I60CR-00066n-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jul 2007 06:20:14 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46933 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757433AbXGDKUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 06:20:12 -0400
+Date: Wed, 4 Jul 2007 20:20:00 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Regression: 2.6.22-rcX: hda: lost interrupt
+Message-ID: <20070704102000.GN989688@sgi.com>
+References: <20070629124248.GJ989688@sgi.com> <468516B9.1080300@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707041226.34799.rjw@sisk.pl>
+In-Reply-To: <468516B9.1080300@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 4 July 2007 10:26, Miklos Szeredi wrote:
-> > > That's weird, I never had a suspend problem due to a fuse mount,
-> > > though I have them all the time.  And I suspect, that even the sync()
-> > 
-> > Well, I don't either, because we don't freeze processes on
-> > powerbooks.  But I have heard that other people have problems with
-> > suspending with a fuse filesystem mounted.  Maybe the difference is
-> > whether or not the filesystem is writable?
-> > 
-> > > thing that suspend does is not the real cause, because sync() actually
-> > > does nothing in fuse filesystems.
-> > 
-> > It's not the filesystem sync method, as I understand it, it's that if
-> > there are dirty pages in the page cache for files on the fuse
-> > filesystem,
+On Fri, Jun 29, 2007 at 10:27:05AM -0400, Jeff Garzik wrote:
+> David Chinner wrote:
+> >Folks,
+> >
+> >After updating an x86_64 machine from 2.6.21 to 2.6.22-rc6 and
+> >fighting off the where-the-fuck-did-my-serial-console-go blues
+> >(legacy_serial.force), I finally discovered why the damn thing
+> >wasn't booting - the machine was sitting there in a loop outputting
+> >"hda: lost interrupt" over and over again during hardware
+> >discovery (hda = dvd drive).
+> >
+> >It doesn't happen on every boot - more boots hung than failed,
+> >though, while I was trying to work out where my serial port
+> >went and get some work done.
+> >
+> >Since I've had the console operative, the boot hangs are
+> >basically like:
+> >
+> >ESB2: IDE controller at PCI slot 0000:00:1f.1
+> >ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 20 (level, low) -> IRQ20
+> >ESB2: chipset revision 9
+> >ESB2: not 100% native mode: will probe irqs later
+> >    ide0: DM-DMA at 0x50a0-0x50a7, BIOS settings: hda:DMA, hdb:pio
+> >    ide1: DM-DMA at 0x50a8-0x50af, BIOS settings: hda:pio, hdb:pio
+> >Probing IDE interface ide0...
+> >hda: probing with STATUS(0xa0) instead of ALTSTATUS(0x58)
+> >hda: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+> >hdb: probing with STATUS(0xb0) instead of ALTSTATUS(0x00)
+> >hdb: probing with STATUS(0xa1) instead of ALTSTATUS(0x51)
+> >hdb: <some ctrl char>, ATAPI UNKNOWN (type 31) drive
+> >hda: set_drive_speed_status: status=0x58 { DriveReady SeekComplete 
+> >DataRequest }
+> >hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
+> >hda: set_drive_speed_status: error=0x04 { AbortedCommand }
+> >ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
+> >hda: lost interrupt
 > 
-> Currently fuse doesn't produce dirty pages.  Normal writes are done
-> synchronously, and writable mmap is not supported.  So sync() should
-> really be a no-op for fuse.
+> What is the behavior under libata?
 > 
-> > the system will initiate a write-out on them and wait for it to
-> > finish.  But if the fuse userspace is frozen, the write-out will
-> > never complete.
-> 
-> Maybe there is some other fs operation being done, possibly not
-> directly, but by waiting for a kernel thread, that does that.
+> If you see timeouts/etc. there too, it might be an interrupt routing or 
+> hardware problem.
 
-We're going to limit the freezing of kernel threads to the ones that explicitly
-want to be frozen, so if that's the case, then I think it'll be fixed soon.
+Sorry to take so long to get back to this, Jeff.
 
-> It would be nice, if someone who can reproduce the deadlock could
-> debug it.
+I think the problem is on my side. It looks like a dodgy initrd
+was causing the problems - a statically built kernel detects
+the DVD drive without any issues so there may not be a problem
+here at all. I'll continue trying to track down why the initrd
+was not being built properly...
 
-Agreed.
+Cheers,
 
-> Does sysrq still work during suspend? 
-
-Yes, it should work.
-
-Greetings,
-Rafael
-
-
+Dave.
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
