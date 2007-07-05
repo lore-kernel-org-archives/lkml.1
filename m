@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbXGEUmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762737AbXGEUna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762685AbXGEUmh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760801AbXGEUm1
+	id S1762737AbXGEUna (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759890AbXGEUnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:42:27 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:47680 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753872AbXGEUm0 (ORCPT
+	Thu, 5 Jul 2007 16:43:23 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:51456 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758967AbXGEUnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:42:26 -0400
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Karel Zak <kzak@redhat.com>,
-       List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-References: <8CYT9-4Ou-23@gated-at.bofh.it> <8Dh9k-8lT-3@gated-at.bofh.it>
-	<8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz>
-	<20070705192002.GB11204@DervishD>
-From: Nix <nix@esperi.org.uk>
-Emacs: where editing text is like playing Paganini on a glass harmonica.
-Date: Thu, 05 Jul 2007 21:42:17 +0100
-In-Reply-To: <20070705192002.GB11204@DervishD> (DervishD's message of "Thu, 5 Jul 2007 21:20:02 +0200")
-Message-ID: <87vecyeg5y.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+	Thu, 5 Jul 2007 16:43:22 -0400
+Date: Thu, 5 Jul 2007 16:43:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: paulus@samba.org, <rjw@sisk.pl>, <mjg59@srcf.ucam.org>,
+       <linux-pm@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
+ pathway
+In-Reply-To: <E1I6VLD-0001Ks-00@dorka.pomaz.szeredi.hu>
+Message-ID: <Pine.LNX.4.44L0.0707051628380.2557-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-dcc1-Metrics: hades 1182; Body=5 Fuz1=5 Fuz2=5
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5 Jul 2007, DervishD spake thusly:
->  * Bodo Eggert <7eggert@gmx.de> dixit:
->> Standardisation is good, but autotools (as they are used) usurally isn't.
->
->     Usually, by picking other's project configure.in and tweak blindly.
+On Thu, 5 Jul 2007, Miklos Szeredi wrote:
 
-You'd think they'd never heard of autoscan...
+> > > Alan Stern writes:
+> > > 
+> > > > Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
+> > > > wanting to resume devices during a system suspend transition?  This is
+> > > > exactly what happens when those threads aren't frozen.
+> > > 
+> > > So, I wonder why I don't see that error on my powerbook?
+> > 
+> > That's a good question.  Miklos, can you please reproduce the suspend 
+> > error using a kernel built with CONFIG_USB_DEBUG turned on?
+> 
+> Here's the full dmesg.  First there was a successful suspend/resume,
+> then a couple of unsuccessful ones:
 
->     My favourite is when the project doesn't honor --*dir options. Or
-> when the project breaks badly if you put some files in different places
-> by using configure options... That's good standarization.
+Okay, good.  It's not a coincidence that the first one worked and later 
+ones didn't.  Here's what happened:
 
-That's a broken project, I'd say. But you have a point, which is that
-autoconf does too little, and automake plugs the gaps badly (and let's
-not even talk about the abomination which is libtool).
+You suspended the system.  Upon resuming, the USB host controller 
+drivers detected that their device sessions had been interrupted and 
+consequently marked your two USB devices (the optical mouse and the 
+biometric thingy) for removal.  Normally that removal would take place 
+when khubd wakes up, i.e., after the resume is complete and the thread 
+is taken out of the freezer.
 
->> Configuring the build of an autotools program is harder than nescensary;
->> if it used a config file, you could easily save it somewhere while adding
->> comments on how and why you did *that* choice, and you could possibly
->> use a set of default configs which you'd just include.
->
->     Looks like CMake...
+But in this case khubd was already awake.  It resumed the two root hubs
+in response to their remote wakeup requests and saw that the devices
+were gone.  So it unregistered the device structures immediately --
+even before the PM core tried to resume them -- and then registered new
+data structures to embody the new device connections.  As far as I can
+tell, the fact that these new device structures were created while the
+suspend-list was in flux must have caused one of them (the biometric
+coprocessor) not to be added to the appropriate list.
 
-That's cool :) thanks to KDE using it everyone's autobuilders are having
-to adapt to cmake anyway, and it's not hard and you only have to do it
-once.
+Thus the next time you tried to suspend, the PM core didn't call the
+device's suspend method.  It was left awake, and as a result its parent 
+hub refused to suspend (since it had an unsuspended child).  This 
+caused the overall system suspend to fail.
 
->> I'm really really happy if I read 'edit Makefile.conf and run make...'.
->
->     Again, this looks like CMake...
+This illustrates the folly of allowing other threads to perform 
+driver-core-type operations in the middle of a system sleep transition.
 
-:)
+Alan Stern
 
-My only real grouch with cmake is that the authors have invented a
-language with so bloody many capital letters in it. Looking at cmake
-macros makes my eyes bleed even more badly than looking at the mass of
-involuted nested brackets in configure.ac's, and that's a difficult
-thing to do. (It's less portable than autoconf-generated configure
-scripts but most of autoconf's portability tests are for long-dead
-systems anyway, and as you said util-linux of all projects doesn't give
-a damn. I don't really care if software isn't portable to an Interactive
-box --- EOLed in 1992 --- or a SunOS 4.0 or HP-UX 8 box.)
-
-There's a good reason most text is lowercase. Even Lisp moved to
-lowercase a long time ago...
