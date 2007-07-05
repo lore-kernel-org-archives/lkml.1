@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760464AbXGEPUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbXGEPYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760464AbXGEPUa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 11:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbXGEPUX
+	id S1760180AbXGEPYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 11:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbXGEPYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 11:20:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54071 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757448AbXGEPUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 11:20:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-Date: Thu, 5 Jul 2007 17:27:35 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Paul Mackerras <paulus@samba.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <200707051704.48137.rjw@sisk.pl> <20070705150301.GB23647@srcf.ucam.org>
-In-Reply-To: <20070705150301.GB23647@srcf.ucam.org>
+	Thu, 5 Jul 2007 11:24:06 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:60747 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756298AbXGEPYF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 11:24:05 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
+To: Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Thu, 05 Jul 2007 17:23:11 +0200
+References: <8CTJM-4Z1-27@gated-at.bofh.it> <8CU38-5E1-23@gated-at.bofh.it> <8DjNU-4bL-47@gated-at.bofh.it> <8DkTC-5Vy-11@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707051727.36715.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1I6TAl-0002iC-W7@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/XBd9AV6EiaMv4+ozuA+lUyCEXAYYNjCbVhSB
+ OFc3gdG1AvOAuUU3rYTp4jsnfPKBD4g9zqsFU2Vem/OUFNM8oa
+ 5sQHlvmWYQEmNgE81cNzw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 17:03, Matthew Garrett wrote:
-> On Thu, Jul 05, 2007 at 05:04:47PM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, 5 July 2007 16:39, Matthew Garrett wrote:
-> > > Why?
-> > 
-> > You have processes that don't react to signals, because some other user land
-> > task is misbehaving.  I'd call that ugly at the very least.
+Andi Kleen <andi@firstfloor.org> wrote:
+> Alexey Dobriyan <adobriyan@gmail.com> writes:
+>> On Tue, Jul 03, 2007 at 12:40:56PM -0400, Mathieu Desnoyers wrote:
+
+>> > Use immediate values with lower d-cache hit in optimized version as a
+>> > condition for scheduler profiling call.
+>> 
+>> I think it's better to put profile.c under CONFIG_PROFILING as
+>> _expected_, so CONFIG_PROFILING=n users won't get any overhead, immediate or
+>> not. That's what I'm going to do after test-booting bunch of kernels.
 > 
-> It already happens with, say, NFS. Don't think about it in terms of a 
-> userland task misbehaving - think of it in terms of a resource becoming 
-> unavailable.
+> No, it's better to handle this efficiently at runtime e.g. for
+> distribution kernels. Mathieu's patch is good
 
-I think there's a difference between a userland task playing the role of a
-resource and a "real" external resource the kernel doesn't control.
-
-IMO, userland tasks should not have the power to affect each other as though
-they were parts of the kernel.
-
-Greetings,
-Rafael
- 
-
+IMO you should combine them. For distibutions, it may be good to include
+profiling support unconditionally, but how many of the vanilla kernel users
+are going to use profiling at all?
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+A man inserted an advertisement in the classified: Wife Wanted."
+The next day he received a hundred letters. They all said the
+same thing: "You can have mine."
+Friﬂ, Spammer: oztx1@nAQd3C.7eggert.dyndns.org wGhu@InUYZ.7eggert.dyndns.org
