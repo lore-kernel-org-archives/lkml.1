@@ -1,159 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbXGEQOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbXGEQVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760271AbXGEQOs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 12:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758040AbXGEQOl
+	id S1760041AbXGEQVg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 12:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757888AbXGEQVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 12:14:41 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:37099 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757794AbXGEQOk (ORCPT
+	Thu, 5 Jul 2007 12:21:25 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:48520 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757708AbXGEQVY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 12:14:40 -0400
-Date: Thu, 5 Jul 2007 12:14:38 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Tom Zanussi <zanussi@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, dwilder@us.ibm.com, HOLZHEU@de.ibm.com
-Subject: Re: [RFC PATCH 2/6] Driver Tracing Interface (DTI) code
-Message-ID: <20070705161438.GA23668@Krystal>
-References: <1183173834.24291.138.camel@ubuntu> <20070704031304.GA24590@Krystal> <1183651149.4517.164.camel@ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 12:21:24 -0400
+Date: Thu, 5 Jul 2007 17:21:21 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: alexn@telia.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Allow PAGE_OWNER to be set on any architecture
+Message-ID: <20070705162121.GA21219@skynet.ie>
+References: <20070608125349.GA8444@skynet.ie> <20070627165651.1ffb72d7.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1183651149.4517.164.camel@ubuntu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:07:22 up 4 days, 10:50,  3 users,  load average: 0.42, 0.30, 0.22
+In-Reply-To: <20070627165651.1ffb72d7.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tom Zanussi (zanussi@us.ibm.com) wrote:
-> On Tue, 2007-07-03 at 23:13 -0400, Mathieu Desnoyers wrote:
-> > > +void *__dti_reserve(struct dti_info *dti, int prio, size_t len)
-> > > +{
-> > > +	struct dti_event *event;
-> > > +	int event_len;
-> > > +
-> > > +	if (!dti)
-> > > +		return NULL;
-> > > +
-> > > +	if (prio > dti->level)
-> > > +		return NULL;
-> > > +
-> > > +	event_len = len + sizeof(*event);
-> > > +
-> > > +	event = relay_reserve(dti->trace->rchan, event_len);
-> > > +	if (!event)
-> > > +		return NULL;
-> > > +
-> > > +	event->time = sched_clock();
-> > 
-> > sched_clock() is dangerous.. you have to make sure you provide correct
-> > clock errors in the trace parsing.. not exactly something interesting
-> > when you are looking at the "one" case over 10000 that was faulty. See
-> > the i386 sched-clock.c:
-> > 
-> >  * Scheduler clock - returns current time in nanosec units.
-> >  * All data is local to the CPU.
-> >  * The values are approximately[1] monotonic local to a CPU, but not
-> >  * between CPUs.   There might be also an occasionally random error,
-> >  * but not too bad. Between CPUs the values can be non monotonic.
-> >  *
-> >  * [1] no attempt to stop CPU instruction reordering, which can hit
-> >  * in a 100 instruction window or so.
-> > 
-> > How do you plan to use these timestamps to reorder events across CPUs ?
-> > 
+On (27/06/07 16:56), Andrew Morton didst pronounce:
+> On Fri, 8 Jun 2007 13:53:49 +0100
+> mel@skynet.ie (Mel Gorman) wrote:
 > 
-> lttng_timestamp()? ;-)
+> > Currently PAGE_OWNER depends on CONFIG_X86. This appears to be due to
+> > pfn_to_page() being called in an inappropriate for many memory models
+> > and the presense of memory holes. This patch ensures that pfn_valid()
+> > and pfn_valid_within() is called at the appropriate places and the offsets
+> > correctly updated so that PAGE_OWNER is safe on any architecture.
+> > 
+> > In situations where CONFIG_HOLES_IN_ZONES is set (IA64 with VIRTUAL_MEM_MAP),
+> > there may be cases where pages allocated within a MAX_ORDER_NR_PAGES block
+> > of pages may not be displayed in /proc/page_owner if the hole is at the
+> > start of the block. Addressing this would be quite complex, perform slowly
+> > and is of no clear benefit.
+> > 
+> > Once PAGE_OWNER is allowed on all architectures, the statistics for grouping
+> > pages by mobility that declare how many pageblocks contain mixed page types
+> > becomes optionally available on all arches.
+> > 
+> > This patch was tested successfully on x86, x86_64, ppc64 and IA64 machines.
+> 
+> I'm kinda mystified about how you successfully tested this on ppc64 and
+> ia64.  They don't assemble and execute i386 opcodes?
 > 
 
-Yeah, this problem is not easy.. I have a set of per architecture
-timestamping implementations that detects the limitations of the
-hardware and overcomes them (32 bits TSC -> 64 bits extension that
-supports read from NMI context, detect TSCs not in sync (AMDs and some
-intels) that falls back to what is more or less a logical clock then,
-printing warnings. I also keep a recipe cookbook about what people
-should disable on these architectures to get precise timestamps.
-> 
-> > > +
-> > > +static int vprintk_normal(struct dti_info *dti, int prio, const char* fmt,
-> > > +			  va_list args)
-> > > +{
-> > > +	struct dti_event *event;
-> > > +	void *buf;
-> > > +	int len, event_len, rc = -1;
-> > > +	unsigned long flags;
-> > > +
-> > > +	if (!dti)
-> > > +		return -1;
-> > > +
-> > > +	if (prio > dti->level)
-> > > +		return -1;
-> > > +
-> > > +	local_irq_save(flags);
-> > > +	buf = dti_printf_tmpbuf[smp_processor_id()];
-> > > +	len = vsnprintf(buf, DTI_PRINTF_TMPBUF_SIZE, fmt, args);
-> > 
-> > As I said, why not put the result of the vsnprintf directly in the
-> > buffer after the relay_reserve ?
-> > 
-> 
-> Because I don't know how much to reserve until I've done the
-> vsnprintf().  I think that to have vsnprintf() print directly into the
-> relay buffer, I'd need a relay_unreserve() to remove the unused portion.
-> 
+You are of course right and I thought I must be insane to apparently screw
+up testing so badly.  However somewhat to my suprise, this does work on
+ppc64 and IA64. I boot tested with the patch and was able to read the stack
+trace on /proc/page_owner although it is a bit useless on IA64. Of course,
+the inline assember doesn't show up in the disassembled vmlinux because it
+could never be executed.
 
-This is why I use a 2 pass approach in LTTng: the first one, given a
-NULL buffer, calculates the reserve size, and then the second pass does
-the copy.
+What appears to happen is that the inline assembler is optimised away when
+CONFIG_FRAME_POINTER is not set as the bp variable is unused.  As it cannot
+be set on IA64 or PPC64, it appeared to work and passed earlier testing.
+When I cross-compile for m68k (something I hadn't done before), it builds
+if CONFIG_FRAME_POINTER is unset but fails with parse errors when set which
+is what one would expect.
 
-> > > +
-> > > +/**
-> > > + *	dti_relog_initbuf - re-log static initbuf into real relay channel
-> > > + *	@work: work struct that contains the the dti handle
-> > > + *
-> > > + *	The global initbuf may contain events from multiple cpus.  These
-> > > + *	events must be put into their respective cpu buffers once the
-> > > + *	per-cpu channel is available.
-> > > + *
-> > > + *	Internal - exported for setup macros.
-> > > + */
-> > > +int dti_relog_initbuf(struct dti_handle *handle)
-> > > +{
-> > 
-> > What do you do with the data recorded by the system while you do this
-> > buffer copy? Is the timestamp ordering kept? Why do you copy the static
-> > buffers into other buffers at all anyway ? They could be exported
-> > through relay (if it supported exporting statically mapped buffers).
-> > 
-> 
-> You're right, we need to do something about that.  As mentioned before,
-> we copy the events from the static buffer into the relay channel (the
-> timestamp ordering is kept) after it becomes available because that
-> seems like the simplest thing to do.  We could add support to relay to
-> export another set of (static) buffers, or add the relogging code to
-> relay if other tracers want to use it.
-> 
-> 
+I think the following patch brings things more in line with expectations once
+your fix is in place at the cost of a larger __stack_trace function. It uses
+the frame pointer if possible but otherwise falls back. It appears to work
+fine on ppc64, IA64 and an x86 laptop.
 
-The problem with relogging is that it will be a huge timestamping mess.
-I doubt that we can reliably continue tracing while we do this copy.
-Therefore, we will end up losing events or having timestamps jumping
-backward.
+======
 
-A solution that would export the static buffers separately to user-space
-and (maybe) allows them to be (somehow?) de-allocated once they have
-been read by user-space seems cleaner to me. The switch between the
-static buffers and the normal relay buffers could then be done
-atomically in a simple pointer overwrite.
+Page-owner-tracking stores the a backtrace of an allocation in the struct
+page. How the stack trace is generated depends on whether CONFIG_FRAME_POINTER
+is set or not. If CONFIG_FRAME_POINTER is set, the frame pointer must be
+read using some inline assembler which is not available for all architectures.
 
-Mathieu
+This patch uses the frame pointer where it is available but has a fallback
+where it is not.
 
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+
+--- 
+ page_alloc.c |   18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc4-mm2-005_pageowner_anyarch/mm/page_alloc.c linux-2.6.22-rc4-mm2-010_handle_framepointer/mm/page_alloc.c
+--- linux-2.6.22-rc4-mm2-005_pageowner_anyarch/mm/page_alloc.c	2007-07-05 14:12:56.000000000 +0100
++++ linux-2.6.22-rc4-mm2-010_handle_framepointer/mm/page_alloc.c	2007-07-05 14:48:23.000000000 +0100
+@@ -1494,14 +1494,17 @@ static inline void __stack_trace(struct 
+ 	memset(page->trace, 0, sizeof(long) * 8);
+ 
+ #ifdef CONFIG_FRAME_POINTER
+-	while (valid_stack_ptr(tinfo, (void *)bp)) {
+-		addr = *(unsigned long *)(bp + sizeof(long));
+-		page->trace[i] = addr;
+-		if (++i >= 8)
+-			break;
+-		bp = *(unsigned long *)bp;
++	if (bp) {
++		while (valid_stack_ptr(tinfo, (void *)bp)) {
++			addr = *(unsigned long *)(bp + sizeof(long));
++			page->trace[i] = addr;
++			if (++i >= 8)
++				break;
++			bp = *(unsigned long *)bp;
++		}
++		return;
+ 	}
+-#else
++#endif /* CONFIG_FRAME_POINTER */
+ 	while (valid_stack_ptr(tinfo, stack)) {
+ 		addr = *stack++;
+ 		if (__kernel_text_address(addr)) {
+@@ -1510,7 +1513,6 @@ static inline void __stack_trace(struct 
+ 				break;
+ 		}
+ 	}
+-#endif
+ }
+ 
+ static void set_page_owner(struct page *page, unsigned int order,
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
