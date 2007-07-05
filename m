@@ -1,54 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbXGEV17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbXGEV2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762050AbXGEV17 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 17:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760161AbXGEV1v
+	id S1761971AbXGEV2l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 17:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760700AbXGEV2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 17:27:51 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:57131 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759967AbXGEV1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 17:27:50 -0400
-To: stern@rowland.harvard.edu
-CC: miklos@szeredi.hu, oliver@neukum.org, pavel@ucw.cz, paulus@samba.org,
-       johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-In-reply-to: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
-	(message from Alan Stern on Thu, 5 Jul 2007 17:15:24 -0400 (EDT))
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
- RAM pathway
-References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
-Message-Id: <E1I6Yqk-00022q-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Jul 2007 23:26:54 +0200
+	Thu, 5 Jul 2007 17:28:30 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:48720 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760218AbXGEV22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 17:28:28 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: 7eggert@gmx.de
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+Date: Thu, 5 Jul 2007 17:30:24 -0400
+User-Agent: KMail/1.9.7
+Cc: Nix <nix@esperi.org.uk>, Karel Zak <kzak@redhat.com>,
+       List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <8CYT9-4Ou-23@gated-at.bofh.it> <8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz>
+In-Reply-To: <E1I6SfW-0002XG-AM@be1.lrz>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2752161.iVL45xWCXH";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707051730.25776.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I fear, that your efforts to "save" the freezer are in vain.  It is
-> > already moderately hackish with that PF_FREEZER_SKIP and the kernel
-> > dotted randomly with try_to_freeze() calls, but adding bandaids to try
-> > to order freezing userspace processes in the right order would just
-> > make it a horrible mess.
-> 
-> I agree that bandaids won't work.  What's needed is something more 
-> radical.  Things like FUSE must be written so that the kernel parts 
-> _can_ freeze even while they are waiting for a response from a user 
-> thread.
+--nextPart2752161.iVL45xWCXH
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This has already been discussed, with the conclusion, that it can't be
-done without hacking VFS internals.
+On Thursday 05 July 2007, Bodo Eggert wrote:
+> Nix <nix@esperi.org.uk> wrote:
+> > On 4 Jul 2007, DervishD stated:
+> >>     Anyway, if you don't like mobs or you just don't want to try it,
+> >> that's fine, but please don't use autotools, it doesn't make much sense
+> >> for a linux only project, since you will be using only the "directory
+> >> choosing" part of autotools. Maybe a hand made script will help (and I
+> >
+> > Oh, yeah, great, another hand-rolled build system. That's *juwt* what
+> > those of us who have autotools working well (with config.site's that
+> > do all we need and then some) are looking forward to.
+> >
+> > There are advantages to standardization, you know. A *lot* of
+> > autobuilders know how to make autoconf-generated configure scripts jump
+> > through hoops. I was downright *happy* when util-linux was
+> > autoconfiscated: I could ditch the code to handle automatic
+> > configuration of yet another one-package hand-rolled build system.
+>
+> Standardisation is good, but autotools (as they are used) usurally isn't.
 
-The basic problem is that the freezer tries to get every user process
-out of the kernel even when those processes have _nothing_ to do with
-drivers and could happily stay in kernel land across a suspend or even
-hibernate.
+i dont see how blaming autotools for other people's misuse is relevant ...=
+=20
+this same exact claim could be made for just about any other build system,=
+=20
+simply apply 's/autotools/$some_build_system_you_wish_to_complain/'.
 
-If we could have a good grip on when a request is entering a driver,
-it would be easy to take care of this.  I guess network and block
-devices are easy.  For others there's no obvious common place where
-such barriers could be placed so it's more work, but nothing
-conceptually problematic.  Is this about right?
+> It tests for the availability of a fortran compiler for a C-only project
 
-Miklos
+a libtool bug that has been fixed upstream and is trivial to work around ..=
+=2E=20
+you could also point out that libtool will also search for a C++ compiler i=
+n=20
+a C-only project.  the libtool stuff can probably be easily cleaned out fro=
+m=20
+util-linux completely thus negating this whole topic.
+
+> checks the width of integers on i386 for projects not caring about that a=
+nd
+> fails to find installed libraries without telling how it was supposed to
+> find them or how to make it find that library.
+
+no idea what this rant is about.
+
+> Configuring the build of an autotools program is harder than nescensary;
+> if it used a config file, you could easily save it somewhere while adding
+> comments on how and why you did *that* choice, and you could possibly
+> use a set of default configs which you'd just include.
+
+history shows this is a pita to maintain.  every package has its own build=
+=20
+system and configuration file which means you have to go through the=20
+documentation and figure out the magic incantation to get the thing to buil=
+d=20
+up the way you need.
+
+> The Makefiles generated by autotools is a huge mess, if autotools got it
+> wrong (again!), fixing them requires editing a lot of files.
+
+this looks like a no brainer to me: dont edit generated files
+=2Dmike
+
+--nextPart2752161.iVL45xWCXH
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iQIVAwUARo1i8UFjO5/oN/WBAQKxlg//fJXfz66gv6EMTbXrRKrcDi0npqrOZzIZ
+cBD8CGmo5eIlvuwepWt9Tlb6EUM7aoNiFJkSoBnPXlhs0WaQ4s4A4Wjg9gdDq8bq
+lgvRL/k35TQmrf6vwrbq1+CC05h1bhZ8fufL2ImbceTzOp6g2+eOkLZZA+WG1eQM
+tc/RGOIyPa9XOjHMzpMdcIiXdIGf0e1ABt5E8ndvhXHs2ReDm25+8t1KtwSfNZ6H
+getOiQG3lxkhAk6YdfZeJpf6rW0yHHYIVqJAZhv2ucFXNXLzZ3+xCHj/QQKbSdW7
+xZI9SP1/ZwxH+W1BGpieYZJR5XbvQ59uTKJtEHB5lnOKnOzxjlx+Z3ts7h310kY5
+jeYXQnlVcU9vsU6tRuYRcq+ZrM6YdyNFTuo+qmGIPe2a3NPT+y8zgRghfipRT2WW
+qke5FnUQ8kDyPbaih9LABxkyK1ED6qH8P9NjfXjkQmoLe1KCoF+K+jCou6KnlZH3
+pwRcxDvE41YVfMI+/E5Sjc3INKwe0cFkENIJBYHYA8MsiYe+w363jM0moTafrTaC
+Quoe58x9pc1BqnHd8RsMBkzYt7gw+cgL/59Ibjz18VZOVZIxjXiBz5t+GoAl8GPq
+VPiKD7IAadRbMMTLS4ebHC9eUIwEfdhegaOuQN94niUV/PJ4mX9qh0xO4QjOoqJf
+rNHUuMLPvcg=
+=livN
+-----END PGP SIGNATURE-----
+
+--nextPart2752161.iVL45xWCXH--
