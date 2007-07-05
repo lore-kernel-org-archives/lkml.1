@@ -1,59 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbXGEQG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbXGEQIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759892AbXGEQG3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 12:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757708AbXGEQGW
+	id S1760152AbXGEQIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 12:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbXGEQIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 12:06:22 -0400
-Received: from sccrmhc15.comcast.net ([63.240.77.85]:53042 "EHLO
-	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757171AbXGEQGV (ORCPT
+	Thu, 5 Jul 2007 12:08:06 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:33585 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757794AbXGEQIC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 12:06:21 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Oliver Neukum <oliver@neukum.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, benh@kernel.crashing.org
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-In-Reply-To: <20070705142318.GA22598@srcf.ucam.org> (Matthew Garrett's message
-	of "Thu\, 5 Jul 2007 15\:23\:18 +0100")
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<200707051528.34754.oliver@neukum.org>
-	<20070705134632.GA22177@srcf.ucam.org> <200707051609.25887.rjw@sisk.pl>
-	<20070705142318.GA22598@srcf.ucam.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Thu, 05 Jul 2007 12:06:09 -0400
-Message-ID: <87wsxeu972.fsf@jbms.ath.cx>
-MIME-Version: 1.0
+	Thu, 5 Jul 2007 12:08:02 -0400
+Subject: Re: [RFC PATCH 1/3] Generic Trace Setup and Control (GTSC)
+	Documentation
+From: Tom Zanussi <zanussi@us.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, dwilder@us.ibm.com,
+       hunt@redhat.com
+In-Reply-To: <20070704033738.GC24341@Krystal>
+References: <1183173868.24291.143.camel@ubuntu>
+	 <20070704033738.GC24341@Krystal>
 Content-Type: text/plain
+Date: Thu, 05 Jul 2007 11:05:19 -0500
+Message-Id: <1183651519.4517.167.camel@ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett <mjg59@srcf.ucam.org> writes:
+On Tue, 2007-07-03 at 23:37 -0400, Mathieu Desnoyers wrote:
+> * Tom Zanussi (zanussi@us.ibm.com) wrote:
+> > This is the documentation for the Generic Trace Setup and Control
+> > patchset, first submitted a couple of weeks ago.  See
+> > 
+> > http://marc.info/?l=linux-kernel&m=118214274912586&w=2
+> > 
+> > for a more detailed description.
+> > 
+> > I've updated this patch to incorporate the suggestions made by Alexey
+> > Dobriyan in that thread.
+> > 
+> 
+> It would be nice, since it claims to be "generic", to support things
+> brought forward by other tracers like LTTng, such as : multiple channels
+> (for low, medium and high event rate data, with user-selectable sizes),
+> hybrid trace mode (combined normal trace channels and flight recorder
+> channels).
+> 
 
-> On Thu, Jul 05, 2007 at 04:09:24PM +0200, Rafael J. Wysocki wrote:
->> On Thursday, 5 July 2007 15:46, Matthew Garrett wrote:
->> > I have a model for STD that avoids the need to freeze the entirity of 
->> > userspace, but I need to find some more time to flesh it out.
->> 
->> You can just describe it, as far as I'm concerned. :-)
+Those seem like useful things, but it would also be nice for LTTng to
+support things brought forward by other tracers too.
 
-[snip: new hibernate idea]
+GTSC comes from something I posted last year called 'UTT', for 'Unified
+Trace Transport':
 
-I think my kexec-based hibernate idea is simpler and more feasible than
-this approach, and also avoids the freezer.
+http://www.ecos.sourceware.org/ml/systemtap/2006-q4/msg00026.html
 
--- 
-Jeremy Maitin-Shepard
+I wasn't comfortable with the word 'Unified' then, either, since I
+thought it was presumptuous (so 'unified' was dropped, and 'generic'
+used instead - basically it just means that any tracing application can
+use it, not that it attempts to subsume all other tracers).
+
+The idea was to see if the blktrace code could be generalized so that it
+could be used for other tracing applications besides block layer
+tracing.  The test case was to get systemtap running on top of the
+blktrace transport, and it seemed to work fine.  As part of that patch
+set, I also posted a couple patches that did the same thing but on top
+of LTTng, which also worked fine:
+
+http://www.ecos.sourceware.org/ml/systemtap/2006-q4/msg00028.html
+http://www.ecos.sourceware.org/ml/systemtap/2006-q4/msg00027.html
+
+But I never got any comments about it, so I assumed it wasn't something
+you were interested in.  In any case, do you really think everyone who
+wants to do tracing should wait around for LTTng to get into the kernel
+lock, stock, and barrel?  It's been awhile since I did this experiment,
+but do you think LTTng is ready today to function as the transport for
+systemtap?  How hard do you think it would it be to modify blktrace to
+run on top of the the LTTng tracing infrastructure?  My guess is that if
+the answers were 'yes' and 'not hard', then LTTng could basically 'own'
+tracing and the rest of us could move on to more interesting things.
+
+> Please see comments below,
+> 
+> > +
+> > +void gtsc_printf(struct trace_info *trace, const char *format, ...)
+> > +{
+> > +	va_list args;
+> > +	void *buf;
+> > +	int len;
+> > +	char *record;
+> > +
+> > +	if (!trace)
+> > +		return;
+> > +	if (!trace_running(trace))
+> > +		return;
+> > +
+> > +	/* get a timestamp */
+> > +	buf = gtsc_printf_tmpbuf[smp_processor_id()];
+> > +	len = sprintf(buf,"[%lld] ", trace_timestamp());
+> > +
+> > +	/* get the data */
+> > +	va_start(args, format);
+> > +	len += vsnprintf(buf+len, GTSC_PRINTF_TMPBUF_SIZE, format, args);
+> > +	va_end(args);
+> > +
+> > +	/*
+> > +	 * Locking can be eliminated by specifying per-cpu buffers
+> > +	 * when calling trace_setup().
+> > +	 */
+> > +	spin_lock(&gtsc_printf_lock);
+> > +
+> 
+> I really hope nobody is willing to call gtsc_printf from an interrupt
+> handler.. :) Easy dead embrace in perspective.
+> 
+
+This is just example code in the documentation.  There is no actual
+gtsc_printf() in the code.
+
+Tom
+
+
+
