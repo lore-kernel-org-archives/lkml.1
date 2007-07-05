@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbXGES7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761770AbXGETJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762154AbXGES7q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 14:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760457AbXGES7i
+	id S1761770AbXGETJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 15:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759628AbXGETJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 14:59:38 -0400
-Received: from smtp101.plus.mail.re1.yahoo.com ([69.147.102.64]:28931 "HELO
-	smtp101.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760351AbXGES7h (ORCPT
+	Thu, 5 Jul 2007 15:09:19 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:50306 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759457AbXGETJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 14:59:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=V107MTQhl5mmLi0w2f7tsVn2Onx4I5M2wdGq1Mwk3V3nnbJfmUGNtv4sBPlaDtgFgIc/W5Kt9WF9Hh2pFoVkvxDQmo4HIhQgnuBdNrvRI+wjViLqfKsqslWDQ5WEX77nn6IYT5cZKJrnDctrypvq1ypTENSBFt3gHWKAYOS8jHM=  ;
-X-YMail-OSG: ztpKEkMVM1kJQaRe.By9xiKyUBR.aK8Gy6eqHHIc8rXbwyup3i0Lf0GwBpnDU6rbc2z48omKbg--
-Date: Thu, 5 Jul 2007 20:59:27 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext4: fix error handling in ext4_create_journal
-Message-ID: <20070705185927.GA4867@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070701221111.GA8627@gollum.tnic> <20070703152543.e58ad39a.akpm@linux-foundation.org> <20070704193024.GA6802@gollum.tnic> <20070704201725.GA5812@martell.zuzino.mipt.ru>
+	Thu, 5 Jul 2007 15:09:18 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 5 Jul 2007 15:06:29 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, perex@suse.cz
+Subject: [PATCH] SOUND:  Remove unreferenced header file include/sound/wavefront_fx.h.
+Message-ID: <Pine.LNX.4.64.0707051504330.18942@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070704201725.GA5812@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 12:17:25AM +0400, Alexey Dobriyan wrote:
-> On Wed, Jul 04, 2007 at 09:30:24PM +0200, Borislav Petkov wrote:
-> > Fix error handling in ext4_create_journal according to kernel conventions.
-> 
-> > --- linux-2.6.22-rc7/fs/ext4/super.c.orig
-> > +++ linux-2.6.22-rc7/fs/ext4/super.c
-> > @@ -2150,6 +2150,7 @@
-> >  			       unsigned int journal_inum)
-> >  {
-> >  	journal_t *journal;
-> > +	int err;
-> >  
-> >  	if (sb->s_flags & MS_RDONLY) {
-> >  		printk(KERN_ERR "EXT4-fs: readonly filesystem when trying to "
-> > @@ -2157,13 +2158,15 @@
-> >  		return -EROFS;
-> >  	}
-> >  
-> > -	if (!(journal = ext4_get_journal(sb, journal_inum)))
-> > +	journal = ext4_get_journal(sb, journal_inum);
-> > +	if (!journal)
-> >  		return -EINVAL;
-> 
-> OK.
-> 
-> >  	printk(KERN_INFO "EXT4-fs: creating new journal on inode %u\n",
-> >  	       journal_inum);
-> >  
-> > -	if (jbd2_journal_create(journal)) {
-> > +	err = jbd2_journal_create(journal);
-> > +	if (err) {
-> >  		printk(KERN_ERR "EXT4-fs: error creating journal.\n");
-> >  		jbd2_journal_destroy(journal);
-> >  		return -EIO;
-> 
-> Original code is fine.
 
-Hmm, ok but this is not the way error handling is done in the rest of ext3/4.
-If you look for error variables declarations of type int in super.c, e.g. in
-ext4_load_journal(), ext4_clear_journal_err() and ext4_remount() to name a few,
-you'll see how the return value of the called function is assigned to the
-error variable and then the last is checked in the if-conditional, which is the
-usual way error handling is done in the kernel, imho. And my patch addresses exactly that.
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
+---
+
+  not sure who the proper SOUND subsystem maintainer would be here, so
+i just took a chance.
+
+diff --git a/include/sound/wavefront_fx.h b/include/sound/wavefront_fx.h
+deleted file mode 100644
+index cec92b1..0000000
+--- a/include/sound/wavefront_fx.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-#ifndef __SOUND_WAVEFRONT_FX_H
+-#define __SOUND_WAVEFRONT_FX_H
+-
+-extern int  snd_wavefront_fx_detect (snd_wavefront_t *);
+-extern void snd_wavefront_fx_ioctl  (snd_synth_t *sdev,
+-				     unsigned int cmd,
+-				     unsigned long arg);
+-
+-#endif  __SOUND_WAVEFRONT_FX_H
 -- 
-Regards/Gruﬂ,
-    Boris.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
