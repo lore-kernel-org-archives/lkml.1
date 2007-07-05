@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbXGEXHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbXGEXJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762628AbXGEXHj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762006AbXGEXHU
+	id S1762266AbXGEXJX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760089AbXGEXJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:07:20 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42354 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761269AbXGEXHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:07:19 -0400
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
-	RAM pathway
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707051014180.3728-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0707051014180.3728-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Fri, 06 Jul 2007 08:59:52 +1000
-Message-Id: <1183676393.3388.89.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 19:09:14 -0400
+Received: from ganymede.cleverdot.com ([84.40.17.200]:59584 "EHLO
+	ganymede.cleverdot.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760042AbXGEXJN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 19:09:13 -0400
+Date: Thu, 5 Jul 2007 11:36:21 -0600
+From: Mike Stroyan <mike@stroyan.net>
+To: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+Message-ID: <20070705173621.GA8320@stroyan.net>
+References: <468BADA6.9050609@bull.net> <20070705015806.6a82463f.kamezawa.hiroyu@jp.fujitsu.com> <468CB25C.2040505@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <468CB25C.2040505@bull.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - ganymede.cleverdot.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [26 6] / [26 6]
+X-AntiAbuse: Sender Address Domain - stroyan.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-05 at 10:23 -0400, Alan Stern wrote:
+On Thu, Jul 05, 2007 at 10:57:00AM +0200, Zoltan Menyhart wrote:
+> KAMEZAWA Hiroyuki wrote:
+> >In our test, we confirmed that this can be fixed by flushing L2I just 
+> >before SetPageUptodate() in NFS.
 > 
-> How will that help?  Block the kernel thread in the freezer or block it 
-> in the driver -- either way it is blocked.  So how do your deadlocks 
-> get resolved?
-
-Because nobody is waiting on that kernel thread anyway without a freezer
-so there is no deadlock anymore.
-
-> I disagree with your analysis -- not that it's completely wrong, but it 
-> points out an existing basic problem in the kernel.  The kernel should 
-> never depend on userspace!  More correctly, a task executing in the 
-> kernel should never block with any sort of mutex or other lock held (in 
-> a way that would preclude it from being frozen, let's say) while 
-> waiting for a response from userspace.
+> I can agree.
+> We can be more permissive: it can be done anywhere after the new
+> data is put in place and before nfs_readpage() or nfs_readpages()
+> returns.
 > 
-> Then the dependency graph would be easy to construct: User tasks can
-> depend on whatever they want, and kernel threads never depend on a user
-> task.
+> I saw your patch http://marc.info/?l=linux-mm&m=118352909826277&w=2
+> that modifies e.g. mm/memory.c and not the NFS layer.
+> 
+> Have you proposed a patch against the NFS layer?
 
-In an idea world, there would be no hunger...
+  This really doesn't look like a job for the file system layer.
+That would require all sorts of file system readpage routines to
+be modified to handle memory management details that are already
+handled by the memory.c functions.  The do_no_page code is already
+dealing with the necessary icache flushing operations.  It just
+happens to be doing it with a bad race condition for ia64.
 
-> If this contradicts the existing implementations and APIs for userspace 
-> filesystems, then so be it.  My conclusion would be that the 
-> implementations and APIs should be changed.
-
-Why are you guys working so hard and spending so much energy to try to
-avoid doing the right thing is beyond my understanding...
-
-> It _does_ apply to kernel threads.  That's exactly why I wrote above 
-> that kernel threads which try to do I/O during a suspend will need 
-> extra attention.
-
-Ok none at all if you don't have a freezer.
-
-Ben.
-
-
+-- 
+Mike Stroyan <mike@stroyan.net>
