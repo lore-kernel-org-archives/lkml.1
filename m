@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761253AbXGERVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbXGERW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761253AbXGERVg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 13:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXGERV2
+	id S1761410AbXGERW3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 13:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXGERWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 13:21:28 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26404 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756674AbXGERV1 (ORCPT
+	Thu, 5 Jul 2007 13:22:21 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:44856 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758708AbXGERWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 13:21:27 -0400
-In-Reply-To: <1183655819.19473.0.camel@dyn9047017100.beaverton.ibm.com>
-References: <46832499.40807@us.ibm.com> <5A6608DF-EDC3-43C1-BFB7-58ACBF94DBCB@oracle.com> <46859DE2.9040604@us.ibm.com>  <20070703222855.GA6293@mami.zabbo.net> <1183602311.29435.1.camel@dyn9047017100.beaverton.ibm.com> <3439F83E-9FBD-4743-B2A9-63009B7087FD@oracle.com> <1183655819.19473.0.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6ABBC539-4EDC-494D-8399-6C75673A99AC@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
+	Thu, 5 Jul 2007 13:22:19 -0400
+Message-ID: <468D28BF.5020404@zytor.com>
+Date: Thu, 05 Jul 2007 10:22:07 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Karel Zak <kzak@redhat.com>,
+       List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+References: <20070703221156.GY14825@petra.dvoda.cz> <Pine.LNX.4.64.0707041308330.1536@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0707041308330.1536@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] dio: remove bogus refcounting BUG_ON
-Date: Thu, 5 Jul 2007 10:21:13 -0700
-To: Badari Pulavarty <pbadari@us.ibm.com>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> What are they doing to reproduce it?  How much setup does it take?
->
-> Huge OLTP run :(
+Jan Engelhardt wrote:
+> On Jul 4 2007 00:11, Karel Zak wrote:
+>> newgrp:
+>> 	add support for /etc/gshadow
+>> 	check result from getgrnam() more carefully
+> 
+> Hm, gshadow looks like it is really obsolete. (There is no such file anymore in
+> suse releases since a long while. Previously, gshadow was filled with all the
+> groups that existed.)
+> 
 
-Darn :(
+gshadow is used when you have groups which have passwords, which is very
+rare in practice but permitted in theory.
 
-> I will ask them to try that.
-
-Great, thanks.
-
-- z
+	-hpa
