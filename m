@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762025AbXGEU1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbXGEU20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762025AbXGEU1h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757777AbXGEU1a
+	id S1762264AbXGEU20 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759662AbXGEU2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:27:30 -0400
-Received: from main.gmane.org ([80.91.229.2]:59991 "EHLO ciao.gmane.org"
+	Thu, 5 Jul 2007 16:28:17 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:36496 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756268AbXGEU13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:27:29 -0400
-X-Injected-Via-Gmane: http://gmane.org/
+	id S1759605AbXGEU2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 16:28:16 -0400
+X-Greylist: delayed 1779 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jul 2007 16:28:15 EDT
+Subject: 2.6.22-rc6 bad page error
 To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: blink driver power saving
-Date: Thu, 05 Jul 2007 16:30:46 -0400
-Message-ID: <468D54F6.9080808@tmr.com>
-References: <51563.81.207.0.53.1183376603.squirrel@secure.samage.net> <200707021351.57965.ak@suse.de> <d120d5000707020531y43d41b6fl46e05c8343dbbeae@mail.gmail.com> <200707021439.27357.ak@suse.de> <20070702230827.GA9071@elf.ucw.cz> <20070703071237.GA17476@suse.de> <20070704193711.GG2728@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Thu, 5 Jul 2007 14:58:35 -0500 (CDT)
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Andi Kleen <ak@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Indan Zupancic <indan@nul.nu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: pool-70-109-121-113.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <20070704193711.GG2728@elf.ucw.cz>
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070705195835.AAB19DBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+This happened on an Alpha computer (433au) running 2.6.22-rc6.  The
+error was triggered when I started up a NX KDE session, which I've
+done successfully on all occasions prior to this one.  In other words,
+I wasn't doing anything out of the ordinary...  The machine is still up
+and running as I type this, and can't/won't be rebooted for a few hours
+if there's any other troubleshooting information I need to retrieve that
+might be helpful.
 
->>> ...drivers are not expected to act on their own. I was expecting to
->>> get nice /sys/class/led* interface to my keyboard leds.
->> What's the benefit of such an interface? If you're able to trigger
->> keyboard LEDs via that interface, you're also able to use the ioctl()
->> on /dev/console.
-> 
-> Well, at least it is standartized interface... plus it can do stuff
-> like "blink that led on disk access".
-> 
-One of many useful things for system without blinking lights, disk 
-network, thermal alert, etc. And a cheap helper for handicapped folks 
-who can't hear an audible alert.
-
->> I think the intention of the blink driver was to have a *early* blink,
->> i.e. before initrd (and on systems without intrd, before the first
->> init script runs).
-> 
-> ...and yes, it can autoblink, too. It should be even possible to set
-> default behaviour of led to blink, doing what the blink driver does,
-> but in a clean way.
-
-Endlessly useful, alarm clock, non-fatal errors on boot, etc.
-
-<it would be nice>
-If this were done, priority levels would be nice, so the "I'm taking a 
-dump" or "panic" would block lower level system use like disk or network 
-lights, and user applications would have some policy to put them higher 
-or lower than the pseudo disk light (or not).
-</not nice>
+>Bad page state in process 'gnome-terminal'
+>page:fffffc0000a407f0 flags:0x000000000000000c mapping:0000000000000000 mapcount:1 count:1
+>Trying to fix it up, but a reboot is needed
+>Backtrace:
+>fffffc000960bc00 0000000000000000 0000000000000001 0000000000000001
+>       fffffc0000356e40 fffffc0000a407f0 fffffc0000356ee8 fffffc002399b0a0
+>       fffffc000f784a68 00000000000280d2 0000000000000000 000000012029a3c8
+>       fffffc00006fb6c0 fffffc001b0667a0 0000000000000000 0000000000000000
+>       fffffc00006fb6c8 00000000000280d2 0000000000000000 0000000000000044
+>       fffffc00006fb1f0 0000000000000000 0000000000000000 0000000000000001
+>Trace:
+>[<fffffc0000356e40>] get_page_from_freelist+0x420/0x430
+>[<fffffc0000356ee8>] __alloc_pages+0x98/0x3b0
+>[<fffffc00003638fc>] __handle_mm_fault+0x65c/0xb50
+>[<fffffc0000353554>] filemap_nopage+0x1a4/0x3d0
+>[<fffffc0000363534>] __handle_mm_fault+0x294/0xb50
+>[<fffffc000031e904>] do_page_fault+0x2d4/0x490
+>[<fffffc0000310bdc>] entMM+0x9c/0xc0
+>[<fffffc000032b0c0>] __do_softirq+0x90/0x120
+>[<fffffc000032b1b4>] do_softirq+0x64/0x70
+>[<fffffc000032b1b4>] do_softirq+0x64/0x70
+>[<fffffc0000315d94>] handle_irq+0x74/0xc0
+>
+>Bad page state in process 'syslogd'
+>page:fffffc0000a40828 flags:0x000000000000000c mapping:0000000000000000 mapcount:1 count:1
+>Trying to fix it up, but a reboot is needed
+>Backtrace:
+>fffffc002242fa98 0000000000000000 0000000000000001 0000000000000001
+>       fffffc0000356e40 fffffc0000a40828 fffffc0000356ee8 fffffc0023f6e0c0
+>       0000000000000003 00000000000000d0 0000000000000000 00000000000000d0
+>       fffffc00006fb6c0 0000000000000020 0000000000000000 0000000000000000
+>       fffffc00006fb6c8 00000000000200d0 0000000000000000 0000000000000044
+>       fffffc00006fb1f0 0000000000000000 0000000000000000 0000000000000001
+>Trace:
+>[<fffffc0000356e40>] get_page_from_freelist+0x420/0x430
+>[<fffffc0000356ee8>] __alloc_pages+0x98/0x3b0
+>[<fffffc0000375b30>] cache_alloc_refill+0x390/0x690
+>[<fffffc0000387018>] __link_path_walk+0x8a8/0x10b0
+>[<fffffc0000387374>] __link_path_walk+0xc04/0x10b0
+>[<fffffc0000375798>] kmem_cache_alloc+0x78/0x80
+>[<fffffc0000322e04>] copy_process+0xb4/0x11a0
+>[<fffffc0000323f88>] do_fork+0x98/0x330
+>[<fffffc0000323f40>] do_fork+0x50/0x330
+>[<fffffc0000313340>] alpha_clone+0x40/0x60
+>[<fffffc0000388f5c>] open_namei+0xbc/0x820
+>[<fffffc0000311480>] sys_clone+0x10/0x20
+>[<fffffc0000310f84>] entSys+0xa4/0xc0
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+-----------------------------------------------------------------------
+Bob Tracy               | "Eagles may soar, but weasels don't get
+rct@frus.com            |  sucked into jet engines."       --Anon
+-----------------------------------------------------------------------
