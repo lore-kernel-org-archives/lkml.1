@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbXGEXJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbXGEXJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762266AbXGEXJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760089AbXGEXJO
+	id S1760794AbXGEXJg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760981AbXGEXJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:09:14 -0400
-Received: from ganymede.cleverdot.com ([84.40.17.200]:59584 "EHLO
-	ganymede.cleverdot.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760042AbXGEXJN (ORCPT
+	Thu, 5 Jul 2007 19:09:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39153 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760775AbXGEXJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:09:13 -0400
-Date: Thu, 5 Jul 2007 11:36:21 -0600
-From: Mike Stroyan <mike@stroyan.net>
-To: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-Message-ID: <20070705173621.GA8320@stroyan.net>
-References: <468BADA6.9050609@bull.net> <20070705015806.6a82463f.kamezawa.hiroyu@jp.fujitsu.com> <468CB25C.2040505@bull.net>
+	Thu, 5 Jul 2007 19:09:18 -0400
+Date: Thu, 5 Jul 2007 16:09:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dmitry Torokhov <dtor@insightbb.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull][resend] Input updates for 2.6.22-rc7
+In-Reply-To: <200707050111.43327.dtor@insightbb.com>
+Message-ID: <alpine.LFD.0.98.0707051556000.9434@woody.linux-foundation.org>
+References: <200707050111.43327.dtor@insightbb.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <468CB25C.2040505@bull.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - ganymede.cleverdot.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [26 6] / [26 6]
-X-AntiAbuse: Sender Address Domain - stroyan.net
+Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 10:57:00AM +0200, Zoltan Menyhart wrote:
-> KAMEZAWA Hiroyuki wrote:
-> >In our test, we confirmed that this can be fixed by flushing L2I just 
-> >before SetPageUptodate() in NFS.
-> 
-> I can agree.
-> We can be more permissive: it can be done anywhere after the new
-> data is put in place and before nfs_readpage() or nfs_readpages()
-> returns.
-> 
-> I saw your patch http://marc.info/?l=linux-mm&m=118352909826277&w=2
-> that modifies e.g. mm/memory.c and not the NFS layer.
-> 
-> Have you proposed a patch against the NFS layer?
 
-  This really doesn't look like a job for the file system layer.
-That would require all sorts of file system readpage routines to
-be modified to handle memory management details that are already
-handled by the memory.c functions.  The do_no_page code is already
-dealing with the necessary icache flushing operations.  It just
-happens to be doing it with a bad race condition for ia64.
+[ Ok, pulled. However, it's time for another installment of "Flame that 
+  stupid mail client", because this isn't the first time this bit me ]
 
--- 
-Mike Stroyan <mike@stroyan.net>
+On Thu, 5 Jul 2007, Dmitry Torokhov wrote:
+> 
+> Please consider pulling from:
+> 
+>         git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+
+There's somethign wrong with your emails, and it's very irritating.
+
+I cannot just cut-and-paste the whole line, because your tabs and spaces 
+aren't tabs and spaces, they are some horrible abomination.
+
+What _looks_ like a tab above, when I save it and look at it with "od", it 
+shows it true nasty life: it's not a tab, and it's not even eight spaces, 
+it's four copies of the byte sequence '\302\240 ' ('\xC2\xA0\x20'), ie 
+some horrid nasty three-byte sequence where one character is a space, and 
+the previous two characters are some utf-8 abomination.
+
+I have no idea what kind of crap you use to generate it, and quite 
+frankly, I don't want to know. I just want it to stop, so that when I 
+cut-and-paste, I don't get random UTF-8 characters that just *look* like 
+spaces but don't act like it, and cause my shell to very reasonably whine 
+about the result.
+
+I think the "c2 a0" character is the utf-8 representation of a &nbsp 
+(non-breaking space), but:
+ - you are damn well sending text
+ - it's followed by a regular space, so it's stupid
+ - please don't do it.
+
+It says your user-agent is "Kmail", and maybe there is some way to fix it. 
+And if kmail is correct, please make a bug-report to the kmail people. 
+Sending hidden invisible utf-8 crap that looks like space, but doesn't act 
+like it, is just damn impolite by kmail. I assume you weren't even aware 
+of the random crud you are sending out?
+
+		Linus
