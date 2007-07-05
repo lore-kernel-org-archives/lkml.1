@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761363AbXGENYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761492AbXGEN0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761363AbXGENYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 09:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbXGENYJ
+	id S1761492AbXGEN0n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 09:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbXGEN0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 09:24:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53499 "EHLO ogre.sisk.pl"
+	Thu, 5 Jul 2007 09:26:36 -0400
+Received: from edu.joroinen.fi ([194.89.68.130]:44378 "EHLO edu.joroinen.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758663AbXGENYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 09:24:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 15:31:36 +0200
-User-Agent: KMail/1.9.5
-Cc: pavel@ucw.cz, oliver@neukum.org, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051358.26963.rjw@sisk.pl> <E1I6QOA-0000bq-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I6QOA-0000bq-00@dorka.pomaz.szeredi.hu>
+	id S1758663AbXGEN0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 09:26:36 -0400
+X-Greylist: delayed 1603 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jul 2007 09:26:36 EDT
+Date: Thu, 5 Jul 2007 15:59:51 +0300
+From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
+To: Dmitry Melekhov <dm@belkam.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: scsi lun online resize
+Message-ID: <20070705125951.GF4106@edu.joroinen.fi>
+References: <46652EB3.4060903@belkam.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707051531.37532.rjw@sisk.pl>
+In-Reply-To: <46652EB3.4060903@belkam.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 14:24, Miklos Szeredi wrote:
-> > Don't you think, however, that it can be modified a little to play well,
-> > for example, with the freezer?
+On Tue, Jun 05, 2007 at 02:36:51PM +0500, Dmitry Melekhov wrote:
+> Hello!
 > 
-> I could stick a couple of try_to_freeze()s into fuse, and that would
-> make suspend failure less likely.  But making problems less easy to
-> reproduce is not a good thing.
+> I'm playing with iscsi on linux.
+> And I have following problem:
+> 
+> If I change lun size on target side and then do echo "1" >/sys/block/
+> sdb/device/rescan
+> device size is changed only if /dev/sdb is not mounted, if it is
+> mounted fdisk shows no size change, so lun can't be resized online.
+> 
+> open-iscsi guys say this is general linux problem, not iscsi specific.
+> Could you tell me is there any solution?
+> 
 
-So, how about eliminating them?
+Do you have partition table on /dev/sdb, or are you using /dev/sdb directly? 
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+-- Pasi
