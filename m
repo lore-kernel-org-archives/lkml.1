@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbXGEJLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbXGEJOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760227AbXGEJLA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758285AbXGEJKx
+	id S1759561AbXGEJOm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 05:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758285AbXGEJOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:10:53 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:16240 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757952AbXGEJKw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:10:52 -0400
-Subject: Re: [PATCH] debug work struct cancel deadlocks with lockdep
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Sattler <tsattler@gmx.de>
-In-Reply-To: <1183626507.3818.19.camel@johannes.berg>
-References: <1183583529.9662.34.camel@johannes.berg>
-	 <20070705085304.GC3476@elte.hu>  <1183625889.3818.14.camel@johannes.berg>
-	 <1183626070.7054.54.camel@twins>  <1183626507.3818.19.camel@johannes.berg>
-Content-Type: text/plain
-Date: Thu, 05 Jul 2007 11:10:47 +0200
-Message-Id: <1183626647.7054.61.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 05:14:32 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:51067 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757868AbXGEJOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 05:14:31 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Thu, 5 Jul 2007 15:06:01 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH -mm 5/9] netconsole: Introduce dev_status member
+In-Reply-To: <20070705063904.GG17650@tasint.org>
+Message-ID: <Pine.LNX.4.64.0707051501190.15925@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070705063904.GG17650@tasint.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-05 at 11:08 +0200, Johannes Berg wrote:
-> On Thu, 2007-07-05 at 11:01 +0200, Peter Zijlstra wrote:
+On Wed, 4 Jul 2007, Joel Becker wrote:
+> On Wed, Jul 04, 2007 at 04:38:04PM +0530, Satyam Sharma wrote:
+> > -	if (!(event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
+> > -		goto done;
+> > +	if (!(event == NETDEV_UP || event == NETDEV_DOWN ||
+> > +	      event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
+> > +	      	goto done;
+> >
+> >  	if (nt->np.dev == dev) {
+> >  		switch (event) {
 > 
-> > You could of course make this STATIC_LOCKDEP_MAP_INIT() and place it
-> > near lockdep_init_map() :-)
-> > 
-> > That way it would be clear that changes to either ought to be reflected
-> > in the other.
-> 
-> Sure. I have to repost anyway :)
-> 
-> How about
-> 
-> +/* both _name and _key must not be NULL */
-> +#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
-> +	{ .name = (_name), .key = (_key), }
+> 	It's a small nit, but isn't the large if() just the degenerate
+> default case of the switch()?  Why have it at all?  
 
-looks sane enough :-)
+Yes, the large if() is redundant in this particular patch.
 
-> That'll still require some #ifdef foo inside workqueue.h but I think
-> it's cleaner to put just this into lockdep.h
+But in further patches, the switch() is enclosed inside a 
+spin_lock_irqsave() and list_for_each_entry(target_list) and so the
+large if() upfront saves us from unnecessarily disabling interrupts
+and iterating through the entire target_list in the case that it is
+a notification for an event that we don't care about.
 
-It is.
+So I'll remove this if() from this patch and introduce it in the
+later one itself, which is where it starts making some sense, anyway.
 
+Satyam
