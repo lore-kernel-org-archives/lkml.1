@@ -1,122 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbXGEV2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbXGEVak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761971AbXGEV2l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 17:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760700AbXGEV2a
+	id S1762066AbXGEVak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 17:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758906AbXGEVaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 17:28:30 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:48720 "EHLO smtp.gentoo.org"
+	Thu, 5 Jul 2007 17:30:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42771 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760218AbXGEV22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 17:28:28 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: 7eggert@gmx.de
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-Date: Thu, 5 Jul 2007 17:30:24 -0400
-User-Agent: KMail/1.9.7
-Cc: Nix <nix@esperi.org.uk>, Karel Zak <kzak@redhat.com>,
+	id S1757909AbXGEVa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 17:30:29 -0400
+Date: Thu, 5 Jul 2007 23:30:20 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
        List util-linux-ng <util-linux-ng@vger.kernel.org>,
        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <8CYT9-4Ou-23@gated-at.bofh.it> <8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz>
-In-Reply-To: <E1I6SfW-0002XG-AM@be1.lrz>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2752161.iVL45xWCXH";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707051730.25776.vapier@gentoo.org>
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+Message-ID: <20070705213020.GB14825@petra.dvoda.cz>
+References: <20070703221156.GY14825@petra.dvoda.cz> <20070704084211.GA19128@infradead.org> <200707051242.00625.vapier@gentoo.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707051242.00625.vapier@gentoo.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2752161.iVL45xWCXH
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Thursday 05 July 2007, Bodo Eggert wrote:
-> Nix <nix@esperi.org.uk> wrote:
-> > On 4 Jul 2007, DervishD stated:
-> >>     Anyway, if you don't like mobs or you just don't want to try it,
-> >> that's fine, but please don't use autotools, it doesn't make much sense
-> >> for a linux only project, since you will be using only the "directory
-> >> choosing" part of autotools. Maybe a hand made script will help (and I
+On Thu, Jul 05, 2007 at 12:41:59PM -0400, Mike Frysinger wrote:
+> On Wednesday 04 July 2007, Christoph Hellwig wrote:
+> > On Wed, Jul 04, 2007 at 12:11:56AM +0200, Karel Zak wrote:
+> > >  mount(8) doesn't include filesystem detection code anymore. You
+> > >  have to compile --with-fsprobe={blkid,volume_id}, and libblkid
+> > >  (e2fsprogs) or libvolume_id (udev >= v110) is required.
 > >
-> > Oh, yeah, great, another hand-rolled build system. That's *juwt* what
-> > those of us who have autotools working well (with config.site's that
-> > do all we need and then some) are looking forward to.
+> > Sorry, but it's really annoying to pull in a filesystem-specific devel
+> > package for that.  Having a library is fine, but please move the library
+> > into util-linux so it's always available without another dependency.
+> 
+> ugh, moving libraries which are already actively maintained by other core 
+> projects into util-linux is so not a good idea (ignoring the fact that it'd 
+> easily be a pita/waste for distro maintainers)
+
+ Yes. We have good experience with libblkid and libvolume_id. This
+ concept is nothing new (see current RHEL, FC, Suse, ...). The change
+ is that we've removed old, useless and unmaintained FS detection code
+ from util-linux.
+
+ I think move the library to util-linux is really bad idea. A better
+ idea is detach libblkid or libvolume_id (or both) from e2fsprogs/udev
+ and create an independent libfsprobe library and use everywhere
+ (e2fsprogs, udev, util-linux) this library only.
+
+> > >  The package build system is now based on autotools. The build system
+> > >  supports  separate CFLAGS and LDFLAGS for suid programs (SUID_CFLAGS,
+> > >  SUID_LDFLAGS). For more details see the README file
 > >
-> > There are advantages to standardization, you know. A *lot* of
-> > autobuilders know how to make autoconf-generated configure scripts jump
-> > through hoops. I was downright *happy* when util-linux was
-> > autoconfiscated: I could ditch the code to handle automatic
-> > configuration of yet another one-package hand-rolled build system.
->
-> Standardisation is good, but autotools (as they are used) usurally isn't.
+> > And this is really dumb.  autotools is a completely pain in the ass and
 
-i dont see how blaming autotools for other people's misuse is relevant ...=
-=20
-this same exact claim could be made for just about any other build system,=
-=20
-simply apply 's/autotools/$some_build_system_you_wish_to_complain/'.
+ Well, Adrian Bunk added autotools stuff to util-linux during his work
+ on v2.13. This stuff has been fixed and stabilized in util-linux-ng
+ v2.13.
 
-> It tests for the availability of a fortran compiler for a C-only project
+ I'm not fanatical autotools protagonist, but it seems useful in
+ util-linux. We will see...
 
-a libtool bug that has been fixed upstream and is trivial to work around ..=
-=2E=20
-you could also point out that libtool will also search for a C++ compiler i=
-n=20
-a C-only project.  the libtool stuff can probably be easily cleaned out fro=
-m=20
-util-linux completely thus negating this whole topic.
+ I'm ready to change or fix arbitrary thing in util-linux-ng, but I
+ always need a real reason -- bug report, new feature, or so. This
+ discussion is about impressions and feelings only.
 
-> checks the width of integers on i386 for projects not caring about that a=
-nd
-> fails to find installed libraries without telling how it was supposed to
-> find them or how to make it find that library.
+> > not useful at all for linux-only tools.
+> 
+> incorrect.  linux changes over time as does the kernel/libc/architecture 
+> api's.  look at the old util-linux build system -- it had a crappy hand 
+> written configure script to try and detect all these different issues.
 
-no idea what this rant is about.
+ Right. The autotools provides more features that portability only.
 
-> Configuring the build of an autotools program is harder than nescensary;
-> if it used a config file, you could easily save it somewhere while adding
-> comments on how and why you did *that* choice, and you could possibly
-> use a set of default configs which you'd just include.
+    Karel
 
-history shows this is a pita to maintain.  every package has its own build=
-=20
-system and configuration file which means you have to go through the=20
-documentation and figure out the magic incantation to get the thing to buil=
-d=20
-up the way you need.
 
-> The Makefiles generated by autotools is a huge mess, if autotools got it
-> wrong (again!), fixing them requires editing a lot of files.
-
-this looks like a no brainer to me: dont edit generated files
-=2Dmike
-
---nextPart2752161.iVL45xWCXH
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iQIVAwUARo1i8UFjO5/oN/WBAQKxlg//fJXfz66gv6EMTbXrRKrcDi0npqrOZzIZ
-cBD8CGmo5eIlvuwepWt9Tlb6EUM7aoNiFJkSoBnPXlhs0WaQ4s4A4Wjg9gdDq8bq
-lgvRL/k35TQmrf6vwrbq1+CC05h1bhZ8fufL2ImbceTzOp6g2+eOkLZZA+WG1eQM
-tc/RGOIyPa9XOjHMzpMdcIiXdIGf0e1ABt5E8ndvhXHs2ReDm25+8t1KtwSfNZ6H
-getOiQG3lxkhAk6YdfZeJpf6rW0yHHYIVqJAZhv2ucFXNXLzZ3+xCHj/QQKbSdW7
-xZI9SP1/ZwxH+W1BGpieYZJR5XbvQ59uTKJtEHB5lnOKnOzxjlx+Z3ts7h310kY5
-jeYXQnlVcU9vsU6tRuYRcq+ZrM6YdyNFTuo+qmGIPe2a3NPT+y8zgRghfipRT2WW
-qke5FnUQ8kDyPbaih9LABxkyK1ED6qH8P9NjfXjkQmoLe1KCoF+K+jCou6KnlZH3
-pwRcxDvE41YVfMI+/E5Sjc3INKwe0cFkENIJBYHYA8MsiYe+w363jM0moTafrTaC
-Quoe58x9pc1BqnHd8RsMBkzYt7gw+cgL/59Ibjz18VZOVZIxjXiBz5t+GoAl8GPq
-VPiKD7IAadRbMMTLS4ebHC9eUIwEfdhegaOuQN94niUV/PJ4mX9qh0xO4QjOoqJf
-rNHUuMLPvcg=
-=livN
------END PGP SIGNATURE-----
-
---nextPart2752161.iVL45xWCXH--
+-- 
+ Karel Zak  <kzak@redhat.com>
