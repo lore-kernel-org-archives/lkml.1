@@ -1,342 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752006AbXGEUEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761942AbXGEUEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752006AbXGEUEE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758628AbXGEUD4
+	id S1761942AbXGEUEX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761345AbXGEUEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:03:56 -0400
-Received: from mail.queued.net ([207.210.101.209]:3450 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757501AbXGEUDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:03:55 -0400
-Date: Thu, 5 Jul 2007 16:05:32 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jordan Crouse <jordan.crouse@amd.com>, info-linux@geode.amd.com
-Subject: [PATCH 2/3] GEODE: MFGPT support for Geode-class machines
-Message-Id: <20070705160532.3d0c0493.dilinger@queued.net>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 5 Jul 2007 16:04:04 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:50976 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbXGEUEC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 16:04:02 -0400
+Message-ID: <468D4E8A.40602@linux.vnet.ibm.com>
+Date: Thu, 05 Jul 2007 13:03:22 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@osdl.org>, Pavel Emelianov <xemul@openvz.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [-mm PATCH 4/7] Memory controller memory accounting
+References: <20070704222108.17702.40293.sendpatchset@balbir-laptop> <20070704222203.17702.37327.sendpatchset@balbir-laptop> <468D3C6C.8060900@linux.vnet.ibm.com>
+In-Reply-To: <468D3C6C.8060900@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for Multi-Function General Purpose Timers.  It detects the
-available timers during southbridge init, and provides an API for allocating
-and setting the timers.  They're higher resolution than the standard PIT,
-so the MFGPTs come in handy for quite a few things.
+Vaidyanathan Srinivasan wrote:
+>>
+>> +	if (mem_container_charge(page, mm)) {
+> 
+> Minor correction.  The above line should be
+> 
+> if (mem_container_charge(new, mm)) {
+> 
+> to avoid compilation error.
+> 
+> --Vaidy
+> 
+> [snip]
 
-Note that we never clobber the timers that the BIOS might have opted to
-use; we just check for unused timers.
+Thanks, Vaidy,
 
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- arch/i386/kernel/Makefile |    2 +-
- arch/i386/kernel/geode.c  |    4 +
- arch/i386/kernel/mfgpt.c  |  200 +++++++++++++++++++++++++++++++++++++++++++++
- include/asm-i386/geode.h  |   50 +++++++++++
- 4 files changed, 255 insertions(+), 1 deletions(-)
- create mode 100644 arch/i386/kernel/mfgpt.c
+Patch incorporated.
 
-diff --git a/arch/i386/kernel/Makefile b/arch/i386/kernel/Makefile
-index dbe5e87..48c6076 100644
---- a/arch/i386/kernel/Makefile
-+++ b/arch/i386/kernel/Makefile
-@@ -40,7 +40,7 @@ obj-$(CONFIG_VM86)		+= vm86.o
- obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
- obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
- obj-$(CONFIG_K8_NB)		+= k8.o
--obj-$(CONFIG_MGEODE_LX)		+= geode.o
-+obj-$(CONFIG_MGEODE_LX)		+= geode.o mfgpt.o
- 
- obj-$(CONFIG_VMI)		+= vmi.o vmiclock.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt.o
-diff --git a/arch/i386/kernel/geode.c b/arch/i386/kernel/geode.c
-index e67d01e..b2741f3 100644
---- a/arch/i386/kernel/geode.c
-+++ b/arch/i386/kernel/geode.c
-@@ -146,10 +146,14 @@ EXPORT_SYMBOL_GPL(geode_gpio_setup_event);
- 
- static int __init geode_southbridge_init(void)
- {
-+	int timers;
-+
- 	if (!is_geode())
- 		return -ENODEV;
- 
- 	init_lbars();
-+	timers = geode_mfgpt_detect();
-+	printk(KERN_INFO "geode:  %d MFGPT timers available.\n", timers);
- 	return 0;
- }
- 
-diff --git a/arch/i386/kernel/mfgpt.c b/arch/i386/kernel/mfgpt.c
-new file mode 100644
-index 0000000..b13c34f
---- /dev/null
-+++ b/arch/i386/kernel/mfgpt.c
-@@ -0,0 +1,200 @@
-+/*
-+ * Driver/API for AMD Geode Multi-Function General Purpose Timers (MFGPT)
-+ *
-+ * Copyright (C) 2006, Advanced Micro Devices, Inc.
-+ * Copyright (C) 2007, Andres Salomon <dilinger@debian.org>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * The MFGPTs are documented in AMD Geode CS5536 Companion Device Data Book.
-+ */
-+
-+/*
-+ * We are using the 32Khz input clock - its the only one that has the
-+ * ranges we find desirable.  The following table lists the suitable
-+ * divisors and the associated hz, minimum interval
-+ * and the maximum interval:
-+ *
-+ *  Divisor   Hz      Min Delta (S) Max Delta (S)
-+ *   1        32000     .0005          2.048
-+ *   2        16000      .001          4.096
-+ *   4         8000      .002          8.192
-+ *   8         4000      .004         16.384
-+ *   16        2000      .008         32.768
-+ *   32        1000      .016         65.536
-+ *   64         500      .032        131.072
-+ *  128         250      .064        262.144
-+ *  256         125      .128        524.288
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <asm/geode.h>
-+
-+#define F_AVAIL    0x01
-+
-+static struct mfgpt_timer_t {
-+	int flags;
-+	struct module *owner;
-+} mfgpt_timers[MFGPT_MAX_TIMERS];
-+
-+/* Selected from the table above */
-+
-+#define MFGPT_DIVISOR 16
-+#define MFGPT_SCALE  4     /* divisor = 2^(scale) */
-+#define MFGPT_HZ  (32000 / MFGPT_DIVISOR)
-+#define MFGPT_PERIODIC (MFGPT_HZ / HZ)
-+
-+/* Allow for disabling of MFGPTs */
-+static int disable = 0;
-+static int __init mfgpt_disable(char *s)
-+{
-+	disable = 1;
-+	return 1;
-+}
-+__setup("nomfgpt", mfgpt_disable);
-+
-+/*
-+ * Check whether any MFGPTs are available for the kernel to use.  In most
-+ * cases, firmware that uses AMD's VSA code will claim all timers during
-+ * bootup; we certainly don't want to take them if they're already in use.
-+ * In other cases (such as with VSAless OpenFirmware), the system firmware
-+ * leaves timers available for us to use.
-+ */
-+int __init geode_mfgpt_detect(void)
-+{
-+	int count = 0, i;
-+	u16 val;
-+
-+	if (disable) {
-+		printk(KERN_INFO "geode-mfgpt:  Skipping MFGPT setup\n");
-+		return 0;
-+	}
-+
-+	for (i = 0; i < MFGPT_MAX_TIMERS; i++) {
-+		val = geode_mfgpt_read(i, MFGPT_REG_SETUP);
-+		if (!(val & MFGPT_SETUP_SETUP)) {
-+			mfgpt_timers[i].flags = F_AVAIL;
-+			count++;
-+		}
-+	}
-+
-+	return count;
-+}
-+
-+int geode_mfgpt_toggle_event(int timer, int cmp, int event, int enable)
-+{
-+	u32 msr, mask, value, dummy;
-+	int shift = (cmp == MFGPT_CMP1) ? 0 : 8;
-+
-+	if (timer < 0 || timer >= MFGPT_MAX_TIMERS)
-+		return -EIO;
-+
-+	/*
-+	 * The register maps for these are described in sections 6.17.1.x of
-+	 * the AMD Geode CS5536 Companion Device Data Book.
-+	 */
-+	switch (event) {
-+	case MFGPT_EVENT_RESET:
-+		/* 
-+		 * XXX: According to the docs, we cannot reset timers above
-+		 * 6; that is, resets for 7 and 8 will be ignored.  Is this
-+		 * a problem?   -dilinger
-+		 */
-+		msr = MFGPT_NR_MSR;
-+		mask = 1 << (timer + 24);
-+		break;
-+
-+	case MFGPT_EVENT_NMI:
-+		msr = MFGPT_NR_MSR;
-+		mask = 1 << (timer + shift);
-+		break;
-+
-+	case MFGPT_EVENT_IRQ:
-+		msr = MFGPT_IRQ_MSR;
-+		mask = 1 << (timer + shift);
-+		break;
-+
-+	default:
-+		return -EIO;
-+	}
-+
-+	rdmsr(msr, value, dummy);
-+
-+	if (enable)
-+		value |= mask;
-+	else
-+		value &= ~mask;
-+
-+	wrmsr(msr, value, dummy);
-+	return 0;
-+}
-+EXPORT_SYMBOL(geode_mfgpt_toggle_event);
-+
-+int geode_mfgpt_set_irq(int timer, int cmp, int irq, int enable)
-+{
-+	u32 val, dummy;
-+	int offset;
-+
-+	if (timer < 0 || timer >= MFGPT_MAX_TIMERS)
-+		return -EIO;
-+
-+	if (geode_mfgpt_toggle_event(timer, cmp, MFGPT_EVENT_IRQ, enable))
-+		return -EIO;
-+
-+	rdmsr(0x51400022, val, dummy);
-+
-+	offset = (timer % 4) * 4;
-+
-+	val &= ~((0xF << offset) | (0xF << (offset + 16)));
-+
-+	if (enable) {
-+		val |= (irq & 0x0F) << (offset);
-+		val |= (irq & 0x0F) << (offset + 16);
-+	}
-+
-+	wrmsr(0x51400022, val, dummy);
-+	return 0;
-+}
-+EXPORT_SYMBOL(geode_mfgpt_set_irq);
-+
-+static int mfgpt_get(int timer, struct module *owner)
-+{
-+	mfgpt_timers[timer].flags &= ~F_AVAIL;
-+	mfgpt_timers[timer].owner = owner;
-+	printk(KERN_INFO "geode-mfgpt:  Registered timer %d\n", timer);
-+	return timer;
-+}
-+
-+int geode_mfgpt_alloc_timer(int timer, int domain, struct module *owner)
-+{
-+	int i;
-+
-+	if (!geode_get_dev_base(GEODE_DEV_MFGPT))
-+		return -ENODEV;
-+	if (timer >= MFGPT_MAX_TIMERS)
-+		return -EIO;
-+
-+	if (timer < 0) {
-+		/* Try to find an available timer */
-+		for (i = 0; i < MFGPT_MAX_TIMERS; i++) {
-+			if (mfgpt_timers[i].flags & F_AVAIL)
-+				return mfgpt_get(i, owner);
-+
-+			if (i == 5 && domain == MFGPT_DOMAIN_WORKING)
-+				break;
-+		}
-+	}
-+	else {
-+		/* If they requested a specific timer, try to honor that */
-+		if (mfgpt_timers[timer].flags & F_AVAIL)
-+			return mfgpt_get(timer, owner);
-+	}
-+
-+	/* No timers available - too bad */
-+	return -1;
-+}
-+EXPORT_SYMBOL(geode_mfgpt_alloc_timer);
-diff --git a/include/asm-i386/geode.h b/include/asm-i386/geode.h
-index a9d1392..6fba563 100644
---- a/include/asm-i386/geode.h
-+++ b/include/asm-i386/geode.h
-@@ -156,4 +156,54 @@ static inline int is_geode(void)
- 	return (is_geode_gx() || is_geode_lx());
- }
- 
-+/* MFGPTs */
-+
-+#define MFGPT_MAX_TIMERS	8
-+#define MFGPT_TIMER_ANY		-1
-+
-+#define MFGPT_DOMAIN_WORKING	1
-+#define MFGPT_DOMAIN_STANDBY	2
-+#define MFGPT_DOMAIN_ANY	(MFGPT_DOMAIN_WORKING | MFGPT_DOMAIN_STANDBY)
-+
-+#define MFGPT_CMP1		0
-+#define MFGPT_CMP2		1
-+
-+#define MFGPT_EVENT_IRQ		0
-+#define MFGPT_EVENT_NMI		1
-+#define MFGPT_EVENT_RESET	3
-+
-+#define MFGPT_REG_CMP1		0
-+#define MFGPT_REG_CMP2		2
-+#define MFGPT_REG_COUNTER	4
-+#define MFGPT_REG_SETUP		6
-+
-+#define MFGPT_SETUP_CNTEN	(1 << 15)
-+#define MFGPT_SETUP_CMP2	(1 << 14)
-+#define MFGPT_SETUP_CMP1	(1 << 13)
-+#define MFGPT_SETUP_SETUP	(1 << 12)
-+#define MFGPT_SETUP_STOPEN	(1 << 11)
-+#define MFGPT_SETUP_EXTEN	(1 << 10)
-+#define MFGPT_SETUP_REVEN	(1 << 5)
-+#define MFGPT_SETUP_CLKSEL	(1 << 4)
-+
-+static inline void geode_mfgpt_write(int timer, u16 reg, u16 value)
-+{
-+	u32 base = geode_get_dev_base(GEODE_DEV_MFGPT);
-+	outw(value, base + reg + (timer * 8));
-+}
-+
-+static inline u16 geode_mfgpt_read(int timer, u16 reg)
-+{
-+	u32 base = geode_get_dev_base(GEODE_DEV_MFGPT);
-+	return inw(base + reg + (timer * 8));
-+}
-+
-+extern int __init geode_mfgpt_detect(void);
-+extern int geode_mfgpt_toggle_event(int timer, int cmp, int event, int enable);
-+extern int geode_mfgpt_set_irq(int timer, int cmp, int irq, int enable);
-+extern int geode_mfgpt_alloc_timer(int timer, int domain, struct module *owner);
-+
-+#define geode_mfgpt_setup_irq(t,c,i) geode_mfgpt_set_irq((t),(c),(i),1)
-+#define geode_mfgpt_release_irq(t,c,i) geode_mfgpt_set_irq((t),(c),(i),0)
-+
- #endif
 -- 
-1.5.2.2
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
