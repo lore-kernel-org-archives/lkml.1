@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbXGELyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbXGEL4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760103AbXGELyY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 07:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXGELyQ
+	id S1760305AbXGEL4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 07:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbXGEL4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 07:54:16 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2433 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754788AbXGELyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 07:54:15 -0400
-Date: Thu, 5 Jul 2007 11:54:00 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: oliver@neukum.org, paulus@samba.org, stern@rowland.harvard.edu,
-       johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Message-ID: <20070705115400.GF3984@ucw.cz>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org> <18060.14856.824473.325660@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.9i
+	Thu, 5 Jul 2007 07:56:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41157 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756121AbXGEL4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 07:56:24 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Remove some dead code
+To: torvalds@osdl.org, akpm@osdl.org, rpjday@mindspring.com
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Thu, 05 Jul 2007 12:56:18 +0100
+Message-ID: <20070705115618.13484.24957.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: David Howells <dhowells@redhat.com>
 
-> > > > In which way can user space tasks depend on each other in a way that
-> > > > allows a them members of that cycle to be in uninterruptible sleep?
-> > > 
-> > >  - process A calls rename() on a fuse fs
-> > >  - process B, the fuse server, starts to process the rename request
-> > >  - process B is frozen before it can reply
-> > > 
-> > > Now process A is unfreezable.  We cannot make rename() restartable,
-> > > hence it cannot be interruptible.
-> > 
-> > Yes, we are claiming fuse is very special in this regard, and perhaps
-> > even broken.
-> > 
-> > Let's see. If I SIGSTOP the fuse server, I can get unrelated tasks
-> > unkillable (even for SIGKILL!) forever.
-> 
-> Actually fuse allows SIGKILL, because it's always fatal, and the
-> syscall may not be restarted.
+Remove some dead chunks of code that are bounded by preprocessor conditionals
+controlled by apparently no-longer available config options.
 
-I think you want to stick try_to_freeze() at the same places where you
-do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
-problem.
+These are:
 
-Plus, it would be nice to find out where suspend/hibernation is
-triggering fuse activity. We can then decide where to fix it -- in
-fuse or in suspend parts. You said sys_sync is not implemented... so
-where is the problem?
+	CONFIG_BLK_DEV_BLKMEM
+	CONFIG_CHR_DEV_FLASH
+	CONFIG_BLK_DEV_FLASH
+	CONFIG_CONSOLE
 
-> > That's very special, and maybe even a FUSE bug. And that is also
-> > what makes FUSE special w.r.t. s2ram.
-> 
-> What makes fuse special is that some file operations are synchronous
-> and non-restartable.  That's just how the UNIX filesystem API works
-> and is hardly a bug in fuse.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Well, unix is not plan9, and maybe userland filesystems are impossible
-in unix. But that is hardly a bug in unix :-).
+ arch/frv/kernel/setup.c |   16 ----------------
+ 1 files changed, 0 insertions(+), 16 deletions(-)
 
-							Pavel
+diff --git a/arch/frv/kernel/setup.c b/arch/frv/kernel/setup.c
+index aa3c795..c1c32e4 100644
+--- a/arch/frv/kernel/setup.c
++++ b/arch/frv/kernel/setup.c
+@@ -60,10 +60,6 @@ static void __init setup_linux_memory(void);
+ static void __init setup_uclinux_memory(void);
+ #endif
+ 
+-#ifdef CONFIG_CONSOLE
+-extern struct consw *conswitchp;
+-#endif
+-
+ #ifdef CONFIG_MB93090_MB00
+ static char __initdata mb93090_banner[] = "FJ/RH FR-V Linux";
+ static char __initdata mb93090_version[] = UTS_RELEASE;
+@@ -795,13 +791,6 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ #endif
+ 
+-#if defined(CONFIG_CHR_DEV_FLASH) || defined(CONFIG_BLK_DEV_FLASH)
+-	/* we need to initialize the Flashrom device here since we might
+-	 * do things with flash early on in the boot
+-	 */
+-	flash_probe();
+-#endif
+-
+ 	/* deal with the command line - RedBoot may have passed one to the kernel */
+ 	memcpy(command_line, boot_command_line, sizeof(command_line));
+ 	*cmdline_p = &command_line[0];
+@@ -837,11 +826,6 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ #endif
+ 
+-#ifdef CONFIG_BLK_DEV_BLKMEM
+-	ROOT_DEV = MKDEV(BLKMEM_MAJOR,0);
+-#endif
+-	/*rom_length = (unsigned long)&_flashend - (unsigned long)&_romvec;*/
+-
+ #ifdef CONFIG_MMU
+ 	setup_linux_memory();
+ #else
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
