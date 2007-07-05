@@ -1,60 +1,383 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761264AbXGEUA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761604AbXGEUB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761264AbXGEUA5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbXGEUAv
+	id S1761604AbXGEUB3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759161AbXGEUBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:00:51 -0400
-Received: from mga09.intel.com ([134.134.136.24]:44237 "EHLO mga09.intel.com"
+	Thu, 5 Jul 2007 16:01:20 -0400
+Received: from mail.queued.net ([207.210.101.209]:2902 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbXGEUAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:00:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,505,1175497200"; 
-   d="scan'208";a="103316378"
-Message-ID: <468D4D82.8030009@linux.intel.com>
-Date: Thu, 05 Jul 2007 12:58:58 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
+	id S1758967AbXGEUBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 16:01:19 -0400
+Date: Thu, 5 Jul 2007 16:02:51 -0400
+From: Andres Salomon <dilinger@queued.net>
 To: linux-kernel@vger.kernel.org
-Subject: Liunx power consumption on laptops -- Enormous progress in the last
- few months
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jordan Crouse <jordan.crouse@amd.com>, info-linux@geode.amd.com
+Subject: [PATCH 1/3] GEODE: basic infrastructure support for AMD geode-class
+ machines
+Message-Id: <20070705160251.aea9aedc.dilinger@queued.net>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This builds upon the existing geode infrastructure, but adds southbridge
+support, some GPIO functions, and a header file (asm-i386/geode.h) with
+some useful GX/LX detection tests.
 
-with all the tickless and other goodies going into the kernel in the 
-last few months, there is a lot of hope that this helps Linux reduce 
-power consumption... and the good news is that it does... once you fix 
-some bugs and fix a bunch of userspace applications.
+The majority of this code was written by Jordan Crouse.
 
-While it's hard to show "one size fits all" number/percentage, we took 
-a bog standard Lenovo T61 laptop (no vendor preference, they just were 
-the first one to deliver a model with the latest Intel chipset to our 
-cubes) and measured the effect. The baseline we used was a 32 bit 
-Fedora 7 installation; note that this already has the tickless kernel, 
-but is lacking several of the key bugfixes that came afterwards.
+Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ arch/i386/kernel/Makefile |    1 +
+ arch/i386/kernel/geode.c  |  156 ++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/geode.h  |  159 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 316 insertions(+), 0 deletions(-)
+ create mode 100644 arch/i386/kernel/geode.c
+ create mode 100644 include/asm-i386/geode.h
 
-We've put our measurements in a graph at
-
-http://ww.linuxpowertop.org/results.php
-
-With kernel fixes and features, the power consumption of this laptop 
-went from 21.06 Watts to 18.25 Watts; with 2 additional userspace 
-fixes the power consumption ended up at 15.5 Watts.
-
-(Don't worry that this is the end of it; there's more stuff in the 
-various project pipelines, and we'll keep measuring the progress over 
-time)
-
-
-All in all, personally I'm very happy to see Linux making such a huge 
-step forward with tickless and can't wait for this step to be 
-available in all distros and for all architectures...
-
-Greetings,
-    Arjan van de Ven
+diff --git a/arch/i386/kernel/Makefile b/arch/i386/kernel/Makefile
+index 06da59f..dbe5e87 100644
+--- a/arch/i386/kernel/Makefile
++++ b/arch/i386/kernel/Makefile
+@@ -40,6 +40,7 @@ obj-$(CONFIG_VM86)		+= vm86.o
+ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+ obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
+ obj-$(CONFIG_K8_NB)		+= k8.o
++obj-$(CONFIG_MGEODE_LX)		+= geode.o
+ 
+ obj-$(CONFIG_VMI)		+= vmi.o vmiclock.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+diff --git a/arch/i386/kernel/geode.c b/arch/i386/kernel/geode.c
+new file mode 100644
+index 0000000..e67d01e
+--- /dev/null
++++ b/arch/i386/kernel/geode.c
+@@ -0,0 +1,156 @@
++/*
++ * AMD Geode southbridge support code
++ * Copyright (C) 2006, Advanced Micro Devices, Inc.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/ioport.h>
++#include <asm/io.h>
++#include <asm/msr.h>
++#include <asm/geode.h>
++
++static struct {
++	char *name;
++	u32 msr;
++	int size;
++	u32 base;
++} lbars[] = {
++	{ "geode-pms",   MSR_LBAR_PMS, LBAR_PMS_SIZE, 0 },
++	{ "geode-acpi",  MSR_LBAR_ACPI, LBAR_ACPI_SIZE, 0 },
++	{ "geode-gpio",  MSR_LBAR_GPIO, LBAR_GPIO_SIZE, 0 },
++	{ "geode-mfgpt", MSR_LBAR_MFGPT, LBAR_MFGPT_SIZE, 0 }
++};
++
++static void __init init_lbars(void)
++{
++	u32 lo, hi;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(lbars); i++) {
++		rdmsr(lbars[i].msr, lo, hi);
++		if (hi & 0x01)
++			lbars[i].base = lo & 0x0000ffff;
++
++		if (lbars[i].base == 0)
++			printk(KERN_ERR "geode:  Couldn't initialize '%s'\n", lbars[i].name);
++	}
++}
++
++int geode_get_dev_base(unsigned int dev)
++{
++	BUG_ON(dev >= ARRAY_SIZE(lbars));
++	return lbars[dev].base;
++}
++EXPORT_SYMBOL_GPL(geode_get_dev_base);
++
++/* === GPIO API === */
++
++void geode_gpio_set(unsigned int gpio, unsigned int reg)
++{
++	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
++
++	if (!base)
++		return;
++
++	if (gpio < 16)
++		outl(1 << gpio, base + reg);
++	else
++		outl(1 << (gpio - 16), base + 0x80 + reg);
++}
++EXPORT_SYMBOL_GPL(geode_gpio_set);
++
++void geode_gpio_clear(unsigned int gpio, unsigned int reg)
++{
++	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
++
++	if (!base)
++		return;
++
++	if (gpio < 16)
++		outl(1 << (gpio + 16), base + reg);
++	else
++		outl(1 << gpio, base + 0x80 + reg);
++}
++EXPORT_SYMBOL_GPL(geode_gpio_clear);
++
++int geode_gpio_isset(unsigned int gpio, unsigned int reg)
++{
++	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
++
++	if (!base)
++		return 0;
++
++	if (gpio < 16)
++		return (inl(base + reg) & (1 << gpio)) ? 1 : 0;
++	else
++		return (inl(base + 0x80 + reg) & (1 << (gpio - 16))) ? 1 : 0;
++}
++EXPORT_SYMBOL_GPL(geode_gpio_isset);
++
++void geode_gpio_set_irq(unsigned int group, unsigned int irq)
++{
++	u32 lo, hi;
++
++	if (group > 7 || irq > 15)
++		return;
++
++	rdmsr(MSR_PIC_ZSEL_HIGH, lo, hi);
++
++	lo &= ~(0xF << (group * 4));
++	lo |= (irq & 0xF) << (group * 4);
++
++	wrmsr(MSR_PIC_ZSEL_HIGH, lo, hi);
++}
++
++EXPORT_SYMBOL_GPL(geode_gpio_set_irq);
++
++void geode_gpio_setup_event(unsigned int gpio, int pair, int pme)
++{
++	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
++	u32 offset, shift, val;
++
++	if (gpio >= 24)
++		offset = GPIO_MAP_W;
++	else if (gpio >= 16)
++		offset = GPIO_MAP_Z;
++	else if (gpio >= 8)
++		offset = GPIO_MAP_Y;
++	else
++		offset = GPIO_MAP_X;
++
++	shift = (gpio % 8) * 4;
++
++	val = inl(base + offset);
++
++	/* Clear whatever was there before */
++	val &= ~(0xF << shift);
++
++	/* And set the new value */
++
++	val |= ((pair & 7) << shift);
++
++	/* Set the PME bit if this is a PME event */
++
++	if (pme)
++		val |= (1 << (shift + 3));
++
++	outl(val, base + offset);
++}
++
++EXPORT_SYMBOL_GPL(geode_gpio_setup_event);
++
++static int __init geode_southbridge_init(void)
++{
++	if (!is_geode())
++		return -ENODEV;
++
++	init_lbars();
++	return 0;
++}
++
++postcore_initcall(geode_southbridge_init);
+diff --git a/include/asm-i386/geode.h b/include/asm-i386/geode.h
+new file mode 100644
+index 0000000..a9d1392
+--- /dev/null
++++ b/include/asm-i386/geode.h
+@@ -0,0 +1,159 @@
++/*
++ * AMD Geode definitions
++ * Copyright (C) 2006, Advanced Micro Devices, Inc.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_GEODE_H_
++#define _ASM_GEODE_H_
++
++#include <asm/processor.h>
++#include <asm/io.h>
++
++/* Generic southbridge functions */
++
++#define GEODE_DEV_PMS 0
++#define GEODE_DEV_ACPI 1
++#define GEODE_DEV_GPIO 2
++#define GEODE_DEV_MFGPT 3
++
++extern int geode_get_dev_base(unsigned int dev);
++
++/* Useful macros */
++#define geode_pms_base()	geode_get_dev_base(GEODE_DEV_PMS)
++#define geode_acpi_base()	geode_get_dev_base(GEODE_DEV_ACPI)
++#define geode_gpio_base()	geode_get_dev_base(GEODE_DEV_GPIO)
++#define geode_mfgpt_base()	geode_get_dev_base(GEODE_DEV_MFGPT)
++
++/* MSRS */
++
++#define GX_GLCP_SYS_RSTPLL	0x4C000014
++
++#define MSR_LBAR_SMB		0x5140000B
++#define MSR_LBAR_GPIO		0x5140000C
++#define MSR_LBAR_MFGPT		0x5140000D
++#define MSR_LBAR_ACPI		0x5140000E
++#define MSR_LBAR_PMS		0x5140000F
++
++#define MSR_PIC_YSEL_LOW	0x51400020
++#define MSR_PIC_YSEL_HIGH	0x51400021
++#define MSR_PIC_ZSEL_LOW	0x51400022
++#define MSR_PIC_ZSEL_HIGH	0x51400023
++
++#define MFGPT_IRQ_MSR		0x51400028
++#define MFGPT_NR_MSR		0x51400029
++
++/* Resource Sizes */
++
++#define LBAR_GPIO_SIZE		0xFF
++#define LBAR_MFGPT_SIZE		0x40
++#define LBAR_ACPI_SIZE		0x40
++#define LBAR_PMS_SIZE		0x80
++
++/* ACPI registers (PMS block) */
++
++/*
++ * PM1_EN is only valid when VSA is enabled for 16 bit reads.
++ * When VSA is not enabled, *always* read both PM1_STS and PM1_EN
++ * with a 32 bit read at offset 0x0
++ */
++
++#define PM1_STS			0x00
++#define PM1_EN			0x02
++#define PM1_CNT			0x08
++#define PM2_CNT			0x0C
++#define PM_TMR			0x10
++#define PM_GPE0_STS		0x18
++#define PM_GPE0_EN		0x1C
++
++/* PMC registers (PMS block) */
++
++#define PM_SSD			0x00
++#define PM_SCXA			0x04
++#define PM_SCYA			0x08
++#define PM_OUT_SLPCTL		0x0C
++#define PM_SCLK			0x10
++#define PM_SED			0x1
++#define PM_SCXD			0x18
++#define PM_SCYD			0x1C
++#define PM_IN_SLPCTL		0x20
++#define PM_WKD			0x30
++#define PM_WKXD			0x34
++#define PM_RD			0x38
++#define PM_WKXA			0x3C
++#define PM_FSD			0x40
++#define PM_TSD			0x44
++#define PM_PSD			0x48
++#define PM_NWKD			0x4C
++#define PM_AWKD			0x50
++#define PM_SSC			0x54
++
++/* GPIO */
++
++#define GPIO_OUTPUT_VAL		0x00
++#define GPIO_OUTPUT_ENABLE	0x04
++#define GPIO_OUTPUT_OPEN_DRAIN	0x08
++#define GPIO_OUTPUT_INVERT	0x0C
++#define GPIO_OUTPUT_AUX1	0x10
++#define GPIO_OUTPUT_AUX2	0x14
++#define GPIO_PULL_UP		0x18
++#define GPIO_PULL_DOWN		0x1C
++#define GPIO_INPUT_ENABLE	0x20
++#define GPIO_INPUT_INVERT	0x24
++#define GPIO_INPUT_FILTER	0x28
++#define GPIO_INPUT_EVENT_COUNT	0x2C
++#define GPIO_READ_BACK		0x30
++#define GPIO_INPUT_AUX1		0x34
++#define GPIO_EVENTS_ENABLE	0x38
++#define GPIO_LOCK_ENABLE	0x3C
++#define GPIO_POSITIVE_EDGE_EN	0x40
++#define GPIO_NEGATIVE_EDGE_EN	0x44
++#define GPIO_POSITIVE_EDGE_STS	0x48
++#define GPIO_NEGATIVE_EDGE_STS	0x4C
++
++#define GPIO_MAP_X		0xE0
++#define GPIO_MAP_Y		0xE4
++#define GPIO_MAP_Z		0xE8
++#define GPIO_MAP_W		0xEC
++
++extern void geode_gpio_set(unsigned int, unsigned int);
++extern void geode_gpio_clear(unsigned int, unsigned int);
++extern int geode_gpio_isset(unsigned int, unsigned int);
++extern void geode_gpio_setup_event(unsigned int, int, int);
++extern void geode_gpio_set_irq(unsigned int, unsigned int);
++
++static inline void geode_gpio_event_irq(unsigned int gpio, int pair)
++{
++	geode_gpio_setup_event(gpio, pair, 0);
++}
++
++static inline void geode_gpio_event_pme(unsigned int gpio, int pair)
++{
++	geode_gpio_setup_event(gpio, pair, 1);
++}
++
++/* Specific geode tests */
++
++static inline int is_geode_gx(void)
++{
++	return ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC) &&
++		(boot_cpu_data.x86 == 5) &&
++		(boot_cpu_data.x86_model == 5));
++}
++
++static inline int is_geode_lx(void)
++{
++	return ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
++		(boot_cpu_data.x86 == 5) &&
++		(boot_cpu_data.x86_model == 10));
++}
++
++static inline int is_geode(void)
++{
++	return (is_geode_gx() || is_geode_lx());
++}
++
++#endif
+-- 
+1.5.2.2
