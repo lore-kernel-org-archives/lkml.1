@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbXGEA14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbXGEAdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758755AbXGEA14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 20:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXGEA1s
+	id S1758486AbXGEAdO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 20:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbXGEAc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 20:27:48 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37870 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756074AbXGEA1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 20:27:48 -0400
-Date: Thu, 5 Jul 2007 02:27:47 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: The big suspend mess
-Message-ID: <20070705002747.GA2952@elf.ucw.cz>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707031456.40890.rjw@sisk.pl> <1183497290.3388.4.camel@localhost.localdomain> <200707032332.49694.rjw@sisk.pl> <18059.5165.861038.392332@cargo.ozlabs.ibm.com> <20070704221952.GM3492@stusta.de>
+	Wed, 4 Jul 2007 20:32:59 -0400
+Received: from gw.goop.org ([64.81.55.164]:59225 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755815AbXGEAc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jul 2007 20:32:59 -0400
+Message-ID: <468C3C39.2030009@goop.org>
+Date: Wed, 04 Jul 2007 17:32:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070704221952.GM3492@stusta.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, jeremy@xensource.com,
+       chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, Andi Kleen <ak@suse.de>
+Subject: [PATCH] xen: can't support numa yet
+References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <20070704190046.GL3492@stusta.de>
+In-Reply-To: <20070704190046.GL3492@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Xen currently relies on contigious memory (ie, no numa, discontig or
+sparse memory).  Specifically it uses mem_map, which is only available
+if CONFIG_NEED_MULTIPLE_NODES is not defined.
 
-> IMHO the suspend code is currently way too much of a moving target which 
-> results in this mess.
-> 
-> The correct order seems to be:
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Adrian Bunk <bunk@stusta.de>
+Cc: Andi Kleen <ak@suse.de>
 
-0. Get someone to sign up as a maintainer for suspend, so we have
-someone to blame for the mess? :-)
+---
+ arch/i386/xen/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> 1. agree on what the suspend code as a whole should look like
-> 2. implement this
-> 3. fix ALL drivers to work at least as good as they do today
-> 4. get it tested in -mm
-> 5. fix all bugs people run into
-> 6. submit it for inclusion in Linus' tree
-> 7. quickly work on the most likely big amount of bug reports
-> 
-> Step 1 is the most important one - evolving code is often something 
-> good, but in this case with different people trying to evolve the 
-> suspend code in different directions it simply results in a big mess.
+===================================================================
+--- a/arch/i386/xen/Kconfig
++++ b/arch/i386/xen/Kconfig
+@@ -4,7 +4,7 @@
+ 
+ config XEN
+ 	bool "Enable support for Xen hypervisor"
+-	depends on PARAVIRT && X86_CMPXCHG && X86_TSC
++	depends on PARAVIRT && X86_CMPXCHG && X86_TSC && !NEED_MULTIPLE_NODES
+ 	help
+ 	  This is the Linux Xen port.  Enabling this will allow the
+ 	  kernel to boot in a paravirtualized environment under the
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+
