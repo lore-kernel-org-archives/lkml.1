@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761223AbXGEUU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761926AbXGEUVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761223AbXGEUU1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757909AbXGEUUR
+	id S1761926AbXGEUVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758951AbXGEUVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:20:17 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:20221 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753872AbXGEUUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:20:16 -0400
-Message-ID: <468D527D.5000809@msgid.tls.msk.ru>
-Date: Fri, 06 Jul 2007 00:20:13 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: VIA C7 / VIA PC-1 (PC2500) anyone?
-References: <466E65A7.3000206@msgid.tls.msk.ru>
-In-Reply-To: <466E65A7.3000206@msgid.tls.msk.ru>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 5 Jul 2007 16:21:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52907 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757909AbXGEUVe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 16:21:34 -0400
+Date: Thu, 5 Jul 2007 13:21:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
+Message-Id: <20070705132120.8edbc1f3.akpm@linux-foundation.org>
+In-Reply-To: <20070703185748.GA4047@Krystal>
+References: <20070703164046.645090494@polymtl.ca>
+	<20070703164516.377240547@polymtl.ca>
+	<20070703181151.GB5800@martell.zuzino.mipt.ru>
+	<20070703185748.GA4047@Krystal>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
-> I bought a VIA PC2500 board a few days ago - this
-> new series of their mobos,
+On Tue, 3 Jul 2007 14:57:48 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> Measuring the overall impact on the system of this single modification
+> results in the difference brought by one site within the standard
+> deviation of the normal samples. It will become significant when the
+> number of immediate values used instead of global variables at hot
+> kernel paths (need to ponder with the frequency at which the data is
+> accessed) will start to be significant compared to the L1 data cache
+> size. We could characterize this in memory to L1 cache transfers per
+> seconds.
 > 
-[]
-> It works generally - it boots, I can run my usual apps
-> etc.  But on a random (yet frequent) basis it segfaults
-> here and there.  For example:
+> On 3GHz P4:
+> 
+> memory read: ~48 cycles
+> 
+> So we can definitely say that 48*HZ (approximation of the frequency at
+> which the scheduler is called) won't make much difference, but as it
+> grows, it will.
+> 
+> On a 1000HZ system, it results in:
+> 
+> 48000 cycles/second, or 16__s/second, or 0.000016% speedup.
+> 
+> However, if we place this in code called much more often, such as
+> do_page_fault, we get, with an hypotetical scenario of approximation
+> of 100000 page faults per second:
+> 
+> 4800000 cycles/s, 1.6ms/second or 0.0016% speedup.
+> 
+> So as the number of immediate values used increase, the overall memory
+> bandwidth required by the kernel will go down.
 
-Replying to my old message.  Yes the mobo crashed like
-crazy and was very unstable.  I returned it back to the
-store and got a replacement, exactly the same thing.
-Which, unlike the previous one, works flawlessly so
-far - at least I can't reproduce any crashes anymore.
-More -- CPU temperature, which - according to the
-lm_sensors values, was jumping somewhere between
-40C and 65C, is now at 24C at idle and 35C under
-high load.  CPU headsink is MUCH cooler on this
-mobo, while the fan is working exactly the same.
-And no more themp jumps as before.  So it turns out
-I just had a bad (defected) mobo, nothing to do with
-kernel....  Oh well.
 
-(But BIOS on this mobo is a bit crappy still.  Not
-fatal but not nice either.)
+Is that 48 cycles measured when the target of the read is in L1 cache, as
+it would be in any situation which we actually care about?  I guess so...
 
-/mjt
+Boy, this is a tiny optimisation and boy, you added a pile of tricky new
+code to obtain it.
+
+Frankly, I'm thinking that life would be simpler if we just added static
+markers and stopped trying to add lots of tricksy
+maintenance-load-increasing things like this.
+
+Ho hum.  Need more convincing, please.
+
+
+
+
+Also: a while back (maybe as much as a year) we had an extensive discussion
+regarding whether we want static markers at all in the kernel.  The
+eventual outcome was, I believe, "yes".
+
+But our reasons for making that decision appear to have been lost.  So if I
+were to send the markers patches to Linus and he were to ask me "why are
+you sending these", I'd be forced to answer "I don't know".  This is not a
+good situation.
+
+Please prepare and maintain a short document which describes the
+justification for making all these changes to the kernel.  The changelog
+for the main markers patch wold be an appropriate place for this.  The
+target audience would be kernel developers and it should capture the pro-
+and con- arguments which were raised during that discussion.
+
+Bascially: tell us why we should merge _any_ of this stuff, because I for
+one have forgotten.  Thanks.
