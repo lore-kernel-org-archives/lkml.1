@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760919AbXGEMFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760643AbXGEMIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760919AbXGEMFS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 08:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbXGEMFF
+	id S1760643AbXGEMIr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 08:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbXGEMIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 08:05:05 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:49825 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752778AbXGEMFD convert rfc822-to-8bit (ORCPT
+	Thu, 5 Jul 2007 08:08:40 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:38510 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755274AbXGEMIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 08:05:03 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [RFC] bloody mess with __attribute__() syntax
-Date: Thu, 5 Jul 2007 14:03:16 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-sparse@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
-References: <20070705093528.GK21478@ftp.linux.org.uk>
-In-Reply-To: <20070705093528.GK21478@ftp.linux.org.uk>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707051403.16789.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX195n9d1HAUsP1miJpT5OHw3plYON8KYLac6L4n
- R/t43AlKItmUZbtdrPKXDmPhuKvNk3ed/h4BJs+aIoO0vrxut6
- zTjEbzuzQJdtLwiTyyYHA==
+	Thu, 5 Jul 2007 08:08:39 -0400
+To: pavel@ucw.cz
+CC: miklos@szeredi.hu, oliver@neukum.org, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+In-reply-to: <20070705115400.GF3984@ucw.cz> (message from Pavel Machek on Thu,
+	5 Jul 2007 11:54:00 +0000)
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org> <18060.14856.824473.325660@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu> <20070705115400.GF3984@ucw.cz>
+Message-Id: <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Jul 2007 14:07:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 July 2007, Al Viro wrote:
-> Frankly, I would rather add a new primitive (__qualifier__) mirroring the
-> __attribute__, but acting like real qualifiers do.  And switched the
-> noderef et.al. to it.  The only real alternative is to have __attribute__
-> behaviour dependent on its guts and that's not feasible - remember that
-> there can be more than one attribute in the list insider the damn thing.
-> Besides, it's bloody disgusting.
+> > Actually fuse allows SIGKILL, because it's always fatal, and the
+> > syscall may not be restarted.
 > 
-> And yes, I realize that it's an incompatible change, i.e. not a step
-> to be taken lightly.  Better ways out of that mess are more than
-> welcome; I don't see any ;-/
+> I think you want to stick try_to_freeze() at the same places where you
+> do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
+> problem.
 
-Uli Weigand has put some work into making the 'Multiple Address
-Spaces' feature of Embedded C work with gcc. We need that in order
-to address the process address space from a program running on an SPU
-on Cell, but it should syntactically be the same thing we need for
-__user, __iomem, etc. I.e., iit follows the same rules as 'const'
-and 'volatile' qualifiers.
-AFAIK, the infrastructure for this is supposed to go into gcc-4.3,
-but has not been posted publically yet. If you add something like
-this to sparse, it would be good to keep it compatible with the
-new gcc extension, so that gcc can do the right thing at some point
-in the future for the kernel.
+I could, but it would not solve the general problem.  Namely, that the
+presence of fuse imposes a certain ordering in which userspace tasks
+have to be frozen.  And it is not possible to know this ordering.
 
-Uli, can you point us to any public code or specfication about the
-multiple address spaces feature?
+And even if the ordering were solved, the freezer would still not work
+if the filesystem is not responding due to external events, such as a
+lost network (this affects NFS, CIFS, whatever just the same as fuse).
 
-	Arnd <><
+> Plus, it would be nice to find out where suspend/hibernation is
+> triggering fuse activity. We can then decide where to fix it -- in
+> fuse or in suspend parts. You said sys_sync is not implemented... so
+> where is the problem?
+
+I cannot say without having a sysrq-t of the situation.
+
+> > > That's very special, and maybe even a FUSE bug. And that is also
+> > > what makes FUSE special w.r.t. s2ram.
+> > 
+> > What makes fuse special is that some file operations are synchronous
+> > and non-restartable.  That's just how the UNIX filesystem API works
+> > and is hardly a bug in fuse.
+> 
+> Well, unix is not plan9, and maybe userland filesystems are impossible
+> in unix. But that is hardly a bug in unix :-).
+
+I'd rather say, reliable suspend to ram is impossible in the presense
+of userspace filesystems, iff people are too lazy to fix the suspend
+framework and the drivers to work without the freezer.
+
+This has nothing to do with unix, if plan9 would need to support STR
+or hibernate, it would face exactly the same problems.
+
+Miklos
