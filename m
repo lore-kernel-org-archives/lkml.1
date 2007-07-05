@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763136AbXGEVPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762959AbXGEVR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763136AbXGEVPt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 17:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759731AbXGEVPj
+	id S1762959AbXGEVR5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 17:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbXGEVRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 17:15:39 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:39620 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756213AbXGEVPi convert rfc822-to-8bit (ORCPT
+	Thu, 5 Jul 2007 17:17:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:55271 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756674AbXGEVRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 17:15:38 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 23:15:38 +0200
-User-Agent: KMail/1.9.7
-Cc: Miklos Szeredi <miklos@szeredi.hu>, pavel@ucw.cz, paulus@samba.org,
-       johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-References: <Pine.LNX.4.44L0.0707051704580.2557-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707051704580.2557-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707052315.38770.oliver@neukum.org>
+	Thu, 5 Jul 2007 17:17:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=FHXLNVCT+Xzkkg7/YO2LHr6TzuyEb3IzUljuDuU7dejyI8dpuf70Bic/3mjN94Euml/5exUbAOo2KMAhEQdrn0zP84TgrI04QjhmZ0KMSNF76oqU/Tnuhh5lzD6MkG/b+JBNcGNHoK/xjCEqfbMK4xaoTA1D4+kRsPtnk4PujJ4=
+Subject: SD card readable only up to certain boundary (samcop sdi
+	controller)
+From: Milan Plzik <milan.plzik@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: drzeus-mmc@drzeus.cx
+Content-Type: text/plain
+Date: Thu, 05 Jul 2007 23:17:24 +0200
+Message-Id: <1183670244.9213.81.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 5. Juli 2007 schrieb Alan Stern:
-> On Thu, 5 Jul 2007, Oliver Neukum wrote:
-> 
-> > > Obviously.  But I wasn't about the server trying to acquire a lock
-> > > held by a client.  I was talking about a client trying to acquire a
-> > > lock held by _another_ client.
-> > > 
-> > > If this coincides with the server (or some other task which the server
-> > > is depending on) being frozen before the clients, the freezer has a
-> > > problem.
-> > 
-> > True, but that case can only happen if servers are frozen before clients.
-> > You don't need a full dependency graph. A simple set sequence of two
-> > classes of tasks will do.
-> 
-> Just to make things more complicated...  Since a server isn't
-> restricted in what it can do, what happens when one server depends on
-> another server?
+  Hello,
 
-The same principle applies. If you really want that you can solve this
-by freezing servers in the reverse sequence they were started.
+  I'm trying to get samcop sdi controller (found e.g. in h5000 ipaqs)
+working with Apacer 2GB SD card. Samcop sdi, nor samcop in general is
+supported in vanilla kernel, but I'm not sure what could be wrong (I
+suspect either mmc_block or sdi driver), so I think lkml might be the
+right place.
 
-The main point remains. If you have a circular dependency anywhere
-among the servers you can deadlock independent of the freezer.
+  My problem is that I can access only small portion of SD card --
+roughly 224MB (in 512byte sectors, the boundary is 0x70000, inclusive).
+All reads/writes beyond this address cause errors like timeouts, fifo
+underrun, etc. (MMC errors 1, 3 and 4). DMA engine, which reads received
+data seems to be 'frozen' at incomplete transfer (counter of remaining
+blocks to be transferred is stopped at non-zero value, although
+something seems to be transferred, but that might not be useful data).
+Kernel version is 2.6.21, with handhelds.org patches.
 
-	Regards
-		Oliver
+  The SD card works correctly with other devices, like PCMCIA card
+readers. Also samcop sdi was able to fully read 512MB card. I'm not
+really sure what could cause behavior like this and I'm open to any
+suggestion.
+
+  Also, please Cc me, as I'm not subscribed to linux-kernel... .
+
+  Thank you,
+
+	Milan Plzik
+
