@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbXGEISe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbXGEITS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbXGEISe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 04:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbXGEIS1
+	id S1758810AbXGEITS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 04:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbXGEITK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 04:18:27 -0400
-Received: from web52905.mail.re2.yahoo.com ([206.190.49.15]:44701 "HELO
-	web52905.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752784AbXGEIS0 (ORCPT
+	Thu, 5 Jul 2007 04:19:10 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:37042 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756886AbXGEITJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 04:18:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=fwUb9htx2PBTrrcoHL07PHw4PY06e35d1BweLsy7qamowY1teqwS67rYdiPE9acZfc4JphkY2ASfhXkPiIeyHvBvB2729qN+282RtoACVHKULorRznyAd36z8YyMWj3K2yRKNmiLVYy9pFfBbFWcUEe3yuvxhNLTb5FM8gdwJhU=;
-X-YMail-OSG: NkvNXWIVM1lLMlX0CVDHa4..frvwT5D3DS3cfyyP6euvOAuu1sW_aF0t.R2_INHOoFHZGFcnJpYCI3sVMQVqtxKMcW5ukgx_CAMaY_dkBkO3AJzQe2WaeXummaemsl069asLTMsN9uSFcnY-
-Date: Thu, 5 Jul 2007 09:18:25 +0100 (BST)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: Libata PATA status
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <438835.62282.qm@web52905.mail.re2.yahoo.com>
+	Thu, 5 Jul 2007 04:19:09 -0400
+To: oliver@neukum.org
+CC: paulus@samba.org, stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, pavel@ucw.cz, mjg59@srcf.ucam.org,
+       benh@kernel.crashing.org
+In-reply-to: <200707050858.03638.oliver@neukum.org> (message from Oliver
+	Neukum on Thu, 5 Jul 2007 08:58:03 +0200)
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org> <18060.14856.824473.325660@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Jul 2007 10:17:17 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why not. I boot back and forth randomly between old and new IDE kernels
-> without problems. The root fs loaded is set in kernel or grub (or on most
-> distros nowdays by label scanning from initrd) so just works. Then mount
-> label or uuid based mounting does the rest.
+> > > I have discussed the benefits elsewhere.  As for the deadlocks -- do 
+> > > you still observe them if you use the version of the freezer which 
+> > > doesn't freeze kernel threads?
+> > 
+> > In general the only way to guarantee there are no deadlocks is to
+> > construct the graph of dependencies between tasks.  Those dependencies
+> > are not in practice observable from outside the tasks, so it is
+> > virtually impossible to construct the graph.
+> 
+> In which way can user space tasks depend on each other in a way that
+> allows a them members of that cycle to be in uninterruptible sleep?
 
-You say that, but I remember the "fun" I had upgrading from FC5 to F7 when the installer couldn't
-find my swap partition (as described in /etc/fstab). There were also LVM partitions to contend
-with, although vgcfgbackup/vgcfgrestore seemed to sort that out nicely enough. And since I have a
-PCI SATA card, the SATA drive suddenly became sdb when I switched to PATA too. So it was all very
-much a "one way" process, particularly when the userspace applications needed to be re-educated as
-well.
+ - process A calls rename() on a fuse fs
+ - process B, the fuse server, starts to process the rename request
+ - process B is frozen before it can reply
 
-I also know of at least one person (who shall remain nameless because he ought to know better) who
-is thinking about buying a brand new machine and installing F7 from scratch rather than go through
-the pain of upgrading IDE to PATA.
+Now process A is unfreezable.  We cannot make rename() restartable,
+hence it cannot be interruptible.
 
-Cheers,
-Chris
-
-
-
-      ___________________________________________________________ 
-Yahoo! Mail is the world's favourite email. Don't settle for less, sign up for
-your free account today http://uk.rd.yahoo.com/evt=44106/*http://uk.docs.yahoo.com/mail/winter07.html 
+Miklos
