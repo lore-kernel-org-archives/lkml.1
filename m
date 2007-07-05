@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760306AbXGEO5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbXGEPCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760306AbXGEO5T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 10:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbXGEO5L
+	id S1760302AbXGEPCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 11:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbXGEPCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 10:57:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53979 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755694AbXGEO5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 10:57:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-Date: Thu, 5 Jul 2007 17:04:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Paul Mackerras <paulus@samba.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <200707051641.39998.rjw@sisk.pl> <20070705143918.GA23248@srcf.ucam.org>
-In-Reply-To: <20070705143918.GA23248@srcf.ucam.org>
+	Thu, 5 Jul 2007 11:02:11 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:60968 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757094AbXGEPCK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 11:02:10 -0400
+Date: Thu, 5 Jul 2007 16:00:42 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Oliver Neukum <oliver@neukum.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       pavel@ucw.cz, benh@kernel.crashing.org
+Message-ID: <20070705150042.GA23647@srcf.ucam.org>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051528.34754.oliver@neukum.org> <20070705134632.GA22177@srcf.ucam.org> <200707051609.25887.rjw@sisk.pl> <20070705142318.GA22598@srcf.ucam.org> <2c0942db0707050746v2b8cdc9ew2c4656736b52895d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707051704.48137.rjw@sisk.pl>
+In-Reply-To: <2c0942db0707050746v2b8cdc9ew2c4656736b52895d@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 16:39, Matthew Garrett wrote:
-> On Thu, Jul 05, 2007 at 04:41:39PM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, 5 July 2007 16:26, Matthew Garrett wrote:
-> > > On Thu, Jul 05, 2007 at 04:28:11PM +0200, Rafael J. Wysocki wrote:
-> > > > On Thursday, 5 July 2007 15:57, Matthew Garrett wrote:
-> > > > > And also "Userland should not depend on userland services", which is 
-> > > > > rather more of a problem.
-> > > > 
-> > > > I think you're oversimplifying it, as far as FUSE is concerned.
-> > > > 
-> > > > Namely, if there are two userland tasks, A and B, and B is uninterruptible,
-> > > > because A is blocked, then this is not a usual situation.
-> > > 
-> > > Fuse is one case of it occuring, and if we end up with more userspace 
-> > > drivers then the problem is only going to get worse.
-> > 
-> > But this is a problem by itself, regardless of the freezer etc., no?
-> 
-> Why?
+On Thu, Jul 05, 2007 at 07:46:01AM -0700, Ray Lee wrote:
 
-You have processes that don't react to signals, because some other user land
-task is misbehaving.  I'd call that ugly at the very least.
+> Hmm, careful. There are a bunch of people who use suspend2 exactly
+> because it saves and restores the page cache, leaving the system in a
+> usable state without waiting for the universe to swap back in from
+> disk. It makes a big difference on older laptops with slow drives.
+> While the other advantages you list for process cryogenics are pretty
+> neat, let's remember that the 99% use case for STD is laptops.
 
-Greetings,
-Rafael
-
+Saving the processes means that you're implicitly saving the interesting 
+chunks of the page cache. Removing the need for the atomic copy saves 
+you from pushing a pile of stuff out to swap in the first place.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Matthew Garrett | mjg59@srcf.ucam.org
