@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760957AbXGEJgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbXGEJjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760957AbXGEJgz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759079AbXGEJgr
+	id S1760286AbXGEJjL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 05:39:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758507AbXGEJi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:36:47 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:60285 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758576AbXGEJgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:36:47 -0400
-Subject: [PATCH] slub: don't export static kmem_cache_open
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 05 Jul 2007 11:37:40 +0200
-Message-Id: <1183628260.3818.31.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 05:38:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38765 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758431AbXGEJi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 05:38:57 -0400
+Date: Thu, 5 Jul 2007 11:38:42 +0200
+From: Stefan Seyfried <seife@suse.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, nigel@nigel.suspend2.net,
+       linux-kernel@vger.kernel.org, suspend-devel@lists.sourceforge.net,
+       Frank Seidel <fseidel@suse.de>
+Subject: Re: [RFC] get rid of CONFIG_DISABLE_CONSOLE_SUSPEND
+Message-ID: <20070705093842.GA3175@suse.de>
+References: <20070628135108.GA1810@elf.ucw.cz> <200706281734.54642.rjw@sisk.pl> <20070704193313.GF2728@elf.ucw.cz> <200707042344.25207.rjw@sisk.pl> <20070704223921.GA2491@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070704223921.GA2491@elf.ucw.cz>
+X-Operating-System: openSUSE 10.3 (i586) Alpha5plus, Kernel 2.6.22-rc7-2-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kmem_cache_open is static so shouldn't be exported.
+Hi,
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+On Thu, Jul 05, 2007 at 12:39:22AM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > Yes, but I'm not sure if netconsole is the only one that we will want to have
+> 
+> Well, netconsole is the only one we know of.
 
----
- mm/slub.c |    1 -
- 1 file changed, 1 deletion(-)
+AFAIR it is plain luck that serial console sometimes works.
 
---- wireless-dev.orig/mm/slub.c	2007-07-05 11:35:51.555640003 +0200
-+++ wireless-dev/mm/slub.c	2007-07-05 11:36:03.895640003 +0200
-@@ -2016,7 +2016,6 @@ error:
- 			s->offset, flags);
- 	return 0;
- }
--EXPORT_SYMBOL(kmem_cache_open);
+I repeat: "no bugreport" is not the same as "it works for everyone" wrt.
+suspend. It seems (i unfortunately have no numbers, since my machines always
+worked without suspending the consoles) as if suspending consoles generally
+helped reliability of suspend.
  
- /*
-  * Check if a given pointer is valid
+> > disabled.  Moreover, what if someone wants to use the netconsole regardless
+> > of the fact that it can crash the box?
+> 
+> He'll have to edit the sources at that point. I'd prefer not to have
+> too many "please crash the box" options.
 
+So should we remove sysrq-C?
+This is a debugging option. Only root can set it. Its purpose is to make
+"machine hangs during suspend" (even before it goes to sleep) debuggable.
+It will only be set if the machine crashes anyways.
 
+(We can taint the kernel if this control is set, if that helps you).
+-- 
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
