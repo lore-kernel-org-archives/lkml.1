@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbXGEKvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbXGELAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759510AbXGEKvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 06:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbXGEKvE
+	id S1759916AbXGELAl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 07:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758382AbXGELAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 06:51:04 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:41405 "EHLO
+	Thu, 5 Jul 2007 07:00:32 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:41928 "EHLO
 	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755521AbXGEKvC (ORCPT
+	with ESMTP id S1757981AbXGELAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 06:51:02 -0400
+	Thu, 5 Jul 2007 07:00:31 -0400
 X-Originating-Ip: 72.143.66.27
-Date: Thu, 5 Jul 2007 06:48:50 -0400 (EDT)
+Date: Thu, 5 Jul 2007 06:58:12 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
 X-X-Sender: rpjday@localhost.localdomain
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: keeping the MAINTAINERS file under control
-Message-ID: <Pine.LNX.4.64.0707050647370.7480@localhost.localdomain>
+cc: ysato@users.sourceforge.jp
+Subject: MAINTAINERS file pedantry
+Message-ID: <Pine.LNX.4.64.0707050656310.8190@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
@@ -30,44 +31,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  it's always nice when a subsystem has an official maintainer but
-this does seem a bit excessive, no?
-
-BLACKFIN ARCHITECTURE
-P:      Aubrey Li
-M:      aubrey.li@analog.com
-P:      Bernd Schmidt
-M:      bernd.schmidt@analog.com
-P:      Bryan Wu
-M:      bryan.wu@analog.com
-P:      Grace Pan
-M:      grace.pan@analog.com
-P:      Marc Hoffman
-M:      marc.hoffman@analog.com
-P:      Michael Hennerich
-M:      michael.hennerich@analog.com
-P:      Mike Frysinger
-M:      michael.frysinger@analog.com
-P:      Jerry Zeng
-M:      jerry.zeng@analog.com
-P:      Jie Zhang
-M:      jie.zhang@analog.com
-P:      Robin Getz
-M:      robin.getz@analog.com
-P:      Roy Huang
-M:      roy.huang@analog.com
-P:      Sonic Zhang
-M:      sonic.zhang@analog.com
-P:      Vivi Li
-M:      vivi.li@analog.com
-P:      Yi Li
-M:      yi.li@analog.com
-L:      uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
-W:      http://blackfin.uclinux.org
-S:      Supported
+  while the architecture directory is "h8300", the MAINTAINERS file
+entry lists the architecture as "H8/300", so a simple grep for "h8300"
+through MAINTAINERS would fail to find that entry.
 
 rday
-
 -- 
 ========================================================================
 Robert P. J. Day
