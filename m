@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761369AbXGEOec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXGEOeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761369AbXGEOec (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 10:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757492AbXGEOeZ
+	id S1759505AbXGEOeo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 10:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761563AbXGEOeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 10:34:25 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:38664 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755471AbXGEOeY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 10:34:24 -0400
-Message-ID: <468D00FF.6070106@linux.vnet.ibm.com>
-Date: Thu, 05 Jul 2007 07:32:31 -0700
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Thu, 5 Jul 2007 10:34:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53867 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761494AbXGEOee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 10:34:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+Date: Thu, 5 Jul 2007 16:41:39 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Paul Mackerras <paulus@samba.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <200707051628.12199.rjw@sisk.pl> <20070705142600.GB22598@srcf.ucam.org>
+In-Reply-To: <20070705142600.GB22598@srcf.ucam.org>
 MIME-Version: 1.0
-To: Pavel Emelianov <xemul@openvz.org>
-CC: Kirill Korotaev <dev@openvz.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Paul Menage <menage@google.com>
-Subject: Re: [-mm PATCH 0/7] Memory controller introduction
-References: <20070704222108.17702.40293.sendpatchset@balbir-laptop> <468CB658.7000204@openvz.org>
-In-Reply-To: <468CB658.7000204@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707051641.39998.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Pavel,
-
-Pavel Emelianov wrote:
-> Balbir Singh wrote:
+On Thursday, 5 July 2007 16:26, Matthew Garrett wrote:
+> On Thu, Jul 05, 2007 at 04:28:11PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 5 July 2007 15:57, Matthew Garrett wrote:
+> > > And also "Userland should not depend on userland services", which is 
+> > > rather more of a problem.
+> > 
+> > I think you're oversimplifying it, as far as FUSE is concerned.
+> > 
+> > Namely, if there are two userland tasks, A and B, and B is uninterruptible,
+> > because A is blocked, then this is not a usual situation.
 > 
-> As far as I remember at OLS we decided to implement per-zone RLU
-> lists and reuse the lru lock as well. This will remove all the 
-> problems with per-container lists inconsistency.
-> 
+> Fuse is one case of it occuring, and if we end up with more userspace 
+> drivers then the problem is only going to get worse.
 
-It's there in the TODO list. It is easy to implement. I can do that
-in the next revision. We are re-using the LRU lock, since the
-isolate_pages callback is called under the zone's LRU lock.
+But this is a problem by itself, regardless of the freezer etc., no?
 
-> Separate limits for RSS and RSS+pagecache are also a must.
-> 
-
-I remember that we discussed having one limit, but we can come up
-with a configuration parameter to do it. I'll do that in the
-next release.
-
-> BTW, if you send smb. else's patches you may include a 'From: xxx'
-> line into the letter to address the original author.
-> 
-
-I'll do that for the res_counters_infra patch. Although I had used
-res_counter, the hooks in mm_struct earlier (http://lkml.org/lkml/2007/2/19/12).
-
-A lot of the code for the reclaim logic and the meta_page is yours.
-Please do identify patches where you would like to see your
-signed-off-by and where you think the entire patch is completely
-yours.
+Greetings,
+Rafael
 
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+"Premature optimization is the root of all evil." - Donald Knuth
