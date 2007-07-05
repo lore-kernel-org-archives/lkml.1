@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbXGEGwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbXGEGxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758538AbXGEGwy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 02:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbXGEGwp
+	id S1758714AbXGEGxu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 02:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757110AbXGEGxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 02:52:45 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:20800 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756900AbXGEGwn (ORCPT
+	Thu, 5 Jul 2007 02:53:44 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:53488 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756926AbXGEGxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 02:52:43 -0400
-Date: Wed, 4 Jul 2007 23:52:14 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 8/9] netconsole: Update documentation for dynamic reconfigurability
-Message-ID: <20070705065213.GH17650@tasint.org>
-Mail-Followup-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Keiichi Kii <k-keiichi@bx.jp.nec.com>,
-	Netdev <netdev@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
+	Thu, 5 Jul 2007 02:53:43 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Thu, 5 Jul 2007 08:53:41 +0200
+User-Agent: KMail/1.9.7
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031920.59940.oliver@neukum.org> <20070704233909.GB2719@elf.ucw.cz>
+In-Reply-To: <20070704233909.GB2719@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200707050853.42224.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 04, 2007 at 04:38:19PM +0530, Satyam Sharma wrote:
-> +Some examples follow (configfs is mounted at the /config mountpoint, say).
+Am Donnerstag, 5. Juli 2007 schrieb Pavel Machek:
+> On Tue 2007-07-03 19:20:59, Oliver Neukum wrote:
+> > Am Dienstag, 3. Juli 2007 schrieb Rafael J. Wysocki:
+> > > On Tuesday, 3 July 2007 15:08, Rafael J. Wysocki wrote:
+> > > > On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
+> > > > > On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
+> > > > > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
+> > > > > > a screaming nightmare - either the suspend fails because syslog (for 
+> > > > > > instance) can't be frozen, or the machine deadlocks for some other 
+> > > > > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
+> > > > > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
+> > > > > > and just not use the freezer.
+> > > > > 
+> > > > > The main reason for deadlocks is because we do a sys_sync() after the
+> > > > > freeze, which we shouldn't do.
+> > > > 
+> > > > So why don't we remove the sys_sync() from freeze_processes() instead?
+> > > 
+> > > The patch follows (untested).
+> > > 
+> > > Greetings,
+> > > Rafael
+> > > 
+> > > 
+> > > ---
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > We shouldn't sync filesystems from within the freezer, because it's not needed
+> > > for suspend to RAM and leads to problems with FUSE.
+> > 
+> > This seems fishy. Swsusp needs enough clean memory to make enough
+> > room for the image. If you sync before you freeze, the running tasks can
+> > redirty memory.
+> > What makes you sure that you don't die as shrink_all_memory() writes out
+> > pages?
+> 
+> Shrink_all_memory should just free enough memory, what's the problem?
+> Yes, we can have dirty memory, shrink_all_memory() can write that out
+> just fine.
 
-	configfs is generally expected to be mounted at
-/sys/kernel/config, and it even creates that mountpoint for itself.  The
-documentation should probably be consistent with that.
+If there's any dirty memory to be written out through fuse, this will not
+work as user space is already frozen. Now I am told that with fuse writes
+are synchronous. Therefore I don't understand why having a call to sys_sync()
+can make a difference. IMHO removing it to make fuse work covers over
+a symptom but hides the bug.
 
-Joel
+	Regards
+		Oliver
 
--- 
-
-"Also, all of life's big problems include the words 'indictment' or
-	'inoperable.' Everything else is small stuff."
-	- Alton Brown
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
