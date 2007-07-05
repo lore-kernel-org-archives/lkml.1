@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbXGEJQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbXGEJSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760823AbXGEJQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758884AbXGEJQn
+	id S1760641AbXGEJSR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 05:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758876AbXGEJSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:16:43 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:51186 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753819AbXGEJQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:16:42 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Thu, 5 Jul 2007 15:08:11 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 8/9] netconsole: Update documentation for dynamic
- reconfigurability
-In-Reply-To: <20070705065213.GH17650@tasint.org>
-Message-ID: <Pine.LNX.4.64.0707051506080.15925@cselinux1.cse.iitk.ac.in>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070705065213.GH17650@tasint.org>
+	Thu, 5 Jul 2007 05:18:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57254 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758811AbXGEJSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 05:18:04 -0400
+Date: Thu, 5 Jul 2007 11:18:01 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: oliver@neukum.org, paulus@samba.org, stern@rowland.harvard.edu,
+       johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Message-ID: <20070705091801.GB3084@elf.ucw.cz>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org> <18060.14856.824473.325660@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Joel Becker wrote:
-> On Wed, Jul 04, 2007 at 04:38:19PM +0530, Satyam Sharma wrote:
-> > +Some examples follow (configfs is mounted at the /config mountpoint, say).
+On Thu 2007-07-05 10:17:17, Miklos Szeredi wrote:
+> > > > I have discussed the benefits elsewhere.  As for the deadlocks -- do 
+> > > > you still observe them if you use the version of the freezer which 
+> > > > doesn't freeze kernel threads?
+> > > 
+> > > In general the only way to guarantee there are no deadlocks is to
+> > > construct the graph of dependencies between tasks.  Those dependencies
+> > > are not in practice observable from outside the tasks, so it is
+> > > virtually impossible to construct the graph.
+> > 
+> > In which way can user space tasks depend on each other in a way that
+> > allows a them members of that cycle to be in uninterruptible sleep?
 > 
-> 	configfs is generally expected to be mounted at
-> /sys/kernel/config, and it even creates that mountpoint for itself.  The
-> documentation should probably be consistent with that.
+>  - process A calls rename() on a fuse fs
+>  - process B, the fuse server, starts to process the rename request
+>  - process B is frozen before it can reply
+> 
+> Now process A is unfreezable.  We cannot make rename() restartable,
+> hence it cannot be interruptible.
 
-Ok, will do that in the next iteration -- I'll wait for a couple more
-days for comments from others, and then post the v2 patches sometime
-during the weekend.
+Yes, we are claiming fuse is very special in this regard, and perhaps
+even broken.
 
-Satyam
+Let's see. If I SIGSTOP the fuse server, I can get unrelated tasks
+unkillable (even for SIGKILL!) forever. That's very special, and maybe
+even a FUSE bug. And that is also what makes FUSE special
+w.r.t. s2ram.
+
+So no, you can't claim "FUSE is just IPC". It is very special IPC.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
