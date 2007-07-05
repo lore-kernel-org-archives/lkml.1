@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbXGELu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760333AbXGELvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759728AbXGELu6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 07:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbXGELuu
+	id S1760333AbXGELvV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 07:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758658AbXGELu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 07:50:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53004 "EHLO ogre.sisk.pl"
+	Thu, 5 Jul 2007 07:50:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39764 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755042AbXGELuu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 07:50:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 13:58:25 +0200
-User-Agent: KMail/1.9.5
-Cc: pavel@ucw.cz, oliver@neukum.org, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
+	id S1757339AbXGELuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 07:50:55 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Be (self-)consistent and use CONFIG_GDB_CONSOLE
+	everywhere
+To: torvalds@osdl.org, akpm@osdl.org, rpjday@mindspring.com
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Thu, 05 Jul 2007 12:50:48 +0100
+Message-ID: <20070705115048.12625.64771.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707051358.26963.rjw@sisk.pl>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 11:31, Miklos Szeredi wrote:
-> > > > > > I have discussed the benefits elsewhere.  As for the deadlocks -- do 
-> > > > > > you still observe them if you use the version of the freezer which 
-> > > > > > doesn't freeze kernel threads?
-> > > > > 
-> > > > > In general the only way to guarantee there are no deadlocks is to
-> > > > > construct the graph of dependencies between tasks.  Those dependencies
-> > > > > are not in practice observable from outside the tasks, so it is
-> > > > > virtually impossible to construct the graph.
-> > > > 
-> > > > In which way can user space tasks depend on each other in a way that
-> > > > allows a them members of that cycle to be in uninterruptible sleep?
-> > > 
-> > >  - process A calls rename() on a fuse fs
-> > >  - process B, the fuse server, starts to process the rename request
-> > >  - process B is frozen before it can reply
-> > > 
-> > > Now process A is unfreezable.  We cannot make rename() restartable,
-> > > hence it cannot be interruptible.
-> > 
-> > Yes, we are claiming fuse is very special in this regard, and perhaps
-> > even broken.
-> > 
-> > Let's see. If I SIGSTOP the fuse server, I can get unrelated tasks
-> > unkillable (even for SIGKILL!) forever.
-> 
-> Actually fuse allows SIGKILL, because it's always fatal, and the
-> syscall may not be restarted.
-> 
-> > That's very special, and maybe even a FUSE bug. And that is also
-> > what makes FUSE special w.r.t. s2ram.
-> 
-> What makes fuse special is that some file operations are synchronous
-> and non-restartable.  That's just how the UNIX filesystem API works
-> and is hardly a bug in fuse.
-> 
-> > So no, you can't claim "FUSE is just IPC". It is very special IPC.
-> 
-> I did say it's special.  Sure, it has some "interesting" properties,
-> and with a bit of malice you can do very ugly things with it.  If you
-> are interested, read Documentation/filesystems/fuse.txt, especially
-> the "Tricky deadlock" section ;)
+From: David Howells <dhowells@redhat.com>
 
-Very well.
+Be (self-)consistent and use CONFIG_GDB_CONSOLE everywhere rather than using
+CONFIG_GDBSTUB_CONSOLE in some places and not others.  This is also then
+consistent with other archs.
 
-Don't you think, however, that it can be modified a little to play well,
-for example, with the freezer?
+Also remove the gdbstub condole device() op which doesn't seem to be necessary
+now (especially as it doesn't compile).
 
-Greetings,
-Rafael
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
+ arch/frv/kernel/gdb-stub.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+diff --git a/arch/frv/kernel/gdb-stub.c b/arch/frv/kernel/gdb-stub.c
+index 1e7a101..e89cad1 100644
+--- a/arch/frv/kernel/gdb-stub.c
++++ b/arch/frv/kernel/gdb-stub.c
+@@ -647,17 +647,11 @@ void debug_to_serial(const char *p, int n)
+ }
+ #endif
+ 
+-#ifdef CONFIG_GDBSTUB_CONSOLE
+-
+-static kdev_t gdbstub_console_dev(struct console *con)
+-{
+-	return MKDEV(1,3); /* /dev/null */
+-}
++#ifdef CONFIG_GDB_CONSOLE
+ 
+ static struct console gdbstub_console = {
+ 	.name	= "gdb",
+ 	.write	= gdbstub_console_write,	/* in break.S */
+-	.device	= gdbstub_console_dev,
+ 	.flags	= CON_PRINTBUFFER,
+ 	.index	= -1,
+ };
+@@ -2021,7 +2015,7 @@ void __init gdbstub_init(void)
+ 	ptr = mem2hex(gdbstub_banner, ptr, sizeof(gdbstub_banner) - 1, 0);
+ 	gdbstub_send_packet(output_buffer);
+ #endif
+-#if defined(CONFIG_GDBSTUB_CONSOLE) && defined(CONFIG_GDBSTUB_IMMEDIATE)
++#if defined(CONFIG_GDB_CONSOLE) && defined(CONFIG_GDBSTUB_IMMEDIATE)
+ 	register_console(&gdbstub_console);
+ #endif
+ 
+@@ -2031,7 +2025,7 @@ void __init gdbstub_init(void)
+ /*
+  * register the console at a more appropriate time
+  */
+-#if defined (CONFIG_GDBSTUB_CONSOLE) && !defined(CONFIG_GDBSTUB_IMMEDIATE)
++#if defined (CONFIG_GDB_CONSOLE) && !defined(CONFIG_GDBSTUB_IMMEDIATE)
+ static int __init gdbstub_postinit(void)
+ {
+ 	printk("registering console\n");
+
