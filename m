@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbXGEUxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762643AbXGEUy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762768AbXGEUxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761543AbXGEUxd
+	id S1762643AbXGEUy1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760809AbXGEUyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:53:33 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:38070 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761461AbXGEUxc convert rfc822-to-8bit (ORCPT
+	Thu, 5 Jul 2007 16:54:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55320 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760414AbXGEUyS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:53:32 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: linux-pm@lists.linux-foundation.org
+	Thu, 5 Jul 2007 16:54:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
 Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 22:53:34 +0200
-User-Agent: KMail/1.9.7
-Cc: Miklos Szeredi <miklos@szeredi.hu>, mjg59@srcf.ucam.org,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <E1I6YDJ-0001sj-00@dorka.pomaz.szeredi.hu> <200707052249.45495.oliver@neukum.org>
-In-Reply-To: <200707052249.45495.oliver@neukum.org>
+Date: Thu, 5 Jul 2007 23:01:39 +0200
+User-Agent: KMail/1.9.5
+Cc: oliver@neukum.org, pavel@ucw.cz, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707052220.00555.rjw@sisk.pl> <E1I6Y5o-0001qm-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I6Y5o-0001qm-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200707052253.34817.oliver@neukum.org>
+Message-Id: <200707052301.40303.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 5. Juli 2007 schrieb Oliver Neukum:
-> Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
-> > > > Yes, fuse could handle being frozen there.  However that would only
-> > > > solve part of the problem: an operation waiting for a reply could be
-> > > > holding a VFS mutex and some other task may be blocked on that mutex.
+On Thursday, 5 July 2007 22:38, Miklos Szeredi wrote:
+> > > > > > > Actually fuse allows SIGKILL, because it's always fatal, and the
+> > > > > > > syscall may not be restarted.
+> > > > > > 
+> > > > > > I think you want to stick try_to_freeze() at the same places where you
+> > > > > > do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
+> > > > > > problem.
+> > > > > 
+> > > > > I could, but it would not solve the general problem.  Namely, that the
+> > > > > presence of fuse imposes a certain ordering in which userspace tasks
+> > > > > have to be frozen.  And it is not possible to know this ordering.
 > > > > 
-> > > > How would you solve freezing those tasks?
+> > > > Actually, why do you need this? There is no absolute need that you
+> > > > finish the request. You must either finish the request or let yourself
+> > > > be frozen.
+> > > > 
+> > > > A quick look through fuse reveals principally request_wait_answer()
+> > > > And maybe a few other places. Is there some hidden reason you cannot
+> > > > handle being frozen here?
 > > > 
-> > > OK, you made me reach for literatur on theoretical computer science.
+> > > Yes, fuse could handle being frozen there.  However that would only
+> > > solve part of the problem: an operation waiting for a reply could be
+> > > holding a VFS mutex and some other task may be blocked on that mutex.
 > > > 
-> > > IMHO the range of actions a fuse server is inherently limited.
-> > > You must never ever block on a lock one of your clients is holding. In
-> > > this case the limitation is not influenced by the freezer.
+> > > How would you solve freezing those tasks?
 > > 
-> > Obviously.  But I wasn't about the server trying to acquire a lock
-> > held by a client.  I was talking about a client trying to acquire a
-> > lock held by _another_ client.
-> > 
-> > If this coincides with the server (or some other task which the server
-> > is depending on) being frozen before the clients, the freezer has a
-> > problem.
+> > How probable is this situation?
 > 
-> True, but that case can only happen if servers are frozen before clients.
-> You don't need a full dependency graph. A simple set sequence of two
-> classes of tasks will do.
+> I guess it depends on usage patterns.
+> 
+> I don't remember seeing any such cases, even though I have a permanent
+> fuse mount, and I suspend regularly.  But the fs is probably totally
+> idle during suspend in my case.
+> 
+> But some people use fuse as a home or root filesystem and in those
+> cases it can become quite likely to cause problems.
 
-Any replying to myself. A deadlock here is not fatal. You can and will
-timeout in the freezer and can try again.
+That means we need to prevent the freezer from sending freeze requests FUSE's
+filesystem servers too early.
 
-	REegards
-		Oliver
+What about this (more or less):
+1) We add a list of userland processes to the freezer that should not be frozen
+in the first phase (ie. during the freezing of user space).  They will be frozen
+anyway along with the freezable kernel threads.
+2) FUSE adds its filesystem servers to this list upon connecting to them
+3) FUSE removes its filesystem servers from this list upon disconnecting
 
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
