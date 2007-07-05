@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762308AbXGEUKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762345AbXGEULT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762308AbXGEUKd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXGEUKV
+	id S1762345AbXGEULT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759094AbXGEULJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:10:21 -0400
-Received: from www.osadl.org ([213.239.205.134]:46981 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758255AbXGEUKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:10:19 -0400
-Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Clemens Koller <clemens.koller@anagramm.de>,
-       Chris Wright <chrisw@sous-sol.org>, Uli Luckas <u.luckas@road.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <468D2EF1.7050908@nortel.com>
-References: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca>
-	 <468AA364.2010000@nortel.com> <468AB976.2010806@redhat.com>
-	 <200707041056.53992.u.luckas@road.de>
-	 <20070704165313.GC4306@sequoia.sous-sol.org> <468CFCA1.3080104@anagramm.de>
-	 <468D2EF1.7050908@nortel.com>
-Content-Type: text/plain
-Date: Thu, 05 Jul 2007 22:10:16 +0200
-Message-Id: <1183666216.3289.41.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Thu, 5 Jul 2007 16:11:09 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41744
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758951AbXGEULI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 16:11:08 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Elyse M. Grasso" <emgrasso@data-raptors.com>
+Subject: Re: [PATCH][Documentation][resend] Add missing files and dirs to 00-INDEX in Documentation/
+Date: Thu, 5 Jul 2007 16:10:19 -0400
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200707010106.00181.jesper.juhl@gmail.com> <200707032058.26512.rob@landley.net> <200707051112.35909.emgrasso@data-raptors.com>
+In-Reply-To: <200707051112.35909.emgrasso@data-raptors.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707051610.19634.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-05 at 11:48 -0600, Chris Friesen wrote:
-> Clemens Koller wrote:
-> 
-> > Okay, we all survived Y2K and this little glitch. Puh! ;-)
-> > Can you please explain in which configuration this problem got triggered.
-> 
-> As far as I can tell many kernel versions contained the source code bug. 
->   (I'd like some more information on exactly what the problem was if 
-> anyone cares to share..the proposed patch didn't give much in the way of 
-> specifics.)
+On Thursday 05 July 2007 13:12:35 Elyse M. Grasso wrote:
+> Is there something I could do to help? It's been years since I programmed
+> C, but I'm a former librarian, current configuration management tools
+> consultant. I write good standards-compliant HTML and XHTML, and Perl is my
+> life these days.
+>
+> Point me at something where I won't be duplicating effort and I'll take a
+> look at it.
 
-It only happens with CONFIG_HIGHRES_TIMERS=y otherwise clock_was_set()
-is a NOP. So only the 2.6.21 kernel and i386 and ARM are affected.
+Sure.
 
-	tglx
+Could you start by subscribing to linux-doc?  (Info at 
+http://vger.kernel.org/vger-lists.html)  We can discuss it at length over 
+there.
 
+Thanks,
 
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
