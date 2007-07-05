@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbXGEVak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbXGEVcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762066AbXGEVak (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 17:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758906AbXGEVaa
+	id S1762203AbXGEVcc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 17:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759822AbXGEVcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 17:30:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42771 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757909AbXGEVa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 17:30:29 -0400
-Date: Thu, 5 Jul 2007 23:30:20 +0200
-From: Karel Zak <kzak@redhat.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-Message-ID: <20070705213020.GB14825@petra.dvoda.cz>
-References: <20070703221156.GY14825@petra.dvoda.cz> <20070704084211.GA19128@infradead.org> <200707051242.00625.vapier@gentoo.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707051242.00625.vapier@gentoo.org>
-User-Agent: Mutt/1.5.11
+	Thu, 5 Jul 2007 17:32:25 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:34862 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758906AbXGEVcZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 17:32:25 -0400
+To: oliver@neukum.org
+CC: stern@rowland.harvard.edu, miklos@szeredi.hu, pavel@ucw.cz,
+       paulus@samba.org, johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+In-reply-to: <200707052315.38770.oliver@neukum.org> (message from Oliver
+	Neukum on Thu, 5 Jul 2007 23:15:38 +0200)
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+References: <Pine.LNX.4.44L0.0707051704580.2557-100000@iolanthe.rowland.org> <200707052315.38770.oliver@neukum.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1I6YvE-00025u-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Jul 2007 23:31:32 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 12:41:59PM -0400, Mike Frysinger wrote:
-> On Wednesday 04 July 2007, Christoph Hellwig wrote:
-> > On Wed, Jul 04, 2007 at 12:11:56AM +0200, Karel Zak wrote:
-> > >  mount(8) doesn't include filesystem detection code anymore. You
-> > >  have to compile --with-fsprobe={blkid,volume_id}, and libblkid
-> > >  (e2fsprogs) or libvolume_id (udev >= v110) is required.
-> >
-> > Sorry, but it's really annoying to pull in a filesystem-specific devel
-> > package for that.  Having a library is fine, but please move the library
-> > into util-linux so it's always available without another dependency.
+> > On Thu, 5 Jul 2007, Oliver Neukum wrote:
+> > 
+> > > > Obviously. Â But I wasn't about the server trying to acquire a lock
+> > > > held by a client. Â I was talking about a client trying to acquire a
+> > > > lock held by _another_ client.
+> > > > 
+> > > > If this coincides with the server (or some other task which the server
+> > > > is depending on) being frozen before the clients, the freezer has a
+> > > > problem.
+> > > 
+> > > True, but that case can only happen if servers are frozen before clients.
+> > > You don't need a full dependency graph. A simple set sequence of two
+> > > classes of tasks will do.
+> > 
+> > Just to make things more complicated...  Since a server isn't
+> > restricted in what it can do, what happens when one server depends on
+> > another server?
 > 
-> ugh, moving libraries which are already actively maintained by other core 
-> projects into util-linux is so not a good idea (ignoring the fact that it'd 
-> easily be a pita/waste for distro maintainers)
+> The same principle applies. If you really want that you can solve this
+> by freezing servers in the reverse sequence they were started.
 
- Yes. We have good experience with libblkid and libvolume_id. This
- concept is nothing new (see current RHEL, FC, Suse, ...). The change
- is that we've removed old, useless and unmaintained FS detection code
- from util-linux.
+You just can't know what constitutes a "server", processes which read
+from the fuse device are candidates, but all tasks which communicate
+with these in some way are also.  And that basically makes every
+userspace task in the system a candidate server and you are no further
+than before.
 
- I think move the library to util-linux is really bad idea. A better
- idea is detach libblkid or libvolume_id (or both) from e2fsprogs/udev
- and create an independent libfsprobe library and use everywhere
- (e2fsprogs, udev, util-linux) this library only.
+> The main point remains. If you have a circular dependency anywhere
+> among the servers you can deadlock independent of the freezer.
 
-> > >  The package build system is now based on autotools. The build system
-> > >  supports  separate CFLAGS and LDFLAGS for suid programs (SUID_CFLAGS,
-> > >  SUID_LDFLAGS). For more details see the README file
-> >
-> > And this is really dumb.  autotools is a completely pain in the ass and
+Well, Duh.
 
- Well, Adrian Bunk added autotools stuff to util-linux during his work
- on v2.13. This stuff has been fixed and stabilized in util-linux-ng
- v2.13.
-
- I'm not fanatical autotools protagonist, but it seems useful in
- util-linux. We will see...
-
- I'm ready to change or fix arbitrary thing in util-linux-ng, but I
- always need a real reason -- bug report, new feature, or so. This
- discussion is about impressions and feelings only.
-
-> > not useful at all for linux-only tools.
-> 
-> incorrect.  linux changes over time as does the kernel/libc/architecture 
-> api's.  look at the old util-linux build system -- it had a crappy hand 
-> written configure script to try and detect all these different issues.
-
- Right. The autotools provides more features that portability only.
-
-    Karel
-
-
--- 
- Karel Zak  <kzak@redhat.com>
+Miklos
