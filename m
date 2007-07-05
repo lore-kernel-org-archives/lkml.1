@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbXGILTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbXGILTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756915AbXGILTf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 07:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbXGILSx
+	id S1757196AbXGILTw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 07:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbXGILSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 07:18:53 -0400
+	Mon, 9 Jul 2007 07:18:55 -0400
 Received: from mail.tmr.com ([64.65.253.246]:34742 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754040AbXGILSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 07:18:49 -0400
-Message-ID: <468D4808.3080702@tmr.com>
-Date: Thu, 05 Jul 2007 15:35:36 -0400
+	id S1755591AbXGILSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 07:18:50 -0400
+Message-ID: <468D44F5.4070906@tmr.com>
+Date: Thu, 05 Jul 2007 15:22:29 -0400
 From: Bill Davidsen <davidsen@tmr.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: RAID performance is not too well....
-References: <20070629140458.GA32107@bitwizard.nl>
-In-Reply-To: <20070629140458.GA32107@bitwizard.nl>
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: Tejun Heo <htejun@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Some NCQ numbers...
+References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com> <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com> <468B6BD7.9010108@msgid.tls.msk.ru>
+In-Reply-To: <468B6BD7.9010108@msgid.tls.msk.ru>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rogier Wolff wrote:
-> Hi,
+Michael Tokarev wrote:
+> Tejun Heo wrote:
+>> Hello,
+>>
+>> Michael Tokarev wrote:
+>>> Well.  It looks like the results does not depend on the
+>>> elevator.  Originally I tried with deadline, and just
+>>> re-ran the test with noop (hence the long delay with
+>>> the answer) - changing linux elevator changes almost
+>>> nothing in the results - modulo some random "fluctuations".
+>> I see.  Thanks for testing.
 > 
-> I have an application that creates some 228 thousand files,
-> spread over about 4000 directories. Total is not more than 
-> 1.3Gb.  (I'm not sure, and I don't care if it's 10% or 90% of
-> that number)
+> Here are actual results - the tests were still running when
+> I replied yesterday.
 > 
-> Anyway, I've loaded all of the 1.3Gb into the cache (the machine
-> has 8Gb of RAM), so that only writes need to take place. 
+> Again, this is Seagate ST3250620AS "desktop" drive, 7200RPM,
+> 16Mb cache, 250Gb capacity.  The tests were performed with
+> queue depth = 64 (on mptsas), drive write cache is turned
+> off.
 > 
-> After a while the machine goes into a routine of writing
-> about 500 to 1000kbytes per second. 
-> 
-> Sync seems to take a long time: 
-> 
-> zebigbos:/recover7/bd4256_jense/tree> time sync 
-> 0.004u 0.136s 5:44.66 0.0%      0+0k 0+0io 0pf+0w
-> zebigbos:/recover7/bd4256_jense/tree> 
-> 
-> The machine normally reads up to about 150 Mbytes per second without
-> trouble. 
-> 
-> I'm suspecting that the writes to the inodes and files all end
-> up "fragmented" such that reads to complete the RAID stripes 
-> need to be performed: 
-> 
-> Iostat shows: 
-> 
-> Device:            tps    kB_read/s    kB_wrtn/s    kB_read    kB_wrtn
-> sda              75.25       277.23       126.73        280        128
-> sdb              91.09       400.00       134.65        404        136
-> sdc              71.29       253.47        95.05        256         96
-> sdd             100.99       221.78       304.95        224        308
-> 
-> However, I would say that all those new files should be "clustered" 
-> such that the chances of writing a full stripe becomes reasonable. 
-> Moreover, clustering should, even with reading other parts of the
-> stripe result in a performance on the order of 10 to 50 times better. 
-> 
-> Raid block (stripe) size  is 64k.  (Next time I format a partition, 
-> I will chose 512k, causing the readperformance to increasae from 150Mb
-> per second to about 200Mb per second). 
-> 
-I'm not sure what you mean by "Raid block," and a stripe size on 64k is 
-improbably low. That sounds like a chunk size using common nomenclature. 
-You don't say what RAID level you are using, nor what filesystem type, 
-so it's really hard to give you any useful help, other than "send more 
-information, use standard terms, send to the linux-raid list, not kernel."
+But... with write cache off you don't let the drive do some things which 
+might show a lot of improvement with one scheduler or another. So your 
+data are only part of the story, aren't they?
 
-By "format a partition" do you mean "create an array?" Or ???
+[snip]
+
+>>> By the way, Seagate announced Barracuda ES 2 series
+>>> (in range 500..1200Gb if memory serves) - maybe with
+>>> those, NCQ will work better?
+>> No one would know without testing.
+> 
+> Sure thing.  I guess I'll set up a web page with all
+> the results so far, in a hope someday it will be more
+> complete (we don't have many different drives to test,
+> but others do).
+> 
+> By the way.  Both SATA drives we have are single-platter
+> ones (with 500Gb models they've 2 platters, and 750Gb
+> ones are with 3 platters), while all SCSI drives I
+> tested have more than one platters.  Maybe this is
+> yet another reason for NCQ failing.
+> 
+> And another note.  I heard somewhere that Seagate for
+> one prohibits publishing of tests like this, however
+> I haven't signed any NDAs and somesuch when purchased
+> their drives in a nearest computer store... ;)
+> 
+>>> Or maybe it's libata which does not implement NCQ
+>>> "properly"?  (As I shown before, with almost all
+>>> ol'good SCSI drives TCQ helps alot - up to 2x the
+>>> difference and more - with multiple I/O threads)
+>> Well, what the driver does is minimal.  It just passes through all the
+>> commands to the harddrive.  After all, NCQ/TCQ gives the harddrive more
+>> responsibility regarding request scheduling.
+> 
+> Oh well, I see.... :(
+> 
 
 -- 
 Bill Davidsen <davidsen@tmr.com>
