@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbXGESEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761517AbXGESHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760559AbXGESEl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 14:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXGESEd
+	id S1761517AbXGESHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 14:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759331AbXGESHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 14:04:33 -0400
-Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:49205 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757570AbXGESEc (ORCPT
+	Thu, 5 Jul 2007 14:07:44 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:32973 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759286AbXGESHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 14:04:32 -0400
-Date: Thu, 5 Jul 2007 12:04:28 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Karel Zak <kzak@redhat.com>,
-       List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-Message-ID: <20070705180428.GJ5633@schatzie.adilger.int>
-Mail-Followup-To: Mike Frysinger <vapier@gentoo.org>,
-	Christoph Hellwig <hch@infradead.org>, Karel Zak <kzak@redhat.com>,
-	List util-linux-ng <util-linux-ng@vger.kernel.org>,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20070703221156.GY14825@petra.dvoda.cz> <20070704084211.GA19128@infradead.org> <200707051242.00625.vapier@gentoo.org>
+	Thu, 5 Jul 2007 14:07:43 -0400
+Date: Thu, 5 Jul 2007 19:07:42 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sparse@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] bloody mess with __attribute__() syntax
+Message-ID: <20070705180742.GP21478@ftp.linux.org.uk>
+References: <20070705093528.GK21478@ftp.linux.org.uk> <alpine.LFD.0.98.0707050930330.9434@woody.linux-foundation.org> <20070705170918.GO21478@ftp.linux.org.uk> <alpine.LFD.0.98.0707051014380.9434@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200707051242.00625.vapier@gentoo.org>
+In-Reply-To: <alpine.LFD.0.98.0707051014380.9434@woody.linux-foundation.org>
 User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 05, 2007  12:41 -0400, Mike Frysinger wrote:
-> On Wednesday 04 July 2007, Christoph Hellwig wrote:
-> > Sorry, but it's really annoying to pull in a filesystem-specific devel
-> > package for that.  Having a library is fine, but please move the library
-> > into util-linux so it's always available without another dependency.
-> 
-> ugh, moving libraries which are already actively maintained by other core 
-> projects into util-linux is so not a good idea (ignoring the fact that it'd 
-> easily be a pita/waste for distro maintainers)
+On Thu, Jul 05, 2007 at 10:26:40AM -0700, Linus Torvalds wrote:
+> And I'm just saying that:
+>  (a) having two different magic keywords is silly and stupid, since:
+>  (b) We already have *one* magic keyword that can (and has to) look at its 
+>      subwords, and those sub-words have the capability to tell which of 
+>      the two cases we have (by just using name-space lookups)
 
-Some distros (Debian and SuSE I think) split the e2fsprogs libraries
-into separate packages so that you are not depending on "e2fsprogs",
-but rather "libuuid" and/or "libblkid".
+I.e. you get per-attribute rules (fsckloads of them) and no way to tell
+what do the attributes apply to unless you know the rules for given attribute.
 
-> > That way xfsprogs could for example drop it's own detection library aswell.
-> 
-> i dont really think this is dependent on util-linux at all.  nothing is 
-> stopping xfsprogs from depending on udev or e2fsprogs now.
+> See? THAT is what I'm saying. There's no reason to change existing syntax, 
+> and in fact it is just _bad_ to change existing syntax, because it doesn't 
+> actually buy us anything, because we already have the capability to parse 
+> things in different contexts, and in fact allowing things to be parsed at 
+> the same _time_ in the different contexts.
 
-In fact, Eric Sandeen and I discussed splitting the xfsprogs "libdisk"
-(or similar, it detects RAID geometry for DM/MD/etc) into a standalone
-library so that e2fsprogs could use it.  The only issue is the increased
-maintenance and packaging of separate libraries.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+Oh, I understand what you are proposing (hell, I've mentioned that variant
+in the first posting).  The trouble is not with being able to implement it.
+I just don't like having no relationship between the syntax and operations
+on types, that's all.  gcc variant, nasty as it is for our needs, at least
+has that consistent.  IOW, you can get from declaration to type structure
+without knowing what each attribute does.  Seeing that gcc rules are
+weird enough to be confusing, at least having that weirdness clearly
+indicated by __attribute__() instead of recalling which attribute is gcc-like
+and which is not...
