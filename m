@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762890AbXGEWPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762894AbXGEWRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762890AbXGEWPz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 18:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbXGEWPq
+	id S1762894AbXGEWRu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 18:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761005AbXGEWRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 18:15:46 -0400
-Received: from echo.digadd.de ([195.47.195.234]:49475 "EHLO mx2.digadd.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753092AbXGEWPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 18:15:45 -0400
-Message-ID: <468D6E49.90102@digadd.de>
-Date: Fri, 06 Jul 2007 01:18:49 +0300
-From: "Christian P. Schmidt" <charlie@digadd.de>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070619)
+	Thu, 5 Jul 2007 18:17:43 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3846 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760060AbXGEWRm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 18:17:42 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 5 Jul 2007 15:17:40 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Gautam Singaraju <gautam.singaraju@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: syscall macro fails upon compilation
+In-Reply-To: <f8b2ccd40707051509tcbce704y3e5b114580069039@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0707051517010.23066@alien.or.mcafeemobile.com>
+References: <f8b2ccd40707051509tcbce704y3e5b114580069039@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [patch] Add blacklisting capability to serial_pci to avoid misdetection
- of serial ports
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/mixed;
- boundary="------------090200080002080403000606"
-X-Spam-Score: -4.4 (----)
+Content-Type: MULTIPART/MIXED; BOUNDARY="1795850513-1836802438-1183673860=:23066"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090200080002080403000606
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-From: Christian Schmidt <schmidt@digadd.de>
+--1795850513-1836802438-1183673860=:23066
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-The serial_pci driver tries to guess serial ports on unknown devices
-based on the PCI class (modem or serial). On certain softmodems (AC'97
-modems) this can lead to the recognition of non-existing serial ports.
+On Thu, 5 Jul 2007, Gautam Singaraju wrote:
 
-This patch adds a blacklist of PCI IDs that are to be ignored by the driver.
+> I have been adding a syscall to the kernel (v 2.6.21); I am able to
+> compile and boot into the kernel. However, the userspace macro fails
+> to compile with the following message: "error: expected declaration
+> specifiers or =E2...=E2 before =E2mycall=E2". I could not find any soluti=
+on
+> using google. I use the _syscall0 macro. Any suggestion would help.
 
-The patch applies against both 2.6.21.5 and 2.6.22-rc7.
-
-Signed-off-by: Christian Schmidt <schmidt@digadd.de>
+Try a `man syscall`
 
 
---------------090200080002080403000606
-Content-Type: text/plain;
- name="8250_pci.blacklist.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="8250_pci.blacklist.patch"
 
---- linux-2.6.21.5.orig/drivers/serial/8250_pci.c	2007-04-26 06:08:32.000000000 +0300
-+++ linux-2.6.21.5/drivers/serial/8250_pci.c	2007-07-05 17:26:32.000000000 +0300
-@@ -1513,6 +1513,11 @@
- 	},
- };
- 
-+static const struct pci_device_id softmodem_blacklist[] = {
-+     { PCI_VDEVICE ( AL, 0x5457 ), }, /* ALi Corporation M5457 AC'97 Modem */
-+     { }
-+};
-+
- /*
-  * Given a complete unknown PCI device, try to use some heuristics to
-  * guess what the configuration might be, based on the pitiful PCI
-@@ -1521,6 +1526,7 @@
- static int __devinit
- serial_pci_guess_board(struct pci_dev *dev, struct pciserial_board *board)
- {
-+        const struct pci_device_id * blacklist;
- 	int num_iomem, num_port, first_port = -1, i;
- 	
- 	/*
-@@ -1535,6 +1541,16 @@
- 	    (dev->class & 0xff) > 6)
- 		return -ENODEV;
- 
-+	/*
-+	 * Do not access blacklisted devices that are known not to
-+	 * feature serial ports.
-+	 */
-+	for (blacklist = softmodem_blacklist; blacklist->vendor; blacklist++) {
-+	        if ((dev->vendor == blacklist->vendor) &&
-+	            (dev->device == blacklist->device))
-+		        return -ENODEV;
-+	}
-+	
- 	num_iomem = num_port = 0;
- 	for (i = 0; i < PCI_NUM_BAR_RESOURCES; i++) {
- 		if (pci_resource_flags(dev, i) & IORESOURCE_IO) {
+- Davide
 
---------------090200080002080403000606--
+
+--1795850513-1836802438-1183673860=:23066--
