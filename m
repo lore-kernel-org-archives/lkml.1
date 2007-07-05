@@ -1,148 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763906AbXGEX1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763967AbXGEX14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763906AbXGEX1i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763067AbXGEXXb
+	id S1763967AbXGEX14 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763438AbXGEXZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:23:31 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52158 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763058AbXGEXX3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:23:29 -0400
-Date: Fri, 6 Jul 2007 01:23:58 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mm/mempolicy.c: cleanups
-Message-ID: <20070705232358.GJ3492@stusta.de>
+	Thu, 5 Jul 2007 19:25:14 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51760 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763436AbXGEXZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 19:25:12 -0400
+Message-ID: <468D7DD4.9060306@garzik.org>
+Date: Thu, 05 Jul 2007 19:25:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Libata PATA status
+References: <20070703185116.59c8f5f5@the-village.bc.nu> <p73k5tg2uj9.fsf@bingen.suse.de>
+In-Reply-To: <p73k5tg2uj9.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the following cleanups:
-- every file should include the headers containing the prototypes for
-  its global functions
-- make the follosing needlessly global functions static:
-  - migrate_to_node()
-  - do_mbind()
-  - sp_alloc()
-  - mpol_rebind_policy()
+Andi Kleen wrote:
+> My personal wish list feature would be a little forwarder driver
+> to forward /dev/hd* to /dev/sd* for this; then old IDE could be
+> disabled without risking breaking old root file systems.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
----
+That's on the long-term TODO list.
 
- include/linux/mempolicy.h |    6 ------
- mm/mempolicy.c            |   25 ++++++++++++++++---------
- 2 files changed, 16 insertions(+), 15 deletions(-)
+libata is moving towards making libata-scsi an optional module (will 
+always be around for ATAPI, and for compat with current ATA), and 
+driving ATA disks as a native block driver, rather than having SCSI do 
+the work for us.
 
---- linux-2.6.22-rc6-mm1/include/linux/mempolicy.h.old	2007-07-05 17:16:55.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/include/linux/mempolicy.h	2007-07-05 17:17:05.000000000 +0200
-@@ -143,7 +143,6 @@
- 
- extern void numa_default_policy(void);
- extern void numa_policy_init(void);
--extern void mpol_rebind_policy(struct mempolicy *pol, const nodemask_t *new);
- extern void mpol_rebind_task(struct task_struct *tsk,
- 					const nodemask_t *new);
- extern void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new);
-@@ -225,11 +224,6 @@
- {
- }
- 
--static inline void mpol_rebind_policy(struct mempolicy *pol,
--					const nodemask_t *new)
--{
--}
--
- static inline void mpol_rebind_task(struct task_struct *tsk,
- 					const nodemask_t *new)
- {
---- linux-2.6.22-rc6-mm1/mm/mempolicy.c.old	2007-07-05 17:14:16.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/mm/mempolicy.c	2007-07-05 17:22:17.000000000 +0200
-@@ -89,6 +89,7 @@
- #include <linux/migrate.h>
- #include <linux/rmap.h>
- #include <linux/security.h>
-+#include <linux/syscalls.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/uaccess.h>
-@@ -110,6 +111,9 @@
- 	.policy = MPOL_DEFAULT,
- };
- 
-+static void mpol_rebind_policy(struct mempolicy *pol,
-+                               const nodemask_t *newmask);
-+
- /* Do sanity checking on a policy */
- static int mpol_check_policy(int mode, nodemask_t *nodes)
- {
-@@ -459,7 +463,7 @@
- }
- 
- /* Set the process memory policy */
--long do_set_mempolicy(int mode, nodemask_t *nodes)
-+static long do_set_mempolicy(int mode, nodemask_t *nodes)
- {
- 	struct mempolicy *new;
- 
-@@ -519,8 +523,8 @@
- }
- 
- /* Retrieve NUMA policy */
--long do_get_mempolicy(int *policy, nodemask_t *nmask,
--			unsigned long addr, unsigned long flags)
-+static long do_get_mempolicy(int *policy, nodemask_t *nmask,
-+			     unsigned long addr, unsigned long flags)
- {
- 	int err;
- 	struct mm_struct *mm = current->mm;
-@@ -601,7 +605,8 @@
-  * Migrate pages from one node to a target node.
-  * Returns error or the number of pages not migrated.
-  */
--int migrate_to_node(struct mm_struct *mm, int source, int dest, int flags)
-+static int migrate_to_node(struct mm_struct *mm, int source, int dest,
-+			   int flags)
- {
- 	nodemask_t nmask;
- 	LIST_HEAD(pagelist);
-@@ -732,8 +737,9 @@
- }
- #endif
- 
--long do_mbind(unsigned long start, unsigned long len,
--		unsigned long mode, nodemask_t *nmask, unsigned long flags)
-+static long do_mbind(unsigned long start, unsigned long len,
-+		     unsigned long mode, nodemask_t *nmask,
-+		     unsigned long flags)
- {
- 	struct vm_area_struct *vma;
- 	struct mm_struct *mm = current->mm;
-@@ -1466,8 +1472,8 @@
- 	kmem_cache_free(sn_cache, n);
- }
- 
--struct sp_node *
--sp_alloc(unsigned long start, unsigned long end, struct mempolicy *pol)
-+static struct sp_node *sp_alloc(unsigned long start, unsigned long end,
-+				struct mempolicy *pol)
- {
- 	struct sp_node *n = kmem_cache_alloc(sn_cache, GFP_KERNEL);
- 
-@@ -1645,7 +1651,8 @@
- }
- 
- /* Migrate a policy to a different set of nodes */
--void mpol_rebind_policy(struct mempolicy *pol, const nodemask_t *newmask)
-+static void mpol_rebind_policy(struct mempolicy *pol,
-+			       const nodemask_t *newmask)
- {
- 	nodemask_t *mpolmask;
- 	nodemask_t tmp;
+libata's qc_issue/qc_complete high level API and internal modularity 
+were designed to make this possible.  It is easy to see in the current 
+code how libata-scsi is merely a user of the qc_issue/qc_complete API, 
+with all the low-level details isolated away from that module.
+
+Addendum:  Remember too, /dev/hdX is not just a major/minor pair, but a 
+userspace interface, complete with expected ioctl support.
+
+	Jeff
+
 
