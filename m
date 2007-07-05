@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763967AbXGEX14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762357AbXGEXc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763967AbXGEX14 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763438AbXGEXZO
+	id S1762357AbXGEXc3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbXGEXcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:25:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51760 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763436AbXGEXZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:25:12 -0400
-Message-ID: <468D7DD4.9060306@garzik.org>
-Date: Thu, 05 Jul 2007 19:25:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Thu, 5 Jul 2007 19:32:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49915 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752514AbXGEXcU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 19:32:20 -0400
+Date: Thu, 5 Jul 2007 16:32:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dmitry Torokhov <dtor@insightbb.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull][resend] Input updates for 2.6.22-rc7
+In-Reply-To: <alpine.LFD.0.98.0707051556000.9434@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0707051618040.9434@woody.linux-foundation.org>
+References: <200707050111.43327.dtor@insightbb.com>
+ <alpine.LFD.0.98.0707051556000.9434@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Libata PATA status
-References: <20070703185116.59c8f5f5@the-village.bc.nu> <p73k5tg2uj9.fsf@bingen.suse.de>
-In-Reply-To: <p73k5tg2uj9.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> My personal wish list feature would be a little forwarder driver
-> to forward /dev/hd* to /dev/sd* for this; then old IDE could be
-> disabled without risking breaking old root file systems.
 
 
-That's on the long-term TODO list.
+On Thu, 5 Jul 2007, Linus Torvalds wrote:
+> 
+> It says your user-agent is "Kmail", and maybe there is some way to fix it. 
+> And if kmail is correct, please make a bug-report to the kmail people. 
 
-libata is moving towards making libata-scsi an optional module (will 
-always be around for ATAPI, and for compat with current ATA), and 
-driving ATA disks as a native block driver, rather than having SCSI do 
-the work for us.
+Ok, googling for kmail, I think it really is kmail doing it, because I 
+find others complaining about the same idiocy.
 
-libata's qc_issue/qc_complete high level API and internal modularity 
-were designed to make this possible.  It is easy to see in the current 
-code how libata-scsi is merely a user of the qc_issue/qc_complete API, 
-with all the low-level details isolated away from that module.
+Btw, the others who noticed this weren't _nearly_ as polite as I am about 
+kmail.
 
-Addendum:  Remember too, /dev/hdX is not just a major/minor pair, but a 
-userspace interface, complete with expected ioctl support.
+Apparently kmail - at least when cutting-and-pasting - will actually turn 
+every other space into an NBSP for some internal idiotic reason. So even 
+if you _originally_ had 8 spaces, Kmail will apparently corrupt your data 
+when cutting-and-pasting according to that other report I saw.
 
-	Jeff
+Please stop using kmail, or ask for it to get fixed.
 
+I'm constantly surprised by just how _many_ ways MUA's find to screw up. 
+It's not like they seem to all have some stupid bug. It's more like they 
+seem to all have willfully added code explicitly to mess up the content of 
+email, often with the goal of making it "look" right, even if it's crap.
 
+In this case, it means that you cannot cut-and-paste simple ASCII text, 
+because Kmail messed up.
+
+			Linus
