@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbXGENm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759742AbXGENrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbXGENm6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 09:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbXGENmu
+	id S1759742AbXGENrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 09:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbXGENrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 09:42:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45523 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757100AbXGENmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 09:42:49 -0400
-Date: Thu, 5 Jul 2007 08:39:33 -0500
-From: David Teigland <teigland@redhat.com>
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: [PATCH -mm 0/3] configfs: Miscellaneous cleanups
-Message-ID: <20070705133933.GA18696@redhat.com>
-References: <20070704110701.28503.95359.sendpatchset@cselinux1.cse.iitk.ac.in> <20070705063008.GF17650@tasint.org>
-Mime-Version: 1.0
+	Thu, 5 Jul 2007 09:47:13 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:50315 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757113AbXGENrM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 09:47:12 -0400
+Date: Thu, 5 Jul 2007 14:46:32 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       paulus@samba.org, stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       pavel@ucw.cz, benh@kernel.crashing.org
+Message-ID: <20070705134632.GA22177@srcf.ucam.org>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu> <200707051523.44826.rjw@sisk.pl> <200707051528.34754.oliver@neukum.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070705063008.GF17650@tasint.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <200707051528.34754.oliver@neukum.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 04, 2007 at 11:30:08PM -0700, Joel Becker wrote:
-> On Wed, Jul 04, 2007 at 04:37:01PM +0530, Satyam Sharma wrote:
-> > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> > 
-> > [0/3] configfs: Miscellaneous cleanups
-> > 
-> > Simple cleanups for configfs (plus DLM and OCFS2, wherever applicable).
-> > This is diffed against 2.6.22-rc6-mm1.
-> 
-> 	All three are pretty clean and useful.
-> 
-> > [1/3] configfs+dlm: Separate out __CONFIGFS_ATTR into configfs.h
-> 
-> 	I thought I had this already.  If someone is using it (and
-> fs/dlm obviously is), we should provide it for the general case.
-> 
-> > [2/3] configfs+dlm+ocfs2: Convert subsystem semaphore to mutex
-> 
-> 	I've just been lazy about this one.  Thank you.
-> 
-> > [3/3] configfs+dlm: Rename config_group_find_obj and state semantics clearly
-> 
-> 	Makes sense as well.
-> 
-> 	Any dissent from other subsystems?  If not, expect these to
-> show up in the ocfs2 tree soon-ish (I'm currently on vacation :-)
+On Thu, Jul 05, 2007 at 03:28:33PM +0200, Oliver Neukum wrote:
 
-All look good from here.
+> If, at a minimum, we can determine that we can STD without a freezer.
+> It makes no sense to invest a lot of work to face the same problem
+> again with STD.
 
-Dave
+I have a model for STD that avoids the need to freeze the entirity of 
+userspace, but I need to find some more time to flesh it out.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
