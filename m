@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbXGESqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761454AbXGESuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761925AbXGESqf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 14:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbXGESq1
+	id S1761454AbXGESuV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 14:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759896AbXGESuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 14:46:27 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:43415 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759389AbXGESq0 (ORCPT
+	Thu, 5 Jul 2007 14:50:10 -0400
+Received: from main.gmane.org ([80.91.229.2]:60506 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759136AbXGESuI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 14:46:26 -0400
-Message-ID: <468D3C6C.8060900@linux.vnet.ibm.com>
-Date: Fri, 06 Jul 2007 00:16:04 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@osdl.org>, Pavel Emelianov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [-mm PATCH 4/7] Memory controller memory accounting
-References: <20070704222108.17702.40293.sendpatchset@balbir-laptop> <20070704222203.17702.37327.sendpatchset@balbir-laptop>
-In-Reply-To: <20070704222203.17702.37327.sendpatchset@balbir-laptop>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 14:50:08 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [PATCH] ata: Add the SW NCQ support to sata_nv for MCP51/MCP55/MCP61
+Date: Thu, 05 Jul 2007 14:53:21 -0400
+Message-ID: <468D3E21.7070106@tmr.com>
+References: <4682411E.6070808@dunaweb.hu> <468ACE27.7030006@dunaweb.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Complaints-To: usenet@sea.gmane.org
+Cc: Kuan Luo <kluo@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Peer Chen <pchen@nvidia.com>
+X-Gmane-NNTP-Posting-Host: pool-70-109-121-113.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <468ACE27.7030006@dunaweb.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Balbir Singh wrote:
-> Add the accounting hooks. The accounting is carried out for RSS and Page
-> Cache (unmapped) pages. There is now a common limit and accounting for both.
-> The RSS accounting is accounted at page_add_*_rmap() and page_remove_rmap()
-> time. Page cache is accounted at add_to_page_cache(),
-> __delete_from_page_cache(). Swap cache is also accounted for.
+Zoltan Boszormenyi wrote:
+> Hi,
 > 
-> Each page's meta_page is protected with a bit in page flags, this makes
-> handling of race conditions involving simultaneous mappings of a page easier.
-> A reference count is kept in the meta_page to deal with cases where a page
-> might be unmapped from the RSS of all tasks, but still lives in the page
-> cache.
+> Zoltan Boszormenyi írta:
+>> Hi,
+>>
+>> I am testing your current code with akpm's beautifying patches
+>> for about an hour now. I have seen no problems with it so far.
 > 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
+> Still using the patch on 2.6.22-rc6 and no problems so far.
+> It's really stable. I am looking forward to the next version and
+> the inclusion into mainstream kernels. Thanks!
 > 
->  fs/exec.c                  |    1 
->  include/linux/memcontrol.h |   11 +++
->  include/linux/page-flags.h |    3 +
->  mm/filemap.c               |    8 ++
->  mm/memcontrol.c            |  132 ++++++++++++++++++++++++++++++++++++++++++++-
->  mm/memory.c                |   22 +++++++
->  mm/migrate.c               |    6 ++
->  mm/page_alloc.c            |    3 +
->  mm/rmap.c                  |    2 
->  mm/swap_state.c            |    8 ++
->  mm/swapfile.c              |   40 +++++++------
->  11 files changed, 218 insertions(+), 18 deletions(-)
-> 
+I am going to hold off any more -rc testing, but if there's a patch 
+against 2.6.22 when it releases, I would certainly try it on a system 
+which is about to be redeploted. I'm also scheduling testing of several 
+RAID queueing patches there as well.
 
-[snip]
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-> diff -puN mm/migrate.c~mem-control-accounting mm/migrate.c
-> --- linux-2.6.22-rc6/mm/migrate.c~mem-control-accounting	2007-07-04 15:05:27.000000000 -0700
-> +++ linux-2.6.22-rc6-balbir/mm/migrate.c	2007-07-04 15:05:27.000000000 -0700
-> @@ -28,6 +28,7 @@
->  #include <linux/mempolicy.h>
->  #include <linux/vmalloc.h>
->  #include <linux/security.h>
-> +#include <linux/memcontrol.h>
-> 
->  #include "internal.h"
-> 
-> @@ -157,6 +158,11 @@ static void remove_migration_pte(struct 
->   		return;
->   	}
-> 
-> +	if (mem_container_charge(page, mm)) {
-
-Minor correction.  The above line should be
-
-if (mem_container_charge(new, mm)) {
-
-to avoid compilation error.
-
---Vaidy
-
-[snip]
