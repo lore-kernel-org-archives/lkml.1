@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbXGEJOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759681AbXGEJPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759561AbXGEJOm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758285AbXGEJOc
+	id S1759681AbXGEJPf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 05:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbXGEJP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:14:32 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:51067 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757868AbXGEJOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:14:31 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Thu, 5 Jul 2007 15:06:01 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 5/9] netconsole: Introduce dev_status member
-In-Reply-To: <20070705063904.GG17650@tasint.org>
-Message-ID: <Pine.LNX.4.64.0707051501190.15925@cselinux1.cse.iitk.ac.in>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704110804.28520.25792.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070705063904.GG17650@tasint.org>
+	Thu, 5 Jul 2007 05:15:28 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57245 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753638AbXGEJP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 05:15:27 -0400
+Date: Thu, 5 Jul 2007 11:15:26 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+Message-ID: <20070705091526.GA3084@elf.ucw.cz>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041104140.25704-100000@netrider.rowland.org> <18060.15591.556676.28935@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18060.15591.556676.28935@cargo.ozlabs.ibm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007, Joel Becker wrote:
-> On Wed, Jul 04, 2007 at 04:38:04PM +0530, Satyam Sharma wrote:
-> > -	if (!(event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
-> > -		goto done;
-> > +	if (!(event == NETDEV_UP || event == NETDEV_DOWN ||
-> > +	      event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
-> > +	      	goto done;
-> >
-> >  	if (nt->np.dev == dev) {
-> >  		switch (event) {
+Hi!
+
+> > The fact remains that lots of drivers would still need to be changed.  
+> > In the read and write methods someone would have to add code amounting
+> > to this:
+> > 
+> > 	if (suspend_is_under_way()) {
+> > 		mutex_unlock(...);
+> > 		block_until_resume();
+> > 		goto restart;
+> > 	}
+> > 
+> > Freezing userspace is a small amount of code by comparison.
 > 
-> 	It's a small nit, but isn't the large if() just the degenerate
-> default case of the switch()?  Why have it at all?  
+> Normally devices have some sort of queue of pending operations.  So
+> all that is required on suspend is to stop processing the queue and
+> wait for any currently-underway operations to complete.  The blocking
+> then happens naturally using the normal I/O wait mechanisms.
 
-Yes, the large if() is redundant in this particular patch.
+So... instead of one big freezer (we know it is problematic), you have
+100 small freezers, problematic in same way :-(.
 
-But in further patches, the switch() is enclosed inside a 
-spin_lock_irqsave() and list_for_each_entry(target_list) and so the
-large if() upfront saves us from unnecessarily disabling interrupts
-and iterating through the entire target_list in the case that it is
-a notification for an event that we don't care about.
+Let's take current FUSE problems, and see if they have problem on PPC,
+ok?
 
-So I'll remove this if() from this patch and introduce it in the
-later one itself, which is where it starts making some sense, anyway.
+Let's say FUSE thread touches one of those "blocking" devices. It is
+now in D state, somewhere in kernel.... exactly same way refrigerator
+works.
 
-Satyam
+Now, if kernel needs FUSE services for some reason (that's the problem
+we hit in s2ram case, right?), we have a deadlock.
+
+So main problem still seems to be "kernel should not depend on
+userland services during suspend", refrigerator or not.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
