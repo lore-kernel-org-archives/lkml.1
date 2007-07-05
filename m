@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759742AbXGENrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758148AbXGENvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759742AbXGENrU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 09:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbXGENrN
+	id S1758148AbXGENvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 09:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbXGENvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 09:47:13 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:50315 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757113AbXGENrM (ORCPT
+	Thu, 5 Jul 2007 09:51:07 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:42632 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757113AbXGENvG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 09:47:12 -0400
-Date: Thu, 5 Jul 2007 14:46:32 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       paulus@samba.org, stern@rowland.harvard.edu, johannes@sipsolutions.net,
+	Thu, 5 Jul 2007 09:51:06 -0400
+To: rjw@sisk.pl
+CC: miklos@szeredi.hu, pavel@ucw.cz, oliver@neukum.org, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net,
        linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, benh@kernel.crashing.org
-Message-ID: <20070705134632.GA22177@srcf.ucam.org>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu> <200707051523.44826.rjw@sisk.pl> <200707051528.34754.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707051528.34754.oliver@neukum.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+In-reply-to: <200707051531.37532.rjw@sisk.pl>
 Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051358.26963.rjw@sisk.pl> <E1I6QOA-0000bq-00@dorka.pomaz.szeredi.hu> <200707051531.37532.rjw@sisk.pl>
+Message-Id: <E1I6RjE-0000pP-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Jul 2007 15:50:40 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 03:28:33PM +0200, Oliver Neukum wrote:
+> > > Don't you think, however, that it can be modified a little to play well,
+> > > for example, with the freezer?
+> > 
+> > I could stick a couple of try_to_freeze()s into fuse, and that would
+> > make suspend failure less likely.  But making problems less easy to
+> > reproduce is not a good thing.
+> 
+> So, how about eliminating them?
 
-> If, at a minimum, we can determine that we can STD without a freezer.
-> It makes no sense to invest a lot of work to face the same problem
-> again with STD.
+That can't be done just within fuse, a process might be sleeping on a
+VFS mutex.  Do we want to hack VFS as well?
 
-I have a model for STD that avoids the need to freeze the entirity of 
-userspace, but I need to find some more time to flesh it out.
+I guess I know your answer.  But it ain't gonna work.  Suspend code
+really doesn't belong in VFS, and I'm pretty sure the maintainers of
+that little piece of code would agree with me on this.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Miklos
