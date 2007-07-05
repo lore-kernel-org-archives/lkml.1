@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbXGEPYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbXGEP22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760180AbXGEPYS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 11:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbXGEPYG
+	id S1760341AbXGEP22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 11:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbXGEP2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 11:24:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:60747 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756298AbXGEPYF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 11:24:05 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-To: Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Thu, 05 Jul 2007 17:23:11 +0200
-References: <8CTJM-4Z1-27@gated-at.bofh.it> <8CU38-5E1-23@gated-at.bofh.it> <8DjNU-4bL-47@gated-at.bofh.it> <8DkTC-5Vy-11@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1I6TAl-0002iC-W7@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/XBd9AV6EiaMv4+ozuA+lUyCEXAYYNjCbVhSB
- OFc3gdG1AvOAuUU3rYTp4jsnfPKBD4g9zqsFU2Vem/OUFNM8oa
- 5sQHlvmWYQEmNgE81cNzw==
+	Thu, 5 Jul 2007 11:28:21 -0400
+Received: from mail.macqel.be ([194.78.208.39]:7056 "EHLO mail.macqel.be"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757256AbXGEP2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 11:28:20 -0400
+X-Greylist: delayed 1347 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jul 2007 11:28:20 EDT
+Date: Thu, 5 Jul 2007 17:05:47 +0200
+From: Philippe De Muyter <phdm@macqel.be>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] mtd : add FUJITSU MBM29F800BA and ST M29F800AB descriptions
+Message-ID: <20070705150547.GA10281@muff.macqel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> wrote:
-> Alexey Dobriyan <adobriyan@gmail.com> writes:
->> On Tue, Jul 03, 2007 at 12:40:56PM -0400, Mathieu Desnoyers wrote:
+Hi all,
 
->> > Use immediate values with lower d-cache hit in optimized version as a
->> > condition for scheduler profiling call.
->> 
->> I think it's better to put profile.c under CONFIG_PROFILING as
->> _expected_, so CONFIG_PROFILING=n users won't get any overhead, immediate or
->> not. That's what I'm going to do after test-booting bunch of kernels.
-> 
-> No, it's better to handle this efficiently at runtime e.g. for
-> distribution kernels. Mathieu's patch is good
+Add descriptions for Fujitsu MBM29F800BA and ST M29F800AB flash chips.
+Those chips are compatible (except for the ids) with the AMD AM29F800BB.
 
-IMO you should combine them. For distibutions, it may be good to include
-profiling support unconditionally, but how many of the vanilla kernel users
-are going to use profiling at all?
--- 
-A man inserted an advertisement in the classified: Wife Wanted."
-The next day he received a hundred letters. They all said the
-same thing: "You can have mine."
-Friﬂ, Spammer: oztx1@nAQd3C.7eggert.dyndns.org wGhu@InUYZ.7eggert.dyndns.org
+Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+
+diff -r d857b8fa1d27 drivers/mtd/chips/jedec_probe.c
+--- a/drivers/mtd/chips/jedec_probe.c	Sun Jun 24 12:08:53 2007 -0700
++++ b/drivers/mtd/chips/jedec_probe.c	Thu Jul  5 16:46:25 2007 +0200
+@@ -70,6 +70,7 @@
+ 
+ /* Fujitsu */
+ #define MBM29F040C	0x00A4
++#define MBM29F800BA	0x2258
+ #define MBM29LV650UE	0x22D7
+ #define MBM29LV320TE	0x22F6
+ #define MBM29LV320BE	0x22F9
+@@ -129,6 +130,7 @@
+ #define LH28F640BF	0x00b0
+ 
+ /* ST - www.st.com */
++#define M29F800AB	0x0058
+ #define M29W800DT	0x00D7
+ #define M29W800DB	0x005B
+ #define M29W160DT	0x22C4
+@@ -646,6 +648,23 @@ static const struct amd_flash_info jedec
+ 		}
+ 	}, {
+ 		.mfr_id		= MANUFACTURER_FUJITSU,
++		.dev_id		= MBM29F800BA,
++		.name		= "Fujitsu MBM29F800BA",
++		.uaddr		= {
++			[0] = MTD_UADDR_0x0AAA_0x0555,  /* x8 */
++			[1] = MTD_UADDR_0x0555_0x02AA,  /* x16 */
++		},
++		.DevSize	= SIZE_1MiB,
++		.CmdSet		= P_ID_AMD_STD,
++		.NumEraseRegions= 4,
++		.regions	= {
++			ERASEINFO(0x04000,1),
++			ERASEINFO(0x02000,2),
++			ERASEINFO(0x08000,1),
++			ERASEINFO(0x10000,15),
++		}
++	}, {
++		.mfr_id		= MANUFACTURER_FUJITSU,
+ 		.dev_id		= MBM29LV650UE,
+ 		.name		= "Fujitsu MBM29LV650UE",
+ 		.uaddr		= {
+@@ -1510,6 +1529,23 @@ static const struct amd_flash_info jedec
+                        ERASEINFO(0x1000,256)
+                }
+ 
++	}, {
++		.mfr_id		= MANUFACTURER_ST,
++		.dev_id		= M29F800AB,
++		.name		= "ST M29F800AB",
++		.uaddr		= {
++			[0] = MTD_UADDR_0x0AAA_0x0555,  /* x8 */
++			[1] = MTD_UADDR_0x0555_0x02AA,  /* x16 */
++		},
++		.DevSize	= SIZE_1MiB,
++		.CmdSet		= P_ID_AMD_STD,
++		.NumEraseRegions= 4,
++		.regions	= {
++			ERASEINFO(0x04000,1),
++			ERASEINFO(0x02000,2),
++			ERASEINFO(0x08000,1),
++			ERASEINFO(0x10000,15),
++		}
+        }, {
+ 		.mfr_id		= MANUFACTURER_ST,	/* FIXME - CFI device? */
+ 		.dev_id		= M29W800DT,
