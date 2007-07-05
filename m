@@ -1,57 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760338AbXGEMWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761083AbXGEMYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760338AbXGEMWR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 08:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbXGEMWG
+	id S1761083AbXGEMYA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 08:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758663AbXGEMXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 08:22:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53205 "EHLO ogre.sisk.pl"
+	Thu, 5 Jul 2007 08:23:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48679 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755742AbXGEMWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 08:22:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 14:29:06 +0200
-User-Agent: KMail/1.9.5
-Cc: Oliver Neukum <oliver@neukum.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20070703211227.GA28758@srcf.ucam.org> <200707041717.05149.rjw@sisk.pl> <18060.15209.274437.471074@cargo.ozlabs.ibm.com>
-In-Reply-To: <18060.15209.274437.471074@cargo.ozlabs.ibm.com>
+	id S1757160AbXGEMXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 08:23:52 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Be (self-)consistent and use CONFIG_GDB_CONSOLE
+	everywhere [try #2]
+To: torvalds@osdl.org, akpm@osdl.org, rpjday@mindspring.com
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Thu, 05 Jul 2007 13:23:47 +0100
+Message-ID: <20070705122347.17036.34635.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707051429.07535.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 02:29, Paul Mackerras wrote:
-> Rafael J. Wysocki writes:
-> 
-> > They will not trigger 100% of the time, but sporadically and generally at
-> > random.
-> > 
-> > At least the freezer problems are reproducible. ;-)
-> 
-> Our experience with powermacs has been that it isn't actually all that
-> hard to get it right for the drivers you care about.
+From: David Howells <dhowells@redhat.com>
 
-Well, I'm a bit suspicious about that. ;-)
+Be (self-)consistent and use CONFIG_GDB_CONSOLE everywhere rather than using
+CONFIG_GDBSTUB_CONSOLE in some places and not others.  This is also then
+consistent with other archs.
 
-Namely, if you run your suspend code on one CPU and (do I remeber correctly
-that?) with kernel preemption disabled, then you practically prevent user land
-processes from being scheduled when your suspend code is running.
+Also remove the gdbstub console device() op which doesn't seem to be necessary
+now (especially as it doesn't compile).
 
-If that is the case (of which I'm not sure), the freezer is obviously
-unnecessary, because you've taken processes out of the equation in a different
-way ...
+[Found by Robert P. J. Day <rpjday@mindspring.com>]
 
-Greetings,
-Rafael
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
+ arch/frv/kernel/gdb-stub.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+diff --git a/arch/frv/kernel/gdb-stub.c b/arch/frv/kernel/gdb-stub.c
+index 1e7a101..e89cad1 100644
+--- a/arch/frv/kernel/gdb-stub.c
++++ b/arch/frv/kernel/gdb-stub.c
+@@ -647,17 +647,11 @@ void debug_to_serial(const char *p, int n)
+ }
+ #endif
+ 
+-#ifdef CONFIG_GDBSTUB_CONSOLE
+-
+-static kdev_t gdbstub_console_dev(struct console *con)
+-{
+-	return MKDEV(1,3); /* /dev/null */
+-}
++#ifdef CONFIG_GDB_CONSOLE
+ 
+ static struct console gdbstub_console = {
+ 	.name	= "gdb",
+ 	.write	= gdbstub_console_write,	/* in break.S */
+-	.device	= gdbstub_console_dev,
+ 	.flags	= CON_PRINTBUFFER,
+ 	.index	= -1,
+ };
+@@ -2021,7 +2015,7 @@ void __init gdbstub_init(void)
+ 	ptr = mem2hex(gdbstub_banner, ptr, sizeof(gdbstub_banner) - 1, 0);
+ 	gdbstub_send_packet(output_buffer);
+ #endif
+-#if defined(CONFIG_GDBSTUB_CONSOLE) && defined(CONFIG_GDBSTUB_IMMEDIATE)
++#if defined(CONFIG_GDB_CONSOLE) && defined(CONFIG_GDBSTUB_IMMEDIATE)
+ 	register_console(&gdbstub_console);
+ #endif
+ 
+@@ -2031,7 +2025,7 @@ void __init gdbstub_init(void)
+ /*
+  * register the console at a more appropriate time
+  */
+-#if defined (CONFIG_GDBSTUB_CONSOLE) && !defined(CONFIG_GDBSTUB_IMMEDIATE)
++#if defined (CONFIG_GDB_CONSOLE) && !defined(CONFIG_GDBSTUB_IMMEDIATE)
+ static int __init gdbstub_postinit(void)
+ {
+ 	printk("registering console\n");
+
