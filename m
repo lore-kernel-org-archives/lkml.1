@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760351AbXGETnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbXGETpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760351AbXGETnP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 15:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758302AbXGETm7
+	id S1758389AbXGETpe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 15:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758015AbXGETp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 15:42:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36777 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758137AbXGETm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 15:42:58 -0400
-Date: Thu, 5 Jul 2007 15:42:54 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: linux-cifs-client@lists.samba.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] error out if signing was requested, but can't be fulfilled
-Message-Id: <20070705154254.5f0f2a65.jlayton@redhat.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 15:45:27 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:41228 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757979AbXGETp1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 15:45:27 -0400
+To: oliver@neukum.org
+CC: miklos@szeredi.hu, pavel@ucw.cz, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+In-reply-to: <200707052138.56920.oliver@neukum.org> (message from Oliver
+	Neukum on Thu, 5 Jul 2007 21:38:56 +0200)
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <200707052138.56920.oliver@neukum.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Jul 2007 21:44:12 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, if mount with a signing-enabled sec= option (e.g.
-sec=ntlmi), the kernel does a warning printk if the server doesn't
-support signing, and then proceeds without signatures.
+> Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
+> > > > Actually fuse allows SIGKILL, because it's always fatal, and the
+> > > > syscall may not be restarted.
+> > > 
+> > > I think you want to stick try_to_freeze() at the same places where you
+> > > do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
+> > > problem.
+> > 
+> > I could, but it would not solve the general problem.  Namely, that the
+> > presence of fuse imposes a certain ordering in which userspace tasks
+> > have to be frozen.  And it is not possible to know this ordering.
+> 
+> Actually, why do you need this? There is no absolute need that you
+> finish the request. You must either finish the request or let yourself
+> be frozen.
+> 
+> A quick look through fuse reveals principally request_wait_answer()
+> And maybe a few other places. Is there some hidden reason you cannot
+> handle being frozen here?
 
-This is probably OK for people that think to look at the ring buffer,
-but seems wrong to me. If someone explicitly requests signing, we
-should error out if that request can't be satisfied. They can then
-reattempt the mount without signing if that's ok.
+Yes, fuse could handle being frozen there.  However that would only
+solve part of the problem: an operation waiting for a reply could be
+holding a VFS mutex and some other task may be blocked on that mutex.
 
-Is there any reason not to do something like the following patch?
+How would you solve freezing those tasks?
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-
-diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
-index 4a2458e..c9cae48 100644
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -650,6 +650,7 @@ signing_check:
- 			(SECMODE_SIGN_ENABLED | SECMODE_SIGN_REQUIRED)) == 0) {
- 			cERROR(1,
- 				("signing required but server lacks support"));
-+			rc = -EOPNOTSUPP;
- 		} else
- 			server->secMode |= SECMODE_SIGN_REQUIRED;
- 	} else {
+Miklos
