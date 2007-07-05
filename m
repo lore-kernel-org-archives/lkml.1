@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbXGEWry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762161AbXGEWuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762746AbXGEWry (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 18:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760596AbXGEWrp
+	id S1762161AbXGEWuZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 18:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759582AbXGEWuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 18:47:45 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:49071 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752881AbXGEWro (ORCPT
+	Thu, 5 Jul 2007 18:50:14 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:59283 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759022AbXGEWuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 18:47:44 -0400
-Subject: Re: [RFC] Thread Migration Preemption
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070705215152.GA4865@Krystal>
-References: <20070705215152.GA4865@Krystal>
-Content-Type: text/plain
-Date: Thu, 05 Jul 2007 18:46:46 -0400
-Message-Id: <1183675606.17319.83.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Thu, 5 Jul 2007 18:50:13 -0400
+Message-ID: <468D757F.5000804@nortel.com>
+Date: Thu, 05 Jul 2007 16:49:35 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Ernie Petrides <petrides@redhat.com>
+CC: Clemens Koller <clemens.koller@anagramm.de>,
+       Chris Wright <chrisw@sous-sol.org>, Uli Luckas <u.luckas@road.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
+References: <200707052228.l65MSdvA025440@pasta.boston.redhat.com>
+In-Reply-To: <200707052228.l65MSdvA025440@pasta.boston.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jul 2007 22:49:39.0046 (UTC) FILETIME=[C4A30860:01C7BF56]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-05 at 17:51 -0400, Mathieu Desnoyers wrote:
-> Thread Migration Preemption
-> 
-> This patch adds the ability to protect critical sections from migration to
-> another CPU without disabling preemption.
-> 
-> This will be useful to minimize the amount of preemption disabling for the -rt
-> patch. It will help leveraging improvements brought by the local_t types in
-> asm/local.h (see Documentation/local_ops.txt). Note that the updates done to
-> variables protected by migration_disable must be either atomic or protected from
-> concurrent updates done by other threads.
-> 
-> Typical use:
-> 
-> migration_disable();
-> local_inc(&__get_cpu_var(&my_local_t_var));
-> migration_enable();
-> 
-> Which will increment the variable atomically wrt the local CPU.
-> 
-> Comments (such as how to integrate this in the already almost full
-> preempt_count) are welcome.
+Ernie Petrides wrote:
 
-Ingo and Thomas, this also would help with the IRQ thread running a
-softirq issue.  We wouldn't need to bind to a CPU the thread. We could
-simply disable the ability to migrate while the IRQ thread was handling
-the softirqs.
+> Only kernels built with the CONFIG_HIGH_RES_TIMERS option enabled were
+> vulnerable.
 
--- Steve
+As I mentioned in my post to Thomas, we have high res timers disabled 
+and were still affected.  Granted, our kernel has been modified so it is 
+possible that vanilla would not be affected....I haven't tested it.
 
-
+Chris
