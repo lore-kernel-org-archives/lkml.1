@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbXGEKUC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbXGEKWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759989AbXGEKUC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 06:20:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbXGEKTy
+	id S1760156AbXGEKWm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 06:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758431AbXGEKWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 06:19:54 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:57585 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754713AbXGEKTy (ORCPT
+	Thu, 5 Jul 2007 06:22:36 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:40016 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758036AbXGEKWf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 06:19:54 -0400
-To: oliver@neukum.org
-CC: miklos@szeredi.hu, paulus@samba.org, stern@rowland.harvard.edu,
-       johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, mjg59@srcf.ucam.org, benh@kernel.crashing.org
-In-reply-to: <200707051202.59375.oliver@neukum.org> (message from Oliver
-	Neukum on Thu, 5 Jul 2007 12:02:58 +0200)
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051048.46202.oliver@neukum.org> <E1I6NAH-00008t-00@dorka.pomaz.szeredi.hu> <200707051202.59375.oliver@neukum.org>
-Message-Id: <E1I6OLf-0000JP-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Jul 2007 12:14:07 +0200
+	Thu, 5 Jul 2007 06:22:35 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 5 Jul 2007 06:20:20 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Denis Vlasenko <vda.linux@googlemail.com>
+cc: Jesper Juhl <jesper.juhl@gmail.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Some love to default profiler
+In-Reply-To: <200707051216.29018.vda.linux@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0707050619110.4294@localhost.localdomain>
+References: <20070704213420.GA5864@martell.zuzino.mipt.ru>
+ <9a8748490707041650s3b122007o46c8a34647b43af3@mail.gmail.com>
+ <200707051216.29018.vda.linux@googlemail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > And teach VFS to block suspension, while waiting on a mutex held by
-> > > > another process performing a fuse operation.
-> > > > 
-> > > > I can already hear the beautiful praise from Al Viro at the sight of
-> > > > that ;)
-> > > 
-> > > There is that.
-> > > 
-> > > OK, bite the bullet. Tasks involved in fuse are special. Give them a flag
-> > > and teach the freezer to put them on ice only after all other task are
-> > > frozen. In a way they are kernel, there's no use denying that.
-> > 
-> > And flag every other process, that the flagged process is
-> > communicating with?  How are you proposing to do that?
-> > 
-> > Quoting Paul:
-> > 
-> > "1. The freezer cannot be guaranteed deadlock-free without constructing
-> >    a dependency graph between tasks (both user and kernel), which is
-> >    virtually impossible since the dependencies are not externally
-> >    observable."
-> 
-> A deadlock requires that the circular wait is uninterruptible. Normal IPC
-> isn't.
-> 
-> What are you doing in the userland portions of fuse? Some kind of IPC
-> with other tasks?
+On Thu, 5 Jul 2007, Denis Vlasenko wrote:
 
-Anything, writing to a file, writing to shared memory, sending things
-over the network.  There's no limit to what a filesystem daemon may
-do.  It's a perfectly ordinary unprivileged userspace process.  And
-this is a feature not a bug.
+> On Thursday 05 July 2007 01:50, Jesper Juhl wrote:
+> > > Removes conditional branch from schedule(). Code savings on my
+> > >    usual config:
+> > >
+> > >            text    data     bss     dec     hex filename
+> > >         2921871  179895  180224 3281990  321446 vmlinux         before
+> > >         2920141  179847  180224 3280212  320d54 vmlinux         after
+> > >         --------------------------------------------------------------
+> > >           -1730     -48           -1778
+> >
+> > Nice savings there. Not that 1.7K is huge, but it's kernel memory is
+> > precious :-)
+>
+> Hehe. In busybox project people can kill for 1.7K :)
+> --
 
-> There is a limit to which you can push kernel functionality into
-> user space.
+true enough.  say ... whatever *did* you do with rob landley's body?
+:-)
 
-Limiting what a userspace filesystem can do would defeat the whole
-purpose of the bloody thing.  This is not negotiable ;)
+rday
 
-Miklos
+p.s  that was, i say, that was a *joke*, son.
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
