@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbXGETpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbXGETy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758389AbXGETpe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 15:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758015AbXGETp1
+	id S1760685AbXGETy2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 15:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758230AbXGETyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 15:45:27 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:41228 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757979AbXGETp1 (ORCPT
+	Thu, 5 Jul 2007 15:54:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39762 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751098AbXGETyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 15:45:27 -0400
-To: oliver@neukum.org
-CC: miklos@szeredi.hu, pavel@ucw.cz, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-In-reply-to: <200707052138.56920.oliver@neukum.org> (message from Oliver
-	Neukum on Thu, 5 Jul 2007 21:38:56 +0200)
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <200707052138.56920.oliver@neukum.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Jul 2007 21:44:12 +0200
+	Thu, 5 Jul 2007 15:54:17 -0400
+Date: Thu, 5 Jul 2007 12:51:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>, Dmitry Torokhov <dtor@mail.ru>,
+       Jiri Kosina <jkosina@suse.cz>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, marcel@holtmann.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org,
+       "Vladimir V. Saveliev" <vs@namesys.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-ide@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       Mark Fortescue <mark@mtfhpc.demon.co.uk>,
+       William Lee Irwin III <wli@holomorphy.com>, Greg KH <greg@kroah.com>
+Subject: Re: [1/2] 2.6.22-rc7: known regressions
+In-Reply-To: <1183663888.2756.19.camel@shinybook.infradead.org>
+Message-ID: <alpine.LFD.0.98.0707051236410.9434@woody.linux-foundation.org>
+References: <468A7D14.1050505@googlemail.com>  <1183599771.2740.19.camel@shinybook.infradead.org>
+  <alpine.LFD.0.98.0707050921000.9434@woody.linux-foundation.org> 
+ <1183661171.2756.13.camel@shinybook.infradead.org>
+ <1183663888.2756.19.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
-> > > > Actually fuse allows SIGKILL, because it's always fatal, and the
-> > > > syscall may not be restarted.
-> > > 
-> > > I think you want to stick try_to_freeze() at the same places where you
-> > > do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
-> > > problem.
-> > 
-> > I could, but it would not solve the general problem.  Namely, that the
-> > presence of fuse imposes a certain ordering in which userspace tasks
-> > have to be frozen.  And it is not possible to know this ordering.
+
+Looks input-related..
+
+On Thu, 5 Jul 2007, David Woodhouse wrote:
 > 
-> Actually, why do you need this? There is no absolute need that you
-> finish the request. You must either finish the request or let yourself
-> be frozen.
+> Hm, it's not something new. It's an oops I saw occasionally in 2.6.21-rc
+> too, whenever we had CONFIG_SYSFS_DEPRECATED set.
 > 
-> A quick look through fuse reveals principally request_wait_answer()
-> And maybe a few other places. Is there some hidden reason you cannot
-> handle being frozen here?
+>  Unable to handle kernel paging request for data at address 0x6b6b6b6b
 
-Yes, fuse could handle being frozen there.  However that would only
-solve part of the problem: an operation waiting for a reply could be
-holding a VFS mutex and some other task may be blocked on that mutex.
+Ok, that 0x6b is obviously the kfree() poisoning, ie it looks like a 
+use-after-free problem with a pointer being loaded from a structure that 
+had been free'd-
 
-How would you solve freezing those tasks?
+And the trace seems to be (ignore the unreliable one):
 
-Miklos
+>  NIP [c001870c] strlen+0x4/0x18
+>  LR [c0134fec] kobject_get_path+0x34/0xc4
+>  Call Trace:
+>  [eed5be90] [c01d5124] class_uevent+0xac/0x1bc
+>  [eed5bed0] [c01357e4] kobject_uevent_env+0x23c/0x460
+>  [eed5bf20] [c01d485c] class_device_del+0x178/0x1a0
+>  [eed5bf40] [c01d489c] class_device_unregister+0x18/0x30
+>  [eed5bf60] [c021f820] input_unregister_device+0xf4/0x130
+>  [eed5bf70] [c0242f4c] hidinput_disconnect+0x2c/0x60
+>  [eed5bf90] [f27f2bac] hidp_session+0x550/0x584 [hidp]
+>  [eed5bff0] [c0013e28] kernel_thread+0x44/0x60
+
+Where we have a few missing functions due to inlining, ie the real 
+sequence seems to be:
+
+class_device_del ->
+  kobject_uevent_env ->
+    class_uevent ->
+      kobject_get_path ->
+	get_kobj_path_length ->
+	  parent = kobj;
+	  do {
+	    strlen(parent->k_name /* kobject_name(parent) */);
+	    parent = parent->parent;
+	  } while (parent);
+
+so either the kobj or one of it's parents had already been freed when it 
+was unregistered due to the disconnect.
+
+I'm not seeing any reference counting or other protection for the device 
+("input") on "hid->inputs" list. But I don't know the code. Dmitry? Jiri?
+
+		Linus
