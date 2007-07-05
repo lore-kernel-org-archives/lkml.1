@@ -1,98 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbXGEP22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbXGEPdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760341AbXGEP22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 11:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbXGEP2V
+	id S1759630AbXGEPdV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 11:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbXGEPdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 11:28:21 -0400
-Received: from mail.macqel.be ([194.78.208.39]:7056 "EHLO mail.macqel.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757256AbXGEP2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 11:28:20 -0400
-X-Greylist: delayed 1347 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jul 2007 11:28:20 EDT
-Date: Thu, 5 Jul 2007 17:05:47 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] mtd : add FUJITSU MBM29F800BA and ST M29F800AB descriptions
-Message-ID: <20070705150547.GA10281@muff.macqel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4i
+	Thu, 5 Jul 2007 11:33:14 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:40966 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753820AbXGEPdN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 11:33:13 -0400
+To: rjw@sisk.pl
+CC: mjg59@srcf.ucam.org, pavel@ucw.cz, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-reply-to: <200707051727.36715.rjw@sisk.pl>
+Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <200707051704.48137.rjw@sisk.pl> <20070705150301.GB23647@srcf.ucam.org> <200707051727.36715.rjw@sisk.pl>
+Message-Id: <E1I6TJq-000164-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Jul 2007 17:32:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+> > > You have processes that don't react to signals, because some
+> > > other user land task is misbehaving.  I'd call that ugly at the
+> > > very least.
+> > 
+> > It already happens with, say, NFS. Don't think about it in terms of a 
+> > userland task misbehaving - think of it in terms of a resource becoming 
+> > unavailable.
+> 
+> I think there's a difference between a userland task playing the role of a
+> resource and a "real" external resource the kernel doesn't control.
+> 
+> IMO, userland tasks should not have the power to affect each other as though
+> they were parts of the kernel.
 
-Add descriptions for Fujitsu MBM29F800BA and ST M29F800AB flash chips.
-Those chips are compatible (except for the ids) with the AMD AM29F800BB.
+One task doing ptrace() can basically do whatever it wants with the
+task being traced.  This is not an exact analogy to what fuse does,
+but close.
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+And for this reason the security model for allowing access to a fuse
+filesystem is similar to that for allowing tracing.
 
-diff -r d857b8fa1d27 drivers/mtd/chips/jedec_probe.c
---- a/drivers/mtd/chips/jedec_probe.c	Sun Jun 24 12:08:53 2007 -0700
-+++ b/drivers/mtd/chips/jedec_probe.c	Thu Jul  5 16:46:25 2007 +0200
-@@ -70,6 +70,7 @@
- 
- /* Fujitsu */
- #define MBM29F040C	0x00A4
-+#define MBM29F800BA	0x2258
- #define MBM29LV650UE	0x22D7
- #define MBM29LV320TE	0x22F6
- #define MBM29LV320BE	0x22F9
-@@ -129,6 +130,7 @@
- #define LH28F640BF	0x00b0
- 
- /* ST - www.st.com */
-+#define M29F800AB	0x0058
- #define M29W800DT	0x00D7
- #define M29W800DB	0x005B
- #define M29W160DT	0x22C4
-@@ -646,6 +648,23 @@ static const struct amd_flash_info jedec
- 		}
- 	}, {
- 		.mfr_id		= MANUFACTURER_FUJITSU,
-+		.dev_id		= MBM29F800BA,
-+		.name		= "Fujitsu MBM29F800BA",
-+		.uaddr		= {
-+			[0] = MTD_UADDR_0x0AAA_0x0555,  /* x8 */
-+			[1] = MTD_UADDR_0x0555_0x02AA,  /* x16 */
-+		},
-+		.DevSize	= SIZE_1MiB,
-+		.CmdSet		= P_ID_AMD_STD,
-+		.NumEraseRegions= 4,
-+		.regions	= {
-+			ERASEINFO(0x04000,1),
-+			ERASEINFO(0x02000,2),
-+			ERASEINFO(0x08000,1),
-+			ERASEINFO(0x10000,15),
-+		}
-+	}, {
-+		.mfr_id		= MANUFACTURER_FUJITSU,
- 		.dev_id		= MBM29LV650UE,
- 		.name		= "Fujitsu MBM29LV650UE",
- 		.uaddr		= {
-@@ -1510,6 +1529,23 @@ static const struct amd_flash_info jedec
-                        ERASEINFO(0x1000,256)
-                }
- 
-+	}, {
-+		.mfr_id		= MANUFACTURER_ST,
-+		.dev_id		= M29F800AB,
-+		.name		= "ST M29F800AB",
-+		.uaddr		= {
-+			[0] = MTD_UADDR_0x0AAA_0x0555,  /* x8 */
-+			[1] = MTD_UADDR_0x0555_0x02AA,  /* x16 */
-+		},
-+		.DevSize	= SIZE_1MiB,
-+		.CmdSet		= P_ID_AMD_STD,
-+		.NumEraseRegions= 4,
-+		.regions	= {
-+			ERASEINFO(0x04000,1),
-+			ERASEINFO(0x02000,2),
-+			ERASEINFO(0x08000,1),
-+			ERASEINFO(0x10000,15),
-+		}
-        }, {
- 		.mfr_id		= MANUFACTURER_ST,	/* FIXME - CFI device? */
- 		.dev_id		= M29W800DT,
+The gory details can be found in Documentation/filesystems/fuse.txt.
+
+Miklos
