@@ -1,138 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbXGEPgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbXGEPk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757783AbXGEPgr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 11:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757496AbXGEPgi
+	id S1759629AbXGEPk0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 11:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbXGEPkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 11:36:38 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:47918 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757167AbXGEPgh (ORCPT
+	Thu, 5 Jul 2007 11:40:18 -0400
+Received: from web32607.mail.mud.yahoo.com ([68.142.207.234]:44974 "HELO
+	web32607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757693AbXGEPkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 11:36:37 -0400
-Message-ID: <468D1003.1050901@freedesktop.org>
-Date: Thu, 05 Jul 2007 08:36:35 -0700
-From: Josh Triplett <josh@freedesktop.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+	Thu, 5 Jul 2007 11:40:17 -0400
+X-YMail-OSG: gPnCOQcVM1nGDeGwACyzDa5u85ykp8dVYmpbDdMQ6aEdrjAABLYOE7meUSgsLisDZiTZ93va3sOsWZW2y.xn6SvXXajc9z0-
+X-RocketYMMF: knobi.rm
+Date: Thu, 5 Jul 2007 08:40:16 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: Understanding I/O behaviour
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: linux-sparse@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] bloody mess with __attribute__() syntax
-References: <20070705093528.GK21478@ftp.linux.org.uk>
-In-Reply-To: <20070705093528.GK21478@ftp.linux.org.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig303224320AC2F992AED99646"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <867098.12378.qm@web32607.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig303224320AC2F992AED99646
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Al Viro wrote:
-> 	We have a fun problem and for a change it's not sparse fault.
-> It's gcc folks' one.  Basically, __attribute__((...)) behaves in
-> an idiotic way and it's an intentional (and documented) behaviour.
-> In declaration of form
-> 	T __attribute__((foo)) **v;
-> the attribute applies to v, not to **v.  IOW, in that position it
-> behaves (regardless of the nature of attribute) as storage class,
-> not as a qualifier.  Even if the same attribute can be used in
-> 	T * __attribute__((foo)) *v;
-> where it will apply to *v.  Intended way to have it apply to **v is
-> 	T (__attribute__((foo)) **v);
->=20
-> To put it mildly, that blows.  Note that qualifiers can *not* behave
-> that way - direct declarator can not expand to (<qualifier> <something>=
-).
-> I.e. if you replace __attribute__((foo)) with qualifier in the
-> above, you'll get invalid syntax.
+ for a customer we are operating a rackful of HP/DL380/G4 boxes that
+have given us some problems with system responsiveness under [I/O
+triggered] system load.
 
-Wow.  Insane.  So these all declare the same type:
-__attribute__((foo)) T *v;
-T __attribute__((foo)) *v;
-T *__attribute__((foo)) v;
-?  Specifically, they point to a foo-T, for convenient shooting?
+ The systems in question have the following HW:
 
-> Now, that idiocy would be none of our concern, if not for the fact
-> that noderef and address_space() are definitely supposed to imitate
-> qualifiers.
+2x Intel/EM64T CPUs
+8GB memory
+CCISS Raid controller with 4x72GB SCSI disks as RAID5
+2x BCM5704 NIC (using tg3)
 
-context also represents a qualifier; the position of the qualifier should=
+ The distribution is RHEL4. We have tested several kernels including
+the original 2.6.9, 2.6.19.2, 2.6.22-rc7 and 2.6.22-rc7+cfs-v18.
 
-determine things like whether you want to enforce the context when you ac=
-cess
-a pointer or dereference a pointer.
+ One part of the workload is when several processes try to write 5 GB
+each to the local filesystem (ext2->LVM->CCISS). When this happens, the
+load goes up to 12 and responsiveness goes down. This means from one
+moment to the next things like opening a ssh connection to the host in
+question, or doing "df" take forever (minutes). Especially bad with the
+vendor kernel, better (but not perfect) with 2.6.19 and 2.6.22-rc7.
 
-> If anybody seriously suggests switching to syntax
-> like
-> 	int (__user *p);
-> all over the place, well...
+ The load basically comes from the writing processes and up to 12
+"pdflush" threads all being in "D" state.
 
-Definitely not an option.
+ So, what I would like to understand is how we can maximize the
+responsiveness of the system, while keeping disk throughput at maximum.
 
-> Note that gcc rules for __attribute__() (and that's the only source
-> of rules we _have_ for the damn thing) clearly say that
-> 	int __user *p;
-> is the same thing as
-> 	int *__user p;
->
-> Now, we could declare gcc people responsible for that turd rejects
-> of Vogon Construction Fleet and handle the damn thing sanely.
-> The first part is clearly the right thing to do, but the second one...
-> Can't do without breaking gccisms using __attribute__.  E.g.
-> 	int (__attribute__((mode(__pointer__))) *p);
-> is a gcc way to say "pointer to integer type equivalent to intptr_t" an=
-d
-> 	int __attribute__((mode(__pointer__))) *p;
-> is exactly the same thing as
-> 	int *p;
-> since the damn attribute applies to the entire type here (and is obviou=
-sly
-> a no-op).
->
-> Frankly, I would rather add a new primitive (__qualifier__) mirroring t=
-he
-> __attribute__, but acting like real qualifiers do.  And switched the
-> noderef et.al. to it.
+ During my investiogation I basically performed the following test,
+because it represents the kind of trouble situation:
 
-Something like that sounds vaguely reasonable.  It should allow the same =
-set
-of attributes, and just change what they apply to.  To use your example,
-T __qualifier__((foo)) *v;
-and
-T (__attribute__((foo)) *v);
-would mean the same thing.
+----
+$ cat dd3.sh
+echo "Start 3 dd processes: "`date`
+dd if=/dev/zero of=/scratch/X1 bs=1M count=5000&
+dd if=/dev/zero of=/scratch/X2 bs=1M count=5000&
+dd if=/dev/zero of=/scratch/X3 bs=1M count=5000&
+wait
+echo "Finish 3 dd processes: "`date`
+sync
+echo "Finish sync: "`date`
+rm -f /scratch/X?
+echo "Files removed: "`date`
+----
 
-> The only real alternative is to have __attribute__
-> behaviour dependent on its guts and that's not feasible - remember that=
+ This results in the following timings. All with the anticipatory
+scheduler, because it gives the best results:
 
-> there can be more than one attribute in the list insider the damn thing=
-=2E
-> Besides, it's bloody disgusting.
+2.6.19.2, HT: 10m
+2.6.19.2, non-HT: 8m45s
+2.6.22-rc7, HT: 10m
+2.6.22-rc7, non-HT: 6m
+2.6.22-rc7+cfs_v18, HT: 10m40s
+2.6.22-rc7+cfs_v18, non-HT: 10m45s
 
-Agreed.  Not an option, even if we *could* implement it.
+ The "felt" responsiveness was best with the last two kernels, although
+the load profile over time looks identical in all cases.
 
-- Josh Triplett
+ So, a few questions:
 
+a) any idea why disabling HT improves throughput, except for the cfs
+kernels? For plain 2.6.22 the difference is quite substantial
+b) any ideas how to optimize the settings of the /proc/sys/vm/
+parameters? The documentation is a bit thin here.
 
---------------enig303224320AC2F992AED99646
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Thanks in advance
+Martin
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGjRADGJuZRtD+evsRApgLAJwLNHMByiXMUrOn+8/ecHSaCuOY7wCgncDJ
-aAfhWE/bndDAY10MGdr1js0=
-=VhSc
------END PGP SIGNATURE-----
-
---------------enig303224320AC2F992AED99646--
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
