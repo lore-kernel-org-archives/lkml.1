@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbXGER7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbXGESEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbXGER7n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 13:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760011AbXGER7X
+	id S1760559AbXGESEl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 14:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXGESEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 13:59:23 -0400
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:2626 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759426AbXGER7W (ORCPT
+	Thu, 5 Jul 2007 14:04:33 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:49205 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757570AbXGESEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 13:59:22 -0400
-Date: Thu, 5 Jul 2007 19:57:35 +0200
-From: Erik Mouw <mouw@nl.linux.org>
-To: John Stoffel <john@stoffel.org>
-Cc: Theodore Tso <tytso@mit.edu>, alan <alan@clueserver.org>,
-       J?rn Engel <joern@logfs.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-Message-ID: <20070705175735.GC5179@gateway.home>
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org> <20070616145337.GA13391@lazybastard.org> <20070618094524.GF5181@schatzie.adilger.int> <20070618140143.GD30244@thunk.org> <Pine.LNX.4.64.0706180907580.22137@blackbox.fnordora.org> <20070618172955.GB24189@thunk.org> <20070704173234.GB26201@gateway.home> <18060.63700.223173.537189@stoffel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vEao7xgI/oilGqZ+"
+	Thu, 5 Jul 2007 14:04:32 -0400
+Date: Thu, 5 Jul 2007 12:04:28 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Karel Zak <kzak@redhat.com>,
+       List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+Message-ID: <20070705180428.GJ5633@schatzie.adilger.int>
+Mail-Followup-To: Mike Frysinger <vapier@gentoo.org>,
+	Christoph Hellwig <hch@infradead.org>, Karel Zak <kzak@redhat.com>,
+	List util-linux-ng <util-linux-ng@vger.kernel.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070703221156.GY14825@petra.dvoda.cz> <20070704084211.GA19128@infradead.org> <200707051242.00625.vapier@gentoo.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18060.63700.223173.537189@stoffel.org>
-Organization: Eric Conspiracy Secret Labs
-X-Eric-Conspiracy: There is no conspiracy!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200707051242.00625.vapier@gentoo.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jul 05, 2007  12:41 -0400, Mike Frysinger wrote:
+> On Wednesday 04 July 2007, Christoph Hellwig wrote:
+> > Sorry, but it's really annoying to pull in a filesystem-specific devel
+> > package for that.  Having a library is fine, but please move the library
+> > into util-linux so it's always available without another dependency.
+> 
+> ugh, moving libraries which are already actively maintained by other core 
+> projects into util-linux is so not a good idea (ignoring the fact that it'd 
+> easily be a pita/waste for distro maintainers)
 
---vEao7xgI/oilGqZ+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Some distros (Debian and SuSE I think) split the e2fsprogs libraries
+into separate packages so that you are not depending on "e2fsprogs",
+but rather "libuuid" and/or "libblkid".
 
-On Thu, Jul 05, 2007 at 09:57:40AM -0400, John Stoffel wrote:
-> >>>>> "Erik" =3D=3D Erik Mouw <mouw@nl.linux.org> writes:
-> Erik> The only valid use of Streams in Windows I've seen was a virus
-> Erik> checker that stored a hash of the file in a separate
-> Erik> stream. Checking a file was a matter of rehashing it and
-> Erik> comparing against the hash stored in the special hash data
-> Erik> stream for that particular file.
->=20
-> So what was stopping a virus from infecting a file, re-computing the
-> hash and pushing the new hash into the stream? =20
+> > That way xfsprogs could for example drop it's own detection library aswell.
+> 
+> i dont really think this is dependent on util-linux at all.  nothing is 
+> stopping xfsprogs from depending on udev or e2fsprogs now.
 
-Nothing, but the same holds for virus checkers that store the hash in a
-separate file. The only advantage of storing the hash in a stream is
-that the stream is automatically deleted when you remove the file.
+In fact, Eric Sandeen and I discussed splitting the xfsprogs "libdisk"
+(or similar, it detects RAID geometry for DM/MD/etc) into a standalone
+library so that e2fsprogs could use it.  The only issue is the increased
+maintenance and packaging of separate libraries.
 
-> You need to keep the computed hashes on Read-Only media for true
-> security, once you let the system change them, then you're toast....
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
-Agreed.
-
-
-Erik
-
---=20
-They're all fools. Don't worry. Darwin may be slow, but he'll
-eventually get them. -- Matthew Lammers in alt.sysadmin.recovery
-
---vEao7xgI/oilGqZ+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGjTEP/PlVHJtIto0RAtxhAKCGWuhhDHPcJQkd0IpAreWpsWPhfQCdEr6f
-NrVyySmp524FDsb7O8GgceY=
-=jqMD
------END PGP SIGNATURE-----
-
---vEao7xgI/oilGqZ+--
