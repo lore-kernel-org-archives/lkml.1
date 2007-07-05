@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbXGEJVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759731AbXGEJa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760041AbXGEJVn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbXGEJVh
+	id S1759731AbXGEJa2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 05:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758852AbXGEJaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:21:37 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:30263 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757702AbXGEJVg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:21:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AUjHXoG1yR7b0Bdl9gfK6sytD8IRCDvx+Pn+I9mpoeL73z2UqqtMAnj8lZ3E1D6TLxKuiTNjUR5087OWd0MF/gNvC0pjSIkeMU90C11EMFw+XD7whM19pJ3B484G6rdK+t8jiFeYf8H3h7EGH6sHQERornsk4Mkz1/NPracfTRQ=
-Message-ID: <4dde4acb0707050221k5a73a4abt2db9e8b0f7c74ae1@mail.gmail.com>
-Date: Thu, 5 Jul 2007 14:51:35 +0530
-From: "Midhun Agnihotram" <agnimidhun@gmail.com>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Subject: Re: platform_driver_register() ??
-Cc: "Nobin Mathew" <nobin.mathew@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070703211513.5245946b@poseidon.drzeus.cx>
+	Thu, 5 Jul 2007 05:30:17 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35359 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758810AbXGEJaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 05:30:16 -0400
+Date: Thu, 5 Jul 2007 11:30:13 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Message-ID: <20070705093013.GA3228@elf.ucw.cz>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031608.06348.nigel@nigel.suspend2.net> <1183447184.10386.102.camel@localhost.localdomain> <200707031456.40890.rjw@sisk.pl> <1183497290.3388.4.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4dde4acb0707030028p2c078a22jd537853f145c2518@mail.gmail.com>
-	 <8d6898730707030558o5e110b0v257ffc6350c76069@mail.gmail.com>
-	 <20070703211513.5245946b@poseidon.drzeus.cx>
+In-Reply-To: <1183497290.3388.4.camel@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+Hi!
 
+> > >  - For STR, don't do the freezer thing.
+> > 
+> > In the long run, I agree.
+> > 
+> > Still, can you please read this post from Alan Stern:
+> > 
+> > https://lists.linux-foundation.org/pipermail/linux-pm/2007-June/012847.html
+> > 
+> > ?  I don't think I'm able to repeat the arguments given in there in a
+> > convincing way.
+> 
+> That's the same crackpot I've been hearing for the past 3 years or
+> so ...
+> 
+> Both Paulus and I think the freezer is just a way to try to put your
+> head in the sand and ignore the problem. It causes as many problems as
+> it solves on its own, and is just not a solution that will be of any use
+> once you start implementing dynamic PM schemes etc...
 
-> >     I think mmc driver is layered modules, only top block driver
-> > registers driver under  "mmc_bus_type" bus, see
-> > drivers/mmc/mmc_sysfs.c and mmc_block.c. I think they are creating a
-> > tree of devices of same characteristics under that bus.
-> > I think your driver is linux/drivers/mmc/imxmmc.c where it registers a
-> > driver for device of type "platform_bus_type". This module will come
-> > under above mentioned block driver.
-> > Corresponding platform device is registered in
-> > linux/arch/arm/mach-imx/generic.c see platform_device imx_mmc_device.
+Well, yep, you can view freezer as a head in the sand...
 
+> In many cases, having proper support for "live" suspend of devices is
+> just a matter of having a couple of helpers in whatever subsystem those
+> drivers hookup with. In the case of network, for example, it's mostly
+> trivial (stop the queue). For block, it's not terribly hard neither,
+> though you want to have some orderign/atomicity between the blocking of
+> the incoming request queue and the sending of things like spindown &
+> flush commands to the disk. For old-style IDE, that was fairly easily
+> solved by piping suspend/resume command down the request queue itself
+> and have the queue block/unblbock itself after processing them. Some of
+> that logic could maybe be moved to the block layer for all block drivers
+> to benefit.
 
-    Is it necessary that the firmware (may be bootloader) notify about
-the MMC host to Linux? The kernel documentation (platform.txt) says :
+...but the moment you start blocking tasks that done driver request,
+you _do_ have mini-freezer of your own, with pretty much the same
+problems.
 
- "The firmware should notify the platform bus about devices before the
-legacy drivers have had a chance to load."
+In another message I shown that removing freezer will not help with
+FUSE in general case.
 
-   Have I interpreted the above sentence correctly?
-
-Thanks,
-Midhun.
+It probably does not help with firmware, too; as soon as udev attempts
+to do something with your wireless card, it is blocked, and if the
+wireless card needs the firmware from udev, you are deadlocked.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
