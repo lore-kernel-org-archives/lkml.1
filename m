@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761154AbXGENBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbXGEND4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761154AbXGENBf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 09:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbXGENB0
+	id S1760888AbXGEND4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 09:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbXGENDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 09:01:26 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:56069 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758380AbXGENBY (ORCPT
+	Thu, 5 Jul 2007 09:03:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:19483 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758574AbXGENDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 09:01:24 -0400
-Message-ID: <468CEAEC.7040102@bx.jp.nec.com>
-Date: Thu, 05 Jul 2007 21:58:20 +0900
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Thu, 5 Jul 2007 09:03:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ZvT3g16+lnSwhwj5adsHBPTMAZFO0X98o6fd1+Ok9yd1dwBC2JaR8xHZk70aQdxUlZ4rRTP12EuachRmaoh+mPYDyZVUCWsLynfMzvd7t7aLT5lXLxf6U1GkQNFxQ2lvlShTjya7rUNu3dQQuJov0B+fWA/xy36JgUhoQgCl/NY=
+Message-ID: <40378e40707050603k256d2efaifd97669f3f12131e@mail.gmail.com>
+Date: Thu, 5 Jul 2007 15:03:46 +0200
+From: "Mohamed Bamakhrama" <bamakhrama@gmail.com>
+Reply-To: bamakhrama@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: Linux SMP Porting Guide
 MIME-Version: 1.0
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 8/9] netconsole: Update documentation for dynamic
- reconfigurability
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Satyam,
+Hi all,
+Is there any mailing list or tutorial which provides guidelines for
+porting Linux SMP into a new architecture?
 
-> + cat enabled				# check if enabled is 1
-> + echo 0 > enabled			# disable the target (if required)
-> + echo eth2 > dev_name			# set local interface
+Thanks a lot in advance.
 
-I think that the above line should change from "echo eth2 > dev_name" to 
-"echo -n eth2 > dev_name" or the newline should be removed at store_dev_name().
-The default behavior of echo(1) outputs the newline. 
-So, if we write appropriate network device name to dev_name, 
-the netpoll can't find net_device in netpoll_setup(). 
+Best Regards,
 
-I don't have enough time now. So I will check your patches more specific 
-at the weekend.
-Thanks
 -- 
-Keiichi KII
-NEC Corporation OSS Platform Development Division
-E-mail: k-keiichi@bx.jp.nec.com
+Mohamed Ahmed Bamakhrama
+Am Schaeferanger 15, room 035
+85764 Oberschleissheim, Germany
+Email: bamakhra@cs.tum.edu
+Web: http://home.cs.tum.edu/~bamakhra/
+Mobile: +49-160-9349-2711
