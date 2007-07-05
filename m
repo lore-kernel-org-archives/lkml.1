@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761551AbXGEOZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbXGEO0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761551AbXGEOZU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 10:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758265AbXGEOZI
+	id S1761659AbXGEO0p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 10:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758860AbXGEO0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 10:25:08 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55230 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757684AbXGEOZH (ORCPT
+	Thu, 5 Jul 2007 10:26:38 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:52076 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758849AbXGEO0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 10:25:07 -0400
-Date: Thu, 5 Jul 2007 10:25:06 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Paul Mackerras <paulus@samba.org>
-cc: Miklos Szeredi <miklos@szeredi.hu>, <rjw@sisk.pl>, <mjg59@srcf.ucam.org>,
+	Thu, 5 Jul 2007 10:26:37 -0400
+Date: Thu, 5 Jul 2007 15:26:00 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Paul Mackerras <paulus@samba.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>,
        Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
        Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
- pathway
-In-Reply-To: <18060.15630.812698.367707@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0707051023520.3728-100000@iolanthe.rowland.org>
+Message-ID: <20070705142600.GB22598@srcf.ucam.org>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <20070705091526.GA3084@elf.ucw.cz> <20070705135758.GB22177@srcf.ucam.org> <200707051628.12199.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707051628.12199.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jul 2007, Paul Mackerras wrote:
-
-> Alan Stern writes:
+On Thu, Jul 05, 2007 at 04:28:11PM +0200, Rafael J. Wysocki wrote:
+> On Thursday, 5 July 2007 15:57, Matthew Garrett wrote:
+> > And also "Userland should not depend on userland services", which is 
+> > rather more of a problem.
 > 
-> > Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-> > wanting to resume devices during a system suspend transition?  This is
-> > exactly what happens when those threads aren't frozen.
+> I think you're oversimplifying it, as far as FUSE is concerned.
 > 
-> So, I wonder why I don't see that error on my powerbook?
+> Namely, if there are two userland tasks, A and B, and B is uninterruptible,
+> because A is blocked, then this is not a usual situation.
 
-That's a good question.  Miklos, can you please reproduce the suspend 
-error using a kernel built with CONFIG_USB_DEBUG turned on?
-
-Alan Stern
-
+Fuse is one case of it occuring, and if we end up with more userspace 
+drivers then the problem is only going to get worse.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
