@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXGEDxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbXGEE37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbXGEDxU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 23:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbXGEDxM
+	id S1756570AbXGEE37 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 00:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbXGEE3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 23:53:12 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53485 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756332AbXGEDxK (ORCPT
+	Thu, 5 Jul 2007 00:29:49 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:33740 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751158AbXGEE3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 23:53:10 -0400
-Date: Thu, 5 Jul 2007 12:54:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+	Thu, 5 Jul 2007 00:29:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=pTEISwkvCJEYztY0Jq0ozgzT42pOa3OTtSfbZsQ2ToCNdLdlYhOvqhS4gzHCzZIuiGFkBXI5aKJzLpeGqUGaZG6UMwe54II0vgTLWJV2gHUHr8lLrNBw3bINLKxHpeFN+zPReoJ7/4P1Nxo+aNVX+5InR1ZhzxljW3MM9vc2tu4=  ;
+X-YMail-OSG: .tyUeQ0VM1mzqcAhlsHXH3TGq0KASBxCNtlbXl4f4BQ1JqMO
+Message-ID: <468C73B5.1050405@yahoo.com.au>
+Date: Thu, 05 Jul 2007 14:29:41 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
        "tony.luck@intel.com" <tony.luck@intel.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>,
        Christoph Lameter <clameter@sgi.com>, Mike.stroya@hp.com,
        GOTO <y-goto@jp.fujitsu.com>, dmosberger@gmail.com, hugh@veritas.com
 Subject: Re: [BUGFIX][PATCH] DO flush icache before set_pte() on ia64.
-Message-Id: <20070705125427.9a3b8e8b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <468C634D.9050306@yahoo.com.au>
-References: <20070704150504.423f6c54.kamezawa.hiroyu@jp.fujitsu.com>
-	<468B3EAA.9070905@yahoo.com.au>
-	<20070704163826.d0b7465b.kamezawa.hiroyu@jp.fujitsu.com>
-	<468C51A7.3070505@yahoo.com.au>
-	<20070705114726.2449f270.kamezawa.hiroyu@jp.fujitsu.com>
-	<468C634D.9050306@yahoo.com.au>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20070704150504.423f6c54.kamezawa.hiroyu@jp.fujitsu.com>	<468B3EAA.9070905@yahoo.com.au>	<20070704163826.d0b7465b.kamezawa.hiroyu@jp.fujitsu.com>	<468C51A7.3070505@yahoo.com.au>	<20070705114726.2449f270.kamezawa.hiroyu@jp.fujitsu.com>	<468C634D.9050306@yahoo.com.au> <20070705125427.9a3b8e8b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070705125427.9a3b8e8b.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Jul 2007 13:19:41 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> >> From what I can work out, it is something like "at this point the page
-> >>should be uptodate, so at least the icache won't contain *inconsistent*
-> >>data, just old data which userspace should take care of flushing if it
-> >>modifies". Is that always true?
-> > 
-> >  
-> > I think it's true. But, in this case, i-cache doesn't contain *incositent* data.
-> > There are inconsistency between L2-Dcache and L3-mixed-cache. At L2-icache-miss,
-> > a cpu fetches data from L3 cache.
-> > This case seems defficult to be generalized...
+KAMEZAWA Hiroyuki wrote:
+> On Thu, 05 Jul 2007 13:19:41 +1000
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-> If there is something in the icache line that isn't the last data to
-> be stored at that address, isn't that inconsistent?
 > 
-Hmm..do we have a chance to add do_flush_cache_if_not_filled_by_dma(page)
-before SetPageUptodate(page) ?
+>>>>From what I can work out, it is something like "at this point the page
+>>>>should be uptodate, so at least the icache won't contain *inconsistent*
+>>>>data, just old data which userspace should take care of flushing if it
+>>>>modifies". Is that always true?
+>>>
+>>> 
+>>>I think it's true. But, in this case, i-cache doesn't contain *incositent* data.
+>>>There are inconsistency between L2-Dcache and L3-mixed-cache. At L2-icache-miss,
+>>>a cpu fetches data from L3 cache.
+>>>This case seems defficult to be generalized...
+>>
+>>If there is something in the icache line that isn't the last data to
+>>be stored at that address, isn't that inconsistent?
+>>
+> 
+> Hmm..do we have a chance to add do_flush_cache_if_not_filled_by_dma(page)
+> before SetPageUptodate(page) ?
 
--Kame
+Well you shouldn't strictly need to, because only uptodate pages should
+ever be mapped with set_pte, and if you do the flush_icache before the
+set_pte, then you effectively get the same result.
 
+And if that's the result you want, then I don't think the flush_icache
+before set_pte is a *terrible* way to get it.
+
+-- 
+SUSE Labs, Novell Inc.
