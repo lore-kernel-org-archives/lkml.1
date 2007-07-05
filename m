@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbXGEAAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758682AbXGEAA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbXGEAAV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 20:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbXGEAAK
+	id S1758682AbXGEAA7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 20:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbXGEAAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 20:00:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:42179 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbXGEAAI (ORCPT
+	Wed, 4 Jul 2007 20:00:49 -0400
+Received: from web54504.mail.re2.yahoo.com ([206.190.49.154]:28948 "HELO
+	web54504.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757219AbXGEAAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 20:00:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZDA12Nc0sI9EF3V3uIsOaLm87P4vwG5S8I+Brbe0JQv1fQgch1BYxvFdSbo3/E+dM0snF5saLesYXH2ww8NvSn2o7nykZqRwCA5j68ISad5jeofGq7pTD/Sr3fVkxvG5RC5lZQydE1ZQGDCSdWhfVZUW6eBYS+K3n9p0Yd3AbVA=
-Message-ID: <9a8748490707041700q18608e3ave4465f1181b97e2f@mail.gmail.com>
-Date: Thu, 5 Jul 2007 02:00:07 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "WANG Cong" <xiyou.wangcong@gmail.com>
-Subject: Re: [-mm Patch] INFINIBAND: check the return value of kmalloc
-Cc: rolandd@cisco.com, mshefty@ichips.intel.com, halr@voltaire.com,
-       "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070704163741.GA2510@localhost.localdomain>
+	Wed, 4 Jul 2007 20:00:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=RoKI0Xiwh/UxbhtFUAKLwsC2oqx4i3u0rYcW+JrcrN9sVUJek5E0S8ABwMm41bUd/kMzLZXSiT4yRmtgjh5g+yvkFAKwprkGkrfomHIWwAb4wmdUGEaNGUkEI3EiopBDHp0z22a6O8cMMBSYSVHDIkY4SeG245bwcpd0mBEDGdM=;
+X-YMail-OSG: iQatbLwVM1mBWoczhWcFhIeDuHu4UMdvvd7lk6UgZ7xdsg9Qu47vWjSbC8JGtyPU4A--
+Date: Thu, 5 Jul 2007 09:00:47 +0900 (KST)
+From: yong Jung <yong_jk@yahoo.com>
+Subject: "libata ignore_hpa=1" doesn't wok on SATA ?
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070704163741.GA2510@localhost.localdomain>
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: 8bit
+Message-ID: <932011.56083.qm@web54504.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/07/07, WANG Cong <xiyou.wangcong@gmail.com> wrote:
->
-> Don't forget to check the return value of kmalloc().
->
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
->
-> ---
->
-> Index: linux-2.6.22-rc6-mm1/drivers/infiniband/hw/cxgb3/iwch_provider.c
-> ===================================================================
-> --- a/drivers/infiniband/hw/cxgb3/iwch_provider.c       2007-06-29 13:18:20.000000000 +0800
-> +++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c       2007-07-04 23:17:02.000000000 +0800
-> @@ -1166,6 +1166,10 @@
->         dev->ibdev.iwcm =
->             (struct iw_cm_verbs *) kmalloc(sizeof(struct iw_cm_verbs),
-
-While you are here anyway, why not get rid of that pointless kmalloc()
-return value cast at the same time?
-
->                                            GFP_KERNEL);
-> +       if (!dev->ibdev.iwcm) {
-> +               ret = -1;
-> +               goto bail1;
-> +       }
->         dev->ibdev.iwcm->connect = iwch_connect;
->         dev->ibdev.iwcm->accept = iwch_accept_cr;
->         dev->ibdev.iwcm->reject = iwch_reject_cr;
+Hi,
+.
+I would like to see the whole disk area and erase the
+hpa area in my desktop.
+At first I tried "setmax.c" program but it didn't work
+on SATA at least.
+So I upgraeded it to FC7 and added "libata
+ignore_hpa=1" option on boot command and
+/etc/modprobe.conf. 
+This option was accepted but still the kernel couldn't
+see the whole disk area even after reboot.
+I am using FC7, kernel-2.6.21 and 250 SATA disk.
+Could you please give me some more tips ?
+.
+Warm regards,
+Nobel
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+
+      ________________________________________________________ 
+180도 달라진 야후! 메일 - 여러 개의 메시지를 동시에 확인? 새로운 야후! 메일의 탭으로 가능해집니다.
+http://kr.content.mail.yahoo.com/cgland
