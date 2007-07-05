@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760138AbXGEJI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbXGEJLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760138AbXGEJI7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757943AbXGEJIw
+	id S1760227AbXGEJLA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 05:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758285AbXGEJKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:08:52 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:47555 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758036AbXGEJIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:08:51 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Thu, 5 Jul 2007 15:00:20 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Teigland <teigland@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: [PATCH -mm 0/3] configfs: Miscellaneous cleanups
-In-Reply-To: <20070705063008.GF17650@tasint.org>
-Message-ID: <Pine.LNX.4.64.0707051451560.15925@cselinux1.cse.iitk.ac.in>
-References: <20070704110701.28503.95359.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070705063008.GF17650@tasint.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Jul 2007 05:10:53 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:16240 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757952AbXGEJKw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 05:10:52 -0400
+Subject: Re: [PATCH] debug work struct cancel deadlocks with lockdep
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Sattler <tsattler@gmx.de>
+In-Reply-To: <1183626507.3818.19.camel@johannes.berg>
+References: <1183583529.9662.34.camel@johannes.berg>
+	 <20070705085304.GC3476@elte.hu>  <1183625889.3818.14.camel@johannes.berg>
+	 <1183626070.7054.54.camel@twins>  <1183626507.3818.19.camel@johannes.berg>
+Content-Type: text/plain
+Date: Thu, 05 Jul 2007 11:10:47 +0200
+Message-Id: <1183626647.7054.61.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joel,
-
-On Wed, 4 Jul 2007, Joel Becker wrote:
-> On Wed, Jul 04, 2007 at 04:37:01PM +0530, Satyam Sharma wrote:
-> > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+On Thu, 2007-07-05 at 11:08 +0200, Johannes Berg wrote:
+> On Thu, 2007-07-05 at 11:01 +0200, Peter Zijlstra wrote:
+> 
+> > You could of course make this STATIC_LOCKDEP_MAP_INIT() and place it
+> > near lockdep_init_map() :-)
 > > 
-> > [0/3] configfs: Miscellaneous cleanups
-> > 
-> > Simple cleanups for configfs (plus DLM and OCFS2, wherever applicable).
-> > This is diffed against 2.6.22-rc6-mm1.
+> > That way it would be clear that changes to either ought to be reflected
+> > in the other.
 > 
-> 	All three are pretty clean and useful.
+> Sure. I have to repost anyway :)
 > 
-> > [1/3] configfs+dlm: Separate out __CONFIGFS_ATTR into configfs.h
+> How about
 > 
-> 	I thought I had this already.  If someone is using it (and
-> fs/dlm obviously is), we should provide it for the general case.
-> 
-> > [2/3] configfs+dlm+ocfs2: Convert subsystem semaphore to mutex
-> 
-> 	I've just been lazy about this one.  Thank you.
-> 
-> > [3/3] configfs+dlm: Rename config_group_find_obj and state semantics clearly
-> 
-> 	Makes sense as well.
-> 
-> 	Any dissent from other subsystems?  If not, expect these to
-> show up in the ocfs2 tree soon-ish (I'm currently on vacation :-)
+> +/* both _name and _key must not be NULL */
+> +#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
+> +	{ .name = (_name), .key = (_key), }
 
-Steven Whitehouse liked these too, and has given them his:
+looks sane enough :-)
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+> That'll still require some #ifdef foo inside workqueue.h but I think
+> it's cleaner to put just this into lockdep.h
 
-as well.
+It is.
 
-It was a wrong-email-id mistake by me in the initial post, and then
-I made another mistake by doing the resend to only David and Steven
-without copying in LKML and others (I thought I was doing something
-good by not spamming the list / others). Sorry about the whole
-episode -- I guess I'll live and learn :-)
-
-Thanks,
-Satyam
