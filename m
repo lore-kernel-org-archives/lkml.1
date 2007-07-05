@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761080AbXGESaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761209AbXGESei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761080AbXGESaB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 14:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759484AbXGES3w
+	id S1761209AbXGESei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 14:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759403AbXGESec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 14:29:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41650 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756948AbXGES3v (ORCPT
+	Thu, 5 Jul 2007 14:34:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:58071 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759125AbXGESeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 14:29:51 -0400
-Date: Thu, 5 Jul 2007 11:28:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linas@austin.ibm.com (Linas Vepstas)
-Cc: James.Bottomley@steeleye.com, matthew@wil.cx, willy@debian.org,
-       linux-scsi@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH]: PCI Error Recovery: Symbios SCSI device driver
-Message-Id: <20070705112838.2d8c959b.akpm@linux-foundation.org>
-In-Reply-To: <20070702183917.GJ4501@austin.ibm.com>
-References: <20070702183917.GJ4501@austin.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 14:34:31 -0400
+Message-ID: <468D39B6.9060003@anagramm.de>
+Date: Thu, 05 Jul 2007 20:34:30 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+MIME-Version: 1.0
+To: Chris Friesen <cfriesen@nortel.com>
+CC: Chris Wright <chrisw@sous-sol.org>, Uli Luckas <u.luckas@road.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
+References: <F1D642E5A91BC94D9504EC83AE19E6B0128A5C@ecqcmtlmail3.quebec.int.ec.gc.ca> <468AA364.2010000@nortel.com> <468AB976.2010806@redhat.com> <200707041056.53992.u.luckas@road.de> <20070704165313.GC4306@sequoia.sous-sol.org> <468CFCA1.3080104@anagramm.de> <468D2EF1.7050908@nortel.com>
+In-Reply-To: <468D2EF1.7050908@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX1+gvGcDNcYfskUuUJFHjRlWGj+yZMupwz0jdae
+ NXvxvQzU8EjALz98FMJ824+bR/N8dQvIGEsNMfIsWj8pWBBGNn
+ 6C0j5JN/mTSdhbGXw5Xsg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jul 2007 13:39:17 -0500
-linas@austin.ibm.com (Linas Vepstas) wrote:
+Chris Friesen schrieb:
+> However, in order to trigger the problem you also need to have NTP 
+> servers that were erroneously broadcasting the addition of a leap second.
 
-> 
-> Various PCI bus errors can be signaled by newer PCI controllers.  
-> This patch adds the PCI error recovery callbacks to the Symbios 
-> SCSI device driver.  The patch has been tested, and appears to 
-> work well.
-> 
+No matter what NTP servers send, it shouldn't result in a DoS.
 
-yup, this is identical to -mm's
-pci-error-recovery-symbios-scsi-base-support.patch
+> So most people didn't see the issue because there wasn't supposed to be 
+> a leap second added this year...but they would have seen it the next 
+> time a leap second was added.
 
-What is the status of
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/pci-error-recovery-symbios-scsi-first-failure.patch?
+True. It seems like we will have another one next year.
 
-> 
-> ----
-> 
-> Hi,
-> 
-> This patch has been bouncing around for a long time, and has made
-> appearences in various -mm trees since 2.6.something-teen. However,
-> it has never made it into mainline, and I'm starting to get concerned
-> that it will miss 2.6.23 as well. 
-
-Well you've sent it a couple of times, and I've sent it in five more times
-over the past year.  Once we were told "awaiting maintainer ack".
-
-This situation is fairly stupid.  How about we make you the maintainer?
-
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
