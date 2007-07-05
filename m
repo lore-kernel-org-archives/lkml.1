@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbXGEIqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759374AbXGEIs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbXGEIqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 04:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXGEIpx
+	id S1759374AbXGEIs0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 04:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbXGEIsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 04:45:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35623 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Jul 2007 04:48:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35806 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753562AbXGEIpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 04:45:52 -0400
-Date: Thu, 5 Jul 2007 10:45:38 +0200
+	id S1757545AbXGEIsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 04:48:18 -0400
+Date: Thu, 5 Jul 2007 10:48:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Johannes Berg <johannes@sipsolutions.net>
 Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
        Oleg Nesterov <oleg@tv-sign.ru>, Arjan van de Ven <arjan@infradead.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Sattler <tsattler@gmx.de>
-Subject: Re: [PATCH] debug work struct cancel deadlocks with lockdep
-Message-ID: <20070705084538.GA3476@elte.hu>
-References: <1183583529.9662.34.camel@johannes.berg>
+Subject: Re: [PATCH] debug workqueue flushing deadlocks with lockdep
+Message-ID: <20070705084806.GB3476@elte.hu>
+References: <1183577668.9662.11.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1183583529.9662.34.camel@johannes.berg>
+In-Reply-To: <1183577668.9662.11.camel@johannes.berg>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -38,22 +38,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Johannes Berg <johannes@sipsolutions.net> wrote:
 
-> +#ifdef CONFIG_LOCKDEP
-> +		/*
-> +		 * It is permissible to free the struct work_struct
-> +		 * from inside the function that is called from it,
-> +		 * this we need to take into account for lockdep too.
-> +		 * To avoid bogus "held lock freed" warnings as well
-> +		 * as problems when looking into work->lockdep_map,
-> +		 * make a copy and use that here.
-> +		 */
-> +		struct lockdep_map lockdep_map = work->lockdep_map;
-> +#endif
+> This patch adds a fake lock to each workqueue in order to debug things 
+> where you have something like
+> 
+>   my_function() -> lock(); ...; flush_workqueue(); ...
+> vs
+>   run_workqueue() -> my_work() -> ...; lock(); ...
+> 
+> which can obviously deadlock if my_work is scheduled when my_function()
+> is invoked (but hasn't locked yet.)
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-> +		lock_acquire(&lockdep_map, 0, 0, 0, 2, _THIS_IP_);
->  		f(work);
-> +		lock_release(&lockdep_map, 1, _THIS_IP_);
+i'm still impressed by the elegancy of your idea :)
 
-neat trick :)
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+btw., small patch format comment: it would be useful (in the future) to 
+send such combined patches as:
+
+ [patch 0/2] general description
+ [patch 1/2] first patch
+ [patch 2/2] second patch
 
 	Ingo
