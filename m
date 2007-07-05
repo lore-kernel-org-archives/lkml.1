@@ -1,58 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbXGEOqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbXGEOt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289AbXGEOqR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 10:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094AbXGEOqG
+	id S1759457AbXGEOt5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 10:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbXGEOts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 10:46:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:9343 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756362AbXGEOqD (ORCPT
+	Thu, 5 Jul 2007 10:49:48 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:28508 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756918AbXGEOtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 10:46:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=i8ERy8RBEQwEcoZdPXrXa6pvF1tpQMSwggW36Es+xzZegAxOICJHYhvNYIY1sbU6aR9GB/W6bs315yKiXENW45D4C0/qG3HFiB6+JHeiRYP/etB4GvrVN8KFN0J1n30wPIJ/xidZCm3LcnEj8hx0jBWIfEAwhbjc9x5DyChRNPk=
-Message-ID: <2c0942db0707050746v2b8cdc9ew2c4656736b52895d@mail.gmail.com>
-Date: Thu, 5 Jul 2007 07:46:01 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Matthew Garrett" <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Oliver Neukum" <oliver@neukum.org>,
-       "Miklos Szeredi" <miklos@szeredi.hu>, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, benh@kernel.crashing.org
-In-Reply-To: <20070705142318.GA22598@srcf.ucam.org>
+	Thu, 5 Jul 2007 10:49:47 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH 2/2] eHEA: Receive SKB Aggregation, generic LRO helper functions
+Date: Thu, 5 Jul 2007 16:24:46 +0200
+User-Agent: KMail/1.8.2
+References: <200707050926.30468.ossthema@de.ibm.com> <20070705082056.GA358@2ka.mipt.ru>
+In-Reply-To: <20070705082056.GA358@2ka.mipt.ru>
+Cc: netdev <netdev@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="koi8-r"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	 <200707051528.34754.oliver@neukum.org>
-	 <20070705134632.GA22177@srcf.ucam.org>
-	 <200707051609.25887.rjw@sisk.pl>
-	 <20070705142318.GA22598@srcf.ucam.org>
-X-Google-Sender-Auth: b74988ed83714186
+Message-Id: <200707051624.46887.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/5/07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Thu, Jul 05, 2007 at 04:09:24PM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, 5 July 2007 15:46, Matthew Garrett wrote:
-> > > I have a model for STD that avoids the need to freeze the entirity of
-> > > userspace, but I need to find some more time to flesh it out.
-> >
-> > You can just describe it, as far as I'm concerned. :-)
->
-> The basic model is that nobody's really described a use-case where we
-> actually care about restoring system state. What people want is to be
-> able to restore application state.
+Hi, 
 
-Hmm, careful. There are a bunch of people who use suspend2 exactly
-because it saves and restores the page cache, leaving the system in a
-usable state without waiting for the universe to swap back in from
-disk. It makes a big difference on older laptops with slow drives.
-While the other advantages you list for process cryogenics are pretty
-neat, let's remember that the 99% use case for STD is laptops.
+thanks for your comment. 
+
+Jan-Bernd
+
+On Thursday 05 July 2007 10:20, you wrote:
+> Hi Jan-Bernd.
+> 
+> [ Dropped spambot/i.e. unrelated mail lists ]
+> 
+> On Thu, Jul 05, 2007 at 09:26:30AM +0200, Jan-Bernd Themann (ossthema@de.ibm.com) wrote:
+> > This patch enables the receive side processing to aggregate TCP packets within
+> > the HEA device driver. It analyses the packets already received after an
+> > interrupt arrived and forwards these as chains of SKBs for the same TCP
+> > connection with modified header field. We have seen a lower CPU load and
+> > improved throughput for small numbers of parallel TCP connections.
+> > As this feature is considered as experimental it is switched off by default
+> > and can be activated via a module parameter.
+> 
+> I've couple of comments on the driver, but mainly the fact of decreased
+> CPU usage itself - what was the magnitude of the win with this driver,
+> it looks like because of per-packet receive code path invocation is the
+> place of the latency...
+> Your implementation looks generic enough to be used by any driver, don't
+> you want to push it separately from eHEA driver?
+> 
+
+We can try to come up with a generic file with these helperfunctions.
+What do you think about putting them into /net/ipv4/inet_lro.c and 
+/include/linux/inet_lro.h ?
+
+Latency: We didn't measure it so far, but it leads to a significant improvement
+concerning the throughput. Our LRO algorithm only handles X packets a time
+(depends on MTU and budget), so the upper bound delay is X*processing a single
+packet from driver perspective. 
+
+> 
+> > +static int lro_tcp_check(struct iphdr *iph, struct tcphdr *tcph,
+> > +			 int tcp_data_len, struct ehea_lro *lro)
+> > +{
+> > +	if (tcp_data_len == 0)
+> > +		return -1;
+> > +
+> > +	if (iph->ihl != IPH_LEN_WO_OPTIONS)
+> > +		return -1;
+> > +
+> > +	if (tcph->cwr || tcph->ece || tcph->urg || !tcph->ack || tcph->psh
+> > +	    || tcph->rst || tcph->syn || tcph->fin)
+> > +		return -1;
+> > +
+> > +	if (INET_ECN_is_ce(ipv4_get_dsfield(iph)))
+> > +		return -1;
+> > +
+> > +	if (tcph->doff != TCPH_LEN_WO_OPTIONS
+> > +	    && tcph->doff != TCPH_LEN_W_TIMESTAMP)
+> > +		return -1;
+> > +
+> > +	/* check tcp options (only timestamp allowed) */
+> > +	if (tcph->doff == TCPH_LEN_W_TIMESTAMP) {
+> > +		u32 *topt = (u32 *)(tcph + 1);
+> > +
+> > +		if (*topt != htonl((TCPOPT_NOP << 24) | (TCPOPT_NOP << 16)
+> > +				   | (TCPOPT_TIMESTAMP << 8) | TCPOLEN_TIMESTAMP))
+> > +			return -1;
+> > +
+> > +		/* timestamp should be in right order */
+> > +		topt++;
+> > +		if (lro && (ntohl(lro->tcp_rcv_tsval) > ntohl(*topt)))
+> > +			return -1;
+> 
+> This should use before/after technique like PAWS in TCP code or there will be a
+> problem with wrapper timestamps.
+> 
+
+good point, will look into this
+
+> > +
+> > +		/* timestamp reply should not be zero */
+> > +		topt++;
+> > +		if (*topt == 0)
+> > +			return -1;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void update_tcp_ip_header(struct ehea_lro *lro)
+> > +{
+> > +	struct iphdr *iph = lro->iph;
+> > +	struct tcphdr *tcph = lro->tcph;
+> > +	u32 *p;
+> > +
+> > +	tcph->ack_seq = lro->tcp_ack;
+> > +	tcph->window = lro->tcp_window;
+> > +
+> > +	if (lro->tcp_saw_tstamp) {
+> > +		p = (u32 *)(tcph + 1);
+> > +		*(p+2) = lro->tcp_rcv_tsecr;
+> > +	}
+> > +
+> > +	iph->tot_len = htons(lro->ip_tot_len);
+> > +	iph->check = 0;
+> > +	iph->check = ip_fast_csum((u8 *)lro->iph, iph->ihl);
+> > +}
+> > +
+> > +static void init_lro_desc(struct ehea_lro *lro, struct ehea_cqe *cqe,
+> > +			  struct sk_buff *skb, struct iphdr *iph,
+> > +			  struct tcphdr *tcph, u32 tcp_data_len)
+> > +{
+> > +	u32 *ptr;
+> > +
+> > +	lro->parent = skb;
+> > +	lro->iph = iph;
+> > +	lro->tcph = tcph;
+> > +	lro->tcp_next_seq = ntohl(tcph->seq) + tcp_data_len;
+> > +	lro->tcp_ack = ntohl(tcph->ack_seq);
+> 
+> How do you handle misordering or duplicate acks or resends?
+> 
+
+we just forward these packets and leave it to the network stack to
+handle them. As soon as we get a packet which does not match we
+just flush the LRO session and the current packet 
+(forward to stack as separate SKBs)
+
+> > +	lro->skb_sg_cnt = 1;
+> > +	lro->ip_tot_len = ntohs(iph->tot_len);
+> > +
+> > +	if (tcph->doff == 8) {
+> > +		ptr = (u32 *)(tcph+1);
+> > +		lro->tcp_saw_tstamp = 1;
+> > +		lro->tcp_rcv_tsval = *(ptr+1);
+> > +		lro->tcp_rcv_tsecr = *(ptr+2);
+> > +	}
+> > +
+> > +	if (cqe->status & EHEA_CQE_VLAN_TAG_XTRACT) {
+> > +		lro->vlan_packet = 1;
+> > +		lro->vlan_tag = cqe->vlan_tag;
+> > +	}
+> > +
+> > +	lro->active = 1;
+> > +}
+> 
