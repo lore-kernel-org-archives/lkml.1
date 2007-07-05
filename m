@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763130AbXGEXXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbXGEXXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763130AbXGEXXD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:23:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761339AbXGEXWO
+	id S1763090AbXGEXXY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762663AbXGEXWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:22:14 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52128 "EHLO
+	Thu, 5 Jul 2007 19:22:22 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52129 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762463AbXGEXWN (ORCPT
+	with ESMTP id S1762641AbXGEXWU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:22:13 -0400
-Date: Fri, 6 Jul 2007 01:22:42 +0200
+	Thu, 5 Jul 2007 19:22:20 -0400
+Date: Fri, 6 Jul 2007 01:22:50 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, jeremy@xensource.com,
-       chrisw@sous-sol.org
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
-Subject: [-mm patch] arch/i386/xen/mmu.c must #include <linux/sched.h>
-Message-ID: <20070705232242.GV3492@stusta.de>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] i386: no need to make enable_cpu_hotplug a variable
+Message-ID: <20070705232249.GW3492@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error:
-
-<--  snip  -->
-
-...
-  CC      arch/i386/xen/mmu.o
-In file included from 
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/arch/i386/xen/mmu.c:46:
-include2/asm/mmu_context.h: In function ‘switch_mm’:
-include2/asm/mmu_context.h:45: error: dereferencing pointer to incomplete type
-include2/asm/mmu_context.h:50: error: dereferencing pointer to incomplete type
-include2/asm/mmu_context.h:53: error: dereferencing pointer to incomplete type
-include2/asm/mmu_context.h:58: error: dereferencing pointer to incomplete type
-include2/asm/mmu_context.h:58: error: dereferencing pointer to incomplete type
-include2/asm/mmu_context.h:59: error: dereferencing pointer to incomplete type
-include2/asm/mmu_context.h:66: error: dereferencing pointer to incomplete type
-include2/asm/mmu_context.h:70: error: dereferencing pointer to incomplete type
-include2/asm/mmu_context.h:71: error: dereferencing pointer to incomplete type
-...
-make[2]: *** [arch/i386/xen/mmu.o] Error 1
-
-<--  snip  -->
+As long as there's no write access to this variable there's no reason 
+to let gcc check it at runtime.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.22-rc6-mm1/arch/i386/xen/mmu.c.old	2007-07-04 00:11:28.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/arch/i386/xen/mmu.c	2007-07-04 00:11:39.000000000 +0200
-@@ -39,6 +39,7 @@
-  * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
-  */
- #include <linux/highmem.h>
-+#include <linux/sched.h>
+
+ arch/i386/kernel/topology.c |    2 --
+ include/asm-i386/cpu.h      |    2 +-
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+--- linux-2.6.22-rc6-mm1/include/asm-i386/cpu.h.old	2007-07-04 20:29:25.000000000 +0200
++++ linux-2.6.22-rc6-mm1/include/asm-i386/cpu.h	2007-07-04 20:36:33.000000000 +0200
+@@ -13,7 +13,7 @@
+ extern int arch_register_cpu(int num);
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern void arch_unregister_cpu(int);
+-extern int enable_cpu_hotplug;
++#define enable_cpu_hotplug	1
+ #else
+ #define enable_cpu_hotplug	0
+ #endif
+--- linux-2.6.22-rc6-mm1/arch/i386/kernel/topology.c.old	2007-07-04 20:30:12.000000000 +0200
++++ linux-2.6.22-rc6-mm1/arch/i386/kernel/topology.c	2007-07-04 20:35:56.000000000 +0200
+@@ -51,8 +51,6 @@
+ }
  
- #include <asm/bug.h>
- #include <asm/pgtable.h>
+ #ifdef CONFIG_HOTPLUG_CPU
+-int enable_cpu_hotplug = 1;
+-
+ void arch_unregister_cpu(int num) {
+ 	return unregister_cpu(&cpu_devices[num].cpu);
+ }
 
