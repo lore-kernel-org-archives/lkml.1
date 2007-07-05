@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbXGEIt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbXGEIvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759620AbXGEIt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 04:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757793AbXGEItv
+	id S1759902AbXGEIvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 04:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758075AbXGEIvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 04:49:51 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:38224 "EHLO
+	Thu, 5 Jul 2007 04:51:09 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:38270 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757545AbXGEItu (ORCPT
+	with ESMTP id S1758199AbXGEIvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 04:49:50 -0400
-Subject: Re: [PATCH] debug work struct cancel deadlocks with lockdep
+	Thu, 5 Jul 2007 04:51:08 -0400
+Subject: Re: [PATCH] debug workqueue flushing deadlocks with lockdep
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
        Oleg Nesterov <oleg@tv-sign.ru>, Arjan van de Ven <arjan@infradead.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Sattler <tsattler@gmx.de>
-In-Reply-To: <20070705084538.GA3476@elte.hu>
-References: <1183583529.9662.34.camel@johannes.berg>
-	 <20070705084538.GA3476@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NRmcs4MJAAxjGWcAYOEw"
-Date: Thu, 05 Jul 2007 10:50:48 +0200
-Message-Id: <1183625448.3818.6.camel@johannes.berg>
+In-Reply-To: <20070705084806.GB3476@elte.hu>
+References: <1183577668.9662.11.camel@johannes.berg>
+	 <20070705084806.GB3476@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WjEXzkh0dFMV/tNipZs4"
+Date: Thu, 05 Jul 2007 10:52:04 +0200
+Message-Id: <1183625525.3818.9.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-NRmcs4MJAAxjGWcAYOEw
+--=-WjEXzkh0dFMV/tNipZs4
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2007-07-05 at 10:45 +0200, Ingo Molnar wrote:
+On Thu, 2007-07-05 at 10:48 +0200, Ingo Molnar wrote:
 
-> > +#ifdef CONFIG_LOCKDEP
-> > +		/*
-> > +		 * It is permissible to free the struct work_struct
-> > +		 * from inside the function that is called from it,
-> > +		 * this we need to take into account for lockdep too.
-> > +		 * To avoid bogus "held lock freed" warnings as well
-> > +		 * as problems when looking into work->lockdep_map,
-> > +		 * make a copy and use that here.
-> > +		 */
-> > +		struct lockdep_map lockdep_map =3D work->lockdep_map;
-> > +#endif
+> btw., small patch format comment: it would be useful (in the future) to=20
+> send such combined patches as:
 >=20
-> > +		lock_acquire(&lockdep_map, 0, 0, 0, 2, _THIS_IP_);
-> >  		f(work);
-> > +		lock_release(&lockdep_map, 1, _THIS_IP_);
->=20
-> neat trick :)
+>  [patch 0/2] general description
+>  [patch 1/2] first patch
+>  [patch 2/2] second patch
 
-Not like I had a choice ;) But since I assign .key it still works :)
-
-Btw, do you have a tree you'll submit this through, or Oleg, or should I
-send it to akpm after we sort out any further issues?
+Sure, no problem. I usually do that automatically due to quilt but this
+was just 2 out of 52 patches I have pending right now so... :) And akpm
+says that 0/2 should only contain stuff not meant for the changelog.
 
 johannes
 
---=-NRmcs4MJAAxjGWcAYOEw
+--=-WjEXzkh0dFMV/tNipZs4
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGjLDo/ETPhpq3jKURAlrTAKCH4AwokJRPVyt1O1DY/BONOr2qSACeNb6N
-NPGMbsqIjzqaeIWYZO20avs=
-=R4k9
+iD8DBQBGjLE0/ETPhpq3jKURAlAyAKCcDv4bW9HWcdhnoHlfkhklc1dIygCggKuD
+q62DRO/UudHWDP+CNRI6OrE=
+=6TKD
 -----END PGP SIGNATURE-----
 
---=-NRmcs4MJAAxjGWcAYOEw--
+--=-WjEXzkh0dFMV/tNipZs4--
 
