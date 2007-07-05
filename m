@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761649AbXGESyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761994AbXGES4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761649AbXGESyV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 14:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760014AbXGESyJ
+	id S1761994AbXGES4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 14:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760168AbXGES4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 14:54:09 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47944 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759842AbXGESyI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 14:54:08 -0400
-Date: Thu, 5 Jul 2007 12:54:06 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linas Vepstas <linas@austin.ibm.com>, James.Bottomley@steeleye.com,
-       willy@debian.org, linux-scsi@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH]: PCI Error Recovery: Symbios SCSI device driver
-Message-ID: <20070705185406.GA3527@parisc-linux.org>
-References: <20070702183917.GJ4501@austin.ibm.com> <20070705112838.2d8c959b.akpm@linux-foundation.org>
+	Thu, 5 Jul 2007 14:56:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54804 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758779AbXGES4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 14:56:03 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
+Date: Thu, 5 Jul 2007 21:03:16 +0200
+User-Agent: KMail/1.9.5
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+References: <200706192118.23706.nigel@nigel.suspend2.net> <200707042350.25117.rjw@sisk.pl> <20070704224653.GB2491@elf.ucw.cz>
+In-Reply-To: <20070704224653.GB2491@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070705112838.2d8c959b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707052103.17104.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 11:28:38AM -0700, Andrew Morton wrote:
-> Well you've sent it a couple of times, and I've sent it in five more times
-> over the past year.  Once we were told "awaiting maintainer ack".
+On Thursday, 5 July 2007 00:46, Pavel Machek wrote:
+> Hi!
 > 
-> This situation is fairly stupid.  How about we make you the maintainer?
+> > > Here's the version that uses just one variable, relative to Nigel's
+> > > patch. Hmm, and it also closes nasty trap for the user in
+> > > acpi_sleep_setup; order of parameters actually mattered there,
+> > > acpi_sleep=s3_bios,s3_mode doing something different from
+> > > acpi_sleep=s3_mode,s3_bios .  It actually works here.
+> > > 
+> > > Will you fold it into  patch28, or should I create a changelog?
+> > 
+> > Hmm, I think we should keep the record straight.  Please add a changelog
+> > if that's not a problem.
+> 
+> (I also added documentation and removed the superfluous beep_flags).
 
-Last time I looked at it, I still wasn't comfortable with it.  I'm going
-to look at it again.
+OK, thanks.
 
-I'm fairly sure Linas doesn't want to be the sym2 maintainer.  It's
-still an ugly pile of junk that needs cleaning up.
+Added to the patchset as
+
+http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc7/patches/50-Optional-Beeping-During-Resume-From-Suspend-To-Ram-tidy.patch
+
+I think both patches are -mm-ready, aren't they?
+
+Greetings,
+Rafael
+
 
 -- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+"Premature optimization is the root of all evil." - Donald Knuth
