@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXGEMpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbXGEMtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761341AbXGEMpf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 08:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbXGEMp2
+	id S1760781AbXGEMtg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 08:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbXGEMt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 08:45:28 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:47463 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755742AbXGEMp2 (ORCPT
+	Thu, 5 Jul 2007 08:49:29 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:58516 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755092AbXGEMt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 08:45:28 -0400
-To: rjw@sisk.pl
-CC: miklos@szeredi.hu, stern@rowland.harvard.edu, oliver@neukum.org,
-       paulus@samba.org, mjg59@srcf.ucam.org,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-reply-to: <200707051439.37737.rjw@sisk.pl>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-References: <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org> <200707042336.58466.rjw@sisk.pl> <E1I6Mq2-0008WB-00@dorka.pomaz.szeredi.hu> <200707051439.37737.rjw@sisk.pl>
-Message-Id: <E1I6QcZ-0000ex-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Jul 2007 14:39:43 +0200
+	Thu, 5 Jul 2007 08:49:28 -0400
+Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM
+	pathway
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Paul Mackerras <paulus@samba.org>, mjg59@srcf.ucam.org,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <200707051451.38497.rjw@sisk.pl>
+References: <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
+	 <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org>
+	 <18060.15630.812698.367707@cargo.ozlabs.ibm.com>
+	 <200707051451.38497.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5wbtt3bjFieiS1P7Vk4K"
+Date: Thu, 05 Jul 2007 14:50:25 +0200
+Message-Id: <1183639825.3818.38.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > PF_FREEZER_SKIP flag.  Perhaps we can do similar thing with FUSE.
-> > 
-> > It cannot be just worked around in fuse, as a task might be sleeping
-> > on a number of VFS mutexes as well (i_mutex, s_vfs_rename_mutex, etc).
-> > It would be a gigantic hack, possible at all.
-> 
-> Well, obviously FUSE and the freezer don't play well together, but
-> that's FUSE who's late in the game (the freezer was here
-> before). ;-)
 
-Umm, and CODA which is _very_ similar to fuse was there long before
-fuse or the freezer ;)
+--=-5wbtt3bjFieiS1P7Vk4K
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> If you give me some time, I'll see what can be done.
+On Thu, 2007-07-05 at 14:51 +0200, Rafael J. Wysocki wrote:
 
-I give you all the time in the world.  I'd also be willing to help
-with drivers for which I have the hardware.
+> > > Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
+> > > wanting to resume devices during a system suspend transition?  This i=
+s
+> > > exactly what happens when those threads aren't frozen.
+> >=20
+> > So, I wonder why I don't see that error on my powerbook?
+>=20
+> Because you have only one CPU running while your suspend code is being
+> executed?
 
-Miklos
+If that's really all the problem then what's wrong with just unplugging
+the other CPUs earlier? Sure, that makes suspend no longer perfectly
+transparent since userspace might notice the CPUs being unplugged, but
+it has to cope with that anyway since a user can do it manually...
+
+johannes
+
+--=-5wbtt3bjFieiS1P7Vk4K
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGjOkQ/ETPhpq3jKURAuS+AKCkOs0M4b62O+mlZjMKGlO7InyTyQCfU+/Z
+ZOzbFpjyaZyeiBmCweuEM90=
+=Bh3G
+-----END PGP SIGNATURE-----
+
+--=-5wbtt3bjFieiS1P7Vk4K--
+
