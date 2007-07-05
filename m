@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbXGEHBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbXGEHCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758627AbXGEHBu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 03:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbXGEHBl
+	id S1758849AbXGEHCo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 03:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbXGEHCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 03:01:41 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:38311 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756451AbXGEHBj (ORCPT
+	Thu, 5 Jul 2007 03:02:38 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:42719 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756572AbXGEHCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 03:01:39 -0400
-To: Karel Zak <kzak@redhat.com>
-Cc: List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-References: <20070703221156.GY14825@petra.dvoda.cz>
-	<20070704174753.GC1939@DervishD>
-From: Nix <nix@esperi.org.uk>
-Emacs: anything free is worth what you paid for it.
-Date: Thu, 05 Jul 2007 08:01:27 +0100
-In-Reply-To: <20070704174753.GC1939@DervishD> (DervishD's message of "Wed, 4 Jul 2007 19:47:53 +0200")
-Message-ID: <87sl83fi60.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=4 Fuz1=4 Fuz2=4
+	Thu, 5 Jul 2007 03:02:37 -0400
+From: Richman <modmax@web.de>
+To: linux-kernel@vger.kernel.org
+Subject: Internet belongs to you!!!
+X-Mailer: Mail
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <E1I6LIC-0006Xl-00@smtp08.web.de>
+Date: Thu, 05 Jul 2007 08:58:20 +0200
+X-Provags-ID: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4 Jul 2007, DervishD stated:
->     Anyway, if you don't like mobs or you just don't want to try it,
-> that's fine, but please don't use autotools, it doesn't make much sense
-> for a linux only project, since you will be using only the "directory
-> choosing" part of autotools. Maybe a hand made script will help (and I
+You are in the Internet and other one pay billions, in order to reach you.
 
-Oh, yeah, great, another hand-rolled build system. That's *juwt* what
-those of us who have autotools working well (with config.site's that
-do all we need and then some) are looking forward to.
+Wouldn't it be beautiful, even if you could get something??
 
-There are advantages to standardization, you know. A *lot* of
-autobuilders know how to make autoconf-generated configure scripts jump
-through hoops. I was downright *happy* when util-linux was
-autoconfiscated: I could ditch the code to handle automatic
-configuration of yet another one-package hand-rolled build system.
+That is now no more dream. Agloco makes it possible.
 
--- 
-`... in the sense that dragons logically follow evolution so they would
- be able to wield metal.' --- Kenneth Eng's colourless green ideas sleep
- furiously
+No costs or subsequent costs
+
+?? And earnings/services??
+
+Become partner and recruit 5 further partners
+	
+These 5 recruits then 3 and everyone uses 5 hours in the month the Internet
+	
+makes = 761.25 dollar
+
+with 10 partners = 1517.50 dollar
+
+(The calculator is in the member area)
+
+Now free registering!!!
+
+www.agloco.com/r/BBFP9343
+
