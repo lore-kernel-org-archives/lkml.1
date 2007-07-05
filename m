@@ -1,62 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbXGERhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbXGERiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760180AbXGERhM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 13:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbXGERg7
+	id S1760848AbXGERiu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 13:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758215AbXGERin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 13:36:59 -0400
-Received: from post.kiewel-online.de ([85.214.49.162]:34753 "EHLO
-	post.kiewel-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757001AbXGERg6 (ORCPT
+	Thu, 5 Jul 2007 13:38:43 -0400
+Received: from phobos01.frii.com ([216.17.128.161]:49833 "EHLO mail.frii.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758076AbXGERim convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 13:36:58 -0400
-Message-ID: <468D2C30.4030002@kiewel-online.de>
-Date: Thu, 05 Jul 2007 19:36:48 +0200
-From: Uwe Kiewel <mailing-list@kiewel-online.de>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 5 Jul 2007 13:38:42 -0400
+X-Greylist: delayed 1568 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jul 2007 13:38:42 EDT
+From: "Elyse M. Grasso" <emgrasso@data-raptors.com>
+To: Rob Landley <rob@landley.net>
+Subject: Re: [PATCH][Documentation][resend] Add missing files and dirs to 00-INDEX in Documentation/
+Date: Thu, 5 Jul 2007 11:12:35 -0600
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, trivial@kernel.org
+References: <200707010106.00181.jesper.juhl@gmail.com> <20070703125852.0172a588.akpm@linux-foundation.org> <200707032058.26512.rob@landley.net>
+In-Reply-To: <200707032058.26512.rob@landley.net>
 MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com
-Subject: Re: [SCSI] SD driver question
-References: <468BCE5C.6000707@googlemail.com>	<468BD145.5040100@kiewel-online.de> <468BD8E3.9060404@googlemail.com>
-In-Reply-To: <468BD8E3.9060404@googlemail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707051112.35909.emgrasso@data-raptors.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tuesday 03 July 2007, Rob Landley wrote:
 
-Gabriel C schrieb:
-> Uwe Kiewel wrote:
->> Please, can you tell the version of the kernel you use? I use:
->> [abkie@config-lappi ~]$ uname -r
->> 2.6.21-1.3228.fc7
->> It is the current Fedora 7 kernel.
->>
->>   
-> Sure.
+> Documentation/* is a gigantic mess, currently organized based on where 
+random 
+> passers-by put things down last.  I posted a couple of patches to do minor 
+> cleanups to it last month, but since then I've put that on the back burner, 
+> because Documentation/* can't do what I need.
 > 
-> crazy@lara:~$ uname -r
-> 2.6.22-rc6-git4
+> I spent the first month of the documentation fellowship trying to find all 
+the 
+> kernel documentation I could, and figure out how to organize it.  It would 
+be 
+> easy to pile up a big heap (that's sort of what http://kernel.org/docs has 
+> now, and that's less than half of what I've tracked down), but the hard part 
+> is _organizing_ it.  I can't figure out what _isn't_ documented until I have 
+> a handle on what _is_ documented.  (And then I can worry about documentation 
+> being stale, incomplete, or simply wrong...)
 > 
+> I was looking at the Documentation directory in the kernel as the primary 
+> source of documentation and the core around which the rest could be 
+> organized: but it isn't.  Out on the internet there are 8 gazillion other 
+> sources of documentation for the Linux kernel: OLS papers, the LWN kernel 
+> article index, wikis, developer blogs, specifications, online books, things 
+> on sourceforge...  most of that is NEVER getting indexed into 
+Documentation/* 
+> because it's HTML or PDF under various different non-gpl licenses, and the 
+> Documentation directory contains text files.
+> 
+> The fact that Documentation is text means it can't easily link out to 
+> resources that live on the web.  The index I need to organize all this stuff 
+> with must be HTML because huge chunks of it simply aren't local.  The kernel 
+> generates HTML documentation via "make htmldocs", but that can't even 
+> coherently link to everything in the Documentation directory today, let 
+alone 
+> the whole web, because it's generated by grepping through the kernel sources 
+> and that imposes a strong structure on it that makes it bad for indexing 
+> things outside itself.  It can be linked _into_ by an external index, but it 
+> can't easily BE an index composed primarily of external references.  That's 
+> not what it's for.  So that's out too.
+> 
+> I intend to integrate the existing 00-index into the new index (the bare 
+> skeleton of which just went up at http://kernel.org/doc earlier today, 
+> although expect it to change a lot as links and sub-pages get added and I 
+> generally go "what was I THINKING?").  And I'll be adding in all the stuff 
+> that ISN'T in 00-index, too.  I need to set up a link checker to detect 404 
+> and also detect files that aren't linked from anywhere in my local set of 
+> directories...
+> 
+> I have a mercurial archive at http://landley.net/hg/kdocs which I'll accept 
+> patches into (it's deeply unimpressive at the moment, I'm working on it), 
+and 
+> I'd like said patches cc:'d to linux-doc@vger.kernel.org which I'm trying to 
+> resurrect.  I also might shuffle all the stuff I'm mirroring (like 
+> http://kernel.org/doc/ols) into its own mirror/* subdirectory for easier 
+> mirroring if other people want a local copy of this stuff, I'm still trying 
+> to figure out the best way to organize all this.  (I'd prefer not to confuse 
+> google by having multiple live mirrors out on the web, but hey: it's a free 
+> country.)  
+> 
+> Keep in mind my previous laptop died a month ago, and my new one arrived the 
+> monday before OLS, at which my todo list got much longer.  I'm still 
+catching 
+> up.  Organizing is the hard part.  Just _writing_ documentation is 
+> comparatively easy...
+> 
+> Rob
+>
+Is there something I could do to help? It's been years since I programmed C, 
+but I'm a former librarian, current configuration management tools 
+consultant. I write good standards-compliant HTML and XHTML, and Perl is my 
+life these days.
 
-An older kernel has the same behavior. Version is: 2.6.20-1.2952.fc6
+Point me at something where I won't be duplicating effort and I'll take a look 
+at it.
+-- 
+Elyse Grasso
 
-Now I have no new Idea...
-
-
-Regards,
-Uwe
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGjSwwr6SFaBB7DLURAivLAKCRvtemO+WOiehW1AOBxwSsrz1o8gCeProq
-r0ic/W0xNL7U34bwOqVX0dg=
-=3OAG
------END PGP SIGNATURE-----
+http://www.data-raptors.com    Computers and Technology
+http://www.astraltrading.com   Divination and Science Fiction
+http://www.data-raptors.com/global-cgi-bin/cgiwrap/emgrasso/blosxom.cgi WebLog
+http://www.releaseteam.com  (egrasso@releaseteam.com) Work
