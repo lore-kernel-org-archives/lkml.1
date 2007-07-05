@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbXGEX0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbXGEX1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763671AbXGEX0y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762956AbXGEXXW
+	id S1762998AbXGEX1X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762961AbXGEXX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:23:22 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52155 "EHLO
+	Thu, 5 Jul 2007 19:23:26 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52156 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762320AbXGEXXU (ORCPT
+	with ESMTP id S1763215AbXGEXXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:23:20 -0400
-Date: Fri, 6 Jul 2007 01:23:50 +0200
+	Thu, 5 Jul 2007 19:23:24 -0400
+Date: Fri, 6 Jul 2007 01:23:53 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mm/shmem.c: make 3 functions static
-Message-ID: <20070705232350.GH3492@stusta.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] mm/migrate.c: cleanups
+Message-ID: <20070705232353.GI3492@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,76 +23,54 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes three needlessly global functions static.
+This patch contains the following cleanups:
+- every file should include the headers containing the prototypes for
+  its global functions
+- make the needlessly global putback_lru_pages() static
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- include/linux/mm.h |   15 ---------------
- mm/shmem.c         |   10 +++++-----
- 2 files changed, 5 insertions(+), 20 deletions(-)
+ include/linux/migrate.h |    2 --
+ mm/migrate.c            |    3 ++-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
---- linux-2.6.22-rc6-mm1/include/linux/mm.h.old	2007-07-05 17:03:26.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/include/linux/mm.h	2007-07-05 17:03:45.000000000 +0200
-@@ -707,9 +707,6 @@
- extern void show_free_areas(void);
- 
- #ifdef CONFIG_SHMEM
--int shmem_set_policy(struct vm_area_struct *vma, struct mempolicy *new);
--struct mempolicy *shmem_get_policy(struct vm_area_struct *vma,
--					unsigned long addr);
- int shmem_lock(struct file *file, int lock, struct user_struct *user);
- #else
- static inline int shmem_lock(struct file *file, int lock,
-@@ -717,18 +714,6 @@
- {
- 	return 0;
- }
--
--static inline int shmem_set_policy(struct vm_area_struct *vma,
--				   struct mempolicy *new)
--{
--	return 0;
--}
--
--static inline struct mempolicy *shmem_get_policy(struct vm_area_struct *vma,
--						 unsigned long addr)
--{
--	return NULL;
--}
- #endif
- struct file *shmem_file_setup(char *name, loff_t size, unsigned long flags);
- 
---- linux-2.6.22-rc6-mm1/mm/shmem.c.old	2007-07-05 17:04:00.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/mm/shmem.c	2007-07-05 17:06:27.000000000 +0200
-@@ -1025,8 +1025,8 @@
- 	return page;
+--- linux-2.6.22-rc6-mm1/include/linux/migrate.h.old	2007-07-05 17:10:01.000000000 +0200
++++ linux-2.6.22-rc6-mm1/include/linux/migrate.h	2007-07-05 17:10:10.000000000 +0200
+@@ -26,7 +26,6 @@
  }
  
--struct page *shmem_swapin(struct shmem_inode_info *info, swp_entry_t entry,
--			  unsigned long idx)
-+static struct page *shmem_swapin(struct shmem_inode_info *info,
-+				 swp_entry_t entry, unsigned long idx)
- {
- 	struct shared_policy *p = &info->policy;
- 	int i, num;
-@@ -1335,14 +1335,14 @@
- }
+ extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
+-extern int putback_lru_pages(struct list_head *l);
+ extern int migrate_page(struct address_space *,
+ 			struct page *, struct page *);
+ extern int migrate_pages(struct list_head *l, new_page_t x, unsigned long);
+@@ -44,7 +43,6 @@
  
- #ifdef CONFIG_NUMA
--int shmem_set_policy(struct vm_area_struct *vma, struct mempolicy *new)
-+static int shmem_set_policy(struct vm_area_struct *vma, struct mempolicy *new)
- {
- 	struct inode *i = vma->vm_file->f_path.dentry->d_inode;
- 	return mpol_set_shared_policy(&SHMEM_I(i)->policy, vma, new);
- }
+ static inline int isolate_lru_page(struct page *p, struct list_head *list)
+ 					{ return -ENOSYS; }
+-static inline int putback_lru_pages(struct list_head *l) { return 0; }
+ static inline int migrate_pages(struct list_head *l, new_page_t x,
+ 		unsigned long private) { return -ENOSYS; }
  
--struct mempolicy *
--shmem_get_policy(struct vm_area_struct *vma, unsigned long addr)
-+static struct mempolicy *shmem_get_policy(struct vm_area_struct *vma,
-+					  unsigned long addr)
+--- linux-2.6.22-rc6-mm1/mm/migrate.c.old	2007-07-05 17:10:16.000000000 +0200
++++ linux-2.6.22-rc6-mm1/mm/migrate.c	2007-07-05 17:11:43.000000000 +0200
+@@ -28,6 +28,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/vmalloc.h>
+ #include <linux/security.h>
++#include <linux/syscalls.h>
+ 
+ #include "internal.h"
+ 
+@@ -101,7 +102,7 @@
+  *
+  * returns the number of pages put back.
+  */
+-int putback_lru_pages(struct list_head *l)
++static int putback_lru_pages(struct list_head *l)
  {
- 	struct inode *i = vma->vm_file->f_path.dentry->d_inode;
- 	unsigned long idx;
+ 	struct page *page;
+ 	struct page *page2;
 
