@@ -1,243 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbXGEUIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762294AbXGEUJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762206AbXGEUIw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759803AbXGEUIi
+	id S1762294AbXGEUJR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762147AbXGEUIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:08:38 -0400
-Received: from mga03.intel.com ([143.182.124.21]:13867 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759288AbXGEUIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:08:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,505,1175497200"; 
-   d="scan'208";a="246975221"
-Date: Thu, 5 Jul 2007 13:05:18 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: jeff@garzik.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
-       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: [patch 2/4] Expose Power Management Policy option to users
-Message-Id: <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
-In-Reply-To: <20070705194909.337398431@intel.com>
-References: <20070705194909.337398431@intel.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+	Thu, 5 Jul 2007 16:08:45 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35619 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762127AbXGEUIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 16:08:44 -0400
+Date: Thu, 5 Jul 2007 21:08:39 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Josh Triplett <josht@linux.vnet.ibm.com>
+Cc: Josh Triplett <josh@freedesktop.org>, linux-sparse@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] bloody mess with __attribute__() syntax
+Message-ID: <20070705200839.GR21478@ftp.linux.org.uk>
+References: <20070705093528.GK21478@ftp.linux.org.uk> <468D1003.1050901@freedesktop.org> <20070705164334.GM21478@ftp.linux.org.uk> <1183661456.2604.43.camel@josh-work.beaverton.ibm.com> <20070705191358.GQ21478@ftp.linux.org.uk> <1183664153.2604.63.camel@josh-work.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1183664153.2604.63.camel@josh-work.beaverton.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch will modify the scsi subsystem to allow
-users to set a power management policy for the link.
+On Thu, Jul 05, 2007 at 12:35:53PM -0700, Josh Triplett wrote:
+> OK, that seems inconsistent with what you said before.  You said that 
+> T __attribute__((foo)) *v;
 
-The scsi subsystem will create a new sysfs file for each
-host in /sys/class/scsi_host called "link_power_management_policy".
-This file can have 3 possible values:
+... in gcc.
 
-Value		Meaning
--------------------------------------------------------------------
-min_power	User wishes the link to conserve power as much as
-		possible, even at the cost of some performance
+> gives you a foo-pointer-to-T.  So shouldn't
+> int __attribute__((noderef)) *v;
+> give you a noderef-pointer-to-int?
 
-max_performance User wants priority to be on performance, not power
-		savings
+... if we followed gcc rules. 
 
-medium_power	User wants power savings, with less performance cost
-		than min_power (but less power savings as well).
+> However, noderef seems like a property of a pointer, hence why I
+> proposed the example I did.  A warning should occur when you do
+> *(<noderef T *>v) to get a T, not when you do *(<* noderef T>v) to get a
+> noderef T.
 
+Nope.  __noderef is a property of object being pointed to.  Again,
+consider &p->x.  It should not be int *.  And it should not be
+an error.  We want it to be int __noderef *.
 
-Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Index: 2.6-git/drivers/scsi/hosts.c
-===================================================================
---- 2.6-git.orig/drivers/scsi/hosts.c
-+++ 2.6-git/drivers/scsi/hosts.c
-@@ -54,6 +54,25 @@ static struct class shost_class = {
- };
- 
- /**
-+ *	scsi_host_set_link_pm - Change the link power management policy
-+ *	@shost:	scsi host to change the policy of.
-+ *	@policy:	policy to change to.
-+ *
-+ *	Returns zero if successful or an error if the requested
-+ *	transition is illegal.
-+ **/
-+int scsi_host_set_link_pm(struct Scsi_Host *shost,
-+		enum scsi_host_link_pm policy)
-+{
-+	struct scsi_host_template *sht = shost->hostt;
-+	if (sht->set_link_pm_policy)
-+		sht->set_link_pm_policy(shost, policy);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(scsi_host_set_link_pm);
-+
-+/**
-  *	scsi_host_set_state - Take the given host through the host
-  *		state model.
-  *	@shost:	scsi host to change the state of.
-Index: 2.6-git/drivers/scsi/scsi_sysfs.c
-===================================================================
---- 2.6-git.orig/drivers/scsi/scsi_sysfs.c
-+++ 2.6-git/drivers/scsi/scsi_sysfs.c
-@@ -189,6 +189,74 @@ show_shost_state(struct class_device *cl
- 
- static CLASS_DEVICE_ATTR(state, S_IRUGO | S_IWUSR, show_shost_state, store_shost_state);
- 
-+static const struct {
-+	enum scsi_host_link_pm	value;
-+	char			*name;
-+} shost_link_pm_policy[] = {
-+	{ SHOST_NOT_AVAILABLE, "max_performance" },
-+	{ SHOST_MIN_POWER, "min_power" },
-+	{ SHOST_MAX_PERFORMANCE, "max_performance" },
-+	{ SHOST_MEDIUM_POWER, "medium_power" },
-+};
-+
-+const char *scsi_host_link_pm_policy(enum scsi_host_link_pm policy)
-+{
-+	int i;
-+	char *name = NULL;
-+
-+	for (i = 0; i < ARRAY_SIZE(shost_link_pm_policy); i++) {
-+		if (shost_link_pm_policy[i].value == policy) {
-+			name = shost_link_pm_policy[i].name;
-+			break;
-+		}
-+	}
-+	return name;
-+}
-+
-+static ssize_t store_link_pm_policy(struct class_device *class_dev,
-+	const char *buf, size_t count)
-+{
-+	struct Scsi_Host *shost = class_to_shost(class_dev);
-+	enum scsi_host_link_pm policy = 0;
-+	int i;
-+
-+	/*
-+ 	 * we are skipping array location 0 on purpose - this
-+ 	 * is because a value of SHOST_NOT_AVAILABLE is displayed
-+ 	 * to the user as max_performance, but when the user
-+ 	 * writes "max_performance", they actually want the
-+ 	 * value to match SHOST_MAX_PERFORMANCE.
-+ 	 */
-+	for (i = 1; i < ARRAY_SIZE(shost_link_pm_policy); i++) {
-+		const int len = strlen(shost_link_pm_policy[i].name);
-+		if (strncmp(shost_link_pm_policy[i].name, buf, len) == 0 &&
-+		   buf[len] == '\n') {
-+			policy = shost_link_pm_policy[i].value;
-+			break;
-+		}
-+	}
-+	if (!policy)
-+		return -EINVAL;
-+
-+	if (scsi_host_set_link_pm(shost, policy))
-+		return -EINVAL;
-+	return count;
-+}
-+static ssize_t
-+show_link_pm_policy(struct class_device *class_dev, char *buf)
-+{
-+	struct Scsi_Host *shost = class_to_shost(class_dev);
-+	const char *policy =
-+		scsi_host_link_pm_policy(shost->shost_link_pm_policy);
-+
-+	if (!policy)
-+		return -EINVAL;
-+
-+	return snprintf(buf, 23, "%s\n", policy);
-+}
-+static CLASS_DEVICE_ATTR(link_power_management_policy, S_IRUGO | S_IWUSR,
-+		show_link_pm_policy, store_link_pm_policy);
-+
- shost_rd_attr(unique_id, "%u\n");
- shost_rd_attr(host_busy, "%hu\n");
- shost_rd_attr(cmd_per_lun, "%hd\n");
-@@ -207,6 +275,7 @@ static struct class_device_attribute *sc
- 	&class_device_attr_proc_name,
- 	&class_device_attr_scan,
- 	&class_device_attr_state,
-+	&class_device_attr_link_power_management_policy,
- 	NULL
- };
- 
-Index: 2.6-git/include/scsi/scsi_host.h
-===================================================================
---- 2.6-git.orig/include/scsi/scsi_host.h
-+++ 2.6-git/include/scsi/scsi_host.h
-@@ -42,6 +42,16 @@ enum scsi_eh_timer_return {
- 	EH_RESET_TIMER,
- };
- 
-+/*
-+ * shost pm policy: If you alter this, you also need to alter scsi_sysfs.c
-+ * (for the ascii descriptions)
-+ */
-+enum scsi_host_link_pm {
-+	SHOST_NOT_AVAILABLE,
-+	SHOST_MIN_POWER,
-+	SHOST_MAX_PERFORMANCE,
-+	SHOST_MEDIUM_POWER,
-+};
- 
- struct scsi_host_template {
- 	struct module *module;
-@@ -345,6 +355,12 @@ struct scsi_host_template {
- 	int (*suspend)(struct scsi_device *, pm_message_t state);
- 
- 	/*
-+ 	 * link power management support
-+ 	 */
-+	int (*set_link_pm_policy)(struct Scsi_Host *, enum scsi_host_link_pm);
-+	enum scsi_host_link_pm default_link_pm_policy;
-+
-+	/*
- 	 * Name of proc directory
- 	 */
- 	char *proc_name;
-@@ -642,6 +658,7 @@ struct Scsi_Host {
- 	
- 
- 	enum scsi_host_state shost_state;
-+	enum scsi_host_link_pm shost_link_pm_policy;
- 
- 	/* ldm bits */
- 	struct device		shost_gendev;
-@@ -749,4 +766,5 @@ extern struct Scsi_Host *scsi_register(s
- extern void scsi_unregister(struct Scsi_Host *);
- extern int scsi_host_set_state(struct Scsi_Host *, enum scsi_host_state);
- 
-+extern int scsi_host_set_link_pm(struct Scsi_Host *, enum scsi_host_link_pm);
- #endif /* _SCSI_SCSI_HOST_H */
-Index: 2.6-git/Documentation/scsi/link_power_management_policy.txt
-===================================================================
---- /dev/null
-+++ 2.6-git/Documentation/scsi/link_power_management_policy.txt
-@@ -0,0 +1,19 @@
-+This parameter allows the user to set the link (interface) power management.
-+There are 3 possible options:
-+
-+Value			Effect
-+----------------------------------------------------------------------------
-+min_power		Tell the controller to try to make the link use the
-+			least possible power when possible.  This may
-+			sacrifice some performance due to increased latency
-+			when coming out of lower power states.
-+
-+max_performance		Generally, this means no power management.  Tell
-+			the controller to have performance be a priority
-+			over power management.
-+
-+medium_power		Tell the controller to enter a lower power state
-+			when possible, but do not enter the lowest power
-+			state, thus improving latency over min_power setting.
-+
-+
+Semantics of noderef is simple: you should not access or modify the value
+of noderef object.  That's all.  int __noderef * is an absolutely normal
+pointer to such object.  Think of __noderef as of a stronger variant of const.
 
--- 
+It's just another qualifier, with usual qualifier syntax.  It can occur
+in the same places where const can, giving the same kind of effect on type.
+See 6.7.5.1 and 6.7.3 for general stuff on qualifiers...
