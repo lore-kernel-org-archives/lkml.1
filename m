@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763634AbXGEX0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763703AbXGEX0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763634AbXGEX0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762973AbXGEXXL
+	id S1763703AbXGEX0h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763158AbXGEXXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:23:11 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52152 "EHLO
+	Thu, 5 Jul 2007 19:23:17 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:52153 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762873AbXGEXXK (ORCPT
+	with ESMTP id S1762948AbXGEXXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:23:10 -0400
-Date: Fri, 6 Jul 2007 01:23:38 +0200
+	Thu, 5 Jul 2007 19:23:16 -0400
+Date: Fri, 6 Jul 2007 01:23:45 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] kernel/sched.c: make 2 functions static
-Message-ID: <20070705232338.GF3492@stusta.de>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+Subject: [2.6 patch] mm/vmstat.c: possible cleanups
+Message-ID: <20070705232345.GG3492@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following needlessly global functions static:
-- load_balance_start()
-- load_balance_next()
+This patch contains the following possible cleanups:
+- make the needlessly global setup_vmstat() static
+- #if 0 the unused refresh_vm_stats()
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- kernel/sched.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ mm/vmstat.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- linux-2.6.22-rc6-mm1/kernel/sched.c.old	2007-07-05 16:39:42.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/kernel/sched.c	2007-07-05 16:43:38.000000000 +0200
-@@ -2011,7 +2011,7 @@
-  * classes, starting with the highest-prio one:
-  */
- 
--struct task_struct * load_balance_start(struct rq *rq)
-+static struct task_struct * load_balance_start(struct rq *rq)
- {
- 	struct sched_class *class = sched_class_highest;
- 	struct task_struct *p;
-@@ -2028,7 +2028,7 @@
- 	return NULL;
+--- linux-2.6.22-rc6-mm1/mm/vmstat.c.old	2007-07-05 16:54:39.000000000 +0200
++++ linux-2.6.22-rc6-mm1/mm/vmstat.c	2007-07-05 16:55:42.000000000 +0200
+@@ -353,6 +353,8 @@
+ 	}
  }
  
--struct task_struct * load_balance_next(struct rq *rq)
-+static struct task_struct * load_balance_next(struct rq *rq)
++#if 0
++
+ static void __refresh_cpu_vm_stats(void *dummy)
  {
- 	struct sched_class *class = rq->load_balance_class;
- 	struct task_struct *p;
+ 	refresh_cpu_vm_stats(smp_processor_id());
+@@ -370,6 +372,8 @@
+ }
+ EXPORT_SYMBOL(refresh_vm_stats);
+ 
++#endif  /*  0  */
++
+ #endif
+ 
+ #ifdef CONFIG_NUMA
+@@ -957,7 +961,7 @@
+ static struct notifier_block __cpuinitdata vmstat_notifier =
+ 	{ &vmstat_cpuup_callback, NULL, 0 };
+ 
+-int __init setup_vmstat(void)
++static int __init setup_vmstat(void)
+ {
+ 	int cpu;
+ 
 
