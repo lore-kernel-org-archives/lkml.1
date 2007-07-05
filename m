@@ -1,93 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbXGEINs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbXGEISe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758392AbXGEINs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 04:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756886AbXGEINi
+	id S1758580AbXGEISe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 04:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbXGEIS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 04:13:38 -0400
-Received: from mail02.hansenet.de ([213.191.73.62]:48829 "EHLO
-	webmail.hansenet.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752419AbXGEINh (ORCPT
+	Thu, 5 Jul 2007 04:18:27 -0400
+Received: from web52905.mail.re2.yahoo.com ([206.190.49.15]:44701 "HELO
+	web52905.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752784AbXGEIS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 04:13:37 -0400
-X-Greylist: delayed 1253 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jul 2007 04:13:36 EDT
-Message-ID: <468CA340.2060300@edict.de>
-Date: Thu, 05 Jul 2007 09:52:32 +0200
-From: Ingo Freund <Ingo.Freund@edict.de>
-Organization: e-dict GmbH & Co. KG
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
+	Thu, 5 Jul 2007 04:18:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=fwUb9htx2PBTrrcoHL07PHw4PY06e35d1BweLsy7qamowY1teqwS67rYdiPE9acZfc4JphkY2ASfhXkPiIeyHvBvB2729qN+282RtoACVHKULorRznyAd36z8YyMWj3K2yRKNmiLVYy9pFfBbFWcUEe3yuvxhNLTb5FM8gdwJhU=;
+X-YMail-OSG: NkvNXWIVM1lLMlX0CVDHa4..frvwT5D3DS3cfyyP6euvOAuu1sW_aF0t.R2_INHOoFHZGFcnJpYCI3sVMQVqtxKMcW5ukgx_CAMaY_dkBkO3AJzQe2WaeXummaemsl069asLTMsN9uSFcnY-
+Date: Thu, 5 Jul 2007 09:18:25 +0100 (BST)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: Libata PATA status
 To: linux-kernel@vger.kernel.org
-Subject: Re: md device files missing at boot time
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <438835.62282.qm@web52905.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+> Why not. I boot back and forth randomly between old and new IDE kernels
+> without problems. The root fs loaded is set in kernel or grub (or on most
+> distros nowdays by label scanning from initrd) so just works. Then mount
+> label or uuid based mounting does the rest.
 
-I can temporarily only read your answers in archives.
-Thank you for your reaction.
-It would be nice, to send responses directly to me too:
-"linux-kernel-news at e-dict".
-Hopefully this answer doesn't break the thread.
-If it does:
-sorry for it, there were some mail mail problems
-which stopped our server receiving mails from this list
-and now the list stopped sending mails to me :-)
+You say that, but I remember the "fun" I had upgrading from FC5 to F7 when the installer couldn't
+find my swap partition (as described in /etc/fstab). There were also LVM partitions to contend
+with, although vgcfgbackup/vgcfgrestore seemed to sort that out nicely enough. And since I have a
+PCI SATA card, the SATA drive suddenly became sdb when I switched to PATA too. So it was all very
+much a "one way" process, particularly when the userspace applications needed to be re-educated as
+well.
 
-@Kay
-How did you build the initramfs image? /sbin/mkinitrd?
+I also know of at least one person (who shall remain nameless because he ought to know better) who
+is thinking about buying a brand new machine and installing F7 from scratch rather than go through
+the pain of upgrading IDE to PATA.
 
-Did you add md support to the image?
-
-Both "Yes".
-included modules are (in opensuses /etc/sysconfig/kernel:
-INITRD_MODULES="raid1 md reiserfs sym53c8xx pata_serverworks edd"
+Cheers,
+Chris
 
 
 
-@J.A. Magallon
-yes the partitions in question are all typed "fd"
-
-neither all-drivers-compiled-into-the-kernel nor the
-module using version work.
-The only difference I find is the exit to an emergency shell
-when using modules via initrd while the "only kernel version"
-stops commentless when it is time to use /dev/md0 for the first
-time.
-
-"dmesg" is not found after exiting to the shell.
-I can only post the content of a log file which was written
-into the initramfs (which seems to be also a trace of the
-in and output of the emergency console).
-
-Content of the log file (/var/log/boot.msg):
-
-Boot logging started on /dev/tty1(/dev/console) at Thu Jul  5 06:36:35 2007
-
-Creating device nodes with udev
-Loading md-mod
-Loading raid1
-Loading sym53c8xx
-Loading libata
-Loading pata_serverworks
-Loading edd
-Loading reiserfs
-Waiting for device /dev/md0 to appear: ..............................not found -- exiting to /bin/sh
-sh: no job control in this shell
-$ dmesg
-sh: dmesg: command not found
-$ fdisk
-sh: fdisk: command not found
-$ ls /bin
-bash  cat  chmod  date  ipconfig.sh  ln  ls  mkdir  mknod  mount  pidof  rm  run-init  sed  sh  sleep  true  umount
-...
-
-Question: is the order "creating dev nodes with udev" and after
-that "loading the modules" correct?
-
-
-Thanks - Ingo.
-
+      ___________________________________________________________ 
+Yahoo! Mail is the world's favourite email. Don't settle for less, sign up for
+your free account today http://uk.rd.yahoo.com/evt=44106/*http://uk.docs.yahoo.com/mail/winter07.html 
