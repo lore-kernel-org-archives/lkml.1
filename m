@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbXGEHFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759179AbXGEHFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbXGEHFJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 03:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbXGEHE6
+	id S1759179AbXGEHFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 03:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbXGEHF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 03:04:58 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57347 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756572AbXGEHE6 convert rfc822-to-8bit (ORCPT
+	Thu, 5 Jul 2007 03:05:26 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:60795 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756572AbXGEHFZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 03:04:58 -0400
-Date: Thu, 5 Jul 2007 09:03:13 +0200
-From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: New systems: eu.kernel.org
-Message-ID: <20070705090313.7e3995db@frecb000686.frec.bull.fr>
-In-Reply-To: <468BFA34.5020007@zytor.com>
-References: <468AD8B1.8060005@zytor.com>
-	<20070704113507.3658a52e@frecb000686.frec.bull.fr>
-	<468BFA34.5020007@zytor.com>
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/07/2007 09:09:11,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/07/2007 09:09:13,
-	Serialize complete at 05/07/2007 09:09:13
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=UTF-8
+	Thu, 5 Jul 2007 03:05:25 -0400
+Date: Thu, 5 Jul 2007 00:04:50 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Keiichi KII <k-keiichi@bx.jp.nec.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC][PATCH -mm 0/9] netconsole: Multiple targets and dynamic reconfigurability
+Message-ID: <20070705070450.GI17650@tasint.org>
+Mail-Followup-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+	Keiichi KII <k-keiichi@bx.jp.nec.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Netdev <netdev@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <468B8952.9030205@bx.jp.nec.com> <Pine.LNX.4.64.0707041752210.29756@cselinux1.cse.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707041752210.29756@cselinux1.cse.iitk.ac.in>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Jul 2007 12:51:16 -0700 "H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> SÃ©bastien DuguÃ© wrote:
-> >   
-> >   One last thing, is there a git server as well for eu?
+On Wed, Jul 04, 2007 at 05:55:15PM +0530, Satyam Sharma wrote:
+> On Wed, 4 Jul 2007, Keiichi KII wrote:
+> > By the way, how can I add Signed-off-by:'s to your patches?
+> > Should I add it to each patch and submit them to this list again?
 > > 
+> > Anybody could give me an advice?
 > 
-> FWIW, I've set up git.eu.kernel.org; right now it's an alias to
-> git.kernel.org, but that might change in the future.
+> I think you could just individually reply to all the mails and replace
+> the "Cc:" in front of your name + email ID with "Signed-off-by:" --
+> after reviewing & testing this, of course!
 
-  OK, thanks, will update my pointers.
+	If the chain is not going through Keiichi, he should be
+responding with "Acked-by:", not "Signed-off-by:".  Then Satyam submits
+the patches upstream with the Acked-by: line and his own Signed-off-by:
 
-  Sébastien.
+Joel
+
+-- 
+
+"Anything that is too stupid to be spoken is sung."  
+        - Voltaire
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
