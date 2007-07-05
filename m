@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759708AbXGEIsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbXGEIt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759708AbXGEIsx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 04:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbXGEIso
+	id S1759620AbXGEIt6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 04:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757793AbXGEItv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 04:48:44 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:57024 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757793AbXGEIsn convert rfc822-to-8bit (ORCPT
+	Thu, 5 Jul 2007 04:49:51 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:38224 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757545AbXGEItu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 04:48:43 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 10:48:45 +0200
-User-Agent: KMail/1.9.7
-Cc: paulus@samba.org, stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz, mjg59@srcf.ucam.org,
-       benh@kernel.crashing.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051024.23528.oliver@neukum.org> <E1I6Mtu-000058-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I6Mtu-000058-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707051048.46202.oliver@neukum.org>
+	Thu, 5 Jul 2007 04:49:50 -0400
+Subject: Re: [PATCH] debug work struct cancel deadlocks with lockdep
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Sattler <tsattler@gmx.de>
+In-Reply-To: <20070705084538.GA3476@elte.hu>
+References: <1183583529.9662.34.camel@johannes.berg>
+	 <20070705084538.GA3476@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NRmcs4MJAAxjGWcAYOEw"
+Date: Thu, 05 Jul 2007 10:50:48 +0200
+Message-Id: <1183625448.3818.6.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
-> > > > > > I have discussed the benefits elsewhere.  As for the deadlocks -- do 
-> > > > > > you still observe them if you use the version of the freezer which 
-> > > > > > doesn't freeze kernel threads?
-> > > > > 
-> > > > > In general the only way to guarantee there are no deadlocks is to
-> > > > > construct the graph of dependencies between tasks.  Those dependencies
-> > > > > are not in practice observable from outside the tasks, so it is
-> > > > > virtually impossible to construct the graph.
-> > > > 
-> > > > In which way can user space tasks depend on each other in a way that
-> > > > allows a them members of that cycle to be in uninterruptible sleep?
-> > > 
-> > >  - process A calls rename() on a fuse fs
-> > >  - process B, the fuse server, starts to process the rename request
-> > >  - process B is frozen before it can reply
-> > > 
-> > > Now process A is unfreezable.  We cannot make rename() restartable,
-> > > hence it cannot be interruptible.
-> > 
-> > Then this is a problem specific to fuse. You should teach fuse to block
-> > suspension while such operations are being performed.
-> 
-> And teach VFS to block suspension, while waiting on a mutex held by
-> another process performing a fuse operation.
-> 
-> I can already hear the beautiful praise from Al Viro at the sight of
-> that ;)
 
-There is that.
+--=-NRmcs4MJAAxjGWcAYOEw
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-OK, bite the bullet. Tasks involved in fuse are special. Give them a flag
-and teach the freezer to put them on ice only after all other task are
-frozen. In a way they are kernel, there's no use denying that.
+On Thu, 2007-07-05 at 10:45 +0200, Ingo Molnar wrote:
 
-	Regards
-		Oliver
+> > +#ifdef CONFIG_LOCKDEP
+> > +		/*
+> > +		 * It is permissible to free the struct work_struct
+> > +		 * from inside the function that is called from it,
+> > +		 * this we need to take into account for lockdep too.
+> > +		 * To avoid bogus "held lock freed" warnings as well
+> > +		 * as problems when looking into work->lockdep_map,
+> > +		 * make a copy and use that here.
+> > +		 */
+> > +		struct lockdep_map lockdep_map =3D work->lockdep_map;
+> > +#endif
+>=20
+> > +		lock_acquire(&lockdep_map, 0, 0, 0, 2, _THIS_IP_);
+> >  		f(work);
+> > +		lock_release(&lockdep_map, 1, _THIS_IP_);
+>=20
+> neat trick :)
+
+Not like I had a choice ;) But since I assign .key it still works :)
+
+Btw, do you have a tree you'll submit this through, or Oleg, or should I
+send it to akpm after we sort out any further issues?
+
+johannes
+
+--=-NRmcs4MJAAxjGWcAYOEw
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGjLDo/ETPhpq3jKURAlrTAKCH4AwokJRPVyt1O1DY/BONOr2qSACeNb6N
+NPGMbsqIjzqaeIWYZO20avs=
+=R4k9
+-----END PGP SIGNATURE-----
+
+--=-NRmcs4MJAAxjGWcAYOEw--
 
