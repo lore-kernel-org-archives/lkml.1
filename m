@@ -1,38 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbXGEVe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbXGEVhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762735AbXGEVe6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 17:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762098AbXGEVen
+	id S1762264AbXGEVhm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 17:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758449AbXGEVhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 17:34:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57980 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761709AbXGEVem (ORCPT
+	Thu, 5 Jul 2007 17:37:35 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:45501 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757588AbXGEVhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 17:34:42 -0400
-Date: Thu, 5 Jul 2007 14:34:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Denis Vlasenko <vda.linux@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, "Douglas W. Jones" <jones@cs.uiowa.edu>
-Subject: Re: [PATCH 2/2] vsprintf.c: optimizing, part 2: base 10 conversion
- speedup, v2
-Message-Id: <20070705143419.f214f5b2.akpm@linux-foundation.org>
-In-Reply-To: <200707051251.52891.vda.linux@googlemail.com>
-References: <200707051251.52891.vda.linux@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 5 Jul 2007 17:37:35 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Thu, 5 Jul 2007 23:37:26 +0200
+User-Agent: KMail/1.9.7
+Cc: Miklos Szeredi <miklos@szeredi.hu>, pavel@ucw.cz, paulus@samba.org,
+       johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707052337.27066.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jul 2007 12:51:52 +0200
-Denis Vlasenko <vda.linux@googlemail.com> wrote:
-
-> Using code from
+Am Donnerstag, 5. Juli 2007 schrieb Alan Stern:
+> On Thu, 5 Jul 2007, Miklos Szeredi wrote:
 > 
-> http://www.cs.uiowa.edu/~jones/bcd/decimal.html
-> (with permission from the author, Douglas W. Jones)
+> > I fear, that your efforts to "save" the freezer are in vain.  It is
+> > already moderately hackish with that PF_FREEZER_SKIP and the kernel
+> > dotted randomly with try_to_freeze() calls, but adding bandaids to try
+> > to order freezing userspace processes in the right order would just
+> > make it a horrible mess.
+> 
+> I agree that bandaids won't work.  What's needed is something more 
+> radical.  Things like FUSE must be written so that the kernel parts 
+> _can_ freeze even while they are waiting for a response from a user 
+> thread.
 
-Neither of your patches had signed-off-by:s.  Would prefer that they were
-included please, given that we're adding stuff from someone's website.
+OK, some radical ideas.
+
+In principle we want a deadlock here. Tasks that are frozen due to fuse
+are as good as frozen, there's no need to formally freeze them.
+The bad uninterruptible tasks are those waiting for hardware.
+
+Can we detect the difference? Perhaps we can label those crucial locks
+and when only tasks in the refrigerator and tasks waiting on these locks
+are left we are content and go on to suspending the device tree.
+
+	Flame away
+		Oliver
