@@ -1,116 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761980AbXGEXsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762480AbXGEXtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761980AbXGEXsg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759102AbXGEXs3
+	id S1762480AbXGEXtS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbXGEXtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:48:29 -0400
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:32832 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757005AbXGEXs2 (ORCPT
+	Thu, 5 Jul 2007 19:49:09 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:21383 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759102AbXGEXtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:48:28 -0400
-Message-ID: <468D832C.5090805@blueyonder.co.uk>
-Date: Fri, 06 Jul 2007 00:47:56 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: ov511 module does not build
-References: <468ADA8D.10108@blueyonder.co.uk> <20070705025417.GO3492@stusta.de>
-In-Reply-To: <20070705025417.GO3492@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jul 2007 19:49:08 -0400
+Date: Thu, 05 Jul 2007 17:47:55 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Understanding I/O behaviour
+In-reply-to: <fa.gAvf+r9fiPwNwNVqahYy5u1/Is0@ifi.uio.no>
+To: knobi@knobisoft.de
+Cc: linux-kernel@vger.kernel.org
+Message-id: <468D832B.4060002@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.gAvf+r9fiPwNwNVqahYy5u1/Is0@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Jul 04, 2007 at 12:23:57AM +0100, Sid Boyce wrote:
->   
->> With the same setup in .config for linux-2.6.22-rc2-git7, it builds, after 
->> that and right up to linux-2.6.22-rc7-git1 it doesn't.
->> /usr/src/linux-2.6.22-rc2-git7/drivers/media/video/ov511.ko
->> # CONFIG_VIDEO_V4L1 is not set
->>     
->     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->
-> That's the problem.
->
->   
->> CONFIG_VIDEO_V4L1_COMPAT=y
->> In any of the 2.6.22-rc kernels, there is no option to select OV511.
->> tindog:/usr/src/linux-2.6.22-rc2-git7 # grep -i ov511 .config
->> tindog:/usr/src/linux-2.6.22-rc2-git7 #
->>
->> tindog:/usr/src/linux-2.6.22-rc7-git1 # diff 
->> ../linux-2.6.22-rc2-git7/drivers/media/video/Kconfig 
->> drivers/media/video/Kconfig
->> 14c14
->> < if VIDEO_CAPTURE_DRIVERS
->> ---
->>     
->>> if VIDEO_CAPTURE_DRIVERS && VIDEO_DEV
->>>       
->> 694c694
->> < if V4L_USB_DRIVERS
->> ---
->>     
->>> if V4L_USB_DRIVERS && USB
->>>       
->> tindog:/usr/src/linux-2.6.22-rc7-git1 # grep V4L .config
->> # CONFIG_VIDEO_V4L1 is not set
->> CONFIG_VIDEO_V4L1_COMPAT=y
->> CONFIG_VIDEO_V4L2=y
->> CONFIG_V4L_USB_DRIVERS=y
->>
->> tindog:/usr/src/linux-2.6.22-rc2-git7 # grep V4L .config
->> # CONFIG_VIDEO_V4L1 is not set
->>     
->
-> If it built with this version and this .config, something went wrong.
->
-> Are you sure this is the correct .config that built the ov511 module?
->
->   
->> CONFIG_VIDEO_V4L1_COMPAT=y
->> CONFIG_VIDEO_V4L2=y
->> # CONFIG_V4L_USB_DRIVERS is not set
->>
->> Still does not build for 2.6.22-rc7-git2 with .config set with
->>
->> # CONFIG_V4L_USB_DRIVERS is not set
->>
->> Regards
->> Sid.
->> -- 
->> Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
->> Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
->> Specialist, Cricket Coach
->> Microsoft Windows Free Zone - Linux used for all Computing Tasks
->>
->>
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>     
->
-> cu
-> Adrian
->
->   
-Thanks, I see, I didn't select that as it said it was DEPRECATED, now 
-I've selected OV511.
-Regards
-Sid.
+Martin Knoblauch wrote:
+> Hi,
+> 
+>  for a customer we are operating a rackful of HP/DL380/G4 boxes that
+> have given us some problems with system responsiveness under [I/O
+> triggered] system load.
+> 
+>  The systems in question have the following HW:
+> 
+> 2x Intel/EM64T CPUs
+> 8GB memory
+> CCISS Raid controller with 4x72GB SCSI disks as RAID5
+> 2x BCM5704 NIC (using tg3)
+> 
+>  The distribution is RHEL4. We have tested several kernels including
+> the original 2.6.9, 2.6.19.2, 2.6.22-rc7 and 2.6.22-rc7+cfs-v18.
+> 
+>  One part of the workload is when several processes try to write 5 GB
+> each to the local filesystem (ext2->LVM->CCISS). When this happens, the
+> load goes up to 12 and responsiveness goes down. This means from one
+> moment to the next things like opening a ssh connection to the host in
+> question, or doing "df" take forever (minutes). Especially bad with the
+> vendor kernel, better (but not perfect) with 2.6.19 and 2.6.22-rc7.
+> 
+>  The load basically comes from the writing processes and up to 12
+> "pdflush" threads all being in "D" state.
+> 
+>  So, what I would like to understand is how we can maximize the
+> responsiveness of the system, while keeping disk throughput at maximum.
+> 
+>  During my investiogation I basically performed the following test,
+> because it represents the kind of trouble situation:
+> 
+> ----
+> $ cat dd3.sh
+> echo "Start 3 dd processes: "`date`
+> dd if=/dev/zero of=/scratch/X1 bs=1M count=5000&
+> dd if=/dev/zero of=/scratch/X2 bs=1M count=5000&
+> dd if=/dev/zero of=/scratch/X3 bs=1M count=5000&
+> wait
+> echo "Finish 3 dd processes: "`date`
+> sync
+> echo "Finish sync: "`date`
+> rm -f /scratch/X?
+> echo "Files removed: "`date`
+> ----
+> 
+>  This results in the following timings. All with the anticipatory
+> scheduler, because it gives the best results:
+> 
+> 2.6.19.2, HT: 10m
+> 2.6.19.2, non-HT: 8m45s
+> 2.6.22-rc7, HT: 10m
+> 2.6.22-rc7, non-HT: 6m
+> 2.6.22-rc7+cfs_v18, HT: 10m40s
+> 2.6.22-rc7+cfs_v18, non-HT: 10m45s
+> 
+>  The "felt" responsiveness was best with the last two kernels, although
+> the load profile over time looks identical in all cases.
+> 
+>  So, a few questions:
+> 
+> a) any idea why disabling HT improves throughput, except for the cfs
+> kernels? For plain 2.6.22 the difference is quite substantial
+> b) any ideas how to optimize the settings of the /proc/sys/vm/
+> parameters? The documentation is a bit thin here.
+
+Try playing with reducing /proc/sys/vm/dirty_ratio and see how that 
+helps. This workload will fill up memory with dirty data very quickly, 
+and it seems like system responsiveness often goes down the toilet when 
+this happens and the system is going crazy trying to write it all out.
 
 -- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
