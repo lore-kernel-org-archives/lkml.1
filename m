@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762753AbXGEXXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763170AbXGEXXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762753AbXGEXXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 19:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762790AbXGEXW1
+	id S1763170AbXGEXXy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 19:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761033AbXGEXWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 19:22:27 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52134 "EHLO
+	Thu, 5 Jul 2007 19:22:38 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:52135 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762775AbXGEXWZ (ORCPT
+	with ESMTP id S1762943AbXGEXWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 19:22:25 -0400
-Date: Fri, 6 Jul 2007 01:22:55 +0200
+	Thu, 5 Jul 2007 19:22:37 -0400
+Date: Fri, 6 Jul 2007 01:23:06 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, jeremy@xensource.com,
-       chrisw@sous-sol.org
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
-Subject: [-mm patch] make arch/i386/xen/mmu.c:xen_pgd_pin() static
-Message-ID: <20070705232255.GX3492@stusta.de>
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+To: r.marek@assembler.cz
+Cc: lm-sensors@lm-sensors.org, mhoffman@lightlink.com,
+       linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make coretemp_device_remove() static
+Message-ID: <20070705232306.GY3492@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-xen_pgd_pin() can become static.
+coretemp_device_remove() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
-
- arch/i386/xen/mmu.c |    2 +-
- arch/i386/xen/mmu.h |    3 ---
- 2 files changed, 1 insertion(+), 4 deletions(-)
-
---- linux-2.6.22-rc6-mm1/arch/i386/xen/mmu.h.old	2007-07-04 20:42:44.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/arch/i386/xen/mmu.h	2007-07-04 20:42:54.000000000 +0200
-@@ -27,9 +27,6 @@
- void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm);
- void xen_exit_mmap(struct mm_struct *mm);
+--- linux-2.6.22-rc6-mm1/drivers/hwmon/coretemp.c.old	2007-07-04 20:46:05.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/hwmon/coretemp.c	2007-07-04 20:46:20.000000000 +0200
+@@ -318,7 +318,7 @@
+ }
  
--void xen_pgd_pin(pgd_t *pgd);
--//void xen_pgd_unpin(pgd_t *pgd);
--
- #ifdef CONFIG_X86_PAE
- unsigned long long xen_pte_val(pte_t);
- unsigned long long xen_pmd_val(pmd_t);
---- linux-2.6.22-rc6-mm1/arch/i386/xen/mmu.c.old	2007-07-04 20:43:00.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/arch/i386/xen/mmu.c	2007-07-04 20:43:06.000000000 +0200
-@@ -408,7 +408,7 @@
- /* This is called just after a mm has been created, but it has not
-    been used yet.  We need to make sure that its pagetable is all
-    read-only, and can be pinned. */
--void xen_pgd_pin(pgd_t *pgd)
-+static void xen_pgd_pin(pgd_t *pgd)
+ #ifdef CONFIG_HOTPLUG_CPU
+-void coretemp_device_remove(unsigned int cpu)
++static void coretemp_device_remove(unsigned int cpu)
  {
- 	struct multicall_space mcs;
- 	struct mmuext_op *op;
+ 	struct pdev_entry *p, *n;
+ 	mutex_lock(&pdev_list_mutex);
 
