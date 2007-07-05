@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761666AbXGER5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbXGER72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761666AbXGER5s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 13:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760713AbXGER5d
+	id S1761577AbXGER72 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 13:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758475AbXGER7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 13:57:33 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41329 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760457AbXGER5c (ORCPT
+	Thu, 5 Jul 2007 13:59:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:38649 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757570AbXGER7T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 13:57:32 -0400
-Date: Thu, 5 Jul 2007 10:59:42 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/11] drivers/block/rd.c: lower printk severity
-Message-Id: <20070705105942.ec6396fe.randy.dunlap@oracle.com>
-In-Reply-To: <93d7a361198aac1cdb9bbfe556ae60faa40ff36c.1183551645.git.da-x@monatomic.org>
-References: <6789b0ff288d584d640ee65f8e1e5e27bf040862.1183551644.git.da-x@monatomic.org>
-	<93d7a361198aac1cdb9bbfe556ae60faa40ff36c.1183551645.git.da-x@monatomic.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 5 Jul 2007 13:59:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=fKVX0TCQx4vHU9douXvM8Dqd9n5N29ShPelEJRio2B6QKBtiMht4BkApXARWOqcFR5ntFBgi/AII28q9MFHAwreoXWj8+obs/36p5PFTMITvBxz2cyqS3McXxhKOB1s2l2fBWsZs1fTo8J2QlOgkZqrCzVh7HM3oWX/AFVU4pbE=
+Date: Thu, 5 Jul 2007 21:59:10 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Hemminge <shemminger@linux-foundation.org>
+Subject: [PATCH] Sky Cpu: use C99 style for struct init
+Message-ID: <20070705175910.GG7180@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007 15:30:22 +0300 Dan Aloni wrote:
+This patch change structure item init
+format to C99.
 
-> Signed-off-by: Dan Aloni <da-x@monatomic.org>
-> ---
->  drivers/block/rd.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/block/rd.c b/drivers/block/rd.c
-> index a1512da..3b974f8 100644
-> --- a/drivers/block/rd.c
-> +++ b/drivers/block/rd.c
-> @@ -463,9 +463,9 @@ static int __init rd_init(void)
->  	}
->  
->  	/* rd_size is given in kB */
-> -	printk("RAMDISK driver initialized: "
-> -		"%d RAM disks of %dK size %d blocksize\n",
-> -		CONFIG_BLK_DEV_RAM_COUNT, rd_size, rd_blocksize);
-> +	printk(KERN_INFO "RAMDISK driver initialized: "
-> +	       "%d RAM disks of %dK size %d blocksize\n",
-> +	       CONFIG_BLK_DEV_RAM_COUNT, rd_size, rd_blocksize);
->  
->  	return 0;
->  out:
-> -- 
-
-Hi Dan,
-All of the changes look good to me except for this one.
-The change to use 7 spaces to align the strings is unnecessary.
-
-Thanks.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+The patch is over my prev patch named:
+
+	[PATCH 1/4] Sky Cpu and Nexus: code style improvement
+
+ drivers/misc/hdpuftrs/hdpu_cpustate.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/misc/hdpuftrs/hdpu_cpustate.c b/drivers/misc/hdpuftrs/hdpu_cpustate.c
+index 51e4963..cc33f24 100644
+--- a/drivers/misc/hdpuftrs/hdpu_cpustate.c
++++ b/drivers/misc/hdpuftrs/hdpu_cpustate.c
+@@ -171,21 +171,21 @@ static struct platform_driver hdpu_cpustate_driver = {
+  *	The various file operations we support.
+  */
+ static const struct file_operations cpustate_fops = {
+-      owner:	THIS_MODULE,
+-      open:	cpustate_open,
+-      release:	cpustate_release,
+-      read:	cpustate_read,
+-      write:	cpustate_write,
+-      fasync:	NULL,
+-      poll:	NULL,
+-      ioctl:	NULL,
+-      llseek:	no_llseek,
++      .owner	= THIS_MODULE,
++      .open	= cpustate_open,
++      .release	= cpustate_release,
++      .read	= cpustate_read,
++      .write	= cpustate_write,
++      .fasync	= NULL,
++      .poll	= NULL,
++      .ioctl	= NULL,
++      .llseek	= no_llseek,
+ };
+ 
+ static struct miscdevice cpustate_dev = {
+-	MISC_DYNAMIC_MINOR,
+-	"sky_cpustate",
+-	&cpustate_fops,
++	.minor	= MISC_DYNAMIC_MINOR,
++	.name	= "sky_cpustate",
++	.fops	= &cpustate_fops,
+ };
+ 
+ static int hdpu_cpustate_probe(struct platform_device *pdev)
