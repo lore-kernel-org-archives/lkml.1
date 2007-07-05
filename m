@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761806AbXGEOlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbXGEOmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761806AbXGEOlO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 10:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbXGEOlA
+	id S1761326AbXGEOmX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 10:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbXGEOmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 10:41:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40529 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755471AbXGEOk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 10:40:59 -0400
-Date: Thu, 5 Jul 2007 16:40:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 1/2] workqueue: debug flushing deadlocks with lockdep
-Message-ID: <20070705144047.GA9548@elte.hu>
-References: <20070705110744.564273000@sipsolutions.net> <20070705110820.304578000@sipsolutions.net> <20070705143217.GA170@tv-sign.ru>
+	Thu, 5 Jul 2007 10:42:16 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:33025 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752550AbXGEOmQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 10:42:16 -0400
+Date: Thu, 5 Jul 2007 10:42:15 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Paul Mackerras <paulus@samba.org>
+cc: Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
+ RAM pathway
+In-Reply-To: <18060.15591.556676.28935@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0707051025500.3728-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070705143217.GA170@tv-sign.ru>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 5 Jul 2007, Paul Mackerras wrote:
 
-* Oleg Nesterov <oleg@tv-sign.ru> wrote:
-
-> Currently it is allowed that work->func() does flush_workqueue() on 
-> its own workqueue. So we have
+> Alan Stern writes:
 > 
-> 	run_workqueue()
-> 		work->func()
-> 			flush_workqueue()
-> 				run_workqueue()
+> > > > Yes, the code could be changed to keep track of the reason for a device
+> > > > suspend.  But that just raises the old problem of what to do when
+> > > > there's an I/O request for a suspended device during STR.
+> > > 
+> > > Is this actually a real problem?  I would think the policy would be
+> > > "block" for block devices (pun not intended :), "drop" for network
+> > > devices, etc.
+> > 
+> > It is indeed a real problem, or at least, it can be.
 > 
-> All but work->func() take wq->lockdep_map, I guess check_deadlock() 
-> won't be happy.
+> How so?  Can you give me an example?
 
-yep.
+The example I quoted earlier about binding during a suspend will do.  I 
+agree that we can and should try to prevent it from ever occurring.
 
-> OTOH. Perhaps we can can forbid such a behaviour? Andrew, do you know 
-> any good example of "keventd trying to flush its own queue" ?
+Read and write are a problem only in that fixing them would potentially
+involve changing lots of drivers; I don't think they pose a serious
+theoretical obstacle.  (Lord knows what will happen with async I/O!)
 
-i'd prefer to make the API a little bit stricter: such recursion is 
-nasty. Btw., what mechanism prevents the second instance of 
-run_workqueue() calling into a work->func() again?
+Any other entry points to drivers are also potential problems, but it's 
+hard to say anything definite about them since they are so varied.
 
-	Ingo
+> > Bus subsystems can suspend devices with no drivers.
+> 
+> Interesting.  I assume this is for buses for which there is a
+> bus-specific but device-independent suspend procedure defined.
+
+Yes.
+
+> It would seem sensible to me that the PM core should get the bus to
+> resume such a device before calling a driver probe routine.  The
+> resume should be blocked or deferred while a system suspend is
+> underway.  In fact I think that all driver bind/unbind and probe
+> operations should be deferred while the system is suspending (i.e. put
+> on a list to be done after the system resumes).
+
+Getting the PM core to resume a device before probing could be 
+difficult; in general it doesn't know enough about specific device 
+behaviors to do something like that.  But the subsystem certainly ought 
+to take care of it.  USB does.
+
+Yes, bind/unbind/etc. should be deferred during a system suspend.  But
+it has to be done carefully, because these operations generally involve
+locks that can't be released.  They need to be prevented at their
+source, not in the driver core.  That's one reason why khubd needs to
+be frozen (being part of the USB hub driver, it is the task responsible
+for binding and unbinding drivers to USB devices).
+
+Another thing to look out for is registration and unregistration of 
+drivers.  These activities also cause bind/unbind operations.  Note 
+that if userspace is frozen then neither insmod nor rmmod can run.  :-)
+
+> > It would help.  It would help even more if the sysfs core also blocked
+> > all I/O while suspend is under way.  (Although this might be tricky, 
+> > considering that the suspend is initiated by a sysfs write...)
+> 
+> I didn't think sysfs got involved at all in normal read and write
+> requests, so I don't know how it would block them...
+
+All I/O to sysfs attributes passes through the routines in fs/sysfs/*.  
+It could be blocked there.  (But if userspace is frozen it won't need 
+to be.)
+
+> Normally devices have some sort of queue of pending operations.
+
+That's certainly true of block devices, whose drivers use the block 
+subsystem.  It's not true for lots of other devices, though.
+
+>  So
+> all that is required on suspend is to stop processing the queue and
+> wait for any currently-underway operations to complete.  The blocking
+> then happens naturally using the normal I/O wait mechanisms.
+
+In my experience, most non-block drivers do not have any queue of 
+pending I/O operations.  They simply carry out requests as they arrive.
+
+Alan Stern
+
