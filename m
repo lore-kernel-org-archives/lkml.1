@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760563AbXGEN62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbXGEN6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760563AbXGEN62 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 09:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbXGEN6U
+	id S1761362AbXGEN6l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 09:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758520AbXGEN6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 09:58:20 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:35644 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757833AbXGEN6T (ORCPT
+	Thu, 5 Jul 2007 09:58:21 -0400
+Received: from saltmine.radix.net ([207.192.128.40]:43419 "EHLO
+	saltmine.radix.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758120AbXGEN6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 09:58:19 -0400
-Date: Thu, 5 Jul 2007 14:57:58 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Paul Mackerras <paulus@samba.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Message-ID: <20070705135758.GB22177@srcf.ucam.org>
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041104140.25704-100000@netrider.rowland.org> <18060.15591.556676.28935@cargo.ozlabs.ibm.com> <20070705091526.GA3084@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 5 Jul 2007 09:58:20 -0400
+Date: Thu, 5 Jul 2007 09:29:14 -0400
+From: Thomas Dickey <dickey@radix.net>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Keith Packard <keith.packard@intel.com>
+Subject: Re: [patch] CFS scheduler, -v18
+Message-ID: <20070705132914.GA9003@saltmine.radix.net>
+References: <8yZun-1bO-5@gated-at.bofh.it> <8CszT-4hd-11@gated-at.bofh.it> <8CtPi-6qj-9@gated-at.bofh.it> <8Cus1-7eL-11@gated-at.bofh.it> <8CwtU-1Z5-3@gated-at.bofh.it> <8Cxgd-3fN-9@gated-at.bofh.it> <8CKQ8-7HN-13@gated-at.bofh.it> <8CKZV-7Ur-11@gated-at.bofh.it> <8CLCt-vX-3@gated-at.bofh.it>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
 Content-Disposition: inline
-In-Reply-To: <20070705091526.GA3084@elf.ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <8CLCt-vX-3@gated-at.bofh.it>
+User-Agent: Mutt/1.3.27i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 11:15:26AM +0200, Pavel Machek wrote:
 
-> Now, if kernel needs FUSE services for some reason (that's the problem
-> we hit in s2ram case, right?), we have a deadlock.
-> 
-> So main problem still seems to be "kernel should not depend on
-> userland services during suspend", refrigerator or not.
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-And also "Userland should not depend on userland services", which is 
-rather more of a problem.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+On Tue, Jul 03, 2007 at 10:10:05AM +0200, Keith Packard wrote:
+> On Tue, 2007-07-03 at 09:22 +0200, Ingo Molnar wrote:
+>=20
+> > which allows xterm-spam (attached) to easily flood the xterm (without=
+=20
+> > any scrolling that would act as a throttle) and the xterm to flood Xorg=
+.=20
+
+=2E..deleting the offhand remarks
+
+=2E..here's a little content:
+
+> And, as the kernel will not buffer more than 4095 bytes from a pty,
+> there isn't any way it will ever read 4096 bytes.
+
+The sched_yield() call was added to address problems in an earlier
+2.6.x kernel (and the report then stated that it could read more than
+4096 because it would have to perform several reads to keep up with
+a burst of output).
+=20
+=2E..deleting the other offhand remarks
+
+
+--=20
+Thomas E. Dickey
+http://invisible-island.net
+ftp://invisible-island.net
+
+--qMm9M+Fa2AknHoGS
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.6 (SunOS)
+Comment: For info see http://www.gnupg.org
+
+iD8DBQFGjO7ctIqByHxlDocRAu6WAJ4z3YZcXKGVroj24gVyn4qak5iq3wCbBhPW
+4W86UKrJKNeWpX1Sy7y1siM=
+=EEkz
+-----END PGP SIGNATURE-----
+
+--qMm9M+Fa2AknHoGS--
