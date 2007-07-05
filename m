@@ -1,192 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbXGEP6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759934AbXGEQAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759303AbXGEP6h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 11:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbXGEP62
+	id S1759934AbXGEQAQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 12:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757100AbXGEQAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 11:58:28 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:37524 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754099AbXGEP61 (ORCPT
+	Thu, 5 Jul 2007 12:00:05 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:33000 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754099AbXGEQAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 11:58:27 -0400
-Subject: Re: [RFC PATCH 1/6] Driver Tracing Interface (DTI) Documentation
+	Thu, 5 Jul 2007 12:00:01 -0400
+Subject: Re: [RFC PATCH 2/6] Driver Tracing Interface (DTI) code
 From: Tom Zanussi <zanussi@us.ibm.com>
 To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: linux-kernel@vger.kernel.org, michaele@au1.ibm.com, dwilder@us.ibm.com,
-       HOLZHEU@de.ibm.com
-In-Reply-To: <20070704031300.GA24341@Krystal>
-References: <1183173817.24291.137.camel@ubuntu>
-	 <20070704031300.GA24341@Krystal>
+Cc: linux-kernel@vger.kernel.org, dwilder@us.ibm.com, HOLZHEU@de.ibm.com
+In-Reply-To: <20070704031304.GA24590@Krystal>
+References: <1183173834.24291.138.camel@ubuntu>
+	 <20070704031304.GA24590@Krystal>
 Content-Type: text/plain
-Date: Thu, 05 Jul 2007 10:57:44 -0500
-Message-Id: <1183651064.4517.162.camel@ubuntu>
+Date: Thu, 05 Jul 2007 10:59:09 -0500
+Message-Id: <1183651149.4517.164.camel@ubuntu>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu,
-
-Thanks for your comments, mine below...
-
-On Tue, 2007-07-03 at 23:13 -0400, Mathieu Desnoyers wrote: 
-> Hi Tom,
-> 
-> I'm glad to see that other people are tackling the tracing task.
-> I must say that there is a lot here that was already out there in LTTng.
-
-Yes and no.  For the binary tracing parts, there probably is some
-overlap with LTTng.  But since there's no LTTng in the kernel, we do
-without it.
-
-> I will be happy to review the code you present. Please see comments
-> below.
-> 
-> * Tom Zanussi (zanussi@us.ibm.com) wrote:
-> > +On the user side, the combined contents of all the data present in the
-> > +per-cpu relay files can be read from a single debugfs file that merges
-> > +and presents the contents of the per-cpu data files.  This is mostly
-> > +useful for text-based logging, but also works for binary logging.  For
-> > +binary logging, there is a small userspace library and examples
-> > +available which merge and display the binary per-cpu data in userspace
-> > +rather than in the kernel.  See http://sourceforge.net/projects/dti.
+On Tue, 2007-07-03 at 23:13 -0400, Mathieu Desnoyers wrote:
+> > +void *__dti_reserve(struct dti_info *dti, int prio, size_t len)
+> > +{
+> > +	struct dti_event *event;
+> > +	int event_len;
 > > +
+> > +	if (!dti)
+> > +		return NULL;
+> > +
+> > +	if (prio > dti->level)
+> > +		return NULL;
+> > +
+> > +	event_len = len + sizeof(*event);
+> > +
+> > +	event = relay_reserve(dti->trace->rchan, event_len);
+> > +	if (!event)
+> > +		return NULL;
+> > +
+> > +	event->time = sched_clock();
 > 
-> Right.. LTTng does not use text-based tracing at all, nor global
-> buffers, because of the performance hit. I see that it can be usseful in
-> some cases, but the fact that we have a post-processing binary-to-text
-> converter that uses the timestamp to merge the per-cpu buffers makes the
-> global channel useless.
+> sched_clock() is dangerous.. you have to make sure you provide correct
+> clock errors in the trace parsing.. not exactly something interesting
+> when you are looking at the "one" case over 10000 that was faulty. See
+> the i386 sched-clock.c:
+> 
+>  * Scheduler clock - returns current time in nanosec units.
+>  * All data is local to the CPU.
+>  * The values are approximately[1] monotonic local to a CPU, but not
+>  * between CPUs.   There might be also an occasionally random error,
+>  * but not too bad. Between CPUs the values can be non monotonic.
+>  *
+>  * [1] no attempt to stop CPU instruction reordering, which can hit
+>  * in a 100 instruction window or so.
+> 
+> How do you plan to use these timestamps to reorder events across CPUs ?
 > 
 
-DTI doesn't use a global channel either - the 'merged views' present the
-data as if there were a global channel, but logging to the channel is
-still per-cpu.
+lttng_timestamp()? ;-)
 
-As for text-based tracing, of course I agree it's not the most efficient
-way to do tracing, but from my perspective, it's probably the most
-useful part of DTI.  I'm continually getting mail from people saying
-'the relay API is just too hard to use' or 'I just want to log some
-data, I don't want to know jack about debugfs' or 'I just want to log
-some data, I don't want to know jack about merging per-cpu files'.  DTI
-in my opinion (the other authors may disagree) is mainly about making
-those things as easy as possible and providing a more usable API for
-kernel debugging - one line of code to set things up, dti_printk() calls
-to do per-cpu logging, and at the end, a cat of a single file to see the
-merged results.  I don't know how to make it any simpler.
-
-But DTI can also log binary data if needed, and it's not that hard to
-write a quick-and-dirty post-processing converter to present it nicely
-(or the one-size-fits-all dtiprint utility can be used to look at any
-trace).  The emphasis I think is on 'quick-and-dirty' - LTTng is
-targeted at production systems and therefore goes to a lot of trouble
-making sure that users can do everything they need to without ever
-having to reboot.  With DTI, a reboot is pretty much assumed, so there's
-no extra data definition layer to worry about - just define the data you
-want to log and make sure you have the same thing on the other side when
-you want to make sense of it.
-
-Anyway, every so often someone posts a debugging tool similar to DTI -
-DTI is basically an attempt to try and make a lot of that effort
-unnecessary by making relay easier to use for ad hoc debugging; in fact,
-the relay_kernel_read() used by the merged views was something I wrote a
-couple of years ago for logdev and that IIRC that was using it for the
-same purpose.
 
 > > +
-> > +In the kernel, DTI provides both a low-level interface and a
-> > +high-level 'handle-based' interface.  The handle-based interface is
-> > +built on top of the low-level interface.  The main difference between
-> > +the low and high-level interfaces is that in addition to being easier
-> > +to use, the high-level interface only allocates the channel buffers
-> > +'on-demand', when the first event of a high enough priority comes in.
+> > +static int vprintk_normal(struct dti_info *dti, int prio, const char* fmt,
+> > +			  va_list args)
+> > +{
+> > +	struct dti_event *event;
+> > +	void *buf;
+> > +	int len, event_len, rc = -1;
+> > +	unsigned long flags;
+> > +
+> > +	if (!dti)
+> > +		return -1;
+> > +
+> > +	if (prio > dti->level)
+> > +		return -1;
+> > +
+> > +	local_irq_save(flags);
+> > +	buf = dti_printf_tmpbuf[smp_processor_id()];
+> > +	len = vsnprintf(buf, DTI_PRINTF_TMPBUF_SIZE, fmt, args);
 > 
-> Ouch ? What tells you that you are running in a context where it is safe
-> to allocate a channel buffer when you hit the first event of that
-> loglevel ? I see it is done in complete_channel(), which fails silently
-> if the code is called from an atomic context. tsk tsk.. who would like
-> to miss important events just because their buffer was not allocated and
-> they were unable to allocate it.
+> As I said, why not put the result of the vsnprintf directly in the
+> buffer after the relay_reserve ?
 > 
 
-complete_channel() doesn't fail silently - if it's in an unsafe context
-for allocating a channel, it does it in a work queue.  So yes, you'll
-miss some events at the beginning.  If that's a problem, you can use the
-low-level interface for the channel (or maybe there should be a flag on
-DEFINE_DTI_HANDLE() that has it created immediately).
+Because I don't know how much to reserve until I've done the
+vsnprintf().  I think that to have vsnprintf() print directly into the
+relay buffer, I'd need a relay_unreserve() to remove the unused portion.
 
 > > +
-> > +  static char early_tracebuf[4096 * 4];
-> > +
-> > +  DEFINE_DTI_EARLY_HANDLE(early_dti_handle, "early", 4096 * 8,
-> > +                          DTI_LEVEL_DEFAULT, early_tracebuf,
-> > +                          sizeof(early_tracebuf));
-> > +
+> > +/**
+> > + *	dti_relog_initbuf - re-log static initbuf into real relay channel
+> > + *	@work: work struct that contains the the dti handle
+> > + *
+> > + *	The global initbuf may contain events from multiple cpus.  These
+> > + *	events must be put into their respective cpu buffers once the
+> > + *	per-cpu channel is available.
+> > + *
+> > + *	Internal - exported for setup macros.
+> > + */
+> > +int dti_relog_initbuf(struct dti_handle *handle)
+> > +{
 > 
-> What tells you that your timestamps will not be jumping randomly ?
-> 
-
-Why would they be jumping randomly?  Here's output from the early boot
-example - I don't see any random jumping:
-
-[    0.000000][0]first statement in start_kernel()
-[    0.000000][0]after smp_setup_processor_id()
-[    0.000000][0]before tick_init()
-[    0.000000][0]after tick_init()
-[    0.000000][0]after boot_cpu_init()
-[    0.000000][0]after setup_arch()
-[    0.000000][0]after smp_prepare_boot_cpu()
-[    0.000000][0]after sched_init()
-[    0.000000][0]after page_alloc_init()
-[    0.000000][0]after init_timers()
-[    0.000000][0]after hrtimers_init()
-[   54.947609][0]after time_init()
-[   54.950886][0]after console_init()
-[   54.979736][0]after locking_selftest()
-[   55.062384][0]before rest_init()
-
-But I'm quite sure you know a lot more about foolproof timestamping than
-I do, and that it's all encapsulated in something like an
-lttng_timestamp() that I could grab out of lttng?
-
-> Same thing for the if (handle->initbuf test in dti_reserve_early_fn:
-> it should keep a counter of events missed, not discard them silently.
-> 
-> > +This example creates a 32k per-cpu DTI channel having the default log
-> > +level, and in addition specifies a single 16k buffer that will be used
-> > +to log data into until the relay channels can be created at handle
-> > +initialization time.  In this case, after the system boots up, the file
-> > +
-> > +  /sys/kernel/debug/dti/early/merged
-> > +
-> > +will contain the data collected during early tracing.
-> > +
-> > +Handles created with DEFINE_DTI_EARLY_HANDLE are exactly the same as
-> > +handles created using DEFINE_DTI_HANDLE() except that a static init
-> > +buffer is attached to the handle.  This static buffer is logged into
-> > +until the relay channel becomes available, at which point the contents
-> > +of the static buffer are re-logged into the relay buffer.  Early
-> > +handles have the same lifetimes as normal handles and can be used in
-> > +the same way after initialization.  There are no special logging
-> > +functions needed for logging early data - the same dti_printk(), etc,
-> > +functions are used to log to an early channel.
-> 
-> How can the copy be done without mixing TSCs from early and non-early
-> events ? Why should it be done at all ?
+> What do you do with the data recorded by the system while you do this
+> buffer copy? Is the timestamp ordering kept? Why do you copy the static
+> buffers into other buffers at all anyway ? They could be exported
+> through relay (if it supported exporting statically mapped buffers).
 > 
 
-Again, please point me to an lttng_timestamp() that I could use if this
-is a problem.
-
-The reason we do it at all is that we want the events to be available in
-the normal relay channel after the system boots up instead of as some
-special add-on to relay.  Doing it with a single static buffer seemed
-like the simplest thing to do both from a user and implementation
-perspective.
+You're right, we need to do something about that.  As mentioned before,
+we copy the events from the static buffer into the relay channel (the
+timestamp ordering is kept) after it becomes available because that
+seems like the simplest thing to do.  We could add support to relay to
+export another set of (static) buffers, or add the relogging code to
+relay if other tracers want to use it.
 
 Tom
+
 
 
 
