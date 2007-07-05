@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbXGENyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760563AbXGEN62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760910AbXGENyw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 09:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbXGENyp
+	id S1760563AbXGEN62 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 09:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbXGEN6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 09:54:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53686 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757456AbXGENyp convert rfc822-to-8bit (ORCPT
+	Thu, 5 Jul 2007 09:58:20 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:35644 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757833AbXGEN6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 09:54:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 16:02:17 +0200
-User-Agent: KMail/1.9.5
-Cc: Miklos Szeredi <miklos@szeredi.hu>, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, mjg59@srcf.ucam.org, benh@kernel.crashing.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051523.44826.rjw@sisk.pl> <200707051528.34754.oliver@neukum.org>
-In-Reply-To: <200707051528.34754.oliver@neukum.org>
+	Thu, 5 Jul 2007 09:58:19 -0400
+Date: Thu, 5 Jul 2007 14:57:58 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Paul Mackerras <paulus@samba.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Message-ID: <20070705135758.GB22177@srcf.ucam.org>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041104140.25704-100000@netrider.rowland.org> <18060.15591.556676.28935@cargo.ozlabs.ibm.com> <20070705091526.GA3084@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707051602.19042.rjw@sisk.pl>
+In-Reply-To: <20070705091526.GA3084@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 15:28, Oliver Neukum wrote:
-> Am Donnerstag, 5. Juli 2007 schrieb Rafael J. Wysocki:
-> > > It seems pretty clear cut.  Whining about how much problems this will
-> > > cause won't get us nearer to a solution.
-> > 
-> > Yes, that's pretty clear cut, but we should start from fixing the drivers. :-)
+On Thu, Jul 05, 2007 at 11:15:26AM +0200, Pavel Machek wrote:
+
+> Now, if kernel needs FUSE services for some reason (that's the problem
+> we hit in s2ram case, right?), we have a deadlock.
 > 
-> If, at a minimum, we can determine that we can STD without a freezer.
+> So main problem still seems to be "kernel should not depend on
+> userland services during suspend", refrigerator or not.
 
-No, we can't.
-
-> It makes no sense to invest a lot of work to face the same problem
-> again with STD.
-
-Arguably, it does make sense, because for many platforms the hibernation
-is irrelevant and we're going to separate the suspend and hibernation
-frameworks anyway.
-
-Greetings,
-Rafael
-
-
+And also "Userland should not depend on userland services", which is 
+rather more of a problem.
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Matthew Garrett | mjg59@srcf.ucam.org
