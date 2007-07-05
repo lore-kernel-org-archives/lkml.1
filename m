@@ -1,93 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762105AbXGES4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762061AbXGES6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762105AbXGES4j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 14:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760243AbXGES4a
+	id S1762061AbXGES6e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 14:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759896AbXGES60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 14:56:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34250 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760168AbXGES42 (ORCPT
+	Thu, 5 Jul 2007 14:58:26 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:36708 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759838AbXGES6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 14:56:28 -0400
-Date: Thu, 5 Jul 2007 11:56:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: linux-sparse@vger.kernel.org, linux-kernel@vger.kernel.org
+	Thu, 5 Jul 2007 14:58:25 -0400
 Subject: Re: [RFC] bloody mess with __attribute__() syntax
-In-Reply-To: <20070705180742.GP21478@ftp.linux.org.uk>
-Message-ID: <alpine.LFD.0.98.0707051144560.9434@woody.linux-foundation.org>
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Josh Triplett <josh@freedesktop.org>, linux-sparse@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070705164334.GM21478@ftp.linux.org.uk>
 References: <20070705093528.GK21478@ftp.linux.org.uk>
- <alpine.LFD.0.98.0707050930330.9434@woody.linux-foundation.org>
- <20070705170918.GO21478@ftp.linux.org.uk> <alpine.LFD.0.98.0707051014380.9434@woody.linux-foundation.org>
- <20070705180742.GP21478@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	 <468D1003.1050901@freedesktop.org>
+	 <20070705164334.GM21478@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 05 Jul 2007 11:50:56 -0700
+Message-Id: <1183661456.2604.43.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 5 Jul 2007, Al Viro wrote:
+On Thu, 2007-07-05 at 17:43 +0100, Al Viro wrote:
+> On Thu, Jul 05, 2007 at 08:36:35AM -0700, Josh Triplett wrote:
+> > Wow.  Insane.  So these all declare the same type:
+> > __attribute__((foo)) T *v;
+> > T __attribute__((foo)) *v;
+> > T *__attribute__((foo)) v;
+> > ?  Specifically, they point to a foo-T, for convenient shooting?
 > 
-> I.e. you get per-attribute rules (fsckloads of them) and no way to tell
-> what do the attributes apply to unless you know the rules for given attribute.
+> They all give you foo-pointer-to-T.  
+> 	T (__attribute__((foo)) *v);
+> would give pointer-to-foo-T.
 
-It basically boils down to "__attribute__((x))" is basically a _single_ 
-keyword.
+Doesn't that do exactly what we want, then?  If we say
+T __attribute__((noderef)) *v;
+, we want a noderef-pointer-to-T, not a pointer-to-noderef-T.  noderef
+should modify a pointer.
 
-There is no "__attribute__" on its own, or "x" on its own. The two do not 
-make sense separately. 
+> > context also represents a qualifier; the position of the qualifier should
+> > determine things like whether you want to enforce the context when you access
+> > a pointer or dereference a pointer.
+> 
+> Since __context__ is (sparse-only) keyword, we are not constrained by
+> anything anyway.
 
-And that's the _accurate_ way of seeing attribute. Seeing it as a "type 
-attribute" is actively wrong, and that kind of thinking just leads you 
-down the wrong path (not just with qualifiers, but with __attribute__ as 
-done by gcc itself, where it's used for more than type attributes).
+No, I mean __attribute__((context(...))), which means something
+different.  __context__() works as a statement statement changing the
+context.  __attribute__((context(...))) works as an attribute modifying
+a type to say that it requires a given context, and that
+accessing/calling it changes the context.  Somewhat of an odd
+distinction, but sparse currently works that way.
 
-> I just don't like having no relationship between the syntax and operations
-> on types, that's all.
+> > > Frankly, I would rather add a new primitive (__qualifier__) mirroring the
+> > > __attribute__, but acting like real qualifiers do.  And switched the
+> > > noderef et.al. to it.
+> > 
+> > Something like that sounds vaguely reasonable.  It should allow the same set
+> > of attributes, and just change what they apply to.  To use your example,
+> > T __qualifier__((foo)) *v;
+> > and
+> > T (__attribute__((foo)) *v);
+> > would mean the same thing.
+> 
+> Yup, except that it would not accept storage-class-like attributes (e.g.
+> always_inline).
 
-You seem to think that "__attribute__" has some meaning of its own.
+So, to clarify what you mean by storage-class-like: __qualifier__ would
+accept all attributes that modify a *type* rather than a *declaration*.
 
-Not true. 
+> And yes, __qualifier__((context(...))) probably might
+> be a replacement for __context__, to reduce the number of primitives.
 
-Gcc already has things like
+No, see above.  __context__ works as a statement, not as a way to modify
+a type.
 
-	__attribute__((extended))
+That said, "calling this function requires this context or changes the
+context" and "accessing this variable requires this context or changes
+the context" may represent different types of attributes.  I don't know.
 
-which acts not on types or variables, but on expressions and statements.
+- Josh Triplett
 
-And it does not *make*sense* to think of that as just another "attribute". 
-It is *not* about the same kind of attributes as the type attributes at 
-all! If you think it is, you're thinking about it wrong. It's a totally 
-different kind of thing.
 
-So instead of thinking about "__attribute__" as having some stand-alone 
-semantic meaning (it does *not*), think of it the way I do: the 
-"__attribute__" part is just an escape sequence into an extended parsing 
-thing, and "__attribute__((extended))" is really just another way to give 
-a way to say the _extended_ thing, without having to make it a keyword, 
-with all that implies.
-
-In other words, I think your "__qualifier__" idea is fundamentally wrong, 
-because it misses the real _point_ of "attribute()". 
-
-The real point of "__attribute__" is that it's mis-named. But that does 
-not mean that it should be named "__qualifier__", because that just 
-re-inforces the initial mistake. Instead, it probably _should_ have been 
-named "__extension__", or something like that (or maybe "__escape__" or 
-"__magic_keyword__").
-
-That ends up explaining all the gcc semantics. Because "__attribute__" as 
-gcc uses it really isn't about attributes per se, it's about extensions to 
-C semantics, in a way that doesn't violate the C rules that much, and in a 
-way that doesn't introduce infinite numbers of special identifiers in the 
-same global name-space.
-
-So yes, I'd be ok with renaming it, and I don't think "__attribute__" is a 
-wonderful name, but we named it for gcc compatibility, so we're kind of 
-stuck with the name. But that doesn't mean that we have to be stuck with 
-thinking about it as a "symbol node attribute", because it really isn't, 
-and has never been that, even in gcc.
-
-		Linus
