@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761646AbXGESgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761573AbXGESp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761646AbXGESgc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 14:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759970AbXGESgZ
+	id S1761573AbXGESp7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 14:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759389AbXGESpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 14:36:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54734 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759969AbXGESgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 14:36:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
-Date: Thu, 5 Jul 2007 20:43:44 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-References: <200706192118.23706.nigel@nigel.suspend2.net> <200707050910.21852.nigel@nigel.suspend2.net> <20070704232513.GA2695@elf.ucw.cz>
-In-Reply-To: <20070704232513.GA2695@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 5 Jul 2007 14:45:49 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:37906 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753867AbXGESpr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 14:45:47 -0400
+Subject: Re: [1/2] 2.6.22-rc7: known regressions
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, marcel@holtmann.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org,
+       "Vladimir V. Saveliev" <vs@namesys.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-ide@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       Mark Fortescue <mark@mtfhpc.demon.co.uk>,
+       William Lee Irwin III <wli@holomorphy.com>
+In-Reply-To: <alpine.LFD.0.98.0707050921000.9434@woody.linux-foundation.org>
+References: <468A7D14.1050505@googlemail.com>
+	 <1183599771.2740.19.camel@shinybook.infradead.org>
+	 <alpine.LFD.0.98.0707050921000.9434@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 05 Jul 2007 14:46:11 -0400
+Message-Id: <1183661171.2756.13.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707052043.45499.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 01:25, Pavel Machek wrote:
+On Thu, 2007-07-05 at 09:28 -0700, Linus Torvalds wrote:
 > 
-> > > > > > Beep_flags should be removed too if you're sticking with /proc.
-> > > > > 
-> > > > > Fixed.
-> > > > 
-> > > > Ta.  But you didn't answer the question - why /proc and not sysfs?
-> > > 
-> > > Do you seriously advocate setting two bits of one variable from /proc,
-> > > and one more bit from /sys?
+> On Wed, 4 Jul 2007, David Woodhouse wrote:
 > > 
-> > That's partly why I had a separate variable - retaining proc only because it's 
-> > existing functionality, using sysfs for the new code. Remember, too, that 
+> > Oh, and here's another one for you. My Bluetooth mouse just stopped
+> > working and hidd is deadlocked...
 > 
-> /proc is not deprecated _that_ much, and notice that this is sysctl,
-> not regular procfs code.
-> 
-> Yes, I see why you did it that way, but I also think you overdisgned
-> it a bit. 
+> Looks like it is stuck on hidp_session_sem.
 
-Hmm, what about adding a second interface to acpi_realmode_flags in sysfs, in
-a separate patch, and scheduling the old one, in /proc, for removal?
-
-Greetings,
-Rafael 
-
+Oh, I suck. I failed to noticed that it had oopsed earlier, in slab
+debugging. I shall look at my 'obviously correct' slab patch a little
+harder, now that I'm not distracted by the fireworks.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+dwmw2
+
