@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbXGEEah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbXGEEwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752906AbXGEEah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 00:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756930AbXGEEaR
+	id S1757058AbXGEEwp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 00:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXGEEwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 00:30:17 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:58470 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752651AbXGEE3y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 00:29:54 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: x86_64 memory hotplug simulation support?
-Date: Thu, 5 Jul 2007 14:30:00 +1000
-User-Agent: KMail/1.9.6
+	Thu, 5 Jul 2007 00:52:36 -0400
+Received: from pc125.solomon-systech.com ([202.76.106.125]:23114 "HELO
+	virus-gateway.solomon-systech.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751624AbXGEEwg convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 00:52:36 -0400
+X-Greylist: delayed 3638 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jul 2007 00:52:35 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart8004478.yLa1B218cJ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707051430.00800.nigel@nigel.suspend2.net>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: CRAMFS support for 4KB page NAND FLASH
+Date: Thu, 5 Jul 2007 11:51:46 +0800
+Message-ID: <6334E09627481B4AA5C8DE1E69E19D3B06BF98AD@SSLEXCHANGE.solomonsystech.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: CRAMFS support for 4KB page NAND FLASH
+Thread-Index: Ace+t9HOUmYJNt3TTa6d1fLPuBkXyg==
+From: <sasin@solomon-systech.com>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart8004478.yLa1B218cJ
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Trying to boot off CRAMFS on a 4KB page NAND FLASH (new device), I ran
+into the "wrong magic" issue.  MTD's nand_read
+(drivers/mtd/nand/nand_base.c) is returning the right data.
+cramfs_fill_supper calls cramfs_read (fs/cramfs/inode.c) which reads 4
+pages and the 1st page of data gets corrupted.  If I set
+BLKS_PER_BUF_SHIFT in this file to 0 instead of 2, so that only 1 page
+is read, the data is uncorrupted and the magic value matches but it
+crashes later (comments say that this values should be 2 or higher, so
+this is not surprising).  
 
-Hi all.
+So are 4KB-page devices supported by CRAMFS?
 
-I'm wondering whether anyone has patches lying around that might be useful =
-for=20
-simulating memory hotplug on x86_64. Goggling has revealed some old x86=20
-patches, but that's all.
-
-Regards,
-
-Nigel
-
---nextPart8004478.yLa1B218cJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGjHPIN0y+n1M3mo0RAjqkAKDjlB0Ou39WiLjfVZdf2WU3Dfx8hACfS4cT
-tQo2oA1AbwoRwdvi7u9UHoE=
-=vQpq
------END PGP SIGNATURE-----
-
---nextPart8004478.yLa1B218cJ--
+I'm using linux 2.6.20.1 for ARM. 
