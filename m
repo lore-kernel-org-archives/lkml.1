@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761094AbXGENPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbXGENQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761094AbXGENPZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 09:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbXGENPN
+	id S1761353AbXGENQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 09:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbXGENQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 09:15:13 -0400
-Received: from mx01.hansenet.de ([213.191.73.25]:42692 "EHLO
-	webmail.hansenet.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756146AbXGENPM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 09:15:12 -0400
-Message-ID: <468CEED7.3020109@e-dict.net>
-Date: Thu, 05 Jul 2007 15:15:03 +0200
-From: Ingo Freund <linux-kernel-news@e-dict.net>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Thu, 5 Jul 2007 09:16:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53446 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756027AbXGENQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 09:16:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Thu, 5 Jul 2007 15:23:43 +0200
+User-Agent: KMail/1.9.5
+Cc: oliver@neukum.org, paulus@samba.org, stern@rowland.harvard.edu,
+       johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, pavel@ucw.cz, mjg59@srcf.ucam.org,
+       benh@kernel.crashing.org
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051340.41901.rjw@sisk.pl> <E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [seems to be SOLVED] Re: md device files missing at boot time
-References: <468CB6DC.5020102@e-dict.net>
-In-Reply-To: <468CB6DC.5020102@e-dict.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707051523.44826.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05.07.2007 11:16, Ingo Freund wrote (please find the answer below the original text):
-> Hi folks,
+On Thursday, 5 July 2007 13:54, Miklos Szeredi wrote:
+> > > Limiting what a userspace filesystem can do would defeat the whole
+> > > purpose of the bloody thing.  This is not negotiable ;)
+> > 
+> > Which doesn't change the fact that FUSE _is_ special, because it adds
+> > dependencies between processed that were not present before.
 > 
-> I could temporarily only read your answers in archives.
-> Thank you for your reaction.
-> Hopefully this answer doesn't break the thread.
-> If it does:
-> sorry for it, there were some mail mail problems
-> which stopped our server receiving mails from this list
-> and the list auto-unsubscribed me and stopped sending mails :-(
-> But it is all fixed now.
+> OK, fuse is special.  So is the userspace driver framework (UIO)
+> proposed by Greg KH and co.  Now what can be done about these?
 > 
-> @Kay
-> How did you build the initramfs image? /sbin/mkinitrd?
+>  - making them not-special is not an option due to the established
+>    interfaces, which don't allow restartability.
 > 
-> Did you add md support to the image?
+>  - fixing the freezer is pretty much impossible because the
+>    dependencies between the tasks cannot be known.
 > 
-> Both "Yes".
-> included modules are (in opensuses /etc/sysconfig/kernel:
-> INITRD_MODULES="raid1 md reiserfs sym53c8xx pata_serverworks edd"
+>  - removing the freezer and fixing the drivers seems workable, we
+>    already have a prototype in the form of the powermac architecture.
 > 
-> 
+> It seems pretty clear cut.  Whining about how much problems this will
+> cause won't get us nearer to a solution.
 
-@Kay
-there was a hidden hint in your text.
-"mkinitrd -f md"  made it at least for boot with initramfs
+Yes, that's pretty clear cut, but we should start from fixing the drivers. :-)
 
-Thanks - Ingo.
+Greetings,
+Rafael
 
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
