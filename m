@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbXGEKdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbXGEKvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760286AbXGEKdJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 06:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbXGEKc5
+	id S1759510AbXGEKvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 06:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbXGEKvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 06:32:57 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:64455 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbXGEKc4 (ORCPT
+	Thu, 5 Jul 2007 06:51:04 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:41405 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755521AbXGEKvC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 06:32:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FawLfmxJE3yhfJAlTQpKvm6LMULvrhIi3vE1ohQODwAxkACkV9GzcCLb3N+67RQOjXrS33Y6Xg+JPANZw0U5/f/jPXYtVaOqxLxPcoSSqrZZe3F5BHSSvsL5BGPpl6YvDrNxFjPmncychnirJYfkjKJIUEghscou0eXS6OtEcKY=
-Message-ID: <b637ec0b0707050332p6a5d31afpe3c0baa97da9b068@mail.gmail.com>
-Date: Thu, 5 Jul 2007 12:32:55 +0200
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Gabriel C" <nix.or.die@googlemail.com>
-Subject: Re: The big suspend mess
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Paul Mackerras" <paulus@samba.org>,
-       "Adrian Bunk" <bunk@stusta.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-In-Reply-To: <468CC7F7.90803@googlemail.com>
+	Thu, 5 Jul 2007 06:51:02 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 5 Jul 2007 06:48:50 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: keeping the MAINTAINERS file under control
+Message-ID: <Pine.LNX.4.64.0707050647370.7480@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070703042916.GA17240@srcf.ucam.org>
-	 <200707031456.40890.rjw@sisk.pl>
-	 <1183497290.3388.4.camel@localhost.localdomain>
-	 <200707032332.49694.rjw@sisk.pl>
-	 <18059.5165.861038.392332@cargo.ozlabs.ibm.com>
-	 <20070704221952.GM3492@stusta.de> <20070705002747.GA2952@elf.ucw.cz>
-	 <18060.16657.2143.11489@cargo.ozlabs.ibm.com>
-	 <20070705093251.GB3228@elf.ucw.cz> <468CC7F7.90803@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On 7/5/07, Gabriel C <nix.or.die@googlemail.com> wrote:
-> Pavel Machek wrote:
-> > On Thu 2007-07-05 10:53:37, Paul Mackerras wrote:
-> >
-> >> Pavel Machek writes:
-> >>
-> >>
-> >>> 0. Get someone to sign up as a maintainer for suspend, so we have
-> >>> someone to blame for the mess? :-)
-> >>>
-> >> I thought that was Rafael?
-> >>
-> >
-> > Rafael is good job trying to fix suspend when he can, but we do not
-> > actually have "SUSPEND" entry in MAINTAINERS file.
-> >                                                               Pavel
-> >
->
-> Huch ?;)
->
-> We do :p
->
-> ...
->
-> SOFTWARE SUSPEND:
-> P: Pavel Machek
-> M: pavel@suse.cz
-> L: linux-pm@lists.linux-foundation.org
-> S: Maintained
->
+  it's always nice when a subsystem has an official maintainer but
+this does seem a bit excessive, no?
 
-I think he means SUSPEND (aka suspend-to-ram) not "SOFTWARE SUSPEND"
-(aka suspend-to-disk)
+BLACKFIN ARCHITECTURE
+P:      Aubrey Li
+M:      aubrey.li@analog.com
+P:      Bernd Schmidt
+M:      bernd.schmidt@analog.com
+P:      Bryan Wu
+M:      bryan.wu@analog.com
+P:      Grace Pan
+M:      grace.pan@analog.com
+P:      Marc Hoffman
+M:      marc.hoffman@analog.com
+P:      Michael Hennerich
+M:      michael.hennerich@analog.com
+P:      Mike Frysinger
+M:      michael.frysinger@analog.com
+P:      Jerry Zeng
+M:      jerry.zeng@analog.com
+P:      Jie Zhang
+M:      jie.zhang@analog.com
+P:      Robin Getz
+M:      robin.getz@analog.com
+P:      Roy Huang
+M:      roy.huang@analog.com
+P:      Sonic Zhang
+M:      sonic.zhang@analog.com
+P:      Vivi Li
+M:      vivi.li@analog.com
+P:      Yi Li
+M:      yi.li@analog.com
+L:      uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+W:      http://blackfin.uclinux.org
+S:      Supported
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
