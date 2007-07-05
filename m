@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbXGEIns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbXGEIoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759265AbXGEIns (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 04:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbXGEInk
+	id S1759506AbXGEIoA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 04:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbXGEInl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 04:43:40 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:21628 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757401AbXGEInj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 04:43:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49546 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757446AbXGEInj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Jul 2007 04:43:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=FmKIwKXahyWKmQ4Vwr8qkPUTr09MoX45nbphk6EA8IhCn3X4DMHF+kqmEBEWbZe9w1oJza9D3DsaFK1UYHS7ktn1NazDqHdMhK1t9I7yWOhuz+DIrGprQ0OwMWNnT/LLGJ04+FOvQJTDZ+dZMOq9G0fJv1scgnjl4a/rf9+TRzI=
-Message-ID: <547a31ab0707050143n3d3df4b5k7c0135c3063fff3e@mail.gmail.com>
-Date: Thu, 5 Jul 2007 10:43:37 +0200
-From: Croulder <croulder@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Denial of Service in all kernels 2.6.x
+Date: Thu, 5 Jul 2007 10:43:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Sattler <tsattler@gmx.de>
+Subject: Re: [RFC/PATCH] debug workqueue deadlocks with lockdep
+Message-ID: <20070705084323.GB2447@elte.hu>
+References: <1182969638.4769.56.camel@johannes.berg> <1183048429.4089.1.camel@johannes.berg> <1183052001.4089.2.camel@johannes.berg> <1183190728.7932.43.camel@earth4> <20070630114658.GA344@tv-sign.ru> <1183381393.4089.117.camel@johannes.berg> <20070703173112.GA108@tv-sign.ru> <1183549772.3812.10.camel@johannes.berg> <20070704125219.GA98@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070704125219.GA98@tv-sign.ru>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux has the same problem that other OS:
-"Multiple Vendor TCP Timestamp PAWS Remote Denial Of Service
-Vulnerability"  published in 2005 by Noritoshi Demizu
 
-If i send a SYN packet with high timestamp legitime user can not
-establish a connection with the victim server.
+* Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-Kernel Tested : 2.6.21.5 , 2.6.11.12
+> > > Isn't it better to call lock_release() with nested == 1 ?
+> > 
+> > Not sure, Ingo?
+> 
+> Ingo, could you also explain the meaning of "nested" parameter? Looks 
+> like it is just unneeded, lock_release_nested() does a quick check and 
+> use lock_release_non_nested() when hlock is not on top of stack.
 
-http://www.securityfocus.com/bid/13676/info
+hm, i forgot about that. We basically turned off all bad-nesting 
+warnings in lockdep due to false positives.
 
-Temporal solution: echo "0" > /proc/sys/net/ipv4/tcp_timestamp
+the workqueue dependencies should all nest perfectly so please just use 
+nested==1, even though it's a dummy right now. We might want to turn 
+unlock-nest checking back on in the future. Or we'll remove that 
+parameter altogether.
 
-Final solution: ???
+	Ingo
