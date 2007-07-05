@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbXGEBGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbXGEBVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758392AbXGEBGY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jul 2007 21:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbXGEBGP
+	id S1758115AbXGEBVo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jul 2007 21:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbXGEBVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jul 2007 21:06:15 -0400
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:54918 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756527AbXGEBGP (ORCPT
+	Wed, 4 Jul 2007 21:21:39 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:50936 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754742AbXGEBVj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jul 2007 21:06:15 -0400
-X-Greylist: delayed 92534 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jul 2007 21:06:15 EDT
-Message-ID: <468ADA8D.10108@blueyonder.co.uk>
-Date: Wed, 04 Jul 2007 00:23:57 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 4 Jul 2007 21:21:39 -0400
+Date: Thu, 5 Jul 2007 03:22:06 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: The big suspend mess
+Message-ID: <20070705012206.GN3492@stusta.de>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031456.40890.rjw@sisk.pl> <1183497290.3388.4.camel@localhost.localdomain> <200707032332.49694.rjw@sisk.pl> <18059.5165.861038.392332@cargo.ozlabs.ibm.com> <20070704221952.GM3492@stusta.de> <20070705002747.GA2952@elf.ucw.cz>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: ov511 module does not build
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070705002747.GA2952@elf.ucw.cz>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the same setup in .config for linux-2.6.22-rc2-git7, it builds, 
-after that and right up to linux-2.6.22-rc7-git1 it doesn't.
-/usr/src/linux-2.6.22-rc2-git7/drivers/media/video/ov511.ko
-# CONFIG_VIDEO_V4L1 is not set
-CONFIG_VIDEO_V4L1_COMPAT=y
-In any of the 2.6.22-rc kernels, there is no option to select OV511.
-tindog:/usr/src/linux-2.6.22-rc2-git7 # grep -i ov511 .config
-tindog:/usr/src/linux-2.6.22-rc2-git7 #
+On Thu, Jul 05, 2007 at 02:27:47AM +0200, Pavel Machek wrote:
+> 
+> > IMHO the suspend code is currently way too much of a moving target which 
+> > results in this mess.
+> > 
+> > The correct order seems to be:
+> 
+> 0. Get someone to sign up as a maintainer for suspend, so we have
+> someone to blame for the mess? :-)
 
-tindog:/usr/src/linux-2.6.22-rc7-git1 # diff 
-../linux-2.6.22-rc2-git7/drivers/media/video/Kconfig 
-drivers/media/video/Kconfig
-14c14
-< if VIDEO_CAPTURE_DRIVERS
----
- > if VIDEO_CAPTURE_DRIVERS && VIDEO_DEV
-694c694
-< if V4L_USB_DRIVERS
----
- > if V4L_USB_DRIVERS && USB
-tindog:/usr/src/linux-2.6.22-rc7-git1 # grep V4L .config
-# CONFIG_VIDEO_V4L1 is not set
-CONFIG_VIDEO_V4L1_COMPAT=y
-CONFIG_VIDEO_V4L2=y
-CONFIG_V4L_USB_DRIVERS=y
+The "SOFTWARE SUSPEND" entry in MAINTAINERS already contains a victim...  ;-)
 
-tindog:/usr/src/linux-2.6.22-rc2-git7 # grep V4L .config
-# CONFIG_VIDEO_V4L1 is not set
-CONFIG_VIDEO_V4L1_COMPAT=y
-CONFIG_VIDEO_V4L2=y
-# CONFIG_V4L_USB_DRIVERS is not set
+My impression is that suspend is an area of the kernel that does not 
+lack maintainers - you and Rafael are doing a good job, and there's e.g. 
+also the maintained code formerly known as suspend2.
 
-Still does not build for 2.6.22-rc7-git2 with .config set with
+But some basic questions like e.g.
+- What should be done in the kernel and what in userspace?
+- How should this be implemented?
+- What must subsystems and drivers do?
+- What must subsystems and drivers not do?
+seem to be in a constant flux because the big picture everyone agrees 
+upon seems to be missing.
 
-# CONFIG_V4L_USB_DRIVERS is not set
+> > 1. agree on what the suspend code as a whole should look like
+> > 2. implement this
+> > 3. fix ALL drivers to work at least as good as they do today
+> > 4. get it tested in -mm
+> > 5. fix all bugs people run into
+> > 6. submit it for inclusion in Linus' tree
+> > 7. quickly work on the most likely big amount of bug reports
+> > 
+> > Step 1 is the most important one - evolving code is often something 
+> > good, but in this case with different people trying to evolve the 
+> > suspend code in different directions it simply results in a big mess.
+> 
+> 									Pavel
 
-Regards
-Sid.
+cu
+Adrian
+
 -- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
