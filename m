@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbXGEPCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760789AbXGEPDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760302AbXGEPCT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 11:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbXGEPCL
+	id S1760789AbXGEPDv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 11:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbXGEPDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 11:02:11 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:60968 "EHLO
+	Thu, 5 Jul 2007 11:03:45 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:60991 "EHLO
 	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757094AbXGEPCK (ORCPT
+	with ESMTP id S1757094AbXGEPDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 11:02:10 -0400
-Date: Thu, 5 Jul 2007 16:00:42 +0100
+	Thu, 5 Jul 2007 11:03:44 -0400
+Date: Thu, 5 Jul 2007 16:03:01 +0100
 From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Oliver Neukum <oliver@neukum.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, benh@kernel.crashing.org
-Message-ID: <20070705150042.GA23647@srcf.ucam.org>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051528.34754.oliver@neukum.org> <20070705134632.GA22177@srcf.ucam.org> <200707051609.25887.rjw@sisk.pl> <20070705142318.GA22598@srcf.ucam.org> <2c0942db0707050746v2b8cdc9ew2c4656736b52895d@mail.gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Paul Mackerras <paulus@samba.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Message-ID: <20070705150301.GB23647@srcf.ucam.org>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <200707051641.39998.rjw@sisk.pl> <20070705143918.GA23248@srcf.ucam.org> <200707051704.48137.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2c0942db0707050746v2b8cdc9ew2c4656736b52895d@mail.gmail.com>
+In-Reply-To: <200707051704.48137.rjw@sisk.pl>
 User-Agent: Mutt/1.5.12-2006-07-14
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
 X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
 X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 07:46:01AM -0700, Ray Lee wrote:
+On Thu, Jul 05, 2007 at 05:04:47PM +0200, Rafael J. Wysocki wrote:
+> On Thursday, 5 July 2007 16:39, Matthew Garrett wrote:
+> > Why?
+> 
+> You have processes that don't react to signals, because some other user land
+> task is misbehaving.  I'd call that ugly at the very least.
 
-> Hmm, careful. There are a bunch of people who use suspend2 exactly
-> because it saves and restores the page cache, leaving the system in a
-> usable state without waiting for the universe to swap back in from
-> disk. It makes a big difference on older laptops with slow drives.
-> While the other advantages you list for process cryogenics are pretty
-> neat, let's remember that the 99% use case for STD is laptops.
-
-Saving the processes means that you're implicitly saving the interesting 
-chunks of the page cache. Removing the need for the atomic copy saves 
-you from pushing a pile of stuff out to swap in the first place.
+It already happens with, say, NFS. Don't think about it in terms of a 
+userland task misbehaving - think of it in terms of a resource becoming 
+unavailable.
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
