@@ -1,90 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbXGEJQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbXGEJQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbXGEJQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbXGEJQT
+	id S1760823AbXGEJQx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 05:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758884AbXGEJQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:16:19 -0400
-Received: from mail03.hansenet.de ([213.191.73.10]:62071 "EHLO
-	webmail.hansenet.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753813AbXGEJQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:16:19 -0400
-Message-ID: <468CB6DC.5020102@e-dict.net>
-Date: Thu, 05 Jul 2007 11:16:12 +0200
-From: Ingo Freund <linux-kernel-news@e-dict.net>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Thu, 5 Jul 2007 05:16:43 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:51186 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753819AbXGEJQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 05:16:42 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Thu, 5 Jul 2007 15:08:11 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH -mm 8/9] netconsole: Update documentation for dynamic
+ reconfigurability
+In-Reply-To: <20070705065213.GH17650@tasint.org>
+Message-ID: <Pine.LNX.4.64.0707051506080.15925@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070705065213.GH17650@tasint.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: md device files missing at boot time
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+On Wed, 4 Jul 2007, Joel Becker wrote:
+> On Wed, Jul 04, 2007 at 04:38:19PM +0530, Satyam Sharma wrote:
+> > +Some examples follow (configfs is mounted at the /config mountpoint, say).
+> 
+> 	configfs is generally expected to be mounted at
+> /sys/kernel/config, and it even creates that mountpoint for itself.  The
+> documentation should probably be consistent with that.
 
-I could temporarily only read your answers in archives.
-Thank you for your reaction.
-Hopefully this answer doesn't break the thread.
-If it does:
-sorry for it, there were some mail mail problems
-which stopped our server receiving mails from this list
-and the list auto-unsubscribed me and stopped sending mails :-(
-But it is all fixed now.
+Ok, will do that in the next iteration -- I'll wait for a couple more
+days for comments from others, and then post the v2 patches sometime
+during the weekend.
 
-@Kay
-How did you build the initramfs image? /sbin/mkinitrd?
-
-Did you add md support to the image?
-
-Both "Yes".
-included modules are (in opensuses /etc/sysconfig/kernel:
-INITRD_MODULES="raid1 md reiserfs sym53c8xx pata_serverworks edd"
-
-
-
-@J.A. Magallon
-yes the partitions in question are all typed "fd"
-
-neither all-drivers-compiled-into-the-kernel nor the
-module using version work.
-The only difference I find is the exit to an emergency shell
-when using modules via initrd while the "only kernel version"
-stops commentless when it is time to use /dev/md0 for the first
-time.
-
-"dmesg" is not found after exiting to the shell.
-I can only post the content of a log file which was written
-into the initramfs (which seems to be also a trace of the
-in and output of the emergency console).
-
-Content of the log file (/var/log/boot.msg):
-
-Boot logging started on /dev/tty1(/dev/console) at Thu Jul  5 06:36:35 2007
-
-Creating device nodes with udev
-Loading md-mod
-Loading raid1
-Loading sym53c8xx
-Loading libata
-Loading pata_serverworks
-Loading edd
-Loading reiserfs
-Waiting for device /dev/md0 to appear: ..............................not found -- exiting to /bin/sh
-sh: no job control in this shell
-$ dmesg
-sh: dmesg: command not found
-$ fdisk
-sh: fdisk: command not found
-$ ls /bin
-bash  cat  chmod  date  ipconfig.sh  ln  ls  mkdir  mknod  mount  pidof  rm  run-init  sed  sh  sleep  true  umount
-...
-
-Question: is the order "creating dev nodes with udev" and after
-that "loading the modules" correct?
-
-
-Thanks - Ingo.
-
-
+Satyam
