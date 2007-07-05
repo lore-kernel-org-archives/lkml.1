@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762029AbXGFKgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXGFKga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762029AbXGFKgF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 06:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbXGFKfy
+	id S1762650AbXGFKga (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 06:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXGFKgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 06:35:54 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:49384 "EHLO
+	Fri, 6 Jul 2007 06:36:18 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:49395 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753993AbXGFKfy (ORCPT
+	with ESMTP id S1762286AbXGFKgO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 06:35:54 -0400
-Subject: [PATCH] lockdep debugging: give stacktrace for init_error
+	Fri, 6 Jul 2007 06:36:14 -0400
+Subject: [PATCH] stacktrace: fix header file for !CONFIG_STACKTRACE
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
 Content-Type: text/plain
-Date: Thu, 05 Jul 2007 16:06:03 +0200
-Message-Id: <1183644363.3818.53.camel@johannes.berg>
+Date: Thu, 05 Jul 2007 16:09:23 +0200
+Message-Id: <1183644563.3818.56.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I started adding support for lockdep to 64-bit powerpc, I got a
-lockdep_init_error and with this patch was able to pinpoint why and
-where to put lockdep_init(). Let's support this generally for others
-adding lockdep support to their architecture.
+The print_stack_trace macro in stacktrace.h has a wrong number of
+arguments, fix it.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
 ---
- kernel/lockdep.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ include/linux/stacktrace.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6-git.orig/kernel/lockdep.c	2007-07-05 15:48:17.390241118 +0200
-+++ linux-2.6-git/kernel/lockdep.c	2007-07-05 15:58:20.334168396 +0200
-@@ -291,6 +291,11 @@ unsigned int max_recursion_depth;
-  * about it later on, in lockdep_info().
-  */
- static int lockdep_init_error;
-+static unsigned long lockdep_init_trace_data[20];
-+static struct stack_trace lockdep_init_trace = {
-+	.max_entries = ARRAY_SIZE(lockdep_init_trace_data),
-+	.entries = lockdep_init_trace_data,
-+};
- 
- /*
-  * Various lockdep statistics:
-@@ -1170,6 +1175,7 @@ look_up_lock_class(struct lockdep_map *l
- 	if (unlikely(!lockdep_initialized)) {
- 		lockdep_init();
- 		lockdep_init_error = 1;
-+		save_stack_trace(&lockdep_init_trace);
- 	}
+--- linux-2.6-git.orig/include/linux/stacktrace.h	2007-07-05 16:03:41.313168396 +0200
++++ linux-2.6-git/include/linux/stacktrace.h	2007-07-05 16:04:01.588168396 +0200
+@@ -13,7 +13,7 @@ extern void save_stack_trace(struct stac
+ extern void print_stack_trace(struct stack_trace *trace, int spaces);
+ #else
+ # define save_stack_trace(trace)			do { } while (0)
+-# define print_stack_trace(trace)			do { } while (0)
++# define print_stack_trace(trace, spaces)		do { } while (0)
  #endif
  
-@@ -2636,8 +2642,11 @@ void __init lockdep_info(void)
- 		sizeof(struct held_lock) * MAX_LOCK_DEPTH);
- 
- #ifdef CONFIG_DEBUG_LOCKDEP
--	if (lockdep_init_error)
--		printk("WARNING: lockdep init error! Arch code didnt call lockdep_init() early enough?\n");
-+	if (lockdep_init_error) {
-+		printk("WARNING: lockdep init error! Arch code didn't call lockdep_init() early enough?\n");
-+		printk("Call stack leading to lockdep invocation was:\n");
-+		print_stack_trace(&lockdep_init_trace, 0);
-+	}
  #endif
- }
- 
 
 
