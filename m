@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762345AbXGEULT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbXGEUMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762345AbXGEULT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759094AbXGEULJ
+	id S1762333AbXGEUMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbXGEUMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:11:09 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41744
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758951AbXGEULI (ORCPT
+	Thu, 5 Jul 2007 16:12:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55096 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758951AbXGEUMr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:11:08 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Elyse M. Grasso" <emgrasso@data-raptors.com>
-Subject: Re: [PATCH][Documentation][resend] Add missing files and dirs to 00-INDEX in Documentation/
-Date: Thu, 5 Jul 2007 16:10:19 -0400
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200707010106.00181.jesper.juhl@gmail.com> <200707032058.26512.rob@landley.net> <200707051112.35909.emgrasso@data-raptors.com>
-In-Reply-To: <200707051112.35909.emgrasso@data-raptors.com>
+	Thu, 5 Jul 2007 16:12:47 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Thu, 5 Jul 2007 22:19:59 +0200
+User-Agent: KMail/1.9.5
+Cc: oliver@neukum.org, pavel@ucw.cz, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707052138.56920.oliver@neukum.org> <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200707051610.19634.rob@landley.net>
+Message-Id: <200707052220.00555.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 July 2007 13:12:35 Elyse M. Grasso wrote:
-> Is there something I could do to help? It's been years since I programmed
-> C, but I'm a former librarian, current configuration management tools
-> consultant. I write good standards-compliant HTML and XHTML, and Perl is my
-> life these days.
->
-> Point me at something where I won't be duplicating effort and I'll take a
-> look at it.
+On Thursday, 5 July 2007 21:44, Miklos Szeredi wrote:
+> > Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
+> > > > > Actually fuse allows SIGKILL, because it's always fatal, and the
+> > > > > syscall may not be restarted.
+> > > > 
+> > > > I think you want to stick try_to_freeze() at the same places where you
+> > > > do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
+> > > > problem.
+> > > 
+> > > I could, but it would not solve the general problem.  Namely, that the
+> > > presence of fuse imposes a certain ordering in which userspace tasks
+> > > have to be frozen.  And it is not possible to know this ordering.
+> > 
+> > Actually, why do you need this? There is no absolute need that you
+> > finish the request. You must either finish the request or let yourself
+> > be frozen.
+> > 
+> > A quick look through fuse reveals principally request_wait_answer()
+> > And maybe a few other places. Is there some hidden reason you cannot
+> > handle being frozen here?
+> 
+> Yes, fuse could handle being frozen there.  However that would only
+> solve part of the problem: an operation waiting for a reply could be
+> holding a VFS mutex and some other task may be blocked on that mutex.
+> 
+> How would you solve freezing those tasks?
 
-Sure.
+How probable is this situation?
 
-Could you start by subscribing to linux-doc?  (Info at 
-http://vger.kernel.org/vger-lists.html)  We can discuss it at length over 
-there.
+Greetings,
+Rafael
 
-Thanks,
 
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+"Premature optimization is the root of all evil." - Donald Knuth
