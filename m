@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbXGEJSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760872AbXGEJS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760641AbXGEJSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758876AbXGEJSH
+	id S1760872AbXGEJS5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 05:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759133AbXGEJSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:18:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57254 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758811AbXGEJSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:18:04 -0400
-Date: Thu, 5 Jul 2007 11:18:01 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: oliver@neukum.org, paulus@samba.org, stern@rowland.harvard.edu,
-       johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Message-ID: <20070705091801.GB3084@elf.ucw.cz>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org> <18060.14856.824473.325660@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Thu, 5 Jul 2007 05:18:49 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:35804 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758876AbXGEJSs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 05:18:48 -0400
+Subject: Re: [PATCH] debug work struct cancel deadlocks with lockdep
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Sattler <tsattler@gmx.de>
+In-Reply-To: <1183626647.7054.61.camel@twins>
+References: <1183583529.9662.34.camel@johannes.berg>
+	 <20070705085304.GC3476@elte.hu>  <1183625889.3818.14.camel@johannes.berg>
+	 <1183626070.7054.54.camel@twins>  <1183626507.3818.19.camel@johannes.berg>
+	 <1183626647.7054.61.camel@twins>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-E8xaJItvihe9GlF2uGZ7"
+Date: Thu, 05 Jul 2007 11:19:46 +0200
+Message-Id: <1183627186.3818.24.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-07-05 10:17:17, Miklos Szeredi wrote:
-> > > > I have discussed the benefits elsewhere.  As for the deadlocks -- do 
-> > > > you still observe them if you use the version of the freezer which 
-> > > > doesn't freeze kernel threads?
-> > > 
-> > > In general the only way to guarantee there are no deadlocks is to
-> > > construct the graph of dependencies between tasks.  Those dependencies
-> > > are not in practice observable from outside the tasks, so it is
-> > > virtually impossible to construct the graph.
-> > 
-> > In which way can user space tasks depend on each other in a way that
-> > allows a them members of that cycle to be in uninterruptible sleep?
-> 
->  - process A calls rename() on a fuse fs
->  - process B, the fuse server, starts to process the rename request
->  - process B is frozen before it can reply
-> 
-> Now process A is unfreezable.  We cannot make rename() restartable,
-> hence it cannot be interruptible.
 
-Yes, we are claiming fuse is very special in this regard, and perhaps
-even broken.
+--=-E8xaJItvihe9GlF2uGZ7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Let's see. If I SIGSTOP the fuse server, I can get unrelated tasks
-unkillable (even for SIGKILL!) forever. That's very special, and maybe
-even a FUSE bug. And that is also what makes FUSE special
-w.r.t. s2ram.
+On Thu, 2007-07-05 at 11:10 +0200, Peter Zijlstra wrote:
 
-So no, you can't claim "FUSE is just IPC". It is very special IPC.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > +/* both _name and _key must not be NULL */
+
+Heh actually I got confused. The requirement that _key is not NULL comes
+from the fact that I need to copy it for the workqueue stuff, not from
+lockdep. Hence, only _name must be non-NULL, I'll change the comment to
+reflect that.
+
+> > +#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
+> > +	{ .name =3D (_name), .key =3D (_key), }
+>=20
+> looks sane enough :-)
+
+:)
+
+I'll repost with these minor changes directly to akpm tomorrow then; no
+lockdep support on my powerbook that I'm using right now so I can't even
+compile-test.
+
+johannes
+
+--=-E8xaJItvihe9GlF2uGZ7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGjLey/ETPhpq3jKURAjGSAJ9o2W0Q1vCdseXvh1kTW8L75e5R8QCcDdar
+DaD7vepPNsPj9HWEsMvchsQ=
+=rUec
+-----END PGP SIGNATURE-----
+
+--=-E8xaJItvihe9GlF2uGZ7--
+
