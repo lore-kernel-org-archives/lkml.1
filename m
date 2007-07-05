@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXGEUes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762016AbXGEUhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbXGEUes (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760618AbXGEUed
+	id S1762016AbXGEUhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbXGEUhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:34:33 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:55005 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760246AbXGEUec convert rfc822-to-8bit (ORCPT
+	Thu, 5 Jul 2007 16:37:05 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:49602 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759187AbXGEUhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:34:32 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 22:34:29 +0200
-User-Agent: KMail/1.9.7
-Cc: pavel@ucw.cz, paulus@samba.org, stern@rowland.harvard.edu,
-       johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707052138.56920.oliver@neukum.org> <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
+	Thu, 5 Jul 2007 16:37:03 -0400
+To: 7eggert@gmx.de
+Cc: Karel Zak <kzak@redhat.com>,
+       List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+References: <8CYT9-4Ou-23@gated-at.bofh.it> <8Dh9k-8lT-3@gated-at.bofh.it>
+	<8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz>
+From: Nix <nix@esperi.org.uk>
+Emacs: well, why *shouldn't* you pay property taxes on your editor?
+Date: Thu, 05 Jul 2007 21:36:52 +0100
+In-Reply-To: <E1I6SfW-0002XG-AM@be1.lrz> (Bodo Eggert's message of "Thu, 05 Jul 2007 16:50:54 +0200")
+Message-ID: <87zm2aegez.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707052234.30021.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
+X-DCC-dcc1-Metrics: hades 1182; Body=5 Fuz1=5 Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
-> > Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
-> > > > > Actually fuse allows SIGKILL, because it's always fatal, and the
-> > > > > syscall may not be restarted.
-> > > > 
-> > > > I think you want to stick try_to_freeze() at the same places where you
-> > > > do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
-> > > > problem.
-> > > 
-> > > I could, but it would not solve the general problem.  Namely, that the
-> > > presence of fuse imposes a certain ordering in which userspace tasks
-> > > have to be frozen.  And it is not possible to know this ordering.
-> > 
-> > Actually, why do you need this? There is no absolute need that you
-> > finish the request. You must either finish the request or let yourself
-> > be frozen.
-> > 
-> > A quick look through fuse reveals principally request_wait_answer()
-> > And maybe a few other places. Is there some hidden reason you cannot
-> > handle being frozen here?
-> 
-> Yes, fuse could handle being frozen there.  However that would only
-> solve part of the problem: an operation waiting for a reply could be
-> holding a VFS mutex and some other task may be blocked on that mutex.
-> 
-> How would you solve freezing those tasks?
+On 5 Jul 2007, Bodo Eggert outgrape:
+> I'm really really happy if I read 'edit Makefile.conf and run make...'.
 
-OK, you made me reach for literatur on theoretical computer science.
+autobuild scripts find it a hell of a lot more annoying to edit a different
+makefile for every project than to run one unchanging config.site...
 
-IMHO the range of actions a fuse server is inherently limited.
-You must never ever block on a lock one of your clients is holding. In
-this case the limitation is not influenced by the freezer.
+It's hardly a killer, but it would be a step backwards IMO :( by all
+means switch to a nicer build system: cmake, perhaps? but ditching
+standardized build systems entirely is not so good.
 
-The freezer introduces a further limitation in that the server can freeze
-before the client, which must not be. You can prevent that by freezing
-the servers last.
-
-In principle you might have dependencies between servers and you won't
-catch that, true. You won't catch servers blocking on IPC, but you are
-balancing on the edge of deadlock with fuse anyway.
-
-	Regards
-		Oliver
+-- 
+`... in the sense that dragons logically follow evolution so they would
+ be able to wield metal.' --- Kenneth Eng's colourless green ideas sleep
+ furiously
