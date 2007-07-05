@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759185AbXGEImF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbXGEIns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759185AbXGEImF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 04:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbXGEIlz
+	id S1759265AbXGEIns (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 04:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbXGEInk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 04:41:55 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:32994 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757574AbXGEIly (ORCPT
+	Thu, 5 Jul 2007 04:43:40 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:21628 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757401AbXGEInj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 04:41:54 -0400
-To: oliver@neukum.org
-CC: miklos@szeredi.hu, paulus@samba.org, stern@rowland.harvard.edu,
-       johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, mjg59@srcf.ucam.org, benh@kernel.crashing.org
-In-reply-to: <200707051024.23528.oliver@neukum.org> (message from Oliver
-	Neukum on Thu, 5 Jul 2007 10:24:22 +0200)
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <200707051024.23528.oliver@neukum.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1I6Mtu-000058-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Jul 2007 10:41:22 +0200
+	Thu, 5 Jul 2007 04:43:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=FmKIwKXahyWKmQ4Vwr8qkPUTr09MoX45nbphk6EA8IhCn3X4DMHF+kqmEBEWbZe9w1oJza9D3DsaFK1UYHS7ktn1NazDqHdMhK1t9I7yWOhuz+DIrGprQ0OwMWNnT/LLGJ04+FOvQJTDZ+dZMOq9G0fJv1scgnjl4a/rf9+TRzI=
+Message-ID: <547a31ab0707050143n3d3df4b5k7c0135c3063fff3e@mail.gmail.com>
+Date: Thu, 5 Jul 2007 10:43:37 +0200
+From: Croulder <croulder@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Denial of Service in all kernels 2.6.x
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > > I have discussed the benefits elsewhere.  As for the deadlocks -- do 
-> > > > > you still observe them if you use the version of the freezer which 
-> > > > > doesn't freeze kernel threads?
-> > > > 
-> > > > In general the only way to guarantee there are no deadlocks is to
-> > > > construct the graph of dependencies between tasks.  Those dependencies
-> > > > are not in practice observable from outside the tasks, so it is
-> > > > virtually impossible to construct the graph.
-> > > 
-> > > In which way can user space tasks depend on each other in a way that
-> > > allows a them members of that cycle to be in uninterruptible sleep?
-> > 
-> >  - process A calls rename() on a fuse fs
-> >  - process B, the fuse server, starts to process the rename request
-> >  - process B is frozen before it can reply
-> > 
-> > Now process A is unfreezable.  We cannot make rename() restartable,
-> > hence it cannot be interruptible.
-> 
-> Then this is a problem specific to fuse. You should teach fuse to block
-> suspension while such operations are being performed.
+Linux has the same problem that other OS:
+"Multiple Vendor TCP Timestamp PAWS Remote Denial Of Service
+Vulnerability"  published in 2005 by Noritoshi Demizu
 
-And teach VFS to block suspension, while waiting on a mutex held by
-another process performing a fuse operation.
+If i send a SYN packet with high timestamp legitime user can not
+establish a connection with the victim server.
 
-I can already hear the beautiful praise from Al Viro at the sight of
-that ;)
+Kernel Tested : 2.6.21.5 , 2.6.11.12
 
-Miklos
+http://www.securityfocus.com/bid/13676/info
+
+Temporal solution: echo "0" > /proc/sys/net/ipv4/tcp_timestamp
+
+Final solution: ???
