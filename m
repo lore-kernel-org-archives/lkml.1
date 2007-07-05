@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbXGEEwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbXGEFLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757058AbXGEEwp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 00:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXGEEwg
+	id S1757339AbXGEFLu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 01:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbXGEFLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 00:52:36 -0400
-Received: from pc125.solomon-systech.com ([202.76.106.125]:23114 "HELO
-	virus-gateway.solomon-systech.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751624AbXGEEwg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 00:52:36 -0400
-X-Greylist: delayed 3638 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jul 2007 00:52:35 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-Content-Class: urn:content-classes:message
+	Thu, 5 Jul 2007 01:11:42 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:17317 "EHLO
+	asav09.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbXGEFLl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 01:11:41 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AusRADwPjEZKhRO4R2dsb2JhbACPIAEBGw0GEQE
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull][resend] Input updates for 2.6.22-rc7
+Date: Thu, 5 Jul 2007 01:11:42 -0400
+User-Agent: KMail/1.9.3
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Subject: CRAMFS support for 4KB page NAND FLASH
-Date: Thu, 5 Jul 2007 11:51:46 +0800
-Message-ID: <6334E09627481B4AA5C8DE1E69E19D3B06BF98AD@SSLEXCHANGE.solomonsystech.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: CRAMFS support for 4KB page NAND FLASH
-Thread-Index: Ace+t9HOUmYJNt3TTa6d1fLPuBkXyg==
-From: <sasin@solomon-systech.com>
-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+Message-Id: <200707050111.43327.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to boot off CRAMFS on a 4KB page NAND FLASH (new device), I ran
-into the "wrong magic" issue.  MTD's nand_read
-(drivers/mtd/nand/nand_base.c) is returning the right data.
-cramfs_fill_supper calls cramfs_read (fs/cramfs/inode.c) which reads 4
-pages and the 1st page of data gets corrupted.  If I set
-BLKS_PER_BUF_SHIFT in this file to 0 instead of 2, so that only 1 page
-is read, the data is uncorrupted and the magic value matches but it
-crashes later (comments say that this values should be 2 or higher, so
-this is not surprising).  
+[Resending with proper kernel version in subject... I guess original claiming
+to be for 2.6.22-rc4 might have something to do with it being dropped...]
 
-So are 4KB-page devices supported by CRAMFS?
+Hi Linus,
 
-I'm using linux 2.6.20.1 for ARM. 
+Please consider pulling from:
+
+        git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+
+or
+        master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+
+to receive updates for input subsystem. You will get update to AT keyboard
+driver that throttles LED switching so that 'setleds' does not lock up
+keyboards. Also fix for an oops happening if user presses Ctrl-Alt-Del in
+the middle of keyboard being probed (serio_cleanup should take mutex).
+Note that the bulk of changes to input.h are just comments for various
+KEY_XXX input codes and not functional changes.
+
+Changelog:
+----------
+
+Dmitry Torokhov (4):
+      Input: i8042 - add HP Pavilion ZT1000 to the MUX blacklist
+      Input: atkbd - throttle LED switching
+      Input: serio - take drv_mutex in serio_cleanup()
+      Input: document some of keycodes
+
+Henrique de Moraes Holschuh (1):
+      Input: add a new EV_SW SW_RADIO event, for radio switches on laptops
+
+Qi Yong (1):
+      Input: atkbd - use printk_ratelimit for spurious ACK messages
+
+Diffstat:
+---------
+
+ drivers/input/keyboard/atkbd.c        |   47 +++++++----
+ drivers/input/serio/i8042-x86ia64io.h |   11 +++
+ drivers/input/serio/serio.c           |    2 +
+ include/linux/input.h                 |  143 +++++++++++++++++---------------
+ 4 files changed, 119 insertions(+), 84 deletions(-)
+
+-- 
+Dmitry
