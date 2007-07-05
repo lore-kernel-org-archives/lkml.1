@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762621AbXGEVIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762849AbXGEVJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762621AbXGEVIp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 17:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbXGEVIh
+	id S1762849AbXGEVJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 17:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760584AbXGEVJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 17:08:37 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:58806 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755199AbXGEVIh (ORCPT
+	Thu, 5 Jul 2007 17:09:12 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49044 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757465AbXGEVJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 17:08:37 -0400
-To: oliver@neukum.org
-CC: miklos@szeredi.hu, pavel@ucw.cz, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-In-reply-to: <200707052249.45495.oliver@neukum.org> (message from Oliver
-	Neukum on Thu, 5 Jul 2007 22:49:44 +0200)
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707052234.30021.oliver@neukum.org> <E1I6YDJ-0001sj-00@dorka.pomaz.szeredi.hu> <200707052249.45495.oliver@neukum.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1I6YXX-0001yE-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Jul 2007 23:07:03 +0200
+	Thu, 5 Jul 2007 17:09:10 -0400
+Subject: Re: [RFC] bloody mess with __attribute__() syntax
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Josh Triplett <josh@freedesktop.org>, linux-sparse@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070705200839.GR21478@ftp.linux.org.uk>
+References: <20070705093528.GK21478@ftp.linux.org.uk>
+	 <468D1003.1050901@freedesktop.org>
+	 <20070705164334.GM21478@ftp.linux.org.uk>
+	 <1183661456.2604.43.camel@josh-work.beaverton.ibm.com>
+	 <20070705191358.GQ21478@ftp.linux.org.uk>
+	 <1183664153.2604.63.camel@josh-work.beaverton.ibm.com>
+	 <20070705200839.GR21478@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 05 Jul 2007 14:09:16 -0700
+Message-Id: <1183669756.2604.117.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > Yes, fuse could handle being frozen there.  However that would only
-> > > > solve part of the problem: an operation waiting for a reply could be
-> > > > holding a VFS mutex and some other task may be blocked on that mutex.
-> > > > 
-> > > > How would you solve freezing those tasks?
-> > > 
-> > > OK, you made me reach for literatur on theoretical computer science.
-> > > 
-> > > IMHO the range of actions a fuse server is inherently limited.
-> > > You must never ever block on a lock one of your clients is holding. In
-> > > this case the limitation is not influenced by the freezer.
-> > 
-> > Obviously.  But I wasn't about the server trying to acquire a lock
-> > held by a client.  I was talking about a client trying to acquire a
-> > lock held by _another_ client.
-> > 
-> > If this coincides with the server (or some other task which the server
-> > is depending on) being frozen before the clients, the freezer has a
-> > problem.
+On Thu, 2007-07-05 at 21:08 +0100, Al Viro wrote:
+> On Thu, Jul 05, 2007 at 12:35:53PM -0700, Josh Triplett wrote:
+> > OK, that seems inconsistent with what you said before.  You said that 
+> > T __attribute__((foo)) *v;
 > 
-> True, but that case can only happen if servers are frozen before clients.
-> You don't need a full dependency graph. A simple set sequence of two
-> classes of tasks will do.
+> ... in gcc.
+> 
+> > gives you a foo-pointer-to-T.  So shouldn't
+> > int __attribute__((noderef)) *v;
+> > give you a noderef-pointer-to-int?
+> 
+> ... if we followed gcc rules. 
 
-Umm, let's take sshfs, it has a separate "reply processing thread",
-that reads replies from the sftp server and then wakes up the relevant
-request thread.  The reply processing thread has no direct contact
-with the fuse kernel module.  How is freezer supposed to know that
-that task in fact also belongs to the server and needs to be kept from
-freezing?
+Ah, OK.
 
-Given, it's in the same thread group, but using that is a rather weak
-heuristic, as it could easily be a separate process, and likely in
-some filesystems it is.
+> > However, noderef seems like a property of a pointer, hence why I
+> > proposed the example I did.  A warning should occur when you do
+> > *(<noderef T *>v) to get a T, not when you do *(<* noderef T>v) to get a
+> > noderef T.
+> 
+> Nope.  __noderef is a property of object being pointed to.  Again,
+> consider &p->x.  It should not be int *.  And it should not be
+> an error.  We want it to be int __noderef *.
+> 
+> Semantics of noderef is simple: you should not access or modify the value
+> of noderef object.  That's all.  int __noderef * is an absolutely normal
+> pointer to such object.  Think of __noderef as of a stronger variant of const.
 
-I fear, that your efforts to "save" the freezer are in vain.  It is
-already moderately hackish with that PF_FREEZER_SKIP and the kernel
-dotted randomly with try_to_freeze() calls, but adding bandaids to try
-to order freezing userspace processes in the right order would just
-make it a horrible mess.
+OK.  It hadn't occurred to me that "noderef int x" could have any useful
+meaning on its own, but you've given a clear explanation of why it does,
+which makes it meaningful to apply noderef to the pointer target rather
+than the pointer.  Thanks.
 
-Miklos
+- Josh Triplett
+
+
