@@ -1,56 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbXGEWcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbXGEWee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762067AbXGEWcQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 18:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759811AbXGEWcF
+	id S1762190AbXGEWee (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 18:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759363AbXGEWeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 18:32:05 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58210 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759169AbXGEWcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 18:32:03 -0400
-Date: Fri, 6 Jul 2007 00:32:02 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
-Message-ID: <20070705223202.GF3881@elf.ucw.cz>
-References: <200706192118.23706.nigel@nigel.suspend2.net> <200707042350.25117.rjw@sisk.pl> <20070704224653.GB2491@elf.ucw.cz> <200707052103.17104.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707052103.17104.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Thu, 5 Jul 2007 18:34:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38955 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758575AbXGEWeW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 18:34:22 -0400
+Date: Thu, 5 Jul 2007 15:33:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       James.Bottomley@steeleye.com, edwintorok@gmail.com, axboe@kernel.dk,
+       linux-scsi@vger.kernel.org
+Subject: Re: [patch 3/4] Enable link power management for ata drivers
+Message-Id: <20070705153334.08402809.akpm@linux-foundation.org>
+In-Reply-To: <20070705130530.5873afeb.kristen.c.accardi@intel.com>
+References: <20070705194909.337398431@intel.com>
+	<20070705130530.5873afeb.kristen.c.accardi@intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 5 Jul 2007 13:05:30 -0700
+Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
 
-> > > > Here's the version that uses just one variable, relative to Nigel's
-> > > > patch. Hmm, and it also closes nasty trap for the user in
-> > > > acpi_sleep_setup; order of parameters actually mattered there,
-> > > > acpi_sleep=s3_bios,s3_mode doing something different from
-> > > > acpi_sleep=s3_mode,s3_bios .  It actually works here.
-> > > > 
-> > > > Will you fold it into  patch28, or should I create a changelog?
-> > > 
-> > > Hmm, I think we should keep the record straight.  Please add a changelog
-> > > if that's not a problem.
-> > 
-> > (I also added documentation and removed the superfluous beep_flags).
-> 
-> OK, thanks.
-> 
-> Added to the patchset as
-> 
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc7/patches/50-Optional-Beeping-During-Resume-From-Suspend-To-Ram-tidy.patch
-> 
-> I think both patches are -mm-ready, aren't they?
+> +	ATA_DFLAG_IPM		= (1 << 6), /* device supports interface PM */
+>  	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
 
-I'd say so.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I had to bump this to (1<<7), so we've run out.
