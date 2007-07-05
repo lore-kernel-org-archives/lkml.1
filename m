@@ -1,78 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760080AbXGEIx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbXGEIyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760080AbXGEIx2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 04:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758508AbXGEIxU
+	id S1760098AbXGEIyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 04:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbXGEIyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 04:53:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46445 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Jul 2007 04:54:08 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:14688 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757163AbXGEIxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 04:53:19 -0400
-Date: Thu, 5 Jul 2007 10:53:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Sattler <tsattler@gmx.de>
-Subject: Re: [PATCH] debug work struct cancel deadlocks with lockdep
-Message-ID: <20070705085304.GC3476@elte.hu>
-References: <1183583529.9662.34.camel@johannes.berg>
+	id S1757163AbXGEIyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 04:54:06 -0400
+Message-ID: <468CB658.7000204@openvz.org>
+Date: Thu, 05 Jul 2007 13:14:00 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1183583529.9662.34.camel@johannes.berg>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@osdl.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [-mm PATCH 0/7] Memory controller introduction
+References: <20070704222108.17702.40293.sendpatchset@balbir-laptop>
+In-Reply-To: <20070704222108.17702.40293.sendpatchset@balbir-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Johannes Berg <johannes@sipsolutions.net> wrote:
-
-> This adds a lockdep_map for each work struct in order to debug
-> deadlocks like
->   my_function -> lock(); ...; cancel_work_sync(my_work)
-> vs.
->   run_workqueue() -> my_work.f() -> ...; lock(); ...
+Balbir Singh wrote:
+> Resending with the patch numbering fixed and linux-mm copied
 > 
-> which will deadlock if my_work.f() is invoked already but my_function()
-> has acquired the lock already.
+> This patchset implements another version of the memory controller. These
+> patches have been through a big churn, the first set of patches were posted
+> last year and earlier this year at
+> 	http://lkml.org/lkml/2007/2/19/10
 > 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Ever since, the RSS controller has been through four revisions, the latest
+> one being
+> 	http://lwn.net/Articles/236817/
+> 
+> This patchset draws from the patches listed above and from some of the
+> contents of the patches posted by Vaidyanathan for page cache control.
+> 	http://lkml.org/lkml/2007/6/20/92
+> 
+> Pavel, Vaidy could you look at the patches and add your signed off by
+> where relevant?
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+As far as I remember at OLS we decided to implement per-zone RLU
+lists and reuse the lru lock as well. This will remove all the 
+problems with per-container lists inconsistency.
 
-> +#ifdef CONFIG_LOCKDEP
-> +/*
-> + * HACK! This really should call lockdep_init_map() but can't
-> + * because there's no requirement to initialise work structs
-> + * at runtime. This works because subclass == 0.
-> + *
-> + * NB: because we have to copy the lockdep_map, setting .key
-> + * here is required!
-> + */
+Separate limits for RSS and RSS+pagecache are also a must.
 
-why do you consider this a hack? A static object is a static object, and 
-its own address is its key. That's what we have for like 80% of all the 
-spinlocks in the kernel. Static initialization is not as flexible as 
-dynamic initialization, but the lockdep engine handles it. Am i missing 
-something?
+BTW, if you send smb. else's patches you may include a 'From: xxx'
+line into the letter to address the original author.
 
-> +#define __WORK_INIT_LOCKDEP_MAP(n, k)				\
-> +	.lockdep_map = {					\
-> +		.name = n,					\
-> +		.key = (void*) k,				\
-> +	},
+> At OLS, the resource management BOF, it was discussed that we need to manage
+> RSS and unmapped page cache together. This patchset is a step towards that
+> 
+> TODO's
+> 
+> 1. Add memory controller water mark support. Reclaim on high water mark
+> 2. Add support for shrinking on limit change
+> 3. Add per zone per container LRU lists
+> 4. Make page_referenced() container aware
+> 5. Figure out a better CLUI for the controller
+> 
+> In case you have been using/testing the RSS controller, you'll find that
+> this controller works slower than the RSS controller. The reason being
+> that both swap cache and page cache is accounted for, so pages do go
+> out to swap upon reclaim (they cannot live in the swap cache).
+> 
+> I've test compiled the framework without the controller enabled, tested
+> the code on UML and minimally on a power box.
+> 
+> Any test output, feedback, comments, suggestions are welcome!
+> 
+> series
+> 
+> res_counters_infra.patch
+> mem-control-setup.patch
+> mem-control-accounting-setup.patch
+> mem-control-accounting.patch
+> mem-control-task-migration.patch
+> mem-control-lru-and-reclaim.patch
+> mem-control-out-of-memory.patch
+> 
 
-s/void*/void *
-
-	Ingo
