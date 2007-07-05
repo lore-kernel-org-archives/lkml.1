@@ -1,92 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762061AbXGES6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbXGES7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762061AbXGES6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 14:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759896AbXGES60
+	id S1762154AbXGES7q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 14:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760457AbXGES7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 14:58:26 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:36708 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759838AbXGES6Z (ORCPT
+	Thu, 5 Jul 2007 14:59:38 -0400
+Received: from smtp101.plus.mail.re1.yahoo.com ([69.147.102.64]:28931 "HELO
+	smtp101.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760351AbXGES7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 14:58:25 -0400
-Subject: Re: [RFC] bloody mess with __attribute__() syntax
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Josh Triplett <josh@freedesktop.org>, linux-sparse@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 5 Jul 2007 14:59:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=V107MTQhl5mmLi0w2f7tsVn2Onx4I5M2wdGq1Mwk3V3nnbJfmUGNtv4sBPlaDtgFgIc/W5Kt9WF9Hh2pFoVkvxDQmo4HIhQgnuBdNrvRI+wjViLqfKsqslWDQ5WEX77nn6IYT5cZKJrnDctrypvq1ypTENSBFt3gHWKAYOS8jHM=  ;
+X-YMail-OSG: ztpKEkMVM1kJQaRe.By9xiKyUBR.aK8Gy6eqHHIc8rXbwyup3i0Lf0GwBpnDU6rbc2z48omKbg--
+Date: Thu, 5 Jul 2007 20:59:27 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20070705164334.GM21478@ftp.linux.org.uk>
-References: <20070705093528.GK21478@ftp.linux.org.uk>
-	 <468D1003.1050901@freedesktop.org>
-	 <20070705164334.GM21478@ftp.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 05 Jul 2007 11:50:56 -0700
-Message-Id: <1183661456.2604.43.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] ext4: fix error handling in ext4_create_journal
+Message-ID: <20070705185927.GA4867@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070701221111.GA8627@gollum.tnic> <20070703152543.e58ad39a.akpm@linux-foundation.org> <20070704193024.GA6802@gollum.tnic> <20070704201725.GA5812@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070704201725.GA5812@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-05 at 17:43 +0100, Al Viro wrote:
-> On Thu, Jul 05, 2007 at 08:36:35AM -0700, Josh Triplett wrote:
-> > Wow.  Insane.  So these all declare the same type:
-> > __attribute__((foo)) T *v;
-> > T __attribute__((foo)) *v;
-> > T *__attribute__((foo)) v;
-> > ?  Specifically, they point to a foo-T, for convenient shooting?
+On Thu, Jul 05, 2007 at 12:17:25AM +0400, Alexey Dobriyan wrote:
+> On Wed, Jul 04, 2007 at 09:30:24PM +0200, Borislav Petkov wrote:
+> > Fix error handling in ext4_create_journal according to kernel conventions.
 > 
-> They all give you foo-pointer-to-T.  
-> 	T (__attribute__((foo)) *v);
-> would give pointer-to-foo-T.
-
-Doesn't that do exactly what we want, then?  If we say
-T __attribute__((noderef)) *v;
-, we want a noderef-pointer-to-T, not a pointer-to-noderef-T.  noderef
-should modify a pointer.
-
-> > context also represents a qualifier; the position of the qualifier should
-> > determine things like whether you want to enforce the context when you access
-> > a pointer or dereference a pointer.
+> > --- linux-2.6.22-rc7/fs/ext4/super.c.orig
+> > +++ linux-2.6.22-rc7/fs/ext4/super.c
+> > @@ -2150,6 +2150,7 @@
+> >  			       unsigned int journal_inum)
+> >  {
+> >  	journal_t *journal;
+> > +	int err;
+> >  
+> >  	if (sb->s_flags & MS_RDONLY) {
+> >  		printk(KERN_ERR "EXT4-fs: readonly filesystem when trying to "
+> > @@ -2157,13 +2158,15 @@
+> >  		return -EROFS;
+> >  	}
+> >  
+> > -	if (!(journal = ext4_get_journal(sb, journal_inum)))
+> > +	journal = ext4_get_journal(sb, journal_inum);
+> > +	if (!journal)
+> >  		return -EINVAL;
 > 
-> Since __context__ is (sparse-only) keyword, we are not constrained by
-> anything anyway.
-
-No, I mean __attribute__((context(...))), which means something
-different.  __context__() works as a statement statement changing the
-context.  __attribute__((context(...))) works as an attribute modifying
-a type to say that it requires a given context, and that
-accessing/calling it changes the context.  Somewhat of an odd
-distinction, but sparse currently works that way.
-
-> > > Frankly, I would rather add a new primitive (__qualifier__) mirroring the
-> > > __attribute__, but acting like real qualifiers do.  And switched the
-> > > noderef et.al. to it.
-> > 
-> > Something like that sounds vaguely reasonable.  It should allow the same set
-> > of attributes, and just change what they apply to.  To use your example,
-> > T __qualifier__((foo)) *v;
-> > and
-> > T (__attribute__((foo)) *v);
-> > would mean the same thing.
+> OK.
 > 
-> Yup, except that it would not accept storage-class-like attributes (e.g.
-> always_inline).
+> >  	printk(KERN_INFO "EXT4-fs: creating new journal on inode %u\n",
+> >  	       journal_inum);
+> >  
+> > -	if (jbd2_journal_create(journal)) {
+> > +	err = jbd2_journal_create(journal);
+> > +	if (err) {
+> >  		printk(KERN_ERR "EXT4-fs: error creating journal.\n");
+> >  		jbd2_journal_destroy(journal);
+> >  		return -EIO;
+> 
+> Original code is fine.
 
-So, to clarify what you mean by storage-class-like: __qualifier__ would
-accept all attributes that modify a *type* rather than a *declaration*.
+Hmm, ok but this is not the way error handling is done in the rest of ext3/4.
+If you look for error variables declarations of type int in super.c, e.g. in
+ext4_load_journal(), ext4_clear_journal_err() and ext4_remount() to name a few,
+you'll see how the return value of the called function is assigned to the
+error variable and then the last is checked in the if-conditional, which is the
+usual way error handling is done in the kernel, imho. And my patch addresses exactly that.
 
-> And yes, __qualifier__((context(...))) probably might
-> be a replacement for __context__, to reduce the number of primitives.
-
-No, see above.  __context__ works as a statement, not as a way to modify
-a type.
-
-That said, "calling this function requires this context or changes the
-context" and "accessing this variable requires this context or changes
-the context" may represent different types of attributes.  I don't know.
-
-- Josh Triplett
-
-
+-- 
+Regards/Gruﬂ,
+    Boris.
