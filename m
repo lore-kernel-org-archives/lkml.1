@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbXGEJjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbXGEKDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760286AbXGEJjL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 05:39:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758507AbXGEJi6
+	id S1759383AbXGEKDL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 06:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbXGEKDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 05:38:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38765 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758431AbXGEJi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 05:38:57 -0400
-Date: Thu, 5 Jul 2007 11:38:42 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, nigel@nigel.suspend2.net,
-       linux-kernel@vger.kernel.org, suspend-devel@lists.sourceforge.net,
-       Frank Seidel <fseidel@suse.de>
-Subject: Re: [RFC] get rid of CONFIG_DISABLE_CONSOLE_SUSPEND
-Message-ID: <20070705093842.GA3175@suse.de>
-References: <20070628135108.GA1810@elf.ucw.cz> <200706281734.54642.rjw@sisk.pl> <20070704193313.GF2728@elf.ucw.cz> <200707042344.25207.rjw@sisk.pl> <20070704223921.GA2491@elf.ucw.cz>
+	Thu, 5 Jul 2007 06:03:00 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:46197 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754191AbXGEKDA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 06:03:00 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Thu, 5 Jul 2007 12:02:58 +0200
+User-Agent: KMail/1.9.7
+Cc: paulus@samba.org, stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, pavel@ucw.cz, mjg59@srcf.ucam.org,
+       benh@kernel.crashing.org
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051048.46202.oliver@neukum.org> <E1I6NAH-00008t-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I6NAH-00008t-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070704223921.GA2491@elf.ucw.cz>
-X-Operating-System: openSUSE 10.3 (i586) Alpha5plus, Kernel 2.6.22-rc7-2-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+Message-Id: <200707051202.59375.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, Jul 05, 2007 at 12:39:22AM +0200, Pavel Machek wrote:
-> Hi!
+Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
+> > > And teach VFS to block suspension, while waiting on a mutex held by
+> > > another process performing a fuse operation.
+> > > 
+> > > I can already hear the beautiful praise from Al Viro at the sight of
+> > > that ;)
+> > 
+> > There is that.
+> > 
+> > OK, bite the bullet. Tasks involved in fuse are special. Give them a flag
+> > and teach the freezer to put them on ice only after all other task are
+> > frozen. In a way they are kernel, there's no use denying that.
 > 
-> > Yes, but I'm not sure if netconsole is the only one that we will want to have
+> And flag every other process, that the flagged process is
+> communicating with?  How are you proposing to do that?
 > 
-> Well, netconsole is the only one we know of.
-
-AFAIR it is plain luck that serial console sometimes works.
-
-I repeat: "no bugreport" is not the same as "it works for everyone" wrt.
-suspend. It seems (i unfortunately have no numbers, since my machines always
-worked without suspending the consoles) as if suspending consoles generally
-helped reliability of suspend.
- 
-> > disabled.  Moreover, what if someone wants to use the netconsole regardless
-> > of the fact that it can crash the box?
+> Quoting Paul:
 > 
-> He'll have to edit the sources at that point. I'd prefer not to have
-> too many "please crash the box" options.
+> "1. The freezer cannot be guaranteed deadlock-free without constructing
+>    a dependency graph between tasks (both user and kernel), which is
+>    virtually impossible since the dependencies are not externally
+>    observable."
 
-So should we remove sysrq-C?
-This is a debugging option. Only root can set it. Its purpose is to make
-"machine hangs during suspend" (even before it goes to sleep) debuggable.
-It will only be set if the machine crashes anyways.
+A deadlock requires that the circular wait is uninterruptible. Normal IPC
+isn't.
 
-(We can taint the kernel if this control is set, if that helps you).
--- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+What are you doing in the userland portions of fuse? Some kind of IPC
+with other tasks? There is a limit to which you can push kernel functionality
+into user space.
 
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+	Regards
+		Oliver
+
