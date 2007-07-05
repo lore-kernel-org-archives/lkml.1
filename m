@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbXGER72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbXGER7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761577AbXGER72 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 13:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758475AbXGER7U
+	id S1759656AbXGER7n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 13:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760011AbXGER7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 13:59:20 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:38649 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757570AbXGER7T (ORCPT
+	Thu, 5 Jul 2007 13:59:23 -0400
+Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:2626 "EHLO
+	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759426AbXGER7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 13:59:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=fKVX0TCQx4vHU9douXvM8Dqd9n5N29ShPelEJRio2B6QKBtiMht4BkApXARWOqcFR5ntFBgi/AII28q9MFHAwreoXWj8+obs/36p5PFTMITvBxz2cyqS3McXxhKOB1s2l2fBWsZs1fTo8J2QlOgkZqrCzVh7HM3oWX/AFVU4pbE=
-Date: Thu, 5 Jul 2007 21:59:10 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Hemminge <shemminger@linux-foundation.org>
-Subject: [PATCH] Sky Cpu: use C99 style for struct init
-Message-ID: <20070705175910.GG7180@cvg>
+	Thu, 5 Jul 2007 13:59:22 -0400
+Date: Thu, 5 Jul 2007 19:57:35 +0200
+From: Erik Mouw <mouw@nl.linux.org>
+To: John Stoffel <john@stoffel.org>
+Cc: Theodore Tso <tytso@mit.edu>, alan <alan@clueserver.org>,
+       J?rn Engel <joern@logfs.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+Message-ID: <20070705175735.GC5179@gateway.home>
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org> <20070616145337.GA13391@lazybastard.org> <20070618094524.GF5181@schatzie.adilger.int> <20070618140143.GD30244@thunk.org> <Pine.LNX.4.64.0706180907580.22137@blackbox.fnordora.org> <20070618172955.GB24189@thunk.org> <20070704173234.GB26201@gateway.home> <18060.63700.223173.537189@stoffel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vEao7xgI/oilGqZ+"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <18060.63700.223173.537189@stoffel.org>
+Organization: Eric Conspiracy Secret Labs
+X-Eric-Conspiracy: There is no conspiracy!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch change structure item init
-format to C99.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+--vEao7xgI/oilGqZ+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The patch is over my prev patch named:
+On Thu, Jul 05, 2007 at 09:57:40AM -0400, John Stoffel wrote:
+> >>>>> "Erik" =3D=3D Erik Mouw <mouw@nl.linux.org> writes:
+> Erik> The only valid use of Streams in Windows I've seen was a virus
+> Erik> checker that stored a hash of the file in a separate
+> Erik> stream. Checking a file was a matter of rehashing it and
+> Erik> comparing against the hash stored in the special hash data
+> Erik> stream for that particular file.
+>=20
+> So what was stopping a virus from infecting a file, re-computing the
+> hash and pushing the new hash into the stream? =20
 
-	[PATCH 1/4] Sky Cpu and Nexus: code style improvement
+Nothing, but the same holds for virus checkers that store the hash in a
+separate file. The only advantage of storing the hash in a stream is
+that the stream is automatically deleted when you remove the file.
 
- drivers/misc/hdpuftrs/hdpu_cpustate.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+> You need to keep the computed hashes on Read-Only media for true
+> security, once you let the system change them, then you're toast....
 
-diff --git a/drivers/misc/hdpuftrs/hdpu_cpustate.c b/drivers/misc/hdpuftrs/hdpu_cpustate.c
-index 51e4963..cc33f24 100644
---- a/drivers/misc/hdpuftrs/hdpu_cpustate.c
-+++ b/drivers/misc/hdpuftrs/hdpu_cpustate.c
-@@ -171,21 +171,21 @@ static struct platform_driver hdpu_cpustate_driver = {
-  *	The various file operations we support.
-  */
- static const struct file_operations cpustate_fops = {
--      owner:	THIS_MODULE,
--      open:	cpustate_open,
--      release:	cpustate_release,
--      read:	cpustate_read,
--      write:	cpustate_write,
--      fasync:	NULL,
--      poll:	NULL,
--      ioctl:	NULL,
--      llseek:	no_llseek,
-+      .owner	= THIS_MODULE,
-+      .open	= cpustate_open,
-+      .release	= cpustate_release,
-+      .read	= cpustate_read,
-+      .write	= cpustate_write,
-+      .fasync	= NULL,
-+      .poll	= NULL,
-+      .ioctl	= NULL,
-+      .llseek	= no_llseek,
- };
- 
- static struct miscdevice cpustate_dev = {
--	MISC_DYNAMIC_MINOR,
--	"sky_cpustate",
--	&cpustate_fops,
-+	.minor	= MISC_DYNAMIC_MINOR,
-+	.name	= "sky_cpustate",
-+	.fops	= &cpustate_fops,
- };
- 
- static int hdpu_cpustate_probe(struct platform_device *pdev)
+Agreed.
+
+
+Erik
+
+--=20
+They're all fools. Don't worry. Darwin may be slow, but he'll
+eventually get them. -- Matthew Lammers in alt.sysadmin.recovery
+
+--vEao7xgI/oilGqZ+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGjTEP/PlVHJtIto0RAtxhAKCGWuhhDHPcJQkd0IpAreWpsWPhfQCdEr6f
+NrVyySmp524FDsb7O8GgceY=
+=jqMD
+-----END PGP SIGNATURE-----
+
+--vEao7xgI/oilGqZ+--
