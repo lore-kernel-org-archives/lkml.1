@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbXGEPdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759102AbXGEPfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759630AbXGEPdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 11:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbXGEPdO
+	id S1759102AbXGEPfl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 11:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbXGEPff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 11:33:14 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:40966 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753820AbXGEPdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 11:33:13 -0400
-To: rjw@sisk.pl
-CC: mjg59@srcf.ucam.org, pavel@ucw.cz, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-reply-to: <200707051727.36715.rjw@sisk.pl>
-Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com> <200707051704.48137.rjw@sisk.pl> <20070705150301.GB23647@srcf.ucam.org> <200707051727.36715.rjw@sisk.pl>
-Message-Id: <E1I6TJq-000164-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Jul 2007 17:32:34 +0200
+	Thu, 5 Jul 2007 11:35:35 -0400
+Received: from mail.screens.ru ([213.234.233.54]:34749 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757167AbXGEPfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 11:35:34 -0400
+Date: Thu, 5 Jul 2007 19:36:48 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 2/2] workqueue: debug work related deadlocks with lockdep
+Message-ID: <20070705153648.GA236@tv-sign.ru>
+References: <20070705110744.564273000@sipsolutions.net> <20070705110820.622888000@sipsolutions.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070705110820.622888000@sipsolutions.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > You have processes that don't react to signals, because some
-> > > other user land task is misbehaving.  I'd call that ugly at the
-> > > very least.
-> > 
-> > It already happens with, say, NFS. Don't think about it in terms of a 
-> > userland task misbehaving - think of it in terms of a resource becoming 
-> > unavailable.
-> 
-> I think there's a difference between a userland task playing the role of a
-> resource and a "real" external resource the kernel doesn't control.
-> 
-> IMO, userland tasks should not have the power to affect each other as though
-> they were parts of the kernel.
+On 07/05, Johannes Berg wrote:
+>
+> +#define __WORK_INIT_LOCKDEP_MAP(n, k) \
+> +	.lockdep_map = STATIC_LOCKDEP_MAP_INIT(n, k),
+> +#else
+> +#define __WORK_INIT_LOCKDEP_MAP(n, k)
+> +#endif
+> +
+>  #define __WORK_INITIALIZER(n, f) {				\
+>  	.data = WORK_DATA_INIT(),				\
+>  	.entry	= { &(n).entry, &(n).entry },			\
+>  	.func = (f),						\
+> +	__WORK_INIT_LOCKDEP_MAP(#n, &(n))			\
 
-One task doing ptrace() can basically do whatever it wants with the
-task being traced.  This is not an exact analogy to what fuse does,
-but close.
+[...snip...]
 
-And for this reason the security model for allowing access to a fuse
-filesystem is similar to that for allowing tracing.
+> +#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
+> +	{ .name = (_name), .key = (void *)(_key), }
 
-The gory details can be found in Documentation/filesystems/fuse.txt.
+Hmm... Can't understand, please help!
 
-Miklos
+So, __WORK_INITIALIZER() uses work_struct itself as a "struct lock_class_key" ?
+How so?
+
+Oleg.
+
