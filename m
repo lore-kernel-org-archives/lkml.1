@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761683AbXGEN2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760994AbXGENeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761683AbXGEN2p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 09:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761574AbXGEN2f
+	id S1760994AbXGENeK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 09:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758932AbXGENd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 09:28:35 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:35299 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761558AbXGEN2e convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 09:28:34 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 15:28:33 +0200
-User-Agent: KMail/1.9.7
-Cc: Miklos Szeredi <miklos@szeredi.hu>, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, mjg59@srcf.ucam.org, benh@kernel.crashing.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu> <200707051523.44826.rjw@sisk.pl>
-In-Reply-To: <200707051523.44826.rjw@sisk.pl>
+	Thu, 5 Jul 2007 09:33:57 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:37872 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756298AbXGENdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 09:33:55 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Thu, 5 Jul 2007 19:25:18 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
+       Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH -mm 8/9] netconsole: Update documentation for dynamic
+ reconfigurability
+In-Reply-To: <468CEAEC.7040102@bx.jp.nec.com>
+Message-ID: <Pine.LNX.4.64.0707051913001.19842@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <468CEAEC.7040102@bx.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707051528.34754.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 5. Juli 2007 schrieb Rafael J. Wysocki:
-> > It seems pretty clear cut.  Whining about how much problems this will
-> > cause won't get us nearer to a solution.
+Hi Keiichi,
+
+On Thu, 5 Jul 2007, Keiichi KII wrote:
+> Hi Satyam,
 > 
-> Yes, that's pretty clear cut, but we should start from fixing the drivers. :-)
+> > + cat enabled				# check if enabled is 1
+> > + echo 0 > enabled			# disable the target (if required)
+> > + echo eth2 > dev_name			# set local interface
+> 
+> I think that the above line should change from "echo eth2 > dev_name" to 
+> "echo -n eth2 > dev_name" or the newline should be removed at store_dev_name().
+> The default behavior of echo(1) outputs the newline. 
+> So, if we write appropriate network device name to dev_name, 
+> the netpoll can't find net_device in netpoll_setup(). 
 
-If, at a minimum, we can determine that we can STD without a freezer.
-It makes no sense to invest a lot of work to face the same problem
-again with STD.
+Yes, you're right. I'll fix this in store_dev_name() itself, it isn't
+right to limit users to only -n option. Thanks for pointing this out.
 
-	Regards
-		Oliver
+[ BTW I also noticed a typo in that file just above your extract that
+mentions dev_name as a read-only attribute! That also must be fixed ... ]
 
+> I don't have enough time now. So I will check your patches more specific 
+> at the weekend.
+
+Ok, thanks a lot. I'll wait for your comments / testing results over the
+weekend, before sending out the next iteration.
+
+BTW I did some testing myself, and have found another *embarrassing* bug:
+if netconsole is loaded _without_ specifying any "netconsole=" parameter,
+module is still kept loaded, but on unloading configfs_unregister_...()
+obviously panics! :-) This should've been found by me earlier, just that
+I never tested without specifying the parameter to modprobe :-(
+
+Thanks,
+Satyam
