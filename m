@@ -1,84 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761055AbXGEMcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760518AbXGEMii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761055AbXGEMcd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 08:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757234AbXGEMcZ
+	id S1760518AbXGEMii (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 08:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757234AbXGEMia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 08:32:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53276 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757160AbXGEMcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 08:32:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 14:39:36 +0200
-User-Agent: KMail/1.9.5
-Cc: stern@rowland.harvard.edu, oliver@neukum.org, paulus@samba.org,
-       mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org> <200707042336.58466.rjw@sisk.pl> <E1I6Mq2-0008WB-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I6Mq2-0008WB-00@dorka.pomaz.szeredi.hu>
+	Thu, 5 Jul 2007 08:38:30 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:48942 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757164AbXGEMia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 08:38:30 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Thu, 5 Jul 2007 22:38:25 +1000
+User-Agent: KMail/1.9.6
+Cc: Pavel Machek <pavel@ucw.cz>, Oliver Neukum <oliver@neukum.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, benh@kernel.crashing.org,
+       mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <20070703042916.GA17240@srcf.ucam.org> <20070704234523.GC2719@elf.ucw.cz> <200707051425.07904.rjw@sisk.pl>
+In-Reply-To: <200707051425.07904.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: multipart/signed;
+  boundary="nextPart1201636.iSAgefnjtu";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707051439.37737.rjw@sisk.pl>
+Message-Id: <200707052238.27889.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 10:37, Miklos Szeredi wrote:
-> > > Pro-freezers say:
-> > > 
-> > >   - don't remove the freezer, otherwise we'll have to deal with
-> > >     numerous problems in drivers
-> > 
-> > And these problems will generally be difficult to reproduce reliably
-> > and debug.
-> 
-> I see exactly the opposite.
-> 
-> With the freezer I can have very rarely occuring failures, due to
-> freeze ordering effects.
+--nextPart1201636.iSAgefnjtu
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The "freezer ordering effects" only affect uninterruptible tasks.
- 
-> And without the freezer I have a 100% reproducable problem, that is
-> not hard to fix according to Alan Stern.  OK, I don't know what the
-> next problem would be, but the powermac experience shows, that it's
-> not nearly as bad as you and Oliver try to make it out.
+Hi.
 
-The powermac need not be a good example due to the different code ordering
-(it's run on one CPU only, which makes the probability of triggering a race
-be quite low).
+On Thursday 05 July 2007 22:25:06 Rafael J. Wysocki wrote:
+> On Thursday, 5 July 2007 01:45, Pavel Machek wrote:
+> > On Tue 2007-07-03 21:32:20, Oliver Neukum wrote:
+> > > Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
+> > > > > And a further question. The freezer is not atomic. What do you do
+> > > > > if a task not yet frozen calls sys_sync(), but fuse is already=20
+frozen?
+> > > >=20
+> > > > What do you do if a task not yet frozen writes to a pipe, on the ot=
+her
+> > > > end of which is a task already frozen?
+> >=20
+> > There's some difference between uninterruptible and interruptible
+> > sleep I'd say.
+> >=20
+> > > > It doesn't matter.  The only thing that should matter during suspend
+> > > > (not hibernate) is saving the state of devices to ram, and putting =
+the
+> > > > devices to sleep.
+> > >=20
+> > > Well, but you did remove sys_sync() from the freezer, which is
+> > > and must be called in the hibernate path.
+> >=20
+> > Not "must". In fact, hibernation should be safe without sys_sync(). It
+> > is just user un-friendly.
+>=20
+> In fact, I'd like to remove the sys_sync() from the freezer entirely,=20
+because
+> it just doesn't belong in there.
+>=20
+> The only advantege of having sys_sync() in freeze_processes() is that we
+> have a chance to write out everything when applications cannot produce mo=
+re
+> data to write, but there are filesystems which don't do that anyway (eg.=
+=20
+XFS),
+> so generally there's no reason to bother.
 
-> > > Can this be fixed?
-> > > 
-> > > It seems to be a fundamental problem with the freezer: while it does
-> > > make sure that user processes are not calling into drivers during
-> > > suspend, it also disallows perfectly harmless non-driver calls as
-> > > well.
-> > 
-> > The problem is that when the freezer was designed (I didn't do that, BTW),
-> > there was no FUSE and similar things, so it's not prepared to cope with
-> > such interdependencies between user space tasks.
-> > 
-> > We had an analogous problem with vfork() and it was solved by using the
-> > PF_FREEZER_SKIP flag.  Perhaps we can do similar thing with FUSE.
-> 
-> It cannot be just worked around in fuse, as a task might be sleeping
-> on a number of VFS mutexes as well (i_mutex, s_vfs_rename_mutex, etc).
-> It would be a gigantic hack, possible at all.
+Shouldn't XFS - and fuse - be considered to be broken? Sync should sync dat=
+a=20
+and if XFS isn't doing that, it's wrong.
 
-Well, obviously FUSE and the freezer don't play well together, but that's FUSE
-who's late in the game (the freezer was here before). ;-)
+In the case of fuse, we should have a mechanism by which fuse processes can=
+ be=20
+made to sync if they do have any pending I/O, and by which they can be froz=
+en=20
+later than other userspace processes.
 
-If you give me some time, I'll see what can be done.
+I'd like to see the sync stay, because it improves reliability and data=20
+integrity in the fail-to-resume case. Calling scripts would probably invoke=
+=20
+sync themselves if they don't already, but that's racy. As it is at the=20
+moment, we know userspace is stopped, so syncing isn't racy.
 
-Greetings,
-Rafael
+Regards,
 
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+--nextPart1201636.iSAgefnjtu
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGjOZDN0y+n1M3mo0RAk9mAKCSSal8CrEcxMwbaaxn4f4gftpzJgCg0gp9
+ZszH0kVXyMj2Uy+XMSuy0Q8=
+=Mksm
+-----END PGP SIGNATURE-----
+
+--nextPart1201636.iSAgefnjtu--
