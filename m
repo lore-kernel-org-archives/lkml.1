@@ -1,85 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762643AbXGEUy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbXGEUzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762643AbXGEUy1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 16:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760809AbXGEUyT
+	id S1762797AbXGEUzh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 16:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760809AbXGEUz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 16:54:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55320 "EHLO ogre.sisk.pl"
+	Thu, 5 Jul 2007 16:55:28 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47338 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760414AbXGEUyS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 16:54:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Thu, 5 Jul 2007 23:01:39 +0200
-User-Agent: KMail/1.9.5
-Cc: oliver@neukum.org, pavel@ucw.cz, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707052220.00555.rjw@sisk.pl> <E1I6Y5o-0001qm-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I6Y5o-0001qm-00@dorka.pomaz.szeredi.hu>
+	id S1760356AbXGEUz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 16:55:26 -0400
+Date: Thu, 5 Jul 2007 22:55:24 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+Message-ID: <20070705205523.GA15202@suse.de>
+Mail-Followup-To: List util-linux-ng <util-linux-ng@vger.kernel.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <8CYT9-4Ou-23@gated-at.bofh.it> <8Dh9k-8lT-3@gated-at.bofh.it> <8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz> <20070705192002.GB11204@DervishD> <87vecyeg5y.fsf@hades.wkstn.nix>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707052301.40303.rjw@sisk.pl>
+In-Reply-To: <87vecyeg5y.fsf@hades.wkstn.nix>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 5 July 2007 22:38, Miklos Szeredi wrote:
-> > > > > > > Actually fuse allows SIGKILL, because it's always fatal, and the
-> > > > > > > syscall may not be restarted.
-> > > > > > 
-> > > > > > I think you want to stick try_to_freeze() at the same places where you
-> > > > > > do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
-> > > > > > problem.
-> > > > > 
-> > > > > I could, but it would not solve the general problem.  Namely, that the
-> > > > > presence of fuse imposes a certain ordering in which userspace tasks
-> > > > > have to be frozen.  And it is not possible to know this ordering.
-> > > > 
-> > > > Actually, why do you need this? There is no absolute need that you
-> > > > finish the request. You must either finish the request or let yourself
-> > > > be frozen.
-> > > > 
-> > > > A quick look through fuse reveals principally request_wait_answer()
-> > > > And maybe a few other places. Is there some hidden reason you cannot
-> > > > handle being frozen here?
-> > > 
-> > > Yes, fuse could handle being frozen there.  However that would only
-> > > solve part of the problem: an operation waiting for a reply could be
-> > > holding a VFS mutex and some other task may be blocked on that mutex.
-> > > 
-> > > How would you solve freezing those tasks?
-> > 
-> > How probable is this situation?
+* Nix <nix@esperi.org.uk> [2007-07-05 22:42]:
 > 
-> I guess it depends on usage patterns.
-> 
-> I don't remember seeing any such cases, even though I have a permanent
-> fuse mount, and I suspend regularly.  But the fs is probably totally
-> idle during suspend in my case.
-> 
-> But some people use fuse as a home or root filesystem and in those
-> cases it can become quite likely to cause problems.
+> My only real grouch with cmake is that the authors have invented a
+> language with so bloody many capital letters in it. 
 
-That means we need to prevent the freezer from sending freeze requests FUSE's
-filesystem servers too early.
+The real problem I see with cmake is that you need to have cmake
+installed on the build system. While cmake itself isn't the problem,
+often, it also depends on the version of cmake that is installed. The
+good idea about auto* tools is the idea that you don't need to install
+any tools to build, just to develop. A POSIX shell and Perl should be
+installed everywhere ...
 
-What about this (more or less):
-1) We add a list of userland processes to the freezer that should not be frozen
-in the first phase (ie. during the freezing of user space).  They will be frozen
-anyway along with the freezable kernel threads.
-2) FUSE adds its filesystem servers to this list upon connecting to them
-3) FUSE removes its filesystem servers from this list upon disconnecting
-
-Greetings,
-Rafael
+Maybe the problem becomes less important in a few years if everyone
+has cmake installed and it's more "stable" in terms of adding new
+features.
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+
+Thanks,
+   Bernhard
