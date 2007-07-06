@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762886AbXGFKSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763522AbXGFKSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762886AbXGFKSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 06:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbXGFKS1
+	id S1763522AbXGFKSv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 06:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXGFKSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 06:18:27 -0400
-Received: from mail.macqel.be ([194.78.208.39]:11373 "EHLO mail.macqel.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753993AbXGFKS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 06:18:26 -0400
-Date: Fri, 6 Jul 2007 12:18:23 +0200
-From: Philippe De Muyter <phdm@macqel.be>
+	Fri, 6 Jul 2007 06:18:42 -0400
+Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:34802 "HELO
+	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759403AbXGFKSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 06:18:41 -0400
+X-YMail-OSG: zXsOFHQVM1m0gFqP1cT0Rm0N5RaOspOfWRY0eLUiR1AlIwnYlcOCaRz.BOHlN0LQw7OvGgZM1jZza2RAez4sRfHZNg--
+X-RocketYMMF: knobi.rm
+Date: Fri, 6 Jul 2007 03:18:40 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: Re: Understanding I/O behaviour
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] ppp : white space cleanup
-Message-ID: <20070706101823.GA12380@muff.macqel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4i
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <773157.44861.qm@web32603.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+>>    b) any ideas how to optimize the settings of the /proc/sys/vm/
+>>    parameters? The documentation is a bit thin here.
+>>
+>>
+>I cant offer any advice there, but is raid-5 really the best choice
+>for your needs? I would not choose raid-5 for a system that is
+>regularly performing lots of large writes at the same time, dont
+>forget that each write can require several reads to recalculate the
+>partity.
+>
+>Does the raid card have much cache ram?
+>
 
-This removes useless spaces at begin of lines
+ 192 MB, split 50/50 to read write.
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+>If you can afford to loose some space raid-10 would probably perform
+>better.
 
-diff -r 6c0a10cc415a drivers/net/ppp_async.c
---- a/drivers/net/ppp_async.c	Thu Jul  5 16:10:16 2007 -0700
-+++ b/drivers/net/ppp_async.c	Fri Jul  6 12:15:38 2007 +0200
-@@ -887,15 +887,15 @@ ppp_async_input(struct asyncppp *ap, con
- 				skb = dev_alloc_skb(ap->mru + PPP_HDRLEN + 2);
- 				if (skb == 0)
- 					goto nomem;
-- 				ap->rpkt = skb;
-- 			}
-- 			if (skb->len == 0) {
-- 				/* Try to get the payload 4-byte aligned.
-- 				 * This should match the
-- 				 * PPP_ALLSTATIONS/PPP_UI/compressed tests in
-- 				 * process_input_packet, but we do not have
-- 				 * enough chars here to test buf[1] and buf[2].
-- 				 */
-+				ap->rpkt = skb;
-+			}
-+			if (skb->len == 0) {
-+				/* Try to get the payload 4-byte aligned.
-+				 * This should match the
-+				 * PPP_ALLSTATIONS/PPP_UI/compressed tests in
-+				 * process_input_packet, but we do not have
-+				 * enough chars here to test buf[1] and buf[2].
-+				 */
- 				if (buf[0] != PPP_ALLSTATIONS)
- 					skb_reserve(skb, 2 + (buf[0] & 1));
- 			}
+ RAID5 most likely is not the best solution and I would not use it if
+the described use-case was happening all the time. It happens a few
+times a day and then things go down when all memory is filled with
+page-cache.
+
+ And the same also happens when copying large amountd of data from one
+NFS mounted FS to another NFS mounted FS. No disk involved there.
+Memory fills with page-cache until it reaches a ceeling and then for
+some time responsiveness is really really bad.
+
+ I am just now playing with the dirty_* stuff. Maybe it helps.
+
+Cheers
+Martin
+
+
+
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
