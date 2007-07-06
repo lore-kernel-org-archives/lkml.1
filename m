@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763538AbXGFRMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763437AbXGFRQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763538AbXGFRMM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 13:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757852AbXGFRMB
+	id S1763437AbXGFRQe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 13:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbXGFRQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 13:12:01 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42974 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757809AbXGFRMA (ORCPT
+	Fri, 6 Jul 2007 13:16:27 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45476 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756234AbXGFRQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 13:12:00 -0400
-Date: Fri, 6 Jul 2007 19:11:59 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Thread Migration Preemption
-Message-ID: <20070706171159.GB8174@one.firstfloor.org>
-References: <20070705215152.GA4865@Krystal> <p73myy9215m.fsf@bingen.suse.de> <20070706144144.GC32754@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070706144144.GC32754@Krystal>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 6 Jul 2007 13:16:26 -0400
+Message-ID: <468E78E1.1030306@zytor.com>
+Date: Fri, 06 Jul 2007 10:16:17 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andre Noll <maan@systemlinux.org>
+CC: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][Patch] Allow not mounting a root fs
+References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <468DA42D.7050309@zytor.com> <Pine.LNX.4.58.0707061551240.2241@be1.lrz> <20070706170006.GA16470@skl-net.de>
+In-Reply-To: <20070706170006.GA16470@skl-net.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 10:41:44AM -0400, Mathieu Desnoyers wrote:
-> I haven't thought about making it the default for kernel space
-> preemption, but yes, it would make sense.
+Andre Noll wrote:
+> On 17:00, Bodo Eggert wrote:
+> 
+>> I've put the complete system into initrams, and I just want the kernel to
+>> run /sbin/init.
+> 
+> Did you try to exec /sbin/init as the last thing in the init script
+> of your initramfs? That worked for me some time ago.
+> 
 
-Now it's too late -- getcpu() has infected the kernel everywhere.
-It would have made sense a few years ago.
+Just add a symlink:
 
+/init -> /sbin/init
 
-> ... getcpu()...
+	-hpa
 
-Hmm ok, although i suspect it's rare to assume that. But understood
-you don't want to audit all getcpu users because of this.
-
-> using a short instead of an int on modern x86 will cause pipeline stalls
-> due to partial register use.
-
-Sorry, that's totally bogus. Primarily because the access would be directly
-on memory and there is no partial register tracking there.
-
-Besides pipeline stall is not the correct description on what would
-happen if you used a register, the worst you get is a single false dependency
-but no pipeline flush.
-
-Besides the latest x86 cpus (C2, K8) don't have much trouble with these
-false dependencies in general.
-
-> usage, since it is followed by an unsigned long; gcc structure alignment
-
-
-> will put padding instead of the integer, which does not buy us anything
-
-on i386 unsigned long is 4 bytes.
-
--Andi
