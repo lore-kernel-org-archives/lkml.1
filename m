@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763102AbXGFMvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763343AbXGFMv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763102AbXGFMvm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 08:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760168AbXGFMve
+	id S1763343AbXGFMv5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 08:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763330AbXGFMvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 08:51:34 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:39114 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756653AbXGFMve (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 08:51:34 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 6 Jul 2007 08:48:43 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] I386: Deactivate the test for the dead CONFIG_DEBUG_PAGE_TYPE
- variable.
-Message-ID: <Pine.LNX.4.64.0707060847470.23786@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 6 Jul 2007 08:51:46 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:63108 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763184AbXGFMvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 08:51:43 -0400
+Date: Fri, 6 Jul 2007 14:51:37 +0200
+From: DervishD <lkml@dervishd.net>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Nix <nix@esperi.org.uk>, Karel Zak <kzak@redhat.com>,
+       List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+Message-ID: <20070706125137.GA1518@DervishD>
+Mail-Followup-To: Bodo Eggert <7eggert@gmx.de>,
+	Nix <nix@esperi.org.uk>, Karel Zak <kzak@redhat.com>,
+	List util-linux-ng <util-linux-ng@vger.kernel.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <8CYT9-4Ou-23@gated-at.bofh.it> <8Dh9k-8lT-3@gated-at.bofh.it> <8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz> <20070705192002.GB11204@DervishD> <Pine.LNX.4.58.0707061406090.2241@be1.lrz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.58.0707061406090.2241@be1.lrz>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+    Hi Bodo :)
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+ * Bodo Eggert <7eggert@gmx.de> dixit:
+> On Thu, 5 Jul 2007, DervishD wrote:
+> >  * Bodo Eggert <7eggert@gmx.de> dixit:
+> 
+> > > Standardisation is good, but autotools (as they are used) usurally isn't.
+> > 
+> >     Usually, by picking other's project configure.in and tweak blindly.
+> 
+> If it were that easy to write a correct automake script, people would do 
+> that. Wouldn't they?
 
----
+    That's exactly what I meant! People don't write good autotools
+scripts because it's difficult to learn autoconf and automake and it's
+almost impossible to master. It's more or less easy to write an autoconf
+script, but it's not so easy to make it right, powerful and to honor
+every configure switch, etc...
 
-diff --git a/arch/i386/kernel/vmi.c b/arch/i386/kernel/vmi.c
-index c12720d..e3ce5c8 100644
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -235,7 +235,7 @@ static void vmi_nop(void)
- {
- }
+> > > Configuring the build of an autotools program is harder than nescensary;
+> > > if it used a config file, you could easily save it somewhere while adding
+> > > comments on how and why you did *that* choice, and you could possibly
+> > > use a set of default configs which you'd just include.
+> > 
+> >     Looks like CMake...
+> 
+> Obviously something I should look at.
 
--#ifdef CONFIG_DEBUG_PAGE_TYPE
-+#if 0 /* debug page type */
+    Me too. I've learned a bit of CMake because I have my own building
+system ("configure" compatible from the point of view of the packager),
+but instead of adding new features I think I'm going to switch to CMake
+fully.
 
- #ifdef CONFIG_X86_PAE
- #define MAX_BOOT_PTS (2048+4+1)
-@@ -336,7 +336,7 @@ static void vmi_check_page_type(u32 pfn, int type)
- #else
- #define vmi_set_page_type(p,t) do { } while (0)
- #define vmi_check_page_type(p,t) do { } while (0)
--#endif
-+#endif /* debug page type */
+    Raúl Núñez de Arenas Coronado
 
- #ifdef CONFIG_HIGHPTE
- static void *vmi_kmap_atomic_pte(struct page *page, enum km_type type)
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
