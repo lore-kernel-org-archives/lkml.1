@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbXGFVWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763735AbXGFVY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932115AbXGFVWB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 17:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762102AbXGFVVx
+	id S1763735AbXGFVY7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 17:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761848AbXGFVYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 17:21:53 -0400
-Received: from main.gmane.org ([80.91.229.2]:42756 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760650AbXGFVVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 17:21:53 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Oleg Verych <olecom@flower.upol.cz>
-Subject: plain text MUAs (Re: [git pull][resend] Input updates for 2.6.22-rc7)
-Date: Fri, 6 Jul 2007 21:21:40 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department.
-Message-ID: <slrnf8tdbo.bju.olecom@flower.upol.cz>
-References: <200707050111.43327.dtor@insightbb.com> <alpine.LFD.0.98.0707051556000.9434@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	Fri, 6 Jul 2007 17:24:52 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:36595 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759113AbXGFVYv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 17:24:51 -0400
+Message-ID: <468EB2F0.8040903@linux.vnet.ibm.com>
+Date: Fri, 06 Jul 2007 14:24:00 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Dave Hansen <haveblue@us.ibm.com>
+CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Eric W Biederman <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>
+Subject: Re: [-mm PATCH 1/8] Memory controller resource counters (v2)
+References: <20070706052029.11677.16964.sendpatchset@balbir-laptop> <20070706052043.11677.56208.sendpatchset@balbir-laptop> <1183742642.10287.151.camel@localhost>  <468EAE3E.4050802@linux.vnet.ibm.com> <1183756205.10287.212.camel@localhost>
+In-Reply-To: <1183756205.10287.212.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds <Thu, 5 Jul 2007 16:09:10 -0700 (PDT)>
+Dave Hansen wrote:
+> On Fri, 2007-07-06 at 14:03 -0700, Balbir Singh wrote:
+>>>> +ssize_t res_counter_read(struct res_counter *cnt, int member,
+>>>> +            const char __user *userbuf, size_t nbytes, loff_t
+>> *pos)
+>>>> +{
+>>>> +    unsigned long *val;
+>>>> +    char buf[64], *s;
+>>>> +
+>>>> +    s = buf;
+>>>> +    val = res_counter_member(cnt, member);
+>>>> +    s += sprintf(s, "%lu\n", *val);
+>>>> +    return simple_read_from_buffer((void __user *)userbuf, nbytes,
+>>>> +                    pos, buf, s - buf);
+>>>> +}
+>>> Why do we need that cast?  
+>>>
+>> u mean the __user? If I remember correctly it's a attribute for
+>> sparse.
+> 
+> The userbuf is already __user.  This just appears to be making a 'const
+> char *' into a 'void *'.  I wondered what the reason for that part is.
+> 
 
-> Content-Transfer-Encoding: QUOTED-PRINTABLE
+Aah.. yes.. good point. I'll look into it.
 
-> On Thu, 5 Jul 2007, Dmitry Torokhov wrote:
->> 
->> Please consider pulling from:
->> 
->>         git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
->
-> There's somethign wrong with your emails, and it's very irritating.
->
-> I cannot just cut-and-paste the whole line, because your tabs and spaces 
-> aren't tabs and spaces, they are some horrible abomination.
->
-> What _looks_ like a tab above, when I save it and look at it with "od",
+> -- Dave
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-The Plain-Text tools...
-As a proud user of such, i can only say, that crap can be seen just
-like a plain-text (:
 
-|-*-
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 git://git.kernel.org/pub/scm/linux/kernel/g=
-it/dtor/input.git for-linus
-
-or
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 master.kernel.org:/pub/scm/linux/kernel/git=
-/dtor/input.git for-linus
-|-*-
-
-And quoted-printable is the most awful thing, when i read MLs with slrn :)
-____
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
