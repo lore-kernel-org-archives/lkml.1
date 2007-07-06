@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763353AbXGFOkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbXGFOkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763353AbXGFOkd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 10:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbXGFOkX
+	id S1760821AbXGFOkp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 10:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763000AbXGFOka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 10:40:23 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:38670 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754655AbXGFOkV (ORCPT
+	Fri, 6 Jul 2007 10:40:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:37167 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762935AbXGFOk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 10:40:21 -0400
-Date: Fri, 06 Jul 2007 08:39:28 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PATA-disk named sda
-In-reply-to: <fa.DRDWDh+VAXx84D/6XHgY6h2wB+E@ifi.uio.no>
+	Fri, 6 Jul 2007 10:40:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=fX2D+ktE75JeSVMyzvjLcbx7sp5ohPs5m4HVehoKTS10z2qEnu/SnR/bnudo2YKljUjeLAyOyTMXxq5b3InmgTAWwviK9ffBm2SNzgFC9R6lNFEK9GNReZcwUV060WVn/IAhE1IZjb38zrt3vP5rttbRNCq/IkB8fuGH7ngr8/o=
+Message-ID: <468E5458.2060003@googlemail.com>
+Date: Fri, 06 Jul 2007 16:40:24 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+MIME-Version: 1.0
 To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <468E5420.7090605@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.VMMtK2yPXE5gkxuIC8MWb1aPBiQ@ifi.uio.no>
- <fa.23lYEA4r0kfTVDJ1AKcxSE4vGKA@ifi.uio.no>
- <fa.DRDWDh+VAXx84D/6XHgY6h2wB+E@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PATA-disk named sda
+References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>	<20070706111848.43551f33@the-village.bc.nu> <20070706143055.01aa9ef6.Christoph.Pleger@cs.uni-dortmund.de>
+In-Reply-To: <20070706143055.01aa9ef6.Christoph.Pleger@cs.uni-dortmund.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Christoph Pleger wrote:
 > Hello,
-> 
+>   
+
+Hi,
+
+>   
 >>> In the newest Ubuntu Release, my PATA-disk is called sda instead of
 >>> hda. Is that a general feature in newer kernel versions or is it a
 >>> special feature in Ubuntu?
+>>>       
 >> General. SATA and now PATA drives map onto the /dev/sd range as do
 >> SCSI, USB etc
-> 
+>>     
+>
 > It seems to be not that simple, at least not if both the old IDE
 > interface and the new libata interface are enabled as modules: In my
 > Ubuntu system, I created two kernel packages (from the same kernel
@@ -44,27 +52,26 @@ Christoph Pleger wrote:
 > and one with Debian etch utilities. So, I had the same kernel with
 > different ramdisks. With the Ubuntu ramdisk, my harddrive was named sda,
 > but with the Debian ramdisk, it was named hda.
-> 
+>
 > So, the name of the drive can depend on something which happens in the
 > ramdisk environment. Does anybody know what that is? And is there a
 > kernel command line parameter which restores the old behaviour?
-> 
-> And what about hdparm (setting 32bit I/O and multi-sector mode)? Suren
-> wrote that 32bit I/O makes no sense when using DMA. Maybe that's right,
-> but it does not correspond with my experiences. At least, I have the
-> "feeling" that my IDE disks work much faster since I enabled 32bit
-> support (DMA already was on before).
+>   
 
-No, it has absolutely no effect in DMA mode.
+The boot options are different depending on the distribution you are using.
+Every distribution has his own magic for this kind things. ( Debian and 
+Ubuntu should have a man page with boot parameters )
 
-Currently the DMA, multi-sector mode, etc. are not controllable with 
-hdparm with libata. libata is designed to use the fastest settings 
-possible by default. In a lot of cases this messing with hdparm was only 
-needed because of stupidity with the old IDE code (like DMA not being 
-automatically enabled if the low-level driver was built modular).
+On kernels with both IDE and PATA enabled as modules , depends on what 
+you load first / include in your initramfs.
+If you load the IDE subsystem first you get HD*'s while with PATA you 
+get SD*'s.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+I don't use Debian nor Ubuntu but it looks like Ubuntu has PATA as 
+default while Debian has IDE.
 
+> Regards
+>   Christoph
+>   
+
+Gabriel
