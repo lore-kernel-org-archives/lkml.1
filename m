@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762281AbXGFKMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763210AbXGFKMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762281AbXGFKMB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 06:12:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbXGFKLy
+	id S1763210AbXGFKMX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 06:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762767AbXGFKMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 06:11:54 -0400
-Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:33092 "HELO
-	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755300AbXGFKLx (ORCPT
+	Fri, 6 Jul 2007 06:12:06 -0400
+Received: from post.kiewel-online.de ([85.214.49.162]:41479 "EHLO
+	post.kiewel-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762685AbXGFKMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 06:11:53 -0400
-X-YMail-OSG: qFav5.IVM1mG2nP.cYcVjB5OMhCOIzQUmGGh0Xr_zwetrqc4mDGbhT60qKoRLGq3uhYV2cUTLX7reKigPDgTY8q7cQ--
-X-RocketYMMF: knobi.rm
-Date: Fri, 6 Jul 2007 03:11:53 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Reply-To: spamtrap@knobisoft.de
-Subject: Re: Understanding I/O behaviour
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <468D832B.4060002@shaw.ca>
+	Fri, 6 Jul 2007 06:12:03 -0400
+Message-ID: <468E155E.7060402@kiewel-online.de>
+Date: Fri, 06 Jul 2007 12:11:42 +0200
+From: Uwe Kiewel <mailing-list@kiewel-online.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <197707.68164.qm@web32604.mail.mud.yahoo.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PATA-disk named sda
+References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+In-Reply-To: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
---- Robert Hancock <hancockr@shaw.ca> wrote:
-
+Christoph Pleger schrieb:
+> Hello,
 > 
-> Try playing with reducing /proc/sys/vm/dirty_ratio and see how that 
-> helps. This workload will fill up memory with dirty data very
-> quickly, 
-> and it seems like system responsiveness often goes down the toilet
-> when 
-> this happens and the system is going crazy trying to write it all
-> out.
-> 
+> In the newest Ubuntu Release, my PATA-disk is called sda instead of hda.
+> Is that a general feature in newer kernel versions or is it a special
+> feature in Ubuntu?
 
- Definitely the "going crazy" part is the worst problem I see with 2.6
-based kernels (late 2.4 was really better in this corner case).
+IIRC it is relatet to a new libata2 library. My Fedora 7 shows the same
+behavior.
 
- I am just now playing with dirty_ratio. Anybody knows what the lower
-limit is? "0" seems acceptabel, but does it actually imply "write out
-immediatelly"?
+Regrads,
+Uwe
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
- Another problem, the VM parameters are not really well dociúmented in
-their behaviour and interdependence.
-
-Cheers
-Martin
-
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
+iD8DBQFGjhVer6SFaBB7DLURAs9kAKCutDEn7kfxpKQia3zP6i0WIoXsRwCfQgDl
+/nNcRPH3lzrzy3pGuNDZAsw=
+=xPle
+-----END PGP SIGNATURE-----
