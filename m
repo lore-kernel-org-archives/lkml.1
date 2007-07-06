@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbXGFOfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762458AbXGFOgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760947AbXGFOfe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 10:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbXGFOf0
+	id S1762458AbXGFOgS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 10:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbXGFOgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 10:35:26 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:52784 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753481AbXGFOfZ (ORCPT
+	Fri, 6 Jul 2007 10:36:07 -0400
+Received: from serv07.divms.uiowa.edu ([128.255.44.97]:36601 "EHLO
+	serv07.divms.uiowa.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbXGFOgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 10:35:25 -0400
-Subject: Re: [RFC] Thread Migration Preemption
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <468DDD3A.6010308@yahoo.com.au>
-References: <20070705215152.GA4865@Krystal>  <468DDD3A.6010308@yahoo.com.au>
-Content-Type: text/plain
-Date: Fri, 06 Jul 2007 10:34:55 -0400
-Message-Id: <1183732495.17319.133.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Fri, 6 Jul 2007 10:36:06 -0400
+X-Greylist: delayed 1811 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jul 2007 10:36:06 EDT
+In-Reply-To: <20070705143419.f214f5b2.akpm@linux-foundation.org>
+References: <200707051251.52891.vda.linux@googlemail.com> <20070705143419.f214f5b2.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6F17353B-D428-462B-B318-2FDEC11E8D66@cs.uiowa.edu>
+Cc: Denis Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: "Douglas W. Jones" <jones@cs.uiowa.edu>
+Subject: Re: [PATCH 2/2] vsprintf.c: optimizing, part 2: base 10 conversion speedup, v2
+Date: Fri, 6 Jul 2007 09:05:29 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-06 at 16:12 +1000, Nick Piggin wrote:
-> Mathieu Desnoyers wrote:
 
-> > migration_disable();
-> > local_inc(&__get_cpu_var(&my_local_t_var));
-> > migration_enable();
-> > 
+On Jul 5, 2007, at 4:34 PM, Andrew Morton wrote:
 
-[...]
+> On Thu, 5 Jul 2007 12:51:52 +0200
+> Denis Vlasenko <vda.linux@googlemail.com> wrote:
+>
+>> Using code from
+>>
+>> http://www.cs.uiowa.edu/~jones/bcd/decimal.html
+>> (with permission from the author, Douglas W. Jones)
+>
+> Neither of your patches had signed-off-by:s.  Would prefer that  
+> they were
+> included please, given that we're adding stuff from someone's website.
 
-> This seems like way too much stuff to add just for this type of thing. Why
-> not just disable and reenable preempt? Surely local_inc is not going to take
-> so long that disabling preemption matters.
+The material on my website was somewhere between pseudocode and
+code.  The web site is tutorial in nature, and what Vlasenko did
+is follow my tutorial and adapt a working chunk of code from the
+many code snippets in the tutorial.
 
-For this given example, it may be too much fine tuning. But there are
-other things (at least in RT) where this would be very helpful. One
-thing is that in RT an IRQ thread might service a softirq if that
-softirq thread is of the same priority as the IRQ thread. The difference
-between an IRQ thread and a softirq thread is that the IRQ thread may
-migrate but the softirq thread may not. So to do this performance
-enhancement, we need to temporarily pin the IRQ thread to the CPU, which
-is expensive (set_cpus_allowed).  This would make it much simpler and
-light weight to implement.
+If a signoff from me is required, someone will need to tell me how,
+since I have no experience with the protocols for Linux code
+development.  I am entirely content with the current form of credit
+given to me in the code (a comment with a pointer to my web site).
 
-> 
-> The task struct is not something we should just be carefree putting crap
-> into because it is seemingly free :(
-> 
+Frankly, I remain a bit surprise that my work has significant payoff
+on a Pentium.  I was motivated by the problems of doing fast binary
+to ASCII decimal conversion on a brain-dead little microcontroller
+with an 8-bit ALU.
 
-Agreed, but as the subject says "RFC".  Perhaps we can make it a bit
-more complex and put this as one of the most significant bits in the
-preempt_count. We would just need to mask off that bit in all the archs
-when determining if we should preempt or not.  That's more complex, but
-keeps the task struct free from more luggage.
-
--- Steve
-
-
+		Doug Jones
+		jones@cs.uiowa.edu
