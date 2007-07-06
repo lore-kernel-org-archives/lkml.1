@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761302AbXGFOwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762271AbXGFOz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761302AbXGFOwm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 10:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbXGFOwd
+	id S1762271AbXGFOz3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 10:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXGFOzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 10:52:33 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:11566 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752844AbXGFOwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 10:52:33 -0400
-Date: Fri, 6 Jul 2007 18:51:32 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, vtaras@openvz.org
-Subject: Write-only stuff in CFQ data structures
-Message-ID: <20070706145131.GB11067@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 6 Jul 2007 10:55:22 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:26025 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754557AbXGFOzV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 10:55:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TnOFkPFzW5nopLOki/jhMPYuAha21ObTCNbftm0Ci8n83X/vC79DXIkqbWRPvMfqKQEWcGNObc/+NlYhoNTzmZlrQrEm3nfb08ThGg+9djGD4+J9oxPVdF62fpL1e5P5TN1Gl8ylCEiWCGt5kQ9Mhd6kVnrIcFmM6aWpvhNJaCM=
+Message-ID: <8bd0f97a0707060755q59a8fdc5j3c0d44e060eec9cf@mail.gmail.com>
+Date: Fri, 6 Jul 2007 09:55:20 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: dead CONFIG variables in kernel Makefiles
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0707060553350.10501@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+References: <Pine.LNX.4.64.0707060553350.10501@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens, there are some write-only fields in cfq_data and cfq_queue to be
-added in 2.6.22. I'm attaching patch to show what can be deleted, but
-something suspicious is going on:
+On 7/6/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+>
+>   in addition to references to non-existent CONFIG variables in header
+> and source files, here's a list of such variables in Makefiles
+> throughout the entire tree:
+>
+> ===== BF548 =====
+> ./arch/blackfin/Makefile:cpu-$(CONFIG_BF548) := bf548
+> ===== BF549 =====
+> ./arch/blackfin/Makefile:cpu-$(CONFIG_BF549) := bf549
+> ===== BF_REV_0_0 =====
+> ./arch/blackfin/Makefile:rev-$(CONFIG_BF_REV_0_0)  := 0.0
+> ===== BF_REV_0_1 =====
+> ./arch/blackfin/Makefile:rev-$(CONFIG_BF_REV_0_1)  := 0.1
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index baef5fc..eed7020 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -109,9 +109,6 @@ struct cfq_data {
- 	unsigned int cfq_slice_idle;
- 
- 	struct list_head cic_list;
--
--	sector_t new_seek_mean;
--	u64 new_seek_total;
- };
- 
- /*
-@@ -151,8 +148,6 @@ struct cfq_queue {
- 
- 	/* various state flags, see below */
- 	unsigned int flags;
--
--	sector_t last_request_pos;
- };
- 
- enum cfqq_state_flags {
-@@ -1570,11 +1565,6 @@ cfq_update_io_seektime(struct cfq_data *cfqd, struct cfq_io_context *cic,
- 	else
- 		sdist = cic->last_request_pos - rq->sector;
- 
--	if (!cic->seek_samples) {
--		cfqd->new_seek_total = (7*cic->seek_total + (u64)256*sdist) / 8;
--		cfqd->new_seek_mean = cfqd->new_seek_total / 256;
--	}
--
- 	/*
- 	 * Don't allow the seek distance to get too large from the
- 	 * odd fragment, pagein, etc
-@@ -1710,7 +1700,6 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	cfq_update_idle_window(cfqd, cfqq, cic);
- 
- 	cic->last_request_pos = rq->sector + rq->nr_sectors;
--	cfqq->last_request_pos = cic->last_request_pos;
- 
- 	if (cfqq == cfqd->active_queue) {
- 		/*
+that's because we couldnt push the rest of the BF54x port until the
+new merge window ... they'll be defined with 2.6.23
 
+> ===== CPU_FREQ_BF533 =====
+> ./arch/blackfin/mach-bf533/Makefile:obj-$(CONFIG_CPU_FREQ_BF533) += cpu.o
+
+we changed names in the Kconfig but didnt sync that Makefile ... the
+others got updated
+-mike
