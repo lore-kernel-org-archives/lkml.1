@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761161AbXGFKkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbXGFKmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761161AbXGFKkZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 06:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbXGFKkO
+	id S1762856AbXGFKmB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 06:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXGFKly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 06:40:14 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:58798 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756951AbXGFKkM (ORCPT
+	Fri, 6 Jul 2007 06:41:54 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:58450 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753803AbXGFKlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 06:40:12 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 6 Jul 2007 06:38:05 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: can entire drivers/acorn subdirectory be removed?
-Message-ID: <Pine.LNX.4.64.0707060632330.12604@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 6 Jul 2007 06:41:53 -0400
+Subject: Re: [PATCH 1/2] workqueue: debug flushing deadlocks with lockdep
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20070705145243.GA189@tv-sign.ru>
+References: <20070705110744.564273000@sipsolutions.net>
+	 <20070705110820.304578000@sipsolutions.net>
+	 <20070705143217.GA170@tv-sign.ru> <20070705144047.GA9548@elte.hu>
+	 <20070705145243.GA189@tv-sign.ru>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-BKopLc4shNQXFHQpx18+"
+Date: Fri, 06 Jul 2007 12:42:41 +0200
+Message-Id: <1183718561.3818.93.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  given that:
+--=-BKopLc4shNQXFHQpx18+
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-1) drivers/Makefile doesn't even have an entry for the acorn/
-   subdirectory, and
+On Thu, 2007-07-05 at 18:52 +0400, Oleg Nesterov wrote:
 
-2) the Makefile drivers/acorn/char/Makefile is incorrect anyway, since
-   it contains:
+> So I agree with you, such recursion is indeed bad. Can we forbid this?
+> In that case this patch is even more perfect :)
 
-    obj-$(CONFIG_L7200_KEYB)        += defkeymap-l7200.o keyb_l7200.o
+I haven't seen it complain in a few days so that probably means such
+usage is rather rare :)
 
-   which refers to a non-existent source file keyb_l7200.c, and it's
-based on a non-existent config variable on top of that.  it certainly
-seems that that entire subdirectory can be tossed.
+johannes
 
-  and if that happens, then the config variables defined in
-drivers/acorn/block/Kconfig:
+--=-BKopLc4shNQXFHQpx18+
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-  config BLK_DEV_FD1772
-  config BLK_DEV_MFM
-  config BLK_DEV_MFM_AUTODETECT
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-would also vanish, which suggests that any references to *them* could
-also be deleted:
+iD8DBQBGjhyh/ETPhpq3jKURAtaXAKCPRHtGuRMDWEYp4ZqdwqJDD4UuNgCghcyL
+Dyjkah7DM6BNHwG4fjg0t1o=
+=kiFE
+-----END PGP SIGNATURE-----
 
-$ grep -r BLK_DEV_FD1772 *
-arch/arm26/defconfig:# CONFIG_BLK_DEV_FD1772 is not set
-arch/arm26/machine/dma.c:#if defined(CONFIG_BLK_DEV_FD1772) || defined(CONFIG_BLK_DEV_FD1772_MODULE)
-arch/arm26/machine/dma.c:#if defined(CONFIG_BLK_DEV_FD1772) || defined(CONFIG_BLK_DEV_FD1772_MODULE)
-...
+--=-BKopLc4shNQXFHQpx18+--
 
-  anyway, you get the idea.  thoughts?
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
