@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbXGFXRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbXGFX2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753273AbXGFXRE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 19:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbXGFXQx
+	id S1753455AbXGFX2Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 19:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXGFX2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 19:16:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50062 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751650AbXGFXQw (ORCPT
+	Fri, 6 Jul 2007 19:28:15 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53109 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751904AbXGFX2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 19:16:52 -0400
-Date: Fri, 6 Jul 2007 16:16:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Morris <jmorris@namei.org>
-Cc: Heikki Orsila <shdl@zakalwe.fi>, Yoann Padioleau <padator@wanadoo.fr>,
-       kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] some kmalloc/memset ->kzalloc (tree wide)
-Message-Id: <20070706161617.072f7eea.akpm@linux-foundation.org>
-In-Reply-To: <Line.LNX.4.64.0707061806390.18415@d.namei>
-References: <878x9ta320.fsf@wanadoo.fr>
-	<20070706175552.GF3400@zakalwe.fi>
-	<Line.LNX.4.64.0707061806390.18415@d.namei>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jul 2007 19:28:14 -0400
+Date: Sat, 7 Jul 2007 01:28:43 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
+Message-ID: <20070706232843.GT3492@stusta.de>
+References: <20070703164046.645090494@polymtl.ca> <20070703164516.377240547@polymtl.ca> <20070703181151.GB5800@martell.zuzino.mipt.ru> <20070703185748.GA4047@Krystal> <20070705132120.8edbc1f3.akpm@linux-foundation.org> <p73vecx21um.fsf@bingen.suse.de> <468EBEB2.4070605@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <468EBEB2.4070605@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jul 2007 18:07:20 -0400 (EDT)
-James Morris <jmorris@namei.org> wrote:
-
-> On Fri, 6 Jul 2007, Heikki Orsila wrote:
+On Fri, Jul 06, 2007 at 06:14:10PM -0400, Chuck Ebbert wrote:
+> On 07/06/2007 07:44 AM, Andi Kleen wrote:
+> > I think the optimization is a good idea, although i dislike it
+> > that it is complicated for the dynamic markers. If it was just
+> > static it would be much simpler.
 > 
-> > > Transform some calls to kmalloc/memset to a single kzalloc (or 
-> > > kcalloc).
-> > 
-> > I looked all the files through. They looked good to me, except 
-> > one case:
-> 
-> I checked the drivers/net and net/ changes and they looked ok (aside from 
-> the above).
-> 
-> 
+> Another thing to consider is that there might be hundreds of these
+> probes/tracepoints active in an instrumented kernel. The overhead
+> adds up fast, so the gain may be worth all the pain.
 
-OK, thanks for checking it, guys.
+Only if you want to squeeze the last bit of performance out of
+_debugging_ functionality.
 
-Yoann, the "tree wide" thing really is a problem.  Your patch here is
-touching ten or more maintainers' code and it really does want to be split
-into ten separate patches and fed into the tree via the appropriate routes.
+You avoid all the pain if you simply don't use debugging functionality 
+on production systems.
 
-I can take care of that routing if I have the ten patches, but this time I
-really can't be bothered splitting the patch up (it's rather boring, and
-gets error-prone).
+cu
+Adrian
 
-For this patch, I tossed out the ten or so hunks which conflicted with
-other pending patches in the various trees and I shall just grit the teeth
-and maintain and merge it as a single whopping patch.  (At least this way
-I'll actually get some scsi stuff merged).  Anything which conflicts with
-anyone's outstanding work will be dropped.
+-- 
 
-For any future patches, _please_ split them up along some sane lines. 
-Generally you'll find that one patch per second-level directory works
-pretty well: drivers/net, drivers/scsi, drivers/usb, fs/ext2, drivers/char,
-etc.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Thanks.
