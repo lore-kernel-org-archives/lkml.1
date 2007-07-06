@@ -1,41 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763000AbXGFH5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762453AbXGFIDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763000AbXGFH5w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 03:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbXGFH5n
+	id S1762453AbXGFIDq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 04:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756498AbXGFIDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 03:57:43 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40424 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755829AbXGFH5m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 03:57:42 -0400
-Date: Fri, 6 Jul 2007 08:57:41 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Reiser @ wired.com
-Message-ID: <20070706075741.GW21478@ftp.linux.org.uk>
-References: <1870448099@web.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1870448099@web.de>
-User-Agent: Mutt/1.4.1i
+	Fri, 6 Jul 2007 04:03:33 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:14656 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755783AbXGFIDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 04:03:30 -0400
+Message-ID: <468DF6F7.1010906@openvz.org>
+Date: Fri, 06 Jul 2007 12:01:59 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: [PATCH 0/16] Pid namespaces
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 09:42:52AM +0200, devzero@web.de wrote:
-> Hi !
-> 
-> it seems that it hasn`t brought up here yet, so I`d like to let you know that there is some long Reiser-Story at WIRED MAGAZINE: ISSUE 15.07.
-> 
-> For all you gossip fans ;) or for those who want to have some more "in depth" information obout the incident or the person Hans Reiser himself - it`s at:
-> 
-> http://www.wired.com/techbiz/people/magazine/15-07/ff_hansreiser
-> 
-> scary.....
-> nearly sounds like stuff for a movie for me......
+This is "submition for inclusion" of hierarchical, not kconfig
+configurable, zero overheaded ;) pid namespaces.
 
-GAFL.  "Gossip fans" are over there at splashsnot; now bugger off and do not
-crosspost.
+The overall idea is the following:
+
+The namespace are organized as a tree - once a task is cloned
+with CLONE_NEWPIDS (yes, I've also switched to it :) the new
+namespace becomes the parent's child and tasks living in the
+parent namespace see the tasks from the new one. The numerical
+ids are used on the kernel-user boundary, i.e. when we export
+pid to user we show the id, that should be used to address the
+task in question from the namespace we're exporting this id to.
+
+The main difference from Suka's patches are the following:
+
+0. Suka's patches change the kernel/pid.c code too heavy.
+   This set keeps the kernel code look like it was without
+   the patches. However, this is a minor issue. The major is:
+
+1. Suka's approach is to remove the notion of the task's 
+   numerical pid from the kernel at all. The numbers are 
+   used on the kernel-user boundary or within the kernel but
+   with the namespace this nr belongs to. This results in 
+   massive changes of struct's members fro int pid to struct
+   pid *pid, task->pid becomes the virtual id and so on and
+   so forth.
+   My approach is to keep the good old logic in the kernel. 
+   The task->pid is a global and unique pid, find_pid() finds
+   the pid by its global id and so on. The virtual ids appear
+   on the user-kernel boundary only. Thus drivers and other 
+   kernel code may still be unaware of pids unless they do not
+   communicate with the userspace and get/put numerical pids.
+
+And some more minor differences:
+
+2. Suka's patches have the limit of pid namespace nesting. 
+   My patches do not.
+
+3. Suka assumes that pid namespace can live without proc mount
+   and tries to make the code work with pid_ns->proc_mnt change
+   from NULL to not-NULL from times to times.
+   My code calls the kern_mount() at the namespace creation and
+   thus the pid_namespace always works with proc.
+
+There are some small issues that I can describe if someone is
+interested.
+
+The tests like nptl perf, unixbench spawn, getpid and others
+didn't reveal any performance degradation in init_namespace
+with the RHEL5 kernel .config file. I admit, that different
+.config-s may show that patches hurt the performance, but the
+intention was *not* to make the kernel work worse with popular
+distributions.
+
+This set has some ways to move forward, but this is some kind
+of a core, that do not change the init_pid_namespace behavior
+(checked with LTP tests) and may require some hacking to do 
+with the namespaces only.
+
+Patches apply to 2.6.22-rc6-mm1.
