@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764216AbXGFVKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763990AbXGFVKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764216AbXGFVKT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 17:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760067AbXGFVKI
+	id S1763990AbXGFVKj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 17:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763346AbXGFVKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 17:10:08 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:51653 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758139AbXGFVKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 17:10:06 -0400
-Date: Fri, 6 Jul 2007 17:09:58 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dan Kegel <dank@kegel.com>, linux-kernel@vger.kernel.org,
-       Robert Walsh <rjwalsh@durables.org>
-Subject: Re: Valgrinding the kernel?
-Message-ID: <20070706210958.GA13291@c2.user-mode-linux.org>
-References: <a71bd89a0707052114u28fed408h4326913c502a43ac@mail.gmail.com> <468DD6A5.4020705@goop.org> <20070706172513.GD10670@c2.user-mode-linux.org> <a71bd89a0707061030s15572cj49cb748bf274593b@mail.gmail.com> <20070706194252.GA12311@c2.user-mode-linux.org> <468E9D3F.4030406@goop.org>
+	Fri, 6 Jul 2007 17:10:14 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:36594 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763013AbXGFVKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 17:10:12 -0400
+Subject: Re: [-mm PATCH 1/8] Memory controller resource counters (v2)
+From: Dave Hansen <haveblue@us.ibm.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Eric W Biederman <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>
+In-Reply-To: <468EAE3E.4050802@linux.vnet.ibm.com>
+References: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
+	 <20070706052043.11677.56208.sendpatchset@balbir-laptop>
+	 <1183742642.10287.151.camel@localhost>
+	 <468EAE3E.4050802@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 14:10:05 -0700
+Message-Id: <1183756205.10287.212.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <468E9D3F.4030406@goop.org>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 12:51:27PM -0700, Jeremy Fitzhardinge wrote:
-> The virtual CPU code has been competely rewritten since then.  If its a 
-> non-gcc generated instruction, its possible the new code 
-> parser/generator hasn't been taught to deal with it.
+On Fri, 2007-07-06 at 14:03 -0700, Balbir Singh wrote:
+> 
+> >> +ssize_t res_counter_read(struct res_counter *cnt, int member,
+> >> +            const char __user *userbuf, size_t nbytes, loff_t
+> *pos)
+> >> +{
+> >> +    unsigned long *val;
+> >> +    char buf[64], *s;
+> >> +
+> >> +    s = buf;
+> >> +    val = res_counter_member(cnt, member);
+> >> +    s += sprintf(s, "%lu\n", *val);
+> >> +    return simple_read_from_buffer((void __user *)userbuf, nbytes,
+> >> +                    pos, buf, s - buf);
+> >> +}
+> > 
+> > Why do we need that cast?  
+> > 
+> 
+> u mean the __user? If I remember correctly it's a attribute for
+> sparse.
 
-It's not from gcc - it's from the i386 bitops.h:
+The userbuf is already __user.  This just appears to be making a 'const
+char *' into a 'void *'.  I wondered what the reason for that part is.
 
-static inline int find_first_zero_bit(const unsigned long *addr, unsigned size)
-{
-	int d0, d1, d2;
-	int res;
+-- Dave
 
-	if (!size)
-		return 0;
-	/* This looks at memory. Mark it volatile to tell gcc not to move it around */
-	__asm__ __volatile__(
-		"movl $-1,%%eax\n\t"
-		"xorl %%edx,%%edx\n\t"
-		"repe; scasl\n\t"
-		"je 1f\n\t"
-		"xorl -4(%%edi),%%eax\n\t"
-		"subl $4,%%edi\n\t"
-		"bsfl %%eax,%%edx\n"
-		"1:\tsubl %%ebx,%%edi\n\t"
-		"shll $3,%%edi\n\t"
-		"addl %%edi,%%edx"
-		:"=d" (res), "=&c" (d0), "=&D" (d1), "=&a" (d2)
-		:"1" ((size + 31) >> 5), "2" (addr), "b" (addr) : "memory");
-	return res;
-}
-
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
