@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbXGFX2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbXGFXdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbXGFX2Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 19:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXGFX2P
+	id S1753939AbXGFXdh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 19:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbXGFXd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 19:28:15 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53109 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751904AbXGFX2O (ORCPT
+	Fri, 6 Jul 2007 19:33:29 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36617 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbXGFXd2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 19:28:14 -0400
-Date: Sat, 7 Jul 2007 01:28:43 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-Message-ID: <20070706232843.GT3492@stusta.de>
-References: <20070703164046.645090494@polymtl.ca> <20070703164516.377240547@polymtl.ca> <20070703181151.GB5800@martell.zuzino.mipt.ru> <20070703185748.GA4047@Krystal> <20070705132120.8edbc1f3.akpm@linux-foundation.org> <p73vecx21um.fsf@bingen.suse.de> <468EBEB2.4070605@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <468EBEB2.4070605@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 6 Jul 2007 19:33:28 -0400
+Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070706222651.GG5777@v2.random>
+References: <20070706222651.GG5777@v2.random>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 16:33:21 -0700
+Message-Id: <1183764801.10287.233.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 06:14:10PM -0400, Chuck Ebbert wrote:
-> On 07/06/2007 07:44 AM, Andi Kleen wrote:
-> > I think the optimization is a good idea, although i dislike it
-> > that it is complicated for the dynamic markers. If it was just
-> > static it would be much simpler.
+On Sat, 2007-07-07 at 00:26 +0200, Andrea Arcangeli wrote:
+> for the hack week at opensuse (see http://idea.opensuse.org/) I've
+> been working on a new feature called CONFIG_PAGE_SHIFT.
+...
+> If you want to help/look here the patch:
 > 
-> Another thing to consider is that there might be hundreds of these
-> probes/tracepoints active in an instrumented kernel. The overhead
-> adds up fast, so the gain may be worth all the pain.
+> 	http://www.kernel.org/pub/linux/kernel/people/andrea/patches/v2.6/2.6.22-rc7/hard-page-size
+> 
+> I'm tracking it with hg mq extension so far, but I can change if it
+> helps.
 
-Only if you want to squeeze the last bit of performance out of
-_debugging_ functionality.
+The patch looks really interesting, it's just a little hard to parse
+with all of the s/4096/PAGE_SIZE/ bits around.  Those cleanups, along
+with the s/PAGE_SIZE/HARD_PAGE_SIZE/ parts would be great in a
+separated-out patch so that the really juicy bits (like the pte
+handling) where the new logic is stand out better.  
 
-You avoid all the pain if you simply don't use debugging functionality 
-on production systems.
+I think it would help readability to have something like:
 
-cu
-Adrian
+#define PAGES_PER_HARD_PAGE (1<<(PAGE_SHIFT-HARD_PAGE_SHIFT))
 
--- 
+which would look like this:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+-	if (unlikely(!pfn_valid(pfn))) {
++	if (unlikely(!pfn_valid(pfn * PAGES_PER_HARD_PAGE))) {
+
+Instead of having hardpfn_t, would it be more useful to tag the types
+with sparse?  That's probably something that other interested parties
+could work on.
+
+-- Dave
 
