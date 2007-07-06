@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762987AbXGFB4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762480AbXGFCAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762987AbXGFB4e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 21:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759695AbXGFB4Y
+	id S1762480AbXGFCAv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 22:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758857AbXGFCAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 21:56:24 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:59388 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757751AbXGFB4W (ORCPT
+	Thu, 5 Jul 2007 22:00:44 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:52658 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758137AbXGFCAo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 21:56:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=a7C6lTKveolCsMKUJmxqqgVhD0vsZMBqTCltdrP2bklqkNSy6LW9W82Q9bmrc+HNTTIP0vVw0tgKSkA28FpVl/N47xRLQuZ92r7uipQWp5zepIK3px9Pj4rXqBe4AVFTXy2kk/53WjyUVPkcpfNhXLZCYxyrVSabV5tKbcbKzAk=
-Message-ID: <e9c3a7c20707051856q71667367j2c5dbef08269d99d@mail.gmail.com>
-Date: Thu, 5 Jul 2007 18:56:22 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [RFC PATCH 0/2] raid5: 65% sequential-write performance improvement, stripe-queue take2
-Cc: neilb@suse.de, raziebe@gmail.com, akpm@linux-foundation.org,
-       davidsen@tmr.com, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-In-Reply-To: <p73wsxg2y6x.fsf@bingen.suse.de>
+	Thu, 5 Jul 2007 22:00:44 -0400
+Date: Fri, 6 Jul 2007 04:00:37 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: [RFC][Patch] Allow not mounting a root fs
+Message-ID: <Pine.LNX.4.58.0707060318160.26869@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070703231838.17500.34505.stgit@dwillia2-linux.ch.intel.com>
-	 <p73wsxg2y6x.fsf@bingen.suse.de>
-X-Google-Sender-Auth: 49e90039d9956933
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19tNlV22x5Tq8sKBSybRTX8QI81bMz6JoJ4bns
+ NnOqTVad3pPE1MqVRJPbElgOngb2vbBXn4Lbk8isVu96p9CK6k
+ eQMkkHJGaIWo0w6/DlREg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04 Jul 2007 13:41:26 +0200, Andi Kleen <andi@firstfloor.org> wrote:
-> Dan Williams <dan.j.williams@intel.com> writes:
->
-> > The write performance numbers are better than I expected and would seem
-> > to address the concerns raised in the thread "Odd (slow) RAID
-> > performance"[2].  The read performance drop was not expected.  However,
-> > the numbers suggest some additional changes to be made to the queuing
-> > model.
->
-> Have you considered supporting copy-xor in MD for non accelerated
-> RAID? I've been looking at fixing the old dubious slow crufty x86 SSE
-> XOR functions.
-Copy-xor is something that Neil suggested at the beginning of the
-acceleration work.  It was put on the back-burner, but now that the
-implementation has settled it can be revisited.
+This patch adds the option to not mount another root filesystem 
+by specifying root=initramfs.
 
-> One thing I discovered is that it seems fairly
-> pointless to make them slower with cache avoidance when most of the data is
-> copied before anyways. I think much more advantage could be gotten by
-> supporting copy-xor because XORing during a copy should be nearly
-> free.
->
-Yes, it does not make sense to have cache-avoidance mismatched copy
-and xor operations in MD.  However, I think the memcpy should be
-changed to a cache-avoiding memcpy rather than caching the xor data.
-Then a copy-xor implementation will have a greater effect, or do you
-see it differently?
+TODO: Documentation
+---
 
-> On the other hand ext3 write() also uses a cache avoiding copy now
-> and for the XOR it would need to load the data from memory again.
-> Perhaps this could be also optimized somehow (e.g. setting a flag
-> somewhere and using a normal copy for the RAID-5 case)
->
-The incoming async_memcpy call has a flags parameter where this could go...
+BTW: Is it possible to mount a tmpfs on / before extracting the cpio?
 
-One possible way to implement support for copy-xor (and xor-copy-xor
-for that matter) would be to write a soft-dmaengine driver.  When a
-memcpy is submitted it can hold off processing it to see if an xor
-operation is attached to the chain.  Once the xor descriptor is
-attached the implementation will know the location of all the incoming
-data, all the existing stripe data and the destination for the xor.
 
-> -Andi
+While I'm at it:
 
-Dan
+In init/do_mounts.c, mount_root(void):
+ROOT_NFS: Is it desirable to use the floppy as a root device if nfs-root 
+failed? If I tell my system to d A, i usually dislike it to do B instead.
+
+Is the boot-from-floppy code here still usable, even though booting from 
+floppy is no longer supported?
+
+
+
+diff -X dontdiff -pruN 2.6.21.ori/init/do_mounts.c 2.6.21/init/do_mounts.c
+--- 2.6.21.ori/init/do_mounts.c	2007-07-06 03:31:57.000000000 +0200
++++ 2.6.21/init/do_mounts.c	2007-07-06 03:27:33.000000000 +0200
+@@ -427,6 +427,9 @@ void __init prepare_namespace(void)
+ 			mount_block_root(root_device_name, root_mountflags);
+ 			goto out;
+ 		}
++		if (!strncmp(root_device_name, "initramfs", 3)) {
++			goto out_nomount;
++		}
+ 		ROOT_DEV = name_to_dev_t(root_device_name);
+ 		if (strncmp(root_device_name, "/dev/", 5) == 0)
+ 			root_device_name += 5;
+@@ -444,6 +447,7 @@ void __init prepare_namespace(void)
+ out:
+ 	sys_mount(".", "/", NULL, MS_MOVE, NULL);
+ 	sys_chroot(".");
++out_nomount:
+ 	security_sb_post_mountroot();
+ }
+ 
+-- 
+Top 100 things you don't want the sysadmin to say:
+65. What do you mean /home was on that disk?  I umounted it!
