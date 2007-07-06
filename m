@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbXGFPsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763658AbXGFPs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763350AbXGFPsO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760184AbXGFPsA
+	id S1763658AbXGFPs1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 11:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762275AbXGFPsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:48:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:35672 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753564AbXGFPsA (ORCPT
+	Fri, 6 Jul 2007 11:48:09 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:62784 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762104AbXGFPsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:48:00 -0400
-Date: Fri, 6 Jul 2007 08:49:10 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, gregkh@suse.de
-Subject: Re: [PATCH] USB:  Remove Makefile reference to obsolete OHCI_AT91.
-Message-Id: <20070706084910.4e5fc20f.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0707060623170.11885@localhost.localdomain>
-References: <Pine.LNX.4.64.0707060623170.11885@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 6 Jul 2007 11:48:08 -0400
+Message-ID: <468E6402.2000507@nortel.com>
+Date: Fri, 06 Jul 2007 09:47:14 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Ernie Petrides <petrides@redhat.com>,
+       Clemens Koller <clemens.koller@anagramm.de>,
+       Chris Wright <chrisw@sous-sol.org>, Uli Luckas <u.luckas@road.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
+References: <200707052312.l65NCjfb025915@pasta.boston.redhat.com> <1183699046.3289.51.camel@chaos>
+In-Reply-To: <1183699046.3289.51.camel@chaos>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 06 Jul 2007 15:47:18.0524 (UTC) FILETIME=[EEEBFBC0:01C7BFE4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jul 2007 06:24:20 -0400 (EDT) Robert P. J. Day wrote:
+Thomas Gleixner wrote:
 
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> 
-> ---
-> 
-> diff --git a/drivers/usb/Makefile b/drivers/usb/Makefile
-> index 72464b5..4d65404 100644
-> --- a/drivers/usb/Makefile
-> +++ b/drivers/usb/Makefile
-> @@ -15,7 +15,6 @@ obj-$(CONFIG_USB_OHCI_HCD)	+= host/
->  obj-$(CONFIG_USB_UHCI_HCD)	+= host/
->  obj-$(CONFIG_USB_SL811_HCD)	+= host/
->  obj-$(CONFIG_USB_U132_HCD)	+= host/
-> -obj-$(CONFIG_USB_OHCI_AT91)	+= host/
-> 
->  obj-$(CONFIG_USB_ACM)		+= class/
->  obj-$(CONFIG_USB_PRINTER)	+= class/
-> -- 
+> It needs a running smp_call_function() to be interrupted by the timer
+> interrupt, which calls clock_was_set(). So it's not that easy to
+> reproduce.
 
-Please use subsystem mailing lists instead of using lkml for
-Everything:
+On our 2.6.10-based kernel its basically trivial to reproduce, and the 
+posted fix doesn't solve the issue.
 
-USB SUBSYSTEM
-P:	Greg Kroah-Hartman
-M:	gregkh@suse.de
-L:	linux-usb-users@lists.sourceforge.net
-L:	linux-usb-devel@lists.sourceforge.net
-W:	http://www.linux-usb.org
-T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-S:	Supported
+One of our guys is trying to track it down. As yet we don't know if it's 
+the vanilla code or the patches on top that contain the bug.
 
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Chris
