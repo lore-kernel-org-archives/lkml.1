@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763437AbXGFRQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763602AbXGFRSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763437AbXGFRQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 13:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbXGFRQ1
+	id S1763602AbXGFRSv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 13:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbXGFRSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 13:16:27 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:45476 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756234AbXGFRQ0 (ORCPT
+	Fri, 6 Jul 2007 13:18:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:25506 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755997AbXGFRSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 13:16:26 -0400
-Message-ID: <468E78E1.1030306@zytor.com>
-Date: Fri, 06 Jul 2007 10:16:17 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 6 Jul 2007 13:18:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=tjc2OmPe5obpc5OVd4kJkanytM+UR9b9Cp1FzcbYlMfK8iPqsZ8wzZStoomnloMQLCSlfiDf/Pt5noa3glX0jQQT2P4/8KhL782bcxSRWNKt7IVHmZjX6KskDnMU2faCea7x0ieeZcHI1zoJOErc26F9w0TU7B/yZ/Ys7j0wIoY=
+Date: Fri, 6 Jul 2007 21:18:37 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <clameter@sgi.com>, riel <riel@redhat.com>
+Subject: Re: [PATCH] mm: fixup /proc/vmstat output
+Message-ID: <20070706171837.GA5763@martell.zuzino.mipt.ru>
+References: <1183721734.7054.102.camel@twins>
 MIME-Version: 1.0
-To: Andre Noll <maan@systemlinux.org>
-CC: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][Patch] Allow not mounting a root fs
-References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <468DA42D.7050309@zytor.com> <Pine.LNX.4.58.0707061551240.2241@be1.lrz> <20070706170006.GA16470@skl-net.de>
-In-Reply-To: <20070706170006.GA16470@skl-net.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1183721734.7054.102.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andre Noll wrote:
-> On 17:00, Bodo Eggert wrote:
+On Fri, Jul 06, 2007 at 01:35:34PM +0200, Peter Zijlstra wrote:
+> Line up the vmstat_text with zone_stat_item
 > 
->> I've put the complete system into initrams, and I just want the kernel to
->> run /sbin/init.
+> enum zone_stat_item {
+> 	/* First 128 byte cacheline (assuming 64 bit words) */
+> 	NR_FREE_PAGES,
+> 	NR_INACTIVE,
+> 	NR_ACTIVE,
 > 
-> Did you try to exec /sbin/init as the last thing in the init script
-> of your initramfs? That worked for me some time ago.
-> 
+> We current have nr_active and nr_inactive reversed.
 
-Just add a symlink:
+OK with patch, though using initializers canbe handy to prevent such
+things in future:
 
-/init -> /sbin/init
+	static const char * const vmstat_text[] = {
+		[NR_FREE_PAGES] = "nr_free_pages",
+		...
 
-	-hpa
+> --- linux-2.6.orig/mm/vmstat.c
+> +++ linux-2.6/mm/vmstat.c
+> @@ -700,8 +700,8 @@ const struct seq_operations pagetypeinfo
+>  static const char * const vmstat_text[] = {
+>  	/* Zoned VM counters */
+>  	"nr_free_pages",
+> -	"nr_active",
+>  	"nr_inactive",
+> +	"nr_active",
+>  	"nr_anon_pages",
+>  	"nr_mapped",
+>  	"nr_file_pages",
 
