@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbXGFWx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbXGFW5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbXGFWx5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 18:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXGFWxk
+	id S1754176AbXGFW5X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 18:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbXGFW5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 18:53:40 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53082 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753265AbXGFWxj (ORCPT
+	Fri, 6 Jul 2007 18:57:16 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57647 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751523AbXGFW5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 18:53:39 -0400
-Date: Sat, 7 Jul 2007 00:54:09 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6.22 regression fix] include/linux/kallsyms.h must #include
-	<linux/errno.h>
-Message-ID: <20070706225409.GS3492@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 6 Jul 2007 18:57:16 -0400
+Date: Fri, 6 Jul 2007 15:56:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       riel <riel@redhat.com>
+Subject: Re: [PATCH] mm: double mark_page_accessed() in
+ read_cache_page_async()
+Message-Id: <20070706155647.3056f1f5.akpm@linux-foundation.org>
+In-Reply-To: <1183737834.7054.108.camel@twins>
+References: <1183737834.7054.108.camel@twins>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following 2.6.22 regression with CONFIG_KALLSYMS=n:
+On Fri, 06 Jul 2007 18:03:54 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-<--  snip  -->
+> read_cache_page_async() seems to have two invocations of
+> mark_page_accessed() which will launch pages right onto the active list.
+> 
+> Remove the first one, keeping the latter one. This avoids marking
+> unwanted pages active (in the retry loop).
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  mm/filemap.c |    1 -
+>  1 file changed, 1 deletion(-)
+> 
+> Index: linux-2.6/mm/filemap.c
+> ===================================================================
+> --- linux-2.6.orig/mm/filemap.c
+> +++ linux-2.6/mm/filemap.c
+> @@ -1588,7 +1588,6 @@ retry:
+>  	page = __read_cache_page(mapping, index, filler, data);
+>  	if (IS_ERR(page))
+>  		return page;
+> -	mark_page_accessed(page);
+>  	if (PageUptodate(page))
+>  		goto out;
+>  
+> 
 
-...
-  CC      arch/m32r/kernel/traps.o
-In file included from /home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/arch/m32r/kernel/traps.c:14:
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h: In function 'lookup_symbol_name':
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h:66: error: 'ERANGE' undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h:66: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h:66: error: for each function it appears in.)
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h: In function 'lookup_symbol_attrs':
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h:71: error: 'ERANGE' undeclared (first use in this function)
-make[2]: *** [arch/m32r/kernel/traps.o] Error 1
+Thanks for catching this.  It is a post-2.6.21 regression.
 
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
---- linux-2.6.22-rc6-mm1/include/linux/kallsyms.h.old	2007-07-06 05:18:28.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/include/linux/kallsyms.h	2007-07-06 05:19:09.000000000 +0200
-@@ -5,6 +5,7 @@
- #ifndef _LINUX_KALLSYMS_H
- #define _LINUX_KALLSYMS_H
- 
-+#include <linux/errno.h>
- 
- #define KSYM_NAME_LEN 127
- #define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + KSYM_NAME_LEN +	\
-
+We cannot afford to do stuff like this.
