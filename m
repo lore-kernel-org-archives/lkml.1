@@ -1,92 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbXGFPSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762380AbXGFPWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760837AbXGFPSP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbXGFPSA
+	id S1762380AbXGFPWF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 11:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbXGFPVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:18:00 -0400
-Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:46110 "HELO
-	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755324AbXGFPSA (ORCPT
+	Fri, 6 Jul 2007 11:21:55 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:33328 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753845AbXGFPVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:18:00 -0400
-X-YMail-OSG: pMoK8CMVM1n9C_Wek5j4BCoJ2UR7i69Xysor8Z5f8IAmkY7JA7m.kE8Rn_HVrpVbZ_QHwhGLT93.C8Q.kaxW6jeRAQ--
-X-RocketYMMF: knobi.rm
-Date: Fri, 6 Jul 2007 08:17:54 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Reply-To: spamtrap@knobisoft.de
-Subject: Re: Understanding I/O behaviour
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <6278d2220707060725q34005bcfu8f225cf1e3391e61@mail.gmail.com>
+	Fri, 6 Jul 2007 11:21:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Z5Npb1rMYth4cje+DwPwXirLMTKHye6LbYlolhd2Sd+d1Oc7HzU1arbWXe4uNzaV0vfwkv0FKjsrVHoAi2TaITlEgfHLxbP3vFDz/7t+k7H92cYc9sl7QBwQVycOs/Qn2hgGQwzl5q8tMP0++9oklvyYe/Qm+WeDX4VtVJfWDQM=
+Message-ID: <9a8748490707060821m50e53fc2uba2552ea2e0d07a2@mail.gmail.com>
+Date: Fri, 6 Jul 2007 17:21:53 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Douglas W. Jones" <jones@cs.uiowa.edu>
+Subject: Re: [PATCH 2/2] vsprintf.c: optimizing, part 2: base 10 conversion speedup, v2
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Denis Vlasenko" <vda.linux@googlemail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <6F17353B-D428-462B-B318-2FDEC11E8D66@cs.uiowa.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <37949.90952.qm@web32602.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707051251.52891.vda.linux@googlemail.com>
+	 <20070705143419.f214f5b2.akpm@linux-foundation.org>
+	 <6F17353B-D428-462B-B318-2FDEC11E8D66@cs.uiowa.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Daniel J Blueman <daniel.blueman@gmail.com> wrote:
-
-> On 5 Jul, 16:50, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
-> > Hi,
+On 06/07/07, Douglas W. Jones <jones@cs.uiowa.edu> wrote:
+>
+> On Jul 5, 2007, at 4:34 PM, Andrew Morton wrote:
+>
+> > On Thu, 5 Jul 2007 12:51:52 +0200
+> > Denis Vlasenko <vda.linux@googlemail.com> wrote:
 > >
-> >  for a customer we are operating a rackful of HP/DL380/G4 boxes
-> that
-> > have given us some problems with system responsiveness under [I/O
-> > triggered] system load.
-> [snip]
-> 
-> IIRC, the locking in the CCISS driver was pretty heavy until later in
-> the 2.6 series (2.6.16?) kernels; I don't think they were backported
-> to the 1000 or so patches that comprise RH EL 4 kernels.
-> 
-> With write performance being really poor on the Smartarray
-> controllers
-> without the battery-backed write cache, and with less-good locking,
-> performance can really suck.
-> 
-> On a total quiescent hp DL380 G2 (dual PIII, 1.13GHz Tualatin 512KB
-> L2$) running RH EL 5 (2.6.18) with a 32MB SmartArray 5i controller
-> with 6x36GB 10K RPM SCSI disks and all latest firmware:
-> 
-> # dd if=/dev/cciss/c0d0p2 of=/dev/zero bs=1024k count=1000
-> 509+1 records in
-> 509+1 records out
-> 534643200 bytes (535 MB) copied, 11.6336 seconds, 46.0 MB/s
-> 
-> # dd if=/dev/zero of=/dev/cciss/c0d0p2 bs=1024k count=100
-> 100+0 records in
-> 100+0 records out
-> 104857600 bytes (105 MB) copied, 22.3091 seconds, 4.7 MB/s
-> 
-> Oh dear! There are internal performance problems with this
-> controller.
-> The SmartArray 5i in the newer DL380 G3 (dual P4 2.8GHz, 512KB L2$)
-> is
-> perhaps twice the read performance (PCI-X helps some) but still
-> sucks.
-> 
-> I'd get the BBWC in or install another controller.
-> 
-Hi Daniel,
+> >> Using code from
+> >>
+> >> http://www.cs.uiowa.edu/~jones/bcd/decimal.html
+> >> (with permission from the author, Douglas W. Jones)
+> >
+> > Neither of your patches had signed-off-by:s.  Would prefer that
+> > they were
+> > included please, given that we're adding stuff from someone's website.
+>
+> The material on my website was somewhere between pseudocode and
+> code.  The web site is tutorial in nature, and what Vlasenko did
+> is follow my tutorial and adapt a working chunk of code from the
+> many code snippets in the tutorial.
+>
+> If a signoff from me is required, someone will need to tell me how,
+> since I have no experience with the protocols for Linux code
+> development.  I am entirely content with the current form of credit
+> given to me in the code (a comment with a pointer to my web site).
+>
+Section 12 of Documentation/SubmittingPatches :
 
- thanks for the suggestion. The DL380g4 boxes have the "6i" and all
-systems are equipped with the BBWC (192 MB, split 50/50).
+"
+12) Sign your work
 
- The thing is not really a speed daemon, but sufficient for the task.
+To improve tracking of who did what, especially with patches that can
+percolate to their final resting place in the kernel through several
+layers of maintainers, we've introduced a "sign-off" procedure on
+patches that are being emailed around.
 
- The problem really seems to be related to the VM system not writing
-out dirty pages early enough and then getting into trouble when the
-pressure gets to high.
+The sign-off is a simple line at the end of the explanation for the
+patch, which certifies that you wrote it or otherwise have the right to
+pass it on as a open-source patch.  The rules are pretty simple: if you
+can certify the below:
 
-Cheers
-Martin
+        Developer's Certificate of Origin 1.1
+
+        By making a contribution to this project, I certify that:
+
+        (a) The contribution was created in whole or in part by me and I
+            have the right to submit it under the open source license
+            indicated in the file; or
+
+        (b) The contribution is based upon previous work that, to the best
+            of my knowledge, is covered under an appropriate open source
+            license and I have the right under that license to submit that
+            work with modifications, whether created in whole or in part
+            by me, under the same open source license (unless I am
+            permitted to submit under a different license), as indicated
+            in the file; or
+
+        (c) The contribution was provided directly to me by some other
+            person who certified (a), (b) or (c) and I have not modified
+            it.
+
+        (d) I understand and agree that this project and the contribution
+            are public and that a record of the contribution (including all
+            personal information I submit with it, including my sign-off) is
+            maintained indefinitely and may be redistributed consistent with
+            this project or the open source license(s) involved.
+
+then you just add a line saying
+
+        Signed-off-by: Random J Developer <random@developer.example.org>
+
+using your real name (sorry, no pseudonyms or anonymous contributions.)
+
+Some people also put extra tags at the end.  They'll just be ignored for
+now, but you can do this to mark internal company procedures or just
+point out some special detail about the sign-off.
+"
 
 
-
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
