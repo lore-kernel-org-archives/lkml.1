@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbXGFGmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761881AbXGFGz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762628AbXGFGmb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 02:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762064AbXGFGmK
+	id S1761881AbXGFGz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 02:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758575AbXGFGzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 02:42:10 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:51096 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760689AbXGFGmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 02:42:08 -0400
-To: List util-linux-ng <util-linux-ng@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-References: <8CYT9-4Ou-23@gated-at.bofh.it> <8Dh9k-8lT-3@gated-at.bofh.it>
-	<8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz>
-	<20070705192002.GB11204@DervishD> <87vecyeg5y.fsf@hades.wkstn.nix>
-	<20070705205523.GA15202@suse.de>
-From: Nix <nix@esperi.org.uk>
-Emacs: featuring the world's first municipal garbage collector!
-Date: Fri, 06 Jul 2007 07:42:02 +0100
-In-Reply-To: <20070705205523.GA15202@suse.de> (Bernhard Walle's message of "Thu, 5 Jul 2007 22:55:24 +0200")
-Message-ID: <87zm2aav9h.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+	Fri, 6 Jul 2007 02:55:50 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56856 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756583AbXGFGzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 02:55:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from within the freezer
+Date: Fri, 6 Jul 2007 09:02:53 +0200
+User-Agent: KMail/1.9.5
+Cc: pm list <linux-pm@lists.linux-foundation.org>, nigel@suspend2.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Oliver Neukum <oliver@neukum.org>, Paul Mackerras <paulus@samba.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, Ingo Molnar <mingo@elte.hu>
+References: <200707041658.59588.rjw@sisk.pl> <200707052231.27780.rjw@sisk.pl> <20070705220046.GC3881@elf.ucw.cz>
+In-Reply-To: <20070705220046.GC3881@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-dcc.uncw.edu-Metrics: hades 1201; Body=3 Fuz1=3 Fuz2=3
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707060902.55090.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5 Jul 2007, Bernhard Walle stated:
+On Friday, 6 July 2007 00:00, Pavel Machek wrote:
+> Hi!
+> 
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > The syncing of filesystems from within the freezer is generally not needed.
+> > Change freeze_processes() so that it doesn't execute sys_sync() and make the
+> > suspend and hibernation code path sync filesystems independently of the freezer.
+> 
+> Yes, we can do that, but ... why?
 
-> * Nix <nix@esperi.org.uk> [2007-07-05 22:42]:
->> 
->> My only real grouch with cmake is that the authors have invented a
->> language with so bloody many capital letters in it. 
->
-> The real problem I see with cmake is that you need to have cmake
-> installed on the build system.
+I think that sync and the freezer are different things and shouldn't be mixed in
+such a way as they are now.
 
-I don't see that as being very much more of a problem than having make
-installed (except of course that make is defined by POSIX and cmake is
-not). The real problem is that nearly all the cmake macros are shipped
-with cmake itself, so version-dependent scripts are more common, and
-instead of being hit with `you need at least this version of GNU make,
-released in 1998' you're likely to get hit with `you need at least this
-version of cmake, released three months ago' which is more likely to
-annoy the poor users.
+> Does it actually fix FUSE?
 
->                                While cmake itself isn't the problem,
-> often, it also depends on the version of cmake that is installed. The
-> good idea about auto* tools is the idea that you don't need to install
-> any tools to build, just to develop. A POSIX shell and Perl should be
-> installed everywhere ...
+It should prevent the freezer from deadlocking.
 
-You don't need Perl to run configure scripts, either, and it's only
-recently that it started requiring a POSIX shell rather than something
-of the calibre of Solaris's /bin/sh.
+> Miklos claims sync is nop on FUSE...? 
+
+In that case there shouldn't be any deadlock, but a freezer failure. :-)
+
+Greetings,
+Rafael
 
 
-
-(But I'm spamming this list so I'll shut up now.)
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
