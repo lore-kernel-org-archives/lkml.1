@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762393AbXGFAjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXGFAtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762393AbXGFAjJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 20:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760269AbXGFAi4
+	id S1762098AbXGFAtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 20:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbXGFAtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 20:38:56 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:34911 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758603AbXGFAiy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 20:38:54 -0400
-Date: Thu, 5 Jul 2007 18:38:53 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Karel Zak <kzak@redhat.com>
-Cc: Mike Frysinger <vapier@gentoo.org>, Christoph Hellwig <hch@infradead.org>,
-       List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-Message-ID: <20070706003853.GC3527@parisc-linux.org>
-References: <20070703221156.GY14825@petra.dvoda.cz> <20070704084211.GA19128@infradead.org> <200707051242.00625.vapier@gentoo.org> <20070705213020.GB14825@petra.dvoda.cz>
+	Thu, 5 Jul 2007 20:49:07 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52376 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759710AbXGFAtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 20:49:06 -0400
+Message-ID: <468D917F.90204@garzik.org>
+Date: Thu, 05 Jul 2007 20:49:03 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070705213020.GB14825@petra.dvoda.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: slow down printk during boot.
+References: <20070705211346.GB17030@redhat.com>
+In-Reply-To: <20070705211346.GB17030@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 11:30:20PM +0200, Karel Zak wrote:
-> > > >  The package build system is now based on autotools. The build system
-> > > >  supports  separate CFLAGS and LDFLAGS for suid programs (SUID_CFLAGS,
-> > > >  SUID_LDFLAGS). For more details see the README file
-> > >
-> > > And this is really dumb.  autotools is a completely pain in the ass and
+Dave Jones wrote:
+> This patch from Randy has proven quite useful from time to time,
+> and has been in Fedora kernels for a while for that reason.
+> I fixed up some checkpatch warnings, and rediffed it a bunch
+> of times, Randy did the heavy lifting.
 > 
->  Well, Adrian Bunk added autotools stuff to util-linux during his work
->  on v2.13. This stuff has been fixed and stabilized in util-linux-ng
->  v2.13.
+> ---
 > 
->  I'm not fanatical autotools protagonist, but it seems useful in
->  util-linux. We will see...
+> This one delays each printk() during boot by a variable time
+> (from kernel command line), while system_state == SYSTEM_BOOTING.
+> Caveat:  it's not terribly SMP safe or SMP nice.
+> Any ideas for improvements (esp. in the SMP area) are appreciated.
 > 
->  I'm ready to change or fix arbitrary thing in util-linux-ng, but I
->  always need a real reason -- bug report, new feature, or so. This
->  discussion is about impressions and feelings only.
+> ---
+> 
+> From: Randy Dunlap <rdunlap@xenotime.net>
+> 
+> Optionally add a boot delay after each kernel printk() call,
+> crudely measured in milliseconds, with a maximum delay of
+> 10 seconds per printk.
+> 
+> Enable CONFIG_BOOT_DELAY=y and then add (e.g.):
+> "lpj=loops_per_jiffy boot_delay=100"
+> to the kernel command line.
+> 
+> Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
+> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
+> ---
+> 
+>  init/calibrate.c  |    2 +-
+>  init/main.c       |   25 +++++++++++++++++++++++++
+>  kernel/printk.c   |   33 +++++++++++++++++++++++++++++++++
+>  lib/Kconfig.debug |   18 ++++++++++++++++++
+>  4 files changed, 77 insertions(+), 1 deletion(-)
 
-No, it's based on long, hard and painful experiences attempting to debug
-the fuckups that autoconf creates when it goes wrong.
+hey, that's pretty neat.
 
--- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I've occasionally hand-hacked something similar, to achieve those effects.
+
+	Jeff
+
+
+
