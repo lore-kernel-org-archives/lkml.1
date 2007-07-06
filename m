@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763430AbXGFSXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763678AbXGFSZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763430AbXGFSXw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 14:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbXGFSXn
+	id S1763678AbXGFSZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 14:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbXGFSZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 14:23:43 -0400
-Received: from mail.windriver.com ([147.11.1.11]:64307 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756636AbXGFSXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 14:23:42 -0400
-Message-ID: <468E88CE.2060809@windriver.com>
-Date: Fri, 06 Jul 2007 13:24:14 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Fri, 6 Jul 2007 14:25:50 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54800 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756636AbXGFSZt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 14:25:49 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <468E890A.1070504@s5r6.in-berlin.de>
+Date: Fri, 06 Jul 2007 20:25:14 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
 MIME-Version: 1.0
-To: Jan Kiszka <jan.kiszka@web.de>
-CC: kgdb-bugreport@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: preemption counter havoc on kgdb-taken faults
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>	<468E4BA5.8010601@imap.cc> <468E8106.8080801@windriver.com> <468E86DF.4050509@web.de>
-In-Reply-To: <468E86DF.4050509@web.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, virtualization@lists.osdl.org
+Subject: Re: [PATCH] I386: Deactivate the test for the dead CONFIG_DEBUG_PAGE_TYPE
+ variable.
+References: <Pine.LNX.4.64.0707060847470.23786@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707060847470.23786@localhost.localdomain>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jul 2007 18:23:22.0971 (UTC) FILETIME=[BC9132B0:01C7BFFA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kiszka wrote:
->
-> At this chance... Reminds me that this old issue still seems to be
-> unsolved in current kgdb:
->
-> http://www.mail-archive.com/kgdb-bugreport@lists.sourceforge.net/msg00442.html
->
-> I'm only looking at that spot in kgdb right now and /may/ oversee new
-> border conditions elsewhere. But my feeling is there are none.
->
-> Jan (looking forward to see kgdb merged)
->
->   
+Robert P. J. Day wrote:
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+> ---
+> 
+> diff --git a/arch/i386/kernel/vmi.c b/arch/i386/kernel/vmi.c
 
+Maintainers are apparently those under "PARAVIRT_OPS INTERFACE".
+CCs added.
 
-Hi Jan,
+> index c12720d..e3ce5c8 100644
+> --- a/arch/i386/kernel/vmi.c
+> +++ b/arch/i386/kernel/vmi.c
+> @@ -235,7 +235,7 @@ static void vmi_nop(void)
+>  {
+>  }
+> 
+> -#ifdef CONFIG_DEBUG_PAGE_TYPE
+> +#if 0 /* debug page type */
+> 
+>  #ifdef CONFIG_X86_PAE
+>  #define MAX_BOOT_PTS (2048+4+1)
+> @@ -336,7 +336,7 @@ static void vmi_check_page_type(u32 pfn, int type)
+>  #else
+>  #define vmi_set_page_type(p,t) do { } while (0)
+>  #define vmi_check_page_type(p,t) do { } while (0)
+> -#endif
+> +#endif /* debug page type */
+> 
+>  #ifdef CONFIG_HIGHPTE
+>  static void *vmi_kmap_atomic_pte(struct page *page, enum km_type type)
 
-This issue was fixed in a generic way in the patch set that is in the 
--mm tree.  Had you tried your test case in the current -mm tree?
-
-The problem you mentioned was fixed by saving and restoring the preempt 
-count as a part of the fault handling from the kgdb core and not in the 
-arch specific portion.
-
-Jason.
+This misnamed CONFIG_DEBUG_PAGE_TYPE (it's not a Kconfig variable) has
+about 120 lines debug code dangling on it.  So, replacing it by #if 0
+will hopefully motivate a kind janitor to send a removal patch for that
+debug code eventually.  I don't do so just now because that code went in
+between 2.6.20 and 2.6.21-rc1, i.e. not so long ago.
+-- 
+Stefan Richter
+-=====-=-=== -=== --==-
+http://arcgraph.de/sr/
