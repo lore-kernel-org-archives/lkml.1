@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762911AbXGFAB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762976AbXGFACW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762911AbXGFAB1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 20:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760687AbXGFABR
+	id S1762976AbXGFACW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 20:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760693AbXGFACM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 20:01:17 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52124 "EHLO mail.dvmed.net"
+	Thu, 5 Jul 2007 20:02:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52151 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753702AbXGFABP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 20:01:15 -0400
-Message-ID: <468D8648.8030602@garzik.org>
-Date: Thu, 05 Jul 2007 20:01:12 -0400
+	id S1751154AbXGFACL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 20:02:11 -0400
+Message-ID: <468D8680.1090005@garzik.org>
+Date: Thu, 05 Jul 2007 20:02:08 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
@@ -30,10 +30,8 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I guess we can bump ATA_DFLAG_CFG_MASK up to 12, like this?
-
-Yep
+May I assume that I may delete the patches from Kristen, and assume that 
+you will resend an updated version of her AN and ALPM patches to me?
 
 	Jeff
 
