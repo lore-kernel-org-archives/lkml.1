@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761538AbXGFFWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbXGFFWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761538AbXGFFWl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 01:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbXGFFWd
+	id S1757334AbXGFFWy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 01:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757805AbXGFFWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 01:22:33 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:46192 "EHLO
+	Fri, 6 Jul 2007 01:22:36 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:46218 "EHLO
 	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754499AbXGFFWd (ORCPT
+	with ESMTP id S1756418AbXGFFWf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 01:22:33 -0400
+	Fri, 6 Jul 2007 01:22:35 -0400
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Pavel Emelianov <xemul@openvz.org>
 Cc: Linux Containers <containers@lists.osdl.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linux MM Mailing List <linux-mm@kvack.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        Eric W Biederman <ebiederm@xmission.com>
-Date: Thu, 05 Jul 2007 22:20:29 -0700
-Message-Id: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
-Subject: [-mm PATCH 0/8] Memory controller introduction (v2)
+Date: Thu, 05 Jul 2007 22:21:55 -0700
+Message-Id: <20070706052155.11677.41872.sendpatchset@balbir-laptop>
+In-Reply-To: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
+References: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
+Subject: [-mm PATCH 5/8] Memory controller task migration (v2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changelog since version 1
 
-1. Fixed some compile time errors (in mm/migrate.c from Vaidyanathan S)
-2. Fixed a panic seen when LIST_DEBUG is enabled
-3. Added a mechanism to control whether we track page cache or both
-   page cache and mapped pages (as requested by Pavel)
+Allow tasks to migrate from one container to the other. We migrate
+mm_struct's mem_container only when the thread group id migrates.
 
-This patchset implements another version of the memory controller. These
-patches have been through a big churn, the first set of patches were posted
-last year and earlier this year at
-	http://lkml.org/lkml/2007/2/19/10
 
-Ever since, the RSS controller has been through four revisions, the latest
-one being
-	http://lwn.net/Articles/236817/
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-This patchset draws from the patches listed above and from some of the
-contents of the patches posted by Vaidyanathan for page cache control.
-	http://lkml.org/lkml/2007/6/20/92
+ mm/memcontrol.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-Pavel, Vaidy could you look at the patches and add your signed off by
-where relevant?
-
-At OLS, the resource management BOF, it was discussed that we need to manage
-RSS and unmapped page cache together. This patchset is a step towards that
-
-TODO's
-
-1. Add memory controller water mark support. Reclaim on high water mark
-2. Add support for shrinking on limit change
-3. Add per zone per container LRU lists
-4. Make page_referenced() container aware
-5. Figure out a better CLUI for the controller
-
-In case you have been using/testing the RSS controller, you'll find that
-this controller works slower than the RSS controller. The reason being
-that both swap cache and page cache is accounted for, so pages do go
-out to swap upon reclaim (they cannot live in the swap cache).
-
-I've test compiled the framework without the controller enabled, tested
-the code on UML and minimally on a power box.
-
-Any test output, feedback, comments, suggestions are welcome!
-
-series
-
-res_counters_infra.patch
-mem-control-setup.patch
-mem-control-accounting-setup.patch
-mem-control-accounting.patch
-mem-control-task-migration.patch
-mem-control-lru-and-reclaim.patch
-mem-control-out-of-memory.patch
+diff -puN mm/memcontrol.c~mem-control-task-migration mm/memcontrol.c
+--- linux-2.6.22-rc6/mm/memcontrol.c~mem-control-task-migration	2007-07-05 13:45:18.000000000 -0700
++++ linux-2.6.22-rc6-balbir/mm/memcontrol.c	2007-07-05 13:45:18.000000000 -0700
+@@ -302,11 +302,46 @@ err:
+ 	return rc;
+ }
+ 
++static void mem_container_move_task(struct container_subsys *ss,
++				struct container *cont,
++				struct container *old_cont,
++				struct task_struct *p)
++{
++	struct mm_struct *mm;
++	struct mem_container *mem, *old_mem;
++
++	mm = get_task_mm(p);
++	if (mm == NULL)
++		return;
++
++	mem = mem_container_from_cont(cont);
++	old_mem = mem_container_from_cont(old_cont);
++
++	if (mem == old_mem)
++		goto out;
++
++	/*
++	 * Only thread group leaders are allowed to migrate, the mm_struct is
++	 * in effect owned by the leader
++	 */
++	if (p->tgid != p->pid)
++		goto out;
++
++	css_get(&mem->css);
++	rcu_assign_pointer(mm->mem_container, mem);
++	css_put(&old_mem->css);
++
++out:
++	mmput(mm);
++	return;
++}
++
+ struct container_subsys mem_container_subsys = {
+ 	.name = "mem_container",
+ 	.subsys_id = mem_container_subsys_id,
+ 	.create = mem_container_create,
+ 	.destroy = mem_container_destroy,
+ 	.populate = mem_container_populate,
++	.attach = mem_container_move_task,
+ 	.early_init = 1,
+ };
+_
 
 -- 
 	Warm Regards,
