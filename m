@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXGFKga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761161AbXGFKkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762650AbXGFKga (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 06:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXGFKgS
+	id S1761161AbXGFKkZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 06:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbXGFKkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 06:36:18 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:49395 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762286AbXGFKgO (ORCPT
+	Fri, 6 Jul 2007 06:40:14 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:58798 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756951AbXGFKkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 06:36:14 -0400
-Subject: [PATCH] stacktrace: fix header file for !CONFIG_STACKTRACE
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Thu, 05 Jul 2007 16:09:23 +0200
-Message-Id: <1183644563.3818.56.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jul 2007 06:40:12 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 6 Jul 2007 06:38:05 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: can entire drivers/acorn subdirectory be removed?
+Message-ID: <Pine.LNX.4.64.0707060632330.12604@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The print_stack_trace macro in stacktrace.h has a wrong number of
-arguments, fix it.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+  given that:
 
----
- include/linux/stacktrace.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+1) drivers/Makefile doesn't even have an entry for the acorn/
+   subdirectory, and
 
---- linux-2.6-git.orig/include/linux/stacktrace.h	2007-07-05 16:03:41.313168396 +0200
-+++ linux-2.6-git/include/linux/stacktrace.h	2007-07-05 16:04:01.588168396 +0200
-@@ -13,7 +13,7 @@ extern void save_stack_trace(struct stac
- extern void print_stack_trace(struct stack_trace *trace, int spaces);
- #else
- # define save_stack_trace(trace)			do { } while (0)
--# define print_stack_trace(trace)			do { } while (0)
-+# define print_stack_trace(trace, spaces)		do { } while (0)
- #endif
- 
- #endif
+2) the Makefile drivers/acorn/char/Makefile is incorrect anyway, since
+   it contains:
 
+    obj-$(CONFIG_L7200_KEYB)        += defkeymap-l7200.o keyb_l7200.o
 
+   which refers to a non-existent source file keyb_l7200.c, and it's
+based on a non-existent config variable on top of that.  it certainly
+seems that that entire subdirectory can be tossed.
+
+  and if that happens, then the config variables defined in
+drivers/acorn/block/Kconfig:
+
+  config BLK_DEV_FD1772
+  config BLK_DEV_MFM
+  config BLK_DEV_MFM_AUTODETECT
+
+would also vanish, which suggests that any references to *them* could
+also be deleted:
+
+$ grep -r BLK_DEV_FD1772 *
+arch/arm26/defconfig:# CONFIG_BLK_DEV_FD1772 is not set
+arch/arm26/machine/dma.c:#if defined(CONFIG_BLK_DEV_FD1772) || defined(CONFIG_BLK_DEV_FD1772_MODULE)
+arch/arm26/machine/dma.c:#if defined(CONFIG_BLK_DEV_FD1772) || defined(CONFIG_BLK_DEV_FD1772_MODULE)
+...
+
+  anyway, you get the idea.  thoughts?
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
