@@ -1,197 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763629AbXGFUmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764088AbXGFUnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763629AbXGFUmk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 16:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760627AbXGFUma
+	id S1764088AbXGFUnw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 16:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761901AbXGFUno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 16:42:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:39971 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759177AbXGFUm2 (ORCPT
+	Fri, 6 Jul 2007 16:43:44 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:43197 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761125AbXGFUnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 16:42:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=lHq6LNkYnhkQn+AymfVAZrCEUhBRYuC0VinYQqBAlCWBqnCggAQHPMm4fHe1/U9/yPbWNSKGvG3cwhr7StXZ6yQtGVa7EvrlXxPpKhrprWWKhpAnrILYJv5C+KWRnMk8A+nQ2d5oYP/qtM4kgTi8K6j2GT/thI54qyhcMYbnLBM=
-Message-ID: <92a12cdb0707061342u43273851ufa7e99b7e96da606@mail.gmail.com>
-Date: Fri, 6 Jul 2007 21:42:27 +0100
-From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: [alsa-devel] [PATCH] ALSA AICA sound on SEGA Dreamcast - fix behaviour in poor resource conditions
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-In-Reply-To: <92a12cdb0707060309x6fe997nc3112d5545d73ef5@mail.gmail.com>
+	Fri, 6 Jul 2007 16:43:42 -0400
+Message-ID: <468EA74D.7010706@vmware.com>
+Date: Fri, 06 Jul 2007 13:34:21 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_163932_22767183.1183754547848"
-References: <92a12cdb0707051507r7ab1516blb7ea755d89c25efa@mail.gmail.com>
-	 <s5h3b016fzx.wl%tiwai@suse.de>
-	 <92a12cdb0707060246p407f19depe16c59ac43eb0d96@mail.gmail.com>
-	 <s5hvecx4zz5.wl%tiwai@suse.de>
-	 <92a12cdb0707060309x6fe997nc3112d5545d73ef5@mail.gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization@lists.osdl.org,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH] VMI: remove CONFIG_DEBUG_PAGE_TYPE and associated	bitrotted
+ code
+References: <Pine.LNX.4.64.0707060847470.23786@localhost.localdomain>	<468E890A.1070504@s5r6.in-berlin.de>	<20070706201625.GT4306@sequoia.sous-sol.org> <468EA27C.9060401@vmware.com> <468EA5E0.4070501@goop.org>
+In-Reply-To: <468EA5E0.4070501@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_163932_22767183.1183754547848
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On 06/07/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
-> On 06/07/07, Takashi Iwai <tiwai@suse.de> wrote:
-> > I guess you shoud call del_timer() there at least.  Otherwise the
-> > timer handler (aica_period_elapsed()) might be called even if the
-> > stream is not really running.
-> >
+Jeremy Fitzhardinge wrote:
+>>
+>> I never merged the whole bit upstream because it added a field to 
+>> struct page. 
 >
-> Fair enough. I'll fix that and repost later.
->
->
+> Hm, is that a big problem?  It would be OK for a debug config option, 
+> wouldn't it?  Also, it doesn't seem particularly vmi-specific.  Could 
+> it be made part of the pvops infrastructure?
 
-Attached is a new patch, tidied with indent and with
-SNDRV_PCM_TRIGGER_STOP being used.
+I though about it, but it gets really ugly.  You need wrappers for all 
+the MMU ops in pvops generic code, which means either another layer of 
+wrappers or a bunch of CONFIG_DEBUG_PARAVIRT only things that are easy 
+to break because they also depend on PAE vs. non-PAE.
 
-Submitted by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+It's doable, though, and might even be extensible to s390 for CMM page 
+type debugging, as well as descriptor type tracking and enforcement of 
+page isolation of GDTs.
 
-------=_Part_163932_22767183.1183754547848
-Content-Type: text/x-patch; name="aica.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="aica.diff"
-X-Attachment-Id: f_f3t4vqd2
+Page state tracking could track -
 
-ZGlmZiAtcnVOIGFpY2FvbGQvYWljYS5jIGFpY2FuZXcvYWljYS5jCi0tLSBhaWNhb2xkL2FpY2Eu
-YwkyMDA3LTA3LTA1IDIzOjAxOjM5LjAwMDAwMDAwMCArMDEwMAorKysgYWljYW5ldy9haWNhLmMJ
-MjAwNy0wNy0wNiAyMTozNjo1NS4wMDAwMDAwMDAgKzAxMDAKQEAgLTY0LDEyICs2NCw2IEBACiBN
-T0RVTEVfUEFSTV9ERVNDKGVuYWJsZSwgIkVuYWJsZSAiIENBUkRfTkFNRSAiIHNvdW5kY2FyZC4i
-KTsKIAogLyogVXNlIHdvcmtxdWV1ZSAqLwotCi1zdGF0aWMgc3RydWN0IHNwdV93b3JrX2hvbGRl
-ciB7Ci0Jc3RydWN0IHdvcmtfc3RydWN0IHNwdV9kbWFfd29yazsKLQl2b2lkICpzc3BvaW50ZXI7
-Ci19IHNwdV93b3JraW5nOwotCiBzdGF0aWMgc3RydWN0IHdvcmtxdWV1ZV9zdHJ1Y3QgKmFpY2Ff
-cXVldWU7CiAKIC8qIFNpbXBsZSBwbGF0Zm9ybSBkZXZpY2UgKi8KQEAgLTEwMCw5ICs5NCw5IEBA
-CiAJCQlicmVhazsKIAkJLyogVG8gZW5zdXJlIGhhcmR3YXJlIGZhaWx1cmUgZG9lc24ndCB3ZWRn
-ZSBrZXJuZWwgKi8KIAkJdGltZV9jb3VudCsrOwotCQlpZiAodGltZV9jb3VudCA+IDB4MTAwMDAp
-Ci0JCXsKLQkJCXNuZF9wcmludGsoIldBUk5JTkc6IEcyIEZJRk8gYXBwZWFycyB0byBiZSBibG9j
-a2VkLlxuIik7CisJCWlmICh0aW1lX2NvdW50ID4gMHgxMDAwMCkgeworCQkJc25kX3ByaW50awor
-CQkJICAgICgiV0FSTklORzogRzIgRklGTyBhcHBlYXJzIHRvIGJlIGJsb2NrZWQuXG4iKTsKIAkJ
-CWJyZWFrOwogCQl9CiAJfQpAQCAtMjI2LDExICsyMjAsMTEgQEAKIAlydW50aW1lID0gc3Vic3Ry
-ZWFtLT5ydW50aW1lOwogCWZvciAocSA9IDA7IHEgPCBjaGFubmVsczsgcSsrKSB7CiAJCWVyciA9
-IGRtYV94ZmVyKEFJQ0FfRE1BX0NIQU5ORUwsCi0JCQkgICAgICAgKHVuc2lnbmVkIGxvbmcpKHJ1
-bnRpbWUtPmRtYV9hcmVhICsKLQkJCQkJICAgICAgIChBSUNBX0JVRkZFUl9TSVpFICogcSkgLwot
-CQkJCQkgICAgICAgY2hhbm5lbHMgKwotCQkJCQkgICAgICAgQUlDQV9QRVJJT0RfU0laRSAqCi0J
-CQkJCSAgICAgICBwZXJpb2Rfb2Zmc2V0KSwKKwkJCSAgICAgICAodW5zaWduZWQgbG9uZykgKHJ1
-bnRpbWUtPmRtYV9hcmVhICsKKwkJCQkJCShBSUNBX0JVRkZFUl9TSVpFICogcSkgLworCQkJCQkJ
-Y2hhbm5lbHMgKworCQkJCQkJQUlDQV9QRVJJT0RfU0laRSAqCisJCQkJCQlwZXJpb2Rfb2Zmc2V0
-KSwKIAkJCSAgICAgICBBSUNBX0NIQU5ORUwwX09GRlNFVCArIHEgKiBDSEFOTkVMX09GRlNFVCAr
-CiAJCQkgICAgICAgQUlDQV9QRVJJT0RfU0laRSAqIHBlcmlvZF9vZmZzZXQsCiAJCQkgICAgICAg
-YnVmZmVyX3NpemUgLyBjaGFubmVscywgQUlDQV9ETUFfTU9ERSk7CkBAIC0yNDQsMjYgKzIzOCwy
-NSBAQAogc3RhdGljIHZvaWQgc3RhcnR1cF9haWNhKHN0cnVjdCBzbmRfY2FyZF9haWNhICpkcmVh
-bWNhc3RjYXJkKQogewogCXNwdV9tZW1sb2FkKEFJQ0FfQ0hBTk5FTDBfQ09OVFJPTF9PRkZTRVQs
-Ci0JCSAgICBkcmVhbWNhc3RjYXJkLT5jaGFubmVsLAotCQkgICAgc2l6ZW9mKHN0cnVjdCBhaWNh
-X2NoYW5uZWwpKTsKKwkJICAgIGRyZWFtY2FzdGNhcmQtPmNoYW5uZWwsIHNpemVvZihzdHJ1Y3Qg
-YWljYV9jaGFubmVsKSk7CiAJYWljYV9jaG5fc3RhcnQoKTsKIH0KIAogc3RhdGljIHZvaWQgcnVu
-X3NwdV9kbWEoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKQogewogCWludCBidWZmZXJfc2l6ZTsK
-LQlzdHJ1Y3Qgc25kX3BjbV9zdWJzdHJlYW0gKnN1YnN0cmVhbTsKIAlzdHJ1Y3Qgc25kX3BjbV9y
-dW50aW1lICpydW50aW1lOwogCXN0cnVjdCBzbmRfY2FyZF9haWNhICpkcmVhbWNhc3RjYXJkOwot
-CXN0cnVjdCBzcHVfd29ya19ob2xkZXIgKmhvbGRlciA9IGNvbnRhaW5lcl9vZih3b3JrLCBzdHJ1
-Y3Qgc3B1X3dvcmtfaG9sZGVyLCBzcHVfZG1hX3dvcmspOwotCXN1YnN0cmVhbSA9IGhvbGRlci0+
-IHNzcG9pbnRlcjsKLQlkcmVhbWNhc3RjYXJkID0gc3Vic3RyZWFtLT5wY20tPnByaXZhdGVfZGF0
-YTsKLQlydW50aW1lID0gc3Vic3RyZWFtLT5ydW50aW1lOworCWRyZWFtY2FzdGNhcmQgPQorCSAg
-ICBjb250YWluZXJfb2Yod29yaywgc3RydWN0IHNuZF9jYXJkX2FpY2EsIHNwdV9kbWFfd29yayk7
-CisJcnVudGltZSA9IGRyZWFtY2FzdGNhcmQtPnN1YnN0cmVhbS0+cnVudGltZTsKIAlpZiAodW5s
-aWtlbHkoZHJlYW1jYXN0Y2FyZC0+ZG1hX2NoZWNrID09IDApKSB7Ci0JCWJ1ZmZlcl9zaXplID0g
-ZnJhbWVzX3RvX2J5dGVzKHJ1bnRpbWUsIHJ1bnRpbWUtPmJ1ZmZlcl9zaXplKTsKKwkJYnVmZmVy
-X3NpemUgPQorCQkgICAgZnJhbWVzX3RvX2J5dGVzKHJ1bnRpbWUsIHJ1bnRpbWUtPmJ1ZmZlcl9z
-aXplKTsKIAkJaWYgKHJ1bnRpbWUtPmNoYW5uZWxzID4gMSkKIAkJCWRyZWFtY2FzdGNhcmQtPmNo
-YW5uZWwtPmZsYWdzIHw9IDB4MDE7Ci0JCWFpY2FfZG1hX3RyYW5zZmVyKHJ1bnRpbWUtPmNoYW5u
-ZWxzLCBidWZmZXJfc2l6ZSwgc3Vic3RyZWFtKTsKKwkJYWljYV9kbWFfdHJhbnNmZXIocnVudGlt
-ZS0+Y2hhbm5lbHMsIGJ1ZmZlcl9zaXplLAorCQkJCSAgZHJlYW1jYXN0Y2FyZC0+c3Vic3RyZWFt
-KTsKIAkJc3RhcnR1cF9haWNhKGRyZWFtY2FzdGNhcmQpOwogCQlkcmVhbWNhc3RjYXJkLT5jbGlj
-a3MgPQogCQkgICAgYnVmZmVyX3NpemUgLyAoQUlDQV9QRVJJT0RfU0laRSAqIHJ1bnRpbWUtPmNo
-YW5uZWxzKTsKQEAgLTI3MSwxMyArMjY0LDExIEBACiAJfSBlbHNlIHsKIAkJYWljYV9kbWFfdHJh
-bnNmZXIocnVudGltZS0+Y2hhbm5lbHMsCiAJCQkJICBBSUNBX1BFUklPRF9TSVpFICogcnVudGlt
-ZS0+Y2hhbm5lbHMsCi0JCQkJICBzdWJzdHJlYW0pOworCQkJCSAgZHJlYW1jYXN0Y2FyZC0+c3Vi
-c3RyZWFtKTsKIAkJc25kX3BjbV9wZXJpb2RfZWxhcHNlZChkcmVhbWNhc3RjYXJkLT5zdWJzdHJl
-YW0pOwogCQlkcmVhbWNhc3RjYXJkLT5jbGlja3MrKzsKIAkJaWYgKHVubGlrZWx5KGRyZWFtY2Fz
-dGNhcmQtPmNsaWNrcyA+PSBBSUNBX1BFUklPRF9OVU1CRVIpKQotCQl7CiAJCQlkcmVhbWNhc3Rj
-YXJkLT5jbGlja3MgJT0gQUlDQV9QRVJJT0RfTlVNQkVSOwotCQl9CiAJCW1vZF90aW1lcigmZHJl
-YW1jYXN0Y2FyZC0+dGltZXIsIGppZmZpZXMgKyAxKTsKIAl9CiB9CkBAIC0yODksNyArMjgwLDcg
-QEAKIAlzdHJ1Y3Qgc25kX3BjbV9ydW50aW1lICpydW50aW1lOwogCXN0cnVjdCBzbmRfcGNtX3N1
-YnN0cmVhbSAqc3Vic3RyZWFtOwogCXN0cnVjdCBzbmRfY2FyZF9haWNhICpkcmVhbWNhc3RjYXJk
-OwotCXN1YnN0cmVhbSA9IChzdHJ1Y3Qgc25kX3BjbV9zdWJzdHJlYW0gKil0aW1lcl92YXI7CisJ
-c3Vic3RyZWFtID0gKHN0cnVjdCBzbmRfcGNtX3N1YnN0cmVhbSAqKSB0aW1lcl92YXI7CiAJcnVu
-dGltZSA9IHN1YnN0cmVhbS0+cnVudGltZTsKIAlkcmVhbWNhc3RjYXJkID0gc3Vic3RyZWFtLT5w
-Y20tPnByaXZhdGVfZGF0YTsKIAkvKiBIYXZlIHdlIHBsYXllZCBvdXQgYW4gYWRkaXRpb25hbCBw
-ZXJpb2Q/ICovCkBAIC0zMDcsMjcgKzI5OCwyNCBAQAogCQlkcmVhbWNhc3RjYXJkLT5jdXJyZW50
-X3BlcmlvZCA9IHBsYXlfcGVyaW9kOwogCWlmICh1bmxpa2VseShkcmVhbWNhc3RjYXJkLT5kbWFf
-Y2hlY2sgPT0gMCkpCiAJCWRyZWFtY2FzdGNhcmQtPmRtYV9jaGVjayA9IDE7Ci0JCXF1ZXVlX3dv
-cmsoYWljYV9xdWV1ZSwgJihzcHVfd29ya2luZy5zcHVfZG1hX3dvcmspKTsKKwlxdWV1ZV93b3Jr
-KGFpY2FfcXVldWUsICYoZHJlYW1jYXN0Y2FyZC0+c3B1X2RtYV93b3JrKSk7CiB9CiAKIHN0YXRp
-YyB2b2lkIHNwdV9iZWdpbl9kbWEoc3RydWN0IHNuZF9wY21fc3Vic3RyZWFtICpzdWJzdHJlYW0p
-CiB7Ci0JLyogTXVzdCBiZSBhdG9taWMgKi8KIAlzdHJ1Y3Qgc25kX2NhcmRfYWljYSAqZHJlYW1j
-YXN0Y2FyZDsKIAlzdHJ1Y3Qgc25kX3BjbV9ydW50aW1lICpydW50aW1lOwogCXJ1bnRpbWUgPSBz
-dWJzdHJlYW0tPnJ1bnRpbWU7CiAJZHJlYW1jYXN0Y2FyZCA9IHN1YnN0cmVhbS0+cGNtLT5wcml2
-YXRlX2RhdGE7Ci0JLyogIFVzZSBxdWV1ZSB0byBkbyB0aGUgaGVhdnkgbGlmdGluZyAqLwotCXNw
-dV93b3JraW5nLnNzcG9pbnRlciA9IHN1YnN0cmVhbTsKLQlJTklUX1dPUksoJihzcHVfd29ya2lu
-Zy5zcHVfZG1hX3dvcmspLCBydW5fc3B1X2RtYSk7Ci0JcXVldWVfd29yayhhaWNhX3F1ZXVlLCAm
-KHNwdV93b3JraW5nLnNwdV9kbWFfd29yaykpOworCS8qZ2V0IHRoZSBxdWV1ZSB0byBkbyB0aGUg
-d29yayAqLworCXF1ZXVlX3dvcmsoYWljYV9xdWV1ZSwgJihkcmVhbWNhc3RjYXJkLT5zcHVfZG1h
-X3dvcmspKTsKIAkvKiBUaW1lciBtYXkgYWxyZWFkeSBiZSBydW5uaW5nICovCiAJaWYgKHVubGlr
-ZWx5KGRyZWFtY2FzdGNhcmQtPnRpbWVyLmRhdGEpKSB7CiAJCW1vZF90aW1lcigmZHJlYW1jYXN0
-Y2FyZC0+dGltZXIsIGppZmZpZXMgKyA0KTsKIAkJcmV0dXJuOwogCX0KIAlpbml0X3RpbWVyKCYo
-ZHJlYW1jYXN0Y2FyZC0+dGltZXIpKTsKLQlkcmVhbWNhc3RjYXJkLT50aW1lci5kYXRhID0gKHVu
-c2lnbmVkIGxvbmcpc3Vic3RyZWFtOworCWRyZWFtY2FzdGNhcmQtPnRpbWVyLmRhdGEgPSAodW5z
-aWduZWQgbG9uZykgc3Vic3RyZWFtOwogCWRyZWFtY2FzdGNhcmQtPnRpbWVyLmZ1bmN0aW9uID0g
-YWljYV9wZXJpb2RfZWxhcHNlZDsKIAlkcmVhbWNhc3RjYXJkLT50aW1lci5leHBpcmVzID0gamlm
-ZmllcyArIDQ7CiAJYWRkX3RpbWVyKCYoZHJlYW1jYXN0Y2FyZC0+dGltZXIpKTsKQEAgLTM2Niw3
-ICszNTQsOSBAQAogCQkJCSAqc3Vic3RyZWFtKQogewogCXN0cnVjdCBzbmRfY2FyZF9haWNhICpk
-cmVhbWNhc3RjYXJkID0gc3Vic3RyZWFtLT5wY20tPnByaXZhdGVfZGF0YTsKLQlkZWxfdGltZXIo
-JmRyZWFtY2FzdGNhcmQtPnRpbWVyKTsKKwlmbHVzaF93b3JrcXVldWUoYWljYV9xdWV1ZSk7CisJ
-aWYgKGRyZWFtY2FzdGNhcmQtPnRpbWVyLmRhdGEpCisJCWRlbF90aW1lcigmZHJlYW1jYXN0Y2Fy
-ZC0+dGltZXIpOwogCWtmcmVlKGRyZWFtY2FzdGNhcmQtPmNoYW5uZWwpOwogCXNwdV9kaXNhYmxl
-KCk7CiAJcmV0dXJuIDA7CkBAIC0zODUsNyArMzc1LDggQEAKIHsKIAkvKiBBbGxvY2F0ZSBhIERN
-QSBidWZmZXIgdXNpbmcgQUxTQSBidWlsdC1pbnMgKi8KIAlyZXR1cm4KLQkgICAgc25kX3BjbV9s
-aWJfbWFsbG9jX3BhZ2VzKHN1YnN0cmVhbSwgcGFyYW1zX2J1ZmZlcl9ieXRlcyhod19wYXJhbXMp
-KTsKKwkgICAgc25kX3BjbV9saWJfbWFsbG9jX3BhZ2VzKHN1YnN0cmVhbSwKKwkJCQkgICAgIHBh
-cmFtc19idWZmZXJfYnl0ZXMoaHdfcGFyYW1zKSk7CiB9CiAKIHN0YXRpYyBpbnQgc25kX2FpY2Fw
-Y21fcGNtX3ByZXBhcmUoc3RydWN0IHNuZF9wY21fc3Vic3RyZWFtCkBAIC00MDIsMTUgKzM5Mywx
-MSBAQAogc3RhdGljIGludCBzbmRfYWljYXBjbV9wY21fdHJpZ2dlcihzdHJ1Y3Qgc25kX3BjbV9z
-dWJzdHJlYW0KIAkJCQkgICAqc3Vic3RyZWFtLCBpbnQgY21kKQogewotCXN0cnVjdCBzbmRfY2Fy
-ZF9haWNhICpkcmVhbWNhc3RjYXJkOwogCXN3aXRjaCAoY21kKSB7CiAJY2FzZSBTTkRSVl9QQ01f
-VFJJR0dFUl9TVEFSVDoKIAkJc3B1X2JlZ2luX2RtYShzdWJzdHJlYW0pOwogCQlicmVhazsKIAlj
-YXNlIFNORFJWX1BDTV9UUklHR0VSX1NUT1A6Ci0JCWRyZWFtY2FzdGNhcmQgPSBzdWJzdHJlYW0t
-PnBjbS0+cHJpdmF0ZV9kYXRhOwotCQlpZiAoZHJlYW1jYXN0Y2FyZC0+dGltZXIuZGF0YSkKLQkJ
-CWRlbF90aW1lcigmZHJlYW1jYXN0Y2FyZC0+dGltZXIpOwogCQlhaWNhX2Nobl9oYWx0KCk7CiAJ
-CWJyZWFrOwogCWRlZmF1bHQ6CkBAIC00NDQsNyArNDMxLDggQEAKIAlpbnQgZXJyOwogCS8qIEFJ
-Q0EgaGFzIG5vIGNhcHR1cmUgYWJpbGl0eSAqLwogCWVyciA9Ci0JICAgIHNuZF9wY21fbmV3KGRy
-ZWFtY2FzdGNhcmQtPmNhcmQsICJBSUNBIFBDTSIsIHBjbV9pbmRleCwgMSwgMCwgJnBjbSk7CisJ
-ICAgIHNuZF9wY21fbmV3KGRyZWFtY2FzdGNhcmQtPmNhcmQsICJBSUNBIFBDTSIsIHBjbV9pbmRl
-eCwgMSwgMCwKKwkJCSZwY20pOwogCWlmICh1bmxpa2VseShlcnIgPCAwKSkKIAkJcmV0dXJuIGVy
-cjsKIAlwY20tPnByaXZhdGVfZGF0YSA9IGRyZWFtY2FzdGNhcmQ7CkBAIC01MjQsOSArNTEyLDcg
-QEAKIAlkcmVhbWNhc3RjYXJkLT5jaGFubmVsLT52b2wgPSB1Y29udHJvbC0+dmFsdWUuaW50ZWdl
-ci52YWx1ZVswXTsKIAlkcmVhbWNhc3RjYXJkLT5tYXN0ZXJfdm9sdW1lID0gdWNvbnRyb2wtPnZh
-bHVlLmludGVnZXIudmFsdWVbMF07CiAJc3B1X21lbWxvYWQoQUlDQV9DSEFOTkVMMF9DT05UUk9M
-X09GRlNFVCwKLQkJICAgIGRyZWFtY2FzdGNhcmQtPmNoYW5uZWwsCi0JCSAgICBzaXplb2Yoc3Ry
-dWN0IGFpY2FfY2hhbm5lbCkpOwotCisJCSAgICBkcmVhbWNhc3RjYXJkLT5jaGFubmVsLCBzaXpl
-b2Yoc3RydWN0IGFpY2FfY2hhbm5lbCkpOwogCXJldHVybiAxOwogfQogCkBAIC02MTAsNiArNTk2
-LDggQEAKIAlzdHJjcHkoZHJlYW1jYXN0Y2FyZC0+Y2FyZC0+c2hvcnRuYW1lLCBTTkRfQUlDQV9E
-UklWRVIpOwogCXN0cmNweShkcmVhbWNhc3RjYXJkLT5jYXJkLT5sb25nbmFtZSwKIAkgICAgICAg
-IllhbWFoYSBBSUNBIFN1cGVyIEludGVsbGlnZW50IFNvdW5kIFByb2Nlc3NvciBmb3IgU0VHQSBE
-cmVhbWNhc3QiKTsKKwkvKiBQcmVwYXJlIHRvIHVzZSB0aGUgcXVldWUgKi8KKwlJTklUX1dPUkso
-JihkcmVhbWNhc3RjYXJkLT5zcHVfZG1hX3dvcmspLCBydW5fc3B1X2RtYSk7CiAJLyogTG9hZCB0
-aGUgUENNICdjaGlwJyAqLwogCWVyciA9IHNuZF9haWNhcGNtY2hpcChkcmVhbWNhc3RjYXJkLCAw
-KTsKIAlpZiAodW5saWtlbHkoZXJyIDwgMCkpCkBAIC02NjMsOCArNjUxLDEwIEBACiAKIHN0YXRp
-YyB2b2lkIF9fZXhpdCBhaWNhX2V4aXQodm9pZCkKIHsKLQkvKiBEZXN0cm95IHRoZSBhaWNhIGtl
-cm5lbCB0aHJlYWQgKi8KLQlkZXN0cm95X3dvcmtxdWV1ZShhaWNhX3F1ZXVlKTsKKwkvKiBEZXN0
-cm95IHRoZSBhaWNhIGtlcm5lbCB0aHJlYWQgICAgICAgICAgICAqCisJICogYmVpbmcgZXh0cmEg
-Y2F1dGlvdXMgdG8gY2hlY2sgaWYgaXQgZXhpc3RzKi8KKwlpZiAobGlrZWx5KGFpY2FfcXVldWUp
-KQorCQlkZXN0cm95X3dvcmtxdWV1ZShhaWNhX3F1ZXVlKTsKIAlwbGF0Zm9ybV9kZXZpY2VfdW5y
-ZWdpc3RlcihwZCk7CiAJcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0ZXIoJnNuZF9haWNhX2RyaXZl
-cik7CiAJLyogS2lsbCBhbnkgc291bmQgc3RpbGwgcGxheWluZyBhbmQgcmVzZXQgQVJNNyB0byBz
-YWZlIHN0YXRlICovCmRpZmYgLXJ1TiBhaWNhb2xkL2FpY2EuaCBhaWNhbmV3L2FpY2EuaAotLS0g
-YWljYW9sZC9haWNhLmgJMjAwNy0wNy0wNSAyMzowMTozOS4wMDAwMDAwMDAgKzAxMDAKKysrIGFp
-Y2FuZXcvYWljYS5oCTIwMDctMDctMDYgMjE6Mzc6MzguMDAwMDAwMDAwICswMTAwCkBAIC02OSw2
-ICs2OSw3IEBACiB9OwogCiBzdHJ1Y3Qgc25kX2NhcmRfYWljYSB7CisJc3RydWN0IHdvcmtfc3Ry
-dWN0IHNwdV9kbWFfd29yazsKIAlzdHJ1Y3Qgc25kX2NhcmQgKmNhcmQ7CiAJc3RydWN0IGFpY2Ff
-Y2hhbm5lbCAqY2hhbm5lbDsKIAlzdHJ1Y3Qgc25kX3BjbV9zdWJzdHJlYW0gKnN1YnN0cmVhbTsK
+PAGE_ZERO, PAGE_UNUSED, PAGE_STABLE, PAGE_VOLATILE, 
+PAGE_POTENTIALLY_VOLATILE, PAGE_L1{2/3/4}, PAGE_LDT, PAGE_GDT,
 
-------=_Part_163932_22767183.1183754547848--
+actually, no this seems silly, since we'd just be duplicating bits for 
+the page types, so the only debug benefit is ensuring the intersection 
+of volatile and L{1/2/3/4} is nil, which is already trivially verifiable 
+by inspection.
+
+Zach
