@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbXGFGK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761697AbXGFGMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761622AbXGFGK6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 02:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbXGFGKu
+	id S1761697AbXGFGMb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 02:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbXGFGMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 02:10:50 -0400
-Received: from ppp198-178.static.internode.on.net ([59.167.198.178]:50087 "EHLO
-	anu.rimspace.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756854AbXGFGKt (ORCPT
+	Fri, 6 Jul 2007 02:12:20 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:36796 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756677AbXGFGMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 02:10:49 -0400
-X-Greylist: delayed 1524 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jul 2007 02:10:49 EDT
-From: Daniel Pittman <daniel@rimspace.net>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Oliver Neukum <oliver@neukum.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, benh@kernel.crashing.org
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-In-Reply-To: <20070705142318.GA22598@srcf.ucam.org> (Matthew Garrett's message
-	of "Thu, 5 Jul 2007 15:23:18 +0100")
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<200707051528.34754.oliver@neukum.org>
-	<20070705134632.GA22177@srcf.ucam.org>
-	<200707051609.25887.rjw@sisk.pl>
-	<20070705142318.GA22598@srcf.ucam.org>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) XEmacs/21.5-b28 (fuki, linux)
-Date: Fri, 06 Jul 2007 15:45:17 +1000
-Message-ID: <87r6nmozki.fsf@rimspace.net>
+	Fri, 6 Jul 2007 02:12:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=s1JetL6y5hUfOeOiB2mpHj8cC5aEzSfTg3WOQAgMOIUkDenLecJWHHxpxkGJ2++j3Jo52HyUep+XIJIu3ke9vDOfLC+kqax+TfSa/AO0g8RRrNBhnulo7AG9YFy1Izt7iMv+QgKpdZS2MYmq29+6RnkXP1iVI00c2qKmRrkN488=  ;
+X-YMail-OSG: _X2KTa0VM1nttiIfo6y3j.D8pTo_jao.hyqkBJSeIaLl.uXPMAkZ1_Z2K98hSP0TdSu_MMwjLg--
+Message-ID: <468DDD3A.6010308@yahoo.com.au>
+Date: Fri, 06 Jul 2007 16:12:10 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Thread Migration Preemption
+References: <20070705215152.GA4865@Krystal>
+In-Reply-To: <20070705215152.GA4865@Krystal>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett <mjg59@srcf.ucam.org> writes:
-> On Thu, Jul 05, 2007 at 04:09:24PM +0200, Rafael J. Wysocki wrote:
->> On Thursday, 5 July 2007 15:46, Matthew Garrett wrote:
->> > I have a model for STD that avoids the need to freeze the entirity of 
->> > userspace, but I need to find some more time to flesh it out.
->> 
->> You can just describe it, as far as I'm concerned. :-)
->
-> The basic model is that nobody's really described a use-case where we 
-> actually care about restoring system state. What people want is to be 
-> able to restore application state. So, arguably, what we want isn't to 
-> save the entire kernel state and application state in one go because we 
-> can reconstruct a huge amount of that afterwards.
+Mathieu Desnoyers wrote:
+> Thread Migration Preemption
+> 
+> This patch adds the ability to protect critical sections from migration to
+> another CPU without disabling preemption.
+> 
+> This will be useful to minimize the amount of preemption disabling for the -rt
+> patch. It will help leveraging improvements brought by the local_t types in
+> asm/local.h (see Documentation/local_ops.txt). Note that the updates done to
+> variables protected by migration_disable must be either atomic or protected from
+> concurrent updates done by other threads.
+> 
+> Typical use:
+> 
+> migration_disable();
+> local_inc(&__get_cpu_var(&my_local_t_var));
+> migration_enable();
+> 
+> Which will increment the variable atomically wrt the local CPU.
+> 
+> Comments (such as how to integrate this in the already almost full
+> preempt_count) are welcome.
 
-[...]
+This seems like way too much stuff to add just for this type of thing. Why
+not just disable and reenable preempt? Surely local_inc is not going to take
+so long that disabling preemption matters.
 
-> I've mocked up a basic implementation using cryopid, but it's somewhat
-> limited by the lack of support for sockets. I'd like to move more of
-> the smarts into the kernel (Hurray, checkpointing!) and then see how
-> much hardware support ends up horifically broken.
+The task struct is not something we should just be carefree putting crap
+into because it is seemingly free :(
 
-You might want to look at the checkpoint / migration support in the
-OpenVZ kernel in relation to this.  That does work to dump the state of
-a running "virtual environment" complete with applications to disk, move
-it to another running kernel and restore the content.
-
-That might, perhaps, help with the prototype of this?
-
-Regards,
-	Daniel
+-- 
+SUSE Labs, Novell Inc.
