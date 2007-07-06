@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXGFAa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762393AbXGFAdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761972AbXGFAa3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 20:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758863AbXGFAaP
+	id S1762393AbXGFAdo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 20:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758863AbXGFAdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 20:30:15 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:42743 "EHLO e2.ny.us.ibm.com"
+	Thu, 5 Jul 2007 20:33:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:46561 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758347AbXGFAaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 20:30:13 -0400
-In-Reply-To: <200707051730.25776.vapier@gentoo.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: 7eggert@gmx.de, Karel Zak <kzak@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Nix <nix@esperi.org.uk>,
-       List util-linux-ng <util-linux-ng@vger.kernel.org>
-MIME-Version: 1.0
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF957A5E7F.B63DEC46-ON8825730F.0082A484-88257310.0002C205@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Thu, 5 Jul 2007 17:30:09 -0700
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V80_M5_05202007|May 20, 2007) at
- 07/05/2007 20:30:13,
-	Serialize complete at 07/05/2007 20:30:13
-Content-Type: text/plain; charset="US-ASCII"
+	id S1758389AbXGFAdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 20:33:36 -0400
+Subject: Re: [PATCH 2/3] Virtio draft IV: the block driver
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: virtualization@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200707050932.50110.borntraeger@de.ibm.com>
+References: <1183522348.6110.37.camel@localhost.localdomain>
+	 <1183522765.6110.40.camel@localhost.localdomain>
+	 <200707050932.50110.borntraeger@de.ibm.com>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 10:33:20 +1000
+Message-Id: <1183682000.6005.108.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->i dont see how blaming autotools for other people's misuse is relevant
+On Thu, 2007-07-05 at 09:32 +0200, Christian Borntraeger wrote:
+> Am Mittwoch, 4. Juli 2007 schrieb Rusty Russell:
+> > +		vbr = mempool_alloc(vblk->pool, GFP_ATOMIC);
+> > +		if (!vbr)
+> > +			goto stop;
+> [...]
+> > +		BUG_ON(req->nr_phys_segments > ARRAY_SIZE(vblk->sg));
+> > +		vbr->req = req;
+> > +		if (!do_req(q, vblk, vbr))
+> > +			goto stop;
+> [...]
+> > +stop:
+> > +	/* Queue full?  Wait. */
+> > +	blk_stop_queue(q);
+> > +	mempool_free(vbr, vblk->pool);
+> 
+> 
+> Hmm, can mempool_free really handle NULL as its first argument? (first goto). 
 
-Here's how other people's misuse of the tool can be relevant to the choice 
-of the tool: some tools are easier to use right than others.  Probably the 
-easiest thing to use right is the system you designed and built yourself. 
-I've considered distributing code with an Autotools-based build system 
-before and determined quickly that I am not up to that challenge.  (The 
-bigger part of the challenge isn't writing the original input files; it's 
-debugging when a user says his build doesn't work).  But as far as I know, 
-my hand-rolled build system is used correctly by me.
+Good point.  Any objections to fixing that?
 
->> checks the width of integers on i386 for projects not caring about that 
-and
->> fails to find installed libraries without telling how it was supposed 
-to
->> find them or how to make it find that library.
->
->no idea what this rant is about.
+Cheers,
+Rusty.
+===
+Christian Borntraeger points out that mempool_free() doesn't noop when
+handed NULL.  This is inconsistent with the other free-like functions
+in the kernel.
 
-The second part sounds like my number 1 complaint as a user of 
-Autotools-based packages: 'configure' often can't find my libraries.  I 
-know exactly where they are, and even what compiler and linker options are 
-needed to use them, but it often takes a half hour of tracing 'configure' 
-or generated make files to figure out how to force the build to understand 
-the same thing.  And that's with lots of experience.  The first five times 
-it was much more frustrating.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
->> Configuring the build of an autotools program is harder than 
-nescensary;
->> if it used a config file, you could easily save it somewhere while 
-adding
->> comments on how and why you did *that* choice, and you could possibly
->> use a set of default configs which you'd just include.
->
->history shows this is a pita to maintain.  every package has its own 
-build 
->system and configuration file ...
+diff -r a306f0a8de5e mm/mempool.c
+--- a/mm/mempool.c	Fri Jul 06 10:28:39 2007 +1000
++++ b/mm/mempool.c	Fri Jul 06 10:29:40 2007 +1000
+@@ -263,6 +263,9 @@ void mempool_free(void *element, mempool
+ {
+ 	unsigned long flags;
+ 
++	if (unlikely(element == NULL))
++		return;
++
+ 	smp_mb();
+ 	if (pool->curr_nr < pool->min_nr) {
+ 		spin_lock_irqsave(&pool->lock, flags);
 
-It's my understanding that autotools _does_ provide that ability (as 
-stated, though I think "config file" may have been meant here as 
-"config.make").  The config file is a shell script that contains a 
-'configure' command with a pile of options on it, and as many comments as 
-you want, to tailor the build to your requirements.
 
