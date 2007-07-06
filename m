@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761760AbXGFEOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbXGFEoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761760AbXGFEOk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 00:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbXGFEOc
+	id S1760122AbXGFEoR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 00:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbXGFEoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 00:14:32 -0400
-Received: from qb-out-0506.google.com ([72.14.204.236]:57279 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbXGFEOb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 00:14:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=mMbiMWbnAjJ476huSs96XsZxHnooUSrO3iEDC5hmxDznO5QqKv8KXIQgiXW8Vs2B3VqQ/tr13NA95JvlD7qSxiDbnW9z5vN+6CHtm6/aQZj/v0EhBXuaQU2+bc4yylYWisJsHyBH+JUBfZugaI4rOdGOGMYhWwDyDAN0jMrJGDc=
-Message-ID: <a71bd89a0707052114u28fed408h4326913c502a43ac@mail.gmail.com>
-Date: Thu, 5 Jul 2007 21:14:29 -0700
-From: "Dan Kegel" <dank@kegel.com>
-To: linux-kernel@vger.kernel.org
-Subject: Valgrinding the kernel?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 6 Jul 2007 00:44:07 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39144 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752212AbXGFEoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 00:44:04 -0400
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+In-Reply-To: <200707061403.15932.nigel@nigel.suspend2.net>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	 <200707060935.12706.nigel@nigel.suspend2.net>
+	 <1183694055.3388.108.camel@localhost.localdomain>
+	 <200707061403.15932.nigel@nigel.suspend2.net>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 14:41:40 +1000
+Message-Id: <1183696901.3388.119.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 7ce7af0d3512780d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It'd be nice to see if Valgrind could catch uninitialized
-references in the kernel, if only to see if Coverity is
-missing anything that happens in practice.
 
-Back in December 2002, Valgrind started to run UML:
-http://user-mode-linux.sourceforge.net/diary.html
-http://marc.info/?l=linux-kernel&m=104035199923121&w=2
-but it wasn't quite usable, and it seems broken since then.
-The last note I could find about this was from Jeff In July 2005:
-http://marc.info/?l=linux-kernel&m=112273702329952&w=2
+> I/O from swsusp and suspend2 use bios directly, so the page cache isn't an 
+> issue for them (apart from the fact that Suspend2 saves the page cache 
+> separately so it can get a full image). Not sure about uswsusp.
+> 
+> Only having half the amount of memory doesn't sound like a big limitation for 
+> modern desktops & laptops, but don't forget that there are embedded guys 
+> wanting to hbernate too :)
 
-Has there been any motion since then?
+Wait wait wait ... uses the BIOS ? what do you mean ?
 
-Thanks,
-Dan
+I know that for example, things like MacOS X use a separate polled path to
+the storage driver for suspend (works fine for the built-in IDE, but more
+complicated in large scale). If you can use BIOS calls to write your
+suspend image, that is, if you don't need any of the normal block
+infrastructure, then you don't need a freezer ! not at all !
+
+You just do like STR ... and at the end of the day, once you have stopped
+all your driver, you shut interrupts off and do the BIOS thing....
+
+I fail to see how processes could dirty pages while/after the BIOS thingy :-)
+
+But then, the problem with that approach is that of course, you need a BIOS
+capable of doing that (or a special sideband path to the "blessed" block
+driver that will be used for suspend ... not necessarily a hard thing to do,
+would be trivial to add support to drivers/ide or libata for that sort of
+things I suppose).
+
+Ben.
+
+
