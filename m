@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763990AbXGFVKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763867AbXGFVST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763990AbXGFVKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 17:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763346AbXGFVKO
+	id S1763867AbXGFVST (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 17:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762322AbXGFVSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 17:10:14 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:36594 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763013AbXGFVKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 17:10:12 -0400
-Subject: Re: [-mm PATCH 1/8] Memory controller resource counters (v2)
-From: Dave Hansen <haveblue@us.ibm.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Eric W Biederman <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Paul Menage <menage@google.com>
-In-Reply-To: <468EAE3E.4050802@linux.vnet.ibm.com>
-References: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
-	 <20070706052043.11677.56208.sendpatchset@balbir-laptop>
-	 <1183742642.10287.151.camel@localhost>
-	 <468EAE3E.4050802@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 06 Jul 2007 14:10:05 -0700
-Message-Id: <1183756205.10287.212.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jul 2007 17:18:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:5648 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762102AbXGFVSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 17:18:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=CTrF2v9A766Cbg+vdk4ZYo9UYkhWCdVLGhYOTqXRJyUYJT0vfU3dIJLnXlJyVz3N5TSdJwxdTZf+Y7l3ioBlRs5MUC15YkuXrjU2BQJ4vTztypvjo76dq0+SV52p6AXpvhyGb0wrWhRDrlX0CWRG9MwL8KOoNqA2kry/hx8c8yw=
+Date: Sat, 7 Jul 2007 01:18:03 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Some love to default profiler
+Message-ID: <20070706211803.GB5789@martell.zuzino.mipt.ru>
+References: <20070704213420.GA5864@martell.zuzino.mipt.ru> <9a8748490707041650s3b122007o46c8a34647b43af3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9a8748490707041650s3b122007o46c8a34647b43af3@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-06 at 14:03 -0700, Balbir Singh wrote:
-> 
-> >> +ssize_t res_counter_read(struct res_counter *cnt, int member,
-> >> +            const char __user *userbuf, size_t nbytes, loff_t
-> *pos)
-> >> +{
-> >> +    unsigned long *val;
-> >> +    char buf[64], *s;
-> >> +
-> >> +    s = buf;
-> >> +    val = res_counter_member(cnt, member);
-> >> +    s += sprintf(s, "%lu\n", *val);
-> >> +    return simple_read_from_buffer((void __user *)userbuf, nbytes,
-> >> +                    pos, buf, s - buf);
-> >> +}
-> > 
-> > Why do we need that cast?  
-> > 
-> 
-> u mean the __user? If I remember correctly it's a attribute for
-> sparse.
+On Thu, Jul 05, 2007 at 01:50:27AM +0200, Jesper Juhl wrote:
+> One tiny comment below.
 
-The userbuf is already __user.  This just appears to be making a 'const
-char *' into a 'void *'.  I wondered what the reason for that part is.
+> >+#define prof_on 0
+> >+static inline void profile_init(void)
+> >+{
+> >+}
+>
+> Just to be pedantic; don't we want a blank line between functions
+> here, even if they are empty?
 
--- Dave
+Dunno, it's boilerplate code, nobody reads it.
+
+> >+static inline void profile_tick(int type)
+> >+{
+> >+}
+> >+static inline void profile_hits(int type, void *ip, unsigned int nr_hits)
+> >+{
+> >+}
+> >+static inline void profile_hit(int type, void *ip)
+> >+{
+> >+}
+> >+static inline void profile_munmap(unsigned long addr)
+> >+{
+> >+}
+> >+static inline void profile_task_exit(struct task_struct *tsk)
+> >+{
+> >+}
+> >+static inline int profile_handoff_task(struct task_struct *tsk)
+> >+{
+> >+       return 0;
+> >+}
 
