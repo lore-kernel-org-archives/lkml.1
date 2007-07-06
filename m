@@ -1,88 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762494AbXGFHPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762825AbXGFHP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762494AbXGFHPn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 03:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760303AbXGFHPf
+	id S1762825AbXGFHP6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 03:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762632AbXGFHPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 03:15:35 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:35730 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760210AbXGFHPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 03:15:33 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: DervishD <lkml@dervishd.net>
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-Date: Fri, 6 Jul 2007 03:17:33 -0400
-User-Agent: KMail/1.9.7
-Cc: Nix <nix@esperi.org.uk>, Bodo Eggert <7eggert@gmx.de>,
-       Karel Zak <kzak@redhat.com>,
-       List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <8CYT9-4Ou-23@gated-at.bofh.it> <87vecyeg5y.fsf@hades.wkstn.nix> <20070706064153.GA25161@DervishD>
-In-Reply-To: <20070706064153.GA25161@DervishD>
+	Fri, 6 Jul 2007 03:15:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:33415 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762604AbXGFHPq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 03:15:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:openpgp:content-type:content-transfer-encoding;
+        b=Snv3F7ZAfXljxd3fW9OpHfvE+5t0xHuKJK2Fn0PG14FSPO8l6DbplJnnBm94Fvy6qCFtb1vyh6sbzAi35CmrpJ0ZHsVABbb1McEGbq4hxd6bu55z2mMVcClGUW6g3GJXMjI8B0nvolE2raUdU86kIDV41KwFnz7wwQW1J4nkAbk=
+Message-ID: <468DEC1B.6010301@gmail.com>
+Date: Fri, 06 Jul 2007 12:45:39 +0530
+From: jimmy bahuleyan <knight.camelot@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1909414.D37Cfd0V8l";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Gautam Singaraju <gautam.singaraju@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: RSA support into kernel?
+References: <f8b2ccd40707051548w275a1575oaaddffd40d9a9163@mail.gmail.com> <f8b2ccd40707051753v7cba58cfw1d3e0df5e4decc6d@mail.gmail.com>
+In-Reply-To: <f8b2ccd40707051753v7cba58cfw1d3e0df5e4decc6d@mail.gmail.com>
+X-Enigmail-Version: 0.95.2
+OpenPGP: url=subkeys.pgp.net
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707060317.35177.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1909414.D37Cfd0V8l
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Gautam Singaraju wrote:
+> Is there any attempt being made to provide software based RSA
+> cryptographic support in kernel? I see that Linux supports
+> Hardware based cryptographic devices (VIA Padlock ACE). How is the
+> performance of such hardware? How well are these devices supported?
+> -GS
 
-On Friday 06 July 2007, DervishD wrote:
->     I really like the spirit of CMake. Of course, it adds a dependency,
-> but IMHO is much safer to depend on CMake being installed (or Perl, for
-> that matter) than to depend on a shell. Every shell out there seems to
-> do things on its own, and apart from dash, which is more or less
-> standard, the rest of shells do actually violate the standard one way or
-> another (in fact, configure script include workarounds for at least Bash
-> and Zsh).
+i fail to see why the kernel should provide software RSA support? The
+hardware support that you're talking about are device drivers for chips,
+not a cryptographic interface.
 
-careful, you tread into dangerous territory making silly statements like th=
-at. =20
-by "standard" you probably mean "POSIX standard" which dash too has had=20
-plenty of bugs in terms of implementing it properly (and still does).  as f=
-or=20
-the workarounds you allude to, autotools is designed to be portable=20
-everywhere which means including workarounds for random bugs in major=20
-releases of operating systems.  just because autotools lacks workarounds fo=
-r=20
-bugs found in random versions of dash does not make dash magical.  there is=
-=20
-also the fact that autotools works on systems that predate POSIX or lack=20
-shells which support POSIX.  and claiming that it's safer to depend on CMak=
-e=20
-than bash in this Linux world is just plain bogus.
-=2Dmike
-
---nextPart1909414.D37Cfd0V8l
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iQIVAwUARo3sj0FjO5/oN/WBAQKf6A//eETco2XU+hjk/C4AQZaG4y2CD3D64vGO
-AzYoK0H1bVg0x1+q1FZsTlJF/fpz4FXcD6BrFN7hYI95ltEOIJ24aVHKS3GyaNqY
-/LqOezOq40r/napQ/e9qZ2ojfOsvd4M1JVAaS5SUe64Q5Idhk7piX1aCLfJw5JTS
-Zhx9hhMByKU4eAhJiiDf0wq4PIFmI8EXWMxsKpsQHm6EdWwzj03ofmu7/1HiisNm
-2MiyaddlfqDNgSjQFWuWXvsLEYtNZIcGpnWl5Kh+u2fNP0qZuDlwXGZ9Zq7jWZcK
-q4iiqUQxg7dssYNXgQb0XqJZvcFe2emAXv6LgvyhRl4TYLjB3dXj/AnLckdag7VH
-eCGPFqECZcKBdvBo2Ik6Nh68dgtwwyjJ/VbdIVhyqeO3wCFYarYaRuDoZoGnpcq6
-ArCGUI25+7nN+OhjlO1WWzBazfK1crLGstF8f6oCxoITYklgO8GWnH/LF85ZoKmG
-TI+8Cd7fzJe/ITQBbGNbAX9rX28T35LMoGPjhnhlL6jkDc+t9Bz7Xi9nvmDnPwa6
-SpBLlJxXwuI/HuS7CAYvqUxXPWoGHSgiVYEL1+5xjZblcRmTQCdOwWvu1h5kllHu
-+Dqr+RQvBTJ1jdKNJ9rUOWW2QDwz3JsO+u2qS7ce7Y15k/Kl6F+FvjD/kx1fW5td
-+F8+0a3PFuk=
-=EC+6
------END PGP SIGNATURE-----
-
---nextPart1909414.D37Cfd0V8l--
+-jb
+-- 
+Tact is the art of making a point without making an enemy.
