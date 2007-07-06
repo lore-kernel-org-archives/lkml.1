@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762374AbXGFD7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbXGFEAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762374AbXGFD7Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 23:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758664AbXGFD7G
+	id S1757795AbXGFEAO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 00:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760930AbXGFEAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 23:59:06 -0400
-Received: from alnrmhc15.comcast.net ([206.18.177.55]:53797 "EHLO
-	alnrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759546AbXGFD7F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 23:59:05 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, oliver@neukum.org, pavel@ucw.cz,
-       paulus@samba.org, stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
-	<200707052138.56920.oliver@neukum.org>
-	<E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
-	<1183676751.3388.96.camel@localhost.localdomain>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Thu, 05 Jul 2007 23:59:00 -0400
-In-Reply-To: <1183676751.3388.96.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Fri\, 06 Jul 2007 09\:05\:51 +1000")
-Message-ID: <87d4z6xjwb.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
+	Fri, 6 Jul 2007 00:00:01 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39203 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761325AbXGFEAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 00:00:00 -0400
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+In-Reply-To: <CF60EC03-0171-4052-924D-57555A393168@mac.com>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	 <200707060913.05644.nigel@nigel.suspend2.net>
+	 <1183677643.3388.105.camel@localhost.localdomain>
+	 <200707060935.12706.nigel@nigel.suspend2.net>
+	 <CF60EC03-0171-4052-924D-57555A393168@mac.com>
 Content-Type: text/plain
+Date: Fri, 06 Jul 2007 13:59:07 +1000
+Message-Id: <1183694347.3388.114.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-[snip]
+> How about a freezer whose job it is to "wait for pending hard  
+> interrupts to complete when we have already guaranteed that we won't  
+> get any more"?  That part should be really *REALLY* easy.  You don't  
+> need to care about either userspace processes or kernel threads at  
+> all.  Specifically, Step 1 consists of:
 
-> At the end of the day, I stand my ground, the freezer cannot be made
-> reliable without massive infrastructure changes or giving up on very
-> useful features such as fuse among others. Besides, it only partially
-> "hides" the problem of requests going to drivers, thus it's a bad
-> solutions.
+Well, waiting for pending DMA and making sure to not trigger more
+activity is what driver suspend() is supposed to do. With the ability
+for simple drivers that can cope with it to just basically use a
+late_suspend(), called after IRQs are off, that basically does what you
+describe: wait for pending HW tasks to complete (polling) and turn the
+damn thing off.
 
-I agree that the freezer absolutely should not be used for suspend to
-ram ("suspend"), since it is unnecessary with properly written drivers,
-which are important to have anyway.  It seems that it is indeed the
-consensus that it will be phased out sooner or later.
+Note that the later is really a shortcut for somewhat dump and directly
+accessible devices (PCI comes to mind). Things like USB has to use the
+"normal" mechanism of blocking IOs etc... at suspend(), at least, USB
+devices have to since the USB HC will not issue any new URBs. (And will
+return them with a nice error code which is a perfect way to deal with
+it in driver, been there, it works fine, once we fixed the races in the
+USB host code itself, which I think we pretty much did by now).
 
-It does seem that the current device suspend interface does not tell the
-drivers enough, since as discussed, they need to know whether to merely
-block if they receive a request while suspended (as should be done while
-initiating a suspend to ram), or if they should wake up the device (as
-should be done if a suspend to ram is not in progress).  Clearly these
-two cases need to be addressed by every driver supporting suspend/resume
-(but possibly indirectly if the subsystem handles it for them).
+> Scheduling and userspace are all still fully enabled in this  
+> scenario.  Once all your devices are turned off, the only remaining  
+> running threads will be those which haven't done IO since the  
+> beginning of the suspend.  We can then disable preemption, turn off  
+> the timer interrupts, and tell the other CPUs to park all their  
+> remaining threads in schedule() and sleep.  Then we put the IRQ  
+> controller to sleep and go to sleep ourselves.  If our driver model  
+> locking is sufficient to handle putting a parent device to sleep  
+> while threads are sleeping on a child device then there are exactly 0  
+> problems.
 
-The current hibernate approach used by all of the existing
-implementations for Linux seems to depend fundamentally on the freezer,
-though, in order to actually save the system state.  Thus, it will still
-be necessary to fix all of the issues with the freezer, or adopt an
-alternate hibernate approach (which is unlikely).  Unfortunately, even
-leaving kernel threads and certain drivers running after the snapshot is
-taken means that the saved image isn't completely correct, and the
-freezer cannot help with these issues.
+What you propose is basically a slightly over-simplistic version of what
+I think (and Paulus think) should be done. We do need to do it via
+driver callbacks down the tree since only drivers can know how to deal
+with their DMA etc... and ordering need to be respected, but that's
+basically it.
 
-[snip]
+And guess what ? It's what we do on powerbooks, and it works fine,
+without a freezer :-)
 
--- 
-Jeremy Maitin-Shepard
+Ben.
+
+
