@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761428AbXGFIIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763272AbXGFIJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761428AbXGFIIf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 04:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbXGFIIU
+	id S1763272AbXGFIJL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 04:09:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbXGFIIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 04:08:20 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:24388 "EHLO relay.sw.ru"
+	Fri, 6 Jul 2007 04:08:55 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:23340 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755783AbXGFIIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 04:08:18 -0400
-Message-ID: <468DF826.5030309@openvz.org>
-Date: Fri, 06 Jul 2007 12:07:02 +0400
+	id S1758373AbXGFIIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 04:08:53 -0400
+Message-ID: <468DF849.9080404@openvz.org>
+Date: Fri, 06 Jul 2007 12:07:37 +0400
 From: Pavel Emelianov <xemul@openvz.org>
 User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
@@ -20,7 +20,8 @@ CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
        Linux Containers <containers@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kirill Korotaev <dev@openvz.org>
-Subject: [PATCH 7/16] Helpers to find the task by its numerical ids
+Subject: [PATCH 8/16] Masquerade the siginfo when sending a pid to a foreign
+ namespace
 References: <468DF6F7.1010906@openvz.org>
 In-Reply-To: <468DF6F7.1010906@openvz.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -28,173 +29,99 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When searching the task by numerical id on may need to find
-it using global pid (as it is done now in kernel) or by its
-virtual id, e.g. when sending a signal to a task from one
-namespace the sender will specify the task's virtual id.
+When user send signal from (say) init namespace to any task in a sub
+namespace the siginfo struct must not carry the sender's pid value, as
+this value may refer to some task in the destination namespace and thus
+may confuse the application.
+
+The consensus was to pretend in this case as if it is the kernel who
+sends the signal.
+
+The pid_ns_accessible() call is introduced to check this pid-to-ns
+accessibility.
 
 Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
 ---
 
- fs/proc/base.c        |    2 +-
- include/linux/pid.h   |   13 +++++++++++--
- include/linux/sched.h |   31 +++++++++++++++++++++++++++++--
- kernel/pid.c          |   32 +++++++++++++++++---------------
- 4 files changed, 58 insertions(+), 20 deletions(-)
+ include/linux/pid.h |   10 ++++++++++
+ kernel/signal.c     |   34 ++++++++++++++++++++++++++++------
+ 2 files changed, 38 insertions(+), 6 deletions(-)
 
---- ./fs/proc/base.c.ve6	2007-07-06 10:58:56.000000000 +0400
-+++ ./fs/proc/base.c	2007-07-06 11:03:41.000000000 +0400
-@@ -2230,7 +2230,7 @@ static struct task_struct *next_tgid(uns
- 	rcu_read_lock();
- retry:
- 	task = NULL;
--	pid = find_ge_pid(tgid);
-+	pid = find_ge_pid(tgid, &init_pid_ns);
- 	if (pid) {
- 		tgid = pid->nr + 1;
- 		task = pid_task(pid, PIDTYPE_PID);
---- ./include/linux/pid.h.ve6	2007-07-06 11:03:27.000000000 +0400
-+++ ./include/linux/pid.h	2007-07-06 11:03:27.000000000 +0400
-@@ -98,14 +98,23 @@ extern struct pid_namespace init_pid_ns;
- /*
-  * look up a PID in the hash table. Must be called with the tasklist_lock
-  * or rcu_read_lock() held.
-+ *
-+ * find_pid_ns() finds the pid in the namespace specified
-+ * find_pid() find the pid by its global id, i.e. in the init namespace
-+ * find_vpid() finr the pid by its virtual id, i.e. in the current namespace
-+ *
-+ * see also find_task_by_pid() set in include/linux/sched.h
-  */
--extern struct pid *FASTCALL(find_pid(int nr));
-+extern struct pid *FASTCALL(find_pid_ns(int nr, struct pid_namespace *ns));
-+
-+#define find_vpid(pid)	find_pid_ns(pid, current->nsproxy->pid_ns)
-+#define find_pid(pid)	find_pid_ns(pid, &init_pid_ns)
+diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/pid.h linux-2.6.22-rc4-mm2-2/include/linux/pid.h
+--- linux-2.6.22-rc4-mm2.orig/include/linux/pid.h	2007-06-14 12:14:29.000000000 +0400
++++ linux-2.6.22-rc4-mm2-2/include/linux/pid.h	2007-07-04 19:00:38.000000000 +0400
+@@ -83,6 +89,16 @@ extern void FASTCALL(detach_pid(struct t
+ 	return nr;
+ }
  
- /*
-  * Lookup a PID in the hash table, and return with it's count elevated.
-  */
- extern struct pid *find_get_pid(int nr);
--extern struct pid *find_ge_pid(int nr);
-+extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
- 
- extern struct pid *alloc_pid(void);
- extern void FASTCALL(free_pid(struct pid *pid));
---- ./include/linux/sched.h.ve6	2007-07-06 11:03:27.000000000 +0400
-+++ ./include/linux/sched.h	2007-07-06 11:03:27.000000000 +0400
-@@ -1475,8 +1475,35 @@ extern struct task_struct init_task;
- 
- extern struct   mm_struct init_mm;
- 
--#define find_task_by_pid(nr)	find_task_by_pid_type(PIDTYPE_PID, nr)
--extern struct task_struct *find_task_by_pid_type(int type, int pid);
-+extern struct pid_namespace init_pid_ns;
-+
 +/*
-+ * find a task by one of its numerical ids
-+ *
-+ * find_task_by_pid_type_ns():
-+ *      it is the most generic call - it finds a task by all id,
-+ *      type and namespace specified
-+ * find_task_by_pid_ns():
-+ *      finds a task by its pid in the specified namespace
-+ * find_task_by_pid_type():
-+ *      finds a task by its global id with the specified type, e.g.
-+ *      by global session id
-+ * find_task_by_pid():
-+ *      finds a task by its global pid
-+ *
-+ * see also find_pid() etc in include/linux/pid.h
++ * checks whether the pid actually lives in the namespace ns, i.e. it was
++ * created in this namespace or it was moved there.
 + */
 +
-+extern struct task_struct *find_task_by_pid_type_ns(int type, int pid,
-+		struct pid_namespace *ns);
++static inline int pid_ns_accessible(struct pid_namespace *ns, struct pid *pid)
++{
++	return pid->numbers[pid->level].ns == ns;
++}
 +
-+#define find_task_by_pid_ns(nr, ns)	\
-+		find_task_by_pid_type_ns(PIDTYPE_PID, nr, ns)
-+#define find_task_by_pid_type(type, nr)	\
-+		find_task_by_pid_type_ns(type, nr, &init_pid_ns)
-+#define find_task_by_pid(nr)		\
-+		find_task_by_pid_type(PIDTYPE_PID, nr)
-+
- extern void __set_special_pids(pid_t session, pid_t pgrp);
- 
- /* per-UID process charging. */
---- ./kernel/pid.c.ve6	2007-07-06 11:03:27.000000000 +0400
-+++ ./kernel/pid.c	2007-07-06 11:03:27.000000000 +0400
-@@ -238,19 +238,20 @@ out_free:
- 	goto out;
- }
- 
--struct pid * fastcall find_pid(int nr)
-+struct pid * fastcall find_pid_ns(int nr, struct pid_namespace *ns)
- {
- 	struct hlist_node *elem;
--	struct pid *pid;
-+	struct pid_number *pnr;
-+
-+	hlist_for_each_entry_rcu(pnr, elem,
-+			&pid_hash[pid_hashfn(nr)], pid_chain)
-+		if (pnr->nr == nr && pnr->ns == ns)
-+			return container_of(pnr, struct pid,
-+					numbers[ns->level]);
- 
--	hlist_for_each_entry_rcu(pid, elem,
--			&pid_hash[pid_hashfn(nr)], pid_chain) {
--		if (pid->nr == nr)
--			return pid;
--	}
- 	return NULL;
- }
--EXPORT_SYMBOL_GPL(find_pid);
-+EXPORT_SYMBOL_GPL(find_pid_ns);
- 
- /*
-  * attach_pid() must be called with the tasklist_lock write-held.
-@@ -310,12 +311,13 @@ struct task_struct * fastcall pid_task(s
- /*
-  * Must be called under rcu_read_lock() or with tasklist_lock read-held.
+ #define do_each_pid_task(pid, type, task)				\
+ 	do {								\
+ 		struct hlist_node *pos___;				\
+diff -upr linux-2.6.22-rc4-mm2.orig/kernel/signal.c linux-2.6.22-rc4-mm2-2/kernel/signal.c
+--- linux-2.6.22-rc4-mm2.orig/kernel/signal.c	2007-07-04 19:00:38.000000000 +0400
++++ linux-2.6.22-rc4-mm2-2/kernel/signal.c	2007-07-04 19:00:38.000000000 +0400
+@@ -1124,13 +1124,31 @@ EXPORT_SYMBOL_GPL(kill_pid_info_as_uid);
+  * is probably wrong.  Should make it like BSD or SYSV.
   */
--struct task_struct *find_task_by_pid_type(int type, int nr)
-+struct task_struct *find_task_by_pid_type_ns(int type, int nr,
-+		struct pid_namespace *ns)
+ 
+-static int kill_something_info(int sig, struct siginfo *info, int pid)
++static inline void masquerade_siginfo(struct pid_namespace *src_ns,
++		struct pid *tgt_pid, struct siginfo *info)
++{
++	if (tgt_pid != NULL && !pid_ns_accessible(src_ns, tgt_pid)) {
++		/*
++		 * current namespace is not seen from the taks we
++		 * want to send the signal to, so pretend as if it
++		 * is the kernel who does this to avoid pid messing
++		 * by the target
++		 */
++
++		info->si_pid = 0;
++		info->si_code = SI_KERNEL;
++	}
++}
++
++static int kill_something_info(int sig, struct siginfo *info, int pid_nr)
  {
--	return pid_task(find_pid(nr), type);
-+	return pid_task(find_pid_ns(nr, ns), type);
- }
- 
--EXPORT_SYMBOL(find_task_by_pid_type);
-+EXPORT_SYMBOL(find_task_by_pid_type_ns);
- 
- struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
- {
-@@ -342,7 +344,7 @@ struct pid *find_get_pid(pid_t nr)
- 	struct pid *pid;
- 
+ 	int ret;
++	struct pid *pid;
++
  	rcu_read_lock();
--	pid = get_pid(find_pid(nr));
-+	pid = get_pid(find_vpid(nr));
+-	if (!pid) {
++	if (!pid_nr) {
+ 		ret = kill_pgrp_info(sig, info, task_pgrp(current));
+-	} else if (pid == -1) {
++	} else if (pid_nr == -1) {
+ 		int retval = 0, count = 0;
+ 		struct task_struct * p;
+ 
+@@ -1145,10 +1163,14 @@ static int kill_something_info(int sig, 
+ 		}
+ 		read_unlock(&tasklist_lock);
+ 		ret = count ? retval : -ESRCH;
+-	} else if (pid < 0) {
+-		ret = kill_pgrp_info(sig, info, find_pid(-pid));
++	} else if (pid_nr < 0) {
++		pid = find_vpid(-pid_nr);
++		masquerade_siginfo(current->nsproxy->pid_ns, pid, info);
++		ret = kill_pgrp_info(sig, info, pid);
+ 	} else {
+-		ret = kill_pid_info(sig, info, find_pid(pid));
++		pid = find_vpid(pid_nr);
++		masquerade_siginfo(current->nsproxy->pid_ns, pid, info);
++		ret = kill_pid_info(sig, info, pid);
+ 	}
  	rcu_read_unlock();
- 
- 	return pid;
-@@ -361,15 +363,15 @@ pid_t pid_nr_ns(struct pid *pid, struct 
-  *
-  * If there is a pid at nr this function is exactly the same as find_pid.
-  */
--struct pid *find_ge_pid(int nr)
-+struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
- {
- 	struct pid *pid;
- 
- 	do {
--		pid = find_pid(nr);
-+		pid = find_pid_ns(nr, ns);
- 		if (pid)
- 			break;
--		nr = next_pidmap(current->nsproxy->pid_ns, nr);
-+		nr = next_pidmap(ns, nr);
- 	} while (nr > 0);
- 
- 	return pid;
+ 	return ret;
+
