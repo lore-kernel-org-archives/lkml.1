@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbXGFUF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763465AbXGFUQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762794AbXGFUF2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 16:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762796AbXGFUFT
+	id S1763465AbXGFUQT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 16:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759626AbXGFUQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 16:05:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39391 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760809AbXGFUFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 16:05:17 -0400
-Message-Id: <200707062003.l66K3McB001808@pasta.boston.redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Chris Friesen <cfriesen@nortel.com>,
-       Clemens Koller <clemens.koller@anagramm.de>,
-       Chris Wright <chrisw@sous-sol.org>, Uli Luckas <u.luckas@road.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
-In-Reply-To: Your message of "Fri, 06 Jul 2007 07:17:26 +0200."
-             <1183699046.3289.51.camel@chaos>
-Date: Fri, 06 Jul 2007 16:03:22 -0400
-From: Ernie Petrides <petrides@redhat.com>
+	Fri, 6 Jul 2007 16:16:06 -0400
+Received: from h3mxr02.htp-tel.de ([81.14.243.50]:32262 "EHLO
+	H3MXR02.htp-tel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760499AbXGFUQF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 16:16:05 -0400
+X-Greylist: delayed 845 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jul 2007 16:16:05 EDT
+Message-ID: <468E9F9C.9010508@leemhuis.info>
+Date: Fri, 06 Jul 2007 22:01:32 +0200
+From: Thorsten Leemhuis <fedora@leemhuis.info>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Chr <chunkeey@web.de>
+CC: "Gaston, Jason D" <jason.d.gaston@intel.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2.6.22-rc6] ATA: add a PCI ID for Intel Santa Rosa PATA
+ controller
+References: <39B20DF628532344BC7A2692CB6AEE070181E0EA@orsmsx420.amr.corp.intel.com> <200707062145.01928.chunkeey@web.de>
+In-Reply-To: <200707062145.01928.chunkeey@web.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 6-Jul-2007 at 7:17 +0200, Thomas Gleixner wrote:
-
-> On Thu, 2007-07-05 at 19:12 -0400, Ernie Petrides wrote:
-> > On Thursday, 5-Jul-2007 at 16:49 MDT, Chris Friesen wrote:
-> >
-> > > Ernie Petrides wrote:
-> > >
-> > > > Only kernels built with the CONFIG_HIGH_RES_TIMERS option enabled were
-> > > > vulnerable.
-> > >
-> > > As I mentioned in my post to Thomas, we have high res timers disabled
-> > > and were still affected.  Granted, our kernel has been modified so it is
-> > > possible that vanilla would not be affected....I haven't tested it.
-> > >
-> > > Chris
-> >
-> > That's odd, because Thomas's patch removed two calls to clock_was_set(),
-> > which is a no-op when CONFIG_HIGH_RES_TIMERS is not enabled (at least in
-> > the 2.6.21 source tree).
-> >
-> > Also, I personally tested with the reproducer you posted here, initially
-> > on a box running 2.6.22-rc4, and there were no problems (but I'm not sure
-> > what config options were enabled on that kernel).  I did reproduce the
-> > problem on a stock 2.6.21 kernel with CONFIG_HIGH_RES_TIMERS enabled.
+On 06.07.2007 21:45, Chr wrote:
+> On Friday, 6. July 2007, Gaston, Jason D wrote:
+>>>>> On the other hand, we can leave it, because of a 
+>>> "off-by-one error" in ata_piix.c, 
+>>>>> do_pata_set_dmamode, line ~770:
+>>>>> [...]
+>> I quickly tried this patch on an ICH7-R system with an ATA133 Maxtor HD
+>> and it did not seem to do anything bad.  I see no difference in function
+>> or performance with the patch.
 >
-> It needs a running smp_call_function() to be interrupted by the timer
-> interrupt, which calls clock_was_set(). So it's not that easy to
-> reproduce.
+> Thanks for testing, but you forgot some numbers. ;)
+> (bonnie++? hdparm -i && hdparm -t...)
+> 
+> Because, I don't think that Maxtor HD's mechanics is faster than 100MB/s.. 
+> The only thing that can keep up with > 100MB/s are the few MB of Cache on every HDD... 
+> (so, does anyone have a good idea to check the HDD's cache performance?
 
-I think it's reproducible at will when CONFIG_BUG is enabled, because the
-WARN_ON() on line 546 of arch/i386/kernel/smp.c fires in smp_call_function(),
-causing lots of console output.  By the time on_each_cpu() later reenables
-interrupts, another clock interrupt is pending, and (I think) causes a
-self-deadlock on the xtime_lock in vmi_account_real_cycles().
+Something like the good old "Coretest" might come close to it. But I'm
+not aware of any linux benchmark out there that has the
+coretest-behavior (reading the same 64k block in a loop over and over
+again).
 
-That's my (unproven) theory, anyway.  :)
+But anyway: Sorry, am I the only one that gets nervous if we start to
+run a ATA-Hardware (Intels recent ICH southbridges in this case) with a
+speed grade (Ultra ATA/133) that is not specified by its manufacturer in
+his public data sheets (Ultra ATA/100 max)?
 
-At any rate, I reproduced it twice in two tries on stock 2.6.21.
+Doing something like that by default would imho be overclocking -- sure,
+it works often, but well, it can be the real pita on those systems where
+it doesn't. Heck, there is likely not even a real performance advantage
+ from Ultra ATA/133 in usual systems with one hard disk per channel, as
+most PATA harddisks are afaics not much quicker then round about 70
+MByte (and even that only in the early area of the disk).
 
-Cheers.  -ernie
+CU
+thl
+
+
