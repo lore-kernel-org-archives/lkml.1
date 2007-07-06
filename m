@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763867AbXGFVST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbXGFVWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763867AbXGFVST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 17:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762322AbXGFVSI
+	id S932115AbXGFVWB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 17:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762102AbXGFVVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 17:18:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:5648 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762102AbXGFVSH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 17:18:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=CTrF2v9A766Cbg+vdk4ZYo9UYkhWCdVLGhYOTqXRJyUYJT0vfU3dIJLnXlJyVz3N5TSdJwxdTZf+Y7l3ioBlRs5MUC15YkuXrjU2BQJ4vTztypvjo76dq0+SV52p6AXpvhyGb0wrWhRDrlX0CWRG9MwL8KOoNqA2kry/hx8c8yw=
-Date: Sat, 7 Jul 2007 01:18:03 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Some love to default profiler
-Message-ID: <20070706211803.GB5789@martell.zuzino.mipt.ru>
-References: <20070704213420.GA5864@martell.zuzino.mipt.ru> <9a8748490707041650s3b122007o46c8a34647b43af3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9a8748490707041650s3b122007o46c8a34647b43af3@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 6 Jul 2007 17:21:53 -0400
+Received: from main.gmane.org ([80.91.229.2]:42756 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760650AbXGFVVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 17:21:53 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: plain text MUAs (Re: [git pull][resend] Input updates for 2.6.22-rc7)
+Date: Fri, 6 Jul 2007 21:21:40 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnf8tdbo.bju.olecom@flower.upol.cz>
+References: <200707050111.43327.dtor@insightbb.com> <alpine.LFD.0.98.0707051556000.9434@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 01:50:27AM +0200, Jesper Juhl wrote:
-> One tiny comment below.
+* Linus Torvalds <Thu, 5 Jul 2007 16:09:10 -0700 (PDT)>
 
-> >+#define prof_on 0
-> >+static inline void profile_init(void)
-> >+{
-> >+}
+> Content-Transfer-Encoding: QUOTED-PRINTABLE
+
+> On Thu, 5 Jul 2007, Dmitry Torokhov wrote:
+>> 
+>> Please consider pulling from:
+>> 
+>>         git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
 >
-> Just to be pedantic; don't we want a blank line between functions
-> here, even if they are empty?
+> There's somethign wrong with your emails, and it's very irritating.
+>
+> I cannot just cut-and-paste the whole line, because your tabs and spaces 
+> aren't tabs and spaces, they are some horrible abomination.
+>
+> What _looks_ like a tab above, when I save it and look at it with "od",
 
-Dunno, it's boilerplate code, nobody reads it.
+The Plain-Text tools...
+As a proud user of such, i can only say, that crap can be seen just
+like a plain-text (:
 
-> >+static inline void profile_tick(int type)
-> >+{
-> >+}
-> >+static inline void profile_hits(int type, void *ip, unsigned int nr_hits)
-> >+{
-> >+}
-> >+static inline void profile_hit(int type, void *ip)
-> >+{
-> >+}
-> >+static inline void profile_munmap(unsigned long addr)
-> >+{
-> >+}
-> >+static inline void profile_task_exit(struct task_struct *tsk)
-> >+{
-> >+}
-> >+static inline int profile_handoff_task(struct task_struct *tsk)
-> >+{
-> >+       return 0;
-> >+}
+|-*-
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 git://git.kernel.org/pub/scm/linux/kernel/g=
+it/dtor/input.git for-linus
+
+or
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 master.kernel.org:/pub/scm/linux/kernel/git=
+/dtor/input.git for-linus
+|-*-
+
+And quoted-printable is the most awful thing, when i read MLs with slrn :)
+____
 
