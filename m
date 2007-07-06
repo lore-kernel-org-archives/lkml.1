@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763966AbXGFToV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763563AbXGFTvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763966AbXGFToV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 15:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbXGFToI
+	id S1763563AbXGFTvk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 15:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760155AbXGFTva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 15:44:08 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:33903 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762135AbXGFToF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 15:44:05 -0400
-From: Chr <chunkeey@web.de>
-To: "Gaston, Jason D" <jason.d.gaston@intel.com>
-Subject: Re: [patch 2.6.22-rc6] ATA: add a PCI ID for Intel Santa Rosa PATA controller
-Date: Fri, 6 Jul 2007 21:45:01 +0200
-User-Agent: KMail/1.9.7
-Cc: "Thorsten Leemhuis" <thl@ct.heise.de>,
-       "Thorsten Leemhuis" <fedora@leemhuis.info>,
-       "Chuck Ebbert" <cebbert@redhat.com>, "Jeff Garzik" <jeff@garzik.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <39B20DF628532344BC7A2692CB6AEE070181E0EA@orsmsx420.amr.corp.intel.com>
-In-Reply-To: <39B20DF628532344BC7A2692CB6AEE070181E0EA@orsmsx420.amr.corp.intel.com>
+	Fri, 6 Jul 2007 15:51:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:59104 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759940AbXGFTva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 15:51:30 -0400
+Message-ID: <468E9D3F.4030406@goop.org>
+Date: Fri, 06 Jul 2007 12:51:27 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeff Dike <jdike@addtoit.com>
+CC: Dan Kegel <dank@kegel.com>, linux-kernel@vger.kernel.org,
+       Robert Walsh <rjwalsh@durables.org>
+Subject: Re: Valgrinding the kernel?
+References: <a71bd89a0707052114u28fed408h4326913c502a43ac@mail.gmail.com> <468DD6A5.4020705@goop.org> <20070706172513.GD10670@c2.user-mode-linux.org> <a71bd89a0707061030s15572cj49cb748bf274593b@mail.gmail.com> <20070706194252.GA12311@c2.user-mode-linux.org>
+In-Reply-To: <20070706194252.GA12311@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707062145.01928.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX19R1ss8cINt5bBlqNyRcMIN+yqzJuuySN/z59Fb
-	50BABM6o0PeupALFwjwgurhJL8E5pD9ACqSwnI3zHRBk8WZurQ
-	1Y5/zgWRk=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 6. July 2007, Gaston, Jason D wrote:
-> >> > On the other hand, we can leave it, because of a 
-> >"off-by-one error" in ata_piix.c, 
-> >> > do_pata_set_dmamode, line ~770:
-> >> > [...]
-> >> 
-> >
-> >Thanks,
-> >	Chr.
-> >
-> >
-> 
-> I quickly tried this patch on an ICH7-R system with an ATA133 Maxtor HD
-> and it did not seem to do anything bad.  I see no difference in function
-> or performance with the patch.
-> 
-> Jason
-> 
+Jeff Dike wrote:
+> On Fri, Jul 06, 2007 at 10:30:19AM -0700, Dan Kegel wrote:
+>   
+>> Could you give it a shot?
+>>     
+>
+> OK, after ripping out the code that broke valgrind last time (patch
+> below), I get this:
+>
+> ==27590== Warning: set address range perms: large range 516194304, a 0, v 0
+>   
 
-Thanks for testing, but you forgot some numbers. ;)
-(bonnie++? hdparm -i && hdparm -t...)
+Hm, wonder what that is...
 
-Because, I don't think that Maxtor HD's mechanics is faster than 100MB/s.. 
-The only thing that can keep up with > 100MB/s are the few MB of Cache on every HDD... 
-(so, does anyone have a good idea to check the HDD's cache performance?
-hdparm -t reads too much data) 
+> vex x86->IR: unhandled instruction bytes: 0xF3 0xAF 0x74 0x9
+> ==27590== Your program just tried to execute an instruction that Valgrind
+> ==27590== did not recognise.  There are two possible reasons for this.
+> ==27590== 1. Your program has a bug and erroneously jumped to a non-code
+> ==27590==    location.  If you are running Memcheck and you just saw a
+> ==27590==    warning about a bad jump, it's probably your program's fault.
+> ==27590== 2. The instruction is legitimate but Valgrind doesn't handle it,
+> ==27590==    i.e. it's Valgrind's fault.  If you think this is the case or
+> ==27590==    you are not sure, please let us know.
+> ==27590== Either way, Valgrind will now raise a SIGILL signal which will
+> ==27590== probably kill your program.
+> ==27590== 
+>
+>   
+>> Maybe the problems after that will be more pedestrian.
+>>     
+>
+> Doesn't look like it.
+>
+> FWIW, that instruction is repz scas.  In an earlier valgrind effort in
+> 2002, I hit repe scas
+> (http://www.goop.org/~jeremy/valgrind/76-repe-scas.patch), so maybe
+> something similar is needed here.
+>   
 
-I came up with something like:
-"dd if=/dev/sdX of=/dev/null bs=4M count=1 iflag=direct"
+The virtual CPU code has been competely rewritten since then.  If its a 
+non-gcc generated instruction, its possible the new code 
+parser/generator hasn't been taught to deal with it.
 
-and run it 10 times in a row.
+>> I'm willing to focus a little effort on this.
+>>     
+>
+> I guess you'll have to fix valgrind's various bugs.  See, simple :)
+>   
 
-here's a test run with a SATA I WD2500YD-01N ( hdparm -t performance: ~57MB/s)
-4194304 bytes (4.2 MB) copied, 0.0897687 seconds, 46.7 MB/s
-4194304 bytes (4.2 MB) copied, 0.0776731 seconds, 54.0 MB/s
-4194304 bytes (4.2 MB) copied, 0.0711224 seconds, 59.0 MB/s
-4194304 bytes (4.2 MB) copied, 0.0679675 seconds, 61.7 MB/s
-4194304 bytes (4.2 MB) copied, 0.0603272 seconds, 69.5 MB/s
-4194304 bytes (4.2 MB) copied, 0.0543068 seconds, 77.2 MB/s
-4194304 bytes (4.2 MB) copied, 0.0522881 seconds, 80.2 MB/s
-4194304 bytes (4.2 MB) copied, 0.0520612 seconds, 80.6 MB/s
-4194304 bytes (4.2 MB) copied, 0.0444805 seconds, 94.3 MB/s
-4194304 bytes (4.2 MB) copied, 0.0338407 seconds, 124 MB/s
-4194304 bytes (4.2 MB) copied, 0.0333174 seconds, 126 MB/s 
+Exactly ;)
 
-Thanks,
-	Chr
+    J
