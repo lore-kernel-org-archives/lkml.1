@@ -1,98 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762665AbXGFLnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763091AbXGFLoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762665AbXGFLnn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 07:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbXGFLng
+	id S1763091AbXGFLoH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 07:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbXGFLn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 07:43:36 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:33561 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758871AbXGFLnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 07:43:35 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: SATA exceptions
-Date: Fri, 6 Jul 2007 14:43:10 +0300
-User-Agent: KMail/1.9.7
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
-References: <200707060046.13237.caglar@pardus.org.tr> <468DA071.9010605@gmail.com>
-In-Reply-To: <468DA071.9010605@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4128241.6zHICuv4P7";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 6 Jul 2007 07:43:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35643 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760027AbXGFLnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 07:43:55 -0400
+Subject: Re: [PATCH] Libertas: Fix regression in cmd.c introduced in commit
+	18c96c3497aa871608d57ca5e08de3558159a6c9
+From: Dan Williams <dcbw@redhat.com>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Guillaume LECERF <glecerf@gmail.com>, linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <a781481a0707060029r3ebf237bl84e27247f0943820@mail.gmail.com>
+References: <b8e9195f0707051609v36182409mc07f030cca790a7a@mail.gmail.com>
+	 <a781481a0707060029r3ebf237bl84e27247f0943820@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 07:48:13 -0400
+Message-Id: <1183722493.15222.3.camel@xo-13-A4-25.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707061443.10991.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4128241.6zHICuv4P7
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 2007-07-06 at 12:59 +0530, Satyam Sharma wrote:
+> Hi Guillaume,
+> 
+> [ Added relevant folks to Cc: ]
 
-Hi;
+Botched backport, head is correct.  It's worth noting that WPA didn't
+work before the original commit at _all_, and after the commit it would
+actually work, but you probably couldn't turn it off :)
 
-06 Tem 2007 Cum tarihinde, Tejun Heo =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=C4=
-=B1:=20
-> S.=C3=87a=C4=9Flar Onur wrote:
-> > [ 4260.278427] ata1.00: cmd ca/00:08:d0:88:bc/00:00:00:00:00/ee tag 0 c=
-db
-> > 0x0 data 4096 out
-> > [ 4260.278430]          res 51/40:01:d7:88:bc/00:00:0e:00:00/ee Emask 0=
-x9
-> > (media error)
->
-> That's media error on sector 247236823 on WRITE.  Media errors on write
-> are bad signs - it usually means the drive even failed to remap the
-> sector because extra space ran out.=20
+Thanks for the catch, I'll fix and push to linville.
 
-Hmm, more than 50GB is empty on disk :)
+dan
 
-> I'm not sure this is the case here=20
-> tho - the smart log is clear.  Please run smart short/long tests and see
-> what they say.
+> On 7/6/07, Guillaume LECERF <glecerf@gmail.com> wrote:
+> > [...]
+> >
+> > --- a/drivers/net/wireless/libertas/cmd.c
+> > +++ b/drivers/net/wireless/libertas/cmd.c
+> > @@ -241,7 +241,7 @@
+> >                 if (*enable)
+> >                         penableRSN->enable = cpu_to_le16(cmd_enable_rsn);
+> >                 else
+> > -                       penableRSN->enable = cpu_to_le16(cmd_enable_rsn);
+> > +                       penableRSN->enable = cpu_to_le16(cmd_disable_rsn);
+> >         }
+> >
+> >         lbs_deb_leave(LBS_DEB_CMD);
+> >
+> 
+> Thanks for the patch (looks reasonable to me), but:
+> 
+> 1. No point sending a patch without a "Signed-off-by:" line.
+> 2. Changelog (a few lines of explanation before signed-off-by) must
+> specify what was wrong, and why the patch is correct.
+> 3. Always Cc: relevant maintainers or at least _somebody_ who
+> _will_ pick it up.
+> 4. Gmail has done horrible things to the patch as usual, use some
+> other mailer or script.
+> 
+> And in general, please read: Documentation/SubmittingPatches
+> and http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+> 
+> Satyam
 
-Both completed without a problem;
-
-zangetsu ~ # smartctl -l selftest /dev/sda
-smartctl version 5.37 [i686-pc-linux-gnu] Copyright (C) 2002-6 Bruce Allen
-Home page is http://smartmontools.sourceforge.net/
-
-=3D=3D=3D START OF READ SMART DATA SECTION =3D=3D=3D
-SMART Self-test log structure revision number 1
-Num  Test_Description    Status                  Remaining  LifeTime(hours)=
- =20
-LBA_of_first_error
-# 1  Extended offline    Completed without error       00%       357       =
-  -
-# 2  Short offline       Completed without error       00%       355       =
-  -
-
-If you want me to try something else please just say :)
-
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart4128241.6zHICuv4P7
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGjirOy7E6i0LKo6YRApJyAKDMUd6rbpzznSZMmopuMsqvCnt+NgCfRVUx
-sXgR/QxlXR6r3UqWebdPDN8=
-=ZySk
------END PGP SIGNATURE-----
-
---nextPart4128241.6zHICuv4P7--
