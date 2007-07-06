@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbXGFORj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761604AbXGFOVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbXGFORj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 10:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXGFORb
+	id S1761604AbXGFOVQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 10:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXGFOVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 10:17:31 -0400
-Received: from smtp1.netcabo.pt ([212.113.174.28]:2852 "EHLO
-	exch01smtp11.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752464AbXGFORa (ORCPT
+	Fri, 6 Jul 2007 10:21:05 -0400
+Received: from mathups.math.u-psud.fr ([129.175.52.4]:64008 "EHLO
+	matups.math.u-psud.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752795AbXGFOVE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 10:17:30 -0400
-Message-ID: <37651.194.65.103.1.1183731362.squirrel@www.rncbc.org>
-Date: Fri, 6 Jul 2007 15:16:02 +0100 (WEST)
-Subject: Re: 2.6.21-rt2..8 troubles
-From: "Rui Nuno Capela" <rncbc@rncbc.org>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Cc: "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-User-Agent: SquirrelMail/1.5.1
+	Fri, 6 Jul 2007 10:21:04 -0400
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: mikie <mikie.pl@gmail.com>
+Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
+Date: Fri, 6 Jul 2007 16:20:43 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
+In-Reply-To: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>       
-    <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu>       
-    <46574DE4.2080900@rncbc.org> <1180195709.4264.7.camel@chaos>       
-    <4658A4F4.1080204@rncbc.org>  <46660369.2070104@rncbc.org>       
-    <1181317625.4404.332.camel@chaos>       
-    <59605.213.13.107.141.1181326897.squirrel@www.rncbc.org>       
-    <1181328636.4404.335.camel@chaos>  <466DA42A.6010600@rncbc.org>       
-    <1181591122.8176.159.camel@chaos>       
-    <1181591733.11539.217.camel@imap.mvista.com>       
-    <466DB581.8050306@rncbc.org>  <1181596473.8176.162.camel@chaos>       
-    <466DBDC2.8030509@rncbc.org>  <1181598178.8176.180.camel@chaos>       
-    <1181601280.11539.219.camel@imap.mvista.com>      
-    <1181603306.8176.183.camel@chaos>   
-    <35572.194.65.103.1.1181643050.squirrel@www.rncbc.org>
-In-Reply-To: <35572.194.65.103.1.1181643050.squirrel@www.rncbc.org>
-X-OriginalArrivalTime: 06 Jul 2007 14:17:28.0738 (UTC) FILETIME=[625BE820:01C7BFD8]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707061620.44348.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday 6 July 2007 14:54:18 mikie wrote:
+> Hi,
+> 
+> I experience some problems with the speedtch.c module, especially in
+> regards to its firmware loader.
+> I am not quite sure if this module is going to load the firmware
+> itself or does it use some external software to do that ?
 
-I'm back but with good news this time :)...
+It loads it itself, using some external software!
+ 
+> All I get is :
+> 
+> Jul  6 13:41:37 srv kernel: speedtch 1-2:1.0: speedtch_find_firmware:
+> looking for speedtch-1.bin.2.00
+> [...]
+> Jul  6 13:42:19 srv kernel: speedtch 1-2:1.0: speedtch_find_firmware:
+> looking for speedtch-1.bin.2
+> [...]
+> Jul  6 13:43:19 srv kernel: speedtch 1-2:1.0: speedtch_find_firmware:
+> looking for speedtch-1.bin
+> 
+> And nothing more happens. The firmware does not get loaded to the
+> modem. There is also no information in the logs that the firmware
+> loading failed...
 
-On Tue, June 12, 2007 11:10, Rui Nuno Capela wrote:
-> On Tue, June 12, 2007 00:08, Thomas Gleixner wrote:
->> On Mon, 2007-06-11 at 15:34 -0700, Daniel Walker wrote:
->>> On Mon, 2007-06-11 at 23:42 +0200, Thomas Gleixner wrote:
->>>> On Mon, 2007-06-11 at 22:25 +0100, Rui Nuno Capela wrote:
->>>>
->>>>> Nope. It's a Fujitsu-Siemens Amilo Si 1520 -- Intel Core2 Duo
->>>>> T7200@2.0Ghz.
->>>>>
->>>> Yeah, there are Dell ones which have similar or worse symptoms.
->>>>
->>>>> Works great with 2.6.21-rt1, and 2.6.22-rc4-hrt5, but that you
->>>>> already know :)
->>>>
->>>> Ok. I go back and figure out which differences we have between
->>>> 2.6.21-rt>8 and the -hrt queue.
->>>
->>> Are you sure it's strictly and HRT issue? I didn't see a
->>> !CONFIG_HIGH_RES_TIMERS test ..
->>
->> The main difference between -rt1 and -rt2 was the update of -hrt, which
->>  not only affects CONFIG_HIGH_RES_TIMERS. There are enough
->> CONFIG_HIGH_RES_TIMERS=n related changes to clock events and friends as
->>  well.
->
-> In deed, FWIW and IIRC, I can confirm that the show-stopper problem was
-> still present when tried with CONFIG_HIGH_RES_TIMERS not set (=N).
->
+It should either print:
+	no stage 1 firmware found!
+or
+	found stage 1 firmware <name>
+Does it really print neither?  If so, that must mean that the
+firmware loader got stuck.
 
-Although I'm still with my fingers crossed, I can tell that 2.6.21.5-rt19
-(and -rt20) does behave far better now on the very same box.
+> I have read and checked the firmware.agent script from some hotplug
+> package, and noticed that it makes something like simple file copy of
+> the firmware to the "data" and echoing 1 or 0 to the "loading" file.
+> But what is the location of these data/loading ? Also the firmware is
+> split into 2 parts -- should I upload them one after another? Is that
+> all that should be done to get the firmware loaded?
 
-I've more than 8 hours up and running now, without a single glimpse of the
-bad symptoms, which used to show in a matter of minutes if not earlier
-during init time.
+You need to write the file that was asked for: the modem starts by asking
+for the first file, uploads it, then asks for the second file and uploads it.
+The file is written to the "data" file, but note that the data file is created
+on the fly when the modem requests a firmware load so you can't write to it
+at some random time.
 
-Congratulations, -rt is usable again here and that just makes me happier :)
+Ciao,
 
-Cheers.
--- 
-rncbc aka Rui Nuno Capela
-rncbc@rncbc.org
-
-
+Duncan.
