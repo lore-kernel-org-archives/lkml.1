@@ -1,66 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761697AbXGFGMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761975AbXGFGV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761697AbXGFGMb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 02:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbXGFGMU
+	id S1761975AbXGFGV0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 02:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757847AbXGFGVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 02:12:20 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:36796 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756677AbXGFGMT (ORCPT
+	Fri, 6 Jul 2007 02:21:19 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:44254 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755390AbXGFGVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 02:12:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=s1JetL6y5hUfOeOiB2mpHj8cC5aEzSfTg3WOQAgMOIUkDenLecJWHHxpxkGJ2++j3Jo52HyUep+XIJIu3ke9vDOfLC+kqax+TfSa/AO0g8RRrNBhnulo7AG9YFy1Izt7iMv+QgKpdZS2MYmq29+6RnkXP1iVI00c2qKmRrkN488=  ;
-X-YMail-OSG: _X2KTa0VM1nttiIfo6y3j.D8pTo_jao.hyqkBJSeIaLl.uXPMAkZ1_Z2K98hSP0TdSu_MMwjLg--
-Message-ID: <468DDD3A.6010308@yahoo.com.au>
-Date: Fri, 06 Jul 2007 16:12:10 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Fri, 6 Jul 2007 02:21:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=KJW2P3xprY6c1oBExmZISMJDn7DkdQwWotj1D+X+kmrGs4TnTSL78+HLZ8w6nKWUaPfp9/mPCv7i/9fMAJ5P23GZLzlrWFuQ61vTg57zqCAjClH2kI7nNrAmQw5EvW2GEMg7YBkEL1x8MG2O+qC0SwlkUuoZLlduRS1eWvTbT9o=
+Message-ID: <7dce480a0707052321nacc0f10x2e20171760b97705@mail.gmail.com>
+Date: Fri, 6 Jul 2007 06:21:16 +0000
+From: "Kaleem Khan" <linuxuser8@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: kill -9?
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Thread Migration Preemption
-References: <20070705215152.GA4865@Krystal>
-In-Reply-To: <20070705215152.GA4865@Krystal>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Thread Migration Preemption
-> 
-> This patch adds the ability to protect critical sections from migration to
-> another CPU without disabling preemption.
-> 
-> This will be useful to minimize the amount of preemption disabling for the -rt
-> patch. It will help leveraging improvements brought by the local_t types in
-> asm/local.h (see Documentation/local_ops.txt). Note that the updates done to
-> variables protected by migration_disable must be either atomic or protected from
-> concurrent updates done by other threads.
-> 
-> Typical use:
-> 
-> migration_disable();
-> local_inc(&__get_cpu_var(&my_local_t_var));
-> migration_enable();
-> 
-> Which will increment the variable atomically wrt the local CPU.
-> 
-> Comments (such as how to integrate this in the already almost full
-> preempt_count) are welcome.
+Hello Kernel experts,
 
-This seems like way too much stuff to add just for this type of thing. Why
-not just disable and reenable preempt? Surely local_inc is not going to take
-so long that disabling preemption matters.
+I'd like to know whether there's a way to take some action (say
+calling a routine) in
+response to 'kill -9' before the process is terminated. I tend to
+think it's against 'kill -9'
+UNIX/Linux philosophy but still I'd like to confirm.
 
-The task struct is not something we should just be carefree putting crap
-into because it is seemingly free :(
-
--- 
-SUSE Labs, Novell Inc.
+Thank you.
