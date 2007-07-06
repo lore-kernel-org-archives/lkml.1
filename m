@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764073AbXGFUDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764192AbXGFUDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764073AbXGFUDE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 16:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761590AbXGFUCx
+	id S1764192AbXGFUDW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 16:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764088AbXGFUDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 16:02:53 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:55517 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760277AbXGFUCw (ORCPT
+	Fri, 6 Jul 2007 16:03:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41245 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764075AbXGFUDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 16:02:52 -0400
-Subject: Re: [patch 0/3] clean gendisk out of scsi ULD structs
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: akpm@linux-foundation.org, jeff@garzik.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070705140636.6dbabd6f.kristen.c.accardi@intel.com>
-References: <20070705140636.6dbabd6f.kristen.c.accardi@intel.com>
-Content-Type: text/plain
-Date: Fri, 06 Jul 2007 15:02:49 -0500
-Message-Id: <1183752169.3448.93.camel@localhost.localdomain>
+	Fri, 6 Jul 2007 16:03:04 -0400
+Date: Fri, 6 Jul 2007 21:09:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: minyard@acm.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] Serial 8250: Handle saving the clear-on-read bits from
+ the LSR and MSR
+Message-ID: <20070706210918.255a6a68@the-village.bc.nu>
+In-Reply-To: <20070706194244.GA18371@localdomain>
+References: <20070706194244.GA18371@localdomain>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-05 at 14:06 -0700, Kristen Carlson Accardi wrote:
-> Since gendisk will now become part of struct scsi_device, we don't need
-> to store this value in any private data structs where they already store
-> scsi_device.  This series cleans up a few drivers which did this.
+On Fri, 06 Jul 2007 14:42:44 -0500
+Corey Minyard <minyard@acm.org> wrote:
 
-Actually, as Al pointed out, we do have lifetime rules issues with doing
-this.  The problem is that gendisk itself always has a shorter lifetime
-than scsi_device (not much shorter, usually, but if you execute a legal
-ULD unbind manoeuvre you'll end up with a dangling gendisk pointer).
+> I haven't heard anything on this patch.  This is moved up to 2.6.22-rc7.
+> Is there anything that needs to change to get it included?
 
-The other problem with taking gendisk out of the ULD structure and
-putting it into the scsi_device is that for the sg driver, we have two
-of them (one for the attached ULD and one for the sg driver).
-
-The fundamental issue seems to be that the gendisk is the holder of all
-the other info (queue, ULD etc) not vice versa ... and this patch is
-trying to reverse that relationship.
-
-James
-
-
+Testing for some time in -mm in case of side effects and then pushing it
+to an early -rc of a new kernel
