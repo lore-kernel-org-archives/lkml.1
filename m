@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbXGFPzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbXGFPzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932082AbXGFPzh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760184AbXGFPz2
+	id S1762303AbXGFPzt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 11:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762863AbXGFPzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:55:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:39636 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757220AbXGFPz2 (ORCPT
+	Fri, 6 Jul 2007 11:55:32 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:49279 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762357AbXGFPzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:55:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aliNTZtDYmV7leVXQuRHOldZvuKgixUZgDYEV2f/9cKH8Rkp52KCaGc2tZAz4jwEMQiAyXzxQuYspzslNsBZlCO4ilObE/Yr0Vjp2PiLinpKRETHBDG1a5a0y7kqd6fNvAopGS4TbL3sPCTTIANJv42wQjiomWv5tgDy9olPX4Y=
-Message-ID: <f8b2ccd40707060855o33f1db48v2139ed909e774066@mail.gmail.com>
-Date: Fri, 6 Jul 2007 08:55:27 -0700
-From: "Gautam Singaraju" <gautam.singaraju@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: syscall macro fails upon compilation
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <p73r6nl21fe.fsf@bingen.suse.de>
+	Fri, 6 Jul 2007 11:55:31 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 6 Jul 2007 11:53:11 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, gregkh@suse.de
+Subject: Re: [PATCH] USB:  Remove Makefile reference to obsolete OHCI_AT91.
+In-Reply-To: <20070706084910.4e5fc20f.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0707061152090.32394@localhost.localdomain>
+References: <Pine.LNX.4.64.0707060623170.11885@localhost.localdomain>
+ <20070706084910.4e5fc20f.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f8b2ccd40707051509tcbce704y3e5b114580069039@mail.gmail.com>
-	 <468D6D1F.4040008@zytor.com> <p73r6nl21fe.fsf@bingen.suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am surprised that syscalls have been removed. Anyway, I plan to
-write a device node with read and write functions just so that I can
-call a method from a user space. What are my other choices?
---
-Gautam
+On Fri, 6 Jul 2007, Randy Dunlap wrote:
 
-On 06 Jul 2007 13:53:41 +0200, Andi Kleen <andi@firstfloor.org> wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
+> On Fri, 6 Jul 2007 06:24:20 -0400 (EDT) Robert P. J. Day wrote:
 >
-> > Gautam Singaraju wrote:
-> > > I use the _syscall0 macro.
 > >
-> > Don't.  The _syscall*() macros have been unsupported for ages,
+> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> >
+> > ---
+> >
+> > diff --git a/drivers/usb/Makefile b/drivers/usb/Makefile
+> > index 72464b5..4d65404 100644
+> > --- a/drivers/usb/Makefile
+> > +++ b/drivers/usb/Makefile
+> > @@ -15,7 +15,6 @@ obj-$(CONFIG_USB_OHCI_HCD)	+= host/
+> >  obj-$(CONFIG_USB_UHCI_HCD)	+= host/
+> >  obj-$(CONFIG_USB_SL811_HCD)	+= host/
+> >  obj-$(CONFIG_USB_U132_HCD)	+= host/
+> > -obj-$(CONFIG_USB_OHCI_AT91)	+= host/
+> >
+> >  obj-$(CONFIG_USB_ACM)		+= class/
+> >  obj-$(CONFIG_USB_PRINTER)	+= class/
+> > --
 >
-> That's not true. I supported them on x86 before they were removed against
-> my objections.
->
-> > and broken for ever longer.
->
-> Well, most syscall() versions get 6 argument calls wrong
-> (not sure if that is finally fixed). _syscall*() didn't support
-> -fPIC for larger argument counts (_syscall0-2 never had a problem)
->
-> So all alternatives short of writing your own stub had various
-> issues. If you needed 6 argument calls _syscall* was typically
-> the best alternative.
->
-> -Andi
->
+> Please use subsystem mailing lists instead of using lkml for
+> Everything:
 
+that's what i would normally do, except a couple times when i did
+that, i was chided for not posting to the main list.  i'll deal just
+with the subsystem lists from now on.
 
--- 
----
-Gautam
+rday
