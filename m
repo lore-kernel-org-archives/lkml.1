@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbXGFSa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbXGFScx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbXGFSa1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 14:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761351AbXGFSaU
+	id S1764029AbXGFScx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 14:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760891AbXGFScq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 14:30:20 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:36594 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760891AbXGFSaS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 14:30:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=srQu/kNTOksVcA1+a1Ea5hJYS/S12PRoJCBiBq0PyLzeVyK06t3ccWNGcB/fERpXtFko3J0+vNaXT42butUUXsqC1r3TPiFr6Xx4IbR74DsvJQdgmJOU+8KPAXiUVVnAJHAkEL7MOGkdJJmfH0sl/2URkvMW26fhrsOhzXsl28A=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: PATA-disk named sda
-Date: Fri, 6 Jul 2007 20:47:10 +0200
-User-Agent: KMail/1.9.6
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>,
-       linux-kernel@vger.kernel.org
-References: <fa.VMMtK2yPXE5gkxuIC8MWb1aPBiQ@ifi.uio.no> <468E5420.7090605@shaw.ca> <468E82C8.7060204@rtr.ca>
-In-Reply-To: <468E82C8.7060204@rtr.ca>
+	Fri, 6 Jul 2007 14:32:46 -0400
+Received: from mx.treblig.org ([80.68.94.177]:3277 "EHLO mx.treblig.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758615AbXGFScp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 14:32:45 -0400
+Date: Fri, 6 Jul 2007 19:32:44 +0100
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: can entire drivers/acorn subdirectory be removed?
+Message-ID: <20070706183244.GB25207@gallifrey>
+References: <Pine.LNX.4.64.0707060632330.12604@localhost.localdomain>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707062047.10265.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <Pine.LNX.4.64.0707060632330.12604@localhost.localdomain>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
+X-Uptime: 19:29:19 up 63 days, 12:12,  1 user,  load average: 0.76, 0.79, 0.66
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 July 2007, Mark Lord wrote:
-> Robert Hancock wrote:
-> >..
-> > Currently the DMA, multi-sector mode, etc. are not controllable with 
-> > hdparm with libata. libata is designed to use the fastest settings 
-> > possible by default. In a lot of cases this messing with hdparm was only 
-> > needed because of stupidity with the old IDE code (like DMA not being 
-> > automatically enabled if the low-level driver was built modular).
+* Robert P. J. Day (rpjday@mindspring.com) wrote:
+
+>   and if that happens, then the config variables defined in
+> drivers/acorn/block/Kconfig:
 > 
-> Actually, most of the hdparm flags were put there to help test the IDE
-> subsystem and to help debug the much stranger hardware it had to deal with.
+>   config BLK_DEV_FD1772
+>   config BLK_DEV_MFM
+>   config BLK_DEV_MFM_AUTODETECT
 > 
-> "DMA off by default" was a Linus Torvalds request, to help ensure data safety
-> with all of the weird and wonderful crap pre-standardization.
+> would also vanish, which suggests that any references to *them* could
+> also be deleted:
 
-Exactly as Mark says.
+Ah those are blasts from the past; I've got to wonder how many
+MFM drives that still work are out there.
 
-I just want to add that "DMA off by default" hasn't been a case for a long
-time now and since 2.6.21 the config option for "DMA on by default" is also
-finally gone (to make a long story short: this was the best way to fix some
-bugs while not causing regressions, not to mention that it was defaulting
-to Y for years).
+I should take the 5.25" FH 64MB drive I tested that on to the tip
+sometime.
 
-Thanks,
-Bart
+Dave
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
