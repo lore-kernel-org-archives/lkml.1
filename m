@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763293AbXGFPZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbXGFPcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763293AbXGFPZQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760269AbXGFPZE
+	id S1763319AbXGFPcw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 11:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760698AbXGFPcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:25:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:54769 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758960AbXGFPZB (ORCPT
+	Fri, 6 Jul 2007 11:32:45 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:58710 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760502AbXGFPco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:25:01 -0400
-Date: Fri, 6 Jul 2007 17:24:54 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] introduce panic_gently
-In-Reply-To: <p73d4z520v6.fsf@bingen.suse.de>
-Message-ID: <Pine.LNX.4.58.0707061705260.2241@be1.lrz>
-References: <Pine.LNX.4.58.0707060034330.18989@be1.lrz> <p73d4z520v6.fsf@bingen.suse.de>
+	Fri, 6 Jul 2007 11:32:44 -0400
+Date: Fri, 6 Jul 2007 18:32:32 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][Patch] Allow not mounting a root fs
+Message-ID: <20070706153232.GA11907@localdomain>
+References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <468DA42D.7050309@zytor.com> <Pine.LNX.4.58.0707061551240.2241@be1.lrz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/jU7EMNrSQ7SiY6iAwjCxmEyx3HesTfKULkRN
- eUapKkK4/p3rkTTtZqNyiPBJoyFUcQrS2dpGTS57MCrjOl1+b4
- 90b3qkig4hAH0R9Guucvg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0707061551240.2241@be1.lrz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jul 2007, Andi Kleen wrote:
-
-> Bodo Eggert <7eggert@gmx.de> writes:
+On Fri, Jul 06, 2007 at 05:00:40PM +0200, Bodo Eggert wrote:
+> On Thu, 5 Jul 2007, H. Peter Anvin wrote:
 > 
-> > If the boot process failes to find init or the root fs, the cause has 
-> > usually scrolled off the screen, and because of the panic, it can't be 
-> > reached anymore.
+> > Bodo Eggert wrote:
+> > > This patch adds the option to not mount another root filesystem 
+> > > by specifying root=initramfs.
 > > 
-> > This patch introduces panic_gently, which will allow to use the scrollback 
-> > buffer and to reboot, but it can't be called from unsafe context.
+> > Uhm, the kernel doesn't mount anything if you're using an initramfs.
 > 
-> The implementation certainly has too much duplicated code. If anything
-> it needs some common functions.
+> Yes, instead it panics trying to mount the non-existing "root=".
+> I've put the complete system into initrams, and I just want the kernel to
+> run /sbin/init.
 
-There are common parts, but they have subtile differences.
-I'd rather make that function __init and not wory about that 200 bytes.
+If I understood you correctly, you're trying to get the kernel 
+to execute the "/sbin/init" file of your initramfs. However, "/init" 
+is the sole default initramfs entry point. To fix this, you can pass 
+rdinit=/sbin/init _or_ modify your initramfs image so that "/init" 
+is the entrypoint.
 
-
-Maybe some parts can be skipped, too.
-
-> The problem with keeping interrupts on is that the system might continue
-> to route packets. This is sometimes quite unexpected for users.
-
-> Arguably that's unlikely to be already enabled for missing root,
-> but in theory initrd could have done it.
-
-If initrd set up a router, it should should also do the mounts and call 
-init, shouldn't it? In this case, the panic() won't ever happen.
-
-(At least the kernel panic()s if I run rdinit=/bin/ash and exit that
- shell, therefore I can't depend on the kernel to execute init.)
-
-> I think i would prefer if the normal panic() tried to detect the situations
-> where this is 
-> 
-> It couldn't detect spinlocks, but interrupts off/interrupt context etc.
-
-I asumed that to be the greater challenge, taking several months to get 
-right instead of a few minutes. (I'm not sure I really got this right, but 
-it happens to works for me.-)
+Normally, if your initramfs has a /init script your kernel would 
+skip the entire stage where it panics in the perpare_namespace() 
+function for trying to mount "root=" by itself (see 
+init/main.c:init()).
 
 -- 
-Funny quotes:
-36. You never really learn to swear until you learn to drive.
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
