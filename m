@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbXGFWxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbXGFWx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754467AbXGFWxn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 18:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbXGFWxf
+	id S1754796AbXGFWx5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 18:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXGFWxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 18:53:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53192 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751901AbXGFWxf (ORCPT
+	Fri, 6 Jul 2007 18:53:40 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:53082 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753265AbXGFWxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 18:53:35 -0400
-Subject: Re: Question about cpufreq governors
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: DervishD <lkml@dervishd.net>, Linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0707062353510.1536@fbirervta.pbzchgretzou.qr>
-References: <20070706205045.GA2778@DervishD>
-	 <Pine.LNX.4.64.0707062353510.1536@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 06 Jul 2007 15:50:29 -0700
-Message-Id: <1183762229.2774.1.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 6 Jul 2007 18:53:39 -0400
+Date: Sat, 7 Jul 2007 00:54:09 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6.22 regression fix] include/linux/kallsyms.h must #include
+	<linux/errno.h>
+Message-ID: <20070706225409.GS3492@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-06 at 23:54 +0200, Jan Engelhardt wrote:
-> On Jul 6 2007 22:50, DervishD wrote:
-> >
-> >    What I want to know is if I can choose "ondemand" governor instead
-> >of the recommended for AMD64, namely the "conservative" governor, since
-> >I will be switching between those two frequencies. I haven't found any
-> >information about my CPU regarding latency when switching between
-> >frequencies, so I don't know if I will be gaining anything using the
-> >"conservative" governor.
-> >
-> >    Which governor is better suited for a CPU with only two fid's,
-> >"ondemand" or "conservative"?
-> 
-> Depends on what you want. ondemand instantly switches when there is
-> something/nothing to do, while conservative uses a threshold (modeled upon
-> latency).
+This patch fixes the following 2.6.22 regression with CONFIG_KALLSYMS=n:
 
-for power saving, the ondemand behavior is better in general. However if
-you have a cpu that switches frequency very slowly, you may be better to
-not go as high quickly because going back down is then burning more
-power than needed potentially...
+<--  snip  -->
 
+...
+  CC      arch/m32r/kernel/traps.o
+In file included from /home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/arch/m32r/kernel/traps.c:14:
+/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h: In function 'lookup_symbol_name':
+/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h:66: error: 'ERANGE' undeclared (first use in this function)
+/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h:66: error: (Each undeclared identifier is reported only once
+/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h:66: error: for each function it appears in.)
+/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h: In function 'lookup_symbol_attrs':
+/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/kallsyms.h:71: error: 'ERANGE' undeclared (first use in this function)
+make[2]: *** [arch/m32r/kernel/traps.o] Error 1
 
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+--- linux-2.6.22-rc6-mm1/include/linux/kallsyms.h.old	2007-07-06 05:18:28.000000000 +0200
++++ linux-2.6.22-rc6-mm1/include/linux/kallsyms.h	2007-07-06 05:19:09.000000000 +0200
+@@ -5,6 +5,7 @@
+ #ifndef _LINUX_KALLSYMS_H
+ #define _LINUX_KALLSYMS_H
+ 
++#include <linux/errno.h>
+ 
+ #define KSYM_NAME_LEN 127
+ #define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + KSYM_NAME_LEN +	\
 
