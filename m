@@ -1,51 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbXGFFoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbXGFFyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760868AbXGFFoS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 01:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbXGFFoI
+	id S1761622AbXGFFyE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 01:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbXGFFxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 01:44:08 -0400
-Received: from gw.goop.org ([64.81.55.164]:59738 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754458AbXGFFoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 01:44:07 -0400
-Message-ID: <468DD6A5.4020705@goop.org>
-Date: Thu, 05 Jul 2007 22:44:05 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Fri, 6 Jul 2007 01:53:54 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:47221 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754242AbXGFFxx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 01:53:53 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Fri, 6 Jul 2007 15:53:50 +1000
+User-Agent: KMail/1.9.6
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707061403.15932.nigel@nigel.suspend2.net> <CF605B91-2425-4FC2-9434-5F8877EEEEEB@mac.com>
+In-Reply-To: <CF605B91-2425-4FC2-9434-5F8877EEEEEB@mac.com>
 MIME-Version: 1.0
-To: Dan Kegel <dank@kegel.com>
-CC: linux-kernel@vger.kernel.org, Robert Walsh <rjwalsh@durables.org>
-Subject: Re: Valgrinding the kernel?
-References: <a71bd89a0707052114u28fed408h4326913c502a43ac@mail.gmail.com>
-In-Reply-To: <a71bd89a0707052114u28fed408h4326913c502a43ac@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart7541905.DmvDLvAnoK";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707061553.51036.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Kegel wrote:
-> It'd be nice to see if Valgrind could catch uninitialized
-> references in the kernel, if only to see if Coverity is
-> missing anything that happens in practice.
->
-> Back in December 2002, Valgrind started to run UML:
-> http://user-mode-linux.sourceforge.net/diary.html
-> http://marc.info/?l=linux-kernel&m=104035199923121&w=2
-> but it wasn't quite usable, and it seems broken since then.
-> The last note I could find about this was from Jeff In July 2005:
-> http://marc.info/?l=linux-kernel&m=112273702329952&w=2
->
-> Has there been any motion since then? 
+--nextPart7541905.DmvDLvAnoK
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Not that I know of.  I think all the pieces are in place now.  The 
-original problem was that Valgrind didn't deal with clone and didn't 
-have accurate signal support.  I fixed that.  Then the problem was 
-dealing with the densely packed small kernel stacks.  Valgrind now has a 
-way of registering stack regions, so that it can distinguish between a 
-stack switch and a normal function call.
+Hi Kyle.
 
-So, I think all it needs now is to scatter some valgrind client requests 
-around the kernel and give it a spin.  See, simple ;)
+On Friday 06 July 2007 15:01:48 Kyle Moffett wrote:
+> On Jul 06, 2007, at 00:03:15, Nigel Cunningham wrote:
+> > The kind of thing Linus was talking about would limit you (as =20
+> > swsusp and uswsusp do now) to only half the amount of memory.
+>=20
+> How so?  Suppose hibernate is implemented like this:
 
-    J
+You're not talking about the same thing Linus was suggesting. He was just=20
+wanting a result =3D sys_snapshot() sort of call. That would limit us to ha=
+lf=20
+the amount of memory.
+
+I've looked over what you've written below and want to consider it in detai=
+l.=20
+Right now though, I don't have the time. I'll try to get back to you=20
+promptly.
+
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
+
+--nextPart7541905.DmvDLvAnoK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGjdjvN0y+n1M3mo0RAnciAKDWR3LtY9IPQr7wEtSuzcvDMpnJnQCg9QKI
+EHjZuAo5lsdesim/eT0ANNg=
+=ptAy
+-----END PGP SIGNATURE-----
+
+--nextPart7541905.DmvDLvAnoK--
