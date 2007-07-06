@@ -1,114 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762271AbXGFOXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbXGFOZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762271AbXGFOXx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 10:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbXGFOXq
+	id S1763014AbXGFOZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 10:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXGFOZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 10:23:46 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:34045 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753180AbXGFOXp (ORCPT
+	Fri, 6 Jul 2007 10:25:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:19207 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753319AbXGFOZS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 10:23:45 -0400
-Date: Fri, 6 Jul 2007 10:23:39 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Thread Migration Preemption
-Message-ID: <20070706142339.GA32754@Krystal>
-References: <20070706060257.GA188@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 6 Jul 2007 10:25:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=aqzeyACoJibFhZSGMoKVfByBUtKtIgIG8nzSp/FU3BVT0xmm6ILWlZoe7SX2c9N61VcN+g7ZqUDOD/6nuWIRFg+ahGbMvrBpPK2X3EfptmyDVADku7nihLQlPNmTS7+mRQRXJXcq6NtAUmOeYdwNIO9XO7Ygtmzg5j9x5YOm7Gg=
+Message-ID: <6278d2220707060725q34005bcfu8f225cf1e3391e61@mail.gmail.com>
+Date: Fri, 6 Jul 2007 15:25:16 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Martin Knoblauch" <spamtrap@knobisoft.de>
+Subject: Re: Understanding I/O behaviour
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070706060257.GA188@tv-sign.ru>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:52:01 up 5 days,  8:34,  2 users,  load average: 0.30, 0.30, 0.19
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Oleg Nesterov (oleg@tv-sign.ru) wrote:
-> Mathieu Desnoyers wrote:
-> >
-> > This patch adds the ability to protect critical sections from migration to
-> > another CPU without disabling preemption.
-> >
-> > Typical use:
-> >
-> > migration_disable();
-> > local_inc(&__get_cpu_var(&my_local_t_var));
-> > migration_enable();
-> >
-> > --- linux-2.6-lttng.orig/kernel/sched.c	2007-07-05 16:28:15.000000000 -0400
-> > +++ linux-2.6-lttng/kernel/sched.c	2007-07-05 16:53:24.000000000 -0400
-> > @@ -1996,6 +1996,7 @@
-> >  	 * 1) running (obviously), or
-> >  	 * 2) cannot be migrated to this CPU due to cpus_allowed, or
-> >  	 * 3) are cache-hot on their current CPU.
-> > +	 * 4) migration preemption is non 0 for this non running task.
-> >  	 */
-> >  	if (!cpu_isset(this_cpu, p->cpus_allowed))
-> >  		return 0;
-> > @@ -2003,6 +2004,8 @@
-> >
-> >  	if (task_running(rq, p))
-> >  		return 0;
-> > +	if (task_thread_info(p)->migration_count)
-> > +		return 0;
-> 
+On 5 Jul, 16:50, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
+> Hi,
+>
+>  for a customer we are operating a rackful of HP/DL380/G4 boxes that
+> have given us some problems with system responsiveness under [I/O
+> triggered] system load.
+[snip]
 
-Hi Oleg,
+IIRC, the locking in the CCISS driver was pretty heavy until later in
+the 2.6 series (2.6.16?) kernels; I don't think they were backported
+to the 1000 or so patches that comprise RH EL 4 kernels.
 
-> Question: This means that the task could be preempted, but can't sleep, yes?
-> 
+With write performance being really poor on the Smartarray controllers
+without the battery-backed write cache, and with less-good locking,
+performance can really suck.
 
-No exactly. This means that the task can be preempted, and can therefore
-sleep, but we do not allow this sleeping task to be migrated to a
-different CPU.
+On a total quiescent hp DL380 G2 (dual PIII, 1.13GHz Tualatin 512KB
+L2$) running RH EL 5 (2.6.18) with a 32MB SmartArray 5i controller
+with 6x36GB 10K RPM SCSI disks and all latest firmware:
 
-> Because try_to_wake_up() can change ->cpu. Shouldn't might_sleep() check
-> ->migration_count then? Or we can change try_to_wake_up().
-> 
+# dd if=/dev/cciss/c0d0p2 of=/dev/zero bs=1024k count=1000
+509+1 records in
+509+1 records out
+534643200 bytes (535 MB) copied, 11.6336 seconds, 46.0 MB/s
 
-If we look at try_to_wake_up, it seems to take the new_cpu from
-task_cpu(), which comes from the thread info ->cpu, updated by
-set_task_cpu(). The *_move_tasks seems to be responsible for calling
-can_migrate_task() to see if, in a deferred way, the migration_thread
-can use set_task_cpu() to change the task's cpu.
+# dd if=/dev/zero of=/dev/cciss/c0d0p2 bs=1024k count=100
+100+0 records in
+100+0 records out
+104857600 bytes (105 MB) copied, 22.3091 seconds, 4.7 MB/s
 
-move_task_off_dead_cpu() does not seem to respect this though: it could
-potentially move away a process while it is in a critical section by
-forcing a __migrate_task. I guess I should put a test in __migrate_task
-also so move_task_off_dead_cpu() can try to repeat the migration.
+Oh dear! There are internal performance problems with this controller.
+The SmartArray 5i in the newer DL380 G3 (dual P4 2.8GHz, 512KB L2$) is
+perhaps twice the read performance (PCI-X helps some) but still sucks.
 
-> What if the task does copy_process() under migration_disable() ? Child
-> gets a copy of ->migration_count.
-> 
+I'd get the BBWC in or install another controller.
 
-Right. Neighter does copy_process set the preemption count. It seems to
-be dealt by sched_fork() when the thread is first scheduled in to make
-sure that the preempt count is 1. I guess is would be safer to set the
-migration count to 0 there too. (or set it to one if we ever decide to
-make it the kernel default).
-
-> Also, cpu_down() still can migrate this task to another CPU.
-> 
-
-Yes, just noted this earlier. I first thought it was using
-can_migrate_task(), but it does not seem so.
-
-Thanks,
-
-Mathieu
-
-> Oleg.
-> 
-
+Daniel
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Daniel J Blueman
