@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbXGFOje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763353AbXGFOkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbXGFOje (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 10:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbXGFOjX
+	id S1763353AbXGFOkd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 10:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbXGFOkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 10:39:23 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:40827 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754888AbXGFOjW (ORCPT
+	Fri, 6 Jul 2007 10:40:23 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:38670 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754655AbXGFOkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 10:39:22 -0400
-Date: Fri, 6 Jul 2007 10:34:09 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Thread Migration Preemption
-Message-ID: <20070706143409.GB32754@Krystal>
-References: <20070705215152.GA4865@Krystal> <468DDD3A.6010308@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <468DDD3A.6010308@yahoo.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:24:52 up 5 days,  9:07,  3 users,  load average: 1.29, 1.14, 0.96
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 6 Jul 2007 10:40:21 -0400
+Date: Fri, 06 Jul 2007 08:39:28 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PATA-disk named sda
+In-reply-to: <fa.DRDWDh+VAXx84D/6XHgY6h2wB+E@ifi.uio.no>
+To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <468E5420.7090605@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.VMMtK2yPXE5gkxuIC8MWb1aPBiQ@ifi.uio.no>
+ <fa.23lYEA4r0kfTVDJ1AKcxSE4vGKA@ifi.uio.no>
+ <fa.DRDWDh+VAXx84D/6XHgY6h2wB+E@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nick Piggin (nickpiggin@yahoo.com.au) wrote:
-> Mathieu Desnoyers wrote:
-> >Thread Migration Preemption
-> >
-> >This patch adds the ability to protect critical sections from migration to
-> >another CPU without disabling preemption.
-> >
-> >This will be useful to minimize the amount of preemption disabling for the 
-> >-rt
-> >patch. It will help leveraging improvements brought by the local_t types in
-> >asm/local.h (see Documentation/local_ops.txt). Note that the updates done 
-> >to
-> >variables protected by migration_disable must be either atomic or 
-> >protected from
-> >concurrent updates done by other threads.
-> >
-> >Typical use:
-> >
-> >migration_disable();
-> >local_inc(&__get_cpu_var(&my_local_t_var));
-> >migration_enable();
-> >
-> >Which will increment the variable atomically wrt the local CPU.
-> >
-> >Comments (such as how to integrate this in the already almost full
-> >preempt_count) are welcome.
+Christoph Pleger wrote:
+> Hello,
 > 
-> This seems like way too much stuff to add just for this type of thing. Why
-> not just disable and reenable preempt? Surely local_inc is not going to take
-> so long that disabling preemption matters.
+>>> In the newest Ubuntu Release, my PATA-disk is called sda instead of
+>>> hda. Is that a general feature in newer kernel versions or is it a
+>>> special feature in Ubuntu?
+>> General. SATA and now PATA drives map onto the /dev/sd range as do
+>> SCSI, USB etc
 > 
-
-Disabling preemption seems to cause some discomfort in the RT community.
-Steven already noticed that they could leverage migration disabling to
-enhance the way they deal with softirqs. Basically, anything that must
-be tied to a CPU for a short time, can deal with concurrency from other
-threads running on the same CPU, but where we do not want to add to the
-scheduler latency would be a good prospect for the migration_disable().
-
-> The task struct is not something we should just be carefree putting crap
-> into because it is seemingly free :(
+> It seems to be not that simple, at least not if both the old IDE
+> interface and the new libata interface are enabled as modules: In my
+> Ubuntu system, I created two kernel packages (from the same kernel
+> source and with the same configuration) and installed them. Afterwards,
+> I re-created the initial ramdisks, one with the Ubuntu feisty utilities
+> and one with Debian etch utilities. So, I had the same kernel with
+> different ramdisks. With the Ubuntu ramdisk, my harddrive was named sda,
+> but with the Debian ramdisk, it was named hda.
 > 
+> So, the name of the drive can depend on something which happens in the
+> ramdisk environment. Does anybody know what that is? And is there a
+> kernel command line parameter which restores the old behaviour?
+> 
+> And what about hdparm (setting 32bit I/O and multi-sector mode)? Suren
+> wrote that 32bit I/O makes no sense when using DMA. Maybe that's right,
+> but it does not correspond with my experiences. At least, I have the
+> "feeling" that my IDE disks work much faster since I enabled 32bit
+> support (DMA already was on before).
 
-I agree. I added it knowing that we could either pack this in the
-preempt_count (using masks, if there is still room, which does not seem
-to be the case) or, if not, people who could make extensive use of this
-could justify adding this field to the thread_info struct. I am barely
-sending the idea out there so it can be helpful for the RT team.
+No, it has absolutely no effect in DMA mode.
 
-Mathieu
+Currently the DMA, multi-sector mode, etc. are not controllable with 
+hdparm with libata. libata is designed to use the fastest settings 
+possible by default. In a lot of cases this messing with hdparm was only 
+needed because of stupidity with the old IDE code (like DMA not being 
+automatically enabled if the low-level driver was built modular).
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
