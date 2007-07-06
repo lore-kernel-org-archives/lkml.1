@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764631AbXGFSA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764129AbXGFSDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764631AbXGFSA7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 14:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762094AbXGFSAu
+	id S1764129AbXGFSDP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 14:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762971AbXGFSDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 14:00:50 -0400
-Received: from gw.goop.org ([64.81.55.164]:51914 "EHLO mail.goop.org"
+	Fri, 6 Jul 2007 14:03:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44615 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761029AbXGFSAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 14:00:49 -0400
-Message-ID: <468E834E.6020906@goop.org>
-Date: Fri, 06 Jul 2007 11:00:46 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	id S1762449AbXGFSC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 14:02:59 -0400
+Message-ID: <468E83CE.8090800@redhat.com>
+Date: Fri, 06 Jul 2007 14:02:54 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: Dan Kegel <dank@kegel.com>, linux-kernel@vger.kernel.org,
-       Robert Walsh <rjwalsh@durables.org>
-Subject: Re: Valgrinding the kernel?
-References: <a71bd89a0707052114u28fed408h4326913c502a43ac@mail.gmail.com> <468DD6A5.4020705@goop.org> <20070706172513.GD10670@c2.user-mode-linux.org>
-In-Reply-To: <20070706172513.GD10670@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Liunx power consumption on laptops -- Enormous progress in the
+ last few months
+References: <468D4D82.8030009@linux.intel.com> <468E6F0C.1090601@redhat.com> <468E6F4C.8000601@linux.intel.com>
+In-Reply-To: <468E6F4C.8000601@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> Don't think so.  With what I get on FC5 (valgrind-3.1.0), I get this:
->
-> ==31913== Jump to the invalid address stated on the next line
-> ==31913==    at 0x9: ???
-> ==31913==    by 0xBEC1599A: ???
-> ==31913==    by 0x696C2F69: ???
-> ==31913==  Address 0x9 is not stack'd, malloc'd or (recently) free'd
-> ==31913== 
-> ==31913== Process terminating with default action of signal 11 (SIGSEGV): dumping core
->
-> UML is cloning a thread in order to test the host's ptrace.  However,
-> it looks like valgrind is branching to 0x9 for some reason.
->   
+On 07/06/2007 12:35 PM, Arjan van de Ven wrote:
+>> Where is the ondemand-fix.patch? I can't find any link to it.
+> 
+> just click on it in the graph ;_
+> 
+> it's also http://www.linuxpowertop.org/patches/ondemand-fix.patch (which
+> is submitted already to the maintainers)
+> 
 
-How far into the run does this happen?  Immediately, or after a while?
+Ah, OK, that one just went into the latest Fedora 7 kernel.
 
-> This particular bit is going to be problematic for other reasons, but
-> if valgrind ever looks like it has a chance of working, I can work
-> around that in UML.
->   
-
-Hm.  I haven't touched Valgrind in a couple of years, and I suspect 
-people haven't been as mean to it as I was being.  It might be time I 
-gave it some love.  (I've also been thinking about porting it to be a 
-Xen guest so that we can Valgrind whole virtual machines - but that's a 
-different story.)
-
-    J
