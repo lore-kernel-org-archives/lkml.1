@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762670AbXGFHyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762766AbXGFH5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762670AbXGFHyW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 03:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbXGFHyP
+	id S1762766AbXGFH5T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 03:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757967AbXGFH5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 03:54:15 -0400
-Received: from web32606.mail.mud.yahoo.com ([68.142.207.233]:40434 "HELO
-	web32606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754030AbXGFHyO (ORCPT
+	Fri, 6 Jul 2007 03:57:11 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:54633 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757822AbXGFH5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 03:54:14 -0400
-X-YMail-OSG: 9HUhH_oVM1kAe0piHQLdBYUK77hwOYti1lAlv4K_S9mB6ViW0I3qt0ZYz4RBmua8Kf5F9iXbeiVpcreI1p.MIOJWrg--
-X-RocketYMMF: knobi.rm
-Date: Fri, 6 Jul 2007 00:54:13 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Reply-To: spamtrap@knobisoft.de
-Subject: Re: Understanding I/O behaviour
-To: Jesper Juhl <jesper.juhl@gmail.com>, Robert Hancock <hancockr@shaw.ca>
-Cc: knobi@knobisoft.de, linux-kernel@vger.kernel.org
-In-Reply-To: <9a8748490707051653q6e1b6bf3g9a3d6edf213867d9@mail.gmail.com>
+	Fri, 6 Jul 2007 03:57:10 -0400
+Message-ID: <468DF5D9.4040803@anagramm.de>
+Date: Fri, 06 Jul 2007 09:57:13 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <684951.37870.qm@web32606.mail.mud.yahoo.com>
+To: Bodo Eggert <7eggert@gmx.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] introduce panic_gently
+References: <Pine.LNX.4.58.0707060034330.18989@be1.lrz>
+In-Reply-To: <Pine.LNX.4.58.0707060034330.18989@be1.lrz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18HMQlzmdGpTAPR4kF2KC/iSITCe50DdQFFbuM
+ TZ1piX4HUehb9Kxvc6OYEC4nro/BI5vEQw9wqfWMwvrygf8icb
+ JBcye8K6T8LbydW5CS6hw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Jesper Juhl <jesper.juhl@gmail.com> wrote:
-
-> On 06/07/07, Robert Hancock <hancockr@shaw.ca> wrote:
-> [snip]
-> >
-> > Try playing with reducing /proc/sys/vm/dirty_ratio and see how that
-> > helps. This workload will fill up memory with dirty data very
-> quickly,
-> > and it seems like system responsiveness often goes down the toilet
-> when
-> > this happens and the system is going crazy trying to write it all
-> out.
-> >
+Bodo Eggert schrieb:
+> If the boot process failes to find init or the root fs, the cause has 
+> usually scrolled off the screen, and because of the panic, it can't be 
+> reached anymore.
 > 
-> Perhaps trying out a different elevator would also be worthwhile.
-> 
+> This patch introduces panic_gently, which will allow to use the scrollback 
+> buffer and to reboot, but it can't be called from unsafe context.
 
- AS seems to be the best one (NOOP and DeadLine seem to be equally OK).
-CFQ gives less (about 10-15%) throughput except for the kernel with the
-cfs cpu scheduler, where CFQ is on par with the other IO schedulers.
+In the case where you introduced panic_gently() there is IMHO no reason
+to panic() at all. There is no bug which got hit, the machine just needs
+user intervention because of wrong boot parameters (in most cases).
 
-Thanks
-Martin
+What about asking the user for the correct root= or init= parameters
+and just retry/continue the boot process?
 
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
+The 180seconds reboot timeout also doesn't make sense here. The problem
+won't go away after a reboot without user interaction.
+
+Regards,
+-- 
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm-technology.com
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
