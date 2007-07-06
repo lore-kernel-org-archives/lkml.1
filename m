@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762604AbXGFK7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763102AbXGFK76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762604AbXGFK7q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 06:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbXGFK7i
+	id S1763102AbXGFK76 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 06:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760575AbXGFK7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 06:59:38 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:54158 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758694AbXGFK7h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 06:59:37 -0400
-Date: Fri, 6 Jul 2007 12:59:49 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20070706105949.GH31596@enneenne.com>
+	Fri, 6 Jul 2007 06:59:41 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54086 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760271AbXGFK7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 06:59:40 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Aaron Durbin <adurbin@google.com>
+Subject: Re: [PATCH] i386/x86_64: Insert HPET firmware resource after PCI enumeration has completed
+Date: Fri, 6 Jul 2007 12:59:36 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, matthias.lenk@amd.com
+References: <20070705222724.GA12537@google.com>
+In-Reply-To: <20070705222724.GA12537@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Quest for linux CAN projects
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Message-Id: <200707061259.36526.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Friday 06 July 2007 00:27:24 Aaron Durbin wrote:
+> 
+> Insert HPET resources after pci probing has been completed in order to avoid
+> resource conflicts with PCI resource reservation. With this change the
+> HPET firmware resources will be identified, but it should also not cause
+> issues when the HPET address falls on a BAR in a PCI device, and the PCI
+> enumeration cannot reserve the resources.
 
-I'm looking for CAN project on Linux but I found only simple (old)
-drivers for specific chips or projects like Socket-CAN still out of
-the main kernel tree.
+But what advantage does it have when it's already reserved by PCI?
 
-Did someone take a look at this topic? Does someone know a project for
-introducing CAN support into Linux?
+That's only a cosmetic change, isn't it?  A lot of code for cosmetics.
 
-Thanks in advance,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+-Andi
