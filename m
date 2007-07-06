@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761197AbXGFM3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXGFMbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761197AbXGFM3Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 08:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759995AbXGFM3A
+	id S1761972AbXGFMbI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 08:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXGFMa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 08:29:00 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:59223 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759970AbXGFM3A (ORCPT
+	Fri, 6 Jul 2007 08:30:57 -0400
+Received: from waldorf.cs.uni-dortmund.de ([129.217.4.42]:51883 "EHLO
+	waldorf.cs.uni-dortmund.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755682AbXGFMa4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 08:29:00 -0400
-Message-ID: <468E3579.1020109@s5r6.in-berlin.de>
-Date: Fri, 06 Jul 2007 14:28:41 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: dead(?) i386-related CONFIG variables
-References: <Pine.LNX.4.64.0707050726110.12036@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0707050726110.12036@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Jul 2007 08:30:56 -0400
+Date: Fri, 6 Jul 2007 14:30:55 +0200
+From: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: PATA-disk named sda
+Message-Id: <20070706143055.01aa9ef6.Christoph.Pleger@cs.uni-dortmund.de>
+In-Reply-To: <20070706111848.43551f33@the-village.bc.nu>
+References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+	<20070706111848.43551f33@the-village.bc.nu>
+Organization: Universitaet Dortmund
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; sparc-sun-solaris2.8)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/5/2007 1:27 PM, Robert P. J. Day wrote:
->   since it's not clear who a single contact person would be for
-> i386-related stuff like this, here's what my script turned up for
-> tests on non-existent CONFIG variables under arch/i386:
+Hello,
+
+> > In the newest Ubuntu Release, my PATA-disk is called sda instead of
+> > hda. Is that a general feature in newer kernel versions or is it a
+> > special feature in Ubuntu?
 > 
-> ========== BALANCED_IRQ_DEBUG ==========
-> arch/i386/kernel/io_apic.c:356:#ifdef CONFIG_BALANCED_IRQ_DEBUG
+> General. SATA and now PATA drives map onto the /dev/sd range as do
+> SCSI, USB etc
 
--#ifdef CONFIG_BALANCED_IRQ_DEBUG
-+#if 0 /* debug IRQ balancing */
+It seems to be not that simple, at least not if both the old IDE
+interface and the new libata interface are enabled as modules: In my
+Ubuntu system, I created two kernel packages (from the same kernel
+source and with the same configuration) and installed them. Afterwards,
+I re-created the initial ramdisks, one with the Ubuntu feisty utilities
+and one with Debian etch utilities. So, I had the same kernel with
+different ramdisks. With the Ubuntu ramdisk, my harddrive was named sda,
+but with the Debian ramdisk, it was named hda.
 
-> ========== DEBUG_PAGE_TYPE ==========
-> arch/i386/kernel/vmi.c:238:#ifdef CONFIG_DEBUG_PAGE_TYPE
+So, the name of the drive can depend on something which happens in the
+ramdisk environment. Does anybody know what that is? And is there a
+kernel command line parameter which restores the old behaviour?
 
--#ifdef CONFIG_DEBUG_PAGE_TYPE
-+#if 0 /* debug page type */
+And what about hdparm (setting 32bit I/O and multi-sector mode)? Suren
+wrote that 32bit I/O makes no sense when using DMA. Maybe that's right,
+but it does not correspond with my experiences. At least, I have the
+"feeling" that my IDE disks work much faster since I enabled 32bit
+support (DMA already was on before).
 
-arch/i386/kernel/vmi.c:339
-
--#endif
-+#endif /* debug page type */
-
-> ========== SERIAL_DETECT_IRQ ==========
-> arch/i386/kernel/legacy_serial.c:18:#ifdef CONFIG_SERIAL_DETECT_IRQ
-
-Hmm, not sure about this.  The code section was taken from
-include/asm-{i386,x86_64}/serial.h.  This is an option similar to other
-CONFIG_SERIAL_ options in numerous places.
-
-Serial drivers are orphaned, aren't they?
-
->   feel free to take this as seriously as you want.  :-)
-> 
-> rday
-
--- 
-Stefan Richter
--=====-=-=== -=== --==-
-http://arcgraph.de/sr/
+Regards
+  Christoph
