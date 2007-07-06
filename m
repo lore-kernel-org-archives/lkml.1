@@ -1,35 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbXGFQIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbXGFQL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762846AbXGFQIo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 12:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbXGFQIh
+	id S1762764AbXGFQL2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 12:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbXGFQLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 12:08:37 -0400
-Received: from gw.goop.org ([64.81.55.164]:56329 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753158AbXGFQIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 12:08:36 -0400
-Message-ID: <468E6904.20003@goop.org>
-Date: Fri, 06 Jul 2007 09:08:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Fri, 6 Jul 2007 12:11:21 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:36256 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbXGFQLU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 12:11:20 -0400
+Message-ID: <468E699C.1000502@zytor.com>
+Date: Fri, 06 Jul 2007 09:11:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>
-Subject: Re: dead(?) i386-related CONFIG variables
-References: <Pine.LNX.4.64.0707050726110.12036@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0707050726110.12036@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <andi@firstfloor.org>
+CC: Gautam Singaraju <gautam.singaraju@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: syscall macro fails upon compilation
+References: <f8b2ccd40707051509tcbce704y3e5b114580069039@mail.gmail.com>	<468D6D1F.4040008@zytor.com> <p73r6nl21fe.fsf@bingen.suse.de>
+In-Reply-To: <p73r6nl21fe.fsf@bingen.suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> ========== DEBUG_PAGE_TYPE ==========
-> arch/i386/kernel/vmi.c:238:#ifdef CONFIG_DEBUG_PAGE_TYPE
+Andi Kleen wrote:
+> "H. Peter Anvin" <hpa@zytor.com> writes:
+> 
+>> Gautam Singaraju wrote:
+>>> I use the _syscall0 macro.
+>> Don't.  The _syscall*() macros have been unsupported for ages,
+> 
+> That's not true. I supported them on x86 before they were removed against
+> my objections.
+> 
+>> and broken for ever longer.
+> 
+> Well, most syscall() versions get 6 argument calls wrong
+> (not sure if that is finally fixed). _syscall*() didn't support
+> -fPIC for larger argument counts (_syscall0-2 never had a problem) 
+> 
+> So all alternatives short of writing your own stub had various
+> issues. If you needed 6 argument calls _syscall* was typically
+> the best alternative.
+> 
 
-That's a leftover from some of Zach's debug goo.  I don't think it was 
-ever a real config option (at least, not outside VMWare).
+They were *always* broken for 64-bit arguments on 32-bit machines, however.
 
-    J
+	-hpa
