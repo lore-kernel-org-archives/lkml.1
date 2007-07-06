@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbXGFI7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbXGFJAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760646AbXGFI7q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 04:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXGFI7h
+	id S1761637AbXGFJAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 05:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbXGFJAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 04:59:37 -0400
-Received: from merkurneu.hrz.uni-giessen.de ([134.176.2.3]:60878 "EHLO
-	merkurneu.hrz.uni-giessen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755829AbXGFI7h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 04:59:37 -0400
-From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Libata PATA status
-Date: Fri, 6 Jul 2007 10:58:47 +0200
-User-Agent: KMail/1.9.5
-References: <20070703185116.59c8f5f5@the-village.bc.nu> <200707041618.52249.marc.dietrich@ap.physik.uni-giessen.de> <20070705183355.187e96bc@the-village.bc.nu>
-In-Reply-To: <20070705183355.187e96bc@the-village.bc.nu>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Fri, 6 Jul 2007 05:00:47 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47819 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752834AbXGFJAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 05:00:46 -0400
+Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from within the
+	freezer
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: nigel@suspend2.net, rjw@sisk.pl, pavel@ucw.cz,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, oliver@neukum.org, paulus@samba.org, mingo@elte.hu
+In-Reply-To: <E1I6i0N-0003CY-00@dorka.pomaz.szeredi.hu>
+References: <200707041658.59588.rjw@sisk.pl>
+	 <20070705220046.GC3881@elf.ucw.cz> <200707060902.55090.rjw@sisk.pl>
+	 <200707061707.23316.nigel@nigel.suspend2.net>
+	 <E1I6i0N-0003CY-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 18:59:54 +1000
+Message-Id: <1183712394.3388.128.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707061058.53707.marc.dietrich@ap.physik.uni-giessen.de>
-X-HRZ-JLUG-MailScanner-Information: Passed JLUG virus check
-X-HRZ-JLUG-MailScanner: No virus found
-X-MailScanner-From: marc.dietrich@ap.physik.uni-giessen.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2007-07-06 at 09:13 +0200, Miklos Szeredi wrote:
+> 
+> Another myth, that has been debunked already.  The problem is: how do
+> you define fuse processes?  There's no theoretical or even practial
+> way to do that.
 
-Am Thursday 05 July 2007 19:33 schrieben Sie:
-> Ok dumb bug and fixed in my tree
+It could if they told the kernel via some black magic ...
 
-thanks! Will test when it is available ...
+But that still suck. The freezer sucks :-)
 
-Marc
+Ben.
 
--- 
-	"Those who question our statements are traitors"
-		 Lord Arthur Ponsonby, "Falsehood in Wartime: Propaganda Lies of the First 
-World War", 1928
+
