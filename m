@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762730AbXGFHRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762779AbXGFHTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762730AbXGFHRp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 03:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760131AbXGFHRf
+	id S1762779AbXGFHTV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 03:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbXGFHTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 03:17:35 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:55842 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760682AbXGFHRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 03:17:34 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Nix <nix@esperi.org.uk>
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-Date: Fri, 6 Jul 2007 03:19:35 -0400
-User-Agent: KMail/1.9.7
-Cc: List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <8CYT9-4Ou-23@gated-at.bofh.it> <20070705205523.GA15202@suse.de> <87zm2aav9h.fsf@hades.wkstn.nix>
-In-Reply-To: <87zm2aav9h.fsf@hades.wkstn.nix>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3306583.LmEv7xX1xf";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 6 Jul 2007 03:19:14 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:35803 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbXGFHTN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 03:19:13 -0400
+Subject: Re: [PATCH] Check charset in scripts/checkpatch.pl
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070706000807.8f9f83ca.akpm@linux-foundation.org>
+References: <1183705264.2747.20.camel@shinybook.infradead.org>
+	 <20070706000807.8f9f83ca.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 03:19:50 -0400
+Message-Id: <1183706391.2747.27.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707060319.36460.vapier@gentoo.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3306583.LmEv7xX1xf
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, 2007-07-06 at 00:08 -0700, Andrew Morton wrote:
+> On Fri, 06 Jul 2007 03:01:03 -0400 David Woodhouse <dwmw2@infradead.org> wrote:
+> 
+> > Reject all legacy 8-bit character sets and allow only ASCII or UTF-8 to
+> > be added to files or used in patch descriptions.
+> 
+> What is the reasoning behind this?
 
-On Friday 06 July 2007, Nix wrote:
-> On 5 Jul 2007, Bernhard Walle stated:
-> >                                While cmake itself isn't the problem,
-> > often, it also depends on the version of cmake that is installed. The
-> > good idea about auto* tools is the idea that you don't need to install
-> > any tools to build, just to develop. A POSIX shell and Perl should be
-> > installed everywhere ...
->
-> You don't need Perl to run configure scripts, either, and it's only
-> recently that it started requiring a POSIX shell rather than something
-> of the calibre of Solaris's /bin/sh.
+The character set used by the kernel is UTF-8. So we should check for
+people trying to add invalid stuff in other character sets. There's no
+way for them to _label_ legacy character sets as such; it's not like
+MIME email where we can use a different charset for every mail and
+expect people to cope. We need to be consistent.
 
-since when does autotools require a POSIX shell ?
--mike
+> > Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> > 
+> > Signed-off-by: asd
+> 
+> Jekyll & Hyde?
 
---nextPart3306583.LmEv7xX1xf
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Oops. I prepended that to the output of 'git-diff' just to make
+checkpatch happy. And then forgot about it when I inserted the text file
+into my mailer.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
+-- 
+dwmw2
 
-iQIVAwUARo3tCEFjO5/oN/WBAQLXQg//T6FAdP//euhfNssk3WsJJ8n6x2JfDF4X
-SXqIDzTbEpHKLOyJYsyizA7TUf+FXIbQVc++7bnk9d+B0KG7c+8/LjLACeSI1jvI
-UR/K5CkgT2xxpHZ76JAU7RCPhDfU+C+sp7NHp/BYJxE6v6/t18+zVtCa1GJV5odz
-desCwOnQMSQr7AfR2/SvKCUuT75Hkz6C8woaHP/W8FlMvM0og73N/7VZLT6ccPm7
-LjI97S8VhwwWUcLDN4quQv/PezIQlwPzRoWTOcstJby2TiaRaknV3hT9lLHCg1kA
-TMzxK4lFALAWxfT5UGSnj8DsYfSKYbJPMlG2VNdMVO+VokgvqF30wRsuoqSiWf46
-/8VFJR0S0ADhhNdUYb8ZJTvkVZ4EH9e0O6ieWRasMQuaFY739Mq7QHaldDFQXvb6
-6XQHTRPRdVS3Urmpswg0HnBWl1o/3cH4KL+IsVcxC1d3y66p4WUqCk9RH8N3gFp7
-wXqWyRvC0MHP2pselGBwpseYZXgzv9k33VTisjlslgPjXSkqwk+DA21WIrqY6MDS
-+2mbSo4WF/8ygibBliM1wc/ISiq9ZvcqqsA1Ou/M/JFL3o5eH9HgjEpElYCy8uHC
-QN2RdOJ0fwKt2XlrBols9dXfQ4tAchTGBNccgbAYbuhiq03fTSHnCIKepsE1Uwdl
-QHaa0hdaYjE=
-=pc9u
------END PGP SIGNATURE-----
-
---nextPart3306583.LmEv7xX1xf--
