@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXGFHJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762722AbXGFHNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbXGFHJk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 03:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762707AbXGFHJ3
+	id S1762722AbXGFHNR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 03:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbXGFHNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 03:09:29 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:49716 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752059AbXGFHJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 03:09:27 -0400
-Message-ID: <468DEA8C.6090000@linux.vnet.ibm.com>
-Date: Fri, 06 Jul 2007 00:09:00 -0700
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 6 Jul 2007 03:13:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56959 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758413AbXGFHNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 03:13:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Fri, 6 Jul 2007 09:20:42 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>, Paul Mackerras <paulus@samba.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
+References: <Pine.LNX.4.44L0.0707051014180.3728-100000@iolanthe.rowland.org> <1183676393.3388.89.camel@localhost.localdomain>
+In-Reply-To: <1183676393.3388.89.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Eric W Biederman <ebiederm@xmission.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [-mm PATCH 0/8] Memory controller introduction (v2)
-References: <20070706052029.11677.16964.sendpatchset@balbir-laptop> <468DD969.1040104@linux.vnet.ibm.com>
-In-Reply-To: <468DD969.1040104@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707060920.43707.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
+On Friday, 6 July 2007 00:59, Benjamin Herrenschmidt wrote:
+> On Thu, 2007-07-05 at 10:23 -0400, Alan Stern wrote:
+> > 
+> > How will that help?  Block the kernel thread in the freezer or block it 
+> > in the driver -- either way it is blocked.  So how do your deadlocks 
+> > get resolved?
+> 
+> Because nobody is waiting on that kernel thread anyway without a freezer
+> so there is no deadlock anymore.
 
-In mem_container_move_lists()
+I'm not sure what you mean.  The freezer doesn't wait for threads that are
+already frozen ...
 
-> +		/*
-> +		 * Check if the meta page went away from under us
-> +		 */
-> +		if (!list_empty(&mp->list)
+> > I disagree with your analysis -- not that it's completely wrong, but it 
+> > points out an existing basic problem in the kernel.  The kernel should 
+> > never depend on userspace!  More correctly, a task executing in the 
+> > kernel should never block with any sort of mutex or other lock held (in 
+> > a way that would preclude it from being frozen, let's say) while 
+> > waiting for a response from userspace.
+> > 
+> > Then the dependency graph would be easy to construct: User tasks can
+> > depend on whatever they want, and kernel threads never depend on a user
+> > task.
+> 
+> In an idea world, there would be no hunger...
+> 
+> > If this contradicts the existing implementations and APIs for userspace 
+> > filesystems, then so be it.  My conclusion would be that the 
+> > implementations and APIs should be changed.
+> 
+> Why are you guys working so hard and spending so much energy to try to
+> avoid doing the right thing is beyond my understanding...
+> 
+> > It _does_ apply to kernel threads.  That's exactly why I wrote above 
+> > that kernel threads which try to do I/O during a suspend will need 
+> > extra attention.
+> 
+> Ok none at all if you don't have a freezer.
 
-You'll need an extra brace here to get it compile.
-I forgot to refpatch :(
+Provided that drivers can handle that.
+
+Greetings,
+Rafael
 
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+"Premature optimization is the root of all evil." - Donald Knuth
