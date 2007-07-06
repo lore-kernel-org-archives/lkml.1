@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764240AbXGFUEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbXGFUF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764240AbXGFUEX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 16:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762295AbXGFUEQ
+	id S1762794AbXGFUF2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 16:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762796AbXGFUFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 16:04:16 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37675 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762233AbXGFUEP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 16:04:15 -0400
-Message-ID: <468E9E0E.1050705@vmware.com>
-Date: Fri, 06 Jul 2007 12:54:54 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, virtualization@lists.osdl.org
-Subject: Re: [PATCH] I386: Deactivate the test for the dead CONFIG_DEBUG_PAGE_TYPE
- variable.
-References: <Pine.LNX.4.64.0707060847470.23786@localhost.localdomain> <468E890A.1070504@s5r6.in-berlin.de>
-In-Reply-To: <468E890A.1070504@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jul 2007 16:05:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39391 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760809AbXGFUFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 16:05:17 -0400
+Message-Id: <200707062003.l66K3McB001808@pasta.boston.redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Chris Friesen <cfriesen@nortel.com>,
+       Clemens Koller <clemens.koller@anagramm.de>,
+       Chris Wright <chrisw@sous-sol.org>, Uli Luckas <u.luckas@road.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21.5 june 30th to july 1st date hang?
+In-Reply-To: Your message of "Fri, 06 Jul 2007 07:17:26 +0200."
+             <1183699046.3289.51.camel@chaos>
+Date: Fri, 06 Jul 2007 16:03:22 -0400
+From: Ernie Petrides <petrides@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Robert P. J. Day wrote:
->   
->> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
->>
->> ---
->>
->> diff --git a/arch/i386/kernel/vmi.c b/arch/i386/kernel/vmi.c
->>     
->
-> Maintainers are apparently those under "PARAVIRT_OPS INTERFACE".
-> CCs added.
->
->   
->> index c12720d..e3ce5c8 100644
->> --- a/arch/i386/kernel/vmi.c
->> +++ b/arch/i386/kernel/vmi.c
->> @@ -235,7 +235,7 @@ static void vmi_nop(void)
->>  {
->>  }
->>
->> -#ifdef CONFIG_DEBUG_PAGE_TYPE
->> +#if 0 /* debug page type */
->>
->>  #ifdef CONFIG_X86_PAE
->>  #define MAX_BOOT_PTS (2048+4+1)
->> @@ -336,7 +336,7 @@ static void vmi_check_page_type(u32 pfn, int type)
->>  #else
->>  #define vmi_set_page_type(p,t) do { } while (0)
->>  #define vmi_check_page_type(p,t) do { } while (0)
->> -#endif
->> +#endif /* debug page type */
->>
->>  #ifdef CONFIG_HIGHPTE
->>  static void *vmi_kmap_atomic_pte(struct page *page, enum km_type type)
->>     
->
-> This misnamed CONFIG_DEBUG_PAGE_TYPE (it's not a Kconfig variable) has
-> about 120 lines debug code dangling on it.  So, replacing it by #if 0
-> will hopefully motivate a kind janitor to send a removal patch for that
-> debug code eventually.  I don't do so just now because that code went in
-> between 2.6.20 and 2.6.21-rc1, i.e. not so long ago.
->   
+On Friday, 6-Jul-2007 at 7:17 +0200, Thomas Gleixner wrote:
 
-Nack.  This code was very tricky to get right and found some very 
-obscure bugs.  I want to keep it around even in broken form for as long 
-as possible.
+> On Thu, 2007-07-05 at 19:12 -0400, Ernie Petrides wrote:
+> > On Thursday, 5-Jul-2007 at 16:49 MDT, Chris Friesen wrote:
+> >
+> > > Ernie Petrides wrote:
+> > >
+> > > > Only kernels built with the CONFIG_HIGH_RES_TIMERS option enabled were
+> > > > vulnerable.
+> > >
+> > > As I mentioned in my post to Thomas, we have high res timers disabled
+> > > and were still affected.  Granted, our kernel has been modified so it is
+> > > possible that vanilla would not be affected....I haven't tested it.
+> > >
+> > > Chris
+> >
+> > That's odd, because Thomas's patch removed two calls to clock_was_set(),
+> > which is a no-op when CONFIG_HIGH_RES_TIMERS is not enabled (at least in
+> > the 2.6.21 source tree).
+> >
+> > Also, I personally tested with the reproducer you posted here, initially
+> > on a box running 2.6.22-rc4, and there were no problems (but I'm not sure
+> > what config options were enabled on that kernel).  I did reproduce the
+> > problem on a stock 2.6.21 kernel with CONFIG_HIGH_RES_TIMERS enabled.
+>
+> It needs a running smp_call_function() to be interrupted by the timer
+> interrupt, which calls clock_was_set(). So it's not that easy to
+> reproduce.
 
-Also, it is not misnamed.  I didn't add the rest of the code upstream 
-because it steals bits from struct page.
+I think it's reproducible at will when CONFIG_BUG is enabled, because the
+WARN_ON() on line 546 of arch/i386/kernel/smp.c fires in smp_call_function(),
+causing lots of console output.  By the time on_each_cpu() later reenables
+interrupts, another clock interrupt is pending, and (I think) causes a
+self-deadlock on the xtime_lock in vmi_account_real_cycles().
 
-Zach
+That's my (unproven) theory, anyway.  :)
+
+At any rate, I reproduced it twice in two tries on stock 2.6.21.
+
+Cheers.  -ernie
