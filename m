@@ -1,81 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbXGFXnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbXGFXq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbXGFXnZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 19:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXGFXnS
+	id S1754515AbXGFXq7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 19:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXGFXqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 19:43:18 -0400
-Received: from bc.sympatico.ca ([209.226.175.184]:39042 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752401AbXGFXnR (ORCPT
+	Fri, 6 Jul 2007 19:46:52 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:51709 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbXGFXqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 19:43:17 -0400
-Date: Fri, 6 Jul 2007 19:43:15 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       mbligh@google.com
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-Message-ID: <20070706234315.GA19804@Krystal>
-References: <20070703164046.645090494@polymtl.ca> <20070703164516.377240547@polymtl.ca> <20070703181151.GB5800@martell.zuzino.mipt.ru> <20070703185748.GA4047@Krystal> <20070705132120.8edbc1f3.akpm@linux-foundation.org> <p73vecx21um.fsf@bingen.suse.de> <468EBEB2.4070605@redhat.com> <20070706232843.GT3492@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 6 Jul 2007 19:46:51 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
+Date: Sat, 7 Jul 2007 09:46:47 +1000
+User-Agent: KMail/1.9.6
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Alan Stern <stern@rowland.harvard.edu>,
+       linux-kernel@vger.kernel.org
+References: <20070706202629.GA158@tv-sign.ru> <200707070056.22560.rjw@sisk.pl>
+In-Reply-To: <200707070056.22560.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart10034318.MeZ1UxdGJD";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070706232843.GT3492@stusta.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:40:28 up 5 days, 18:23,  6 users,  load average: 0.02, 0.17, 0.19
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707070946.50153.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@stusta.de) wrote:
-> On Fri, Jul 06, 2007 at 06:14:10PM -0400, Chuck Ebbert wrote:
-> > On 07/06/2007 07:44 AM, Andi Kleen wrote:
-> > > I think the optimization is a good idea, although i dislike it
-> > > that it is complicated for the dynamic markers. If it was just
-> > > static it would be much simpler.
-> > 
-> > Another thing to consider is that there might be hundreds of these
-> > probes/tracepoints active in an instrumented kernel. The overhead
-> > adds up fast, so the gain may be worth all the pain.
-> 
-> Only if you want to squeeze the last bit of performance out of
-> _debugging_ functionality.
-> 
-> You avoid all the pain if you simply don't use debugging functionality 
-> on production systems.
-> 
+--nextPart10034318.MeZ1UxdGJD
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Adrian,
+Hi.
 
-Please have a look at my markers posts, especially:
+On Saturday 07 July 2007 08:56:21 Rafael J. Wysocki wrote:
+> On Friday, 6 July 2007 22:26, Oleg Nesterov wrote:
+> > Rafael J. Wysocki wrote:
+> > >
+> > > This patch makes the freezer skip uninterruptible user space tasks (i=
+e.=20
+such
+> > > that have an mm of their own) when counting the tasks to be frozen.  =
+As=20
+a
+> > > result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set,=
+=20
+but the
+> > > freezer doesn't wait for them to enter the refrigerator.  Nevertheles=
+s,=20
+they
+> > > will enter the refrigerator as soon as they change their state.
+> >=20
+> > A small correction: they will enter the refrigerator on return to=20
+user-space.
+>=20
+> Yes, I should have written that explicitly.
+>=20
+> > Actually, TASK_INTERRUPTIBLE doesn't mean the task actually sleeps. It=
+=20
+could
+> > be running or preempted... I am a bit worried :)
+>=20
+> Fortunately, similar approach has been tested quite extensively by suspen=
+d2,
+> IIRC. :-)
 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0707.0/0669.html
+That's right. I used to signal TASK_UNINTERRUPTIBLE (I take it the=20
+INTERRUPTIBLE above is a typo) tasks, but ignore them when deciding whether=
+=20
+freezing was successful.
 
-And also look into OLS 2007 proceedings for Martin Bligh's paper on
-Debugging Google sized clusters. It basically makes the case for adding
-functionnality to debug _user space_ problems on production systems that
-can be turned on dynamically.
+I've since dropped those modifications, but only because I'm actively tryin=
+g=20
+to get closer to mainline.
 
-Mathieu
+Regards,
 
-> cu
-> Adrian
-> 
-> -- 
-> 
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
-> 
+Nigel
+=2D-=20
+Nigel Cunningham
+Christian Reformed Church of Cobden
+103 Curdie Street, Cobden 3266, Victoria, Australia
+Ph. +61 3 5595 1185 / +61 417 100 574
+Communal Worship: 11 am Sunday.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--nextPart10034318.MeZ1UxdGJD
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGjtRqN0y+n1M3mo0RAiBfAJ40wXHNRNTrNRJ5Ie/Zw1NiUlYsgACguioC
+2JmWooBFKt9rMCjNGry8mR4=
+=QoMI
+-----END PGP SIGNATURE-----
+
+--nextPart10034318.MeZ1UxdGJD--
