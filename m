@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762630AbXGFJqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763262AbXGFJrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762630AbXGFJqO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 05:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbXGFJqA
+	id S1763262AbXGFJrP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 05:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760131AbXGFJrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 05:46:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57615 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752514AbXGFJp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 05:45:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Fri, 6 Jul 2007 11:53:03 +0200
-User-Agent: KMail/1.9.5
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Miklos Szeredi <miklos@szeredi.hu>, pavel@ucw.cz, paulus@samba.org,
-       johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org
-References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org> <1183712354.3388.126.camel@localhost.localdomain> <200707061131.08475.oliver@neukum.org>
-In-Reply-To: <200707061131.08475.oliver@neukum.org>
+	Fri, 6 Jul 2007 05:47:01 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:62805 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759907AbXGFJrA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 05:47:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sJX76GO4qzzU1zJMqRjRetGKGeqeuZW7oy0URKNVTxaMQ6AO+V3b0rkCWbR3Iit6NapqF0h44D7NMRqePkeNcMI6k/BzFQNAZO4yprTzy9N5oM/VN6b3KyLZ0g0gjQ0wfxp6+H2u8TxmpPHPs0eigBXfSF4yrZrFogWL/10VPv8=
+Message-ID: <92a12cdb0707060246p407f19depe16c59ac43eb0d96@mail.gmail.com>
+Date: Fri, 6 Jul 2007 10:46:59 +0100
+From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [alsa-devel] [PATCH] ALSA AICA sound on SEGA Dreamcast - fix behaviour in poor resource conditions
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+In-Reply-To: <s5h3b016fzx.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707061153.05091.rjw@sisk.pl>
+References: <92a12cdb0707051507r7ab1516blb7ea755d89c25efa@mail.gmail.com>
+	 <s5h3b016fzx.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 6 July 2007 11:31, Oliver Neukum wrote:
-> Am Freitag, 6. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > On Fri, 2007-07-06 at 09:13 +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > The only reason (I know of) why we don't handle uninterruptible tasks in the
-> > > freezer is that we're afraid of the suspend process deadlocking with an
-> > > uninterruptible task holding a lock, but AFAICS the probability of such an
-> > > event is extremely small.
-> > 
-> > What would deadlock specifically ? One of the drivers trying to acquire
-> > that lock ? It would be a driver bug then.
-> 
-> Your driver's write method looks like:
-> 
-> mutex_lock();
-> poke_some_hardware();
-> wait_event_uninterruptible(); //for result
-> res = evaluate_result();
-> mutex_unlock();
-> return res;
-> 
-> If you put a task into the refrigerator at wait_event_interruptible()
-> you will deadlock if you need this lock for the driver to go to suspend.
-> The suspend method then must not take the lock _and_ it must be
-> aware that there may be an ongoing operation.
+On 06/07/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Thu, 5 Jul 2007 23:07:44 +0100,
+> Adrian McMenamin wrote:
+> > @@ -402,17 +396,10 @@
+> >  static int snd_aicapcm_pcm_trigger(struct snd_pcm_substream
+> >                                  *substream, int cmd)
+> >  {
+> > -     struct snd_card_aica *dreamcastcard;
+> >       switch (cmd) {
+> >       case SNDRV_PCM_TRIGGER_START:
+> >               spu_begin_dma(substream);
+> >               break;
+> > -     case SNDRV_PCM_TRIGGER_STOP:
+> > -             dreamcastcard = substream->pcm->private_data;
+> > -             if (dreamcastcard->timer.data)
+> > -                     del_timer(&dreamcastcard->timer);
+> > -             aica_chn_halt();
+> > -             break;
+> >       default:
+> >               return -EINVAL;
+> >       }
+>
+> Is this a correct change?  Then you'd have no control for stopping the
+> stream.
+>
 
-s/interruptible/uninterruptible/
-
-> you will deadlock if you need this lock for the driver to go to suspend.
-> The suspend method then must not take the lock _and_ it must be
-> aware that there may be an ongoing operation.
-
-Well, is there any driver in the tree that works like that _and_ has a
-.suspend() method requiring the same lock?
-
-Besides, I'm not going to put the task into the refrigerator at that point.
-
-Please read http://lkml.org/lkml/2007/7/6/71
-
-Moreover, I claim that, in the context of your example, _if_ the task is stuck
-at the wait_event_uninterruptible(), _then_ the freezerless suspend will
-deadlock with the task.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+The shutdown is all done in the close() now, partly because
+snd_aicapcm_pcm_trigger cannot sleep and close() can. Is there a
+pressing reason to put code in snd_aicapcm_pcm_trigger?
