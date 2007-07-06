@@ -1,37 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763618AbXGFKXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762930AbXGFKXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763618AbXGFKXA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 06:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXGFKWx
+	id S1762930AbXGFKXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 06:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXGFKXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 06:22:53 -0400
-Received: from zakalwe.fi ([80.83.5.154]:40796 "EHLO zakalwe.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760266AbXGFKWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 06:22:52 -0400
-Date: Fri, 6 Jul 2007 13:22:38 +0300
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Gautam Singaraju <gautam.singaraju@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RSA support into kernel?
-Message-ID: <20070706102238.GE3400@zakalwe.fi>
-References: <f8b2ccd40707051548w275a1575oaaddffd40d9a9163@mail.gmail.com> <f8b2ccd40707051753v7cba58cfw1d3e0df5e4decc6d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <f8b2ccd40707051753v7cba58cfw1d3e0df5e4decc6d@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Fri, 6 Jul 2007 06:23:08 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:53148 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763665AbXGFKXG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 06:23:06 -0400
+X-Greylist: delayed 2070 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jul 2007 06:23:06 EDT
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <468D7034.7060107@whitby.id.au>
+References: <20070703185116.59c8f5f5@the-village.bc.nu> <468D7034.7060107@whitby.id.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9F3D802E-9A32-4703-98B8-C8A4142C9BF6@cam.ac.uk>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jeff@garzik.org
+Content-Transfer-Encoding: 7bit
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: Re: Libata PATA status (pata_artop)
+Date: Fri, 6 Jul 2007 10:48:22 +0100
+To: Rod Whitby <rod@whitby.id.au>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 05:53:11PM -0700, Gautam Singaraju wrote:
-> Is there any attempt being made to provide software based RSA
-> cryptographic support in kernel?
+On 5 Jul 2007, at 23:27, Rod Whitby wrote:
 
-I fail to see how it would be useful. RSA is such a slow operation that 
-doing it in userspace is efficient and safer.
+> Alan Cox wrote:
+>> Chipsets
+>> ========
+>> ARTOP
+>> 	No reports, but nobody appears to be using one
+>
+> The NSLU2-Linux project (http://www.nslu2-linux.org) relies on the
+> pata-artop driver for the arm/ixp4xx-based Iomega NAS100d and D-Link
+> DSM-G600 NAS devices (both of which are supported in recent mainline
+> kernels).
+>
+> Latest kernels (2.6.22-rc5 is the latest we've tested) have no  
+> reported
+> problems with pata-artop.  We have a handful of people (including
+> myself) who we know are using 2.6.22-rc5 on those devices and are
+> booting from the internal drive using the pata-artop driver.
 
--- 
-Heikki Orsila			Barbie's law:
-heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
-http://www.iki.fi/shd
+Though we have no reported problems, we are carrying a local patch to  
+the pata_artop driver:
+
+http://trac.nslu2-linux.org/kernel/browser/trunk/patches/2.6.22/15- 
+nas100d-pata-artop-single-port.patch
+
+This used to be because of a long delay when probing the non-existent  
+second ATA port on these embedded ARM devices, but the comment in the  
+patch has since been updated suggesting some negative interaction  
+with USB (??).
+
+I don't have this machine so can't comment further on this issue,
+
+M-L
+
