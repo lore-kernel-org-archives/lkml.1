@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762930AbXGFKXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763326AbXGFK0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762930AbXGFKXW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 06:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXGFKXI
+	id S1763326AbXGFK0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 06:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbXGFK0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 06:23:08 -0400
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:53148 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763665AbXGFKXG (ORCPT
+	Fri, 6 Jul 2007 06:26:39 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:58008 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757255AbXGFK0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 06:23:06 -0400
-X-Greylist: delayed 2070 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jul 2007 06:23:06 EDT
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <468D7034.7060107@whitby.id.au>
-References: <20070703185116.59c8f5f5@the-village.bc.nu> <468D7034.7060107@whitby.id.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9F3D802E-9A32-4703-98B8-C8A4142C9BF6@cam.ac.uk>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jeff@garzik.org
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: Libata PATA status (pata_artop)
-Date: Fri, 6 Jul 2007 10:48:22 +0100
-To: Rod Whitby <rod@whitby.id.au>
-X-Mailer: Apple Mail (2.752.2)
+	Fri, 6 Jul 2007 06:26:38 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 6 Jul 2007 06:24:20 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, gregkh@suse.de
+Subject: [PATCH] USB:  Remove Makefile reference to obsolete OHCI_AT91.
+Message-ID: <Pine.LNX.4.64.0707060623170.11885@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5 Jul 2007, at 23:27, Rod Whitby wrote:
 
-> Alan Cox wrote:
->> Chipsets
->> ========
->> ARTOP
->> 	No reports, but nobody appears to be using one
->
-> The NSLU2-Linux project (http://www.nslu2-linux.org) relies on the
-> pata-artop driver for the arm/ixp4xx-based Iomega NAS100d and D-Link
-> DSM-G600 NAS devices (both of which are supported in recent mainline
-> kernels).
->
-> Latest kernels (2.6.22-rc5 is the latest we've tested) have no  
-> reported
-> problems with pata-artop.  We have a handful of people (including
-> myself) who we know are using 2.6.22-rc5 on those devices and are
-> booting from the internal drive using the pata-artop driver.
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Though we have no reported problems, we are carrying a local patch to  
-the pata_artop driver:
+---
 
-http://trac.nslu2-linux.org/kernel/browser/trunk/patches/2.6.22/15- 
-nas100d-pata-artop-single-port.patch
+diff --git a/drivers/usb/Makefile b/drivers/usb/Makefile
+index 72464b5..4d65404 100644
+--- a/drivers/usb/Makefile
++++ b/drivers/usb/Makefile
+@@ -15,7 +15,6 @@ obj-$(CONFIG_USB_OHCI_HCD)	+= host/
+ obj-$(CONFIG_USB_UHCI_HCD)	+= host/
+ obj-$(CONFIG_USB_SL811_HCD)	+= host/
+ obj-$(CONFIG_USB_U132_HCD)	+= host/
+-obj-$(CONFIG_USB_OHCI_AT91)	+= host/
 
-This used to be because of a long delay when probing the non-existent  
-second ATA port on these embedded ARM devices, but the comment in the  
-patch has since been updated suggesting some negative interaction  
-with USB (??).
+ obj-$(CONFIG_USB_ACM)		+= class/
+ obj-$(CONFIG_USB_PRINTER)	+= class/
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-I don't have this machine so can't comment further on this issue,
-
-M-L
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
