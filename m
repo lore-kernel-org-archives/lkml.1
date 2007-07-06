@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbXGFJLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762831AbXGFJOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762609AbXGFJLQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 05:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbXGFJLG
+	id S1762831AbXGFJOR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 05:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbXGFJOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 05:11:06 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:35295 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755829AbXGFJLG (ORCPT
+	Fri, 6 Jul 2007 05:14:07 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:52770 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756414AbXGFJOG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 05:11:06 -0400
-To: oliver@neukum.org
-CC: miklos@szeredi.hu, rjw@sisk.pl, nigel@suspend2.net, pavel@ucw.cz,
-       benh@kernel.crashing.org, mjg59@srcf.ucam.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-In-reply-to: <200707060951.47555.oliver@neukum.org> (message from Oliver
-	Neukum on Fri, 6 Jul 2007 09:51:47 +0200)
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-References: <20070703042916.GA17240@srcf.ucam.org> <200707060940.23248.rjw@sisk.pl> <E1I6iPL-0003Hj-00@dorka.pomaz.szeredi.hu> <200707060951.47555.oliver@neukum.org>
-Message-Id: <E1I6jot-0003U1-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 06 Jul 2007 11:09:43 +0200
+	Fri, 6 Jul 2007 05:14:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=eS2GUM1ld8nmfPkVMyORxYwcsx20YKvhZMXkD0nIlNwhG5ywI4/46MRdNL8lK6wBwf2goUKkj0boMBLRE+5PhhPlEO5wtze2Jp1Syz8SnucWZQ9VqgkUfygpiL14RsRHdcaVvTlQIKNBJ7Q3DAIPstQXs4FHxDk0M+Vc2QKM24o=
+From: Suren Karapetyan <surenkarapetyan@gmail.com>
+To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+Subject: Re: PATA-disk named sda
+Date: Fri, 6 Jul 2007 14:13:42 +0500
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+In-Reply-To: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707061413.53182.surenkarapetyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Moreover, if FUSE implements syncing, then the sync from within the freezer
-> > > will almost certainly deadlock.
-> > 
-> > Rafael, think positively: by the time fuse implements sync(), the
-> > freezer will be long gone ;)
-> 
-> Now you are entering really dangerous territory.
-> If you can implement a meaningfull sync method, you must have dirty
-> pages in the page cache. That means you are in the page freeing path
-> of the vm. Then we are in real trouble. Don't even think about it.
+On Friday 06 July 2007 13:21:32 Christoph Pleger wrote:
+> Hello,
+>
+> In the newest Ubuntu Release, my PATA-disk is called sda instead of hda.
+> Is that a general feature in newer kernel versions or is it a special
+> feature in Ubuntu?
+>
+> Regards
+>   Christoph
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-VM induced deadlocks are real nasty.  I have thought about them a lot
-already.  Suspend shouldn't introduce any big surprises.
-
-Miklos
+In recent kernels both PATA and SATA (SCSI too) drives are handled by libata 
+library. It calls all the drives sd* . 
+More info: http://linux-ata.org/
