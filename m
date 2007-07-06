@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbXGFFyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761404AbXGFGDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761622AbXGFFyE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 01:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbXGFFxy
+	id S1761404AbXGFGDh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 02:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbXGFGD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 01:53:54 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:47221 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754242AbXGFFxx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 01:53:53 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@suspend2.net
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Fri, 6 Jul 2007 15:53:50 +1000
-User-Agent: KMail/1.9.6
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707061403.15932.nigel@nigel.suspend2.net> <CF605B91-2425-4FC2-9434-5F8877EEEEEB@mac.com>
-In-Reply-To: <CF605B91-2425-4FC2-9434-5F8877EEEEEB@mac.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart7541905.DmvDLvAnoK";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707061553.51036.nigel@nigel.suspend2.net>
+	Fri, 6 Jul 2007 02:03:28 -0400
+Received: from mail.screens.ru ([213.234.233.54]:57550 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756663AbXGFGD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 02:03:28 -0400
+Date: Fri, 6 Jul 2007 10:02:57 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Thread Migration Preemption
+Message-ID: <20070706060257.GA188@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart7541905.DmvDLvAnoK
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Mathieu Desnoyers wrote:
+>
+> This patch adds the ability to protect critical sections from migration to
+> another CPU without disabling preemption.
+>
+> Typical use:
+>
+> migration_disable();
+> local_inc(&__get_cpu_var(&my_local_t_var));
+> migration_enable();
+>
+> --- linux-2.6-lttng.orig/kernel/sched.c	2007-07-05 16:28:15.000000000 -0400
+> +++ linux-2.6-lttng/kernel/sched.c	2007-07-05 16:53:24.000000000 -0400
+> @@ -1996,6 +1996,7 @@
+>  	 * 1) running (obviously), or
+>  	 * 2) cannot be migrated to this CPU due to cpus_allowed, or
+>  	 * 3) are cache-hot on their current CPU.
+> +	 * 4) migration preemption is non 0 for this non running task.
+>  	 */
+>  	if (!cpu_isset(this_cpu, p->cpus_allowed))
+>  		return 0;
+> @@ -2003,6 +2004,8 @@
+>
+>  	if (task_running(rq, p))
+>  		return 0;
+> +	if (task_thread_info(p)->migration_count)
+> +		return 0;
 
-Hi Kyle.
+Question: This means that the task could be preempted, but can't sleep, yes?
 
-On Friday 06 July 2007 15:01:48 Kyle Moffett wrote:
-> On Jul 06, 2007, at 00:03:15, Nigel Cunningham wrote:
-> > The kind of thing Linus was talking about would limit you (as =20
-> > swsusp and uswsusp do now) to only half the amount of memory.
->=20
-> How so?  Suppose hibernate is implemented like this:
+Because try_to_wake_up() can change ->cpu. Shouldn't might_sleep() check
+->migration_count then? Or we can change try_to_wake_up().
 
-You're not talking about the same thing Linus was suggesting. He was just=20
-wanting a result =3D sys_snapshot() sort of call. That would limit us to ha=
-lf=20
-the amount of memory.
+What if the task does copy_process() under migration_disable() ? Child
+gets a copy of ->migration_count.
 
-I've looked over what you've written below and want to consider it in detai=
-l.=20
-Right now though, I don't have the time. I'll try to get back to you=20
-promptly.
+Also, cpu_down() still can migrate this task to another CPU.
 
-Nigel
-=2D-=20
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
+Oleg.
 
---nextPart7541905.DmvDLvAnoK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGjdjvN0y+n1M3mo0RAnciAKDWR3LtY9IPQr7wEtSuzcvDMpnJnQCg9QKI
-EHjZuAo5lsdesim/eT0ANNg=
-=ptAy
------END PGP SIGNATURE-----
-
---nextPart7541905.DmvDLvAnoK--
