@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbXGFOZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbXGFOfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763014AbXGFOZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 10:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXGFOZT
+	id S1760947AbXGFOfe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 10:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbXGFOf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 10:25:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:19207 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbXGFOZS (ORCPT
+	Fri, 6 Jul 2007 10:35:26 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:52784 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753481AbXGFOfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 10:25:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=aqzeyACoJibFhZSGMoKVfByBUtKtIgIG8nzSp/FU3BVT0xmm6ILWlZoe7SX2c9N61VcN+g7ZqUDOD/6nuWIRFg+ahGbMvrBpPK2X3EfptmyDVADku7nihLQlPNmTS7+mRQRXJXcq6NtAUmOeYdwNIO9XO7Ygtmzg5j9x5YOm7Gg=
-Message-ID: <6278d2220707060725q34005bcfu8f225cf1e3391e61@mail.gmail.com>
-Date: Fri, 6 Jul 2007 15:25:16 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Martin Knoblauch" <spamtrap@knobisoft.de>
-Subject: Re: Understanding I/O behaviour
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 6 Jul 2007 10:35:25 -0400
+Subject: Re: [RFC] Thread Migration Preemption
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <468DDD3A.6010308@yahoo.com.au>
+References: <20070705215152.GA4865@Krystal>  <468DDD3A.6010308@yahoo.com.au>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 10:34:55 -0400
+Message-Id: <1183732495.17319.133.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5 Jul, 16:50, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
-> Hi,
->
->  for a customer we are operating a rackful of HP/DL380/G4 boxes that
-> have given us some problems with system responsiveness under [I/O
-> triggered] system load.
-[snip]
+On Fri, 2007-07-06 at 16:12 +1000, Nick Piggin wrote:
+> Mathieu Desnoyers wrote:
 
-IIRC, the locking in the CCISS driver was pretty heavy until later in
-the 2.6 series (2.6.16?) kernels; I don't think they were backported
-to the 1000 or so patches that comprise RH EL 4 kernels.
+> > migration_disable();
+> > local_inc(&__get_cpu_var(&my_local_t_var));
+> > migration_enable();
+> > 
 
-With write performance being really poor on the Smartarray controllers
-without the battery-backed write cache, and with less-good locking,
-performance can really suck.
+[...]
 
-On a total quiescent hp DL380 G2 (dual PIII, 1.13GHz Tualatin 512KB
-L2$) running RH EL 5 (2.6.18) with a 32MB SmartArray 5i controller
-with 6x36GB 10K RPM SCSI disks and all latest firmware:
+> This seems like way too much stuff to add just for this type of thing. Why
+> not just disable and reenable preempt? Surely local_inc is not going to take
+> so long that disabling preemption matters.
 
-# dd if=/dev/cciss/c0d0p2 of=/dev/zero bs=1024k count=1000
-509+1 records in
-509+1 records out
-534643200 bytes (535 MB) copied, 11.6336 seconds, 46.0 MB/s
+For this given example, it may be too much fine tuning. But there are
+other things (at least in RT) where this would be very helpful. One
+thing is that in RT an IRQ thread might service a softirq if that
+softirq thread is of the same priority as the IRQ thread. The difference
+between an IRQ thread and a softirq thread is that the IRQ thread may
+migrate but the softirq thread may not. So to do this performance
+enhancement, we need to temporarily pin the IRQ thread to the CPU, which
+is expensive (set_cpus_allowed).  This would make it much simpler and
+light weight to implement.
 
-# dd if=/dev/zero of=/dev/cciss/c0d0p2 bs=1024k count=100
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 22.3091 seconds, 4.7 MB/s
+> 
+> The task struct is not something we should just be carefree putting crap
+> into because it is seemingly free :(
+> 
 
-Oh dear! There are internal performance problems with this controller.
-The SmartArray 5i in the newer DL380 G3 (dual P4 2.8GHz, 512KB L2$) is
-perhaps twice the read performance (PCI-X helps some) but still sucks.
+Agreed, but as the subject says "RFC".  Perhaps we can make it a bit
+more complex and put this as one of the most significant bits in the
+preempt_count. We would just need to mask off that bit in all the archs
+when determining if we should preempt or not.  That's more complex, but
+keeps the task struct free from more luggage.
 
-I'd get the BBWC in or install another controller.
+-- Steve
 
-Daniel
--- 
-Daniel J Blueman
+
