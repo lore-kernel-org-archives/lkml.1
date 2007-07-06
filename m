@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbXGFFWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbXGFFXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbXGFFWy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 01:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757805AbXGFFWg
+	id S1752834AbXGFFXO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 01:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758770AbXGFFWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 01:22:36 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:46218 "EHLO
+	Fri, 6 Jul 2007 01:22:38 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:46226 "EHLO
 	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756418AbXGFFWf (ORCPT
+	with ESMTP id S1757739AbXGFFWg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 01:22:35 -0400
+	Fri, 6 Jul 2007 01:22:36 -0400
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -21,75 +21,288 @@ Cc: Linux Containers <containers@lists.osdl.org>,
        Linux MM Mailing List <linux-mm@kvack.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        Eric W Biederman <ebiederm@xmission.com>
-Date: Thu, 05 Jul 2007 22:21:55 -0700
-Message-Id: <20070706052155.11677.41872.sendpatchset@balbir-laptop>
+Date: Thu, 05 Jul 2007 22:20:43 -0700
+Message-Id: <20070706052043.11677.56208.sendpatchset@balbir-laptop>
 In-Reply-To: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
 References: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
-Subject: [-mm PATCH 5/8] Memory controller task migration (v2)
+Subject: [-mm PATCH 1/8] Memory controller resource counters (v2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Allow tasks to migrate from one container to the other. We migrate
-mm_struct's mem_container only when the thread group id migrates.
+From: Pavel Emelianov <xemul@openvz.org>
 
+Introduce generic structures and routines for resource accounting.
 
+Each resource accounting container is supposed to aggregate it,
+container_subsystem_state and its resource-specific members within.
+
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
 
- mm/memcontrol.c |   35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ include/linux/res_counter.h |  102 +++++++++++++++++++++++++++++++++++++
+ init/Kconfig                |    4 +
+ kernel/Makefile             |    1 
+ kernel/res_counter.c        |  121 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 228 insertions(+)
 
-diff -puN mm/memcontrol.c~mem-control-task-migration mm/memcontrol.c
---- linux-2.6.22-rc6/mm/memcontrol.c~mem-control-task-migration	2007-07-05 13:45:18.000000000 -0700
-+++ linux-2.6.22-rc6-balbir/mm/memcontrol.c	2007-07-05 13:45:18.000000000 -0700
-@@ -302,11 +302,46 @@ err:
- 	return rc;
- }
- 
-+static void mem_container_move_task(struct container_subsys *ss,
-+				struct container *cont,
-+				struct container *old_cont,
-+				struct task_struct *p)
-+{
-+	struct mm_struct *mm;
-+	struct mem_container *mem, *old_mem;
+diff -puN /dev/null include/linux/res_counter.h
+--- /dev/null	2007-06-01 08:12:04.000000000 -0700
++++ linux-2.6.22-rc6-balbir/include/linux/res_counter.h	2007-07-05 13:45:17.000000000 -0700
+@@ -0,0 +1,102 @@
++#ifndef __RES_COUNTER_H__
++#define __RES_COUNTER_H__
 +
-+	mm = get_task_mm(p);
-+	if (mm == NULL)
-+		return;
++/*
++ * resource counters
++ * contain common data types and routines for resource accounting
++ *
++ * Copyright 2007 OpenVZ SWsoft Inc
++ *
++ * Author: Pavel Emelianov <xemul@openvz.org>
++ *
++ */
 +
-+	mem = mem_container_from_cont(cont);
-+	old_mem = mem_container_from_cont(old_cont);
++#include <linux/container.h>
 +
-+	if (mem == old_mem)
-+		goto out;
++/*
++ * the core object. the container that wishes to account for some
++ * resource may include this counter into its structures and use
++ * the helpers described beyond
++ */
 +
++struct res_counter {
 +	/*
-+	 * Only thread group leaders are allowed to migrate, the mm_struct is
-+	 * in effect owned by the leader
++	 * the current resource consumption level
 +	 */
-+	if (p->tgid != p->pid)
-+		goto out;
++	unsigned long usage;
++	/*
++	 * the limit that usage cannot exceed
++	 */
++	unsigned long limit;
++	/*
++	 * the number of insuccessful attempts to consume the resource
++	 */
++	unsigned long failcnt;
++	/*
++	 * the lock to protect all of the above.
++	 * the routines below consider this to be IRQ-safe
++	 */
++	spinlock_t lock;
++};
 +
-+	css_get(&mem->css);
-+	rcu_assign_pointer(mm->mem_container, mem);
-+	css_put(&old_mem->css);
++/*
++ * helpers to interact with userspace
++ * res_counter_read/_write - put/get the specified fields from the
++ * res_counter struct to/from the user
++ *
++ * @cnt:     the counter in question
++ * @member:  the field to work with (see RES_xxx below)
++ * @buf:     the buffer to opeate on,...
++ * @nbytes:  its size...
++ * @pos:     and the offset.
++ */
 +
-+out:
-+	mmput(mm);
-+	return;
++ssize_t res_counter_read(struct res_counter *cnt, int member,
++		const char __user *buf, size_t nbytes, loff_t *pos);
++ssize_t res_counter_write(struct res_counter *cnt, int member,
++		const char __user *buf, size_t nbytes, loff_t *pos);
++
++/*
++ * the field descriptors. one for each member of res_counter
++ */
++
++enum {
++	RES_USAGE,
++	RES_LIMIT,
++	RES_FAILCNT,
++};
++
++/*
++ * helpers for accounting
++ */
++
++void res_counter_init(struct res_counter *cnt);
++
++/*
++ * charge - try to consume more resource.
++ *
++ * @cnt: the counter
++ * @val: the amount of the resource. each controller defines its own
++ *       units, e.g. numbers, bytes, Kbytes, etc
++ *
++ * returns 0 on success and <0 if the cnt->usage will exceed the cnt->limit
++ * _locked call expects the cnt->lock to be taken
++ */
++
++int res_counter_charge_locked(struct res_counter *cnt, unsigned long val);
++int res_counter_charge(struct res_counter *cnt, unsigned long val);
++
++/*
++ * uncharge - tell that some portion of the resource is released
++ *
++ * @cnt: the counter
++ * @val: the amount of the resource
++ *
++ * these calls check for usage underflow and show a warning on the console
++ * _locked call expects the cnt->lock to be taken
++ */
++
++void res_counter_uncharge_locked(struct res_counter *cnt, unsigned long val);
++void res_counter_uncharge(struct res_counter *cnt, unsigned long val);
++
++#endif
+diff -puN init/Kconfig~res_counters_infra init/Kconfig
+--- linux-2.6.22-rc6/init/Kconfig~res_counters_infra	2007-07-05 13:45:17.000000000 -0700
++++ linux-2.6.22-rc6-balbir/init/Kconfig	2007-07-05 13:45:17.000000000 -0700
+@@ -320,6 +320,10 @@ config CPUSETS
+ 
+ 	  Say N if unsure.
+ 
++config RESOURCE_COUNTERS
++	bool
++	select CONTAINERS
++
+ config SYSFS_DEPRECATED
+ 	bool "Create deprecated sysfs files"
+ 	default y
+diff -puN kernel/Makefile~res_counters_infra kernel/Makefile
+--- linux-2.6.22-rc6/kernel/Makefile~res_counters_infra	2007-07-05 13:45:17.000000000 -0700
++++ linux-2.6.22-rc6-balbir/kernel/Makefile	2007-07-05 13:45:17.000000000 -0700
+@@ -58,6 +58,7 @@ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
++obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
+ 
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+diff -puN /dev/null kernel/res_counter.c
+--- /dev/null	2007-06-01 08:12:04.000000000 -0700
++++ linux-2.6.22-rc6-balbir/kernel/res_counter.c	2007-07-05 13:45:17.000000000 -0700
+@@ -0,0 +1,121 @@
++/*
++ * resource containers
++ *
++ * Copyright 2007 OpenVZ SWsoft Inc
++ *
++ * Author: Pavel Emelianov <xemul@openvz.org>
++ *
++ */
++
++#include <linux/types.h>
++#include <linux/parser.h>
++#include <linux/fs.h>
++#include <linux/res_counter.h>
++#include <linux/uaccess.h>
++
++void res_counter_init(struct res_counter *cnt)
++{
++	spin_lock_init(&cnt->lock);
++	cnt->limit = (unsigned long)LONG_MAX;
 +}
 +
- struct container_subsys mem_container_subsys = {
- 	.name = "mem_container",
- 	.subsys_id = mem_container_subsys_id,
- 	.create = mem_container_create,
- 	.destroy = mem_container_destroy,
- 	.populate = mem_container_populate,
-+	.attach = mem_container_move_task,
- 	.early_init = 1,
- };
++int res_counter_charge_locked(struct res_counter *cnt, unsigned long val)
++{
++	if (cnt->usage <= cnt->limit - val) {
++		cnt->usage += val;
++		return 0;
++	}
++
++	cnt->failcnt++;
++	return -ENOMEM;
++}
++
++int res_counter_charge(struct res_counter *cnt, unsigned long val)
++{
++	int ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	ret = res_counter_charge_locked(cnt, val);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return ret;
++}
++
++void res_counter_uncharge_locked(struct res_counter *cnt, unsigned long val)
++{
++	if (unlikely(cnt->usage < val)) {
++		WARN_ON(1);
++		val = cnt->usage;
++	}
++
++	cnt->usage -= val;
++}
++
++void res_counter_uncharge(struct res_counter *cnt, unsigned long val)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	res_counter_uncharge_locked(cnt, val);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++}
++
++
++static inline unsigned long *res_counter_member(struct res_counter *cnt, int member)
++{
++	switch (member) {
++	case RES_USAGE:
++		return &cnt->usage;
++	case RES_LIMIT:
++		return &cnt->limit;
++	case RES_FAILCNT:
++		return &cnt->failcnt;
++	};
++
++	BUG();
++	return NULL;
++}
++
++ssize_t res_counter_read(struct res_counter *cnt, int member,
++		const char __user *userbuf, size_t nbytes, loff_t *pos)
++{
++	unsigned long *val;
++	char buf[64], *s;
++
++	s = buf;
++	val = res_counter_member(cnt, member);
++	s += sprintf(s, "%lu\n", *val);
++	return simple_read_from_buffer((void __user *)userbuf, nbytes,
++			pos, buf, s - buf);
++}
++
++ssize_t res_counter_write(struct res_counter *cnt, int member,
++		const char __user *userbuf, size_t nbytes, loff_t *pos)
++{
++	int ret;
++	char *buf, *end;
++	unsigned long tmp, *val;
++
++	buf = kmalloc(nbytes + 1, GFP_KERNEL);
++	ret = -ENOMEM;
++	if (buf == NULL)
++		goto out;
++
++	buf[nbytes] = 0;
++	ret = -EFAULT;
++	if (copy_from_user(buf, userbuf, nbytes))
++		goto out_free;
++
++	ret = -EINVAL;
++	tmp = simple_strtoul(buf, &end, 10);
++	if (*end != '\0')
++		goto out_free;
++
++	val = res_counter_member(cnt, member);
++	*val = tmp;
++	ret = nbytes;
++out_free:
++	kfree(buf);
++out:
++	return ret;
++}
 _
 
 -- 
