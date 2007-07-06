@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbXGFJth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762500AbXGFJwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762943AbXGFJth (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 05:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbXGFJt3
+	id S1762500AbXGFJwX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 05:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757758AbXGFJwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 05:49:29 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57366 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758609AbXGFJt2 (ORCPT
+	Fri, 6 Jul 2007 05:52:16 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:63553 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757261AbXGFJwP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 05:49:28 -0400
-Date: Fri, 6 Jul 2007 18:50:06 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-Cc: linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, "tony.luck@intel.com" <tony.luck@intel.com>,
-       nickpiggin@yahoo.com.au, mike@stroyan.net, dmosberger@gmail.com,
-       GOTO <y-goto@jp.fujitsu.com>
-Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
-Message-Id: <20070706185006.0014bea5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <468E0E52.2060705@bull.net>
-References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>
-	<468E0E52.2060705@bull.net>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Fri, 6 Jul 2007 05:52:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=ppqoiEryZ5Ri6W850D24M0XXxqywpP5n1ZS/5nwVieO7ZEvyy6OFKgwoDPqmvbEPs+sGWUumKTajq+Q0qWTBmFvzeUPEITTkDXa6MhTptYO+1i8gTTXdMLyI4AykQ0iVivCXEgiKpqJJdDPPH/PRRHW7fk0T0eg/rtIUPM5Kjxc=
+Date: Fri, 6 Jul 2007 11:52:04 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PATA-disk named sda
+Message-ID: <20070706115204.1d5d47ef@localhost.localdomain>
+In-Reply-To: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Jul 2007 11:41:38 +0200
-Zoltan Menyhart <Zoltan.Menyhart@bull.net> wrote:
+El Fri, 6 Jul 2007 10:21:32 +0200
+Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de> escribió:
 
-> KAMEZAWA Hiroyuki wrote:
+> Hello,
 > 
-> >  Note1: icache flush is called only when VM_EXEC flag is on and 
-> >         PG_arch_1 is not set.
-> 
-> If you have not got the page in the cache, then the new page will
-> be allocated with PG_arch_1 bit off.
-> You are going to flush pages which are read by HW DMA, i.e. the L2I
-> of Montecito does not keep old lines for those pages anyway.
-> 
-yes, it's my concern. 
+> In the newest Ubuntu Release, my PATA-disk is called sda instead of hda.
+> Is that a general feature in newer kernel versions or is it a special
+> feature in Ubuntu?
 
-> ...->a_ops->readpage() of "L2I safe" file systems should set PG_arch_1
-> if the CPU is ia64 and it has got separate L2I.
+ You can get information here https://wiki.ubuntu.com/LibAtaForAtaDisks
+
 > 
-> On the other hand, arch. independent file systems should not play with
-> PG_arch_1.
-> The base kernel should export a macro for the file systems...
-> 
-Hm, but it should be discussed in another thread... I think.
->From memory management view, flush_icache before set_pte() is sane thing.
- 
--Kame
+> Regards
+>   Christoph 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+-- 
+Nunca discutas con un idiota. Al final te hacen rebajarte a su nivel y entonces
+te acaban ganando debido a su mayor experiencia.
 
