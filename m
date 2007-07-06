@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763914AbXGFP6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763467AbXGFQEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763914AbXGFP6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762145AbXGFP6J
+	id S1763467AbXGFQEM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 12:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761816AbXGFQD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:58:09 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:42999 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754655AbXGFP6I (ORCPT
+	Fri, 6 Jul 2007 12:03:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39294 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760418AbXGFQD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:58:08 -0400
-Message-ID: <468E6717.3040603@oracle.com>
-Date: Fri, 06 Jul 2007 09:00:23 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, gregkh@suse.de
-Subject: Re: [PATCH] USB:  Remove Makefile reference to obsolete OHCI_AT91.
-References: <Pine.LNX.4.64.0707060623170.11885@localhost.localdomain> <20070706084910.4e5fc20f.randy.dunlap@oracle.com> <Pine.LNX.4.64.0707061152090.32394@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0707061152090.32394@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Fri, 6 Jul 2007 12:03:56 -0400
+Subject: [PATCH] mm: double mark_page_accessed() in read_cache_page_async()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Nick Piggin <npiggin@suse.de>, riel <riel@redhat.com>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 18:03:54 +0200
+Message-Id: <1183737834.7054.108.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Fri, 6 Jul 2007, Randy Dunlap wrote:
-> 
->> On Fri, 6 Jul 2007 06:24:20 -0400 (EDT) Robert P. J. Day wrote:
->>
->>> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
->>>
->>> ---
->>>
->>> diff --git a/drivers/usb/Makefile b/drivers/usb/Makefile
->>> index 72464b5..4d65404 100644
->>> --- a/drivers/usb/Makefile
->>> +++ b/drivers/usb/Makefile
->>> @@ -15,7 +15,6 @@ obj-$(CONFIG_USB_OHCI_HCD)	+= host/
->>>  obj-$(CONFIG_USB_UHCI_HCD)	+= host/
->>>  obj-$(CONFIG_USB_SL811_HCD)	+= host/
->>>  obj-$(CONFIG_USB_U132_HCD)	+= host/
->>> -obj-$(CONFIG_USB_OHCI_AT91)	+= host/
->>>
->>>  obj-$(CONFIG_USB_ACM)		+= class/
->>>  obj-$(CONFIG_USB_PRINTER)	+= class/
->>> --
->> Please use subsystem mailing lists instead of using lkml for
->> Everything:
-> 
-> that's what i would normally do, except a couple times when i did
-> that, i was chided for not posting to the main list.  i'll deal just
-> with the subsystem lists from now on.
+read_cache_page_async() seems to have two invocations of
+mark_page_accessed() which will launch pages right onto the active list.
 
-Thanks.  I missed that chiding that you refer to.  It was incorrect.
+Remove the first one, keeping the latter one. This avoids marking
+unwanted pages active (in the retry loop).
 
--- 
-~Randy
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ mm/filemap.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c
++++ linux-2.6/mm/filemap.c
+@@ -1588,7 +1588,6 @@ retry:
+ 	page = __read_cache_page(mapping, index, filler, data);
+ 	if (IS_ERR(page))
+ 		return page;
+-	mark_page_accessed(page);
+ 	if (PageUptodate(page))
+ 		goto out;
+ 
+
+
