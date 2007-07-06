@@ -1,170 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbXGFFYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762808AbXGFFZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762850AbXGFFYz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 01:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbXGFFYc
+	id S1762808AbXGFFZc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 01:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbXGFFZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 01:24:32 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:46683 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757490AbXGFFY3 (ORCPT
+	Fri, 6 Jul 2007 01:25:23 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:33199 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756719AbXGFFZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 01:24:29 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Cc: Linux Containers <containers@lists.osdl.org>,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Eric W Biederman <ebiederm@xmission.com>
-Date: Thu, 05 Jul 2007 22:22:32 -0700
-Message-Id: <20070706052232.11677.96515.sendpatchset@balbir-laptop>
-In-Reply-To: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
-References: <20070706052029.11677.16964.sendpatchset@balbir-laptop>
-Subject: [-mm PATCH 7/8] Memory controller OOM handling (v2)
+	Fri, 6 Jul 2007 01:25:22 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Fri, 6 Jul 2007 15:25:16 +1000
+User-Agent: KMail/1.9.6
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707061403.15932.nigel@nigel.suspend2.net> <1183696901.3388.119.camel@localhost.localdomain>
+In-Reply-To: <1183696901.3388.119.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2227406.DxAaQg50xy";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707061525.18412.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart2227406.DxAaQg50xy
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Out of memory handling for containers over their limit. A task from the
-container over limit is chosen using the existing OOM logic and killed.
+Hi.
 
-TODO:
-1. As discussed in the OLS BOF session, consider implementing a user
-space policy for OOM handling.
+On Friday 06 July 2007 14:41:40 Benjamin Herrenschmidt wrote:
+>=20
+> > I/O from swsusp and suspend2 use bios directly, so the page cache isn't=
+ an=20
+> > issue for them (apart from the fact that Suspend2 saves the page cache=
+=20
+> > separately so it can get a full image). Not sure about uswsusp.
+> >=20
+> > Only having half the amount of memory doesn't sound like a big limitati=
+on=20
+for=20
+> > modern desktops & laptops, but don't forget that there are embedded guy=
+s=20
+> > wanting to hbernate too :)
+>=20
+> Wait wait wait ... uses the BIOS ? what do you mean ?
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+You misread me, Ben. Sorry for not being clearer. bios as in struct bio.
 
- include/linux/memcontrol.h |    1 +
- mm/memcontrol.c            |    1 +
- mm/oom_kill.c              |   42 ++++++++++++++++++++++++++++++++++++++----
- 3 files changed, 40 insertions(+), 4 deletions(-)
+Regards,
 
-diff -puN include/linux/memcontrol.h~mem-control-out-of-memory include/linux/memcontrol.h
---- linux-2.6.22-rc6/include/linux/memcontrol.h~mem-control-out-of-memory	2007-07-05 18:49:35.000000000 -0700
-+++ linux-2.6.22-rc6-balbir/include/linux/memcontrol.h	2007-07-05 18:49:35.000000000 -0700
-@@ -33,6 +33,7 @@ extern unsigned long mem_container_isola
- 					int mode, struct zone *z,
- 					struct mem_container *mem_cont,
- 					int active);
-+extern void mem_container_out_of_memory(struct mem_container *mem);
- 
- #else /* CONFIG_CONTAINER_MEM_CONT */
- static inline void mm_init_container(struct mm_struct *mm,
-diff -puN mm/memcontrol.c~mem-control-out-of-memory mm/memcontrol.c
---- linux-2.6.22-rc6/mm/memcontrol.c~mem-control-out-of-memory	2007-07-05 18:49:35.000000000 -0700
-+++ linux-2.6.22-rc6-balbir/mm/memcontrol.c	2007-07-05 18:49:35.000000000 -0700
-@@ -266,6 +266,7 @@ int mem_container_charge(struct page *pa
- 		if (res_counter_check_under_limit(&mem->res))
- 			continue;
- 
-+		mem_container_out_of_memory(mem);
- 		goto free_mp;
- 	}
- 
-diff -puN mm/oom_kill.c~mem-control-out-of-memory mm/oom_kill.c
---- linux-2.6.22-rc6/mm/oom_kill.c~mem-control-out-of-memory	2007-07-05 18:49:35.000000000 -0700
-+++ linux-2.6.22-rc6-balbir/mm/oom_kill.c	2007-07-05 18:49:35.000000000 -0700
-@@ -24,6 +24,7 @@
- #include <linux/cpuset.h>
- #include <linux/module.h>
- #include <linux/notifier.h>
-+#include <linux/memcontrol.h>
- 
- int sysctl_panic_on_oom;
- /* #define DEBUG */
-@@ -47,7 +48,8 @@ int sysctl_panic_on_oom;
-  *    of least surprise ... (be careful when you change it)
-  */
- 
--unsigned long badness(struct task_struct *p, unsigned long uptime)
-+unsigned long badness(struct task_struct *p, unsigned long uptime,
-+			struct mem_container *mem)
- {
- 	unsigned long points, cpu_time, run_time, s;
- 	struct mm_struct *mm;
-@@ -60,6 +62,13 @@ unsigned long badness(struct task_struct
- 		return 0;
- 	}
- 
-+#ifdef CONFIG_CONTAINER_MEM_CONT
-+	if (mem != NULL && mm->mem_container != mem) {
-+		task_unlock(p);
-+		return 0;
-+	}
-+#endif
-+
- 	/*
- 	 * The memory size of the process is the basis for the badness.
- 	 */
-@@ -204,7 +213,8 @@ static inline int constrained_alloc(stru
-  *
-  * (not docbooked, we don't want this one cluttering up the manual)
-  */
--static struct task_struct *select_bad_process(unsigned long *ppoints)
-+static struct task_struct *select_bad_process(unsigned long *ppoints,
-+						struct mem_container *mem)
- {
- 	struct task_struct *g, *p;
- 	struct task_struct *chosen = NULL;
-@@ -258,7 +268,7 @@ static struct task_struct *select_bad_pr
- 		if (p->oomkilladj == OOM_DISABLE)
- 			continue;
- 
--		points = badness(p, uptime.tv_sec);
-+		points = badness(p, uptime.tv_sec, mem);
- 		if (points > *ppoints || !chosen) {
- 			chosen = p;
- 			*ppoints = points;
-@@ -372,6 +382,30 @@ static int oom_kill_process(struct task_
- 	return oom_kill_task(p);
- }
- 
-+#ifdef CONFIG_CONTAINER_MEM_CONT
-+void mem_container_out_of_memory(struct mem_container *mem)
-+{
-+	unsigned long points = 0;
-+	struct task_struct *p;
-+
-+	container_lock();
-+	rcu_read_lock();
-+retry:
-+	p = select_bad_process(&points, mem);
-+	if (PTR_ERR(p) == -1UL)
-+		goto out;
-+
-+	if (!p)
-+		p = current;
-+
-+	if (oom_kill_process(p, points, "Memory container out of memory"))
-+		goto retry;
-+out:
-+	rcu_read_unlock();
-+	container_unlock();
-+}
-+#endif
-+
- static BLOCKING_NOTIFIER_HEAD(oom_notify_list);
- 
- int register_oom_notifier(struct notifier_block *nb)
-@@ -444,7 +478,7 @@ retry:
- 		 * Rambo mode: Shoot down a process and hope it solves whatever
- 		 * issues we may have.
- 		 */
--		p = select_bad_process(&points);
-+		p = select_bad_process(&points, NULL);
- 
- 		if (PTR_ERR(p) == -1UL)
- 			goto out;
-_
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+--nextPart2227406.DxAaQg50xy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGjdI+N0y+n1M3mo0RAn+XAKDjmtdqcIfth3ZlY3b3I7ymJJ7SYACgtTQI
+m4wU5zhG5dUsnc9DVnm+n3A=
+=TxDF
+-----END PGP SIGNATURE-----
+
+--nextPart2227406.DxAaQg50xy--
