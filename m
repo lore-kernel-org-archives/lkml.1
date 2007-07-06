@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763509AbXGFWil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751986AbXGFWk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763509AbXGFWil (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 18:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbXGFWie
+	id S1751986AbXGFWk2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 18:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbXGFWkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 18:38:34 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:60631 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760001AbXGFWid convert rfc822-to-8bit (ORCPT
+	Fri, 6 Jul 2007 18:40:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41932 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756437AbXGFWkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 18:38:33 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
-Date: Sat, 7 Jul 2007 00:38:25 +0200
-User-Agent: KMail/1.9.7
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org
-References: <20070706202629.GA158@tv-sign.ru>
-In-Reply-To: <20070706202629.GA158@tv-sign.ru>
+	Fri, 6 Jul 2007 18:40:18 -0400
+Date: Fri, 6 Jul 2007 15:40:17 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, mel@csn.ul.ie
+Subject: Re: [PATCH] memory unplug v7 - introduction
+In-Reply-To: <20070706153401.d1d6bf88.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707061539330.26003@schroedinger.engr.sgi.com>
+References: <20070706181903.428c3713.kamezawa.hiroyu@jp.fujitsu.com>
+ <20070706153401.d1d6bf88.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707070038.25830.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 6. Juli 2007 schrieb Oleg Nesterov:
-> Rafael J. Wysocki wrote:
-> >
-> > This patch makes the freezer skip uninterruptible user space tasks (ie. such
-> > that have an mm of their own) when counting the tasks to be frozen.  As a
-> > result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set, but the
-> > freezer doesn't wait for them to enter the refrigerator.  Nevertheless, they
-> > will enter the refrigerator as soon as they change their state.
+On Fri, 6 Jul 2007, Andrew Morton wrote:
+
+> On Fri, 6 Jul 2007 18:19:03 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> A small correction: they will enter the refrigerator on return to user-space.
+> > This is a memory unplug base patch set against 2.6.22-rc6-mm1.
+> 
+> Well I stuck these in -mm, but I don't know what they do.  An overall
+> description of the design would make any review much more effective.
+> 
+> ie: what does it all do, and how does it do it?
 
-That is too late. We would need them to go to sleep as soon as they are
-woken up. This does not matter if they are in uninterruptible sleep due to
-fuse deadlocking, as they won't be woken up, but it kills the other cases.
-
-	Regards
-		Oliver
+The two patches that you just merged and that I acked are also 
+generally useful for page migration. They are also necessary for
+Mel's memory compaction patchset. 
