@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762477AbXGFPNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763383AbXGFPN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762477AbXGFPNW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbXGFPNP
+	id S1763383AbXGFPN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 11:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759945AbXGFPNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:13:15 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55809 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754428AbXGFPNP (ORCPT
+	Fri, 6 Jul 2007 11:13:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53960 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756007AbXGFPNv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:13:15 -0400
-Date: Fri, 6 Jul 2007 11:13:14 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Paul Mackerras <paulus@samba.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
- RAM pathway
-In-Reply-To: <1183676393.3388.89.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 6 Jul 2007 11:13:51 -0400
+Date: Fri, 6 Jul 2007 16:19:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PATA-disk named sda
+Message-ID: <20070706161950.32fc3139@the-village.bc.nu>
+In-Reply-To: <20070706143055.01aa9ef6.Christoph.Pleger@cs.uni-dortmund.de>
+References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+	<20070706111848.43551f33@the-village.bc.nu>
+	<20070706143055.01aa9ef6.Christoph.Pleger@cs.uni-dortmund.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jul 2007, Benjamin Herrenschmidt wrote:
+> So, the name of the drive can depend on something which happens in the
+> ramdisk environment. Does anybody know what that is? And is there a
+> kernel command line parameter which restores the old behaviour?
 
-> Why are you guys working so hard and spending so much energy to try to
-> avoid doing the right thing is beyond my understanding...
-> 
-> > It _does_ apply to kernel threads.  That's exactly why I wrote above 
-> > that kernel threads which try to do I/O during a suspend will need 
-> > extra attention.
-> 
-> Ok none at all if you don't have a freezer.
+Old IDE -> /dev/hd*
+LibATA -> /dev/sd*
 
-In answer to both questions: We need the freezer in order to implement 
-hibernate.  Even if we take your advice and stop using the freezer 
-during suspend, these issues would still remain and would need to be 
-solved.
+so if you build both sets of modules it depends who gets loaded first.
 
-Alan Stern
+> And what about hdparm (setting 32bit I/O and multi-sector mode)? Suren
+> wrote that 32bit I/O makes no sense when using DMA. Maybe that's right,
+> but it does not correspond with my experiences. At least, I have the
+> "feeling" that my IDE disks work much faster since I enabled 32bit
+> support (DMA already was on before).
 
+32bit I/O and multi-sector I/O are PIO specific features - they have no
+effect on DMA performance. 32bit is on my todo list but very low priority
+as for most systems it makes almost no difference.
+
+Alan
