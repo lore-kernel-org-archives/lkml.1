@@ -1,48 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763300AbXGFIGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761774AbXGFIGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763300AbXGFIGN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 04:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760828AbXGFIFl
+	id S1761774AbXGFIGg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 04:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761373AbXGFIFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 6 Jul 2007 04:05:43 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:2296 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760733AbXGFIFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jul 2007 04:05:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:62584 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760381AbXGFIFj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 04:05:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=d5LWrnszfBeXsKGLGXV2m7xxMfH6kNOCdPfmFVFWvzETCmegx9nPbH+pl3Hlq7X+QZcrLr5jJyGaF4QmMKeQ6U3di0qbOwwo0tooMH/Lr/QSPkKvZ/gTR3pz80uxfWMujKqVGSNEzVT1Y8AtnJFlQsIJ4717QR+ai5l5GSnNOs0=
-Message-ID: <38b2ab8a0707060105o722c1460lcb422d7899ace53a@mail.gmail.com>
-Date: Fri, 6 Jul 2007 10:05:38 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org
-Subject: Question about pm and tty
+Message-ID: <468DF76A.7060106@openvz.org>
+Date: Fri, 06 Jul 2007 12:03:54 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@osdl.org>
+CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: [PATCH 2/16] Miscelaneous preparations for namespaces
+References: <468DF6F7.1010906@openvz.org>
+In-Reply-To: <468DF6F7.1010906@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The most importaint change is moving exit_task_namespaces()
+inside exit_notify() to makes it possible to notify the
+exiting task's parent. However this should be done before
+release_task() to address the issue pointed by Sukadev with
+NFS kernel thread.
 
-I've just finished to implement an input driver for a simple custom
-keyboard (only 16 keys).
+Other changes are small and do not deserve separate description.
 
-I wanted to give it a test through a virtual terminal (CONFIG_VT).
-Note that I'm not familiar with this at all so pardon me if I'm saying
-something silly.
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
-I noticed that as soon as the terminal is initialized, tty_init() is
-called, the input device is open and thus its clock is started. It
-sounds strange to me, I would have thought that the input device is
-open only when /dev/tty is open. Thus the keyboard clock is started
-when the keyboard is really used.
+---
 
-Am I missing something ?
+ include/linux/pid_namespace.h |    7 ++++---
+ kernel/exit.c                 |    3 ++-
+ kernel/pid.c                  |    2 ++
+ 3 files changed, 8 insertions(+), 4 deletions(-)
 
-Thanks
--- 
-Francis
+--- ./include/linux/pid_namespace.h.ve1	2007-07-06 10:58:57.000000000 +0400
++++ ./include/linux/pid_namespace.h	2007-07-06 11:03:18.000000000 +0400
+@@ -4,7 +4,6 @@
+ #include <linux/sched.h>
+ #include <linux/mm.h>
+ #include <linux/threads.h>
+-#include <linux/pid.h>
+ #include <linux/nsproxy.h>
+ #include <linux/kref.h>
+ 
+@@ -24,9 +23,10 @@ struct pid_namespace {
+ 
+ extern struct pid_namespace init_pid_ns;
+ 
+-static inline void get_pid_ns(struct pid_namespace *ns)
++static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
+ {
+ 	kref_get(&ns->kref);
++	return ns;
+ }
+ 
+ extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *ns);
+@@ -39,7 +39,8 @@ static inline void put_pid_ns(struct pid
+ 
+ static inline struct task_struct *child_reaper(struct task_struct *tsk)
+ {
+-	return init_pid_ns.child_reaper;
++	BUG_ON(tsk != current);
++	return tsk->nsproxy->pid_ns->child_reaper;
+ }
+ 
+ #endif /* _LINUX_PID_NS_H */
+--- ./kernel/exit.c.ve1	2007-07-06 11:02:55.000000000 +0400
++++ ./kernel/exit.c	2007-07-06 11:02:55.000000000 +0400
+@@ -862,6 +862,8 @@ static void exit_notify(struct task_stru
+ 		release_task(t);
+ 	}
+ 
++	exit_task_namespaces(tsk);
++
+ 	/* If the process is dead, release it - nobody will wait for it */
+ 	if (state == EXIT_DEAD)
+ 		release_task(tsk);
+@@ -1002,7 +1004,6 @@ fastcall NORET_TYPE void do_exit(long co
+ 
+ 	tsk->exit_code = code;
+ 	proc_exit_connector(tsk);
+-	exit_task_namespaces(tsk);
+ 	exit_notify(tsk);
+ #ifdef CONFIG_NUMA
+ 	mpol_free(tsk->mempolicy);
+--- ./kernel/pid.c.ve1	2007-07-06 10:58:57.000000000 +0400
++++ ./kernel/pid.c	2007-07-06 11:02:55.000000000 +0400
+@@ -71,6 +71,8 @@ struct pid_namespace init_pid_ns = {
+ 	.child_reaper = &init_task
+ };
+ 
++EXPORT_SYMBOL_GPL(init_pid_ns);
++
+ /*
+  * Note: disable interrupts while the pidmap_lock is held as an
+  * interrupt might come in and do read_lock(&tasklist_lock).
