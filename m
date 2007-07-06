@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762910AbXGFLEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762789AbXGFLHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762910AbXGFLEY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 07:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759656AbXGFLEP
+	id S1762789AbXGFLHv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 07:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759779AbXGFLHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 07:04:15 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54384 "EHLO mx2.suse.de"
+	Fri, 6 Jul 2007 07:07:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44942 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755843AbXGFLEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 07:04:14 -0400
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Thread Migration Preemption
-References: <20070705215152.GA4865@Krystal>
+	id S1759656AbXGFLHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 07:07:43 -0400
+To: Clemens Koller <clemens.koller@anagramm.de>
+Cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] introduce panic_gently
+References: <Pine.LNX.4.58.0707060034330.18989@be1.lrz>
+	<468DF5D9.4040803@anagramm.de>
 From: Andi Kleen <andi@firstfloor.org>
-Date: 06 Jul 2007 13:59:33 +0200
-In-Reply-To: <20070705215152.GA4865@Krystal>
-Message-ID: <p73myy9215m.fsf@bingen.suse.de>
+Date: 06 Jul 2007 14:03:05 +0200
+In-Reply-To: <468DF5D9.4040803@anagramm.de>
+Message-ID: <p73hcoh20zq.fsf@bingen.suse.de>
 User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+Clemens Koller <clemens.koller@anagramm.de> writes:
 
-> Thread Migration Preemption
+> Bodo Eggert schrieb:
+> > If the boot process failes to find init or the root fs, the cause
+> > has usually scrolled off the screen, and because of the panic, it
+> > can't be reached anymore.
+> > This patch introduces panic_gently, which will allow to use the
+> > scrollback buffer and to reboot, but it can't be called from unsafe
+> > context.
 > 
-> This patch adds the ability to protect critical sections from migration to
-> another CPU without disabling preemption.
-
-Good idea.
-
-I sometimes think we could have avoided _much_ trouble
-if that had been always default for processes running 
-in kernel space.
- 
-> This will be useful to minimize the amount of preemption disabling for the -rt
-> patch. It will help leveraging improvements brought by the local_t types in
-> asm/local.h (see Documentation/local_ops.txt). Note that the updates done to
-> variables protected by migration_disable must be either atomic or protected from
-> concurrent updates done by other threads.
+> In the case where you introduced panic_gently() there is IMHO no reason
+> to panic() at all. There is no bug which got hit, the machine just needs
+> user intervention because of wrong boot parameters (in most cases).
 > 
-> Typical use:
-> 
-> migration_disable();
-> local_inc(&__get_cpu_var(&my_local_t_var));
-> migration_enable();
+> What about asking the user for the correct root= or init= parameters
+> and just retry/continue the boot process?
 
-It seems strange to have a new interface for this. We already 
-have get_cpu()/put_cpu(). So why not use that?
+BSDs have a boot shell for this. But not sure it's a good idea.
+On EFI systems it might be better to just drop back to the boot environment
+where a "re-boot" could be initiated.
 
->  	unsigned long		flags;		/* low level flags */
->  	__u32			cpu;
->  	__s32			preempt_count;	/* 0 => preemptable, <0 => BUG */
-> +	int			migration_count;/* 0: can migrate, <0 => BUG */
+> The 180seconds reboot timeout also doesn't make sense here. The problem
+> won't go away after a reboot without user interaction.
 
-Can you turn preempt_count into a short first and use a short? That should be enough
-and cache line usage wouldn't be increased. That's ok on x86; on RISCs 
-int might be faster
-
+It will when lilo -R/grubonce were used or the NFS server fixed itself
+on nfs root or ... There can be many reasons for it being a good idea.
 
 -Andi
