@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763638AbXGFIQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbXGFIR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763638AbXGFIQy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 04:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761991AbXGFIQj
+	id S1763445AbXGFIR2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 04:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763262AbXGFIRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 04:16:39 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:36350 "EHLO relay.sw.ru"
+	Fri, 6 Jul 2007 04:17:13 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:11406 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760193AbXGFIQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 04:16:38 -0400
-Message-ID: <468DF8B1.8070503@openvz.org>
-Date: Fri, 06 Jul 2007 12:09:21 +0400
+	id S1761991AbXGFIRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 04:17:11 -0400
+Message-ID: <468DF8DE.4000800@openvz.org>
+Date: Fri, 06 Jul 2007 12:10:06 +0400
 From: Pavel Emelianov <xemul@openvz.org>
 User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
@@ -20,7 +20,7 @@ CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
        Linux Containers <containers@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kirill Korotaev <dev@openvz.org>
-Subject: [PATCH 11/16] Add support for multiple kmem caches for pids
+Subject: [PATCH 12/16] Reference counting of pid naspaces by pids
 References: <468DF6F7.1010906@openvz.org>
 In-Reply-To: <468DF6F7.1010906@openvz.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -28,123 +28,65 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unike Suka's patches I don not limit the level of pid nesting
-creating the caches on demand, depending on the namespace's level.
+Getting and putting the pid namespace in alloc_pid() and
+free_pid() is too slow. Instead this I get/put the namespace
+by the pidmaps. When the pidmap allocates its first pid the
+namespace is get, when the pidmap becomes empty - the namespace
+is put.
 
-Each kmem cache is names "pid_<NR>", where <NR> is the level
-of pid namespace and thus - the number of virtual pids in it.
+Although pids may live longer than their "fingerpints" in the
+pidmaps, this is ok to release the namespace with not yet freed
+struct pids, as this pid is not alive and no routines will
+use it.
 
 Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
 ---
 
- pid.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 56 insertions(+), 5 deletions(-)
+ pid.c |   19 +++++++++++++++----
+ 1 files changed, 15 insertions(+), 4 deletions(-)
 
---- ./kernel/pid.c.ve10	2007-07-06 11:04:15.000000000 +0400
-+++ ./kernel/pid.c	2007-07-06 11:04:48.000000000 +0400
-@@ -32,7 +32,6 @@
- #define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
- static struct hlist_head *pid_hash;
- static int pidhash_shift;
--static struct kmem_cache *pid_cachep;
- struct pid init_struct_pid = INIT_STRUCT_PID;
+diff -upr linux-2.6.22-rc4-mm2.orig/kernel/pid.c linux-2.6.22-rc4-mm2-2/kernel/pid.c
+--- linux-2.6.22-rc4-mm2.orig/kernel/pid.c	2007-06-14 12:14:29.000000000 +0400
++++ linux-2.6.22-rc4-mm2-2/kernel/pid.c	2007-07-04 19:00:38.000000000 +0400
+@@ -89,16 +95,23 @@ static  __cacheline_aligned_in_smp DEFIN
  
- int pid_max = PID_MAX_DEFAULT;
-@@ -179,11 +178,15 @@ static int next_pidmap(struct pid_namesp
- 
- fastcall void put_pid(struct pid *pid)
+ static fastcall void free_pidmap(struct pid_namespace *pid_ns, int pid)
  {
-+	struct pid_namespace *ns;
+-	struct pidmap *map = pid_ns->pidmap + pid / BITS_PER_PAGE;
+ 	int offset = pid & BITS_PER_PAGE_MASK;
++	int map_id = pid / BITS_PER_PAGE;
++	struct pidmap *map = pid_ns->pidmap + map_id;
++	int free_pids;
+ 
+ 	clear_bit(offset, map->page);
+-	atomic_inc(&map->nr_free);
++	free_pids = atomic_inc_return(&map->nr_free);
 +
- 	if (!pid)
- 		return;
-+
-+	ns = pid->numbers[0].ns;
- 	if ((atomic_read(&pid->count) == 1) ||
- 	     atomic_dec_and_test(&pid->count))
--		kmem_cache_free(pid_cachep, pid);
-+		kmem_cache_free(ns->pid_cachep, pid);
++	if (map_id == 0)
++		free_pids++;
++	if (free_pids == BITS_PER_PAGE)
++		put_pid_ns(pid_ns);
  }
- EXPORT_SYMBOL_GPL(put_pid);
  
-@@ -212,7 +215,7 @@ struct pid *alloc_pid(struct pid_namespa
- 	enum pid_type type;
- 	int nr = -1;
- 
--	pid = kmem_cache_alloc(pid_cachep, GFP_KERNEL);
-+	pid = kmem_cache_alloc(init_pid_ns.pid_cachep, GFP_KERNEL);
- 	if (!pid)
- 		goto out;
- 
-@@ -233,7 +236,7 @@ out:
- 	return pid;
- 
- out_free:
--	kmem_cache_free(pid_cachep, pid);
-+	kmem_cache_free(init_pid_ns.pid_cachep, pid);
- 	pid = NULL;
- 	goto out;
- }
-@@ -378,6 +381,52 @@ struct pid *find_ge_pid(int nr, struct p
- }
- EXPORT_SYMBOL_GPL(find_get_pid);
- 
-+struct pid_cache {
-+	int level;
-+	char name[16];
-+	struct kmem_cache *cachep;
-+	struct list_head lh;
-+};
-+
-+static LIST_HEAD(pid_caches);
-+static DEFINE_MUTEX(pid_cache_mutex);
-+
-+static struct kmem_cache *create_pid_cachep(int level)
-+{
-+	struct pid_cache *pc;
-+	struct kmem_cache *cachep = NULL;
-+
-+	mutex_lock(&pid_cache_mutex);
-+	list_for_each_entry (pc, &pid_caches, lh)
-+		if (pc->level == level) {
-+			cachep = pc->cachep;
-+			goto out;
-+		}
-+
-+	pc = kzalloc(sizeof(struct pid_cache), GFP_KERNEL);
-+	if (pc == NULL)
-+		goto out;
-+
-+	snprintf(pc->name, sizeof(pc->name), "pid_%d", level);
-+	cachep = kmem_cache_create(pc->name,
-+			sizeof(struct pid) + level * sizeof(struct pid_number),
-+			0, SLAB_HWCACHE_ALIGN, NULL, NULL);
-+	if (cachep == NULL)
-+		goto out_free;
-+
-+	pc->cachep = cachep;
-+	pc->level = level;
-+	list_add(&pc->lh, &pid_caches);
-+	pc = NULL;
-+
-+out_free:
-+	if (pc != NULL)
-+		kfree(pc);
-+out:
-+	mutex_unlock(&pid_cache_mutex);
-+	return cachep;
-+}
-+
- struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old_ns)
+ static int alloc_pidmap(struct pid_namespace *pid_ns)
  {
- 	BUG_ON(!old_ns);
-@@ -425,5 +474,7 @@ void __init pidmap_init(void)
- 	set_bit(0, init_pid_ns.pidmap[0].page);
- 	atomic_dec(&init_pid_ns.pidmap[0].nr_free);
+-	int i, offset, max_scan, pid, last = pid_ns->last_pid;
++	int i, offset, max_scan, pid, last = pid_ns->last_pid, free_pids;
+ 	struct pidmap *map;
  
--	pid_cachep = KMEM_CACHE(pid, SLAB_PANIC);
-+	init_pid_ns.pid_cachep = create_pid_cachep(0);
-+	if (init_pid_ns.pid_cachep == NULL)
-+		panic("Can't create pid cachep");
- }
+ 	pid = last + 1;
+@@ -126,7 +139,11 @@ static int alloc_pidmap(struct pid_names
+ 		if (likely(atomic_read(&map->nr_free))) {
+ 			do {
+ 				if (!test_and_set_bit(offset, map->page)) {
+-					atomic_dec(&map->nr_free);
++					free_pids = atomic_dec_return(
++							&map->nr_free);
++					if (free_pids == BITS_PER_PAGE - 1)
++						get_pid_ns(pid_ns);
++
+ 					pid_ns->last_pid = pid;
+ 					return pid;
+ 				}
+
