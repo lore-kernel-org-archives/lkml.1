@@ -1,66 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbXGFS76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763356AbXGFTFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762950AbXGFS76 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 14:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761966AbXGFS7t
+	id S1763356AbXGFTFA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 15:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbXGFTEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 14:59:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42799 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761918AbXGFS7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 14:59:48 -0400
-Date: Fri, 6 Jul 2007 14:59:43 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Clean up E7520/7320/7525 quirk printk.
-Message-ID: <20070706185943.GA18853@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Fri, 6 Jul 2007 15:04:52 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:51243 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753353AbXGFTEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 15:04:52 -0400
+Date: Fri, 6 Jul 2007 15:04:41 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Dan Kegel <dank@kegel.com>, linux-kernel@vger.kernel.org,
+       Robert Walsh <rjwalsh@durables.org>
+Subject: Re: Valgrinding the kernel?
+Message-ID: <20070706190441.GA12246@c2.user-mode-linux.org>
+References: <a71bd89a0707052114u28fed408h4326913c502a43ac@mail.gmail.com> <468DD6A5.4020705@goop.org> <20070706172513.GD10670@c2.user-mode-linux.org> <468E834E.6020906@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <468E834E.6020906@goop.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The printk level in this printk is bogus, as the previous printk
-didn't have a terminating \n resulting in ..
+On Fri, Jul 06, 2007 at 11:00:46AM -0700, Jeremy Fitzhardinge wrote:
+> >UML is cloning a thread in order to test the host's ptrace.  However,
+> >it looks like valgrind is branching to 0x9 for some reason.
+> >  
+> 
+> How far into the run does this happen?  Immediately, or after a while?
 
-Intel E7520/7320/7525 detected.<6>Disabling irq balancing and affinity
+This is pretty much immediately.
 
-It also never printed a \n at all in the case where we didn't do
-the quirk.
+				Jeff
 
-Change it to only make noise if it actually does something useful.
-
-Signed-off-by: Dave Jones <davej@redhat.com>
-
-diff --git a/arch/i386/kernel/quirks.c b/arch/i386/kernel/quirks.c
-index 9f6ab17..6722469 100644
---- a/arch/i386/kernel/quirks.c
-+++ b/arch/i386/kernel/quirks.c
-@@ -20,8 +20,6 @@ static void __devinit quirk_intel_irqbalance(struct pci_dev *dev)
- 	if (rev > 0x9)
- 		return;
- 
--	printk(KERN_INFO "Intel E7520/7320/7525 detected.");
--
- 	/* enable access to config space*/
- 	pci_read_config_byte(dev, 0xf4, &config);
- 	pci_write_config_byte(dev, 0xf4, config|0x2);
-@@ -30,7 +28,8 @@ static void __devinit quirk_intel_irqbalance(struct pci_dev *dev)
- 	raw_pci_ops->read(0, 0, 0x40, 0x4c, 2, &word);
- 
- 	if (!(word & (1 << 13))) {
--		printk(KERN_INFO "Disabling irq balancing and affinity\n");
-+		printk(KERN_INFO "Intel E7520/7320/7525 detected. "
-+			"Disabling irq balancing and affinity\n");
- #ifdef CONFIG_IRQBALANCE
- 		irqbalance_disable("");
- #endif
 -- 
-http://www.codemonkey.org.uk
+Work email - jdike at linux dot intel dot com
