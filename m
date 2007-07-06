@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763735AbXGFVY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764190AbXGFV0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763735AbXGFVY7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 17:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761848AbXGFVYw
+	id S1764190AbXGFV0v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 17:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761848AbXGFV0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 17:24:52 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:36595 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759113AbXGFVYv (ORCPT
+	Fri, 6 Jul 2007 17:26:44 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42029 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752567AbXGFV0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 17:24:51 -0400
-Message-ID: <468EB2F0.8040903@linux.vnet.ibm.com>
-Date: Fri, 06 Jul 2007 14:24:00 -0700
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 6 Jul 2007 17:26:43 -0400
+Message-ID: <468EB162.5080006@vmware.com>
+Date: Fri, 06 Jul 2007 14:17:22 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-To: Dave Hansen <haveblue@us.ibm.com>
-CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Chris Wright <chrisw@sous-sol.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Eric W Biederman <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Paul Menage <menage@google.com>
-Subject: Re: [-mm PATCH 1/8] Memory controller resource counters (v2)
-References: <20070706052029.11677.16964.sendpatchset@balbir-laptop> <20070706052043.11677.56208.sendpatchset@balbir-laptop> <1183742642.10287.151.camel@localhost>  <468EAE3E.4050802@linux.vnet.ibm.com> <1183756205.10287.212.camel@localhost>
-In-Reply-To: <1183756205.10287.212.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
+       virtualization@lists.osdl.org,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Carsten Otte <cotte@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] VMI: remove CONFIG_DEBUG_PAGE_TYPE and associated	bitrotted
+ code
+References: <Pine.LNX.4.64.0707060847470.23786@localhost.localdomain>	<468E890A.1070504@s5r6.in-berlin.de>	<20070706201625.GT4306@sequoia.sous-sol.org> <468EA27C.9060401@vmware.com> <468EA5E0.4070501@goop.org> <468EA74D.7010706@vmware.com> <468EADB9.9050802@goop.org>
+In-Reply-To: <468EADB9.9050802@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Fri, 2007-07-06 at 14:03 -0700, Balbir Singh wrote:
->>>> +ssize_t res_counter_read(struct res_counter *cnt, int member,
->>>> +            const char __user *userbuf, size_t nbytes, loff_t
->> *pos)
->>>> +{
->>>> +    unsigned long *val;
->>>> +    char buf[64], *s;
->>>> +
->>>> +    s = buf;
->>>> +    val = res_counter_member(cnt, member);
->>>> +    s += sprintf(s, "%lu\n", *val);
->>>> +    return simple_read_from_buffer((void __user *)userbuf, nbytes,
->>>> +                    pos, buf, s - buf);
->>>> +}
->>> Why do we need that cast?  
->>>
->> u mean the __user? If I remember correctly it's a attribute for
->> sparse.
-> 
-> The userbuf is already __user.  This just appears to be making a 'const
-> char *' into a 'void *'.  I wondered what the reason for that part is.
-> 
+Jeremy Fitzhardinge wrote:
+> Zachary Amsden wrote:
+>> I though about it, but it gets really ugly.  You need wrappers for 
+>> all the MMU ops in pvops generic code, which means either another 
+>> layer of wrappers or a bunch of CONFIG_DEBUG_PARAVIRT
+>
+> Oh, yes, more wrappers please!  We could do it at the paravirt_ops 
+> level: set up your pv_ops, then call paravirt_debug_mmuops(), which 
+> would save away your ops and replace them with wrappers.  That basic 
+> structure would lend itself to all kinds of paravirt-level debugging 
+> tools.
+>
+> It would be a bit more elegant if we had mmu_ops.  Maybe we should do 
+> that splitup before 64bit?
 
-Aah.. yes.. good point. I'll look into it.
+zamsden strongly agrees jsgf.
 
-> -- Dave
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>> only things that are easy to break because they also depend on PAE 
+>> vs. non-PAE.
+>
+> Hm, would they?  Would they need to inspect the content of the pte_t 
+> (etc), or just look at the struct page for the page being updated?  
+> (pmd operations being a bit more awkward, of course.)
 
+No, but there are different sets of operations and different sets of 
+validation rules (for example, multiple PGDs per page for PAE, depending 
+on pgd allocation size).
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> Well, I have to say that keeping the hypervisor hints in sync with the 
+> actual kernel-level page state worries me, so any debug tools which 
+> could help there would be good.  This seems like it should be the 
+> right place to do it, but I can't say I've thought about it in any 
+> detail.
+
+Yes, these things are subtle and easy to break.  In fact, still broken 
+(although in a different way) - check out this naked write to a pte:
+
+arch/i386/mm/init.c:            pte->pte_high &= ~(1 << (_PAGE_BIT_NX - 
+32));
+arch/i386/mm/init.c:            pte->pte_high |= 1 << (_PAGE_BIT_NX - 32);
+
+Not only has page typing created a dependence on the guest accurately 
+representing page state to the hypervisor, it also requires the guest to 
+use proper APIs for access to those pages.  That is much harder to 
+enforce - perhaps static checking can get some of the way there.
+
+The page type debugging is certainly a start in a good direction.
+
+> Of course, if it *is* helpful to the page hinting patches, then it 
+> suggests that it's a facility with wider scope than pv-ops.
+
+I certainly think it's not wide enough to justify a new struct page 
+field, but perhaps a debug-only field is commonly useful; those pg bits 
+are getting quite crammed.
+
+Zach
