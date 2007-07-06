@@ -1,73 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXGFAtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762653AbXGFAxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbXGFAtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 20:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbXGFAtH
+	id S1762653AbXGFAxT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 20:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760983AbXGFAxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 20:49:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52376 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759710AbXGFAtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 20:49:06 -0400
-Message-ID: <468D917F.90204@garzik.org>
-Date: Thu, 05 Jul 2007 20:49:03 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Thu, 5 Jul 2007 20:53:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:33782 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760922AbXGFAxM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 20:53:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bS8kl9lg2wvZ7QsaUDtrzjuktHdrabVGBBfnoIx6QQBcL3A2SxpgKXBmZlHR7IwTHN2SMYo91ANK8V0Y5knHpHo32vz9H9eQMDmQpuXpuXWIFfvPkBrKddUgGrYaVqQPlSYrXmKiBlXshNrULh1fOkX7JF1MJ1cyXwh6X6YbX/s=
+Message-ID: <f8b2ccd40707051753v7cba58cfw1d3e0df5e4decc6d@mail.gmail.com>
+Date: Thu, 5 Jul 2007 17:53:11 -0700
+From: "Gautam Singaraju" <gautam.singaraju@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: RSA support into kernel?
+In-Reply-To: <f8b2ccd40707051548w275a1575oaaddffd40d9a9163@mail.gmail.com>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: slow down printk during boot.
-References: <20070705211346.GB17030@redhat.com>
-In-Reply-To: <20070705211346.GB17030@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <f8b2ccd40707051548w275a1575oaaddffd40d9a9163@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> This patch from Randy has proven quite useful from time to time,
-> and has been in Fedora kernels for a while for that reason.
-> I fixed up some checkpatch warnings, and rediffed it a bunch
-> of times, Randy did the heavy lifting.
-> 
-> ---
-> 
-> This one delays each printk() during boot by a variable time
-> (from kernel command line), while system_state == SYSTEM_BOOTING.
-> Caveat:  it's not terribly SMP safe or SMP nice.
-> Any ideas for improvements (esp. in the SMP area) are appreciated.
-> 
-> ---
-> 
-> From: Randy Dunlap <rdunlap@xenotime.net>
-> 
-> Optionally add a boot delay after each kernel printk() call,
-> crudely measured in milliseconds, with a maximum delay of
-> 10 seconds per printk.
-> 
-> Enable CONFIG_BOOT_DELAY=y and then add (e.g.):
-> "lpj=loops_per_jiffy boot_delay=100"
-> to the kernel command line.
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> 
-> ---
-> 
->  init/calibrate.c  |    2 +-
->  init/main.c       |   25 +++++++++++++++++++++++++
->  kernel/printk.c   |   33 +++++++++++++++++++++++++++++++++
->  lib/Kconfig.debug |   18 ++++++++++++++++++
->  4 files changed, 77 insertions(+), 1 deletion(-)
-
-hey, that's pretty neat.
-
-I've occasionally hand-hacked something similar, to achieve those effects.
-
-	Jeff
-
-
-
+Is there any attempt being made to provide software based RSA
+cryptographic support in kernel? I see that Linux supports
+Hardware based cryptographic devices (VIA Padlock ACE). How is the
+performance of such hardware? How well are these devices supported?
+-GS
