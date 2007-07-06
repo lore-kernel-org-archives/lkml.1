@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762458AbXGFOgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbXGFOjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762458AbXGFOgS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 10:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbXGFOgH
+	id S1762069AbXGFOjQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 10:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbXGFOjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 10:36:07 -0400
-Received: from serv07.divms.uiowa.edu ([128.255.44.97]:36601 "EHLO
-	serv07.divms.uiowa.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbXGFOgG (ORCPT
+	Fri, 6 Jul 2007 10:39:01 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:36759 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753653AbXGFOjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 10:36:06 -0400
-X-Greylist: delayed 1811 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jul 2007 10:36:06 EDT
-In-Reply-To: <20070705143419.f214f5b2.akpm@linux-foundation.org>
-References: <200707051251.52891.vda.linux@googlemail.com> <20070705143419.f214f5b2.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6F17353B-D428-462B-B318-2FDEC11E8D66@cs.uiowa.edu>
-Cc: Denis Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: "Douglas W. Jones" <jones@cs.uiowa.edu>
-Subject: Re: [PATCH 2/2] vsprintf.c: optimizing, part 2: base 10 conversion speedup, v2
-Date: Fri, 6 Jul 2007 09:05:29 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
+	Fri, 6 Jul 2007 10:39:01 -0400
+Date: Fri, 6 Jul 2007 10:38:59 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, <linux-kernel@vger.kernel.org>,
+       <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+In-Reply-To: <1183694347.3388.114.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0707061034540.3737-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 6 Jul 2007, Benjamin Herrenschmidt wrote:
 
-On Jul 5, 2007, at 4:34 PM, Andrew Morton wrote:
+> What you propose is basically a slightly over-simplistic version of what
+> I think (and Paulus think) should be done. We do need to do it via
+> driver callbacks down the tree since only drivers can know how to deal
+> with their DMA etc... and ordering need to be respected, but that's
+> basically it.
+> 
+> And guess what ? It's what we do on powerbooks, and it works fine,
+> without a freezer :-)
 
-> On Thu, 5 Jul 2007 12:51:52 +0200
-> Denis Vlasenko <vda.linux@googlemail.com> wrote:
->
->> Using code from
->>
->> http://www.cs.uiowa.edu/~jones/bcd/decimal.html
->> (with permission from the author, Douglas W. Jones)
->
-> Neither of your patches had signed-off-by:s.  Would prefer that  
-> they were
-> included please, given that we're adding stuff from someone's website.
+I wish you'd stop saying that.  Have you ever done any serious testing?
 
-The material on my website was somewhere between pseudocode and
-code.  The web site is tutorial in nature, and what Vlasenko did
-is follow my tutorial and adapt a working chunk of code from the
-many code snippets in the tutorial.
+Here's something to try:  Add a time delay to the end of hub_suspend in
+drivers/usb/core/hub.c, so you can provoke a race manually.  Then while
+one of your root hubs is being suspended and the system is waiting in
+that delay, either plug in a new USB device to that hub or unplug an
+existing device.
 
-If a signoff from me is required, someone will need to tell me how,
-since I have no experience with the protocols for Linux code
-development.  I am entirely content with the current form of credit
-given to me in the code (a comment with a pointer to my web site).
+Be sure that CONFIG_USB_DEBUG is on so that we can figure out what 
+happened after the fact.
 
-Frankly, I remain a bit surprise that my work has significant payoff
-on a Pentium.  I was motivated by the problems of doing fast binary
-to ASCII decimal conversion on a brain-dead little microcontroller
-with an 8-bit ALU.
+Alan Stern
 
-		Doug Jones
-		jones@cs.uiowa.edu
