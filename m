@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763563AbXGFTvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763897AbXGFTx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763563AbXGFTvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 15:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760155AbXGFTva
+	id S1763897AbXGFTx5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 15:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761883AbXGFTxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 15:51:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:59104 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759940AbXGFTva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 15:51:30 -0400
-Message-ID: <468E9D3F.4030406@goop.org>
-Date: Fri, 06 Jul 2007 12:51:27 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Fri, 6 Jul 2007 15:53:50 -0400
+Received: from ipn26-148.piekary.net ([83.238.26.148]:52873 "EHLO
+	ipn26-148.piekary.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760155AbXGFTxt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 15:53:49 -0400
+Date: Fri, 6 Jul 2007 21:53:43 +0200
+From: Michal Januszewski <spock@gentoo.org>
+To: Ryan Hope <rmh3093@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: [PATCH v2 0/5] uvesafb: a general description
+Message-ID: <20070706195343.GA12096@spock.one.pl>
+Reply-To: spock@gentoo.org
+References: <20070630163101.GA3838@spock.one.pl> <48f7fe350707051038p422ea305w10d727bcc44e5d7b@mail.gmail.com>
 MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: Dan Kegel <dank@kegel.com>, linux-kernel@vger.kernel.org,
-       Robert Walsh <rjwalsh@durables.org>
-Subject: Re: Valgrinding the kernel?
-References: <a71bd89a0707052114u28fed408h4326913c502a43ac@mail.gmail.com> <468DD6A5.4020705@goop.org> <20070706172513.GD10670@c2.user-mode-linux.org> <a71bd89a0707061030s15572cj49cb748bf274593b@mail.gmail.com> <20070706194252.GA12311@c2.user-mode-linux.org>
-In-Reply-To: <20070706194252.GA12311@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <48f7fe350707051038p422ea305w10d727bcc44e5d7b@mail.gmail.com>
+X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> On Fri, Jul 06, 2007 at 10:30:19AM -0700, Dan Kegel wrote:
->   
->> Could you give it a shot?
->>     
->
-> OK, after ripping out the code that broke valgrind last time (patch
-> below), I get this:
->
-> ==27590== Warning: set address range perms: large range 516194304, a 0, v 0
->   
+On Thu, Jul 05, 2007 at 01:38:46PM -0400, Ryan Hope wrote:
+>  I applied
+>  http://dev.gentoo.org/~spock/projects/uvesafb/archive/uvesafb-0.1-rc2-2.6.22-rc6.patchto
+>  2.6.22-rc6-mm1... everything seems to be working properly. However, in dmesg
+>  I did notice the following message:
+> 
+>  uvesafb: message too long (9872), can't execute task
+>  uvesafb: VBE get state call failed (eax=0x4f04, err=-7)
+> 
+>  The messages seem to get generated when I switch VTs. Just thought I would
+>  let you know. If there is anything else I can do to help let me know.
 
-Hm, wonder what that is...
+It looks like the VBE hardware state buffer for your video card is
+larger than the 4k currently supported by connector.  The problem should
+be easily fixed by setting CONNECTOR_MAX_MSG_SIZE in include/linux/connector.h
+to e.g. 16k.  I've already updated the patch on my website, so next time
+you download it, the error messages should be gone.
 
-> vex x86->IR: unhandled instruction bytes: 0xF3 0xAF 0x74 0x9
-> ==27590== Your program just tried to execute an instruction that Valgrind
-> ==27590== did not recognise.  There are two possible reasons for this.
-> ==27590== 1. Your program has a bug and erroneously jumped to a non-code
-> ==27590==    location.  If you are running Memcheck and you just saw a
-> ==27590==    warning about a bad jump, it's probably your program's fault.
-> ==27590== 2. The instruction is legitimate but Valgrind doesn't handle it,
-> ==27590==    i.e. it's Valgrind's fault.  If you think this is the case or
-> ==27590==    you are not sure, please let us know.
-> ==27590== Either way, Valgrind will now raise a SIGILL signal which will
-> ==27590== probably kill your program.
-> ==27590== 
->
->   
->> Maybe the problems after that will be more pedestrian.
->>     
->
-> Doesn't look like it.
->
-> FWIW, that instruction is repz scas.  In an earlier valgrind effort in
-> 2002, I hit repe scas
-> (http://www.goop.org/~jeremy/valgrind/76-repe-scas.patch), so maybe
-> something similar is needed here.
->   
+Best regards,
+Michal
 
-The virtual CPU code has been competely rewritten since then.  If its a 
-non-gcc generated instruction, its possible the new code 
-parser/generator hasn't been taught to deal with it.
-
->> I'm willing to focus a little effort on this.
->>     
->
-> I guess you'll have to fix valgrind's various bugs.  See, simple :)
->   
-
-Exactly ;)
-
-    J
