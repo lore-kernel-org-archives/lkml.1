@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXGFMbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761982AbXGFMgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761972AbXGFMbI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 08:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXGFMa5
+	id S1761982AbXGFMgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 08:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759868AbXGFMgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 08:30:57 -0400
-Received: from waldorf.cs.uni-dortmund.de ([129.217.4.42]:51883 "EHLO
-	waldorf.cs.uni-dortmund.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755682AbXGFMa4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 08:30:56 -0400
-Date: Fri, 6 Jul 2007 14:30:55 +0200
-From: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+	Fri, 6 Jul 2007 08:36:08 -0400
+Received: from main.gmane.org ([80.91.229.2]:38054 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759745AbXGFMgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 08:36:07 -0400
+X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
-Subject: Re: PATA-disk named sda
-Message-Id: <20070706143055.01aa9ef6.Christoph.Pleger@cs.uni-dortmund.de>
-In-Reply-To: <20070706111848.43551f33@the-village.bc.nu>
-References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
-	<20070706111848.43551f33@the-village.bc.nu>
-Organization: Universitaet Dortmund
-X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; sparc-sun-solaris2.8)
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Fri, 06 Jul 2007 14:35:53 +0200
+Message-ID: <m3zm29pv4m.fsf@ursa.amorsen.dk>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051048.46202.oliver@neukum.org> <1183675095.3388.72.camel@localhost.localdomain> <200707060930.21348.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: hd5b9080a.c45-01-12.sta.perspektivbredband.net
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+Cancel-Lock: sha1:/yAXUqCUqgXhKhaGX1Uvznk3pRg=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>>>>> "ON" == Oliver Neukum <oliver@neukum.org> writes:
 
-> > In the newest Ubuntu Release, my PATA-disk is called sda instead of
-> > hda. Is that a general feature in newer kernel versions or is it a
-> > special feature in Ubuntu?
-> 
-> General. SATA and now PATA drives map onto the /dev/sd range as do
-> SCSI, USB etc
+ON> Because we will be unable to escape that job. Let's assume that we
+ON> remove the freezer from the STR path. The next complaint would be
+ON> that we cannot do STD with fuse. "Then don't do that" would not be
+ON> taken kindly as answer.
 
-It seems to be not that simple, at least not if both the old IDE
-interface and the new libata interface are enabled as modules: In my
-Ubuntu system, I created two kernel packages (from the same kernel
-source and with the same configuration) and installed them. Afterwards,
-I re-created the initial ramdisks, one with the Ubuntu feisty utilities
-and one with Debian etch utilities. So, I had the same kernel with
-different ramdisks. With the Ubuntu ramdisk, my harddrive was named sda,
-but with the Debian ramdisk, it was named hda.
+Ah, we are back to keeping STR broken in order to maybe get STD
+working. STR is much more interesting than STD.
 
-So, the name of the drive can depend on something which happens in the
-ramdisk environment. Does anybody know what that is? And is there a
-kernel command line parameter which restores the old behaviour?
 
-And what about hdparm (setting 32bit I/O and multi-sector mode)? Suren
-wrote that 32bit I/O makes no sense when using DMA. Maybe that's right,
-but it does not correspond with my experiences. At least, I have the
-"feeling" that my IDE disks work much faster since I enabled 32bit
-support (DMA already was on before).
+/Benny
 
-Regards
-  Christoph
+
