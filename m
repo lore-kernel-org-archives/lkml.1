@@ -1,35 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763510AbXGFJeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763556AbXGFJg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763510AbXGFJeZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 05:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760471AbXGFJeS
+	id S1763556AbXGFJg1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 05:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761590AbXGFJgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 05:34:18 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:42377 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758867AbXGFJeR (ORCPT
+	Fri, 6 Jul 2007 05:36:20 -0400
+Received: from waldorf.cs.uni-dortmund.de ([129.217.4.42]:56647 "EHLO
+	waldorf.cs.uni-dortmund.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761037AbXGFJgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 05:34:17 -0400
-To: nigel@nigel.suspend2.net
-CC: miklos@szeredi.hu, oliver@neukum.org, rjw@sisk.pl, nigel@suspend2.net,
-       pavel@ucw.cz, benh@kernel.crashing.org, mjg59@srcf.ucam.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-In-reply-to: <200707061916.17590.nigel@nigel.suspend2.net> (message from Nigel
-	Cunningham on Fri, 6 Jul 2007 19:16:16 +1000)
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-References: <20070703042916.GA17240@srcf.ucam.org> <200707060951.47555.oliver@neukum.org> <E1I6jot-0003U1-00@dorka.pomaz.szeredi.hu> <200707061916.17590.nigel@nigel.suspend2.net>
-Message-Id: <E1I6kC8-0003af-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 06 Jul 2007 11:33:44 +0200
+	Fri, 6 Jul 2007 05:36:20 -0400
+Date: Fri, 6 Jul 2007 11:36:18 +0200
+From: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: PATA-disk named sda
+Message-Id: <20070706113618.1d5e216a.Christoph.Pleger@cs.uni-dortmund.de>
+In-Reply-To: <200707061413.53182.surenkarapetyan@gmail.com>
+References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
+	<200707061413.53182.surenkarapetyan@gmail.com>
+Organization: Universitaet Dortmund
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; sparc-sun-solaris2.8)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > VM induced deadlocks are real nasty.  I have thought about them a lot
-> > already.  Suspend shouldn't introduce any big surprises.
-> 
-> Suspend isn't introducing the surprises. Fuse is. It creates the potential 
-> deadlocks simply by existing (this isn't suspend or hibernate specific).
+Hello,
 
-Yes.  And fuse is not going away any time soon.  Get over it ;)
+> In recent kernels both PATA and SATA (SCSI too) drives are handled by
+> libata  library. It calls all the drives sd* . 
 
-Miklos
+If so, what about the use of hdparm then? I could not change parameters
+like DMA, MultSectIO and 32-Bit support with hdparm. sdparm also did not
+do that work.
+
+Regards
+  Christoph  
