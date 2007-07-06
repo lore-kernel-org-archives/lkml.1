@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbXGFHvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXGFHv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761593AbXGFHvi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 03:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbXGFHv3
+	id S1762650AbXGFHv6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 03:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbXGFHvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 03:51:29 -0400
-Received: from rzcomm12.rz.tu-bs.de ([134.169.9.59]:56992 "EHLO
-	rzcomm12.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754030AbXGFHv2 (ORCPT
+	Fri, 6 Jul 2007 03:51:49 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:48970 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754030AbXGFHvt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 03:51:28 -0400
-Message-ID: <468DF478.1080403@l4x.org>
-Date: Fri, 06 Jul 2007 09:51:20 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Thunderbird 2.0.0.5pre (Windows/20070628)
+	Fri, 6 Jul 2007 03:51:49 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Fri, 6 Jul 2007 09:51:47 +0200
+User-Agent: KMail/1.9.7
+Cc: rjw@sisk.pl, nigel@suspend2.net, pavel@ucw.cz, benh@kernel.crashing.org,
+       mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <20070703042916.GA17240@srcf.ucam.org> <200707060940.23248.rjw@sisk.pl> <E1I6iPL-0003Hj-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I6iPL-0003Hj-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: bryan.wu@analog.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] Blackfin arch fixes (try #2)
-References: <1183423041.10353.8.camel@roc-laptop> <468A560A.9050801@l4x.org>	 <8bd0f97a0707031055h7b97c0cerbd2314a2836f7798@mail.gmail.com>	 <468C053D.9050302@l4x.org> <8bd0f97a0707060022x16732628ofc3c0a6004776cbe@mail.gmail.com>
-In-Reply-To: <8bd0f97a0707060022x16732628ofc3c0a6004776cbe@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707060951.47555.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On 7/4/07, Jan Dittmer <jdi@l4x.org> wrote:
->> Mike Frysinger wrote:
->> > On 7/3/07, Jan Dittmer <jdi@l4x.org> wrote:
->> >> Bryan Wu wrote:
->> >>> Jie's patch is required because we will release our new Blackfin 
->> toolchain.
->> >> So, what is the new toolchain version?
->> >> gcc 4.1.1 (adi 07r1) / binutils 2.17 doesn't seem to work anymore:
->> >
->> > we'll post new toolchain binaries in a bit
->>
->> Hrm, somehow I don't understand it. On [1] you're
->> talking about gcc 4.1.2 and binutils 2.17 supporting
->> the -mcpu switch. But if you download the 2007R1 RC9
->> toolchain from the Files section of the site (tar.gz)
->> you actually get 4.1.1 without mcpu support. But the
->> version string from gcc indicates 07r1.
->> Care to explain?
+Am Freitag, 6. Juli 2007 schrieb Miklos Szeredi:
+> > > You're missing the point. I'm arguing that a sync from within the freezer 
+> > > should guarantee that there is no data loss.
+> > 
+> > Well, it should, but it doesn't ...
+> > 
+> > Moreover, if FUSE implements syncing, then the sync from within the freezer
+> > will almost certainly deadlock.
 > 
-> the syntax of the -mcpu option was extended
+> Rafael, think positively: by the time fuse implements sync(), the
+> freezer will be long gone ;)
 
-But the tar-ball does _not_ contain 4.1.2
+Now you are entering really dangerous territory.
+If you can implement a meaningfull sync method, you must have dirty
+pages in the page cache. That means you are in the page freeing path
+of the vm. Then we are in real trouble. Don't even think about it.
 
-Jan
+As far as suspend/hibernate is concerned, get yourself on the new
+notifying chain and revert to synchronous operations when notified.
+
+	Regards
+		Oliver
+
