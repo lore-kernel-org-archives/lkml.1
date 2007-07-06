@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762779AbXGFHTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763093AbXGFHTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762779AbXGFHTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 03:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbXGFHTO
+	id S1763093AbXGFHTs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 03:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXGFHTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 03:19:14 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:35803 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbXGFHTN (ORCPT
+	Fri, 6 Jul 2007 03:19:39 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:40825 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752059AbXGFHTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 03:19:13 -0400
-Subject: Re: [PATCH] Check charset in scripts/checkpatch.pl
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070706000807.8f9f83ca.akpm@linux-foundation.org>
-References: <1183705264.2747.20.camel@shinybook.infradead.org>
-	 <20070706000807.8f9f83ca.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 06 Jul 2007 03:19:50 -0400
-Message-Id: <1183706391.2747.27.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+	Fri, 6 Jul 2007 03:19:38 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from within the freezer
+Date: Fri, 6 Jul 2007 17:19:34 +1000
+User-Agent: KMail/1.9.6
+Cc: nigel@suspend2.net, rjw@sisk.pl, pavel@ucw.cz,
+       linux-pm@lists.linux-foundation.org, benh@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org, oliver@neukum.org,
+       paulus@samba.org, mingo@elte.hu
+References: <200707041658.59588.rjw@sisk.pl> <200707061707.23316.nigel@nigel.suspend2.net> <E1I6i0N-0003CY-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I6i0N-0003CY-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2001911.hDr84XMzzR";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200707061719.36054.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-06 at 00:08 -0700, Andrew Morton wrote:
-> On Fri, 06 Jul 2007 03:01:03 -0400 David Woodhouse <dwmw2@infradead.org> wrote:
-> 
-> > Reject all legacy 8-bit character sets and allow only ASCII or UTF-8 to
-> > be added to files or used in patch descriptions.
-> 
-> What is the reasoning behind this?
+--nextPart2001911.hDr84XMzzR
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The character set used by the kernel is UTF-8. So we should check for
-people trying to add invalid stuff in other character sets. There's no
-way for them to _label_ legacy character sets as such; it's not like
-MIME email where we can use a different charset for every mail and
-expect people to cope. We need to be consistent.
+Hi.
 
-> > Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-> > 
-> > Signed-off-by: asd
-> 
-> Jekyll & Hyde?
+On Friday 06 July 2007 17:13:27 Miklos Szeredi wrote:
+> > To get more serious and practical though, I think the solution is to
+> > fuzz the userspace/kernelspace distinction. What we really want to
+> > do is freeze things that submit I/O, then sync, then freeze anything
+> > that processes I/O and needs to be frozen. In effect, redefine fuse
+> > processes as freezeable kernel threads.
+>=20
+> Another myth, that has been debunked already.  The problem is: how do
+> you define fuse processes?  There's no theoretical or even practial
+> way to do that.
 
-Oops. I prepended that to the output of 'git-diff' just to make
-checkpatch happy. And then forgot about it when I inserted the text file
-into my mailer.
+No theoretical or practical way?! I'll freely admit to being quite ignorant=
+=20
+about fuse, but surely there's some way by which they can be distinguished.
 
--- 
-dwmw2
+Regards,
 
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
+
+--nextPart2001911.hDr84XMzzR
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGje0IN0y+n1M3mo0RAsI8AKDVne3j+dySUwP7nqn+n4PWYYY4nwCgtggq
+iJIlnJzslub4sJ8LypH4e/0=
+=p5BO
+-----END PGP SIGNATURE-----
+
+--nextPart2001911.hDr84XMzzR--
