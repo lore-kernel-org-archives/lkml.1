@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763320AbXGFIMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762585AbXGFINX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763320AbXGFIMG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 04:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763520AbXGFILl
+	id S1762585AbXGFINX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 04:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbXGFINK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 04:11:41 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:43169 "EHLO relay.sw.ru"
+	Fri, 6 Jul 2007 04:13:10 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:6661 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763470AbXGFILj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 04:11:39 -0400
-Message-ID: <468DF78C.6060708@openvz.org>
-Date: Fri, 06 Jul 2007 12:04:28 +0400
+	id S1757467AbXGFINI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 04:13:08 -0400
+Message-ID: <468DF907.2060809@openvz.org>
+Date: Fri, 06 Jul 2007 12:10:47 +0400
 From: Pavel Emelianov <xemul@openvz.org>
 User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
@@ -20,7 +20,7 @@ CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
        Linux Containers <containers@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kirill Korotaev <dev@openvz.org>
-Subject: [PATCH 3/16] Introduce MS_KERNMOUNT flag
+Subject: [PATCH 13/16] Switch to operating with pid_numbers instead of pids
 References: <468DF6F7.1010906@openvz.org>
 In-Reply-To: <468DF6F7.1010906@openvz.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -28,72 +28,118 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This flag tells the .get_sb callback that this is a kern_mount()
-call so that it can trust *data pointer to be valid in-kernel one.
-
-Running a few steps forward - this will be needed for proc to
-create the superblock and store a valid pid namespace on it
-during the namespace creation. The reason, why the namespace
-cannot live without proc mount is described in the appropriate
-patch.
+Make alloc_pid() initialize pid_numbers and hash them
+into the hashtable, not the struct pid itself.
 
 Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
 ---
 
- fs/namespace.c     |    3 ++-
- fs/super.c         |    6 +++---
- include/linux/fs.h |    4 +++-
- 3 files changed, 8 insertions(+), 5 deletions(-)
+ pid.c |   47 +++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 33 insertions(+), 14 deletions(-)
 
-diff -upr linux-2.6.22-rc4-mm2.orig/fs/namespace.c linux-2.6.22-rc4-mm2-2/fs/namespace.c
---- linux-2.6.22-rc4-mm2.orig/fs/namespace.c	2007-06-14 12:00:06.000000000 +0400
-+++ linux-2.6.22-rc4-mm2-2/fs/namespace.c	2007-07-04 19:00:39.000000000 +0400
-@@ -1558,7 +1558,8 @@ long do_mount(char *dev_name, char *dir_
- 		mnt_flags |= MNT_NOMNT;
+--- ./kernel/pid.c.ve12	2007-07-05 11:06:41.000000000 +0400
++++ ./kernel/pid.c	2007-07-05 11:08:23.000000000 +0400
+@@ -28,8 +28,10 @@
+ #include <linux/hash.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/init_task.h>
++#include <linux/proc_fs.h>
  
- 	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
--		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME | MS_NOMNT);
-+		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME |
-+		   MS_NOMNT | MS_KERNMOUNT);
+-#define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
++#define pid_hashfn(nr, ns)	\
++	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+ static struct hlist_head *pid_hash;
+ static int pidhash_shift;
+ struct pid init_struct_pid = INIT_STRUCT_PID;
+@@ -194,7 +198,7 @@ fastcall void put_pid(struct pid *pid)
+ 	if (!pid)
+ 		return;
  
- 	/* ... and get the mountpoint */
- 	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
-diff -upr linux-2.6.22-rc4-mm2.orig/fs/super.c linux-2.6.22-rc4-mm2-2/fs/super.c
---- linux-2.6.22-rc4-mm2.orig/fs/super.c	2007-06-07 15:37:30.000000000 +0400
-+++ linux-2.6.22-rc4-mm2-2/fs/super.c	2007-07-04 19:00:39.000000000 +0400
-@@ -942,9 +942,9 @@ do_kern_mount(const char *fstype, int fl
- 	return mnt;
- }
- 
--struct vfsmount *kern_mount(struct file_system_type *type)
-+struct vfsmount *kern_mount_data(struct file_system_type *type, void *data)
+-	ns = pid->numbers[0].ns;
++	ns = pid->numbers[pid->level].ns;
+ 	if ((atomic_read(&pid->count) == 1) ||
+ 	     atomic_dec_and_test(&pid->count))
+ 		kmem_cache_free(ns->pid_cachep, pid);
+@@ -210,13 +214,17 @@ static void delayed_put_pid(struct rcu_h
+ fastcall void free_pid(struct pid *pid)
  {
--	return vfs_kern_mount(type, 0, type->name, NULL);
-+	return vfs_kern_mount(type, MS_KERNMOUNT, type->name, data);
+ 	/* We can be called with write_lock_irq(&tasklist_lock) held */
++	int i;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&pidmap_lock, flags);
+-	hlist_del_rcu(&pid->pid_chain);
++	for (i = 0; i <= pid->level; i++)
++		hlist_del_rcu(&pid->numbers[i].pid_chain);
+ 	spin_unlock_irqrestore(&pidmap_lock, flags);
+ 
+-	free_pidmap(&init_pid_ns, pid->nr);
++	for (i = 0; i <= pid->level; i++)
++		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
++
+ 	call_rcu(&pid->rcu, delayed_put_pid);
  }
  
--EXPORT_SYMBOL(kern_mount);
-+EXPORT_SYMBOL_GPL(kern_mount_data);
-diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/fs.h linux-2.6.22-rc4-mm2-2/include/linux/fs.h
---- linux-2.6.22-rc4-mm2.orig/include/linux/fs.h	2007-06-14 12:00:06.000000000 +0400
-+++ linux-2.6.22-rc4-mm2-2/include/linux/fs.h	2007-07-04 19:00:39.000000000 +0400
-@@ -130,6 +130,7 @@ extern int dir_notify_enable;
- #define MS_NO_LEASES	(1<<22)	/* fs does not support leases */
- #define MS_SETUSER	(1<<23) /* set mnt_uid to current user */
- #define MS_NOMNT	(1<<24) /* don't allow unprivileged submounts */
-+#define MS_KERNMOUNT	(1<<25) /* this is a kern_mount call */
- #define MS_ACTIVE	(1<<30)
- #define MS_NOUSER	(1<<31)
+@@ -224,30 +232,43 @@ struct pid *alloc_pid(struct pid_namespa
+ {
+ 	struct pid *pid;
+ 	enum pid_type type;
+-	int nr = -1;
++	struct pid_namespace *ns;
++	int i, nr;
  
-@@ -1490,7 +1491,8 @@ void unnamed_dev_init(void);
+-	pid = kmem_cache_alloc(init_pid_ns.pid_cachep, GFP_KERNEL);
++	pid = kmem_cache_alloc(pid_ns->pid_cachep, GFP_KERNEL);
+ 	if (!pid)
+ 		goto out;
  
- extern int register_filesystem(struct file_system_type *);
- extern int unregister_filesystem(struct file_system_type *);
--extern struct vfsmount *kern_mount(struct file_system_type *);
-+extern struct vfsmount *kern_mount_data(struct file_system_type *, void *data);
-+#define kern_mount(type) kern_mount_data(type, NULL)
- extern int may_umount_tree(struct vfsmount *);
- extern int may_umount(struct vfsmount *);
- extern void umount_tree(struct vfsmount *, int, struct list_head *);
-
+-	nr = alloc_pidmap(current->nsproxy->pid_ns);
+-	if (nr < 0)
+-		goto out_free;
++	ns = pid_ns;
++	for (i = pid_ns->level; i >= 0; i--) {
++		nr = alloc_pidmap(ns);
++		if (nr < 0)
++			goto out_free;
+ 
++		pid->numbers[i].nr = nr;
++		pid->numbers[i].ns = ns;
++		ns = ns->parent;
++	}
++
++	pid->level = pid_ns->level;
+ 	atomic_set(&pid->count, 1);
+-	pid->nr = nr;
+ 	for (type = 0; type < PIDTYPE_MAX; ++type)
+ 		INIT_HLIST_HEAD(&pid->tasks[type]);
+ 
+ 	spin_lock_irq(&pidmap_lock);
+-	hlist_add_head_rcu(&pid->pid_chain, &pid_hash[pid_hashfn(pid->nr)]);
++	for (i = pid->level; i >= 0; i--)
++		hlist_add_head_rcu(&pid->numbers[i].pid_chain,
++				&pid_hash[pid_hashfn(pid->numbers[i].nr,
++					pid->numbers[i].ns)]);
+ 	spin_unlock_irq(&pidmap_lock);
+-
+ out:
+ 	return pid;
+ 
+ out_free:
+-	kmem_cache_free(init_pid_ns.pid_cachep, pid);
++	for (i++; i <= pid->level; i++)
++		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
++
++	kmem_cache_free(pid_ns->pid_cachep, pid);
+ 	pid = NULL;
+ 	goto out;
+ }
+@@ -258,7 +279,7 @@ struct pid * fastcall find_pid_ns(int nr
+ 	struct pid_number *pnr;
+ 
+ 	hlist_for_each_entry_rcu(pnr, elem,
+-			&pid_hash[pid_hashfn(nr)], pid_chain)
++			&pid_hash[pid_hashfn(nr, ns)], pid_chain)
+ 		if (pnr->nr == nr && pnr->ns == ns)
+ 			return container_of(pnr, struct pid,
+ 					numbers[ns->level]);
