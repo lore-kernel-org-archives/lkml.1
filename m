@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763091AbXGFLoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761276AbXGFMTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763091AbXGFLoH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 07:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbXGFLn4
+	id S1761276AbXGFMTg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 08:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759965AbXGFMT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 07:43:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35643 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760027AbXGFLnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 07:43:55 -0400
-Subject: Re: [PATCH] Libertas: Fix regression in cmd.c introduced in commit
-	18c96c3497aa871608d57ca5e08de3558159a6c9
-From: Dan Williams <dcbw@redhat.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Guillaume LECERF <glecerf@gmail.com>, linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <a781481a0707060029r3ebf237bl84e27247f0943820@mail.gmail.com>
-References: <b8e9195f0707051609v36182409mc07f030cca790a7a@mail.gmail.com>
-	 <a781481a0707060029r3ebf237bl84e27247f0943820@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 06 Jul 2007 07:48:13 -0400
-Message-Id: <1183722493.15222.3.camel@xo-13-A4-25.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jul 2007 08:19:27 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:59770 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759637AbXGFMTZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 08:19:25 -0400
+Date: Fri, 6 Jul 2007 14:17:51 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: DervishD <lkml@dervishd.net>
+cc: Bodo Eggert <7eggert@gmx.de>, Nix <nix@esperi.org.uk>,
+       Karel Zak <kzak@redhat.com>,
+       List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+In-Reply-To: <20070705192002.GB11204@DervishD>
+Message-ID: <Pine.LNX.4.58.0707061406090.2241@be1.lrz>
+References: <8CYT9-4Ou-23@gated-at.bofh.it> <8Dh9k-8lT-3@gated-at.bofh.it>
+ <8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz>
+ <20070705192002.GB11204@DervishD>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/ALu1yPCRiQS4syxVEBgIVbvuyAnBUkXIMw6p
+ DHdq34eVnKuhB35FJUOLpwlN5BQLPrPln7hKi+6luZRL7x1ICk
+ jO5/Ja60g87XclRk++MKw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-06 at 12:59 +0530, Satyam Sharma wrote:
-> Hi Guillaume,
-> 
-> [ Added relevant folks to Cc: ]
+On Thu, 5 Jul 2007, DervishD wrote:
+>  * Bodo Eggert <7eggert@gmx.de> dixit:
 
-Botched backport, head is correct.  It's worth noting that WPA didn't
-work before the original commit at _all_, and after the commit it would
-actually work, but you probably couldn't turn it off :)
-
-Thanks for the catch, I'll fix and push to linville.
-
-dan
-
-> On 7/6/07, Guillaume LECERF <glecerf@gmail.com> wrote:
-> > [...]
-> >
-> > --- a/drivers/net/wireless/libertas/cmd.c
-> > +++ b/drivers/net/wireless/libertas/cmd.c
-> > @@ -241,7 +241,7 @@
-> >                 if (*enable)
-> >                         penableRSN->enable = cpu_to_le16(cmd_enable_rsn);
-> >                 else
-> > -                       penableRSN->enable = cpu_to_le16(cmd_enable_rsn);
-> > +                       penableRSN->enable = cpu_to_le16(cmd_disable_rsn);
-> >         }
-> >
-> >         lbs_deb_leave(LBS_DEB_CMD);
-> >
+> > Standardisation is good, but autotools (as they are used) usurally isn't.
 > 
-> Thanks for the patch (looks reasonable to me), but:
-> 
-> 1. No point sending a patch without a "Signed-off-by:" line.
-> 2. Changelog (a few lines of explanation before signed-off-by) must
-> specify what was wrong, and why the patch is correct.
-> 3. Always Cc: relevant maintainers or at least _somebody_ who
-> _will_ pick it up.
-> 4. Gmail has done horrible things to the patch as usual, use some
-> other mailer or script.
-> 
-> And in general, please read: Documentation/SubmittingPatches
-> and http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
-> 
-> Satyam
+>     Usually, by picking other's project configure.in and tweak blindly.
 
+If it were that easy to write a correct automake script, people would do 
+that. Wouldn't they?
+
+> > Configuring the build of an autotools program is harder than nescensary;
+> > if it used a config file, you could easily save it somewhere while adding
+> > comments on how and why you did *that* choice, and you could possibly
+> > use a set of default configs which you'd just include.
+> 
+>     Looks like CMake...
+
+Obviously something I should look at.
+-- 
+Top 100 things you don't want the sysadmin to say:
+45. Was that YOUR directory?
