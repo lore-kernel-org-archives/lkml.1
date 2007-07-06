@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761276AbXGFMTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761197AbXGFM3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761276AbXGFMTg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 08:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759965AbXGFMT1
+	id S1761197AbXGFM3Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 08:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759995AbXGFM3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 08:19:27 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:59770 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759637AbXGFMTZ (ORCPT
+	Fri, 6 Jul 2007 08:29:00 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:59223 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759970AbXGFM3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 08:19:25 -0400
-Date: Fri, 6 Jul 2007 14:17:51 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: DervishD <lkml@dervishd.net>
-cc: Bodo Eggert <7eggert@gmx.de>, Nix <nix@esperi.org.uk>,
-       Karel Zak <kzak@redhat.com>,
-       List util-linux-ng <util-linux-ng@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
-In-Reply-To: <20070705192002.GB11204@DervishD>
-Message-ID: <Pine.LNX.4.58.0707061406090.2241@be1.lrz>
-References: <8CYT9-4Ou-23@gated-at.bofh.it> <8Dh9k-8lT-3@gated-at.bofh.it>
- <8DtDz-3xC-15@gated-at.bofh.it> <E1I6SfW-0002XG-AM@be1.lrz>
- <20070705192002.GB11204@DervishD>
+	Fri, 6 Jul 2007 08:29:00 -0400
+Message-ID: <468E3579.1020109@s5r6.in-berlin.de>
+Date: Fri, 06 Jul 2007 14:28:41 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/ALu1yPCRiQS4syxVEBgIVbvuyAnBUkXIMw6p
- DHdq34eVnKuhB35FJUOLpwlN5BQLPrPln7hKi+6luZRL7x1ICk
- jO5/Ja60g87XclRk++MKw==
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: dead(?) i386-related CONFIG variables
+References: <Pine.LNX.4.64.0707050726110.12036@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707050726110.12036@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jul 2007, DervishD wrote:
->  * Bodo Eggert <7eggert@gmx.de> dixit:
-
-> > Standardisation is good, but autotools (as they are used) usurally isn't.
+On 7/5/2007 1:27 PM, Robert P. J. Day wrote:
+>   since it's not clear who a single contact person would be for
+> i386-related stuff like this, here's what my script turned up for
+> tests on non-existent CONFIG variables under arch/i386:
 > 
->     Usually, by picking other's project configure.in and tweak blindly.
+> ========== BALANCED_IRQ_DEBUG ==========
+> arch/i386/kernel/io_apic.c:356:#ifdef CONFIG_BALANCED_IRQ_DEBUG
 
-If it were that easy to write a correct automake script, people would do 
-that. Wouldn't they?
+-#ifdef CONFIG_BALANCED_IRQ_DEBUG
++#if 0 /* debug IRQ balancing */
 
-> > Configuring the build of an autotools program is harder than nescensary;
-> > if it used a config file, you could easily save it somewhere while adding
-> > comments on how and why you did *that* choice, and you could possibly
-> > use a set of default configs which you'd just include.
+> ========== DEBUG_PAGE_TYPE ==========
+> arch/i386/kernel/vmi.c:238:#ifdef CONFIG_DEBUG_PAGE_TYPE
+
+-#ifdef CONFIG_DEBUG_PAGE_TYPE
++#if 0 /* debug page type */
+
+arch/i386/kernel/vmi.c:339
+
+-#endif
++#endif /* debug page type */
+
+> ========== SERIAL_DETECT_IRQ ==========
+> arch/i386/kernel/legacy_serial.c:18:#ifdef CONFIG_SERIAL_DETECT_IRQ
+
+Hmm, not sure about this.  The code section was taken from
+include/asm-{i386,x86_64}/serial.h.  This is an option similar to other
+CONFIG_SERIAL_ options in numerous places.
+
+Serial drivers are orphaned, aren't they?
+
+>   feel free to take this as seriously as you want.  :-)
 > 
->     Looks like CMake...
+> rday
 
-Obviously something I should look at.
 -- 
-Top 100 things you don't want the sysadmin to say:
-45. Was that YOUR directory?
+Stefan Richter
+-=====-=-=== -=== --==-
+http://arcgraph.de/sr/
