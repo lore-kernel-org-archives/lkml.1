@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763282AbXGFM6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbXGFNBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763282AbXGFM6T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 08:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbXGFM6M
+	id S1762780AbXGFNBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 09:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbXGFNBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 08:58:12 -0400
-Received: from mx1.suse.de ([195.135.220.2]:51770 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759970AbXGFM6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 08:58:11 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Hiroaki Fuse <Hiroaki_Fuse@hq.scei.sony.co.jp>
-Subject: Re: Too verbose compat_ioctl messages?
-References: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be>
-X-Yow: I love FRUIT PICKERS!!
-Date: Fri, 06 Jul 2007 14:57:57 +0200
-In-Reply-To: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be> (Geert
-	Uytterhoeven's message of "Fri\, 6 Jul 2007 14\:47\:57 +0200 \(CEST\)")
-Message-ID: <jevecxhep6.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 6 Jul 2007 09:01:10 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:36635 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756165AbXGFNBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 09:01:09 -0400
+Date: Fri, 6 Jul 2007 15:01:04 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Milan Plzik <milan.plzik@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: SD card readable only up to certain boundary (samcop sdi
+ controller)
+Message-ID: <20070706150104.51a3067d@poseidon.drzeus.cx>
+In-Reply-To: <1183670244.9213.81.camel@localhost>
+References: <1183670244.9213.81.camel@localhost>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.11.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> writes:
+On Thu, 05 Jul 2007 23:17:24 +0200
+Milan Plzik <milan.plzik@gmail.com> wrote:
 
-> Is there anything we can do about this?
+> 
+>   The SD card works correctly with other devices, like PCMCIA card
+> readers. Also samcop sdi was able to fully read 512MB card. I'm not
+> really sure what could cause behavior like this and I'm open to any
+> suggestion.
+> 
 
-Define it as IGNORE_IOCTL in fs/compat_ioctl.c?
+No idea, but as it works well in other devices and I've not seen
+anything reports resembling this, I'd guess the driver/hw is buggy. But
+as I haven't seen said driver I cannot guess what the problem might be.
 
-Andreas.
-
+Rgds
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
