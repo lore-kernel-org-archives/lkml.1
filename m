@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbXGFXBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbXGFXRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753662AbXGFXBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 19:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbXGFXBM
+	id S1753273AbXGFXRE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 19:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbXGFXQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 19:01:12 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:40425 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbXGFXBL (ORCPT
+	Fri, 6 Jul 2007 19:16:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50062 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751650AbXGFXQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 19:01:11 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: Stefan Seyfried <seife@suse.de>
-Subject: Re: Failure to properly reinit i8042 post suspend-to-ram
-Date: Sat, 7 Jul 2007 09:01:11 +1000
-User-Agent: KMail/1.9.6
-Cc: nigel@suspend2.net, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>, dmitry.torokhov@gmail.com
-References: <200706221607.33274.nigel@nigel.suspend2.net> <200707052104.27693.nigel@nigel.suspend2.net> <20070706150451.GA11400@suse.de>
-In-Reply-To: <20070706150451.GA11400@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6042013.TqJtlfO50o";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 6 Jul 2007 19:16:52 -0400
+Date: Fri, 6 Jul 2007 16:16:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Morris <jmorris@namei.org>
+Cc: Heikki Orsila <shdl@zakalwe.fi>, Yoann Padioleau <padator@wanadoo.fr>,
+       kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] some kmalloc/memset ->kzalloc (tree wide)
+Message-Id: <20070706161617.072f7eea.akpm@linux-foundation.org>
+In-Reply-To: <Line.LNX.4.64.0707061806390.18415@d.namei>
+References: <878x9ta320.fsf@wanadoo.fr>
+	<20070706175552.GF3400@zakalwe.fi>
+	<Line.LNX.4.64.0707061806390.18415@d.namei>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707070901.11605.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6042013.TqJtlfO50o
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 6 Jul 2007 18:07:20 -0400 (EDT)
+James Morris <jmorris@namei.org> wrote:
 
-Hi.
+> On Fri, 6 Jul 2007, Heikki Orsila wrote:
+> 
+> > > Transform some calls to kmalloc/memset to a single kzalloc (or 
+> > > kcalloc).
+> > 
+> > I looked all the files through. They looked good to me, except 
+> > one case:
+> 
+> I checked the drivers/net and net/ changes and they looked ok (aside from 
+> the above).
+> 
+> 
 
-On Saturday 07 July 2007 01:04:51 Stefan Seyfried wrote:
-> On Thu, Jul 05, 2007 at 09:04:27PM +1000, Nigel Cunningham wrote:
-> > >=20
-> > > If confusion persist after 4 seconds hard power down... then you h ve
-> > > hw/BIOS problem. Complain to whoever is manufacturing that beast.
-> >=20
-> > Adding i8042.reset=3D1 to the commandline fixed it.
->=20
-> Wasn't there a quirk list where workarounds for i8042 on known bad machin=
-es
-> are stored? Maybe it would be a good idea to get your machine into it ;-)
+OK, thanks for checking it, guys.
 
-Never heard of it. I'll see what I can find.
+Yoann, the "tree wide" thing really is a problem.  Your patch here is
+touching ten or more maintainers' code and it really does want to be split
+into ten separate patches and fed into the tree via the appropriate routes.
 
-Regards,
+I can take care of that routing if I have the ten patches, but this time I
+really can't be bothered splitting the patch up (it's rather boring, and
+gets error-prone).
 
-Nigel
-=2D-=20
-Nigel Cunningham
-Christian Reformed Church of Cobden
-103 Curdie Street, Cobden 3266, Victoria, Australia
-Ph. +61 3 5595 1185 / +61 417 100 574
-Communal Worship: 11 am Sunday.
+For this patch, I tossed out the ten or so hunks which conflicted with
+other pending patches in the various trees and I shall just grit the teeth
+and maintain and merge it as a single whopping patch.  (At least this way
+I'll actually get some scsi stuff merged).  Anything which conflicts with
+anyone's outstanding work will be dropped.
 
---nextPart6042013.TqJtlfO50o
-Content-Type: application/pgp-signature
+For any future patches, _please_ split them up along some sane lines. 
+Generally you'll find that one patch per second-level directory works
+pretty well: drivers/net, drivers/scsi, drivers/usb, fs/ext2, drivers/char,
+etc.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGjsm3N0y+n1M3mo0RAuHBAJsFzOYg7yziezWSYPQKu9EkkNOgGACg6Qhi
-pv3eyoqTvioZbjqw1Y0TbW4=
-=+59N
------END PGP SIGNATURE-----
-
---nextPart6042013.TqJtlfO50o--
+Thanks.
