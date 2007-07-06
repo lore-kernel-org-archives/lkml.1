@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbXGFPcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbXGFPev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763319AbXGFPcw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760698AbXGFPcp
+	id S1763462AbXGFPev (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 11:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761020AbXGFPen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:32:45 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:58710 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760502AbXGFPco (ORCPT
+	Fri, 6 Jul 2007 11:34:43 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:37723 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760403AbXGFPen (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:32:44 -0400
-Date: Fri, 6 Jul 2007 18:32:32 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][Patch] Allow not mounting a root fs
-Message-ID: <20070706153232.GA11907@localdomain>
-References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <468DA42D.7050309@zytor.com> <Pine.LNX.4.58.0707061551240.2241@be1.lrz>
+	Fri, 6 Jul 2007 11:34:43 -0400
+Message-ID: <468E6103.5080706@linux.vnet.ibm.com>
+Date: Fri, 06 Jul 2007 08:34:27 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0707061551240.2241@be1.lrz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Pavel Emelianov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [-mm PATCH 0/7] Memory controller introduction
+References: <20070704222108.17702.40293.sendpatchset@balbir-laptop> <468CB658.7000204@openvz.org> <1183727690.7054.104.camel@twins>
+In-Reply-To: <1183727690.7054.104.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 05:00:40PM +0200, Bodo Eggert wrote:
-> On Thu, 5 Jul 2007, H. Peter Anvin wrote:
+Peter Zijlstra wrote:
+> On Thu, 2007-07-05 at 13:14 +0400, Pavel Emelianov wrote:
 > 
-> > Bodo Eggert wrote:
-> > > This patch adds the option to not mount another root filesystem 
-> > > by specifying root=initramfs.
-> > 
-> > Uhm, the kernel doesn't mount anything if you're using an initramfs.
+>> Separate limits for RSS and RSS+pagecache are also a must.
 > 
-> Yes, instead it panics trying to mount the non-existing "root=".
-> I've put the complete system into initrams, and I just want the kernel to
-> run /sbin/init.
+> This I still disagree upon. Page-cache limits are orthogonal to
+> containers and not a requirement for containers. If you want such a
+> feature get it in Linux proper and don't sneak it in the backdoor via
+> containers.
+> 
+> 
+> 
 
-If I understood you correctly, you're trying to get the kernel 
-to execute the "/sbin/init" file of your initramfs. However, "/init" 
-is the sole default initramfs entry point. To fix this, you can pass 
-rdinit=/sbin/init _or_ modify your initramfs image so that "/init" 
-is the entrypoint.
+Peter, 
 
-Normally, if your initramfs has a /init script your kernel would 
-skip the entire stage where it panics in the perpare_namespace() 
-function for trying to mount "root=" by itself (see 
-init/main.c:init()).
+In these patches, we provide memory control that includes
+mapped pages and unmapped pages (as discussed in the BOF). All memory
+is treated uniformly. We will not have separate page cache control,
+what we can have is control for either mapped pages or control
+for a combination of mapped and unmapped pages together.
 
 -- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
