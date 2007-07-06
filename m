@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762388AbXGFPJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762477AbXGFPNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762388AbXGFPJS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756396AbXGFPJE
+	id S1762477AbXGFPNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 11:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbXGFPNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:09:04 -0400
-Received: from mail.suse.de ([195.135.220.2]:59000 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756234AbXGFPJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:09:03 -0400
-Date: Fri, 6 Jul 2007 17:04:51 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: nigel@suspend2.net
-Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       dmitry.torokhov@gmail.com
-Subject: Re: Failure to properly reinit i8042 post suspend-to-ram
-Message-ID: <20070706150451.GA11400@suse.de>
-References: <200706221607.33274.nigel@nigel.suspend2.net> <20070705101514.GD3984@ucw.cz> <200707052104.27693.nigel@nigel.suspend2.net>
+	Fri, 6 Jul 2007 11:13:15 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55809 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754428AbXGFPNP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 11:13:15 -0400
+Date: Fri, 6 Jul 2007 11:13:14 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Paul Mackerras <paulus@samba.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
+ RAM pathway
+In-Reply-To: <1183676393.3388.89.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200707052104.27693.nigel@nigel.suspend2.net>
-X-Operating-System: openSUSE 10.3 (i586) Alpha5plus, Kernel 2.6.22-rc7-2-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 09:04:27PM +1000, Nigel Cunningham wrote:
-> > 
-> > If confusion persist after 4 seconds hard power down... then you h ve
-> > hw/BIOS problem. Complain to whoever is manufacturing that beast.
+On Fri, 6 Jul 2007, Benjamin Herrenschmidt wrote:
+
+> Why are you guys working so hard and spending so much energy to try to
+> avoid doing the right thing is beyond my understanding...
 > 
-> Adding i8042.reset=1 to the commandline fixed it.
+> > It _does_ apply to kernel threads.  That's exactly why I wrote above 
+> > that kernel threads which try to do I/O during a suspend will need 
+> > extra attention.
+> 
+> Ok none at all if you don't have a freezer.
 
-Wasn't there a quirk list where workarounds for i8042 on known bad machines
-are stored? Maybe it would be a good idea to get your machine into it ;-)
--- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+In answer to both questions: We need the freezer in order to implement 
+hibernate.  Even if we take your advice and stop using the freezer 
+during suspend, these issues would still remain and would need to be 
+solved.
 
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Alan Stern
+
