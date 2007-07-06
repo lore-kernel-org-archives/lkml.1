@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762926AbXGFHac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762350AbXGFHcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762926AbXGFHac (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 03:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760218AbXGFHaY
+	id S1762350AbXGFHcj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 03:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbXGFHcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 03:30:24 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:58732 "EHLO
+	Fri, 6 Jul 2007 03:32:32 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:59295 "EHLO
 	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbXGFHaY (ORCPT
+	with ESMTP id S1753431AbXGFHcb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 03:30:24 -0400
+	Fri, 6 Jul 2007 03:32:31 -0400
 From: Oliver Neukum <oliver@neukum.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Fri, 6 Jul 2007 09:30:20 +0200
+Date: Fri, 6 Jul 2007 09:32:30 +0200
 User-Agent: KMail/1.9.7
-Cc: Miklos Szeredi <miklos@szeredi.hu>, paulus@samba.org,
+Cc: Miklos Szeredi <miklos@szeredi.hu>, pavel@ucw.cz, paulus@samba.org,
        stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
        linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, mjg59@srcf.ucam.org
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <200707051048.46202.oliver@neukum.org> <1183675095.3388.72.camel@localhost.localdomain>
-In-Reply-To: <1183675095.3388.72.camel@localhost.localdomain>
+       mjg59@srcf.ucam.org
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu> <1183676751.3388.96.camel@localhost.localdomain>
+In-Reply-To: <1183676751.3388.96.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200707060930.21348.oliver@neukum.org>
+Message-Id: <200707060932.31345.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Am Freitag, 6. Juli 2007 schrieb Benjamin Herrenschmidt:
-> 
-> > There is that.
+> > Yes, fuse could handle being frozen there.  However that would only
+> > solve part of the problem: an operation waiting for a reply could be
+> > holding a VFS mutex and some other task may be blocked on that mutex.
 > > 
-> > OK, bite the bullet. Tasks involved in fuse are special. Give them a flag
-> > and teach the freezer to put them on ice only after all other task are
-> > frozen. In a way they are kernel, there's no use denying that.
+> > How would you solve freezing those tasks?
 > 
-> Yet another ugly hack to work around the fact that the freezer cannot
-> work reliably ... yuck
+> That task is implicitely frozen... but the kernel doesn't know it and
+> thus the freezer timeouts or fails or deadlocks or whatever.
 > 
-> Why not spend that energy fixing drivers to properly block requests
-> instead ?
+> The freezer could be made to ignore tasks that are sleeping in the
+> kernel assuming that if they go out of it, they'll ultimately reach
+> do_signal and freeze, but that means they can potentially still issues
+> IOs which is what the freezer tries to avoid ...
+> 
+> Or the kernel could start tracking dependencies, but then, good luck
+> implementing that crap.
 
-Because we will be unable to escape that job. Let's assume that
-we remove the freezer from the STR path. The next complaint would
-be that we cannot do STD with fuse. "Then don't do that" would not
-be taken kindly as answer.
-
-So we would be under pressure to remove the freezer from STD, too,
-or find a way to make the freezer work. If we'd have to make the freezer
-work anyway, we can do it right now.
+Do we need dependencies? Don't we know that fuse can deadlock only
+on a limited number of locks in VFS?
 
 	Regards
 		Oliver
+
