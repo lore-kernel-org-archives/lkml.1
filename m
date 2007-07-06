@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763938AbXGFRuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762411AbXGFRuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763938AbXGFRuh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 13:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761137AbXGFRu3
+	id S1762411AbXGFRuu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 13:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763687AbXGFRud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 13:50:29 -0400
-Received: from mail.windriver.com ([147.11.1.11]:57305 "EHLO mail.wrs.com"
+	Fri, 6 Jul 2007 13:50:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:60890 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760967AbXGFRu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 13:50:29 -0400
-Message-ID: <468E8106.8080801@windriver.com>
-Date: Fri, 06 Jul 2007 12:51:02 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1762667AbXGFRuc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 13:50:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,509,1175497200"; 
+   d="scan'208";a="247328417"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       kgdb-bugreport@lists.sourceforge.net
-Subject: Re: kgdb Bad IO access
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org> <468E4BA5.8010601@imap.cc>
-In-Reply-To: <468E4BA5.8010601@imap.cc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jul 2007 17:50:11.0261 (UTC) FILETIME=[196A5ED0:01C7BFF6]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch 10/10] Scheduler profiling - Use immediate values
+Date: Fri, 6 Jul 2007 10:50:30 -0700
+Message-ID: <5FD5754DDBA0B1499B5A0B4BB5419485015CC88A@fmsmsx411.amr.corp.intel.com>
+In-Reply-To: <p73vecx21um.fsf@bingen.suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 10/10] Scheduler profiling - Use immediate values
+Thread-Index: Ace/vaf9txiIk825QE2MkLuHwaYp3wAOBgkQ
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 06 Jul 2007 17:50:31.0668 (UTC) FILETIME=[25943B40:01C7BFF6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote:
-> Apart from that, the kernel runs fine, though its subjectively a bit
-> sluggish compared to 2.6.22-rc6-mm1 without kgdb. Its uname -a is:
-> Linux xenon 2.6.22-rc6-mm1-test4 #10 SMP PREEMPT Thu Jul 5 23:41:32 CEST 2007 i686 i686 i386 GNU/Linux
-> I didn't even try to actually do anything with kgdb, though.
->
->   
+> Also cache misses in this situation tend to be much more than 48
+cycles
+> (even an K8 with integrated memory controller with fastest DIMMs is
+> slower than that)  Mathieu probably measured an L2 miss, not a load
+from
+> RAM.
+> Load from RAM can be hundreds of ns in the worst case.
+> 
 
-Do you have something that is more than subjective as a measure?  Some 
-app runs slower, or it boots x seconds slower?
+The 48 cycles sounds to me like a memory load in an unloaded system, but
+it is quite low. I wonder how it was measured...
 
-The only place I could foresee that kgdb could be eating extra cycles in 
-the runtime case is from the die_notifier processing.  Any kind of 
-exception such as a page fault, trap etc... will have a few extra ops 
-and checks of variables so as to determine if the debugger should take 
-the exception.  It looks to me like it would even benefit to add the 
-check at the top of the notify hook for kgdb to exit immediately if the 
-debugger is not attached.
-
-I have contemplated making some changes to KGDB so as to make the 
-registration to the die_notifier to be dynamic with attaching and 
-detaching of the debugger.  If this is done, I would also make a change 
-to allow for the case where the kernel would wait for the debugger to 
-attach on any fatal fault.
-
-Jason.
-
-
-
+  tong
