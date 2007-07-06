@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763217AbXGFRtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763975AbXGFRt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763217AbXGFRtP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 13:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbXGFRs7
+	id S1763975AbXGFRt3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 13:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762127AbXGFRtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 13:48:59 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:34149 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756267AbXGFRs7 (ORCPT
+	Fri, 6 Jul 2007 13:49:06 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56074 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761982AbXGFRtF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 13:48:59 -0400
-Message-ID: <468E8064.6000107@zytor.com>
-Date: Fri, 06 Jul 2007 10:48:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 6 Jul 2007 13:49:05 -0400
+Date: Fri, 6 Jul 2007 10:49:02 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Adrian Bunk <bunk@stusta.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] mm/vmstat.c: possible cleanups
+In-Reply-To: <20070705232345.GG3492@stusta.de>
+Message-ID: <Pine.LNX.4.64.0707061048310.30575@schroedinger.engr.sgi.com>
+References: <20070705232345.GG3492@stusta.de>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Hiroaki Fuse <Hiroaki_Fuse@hq.scei.sony.co.jp>
-Subject: Re: Too verbose compat_ioctl messages?
-References: <Pine.LNX.4.62.0707061431360.1203@pademelon.sonytel.be>	<468E6E33.3040000@zytor.com> <p737ipd1jsg.fsf@bingen.suse.de>
-In-Reply-To: <p737ipd1jsg.fsf@bingen.suse.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
->> For one thing, it looks like we're returning the wrong thing (EINVAL
->> rather than ENOTTY) across the board.  This was unfortunately a common
->> misunderstanding with non-tty-related ioctls in the early days of Linux.
-> 
-> ENOTTY is so excessively misnamed that it is actually surprising
-> anybody ever got that "right" (for very small values of right i guess)
-> 
+On Fri, 6 Jul 2007, Adrian Bunk wrote:
 
-No argument there.
+> This patch contains the following possible cleanups:
+> - make the needlessly global setup_vmstat() static
 
-	-hpa
+Ok.
+
+> - #if 0 the unused refresh_vm_stats()
+
+Hmmm... This may be needed by the cpu idle code to update the vm stats 
+before going idle.
