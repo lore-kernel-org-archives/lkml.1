@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbXGFNwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbXGFNzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760269AbXGFNwS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 09:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXGFNwG
+	id S1760837AbXGFNzl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 09:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbXGFNze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 09:52:06 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:50556 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752403AbXGFNwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 09:52:04 -0400
-Date: Fri, 6 Jul 2007 09:51:56 -0400
-To: Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       nfsv4@linux-nfs.org
-Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
-Message-ID: <20070706135156.GD10812@fieldses.org>
-References: <1183275424.4010.126.camel@localhost.localdomain> <1183388313.3864.35.camel@localhost.localdomain> <20070703221522.GE14074@fieldses.org> <20070703233200.GL6578@schatzie.adilger.int>
+	Fri, 6 Jul 2007 09:55:34 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1810 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751888AbXGFNze (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 09:55:34 -0400
+Message-ID: <468E49C9.3000200@shadowen.org>
+Date: Fri, 06 Jul 2007 14:55:21 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070703233200.GL6578@schatzie.adilger.int>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andres Salomon <dilinger@queued.net>, linux-kernel@vger.kernel.org,
+       Jordan Crouse <jordan.crouse@amd.com>
+Subject: Re: [PATCH 1/3] GEODE: basic infrastructure support for AMD geode-class
+ machines
+References: <20070705160251.aea9aedc.dilinger@queued.net> <20070705152616.31c7c0d1.akpm@linux-foundation.org>
+In-Reply-To: <20070705152616.31c7c0d1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 05:32:00PM -0600, Andreas Dilger wrote:
-> On Jul 03, 2007  18:15 -0400, J. Bruce Fields wrote:
-> > How will nfsd tell whether it can really on a given filesystem's
-> > i_version, or whether it should fall back on ctime?
+Andrew Morton wrote:
+> The patches have some trivial-but-common coding-style bloopers which
+> scripts/checkpatch.pl will detect.  Please check it out.
+> oh
+
+> Please send a patch which documents mfgpt_irq in
+> Documentation/kernel-parameters.txt, thanks.
 > 
-> Good question.
+> Andy, the miss rate on documentation for new __setup() handlers is about
+> 75%.  Might be worth adding to checkpatch.pl.
 
-Well, we don't need anything particularly complicated--just a one-bit
-flag on the superblock would be enough.
+If we are willing to expect the update in the same patch then we can
+emit a failure if the presented string in __check isn't in the update to
+the documentation.  I guess emit it as a CHECK in case they have loads
+of them and a separate documentation patch.
 
-> > So what's the motivation for the "noversion" mount option?
-> 
-> Lustre needs to be able to control the version number directly (version
-> number needs to be ordered between all inodes, is set by Lustre to be a
-> transaction number).  Instead of trying to incorporate this unused code
-> into ext4 we just turn off the ext4 version code and let Lustre control
-> this directly.  It may even be that NFSv4 will need to control the version
-> numbers itself...
+CHECK: __setup appears un-documented -- check
+			Documentation/kernel-parameters.txt
+#131: FILE: arch/i386/kernel/mfgpt.c:233:
++__setup("mfgpt_irq=", mfgpt_setup);
 
-I can't think of any reason we would need to in the near future, but
-maybe I'm insufficiently creative.
-
-The use of a mount option means the change attribute could be
-inconsistent across mounts.  If we really need this, wouldn't it make
-more sense for it to be a persistent feature of the filesystem, set at
-mkfs time?
-
---b.
+-apw
