@@ -1,92 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763537AbXGFPBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762388AbXGFPJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763537AbXGFPBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 11:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758434AbXGFPBF
+	id S1762388AbXGFPJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 11:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756396AbXGFPJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 11:01:05 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40911 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1763375AbXGFPBD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 11:01:03 -0400
-Date: Fri, 6 Jul 2007 11:01:00 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oliver Neukum <oliver@neukum.org>, Pavel Machek <pavel@ucw.cz>,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
-In-Reply-To: <200707061012.48998.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0707061039380.3737-100000@iolanthe.rowland.org>
+	Fri, 6 Jul 2007 11:09:04 -0400
+Received: from mail.suse.de ([195.135.220.2]:59000 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756234AbXGFPJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 11:09:03 -0400
+Date: Fri, 6 Jul 2007 17:04:51 +0200
+From: Stefan Seyfried <seife@suse.de>
+To: nigel@suspend2.net
+Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       dmitry.torokhov@gmail.com
+Subject: Re: Failure to properly reinit i8042 post suspend-to-ram
+Message-ID: <20070706150451.GA11400@suse.de>
+References: <200706221607.33274.nigel@nigel.suspend2.net> <20070705101514.GD3984@ucw.cz> <200707052104.27693.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200707052104.27693.nigel@nigel.suspend2.net>
+X-Operating-System: openSUSE 10.3 (i586) Alpha5plus, Kernel 2.6.22-rc7-2-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jul 2007, Rafael J. Wysocki wrote:
-
-> Hi,
+On Thu, Jul 05, 2007 at 09:04:27PM +1000, Nigel Cunningham wrote:
+> > 
+> > If confusion persist after 4 seconds hard power down... then you h ve
+> > hw/BIOS problem. Complain to whoever is manufacturing that beast.
 > 
-> The main limitation of the freezer is that it cannot handle uninterruptible
-> tasks.  Namely, if there are uninterruptible tasks in the system, the freezer
-> returns an error, which makes it impossible to suspend the system.
-> 
-> This mechanism is used to prevent the situations in which the suspend process
-> can deadlock with a task holding a lock needed by it from happening.  However,
-> AFAICS, the probability of that happening is very small and if the freezer is
-> removed from the suspend code patch, then the suspend process will be exposed to
-> deadlocking in this manner anyway.
-> 
-> Unfortunately, this mechanism also leads to severe limitations, such as that it
-> makes the freezer unable to handle systems using FUSE in a reliable way.
-> 
-> This patch makes the freezer skip uninterruptible user space tasks (ie. such
-> that have an mm of their own) when counting the tasks to be frozen.  As a
-> result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set, but the
-> freezer doesn't wait for them to enter the refrigerator.  Nevertheless, they
-> will enter the refrigerator as soon as they change their state.
+> Adding i8042.reset=1 to the commandline fixed it.
 
-This is a very interesting idea.  Are you certain it is safe?  That is,
-if a task is waiting for a mutex and sometime later the mutex becomes
-available, will the task then enter the freezer immediately -- before
-it can do any I/O or call any drivers?
+Wasn't there a quirk list where workarounds for i8042 on known bad machines
+are stored? Maybe it would be a good idea to get your machine into it ;-)
+-- 
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
 
-If you can't make this guarantee, then you might as well simply not try 
-to freeze any user task until it returns from kernel mode to user mode.  
-And then you will face the problem of a user task doing I/O during 
-hibernate after the atomic snapshot has been made.
-
-
-I had in mind something more complicated.  My idea was to define 
-certain mutexes as "freezable", with the thought that it would be okay 
-for a task in the freezer to own freezable mutexes.  None of the 
-mutexes needed by drivers or the PM core during a suspend transition 
-should be freezable.
-
-Presumably the VFS locks _would_ fall into the freezable category.  In 
-order for this to work, we would have to guarantee the following:
-
-	A thread blocked in the kernel waiting for some response
-	from userspace is allowed to hold freezable mutexes but no
-	other locks.
-
-	When a thread tries to acquire a freezable mutex, it is allowed
-	to hold other freezable mutexes but no other locks.
-
-	When the freezer is running, any task that is blocked on a
-	freezable mutex (maybe also any task that tries to acquire 
-	an unlocked freezable mutex) would immediately go into the 
-	freezer.  So would any task waiting for a response from
-	userspace.
-
-I think this would solve the VFS-related problems (FUSE's and others).  
-But obviously Raphael's approach is preferable, if it works.
-
-Alan Stern
-
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
