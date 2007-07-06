@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762061AbXGFBxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762632AbXGFB4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762061AbXGFBxN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jul 2007 21:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761173AbXGFBw6
+	id S1762632AbXGFB4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jul 2007 21:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757751AbXGFB4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jul 2007 21:52:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:58532 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759597AbXGFBw5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jul 2007 21:52:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=e5CksJfgJx6Dt0+5N8t3jmz/uliLVfcyYKF2kiXIHFRm8dNwoM7L06jEwRAuKA+tyFyCO5ktTziKLNPel4NFw8izmU8R6IEFJTjGt/LfT47AHxCeIOEmCZFEGMfBRXyiwZc/kgVPmyThCA4V5ozAy+EgscV2yrCdx6uPThGOPLA=
-Message-ID: <468DA071.9010605@gmail.com>
-Date: Fri, 06 Jul 2007 10:52:49 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Thu, 5 Jul 2007 21:56:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49531 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757033AbXGFB4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jul 2007 21:56:03 -0400
+Date: Thu, 5 Jul 2007 21:55:58 -0400
+From: Dave Jones <davej@redhat.com>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: slow down printk during boot.
+Message-ID: <20070706015558.GE31633@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Bodo Eggert <7eggert@gmx.de>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Randy Dunlap <rdunlap@xenotime.net>
+References: <8DGUc-ER-37@gated-at.bofh.it> <E1I6cxX-0007Dj-Lo@be1.lrz>
 MIME-Version: 1.0
-To: caglar@pardus.org.tr
-CC: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: SATA exceptions
-References: <200707060046.13237.caglar@pardus.org.tr>
-In-Reply-To: <200707060046.13237.caglar@pardus.org.tr>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1I6cxX-0007Dj-Lo@be1.lrz>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Jul 06, 2007 at 03:50:11AM +0200, Bodo Eggert wrote:
+ > Dave Jones <davej@redhat.com> wrote:
+ > 
+ > > This patch from Randy has proven quite useful from time to time,
+ > > and has been in Fedora kernels for a while for that reason.
+ > > I fixed up some checkpatch warnings, and rediffed it a bunch
+ > > of times, Randy did the heavy lifting.
+ > > 
+ > > ---
+ > > 
+ > > This one delays each printk() during boot by a variable time
+ > > (from kernel command line), while system_state == SYSTEM_BOOTING.
+ > > Caveat:  it's not terribly SMP safe or SMP nice.
+ > > Any ideas for improvements (esp. in the SMP area) are appreciated.
+ > 
+ > I just created a different patch, which replaces the panic with one that
+ > does allow scrolling and reading the messages. Maybe that would be the
+ > better approach ...
 
-S.Çağlar Onur wrote:
-> [ 4260.278427] ata1.00: cmd ca/00:08:d0:88:bc/00:00:00:00:00/ee tag 0 cdb 0x0 
-> data 4096 out
-> [ 4260.278430]          res 51/40:01:d7:88:bc/00:00:0e:00:00/ee Emask 0x9 
-> (media error)
+I've used the 'slow down the printk' patch in situations where we
+haven't panic'd, but silently rebooted instantly or hung with
+a black screen.
 
-That's media error on sector 247236823 on WRITE.  Media errors on write
-are bad signs - it usually means the drive even failed to remap the
-sector because extra space ran out.  I'm not sure this is the case here
-tho - the smart log is clear.  Please run smart short/long tests and see
-what they say.
+	Dave
 
 -- 
-tejun
+http://www.codemonkey.org.uk
