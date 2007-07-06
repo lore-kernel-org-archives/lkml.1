@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763602AbXGFRSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763956AbXGFRTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763602AbXGFRSv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 13:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbXGFRSo
+	id S1763956AbXGFRTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 13:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761199AbXGFRTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 13:18:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:25506 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755997AbXGFRSn (ORCPT
+	Fri, 6 Jul 2007 13:19:11 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45509 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760493AbXGFRTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 13:18:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=tjc2OmPe5obpc5OVd4kJkanytM+UR9b9Cp1FzcbYlMfK8iPqsZ8wzZStoomnloMQLCSlfiDf/Pt5noa3glX0jQQT2P4/8KhL782bcxSRWNKt7IVHmZjX6KskDnMU2faCea7x0ieeZcHI1zoJOErc26F9w0TU7B/yZ/Ys7j0wIoY=
-Date: Fri, 6 Jul 2007 21:18:37 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <clameter@sgi.com>, riel <riel@redhat.com>
-Subject: Re: [PATCH] mm: fixup /proc/vmstat output
-Message-ID: <20070706171837.GA5763@martell.zuzino.mipt.ru>
-References: <1183721734.7054.102.camel@twins>
+	Fri, 6 Jul 2007 13:19:09 -0400
+Message-ID: <468E7985.7050502@zytor.com>
+Date: Fri, 06 Jul 2007 10:19:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1183721734.7054.102.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Gautam Singaraju <gautam.singaraju@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: syscall macro fails upon compilation
+References: <f8b2ccd40707051509tcbce704y3e5b114580069039@mail.gmail.com> <468D6D1F.4040008@zytor.com> <p73r6nl21fe.fsf@bingen.suse.de> <468E699C.1000502@zytor.com> <20070706170512.GA8174@one.firstfloor.org>
+In-Reply-To: <20070706170512.GA8174@one.firstfloor.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 01:35:34PM +0200, Peter Zijlstra wrote:
-> Line up the vmstat_text with zone_stat_item
+Andi Kleen wrote:
+>> They were *always* broken for 64-bit arguments on 32-bit machines, however.
 > 
-> enum zone_stat_item {
-> 	/* First 128 byte cacheline (assuming 64 bit words) */
-> 	NR_FREE_PAGES,
-> 	NR_INACTIVE,
-> 	NR_ACTIVE,
+> Well syscall() doesn't support that at all (unless you split by hand)
 > 
-> We current have nr_active and nr_inactive reversed.
 
-OK with patch, though using initializers canbe handy to prevent such
-things in future:
+On i386 it just happens to work, because the calling convention is
+equivalent.  On some other 32-bit platforms it works that way as well;
+on others, it fails.
 
-	static const char * const vmstat_text[] = {
-		[NR_FREE_PAGES] = "nr_free_pages",
-		...
+To do it right you need a proper assembly stub generator.
 
-> --- linux-2.6.orig/mm/vmstat.c
-> +++ linux-2.6/mm/vmstat.c
-> @@ -700,8 +700,8 @@ const struct seq_operations pagetypeinfo
->  static const char * const vmstat_text[] = {
->  	/* Zoned VM counters */
->  	"nr_free_pages",
-> -	"nr_active",
->  	"nr_inactive",
-> +	"nr_active",
->  	"nr_anon_pages",
->  	"nr_mapped",
->  	"nr_file_pages",
+	-hpa
 
