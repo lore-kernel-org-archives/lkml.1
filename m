@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbXGFNYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbXGFN2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbXGFNYe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 09:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXGFNYZ
+	id S1759645AbXGFN2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 09:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbXGFN2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 09:24:25 -0400
-Received: from mail.macqel.be ([194.78.208.39]:12330 "EHLO mail.macqel.be"
+	Fri, 6 Jul 2007 09:28:25 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33456 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146AbXGFNYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 09:24:25 -0400
-Date: Fri, 6 Jul 2007 15:24:23 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: Patrick McHardy <kaber@trash.net>
-Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net : make netlink_seq_ops const
-Message-ID: <20070706132423.GA10767@ingate.macqel.be>
-References: <20070706124829.GA12930@muff.macqel.be> <468E3AFB.7060403@trash.net>
-Mime-Version: 1.0
+	id S1752038AbXGFN2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 09:28:24 -0400
+Date: Fri, 6 Jul 2007 15:28:14 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: kexec@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Determine version of kernel that produced vmcore
+Message-ID: <20070706132814.GA7079@suse.de>
+Mail-Followup-To: kexec@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <468E3AFB.7060403@trash.net>
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 02:52:11PM +0200, Patrick McHardy wrote:
-> [please send networking patches to netdev]
-> 
-> Philippe De Muyter wrote:
-> > Hi all,
-> > 
-> > Make netlink_seq_ops const
-> 
-> 
-> Might make more sense to do a big patch for all occurences of this
-> in net/:
-> 
-> # grep "^static struct seq_operations" -r net/ | wc -l
-> 76
+Hello,
 
-OK
+does anybody know a _reliable_ way to determine the version the kernel
+that produced a vmcore file? This means not scanning for a specific
+string or something like that which can fail on random memory.
 
-Philippe
+Would it make sense to add a ELF PT_NOTE section in the vmcore?
+
+Thanks for input!
+
+
+
+Thanks,
+   Bernhard
