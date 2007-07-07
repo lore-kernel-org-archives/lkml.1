@@ -1,60 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbXGGIas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbXGGJNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbXGGIas (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 04:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbXGGIaj
+	id S1753914AbXGGJNx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 05:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbXGGJNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 04:30:39 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53323 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752145AbXGGIaj (ORCPT
+	Sat, 7 Jul 2007 05:13:44 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:34559 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbXGGJNn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 04:30:39 -0400
-Date: Sat, 7 Jul 2007 10:31:09 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: chris@zankel.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] include/asm-xtensa/io.h must #include <asm/page.h>
-Message-ID: <20070707083109.GG3492@stusta.de>
+	Sat, 7 Jul 2007 05:13:43 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
+Date: Sat, 7 Jul 2007 19:13:42 +1000
+User-Agent: KMail/1.9.6
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, Oliver Neukum <oliver@neukum.org>,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
+References: <200707061012.48998.rjw@sisk.pl> <20070707075018.GB2638@elf.ucw.cz>
+In-Reply-To: <20070707075018.GB2638@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: multipart/signed;
+  boundary="nextPart1224078.IenSHiJm17";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707071913.43482.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error with 
--Werror-implicit-function-declaration:
+--nextPart1224078.IenSHiJm17
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-<--  snip  -->
+Hi.
 
-...
-  CC      kernel/time/clocksource.o
-In file included from 
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/clocksource.h:18,
-                 from 
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/kernel/time/clocksource.c:27:
-include2/asm/io.h: In function 'virt_to_phys':
-include2/asm/io.h:46: error: implicit declaration of function '__pa'
-include2/asm/io.h: In function 'phys_to_virt':
-include2/asm/io.h:51: error: implicit declaration of function '__va'
-include2/asm/io.h:51: warning: return makes pointer from integer without a cast
-make[3]: *** [kernel/time/clocksource.o] Error 1
+On Saturday 07 July 2007 17:50:18 Pavel Machek wrote:
+> Hi!
+>=20
+> > The main limitation of the freezer is that it cannot handle=20
+uninterruptible
+> > tasks.  Namely, if there are uninterruptible tasks in the system, the=20
+freezer
+> > returns an error, which makes it impossible to suspend the system.
+> ...
+> > Unfortunately, this mechanism also leads to severe limitations, such as=
+=20
+that it
+> > makes the freezer unable to handle systems using FUSE in a reliable way.
+> >=20
+> > This patch makes the freezer skip uninterruptible user space tasks (ie.=
+=20
+such
+> > that have an mm of their own) when counting the tasks to be frozen.  As=
+ a
+> > result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set, b=
+ut=20
+the
+> > freezer doesn't wait for them to enter the refrigerator.  Nevertheless,=
+=20
+they
+> > will enter the refrigerator as soon as they change their state.
+>=20
+> I don't think we can do that. I suspect rename looks like:
+>=20
+> 	write directory entry in source
+> A)	(uninterruptible wait for write)
+> 	write directory entry in destination
+> 	(uninterruptible wait for write)
+> 	write something else
+>=20
+> If we freeze some task in place "A)", we'll write to the disk when the
+> directory write is finished :-(.
 
+Renaming is a single syscall, so won't the process get frozen when the sysc=
+all=20
+finishes? The sys_sync will also help here - it will ensure the rename gets=
+=20
+flushed before we start on freezing kernel threads.
 
-<--  snip  -->
+Perhaps you've just found more logic for keeping the sys_sync there?
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Regards,
 
----
---- linux-2.6.22-rc6-mm1/include/asm-xtensa/io.h.old	2007-07-07 10:16:54.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/include/asm-xtensa/io.h	2007-07-07 10:17:08.000000000 +0200
-@@ -13,6 +13,7 @@
- 
- #ifdef __KERNEL__
- #include <asm/byteorder.h>
-+#include <asm/page.h>
- 
- #include <linux/types.h>
- 
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
 
+--nextPart1224078.IenSHiJm17
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGj1lHN0y+n1M3mo0RAgKlAJ9YI4zJzlL9bwAknrVnrkOiZU5O+gCgnXmS
+Cm4oeo7+qQhhj4HjJpPzG4U=
+=jLOo
+-----END PGP SIGNATURE-----
+
+--nextPart1224078.IenSHiJm17--
