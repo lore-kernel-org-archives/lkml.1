@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbXGGTYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbXGGT2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755073AbXGGTYh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 15:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXGGTY2
+	id S1755002AbXGGT2T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 15:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXGGT2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 15:24:28 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:55224 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753326AbXGGTY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 15:24:26 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Sun, 8 Jul 2007 01:16:17 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: KII Keiichi <k-keiichi@bx.jp.nec.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 7/9] netconsole: Support multiple logging targets
-In-Reply-To: <468FDC8D.6080208@bx.jp.nec.com>
-Message-ID: <Pine.LNX.4.64.0707080108240.3789@cselinux1.cse.iitk.ac.in>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704110814.28520.94417.sendpatchset@cselinux1.cse.iitk.ac.in>
- <468FDC8D.6080208@bx.jp.nec.com>
+	Sat, 7 Jul 2007 15:28:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36515 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753326AbXGGT2I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 15:28:08 -0400
+Date: Sat, 7 Jul 2007 12:27:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Marcel Holtmann <marcel@holtmann.org>, Jiri Kosina <jkosina@suse.cz>,
+       Dmitry Torokhov <dtor@insightbb.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Fix use-after-free oops in Bluetooth HID.
+In-Reply-To: <1183834720.3066.83.camel@shinybook.infradead.org>
+Message-ID: <alpine.LFD.0.999.0707071222480.31544@woody.linux-foundation.org>
+References: <468A7D14.1050505@googlemail.com> 
+ <d120d5000707051403r1d946375nb119ff86b26580ef@mail.gmail.com> 
+ <Pine.LNX.4.64.0707070019110.11634@jikos.suse.cz>  <200707062033.18211.dtor@insightbb.com>
+  <Pine.LNX.4.64.0707070257040.11634@jikos.suse.cz> 
+ <1183771730.2789.1.camel@shinybook.infradead.org> 
+ <1183775126.3066.5.camel@shinybook.infradead.org> 
+ <1183832913.6351.130.camel@aeonflux.holtmann.net> 
+ <alpine.LFD.0.999.0707071135090.31544@woody.linux-foundation.org>
+ <1183834720.3066.83.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Sun, 8 Jul 2007, KII Keiichi wrote:
-> Hi Satyam,
-> 
-> The following comments aren't essential.
-> 
-> >  	if (!(event == NETDEV_UP || event == NETDEV_DOWN ||
-> >  	      event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
-> > -	      	goto done;
-> > +		goto done;
-> 
-> The above diff lines are extra.
 
-Eek, looks like some whitespace correction leaked in here. I'll take care
-not to produce the bad whitespace in the first place the first time this
-line comes in.
+On Sat, 7 Jul 2007, David Woodhouse wrote:
+>
+> When cleaning up HIDP sessions [...]
 
-> > +	spin_lock_irqsave(&target_list_lock, flags);
-> > +	list_for_each_entry(nt, &target_list, list) {
-> > +		if (nt->np.dev == dev) {
-> > +			switch (event) {
-> > +			case NETDEV_UP:
-> > +			case NETDEV_DOWN:
-> > +				nt->dev_status = net_dev_is_up(nt->np.dev);
-> > +				break;
-> > +
-> > +			case NETDEV_CHANGEADDR:
-> > +				memcpy(nt->np.local_mac, dev->dev_addr, ETH_ALEN);
-> 
-> The above line is over 80 characters.
+Thanks.
 
-Hmm, yes, but only by 2 columns. It's a simple and readable line
-in its present form, so I'm not sure I'd want to be an extremist
-and cut it into two ...
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
 
-Satyam
+Btw, and totally unrelated to the patch itself..
+
+I changed that second "Signed-off-by:" into an "Acked-by:", since that 
+more accurately reflects what happened.
+
+Not that it really matters, but it's nice to see what chain the patch 
+actually took (from you to me - sign-off path), and independently of that 
+see who looked at it and approved it (acked-by), and then often we 
+additionally end up having a set of people who might have tested it 
+("Tested-by:") or maybe should just have been aware of it (the "Cc:") 
+ones.
+
+So the "Signed-off-by:" thing is one of many possible thigns that you can 
+do, but it's somewhat special in that it has some "legal" meaning in that 
+it is supposed to show the people who either wrote it or who forwarded it 
+(possibly with changes, but quite often just unchanged).
+
+			Linus
