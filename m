@@ -1,110 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbXGGUkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbXGGUoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbXGGUkg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 16:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbXGGUk2
+	id S1755249AbXGGUoH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 16:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbXGGUn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 16:40:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34268 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751582AbXGGUk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 16:40:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Sat, 7 Jul 2007 16:43:56 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:56859 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbXGGUnz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 16:43:55 -0400
+To: pavel@ucw.cz
+CC: miklos@szeredi.hu, oliver@neukum.org, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+In-reply-to: <20070707121729.GC3111@elf.ucw.cz> (message from Pavel Machek on
+	Sat, 7 Jul 2007 14:17:29 +0200)
 Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Sat, 7 Jul 2007 22:48:05 +0200
-User-Agent: KMail/1.9.5
-Cc: Oliver Neukum <oliver@neukum.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Miklos Szeredi <miklos@szeredi.hu>, pavel@ucw.cz, paulus@samba.org,
-       johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org
-References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org> <200707061131.08475.oliver@neukum.org> <1183776285.3388.201.camel@localhost.localdomain>
-In-Reply-To: <1183776285.3388.201.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707072248.06970.rjw@sisk.pl>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com> <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org> <18060.14856.824473.325660@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <20070707121729.GC3111@elf.ucw.cz>
+Message-Id: <E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 07 Jul 2007 22:42:33 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 7 July 2007 04:44, Benjamin Herrenschmidt wrote:
-> On Fri, 2007-07-06 at 11:31 +0200, Oliver Neukum wrote:
-> > Am Freitag, 6. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > > On Fri, 2007-07-06 at 09:13 +0200, Rafael J. Wysocki wrote:
-> > > > 
-> > > > The only reason (I know of) why we don't handle uninterruptible tasks in the
-> > > > freezer is that we're afraid of the suspend process deadlocking with an
-> > > > uninterruptible task holding a lock, but AFAICS the probability of such an
-> > > > event is extremely small.
-> > > 
-> > > What would deadlock specifically ? One of the drivers trying to acquire
-> > > that lock ? It would be a driver bug then.
-> > 
-> > Your driver's write method looks like:
-> > 
-> > mutex_lock();
-> > poke_some_hardware();
-> > wait_event_uninterruptible(); //for result
-> > res = evaluate_result();
-> > mutex_unlock();
-> > return res;
-> > 
-> > If you put a task into the refrigerator at wait_event_interruptible()
-> > you will deadlock if you need this lock for the driver to go to suspend.
-> > The suspend method then must not take the lock _and_ it must be
-> > aware that there may be an ongoing operation.
-> 
-> Well... 2 things here. Either you have a freezer in which case the
-> chances of the above scenario are increased,
+> We can just wait for all fuse requests to be serviced before
+> proceeding further with freeze, right?
 
-How so? :-)
+Right.  Nice way to slow down or stop the suspend with an unprivileged
+process.  Avoiding that sort of DoS is one of the design goals of
+fuse.
 
-> or you don't, in which case 
-> your suspend method will just sleep on the lock until outstanding HW
-> accesses that have that lock are completed, and everything is fine.
-> 
-> You need to be careful with one thing though, whether you have a freezer
-> or not. If you driver, in some code path, whatever it is (ioctl, kernel
-> thread, workqueue, ...) does something like:
-> 
-> mutex_lock
-> kmalloc(...,GFP_KERNEL);
-> mutex_unlock
-> 
-> And it's suspend callback then does:
-> 
-> mutex_lock
-> 
-> The problem here is that the disks might already have been suspended
-> prior to your driver being called. Thus, any attempt at pushing things
-> out to swap or dirty mmap'ings back to storage will hang, thus kmalloc
-> can potentially hang (afaik), and you will deadlock.
-> 
-> That's what I've been talking about earlier when I said that we should
-> have some security in SLAB/SLUB/Buddy allocators, to silently turn
-> GFP_KERNEL to at least GFP_NOIO or even ATOMIC before we start
-> suspending drivers.
-> 
-> Now, another way to deal with that would have to use
-> pre-suspend/post-resume notifications, and have drivers avoid doing the
-> above between those, but that's much harder. (Essentially, drivers would
-> have to either make sure they don't do things like blocking allocations,
-> even implicitely, or possibly fall back to a degraded synchronous mode
-> or that sort of thing).
-> 
-> I think it's much simpler to tweak slab/slub/buddy instead :-)
-> 
-> Note that the above issue is orthogonal to our freezer discussion, it's
-> just one of the potential deadlock cause we have with suspend that needs
-> to be fixed.
+Look at it this way: the task of the freezer is to stop new I/O
+hitting the hardware.  But it is totally indiscriminate about what it
+stops, it tries to stop _everything_ even things which have nothing to
+do with hardware.
 
-Agreed.
+Not nice.
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Miklos
