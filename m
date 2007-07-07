@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbXGGPDC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbXGGPPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbXGGPDC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 11:03:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbXGGPCz
+	id S1754647AbXGGPPj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 11:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbXGGPP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 11:02:55 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33691 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbXGGPCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 11:02:54 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Pass nr_wake2 to futex_wake_op
-Cc: linux-kernel@vger.kernel.org
-X-Yow: Now, my ENTIRE LIFE is flashing before my EYES as I park my DODGE
- DART in your EXXON service area for a COMPLETE LUBRICATION!!
-Date: Sat, 07 Jul 2007 17:02:53 +0200
-Message-ID: <jeir8wcl42.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Sat, 7 Jul 2007 11:15:28 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:40633 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751635AbXGGPP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 11:15:27 -0400
+Subject: Re: [patch 0/3] clean gendisk out of scsi ULD structs
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: dougg@torque.net
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       akpm@linux-foundation.org, jeff@garzik.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <468F07BB.4000909@torque.net>
+References: <20070705140636.6dbabd6f.kristen.c.accardi@intel.com>
+	 <1183752169.3448.93.camel@localhost.localdomain>
+	 <468F07BB.4000909@torque.net>
+Content-Type: text/plain
+Date: Sat, 07 Jul 2007 10:15:25 -0500
+Message-Id: <1183821325.3408.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The fourth argument of sys_futex is ignored when op == FUTEX_WAKE_OP,
-but futex_wake_op expects it as its nr_wake2 parameter.
+On Fri, 2007-07-06 at 23:25 -0400, Douglas Gilbert wrote:
+> James Bottomley wrote:
+> > On Thu, 2007-07-05 at 14:06 -0700, Kristen Carlson Accardi wrote:
+> >> Since gendisk will now become part of struct scsi_device, we don't need
+> >> to store this value in any private data structs where they already store
+> >> scsi_device.  This series cleans up a few drivers which did this.
+> > 
+> > Actually, as Al pointed out, we do have lifetime rules issues with doing
+> > this.  The problem is that gendisk itself always has a shorter lifetime
+> > than scsi_device (not much shorter, usually, but if you execute a legal
+> > ULD unbind manoeuvre you'll end up with a dangling gendisk pointer).
+> 
+> What about having short-lived scsi_device objects? For example:
+> one that lives long enough for a pass-through to send a
+> SCSI command (and receive its response) to one of a target's
+> well known logical units.
 
-The only user of this operation in glibc is always passing 1, so this
-bug had no consequences so far.
+This is sort of what we already do for REPORT_LUNS (except that we use
+lun 0 instead of the REPORT LUN well known lun).  What additions do you
+want to see?
 
-Signed-off-by: Andreas Schwab <schwab@suse.de>
+> > The other problem with taking gendisk out of the ULD structure and
+> > putting it into the scsi_device is that for the sg driver, we have two
+> > of them (one for the attached ULD and one for the sg driver).
+> 
+> Add the bsg driver and that would make three of them. Or; if
+> the lu's peripheral device type was not of interest to sd, st,
+> sr, and osst; back to two gendisk objects (i.e. one each
+> for sg and bsg).
 
----
- kernel/futex.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+gendisk is actually used to facilitate the SCSI ULD infrastructure; bsg,
+being block, doesn't actually use it, so we'd still only have two.
 
---- linux-2.6.22-rc7.orig/kernel/futex.c	2007-07-02 00:40:44.000000000 +0200
-+++ linux-2.6.22-rc7/kernel/futex.c	2007-07-07 15:56:42.000000000 +0200
-@@ -2061,8 +2061,10 @@ asmlinkage long sys_futex(u32 __user *ua
- 	}
- 	/*
- 	 * requeue parameter in 'utime' if cmd == FUTEX_REQUEUE.
-+	 * number of waiters to wake in 'utime' if cmd == FUTEX_WAKE_OP.
- 	 */
--	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
-+	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE ||
-+	    cmd == FUTEX_WAKE_OP)
- 		val2 = (u32) (unsigned long) utime;
- 
- 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
+> > The fundamental issue seems to be that the gendisk is the holder of all
+> > the other info (queue, ULD etc) not vice versa ... and this patch is
+> > trying to reverse that relationship.
+> 
+> A minor issue is the name gendisk ... unless, of course,
+> you go and look at its definition in linux/genhd.h in
+> which case the name looks somewhat appropriate. It looks
+> like a mess [queue, ULD name, major/minor(s), partitions,
+> capacity, disk_stats, kobjects, etc]. That is a considerable
+> amount of superfluous information for "just a tag for
+> requests coming into (a) given queue" when that queue leads
+> to a non-block device.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+The benefits outweigh the costs ... in the same way that we have a block
+queue above all the character devices so we can treat SCSI queueing in a
+uniform fashion regardless of device.
+
+James
+
+
