@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbXGGCBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbXGGCDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbXGGCBV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 22:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXGGCBN
+	id S1754988AbXGGCDn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 22:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbXGGCDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 22:01:13 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53183 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752848AbXGGCBM (ORCPT
+	Fri, 6 Jul 2007 22:03:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44636 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752848AbXGGCDf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 22:01:12 -0400
-Date: Sat, 7 Jul 2007 04:01:42 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, ezk@cs.sunysb.edu,
-       jsipek@cs.sunysb.edu
-Cc: linux-kernel@vger.kernel.org, unionfs@filesystems.org
-Subject: 2.6.22-rc6-mm1: UNION_FS=y + BLOCK=n = compile error
-Message-ID: <20070707020142.GA3492@stusta.de>
+	Fri, 6 Jul 2007 22:03:35 -0400
+Date: Fri, 6 Jul 2007 19:03:34 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Adrian Bunk <bunk@stusta.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc6-mm1: SLUB_DEBUG=n compile error
+In-Reply-To: <20070707015021.GZ3492@stusta.de>
+Message-ID: <Pine.LNX.4.64.0707061902200.3257@schroedinger.engr.sgi.com>
 References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+ <20070707015021.GZ3492@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1701336060-1183773814=:3257"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 03:43:21AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.22-rc4-mm2:
->...
->  git-unionfs.patch
->...
->  git trees
->...
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-CONFIG_UNION_FS=y, CONFIG_BLOCK=n results in the following compile error:
+---1700579579-1701336060-1183773814=:3257
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-<--  snip  -->
+On Sat, 7 Jul 2007, Adrian Bunk wrote:
 
-...
-  CC      fs/unionfs/file.o
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/fs/unionfs/file.c:147: error: ‘file_fsync’ undeclared here (not in a function)
-make[3]: *** [fs/unionfs/file.o] Error 1
-...
+> With CONFIG_SLUB_DEBUG=3Dn:
 
-<--  snip  -->
+Why switch CONFIG_SLUB_DEBUG off? This is an option for embedded systems.=
+=20
+Unlikely to occur on NUMA.
 
-cu
-Adrian
+> /home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/mm/slub.c: In function =
+=FF=FFinit_kmem_cache_node=FF=FF:
+> /home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/mm/slub.c:1873: error: =
+=FF=FFstruct kmem_cache_node=FF=FF has no member named =FF=FFfull=FF=FF
+> ...
+> make[2]: *** [mm/slub.o] Error 1
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+A fix for this is already in Andrew's tree.
+---1700579579-1701336060-1183773814=:3257--
