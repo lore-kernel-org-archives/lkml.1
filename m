@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbXGGAVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbXGGA0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348AbXGGAVY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 20:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbXGGAVO
+	id S1754379AbXGGA0R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 20:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbXGGA0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 20:21:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60123 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752638AbXGGAVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 20:21:13 -0400
-Message-ID: <468EDC76.9050708@garzik.org>
-Date: Fri, 06 Jul 2007 20:21:10 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Fri, 6 Jul 2007 20:26:05 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:60759 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752692AbXGGA0D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 20:26:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OWT/yx3L+s0OuAH6vczLnwfpQYBXw+Ks9aXl6ogXcUqqFNqYSGEk3f5z/K9xSdrxzUvH1JdWTqIZOowdh9j9NoZ158dKhAz2BGmvCEkXpJQzZLdV1ISEGyE6CfsFbNobJisSEsA3812le9mBsK+xoy/b9fWdq8zsIFgk6nY98Go=
+Message-ID: <dda83e780707061726o56de140avaf85426bb889fe61@mail.gmail.com>
+Date: Fri, 6 Jul 2007 17:26:02 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: [PATCH] slub: don't export static kmem_cache_open
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1183761066.3779.21.camel@johannes.berg>
 MIME-Version: 1.0
-To: IDE/ATA development list <linux-ide@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: libata-dev.git clean up and branch status
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <1183628260.3818.31.camel@johannes.berg>
+	 <Pine.LNX.4.64.0707061028001.30516@schroedinger.engr.sgi.com>
+	 <1183743340.3779.11.camel@johannes.berg>
+	 <dda83e780707061357p798531cbw29758ccf98df60cc@mail.gmail.com>
+	 <1183761066.3779.21.camel@johannes.berg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-libata-dev.git was left a bit grotty when I went on vacation.  That has 
-now been fixed.  The current branches are:
+On 7/6/07, Johannes Berg <johannes@sipsolutions.net> wrote:
+> On Fri, 2007-07-06 at 13:57 -0700, Bret Towe wrote:
+> > On 7/6/07, Johannes Berg <johannes@sipsolutions.net> wrote:
+>
+> > > Oh good. I actually got build problems from that due to a powerpc64 gcc
+> > > bug so... :)
+>
+> > this also looks to solve booting issue on a g4 mac mini also
+>
+> Huh? That doesn't really make sense, but who knows what else that gcc
+> problem caused.
+>
+> johannes
+>
+>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+if you want I can revert the patch and make sure thats what caused it
+as when i applied this i also updated from cfs v18 to v19
+but v18 was working fine before on rc7 i only updated to current -git
 
-master		Always vanilla Linus tree
-
-ALL		Always the "exported for testing" meta-branch
-		(currently == upstream + sil680-mmio + mv-ahci)
-
-upstream	queued for 2.6.23
-		Parent: master
-
-mv-ahci		Marvell 6121/6141 AHCI clone SATA support
-		Parent: upstream
-		Status: Works, once NCQ & PCI MSI are disabled.
-			Turn these off, then can go up.
-
-mv-ahci-pata	Marvell 6121/6141 AHCI clone PATA support
-		Parent: mv-ahci
-		Status: Need to update for proper use of PATA
-			controller commands (provides direct access to
-			PATA device shadow registers)
-
-mv-eh		sata_mv (50xx/60xx) conversion to new EH
-		Parent: upstream
-		Status: Required for hotplug, NCQ, etc.  Working, but
-			currently NCQ disks fail (even if NCQ not used)
-
-new-eh		pdc_adma, sata_qstor, sata_sx4 conversion to new EH
-		Parent: upstream
-		Status: All conversions complete...
-			and completely untested.
-
-sii-lbt		sata_sil Large [DMA] Block Transfer support
-		Parent: upstream
-		Status: Useful, but reported to fail in some cases
-
-sil680-mmio	pata_sil680 MMIO support
-		Parent: upstream
-		Status: dissolved into some argument about MMIO flushing
-
-
+way I saw it was
+-rc7-cfs-v18 working
+-rc7-git-cfs-v18 broken booting with slub
+-rc7-git-cfs-v19 working with slub with this patch
