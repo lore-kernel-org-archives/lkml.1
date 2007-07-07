@@ -1,241 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbXGGAjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbXGGAny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbXGGAjE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 20:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbXGGAiw
+	id S1754669AbXGGAny (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 20:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbXGGAnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 20:38:52 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:44020 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752953AbXGGAiv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 20:38:51 -0400
-Date: Fri, 06 Jul 2007 19:38:43 -0500
-From: Corey Minyard <minyard@acm.org>
-Subject: [PATCH] Serial 8250: Handle saving the clear-on-read bits from the LSR
- and MSR
-To: Andrew Morton <akpm@osdl.org>, Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-serial@vger.kernel.org
-Reply-to: minyard@acm.org
-Message-id: <20070707003843.GA11807@localdomain>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 6 Jul 2007 20:43:45 -0400
+Received: from smtpout.mac.com ([17.250.248.185]:59819 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751950AbXGGAno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 20:43:44 -0400
+In-Reply-To: <Pine.LNX.4.44L0.0707061114190.3737-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0707061114190.3737-100000@iolanthe.rowland.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <EAA83A3B-1534-458B-A6F8-D090D670D4E7@mac.com>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Fri, 6 Jul 2007 20:43:37 -0400
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, can we include this in the mm series for testing?
+On Jul 06, 2007, at 11:42:33, Alan Stern wrote:
+> On Thu, 5 Jul 2007, Kyle Moffett wrote:
+>> Umm, this thread is NOT ABOUT HIBERNATING!!!  Please go back and  
+>> read the subject, specifically the "suspend to RAM" parts :-D.
+>
+> But it _is_ about the freezer; see the "Remove process freezer"  
+> part. :-)  Since the freezer is used during hibernation,  
+> hibernation is a legitimate topic.
 
-Subject: Serial 8250: Handle saving the clear-on-read bits from the LSR and MSR
+Except Linus already decreed (and I heartily agree) that hibernation  
+and suspend-to-RAM were fundamentally completely different operations  
+and therefore any attempts to share code were basically just making a  
+big muddy mess of things.  Would a thread "Remove phase-of-the-moon  
+calculations from network-recv code" be relevant to lunar observation  
+just because the two had to do with the phases of the moon?  No!
 
-Reading the LSR clears the break, parity, frame error, and overrun
-bits in the 8250 chip, but these are not being saved in all places
-that read the LSR.  Same goes for the MSR delta bits.  Save the LSR
-bits off whenever the lsr is read so they can be handled later in the
-receive routine.  Save the MSR bits to be handled in the modem status
-routine.
+>> When your hardware can put itself to sleep and atomically preserve  
+>> memory as it does so, you don't need an atomic copy.  For Real  
+>> Suspend(TM) (IE: Suspend-to-RAM), the list of things to do is  
+>> short and simple:
+>>
+>> 1)  Stop DMA and put most hardware into low-power states (stops  
+>> all interrupt sources)
+>> 2)  Ensure that the other CPUs have finished any trailing  
+>> interrupt handlers and put them to sleep
+>> 3)  Put the interrupt-controllers into low-power stat
+>> 4)  Go to sleep
+>
+> Your short and simple list omits a few crucial items:
+>
+> A)  Decide what to do about remote wakeup requests.
 
-Also, clear the stored bits and clear the interrupt registers before
-enabling interrupts, to avoid handling old values of the stored bits
-in the interrupt routines.
+Why do we care?  If the wakeup request arrives before we go to sleep,  
+we obviously aren't asleep and so can't wake up.  If it arrives after  
+we go to sleep then it will wake us up.  Anything that depends on a  
+wakeup arriving mid-sequence is 100% masochistic race condition.
 
-Signed-off-by: Corey Minyard <minyard@acm.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>
+> B)  Prevent I/O requests from resuming devices that have been  
+> suspended.
 
- drivers/serial/8250.c      |   85 +++++++++++++++++++++++++++++----------------
- include/linux/serial_reg.h |    1 
- 2 files changed, 57 insertions(+), 29 deletions(-)
+(1a) As I describe below, step (1) includes setting NO_BIND and NO_IO  
+flags on devices as they are processed.  Anybody who wants to do IO  
+while those flags are set should just go sleep on a waitqueue.
 
-Index: linux-2.6.22-rc7/drivers/serial/8250.c
-===================================================================
---- linux-2.6.22-rc7.orig/drivers/serial/8250.c
-+++ linux-2.6.22-rc7/drivers/serial/8250.c
-@@ -129,7 +129,16 @@ struct uart_8250_port {
- 	unsigned char		mcr;
- 	unsigned char		mcr_mask;	/* mask of user bits */
- 	unsigned char		mcr_force;	/* mask of forced bits */
--	unsigned char		lsr_break_flag;
-+
-+	/*
-+	 * Some bits in registers are cleared on a read, so they must
-+	 * be saved whenever the register is read but the bits will not
-+	 * be immediately processed.
-+	 */
-+#define LSR_SAVE_FLAGS UART_LSR_BRK_ERROR_BITS
-+	unsigned char		lsr_saved_flags;
-+#define MSR_SAVE_FLAGS UART_MSR_ANY_DELTA
-+	unsigned char		msr_saved_flags;
- 
- 	/*
- 	 * We provide a per-port pm hook.
-@@ -1238,6 +1247,7 @@ static void serial8250_start_tx(struct u
- 		if (up->bugs & UART_BUG_TXEN) {
- 			unsigned char lsr, iir;
- 			lsr = serial_in(up, UART_LSR);
-+			up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
- 			iir = serial_in(up, UART_IIR) & 0x0f;
- 			if ((up->port.type == PORT_RM9000) ?
- 				(lsr & UART_LSR_THRE &&
-@@ -1290,18 +1300,10 @@ receive_chars(struct uart_8250_port *up,
- 		flag = TTY_NORMAL;
- 		up->port.icount.rx++;
- 
--#ifdef CONFIG_SERIAL_8250_CONSOLE
--		/*
--		 * Recover the break flag from console xmit
--		 */
--		if (up->port.line == up->port.cons->index) {
--			lsr |= up->lsr_break_flag;
--			up->lsr_break_flag = 0;
--		}
--#endif
-+		lsr |= up->lsr_saved_flags;
-+		up->lsr_saved_flags = 0;
- 
--		if (unlikely(lsr & (UART_LSR_BI | UART_LSR_PE |
--				    UART_LSR_FE | UART_LSR_OE))) {
-+		if (unlikely(lsr & UART_LSR_BRK_ERROR_BITS)) {
- 			/*
- 			 * For statistics only
- 			 */
-@@ -1392,6 +1394,8 @@ static unsigned int check_modem_status(s
- {
- 	unsigned int status = serial_in(up, UART_MSR);
- 
-+	status |= up->msr_saved_flags;
-+	up->msr_saved_flags = 0;
- 	if (status & UART_MSR_ANY_DELTA && up->ier & UART_IER_MSI &&
- 	    up->port.info != NULL) {
- 		if (status & UART_MSR_TERI)
-@@ -1591,7 +1595,8 @@ static void serial8250_timeout(unsigned 
- static void serial8250_backup_timeout(unsigned long data)
- {
- 	struct uart_8250_port *up = (struct uart_8250_port *)data;
--	unsigned int iir, ier = 0;
-+	unsigned int iir, ier = 0, lsr;
-+	unsigned long flags;
- 
- 	/*
- 	 * Must disable interrupts or else we risk racing with the interrupt
-@@ -1610,9 +1615,13 @@ static void serial8250_backup_timeout(un
- 	 * the "Diva" UART used on the management processor on many HP
- 	 * ia64 and parisc boxes.
- 	 */
-+	spin_lock_irqsave(&up->port.lock, flags);
-+	lsr = serial_in(up, UART_LSR);
-+	up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
-+	spin_unlock_irqrestore(&up->port.lock, flags);
- 	if ((iir & UART_IIR_NO_INT) && (up->ier & UART_IER_THRI) &&
- 	    (!uart_circ_empty(&up->port.info->xmit) || up->port.x_char) &&
--	    (serial_in(up, UART_LSR) & UART_LSR_THRE)) {
-+	    (lsr & UART_LSR_THRE)) {
- 		iir &= ~(UART_IIR_ID | UART_IIR_NO_INT);
- 		iir |= UART_IIR_THRI;
- 	}
-@@ -1631,13 +1640,14 @@ static unsigned int serial8250_tx_empty(
- {
- 	struct uart_8250_port *up = (struct uart_8250_port *)port;
- 	unsigned long flags;
--	unsigned int ret;
-+	unsigned int lsr;
- 
- 	spin_lock_irqsave(&up->port.lock, flags);
--	ret = serial_in(up, UART_LSR) & UART_LSR_TEMT ? TIOCSER_TEMT : 0;
-+	lsr = serial_in(up, UART_LSR);
-+	up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
- 	spin_unlock_irqrestore(&up->port.lock, flags);
- 
--	return ret;
-+	return lsr & UART_LSR_TEMT ? TIOCSER_TEMT : 0;
- }
- 
- static unsigned int serial8250_get_mctrl(struct uart_port *port)
-@@ -1708,8 +1718,7 @@ static inline void wait_for_xmitr(struct
- 	do {
- 		status = serial_in(up, UART_LSR);
- 
--		if (status & UART_LSR_BI)
--			up->lsr_break_flag = UART_LSR_BI;
-+		up->lsr_saved_flags |= status & LSR_SAVE_FLAGS;
- 
- 		if (--tmout == 0)
- 			break;
-@@ -1718,8 +1727,12 @@ static inline void wait_for_xmitr(struct
- 
- 	/* Wait up to 1s for flow control if necessary */
- 	if (up->port.flags & UPF_CONS_FLOW) {
--		tmout = 1000000;
--		while (!(serial_in(up, UART_MSR) & UART_MSR_CTS) && --tmout) {
-+		unsigned int tmout;
-+		for (tmout = 1000000; tmout; tmout--) {
-+			unsigned int msr = serial_in(up, UART_MSR);
-+			up->msr_saved_flags |= msr & MSR_SAVE_FLAGS;
-+			if (msr & UART_MSR_CTS)
-+				break;
- 			udelay(1);
- 			touch_nmi_watchdog();
- 		}
-@@ -1889,6 +1902,18 @@ static int serial8250_startup(struct uar
- 	spin_unlock_irqrestore(&up->port.lock, flags);
- 
- 	/*
-+	 * Clear the interrupt registers again for luck, and clear the
-+	 * saved flags to avoid getting false values from polling
-+	 * routines or the previous session.
-+	 */
-+	(void) serial_inp(up, UART_LSR);
-+	(void) serial_inp(up, UART_RX);
-+	(void) serial_inp(up, UART_IIR);
-+	(void) serial_inp(up, UART_MSR);
-+	up->lsr_saved_flags = 0;
-+	up->msr_saved_flags = 0;
-+
-+	/*
- 	 * Finally, enable interrupts.  Note: Modem status interrupts
- 	 * are set via set_termios(), which will be occurring imminently
- 	 * anyway, so we don't enable them here.
-@@ -1906,14 +1931,6 @@ static int serial8250_startup(struct uar
- 		(void) inb_p(icp);
- 	}
- 
--	/*
--	 * And clear the interrupt registers again for luck.
--	 */
--	(void) serial_inp(up, UART_LSR);
--	(void) serial_inp(up, UART_RX);
--	(void) serial_inp(up, UART_IIR);
--	(void) serial_inp(up, UART_MSR);
--
- 	return 0;
- }
- 
-@@ -2484,6 +2501,16 @@ serial8250_console_write(struct console 
- 	wait_for_xmitr(up, BOTH_EMPTY);
- 	serial_out(up, UART_IER, ier);
- 
-+	/*
-+	 *	The receive handling will happen properly because the
-+	 *	receive ready bit will still be set; it is not cleared
-+	 *	on read.  However, modem control will not, we must
-+	 *	call it if we have saved something in the saved flags
-+	 *	while processing with interrupts off.
-+	 */
-+	if (up->msr_saved_flags)
-+		check_modem_status(up);
-+
- 	if (locked)
- 		spin_unlock(&up->port.lock);
- 	local_irq_restore(flags);
-Index: linux-2.6.22-rc7/include/linux/serial_reg.h
-===================================================================
---- linux-2.6.22-rc7.orig/include/linux/serial_reg.h
-+++ linux-2.6.22-rc7/include/linux/serial_reg.h
-@@ -118,6 +118,7 @@
- #define UART_LSR_PE		0x04 /* Parity error indicator */
- #define UART_LSR_OE		0x02 /* Overrun error indicator */
- #define UART_LSR_DR		0x01 /* Receiver data ready */
-+#define UART_LSR_BRK_ERROR_BITS	0x1E /* BI, FE, PE, OE bits */
- 
- #define UART_MSR	6	/* In:  Modem Status Register */
- #define UART_MSR_DCD		0x80 /* Data Carrier Detect */
+> C)  Prevent devices and drivers from being registered or  
+> unregistered; in particular decide what to do about hot-plug or hot- 
+> unplug events.
+
+(1b) Again, that's where the NO_BIND flag comes in.  If its set then  
+any device probe events must sleep, otherwise they can go through.
+
+> D)  Block driver bind or unbind calls.
+
+See points (1a) and (1b) above.
+
+> Any of these things is capable of screwing up the course of  
+> events.  (In fact A _should_ be allowed to abort a suspend.)
+
+If any of those things screw up suspend-to-RAM then it is 100% the  
+drivers fault and no "process freezer" is going to fix it, end of  
+story.  And "A" cannot be made reliable.  At some point you shut off  
+interrupts right before going to sleep, and at that point any remote  
+wakeup event is just going to get dropped until you actually enter  
+sleep mode and the hardware takes over again.  If you miss a wakeup  
+event then whatever sent it should just retry, just as with *every*  
+other kind of network packet.
+
+>> How about a freezer whose job it is to "wait for pending hard  
+>> interrupts to complete when we have already guaranteed that we  
+>> won't get any more"?  That part should be really *REALLY* easy.   
+>> You don't need to care about either userspace processes or kernel  
+>> threads at all.  Specifically, Step 1 consists of:
+>>
+>> suspend_device(dev)
+>> {
+>> 	set_no_bind_flag(dev);
+>> 	for (dev->subdevices)
+>> 		suspend_device(dev);
+>> 	set_no_io_flag(dev);
+>> 	wait_for_in_progress_dma(dev);
+>> 	turn_off_interrupts(dev);
+>> 	go_to_low_power_state(dev);
+>> }
+>>
+>> After you've set the "no_bind" flag, you won't get any *new*  
+>> subdevices trying to bind,
+>
+> So what happens if a new subdevice arrives at the wrong time?  Do  
+> you block instead of binding it?  While holding a mutex needed to  
+> suspend the parent device?
+
+That would be a driver bug.  If you have asynchronous probing then  
+proper suspend handling includes being able to postpone driver probe  
+events until after resume.  If you have synchronous probing then the  
+problem doesn't exist because "set_no_bind_flag" is just telling the  
+device not to raise any more device probe interrupts.
+
+> What about drivers trying to bind to existing devices?
+
+While binding it will clearly be holding a mutex/spinlock on the  
+parent device, so the suspend process will wait for it.  When binding  
+is done the suspend_device() code will take the device lock and tell  
+everything else to postpone further bind requests as above.
+
+> What happens to I/O requests submitted after the "no_io" flag is  
+> set?  The driver will have to block them, effectively creating its  
+> own little "freezer".
+
+Oh, so you're calling every waitqueue in the kernel a "freezer" now?   
+We do these things at the driver level *all* *the* *time*.  For  
+instance, you can't submit new IOs to an ATA controller while it's  
+renegotiating the bus speed, but that's never been a problem before.
+
+>> When all the leaf devices are off, the parent device can be turned  
+>> off because everything waiting on the leaf devices is blocked on  
+>> them and won't unblock until the parent device *AND* the leaf  
+>> device are turned on again, in that order.
+>
+> This is a lot like what we already do.  The differences are:
+>
+> There is nothing corresponding to your "no-bind" flag.
+>
+> Most drivers don't have anything like your "no_io" flag; they  
+> assume that nobody will be around to submit an I/O request.
+
+Most drivers have an implicit NO_BIND flag:  The device's interrupts  
+are off and/or its in a low-power state.  USB is already terribly  
+buggy with regards to suspend:  If you hotplug a device during  
+suspend (like the touchpad in my powerbook powering down/up), then  
+the USB stack will basically hang that controller.  The device is off  
+and the hotplug triggers interrupts and IO, *EVEN* *WITHOUT*  
+*USERSPACE*.
+
+So if your driver doesn't already have a proper way of blocking IO  
+during suspend then it probably doesn't suspend 50% of the time  
+anyways.  A bug which bites *every* *time* is easy to fix, one which  
+only bites when things hit a race condition is much harder.
+
+>> Resuming is basically running the whole process in reverse.   
+>> Runtime-suspend is achieved by not setting the 'no_io' or  
+>> 'no_bind' flags and putting selective device-subtrees to sleep  
+>> without doing anything to the rest of the system.
+>
+> Nobody doubts that suspend can be made to work without the freezer.  
+> The point is that doing it this way dumps a bunch of extra  
+> responsibility on drivers.
+
+That responsibility has been there ever since suspend-to-RAM support  
+was added.  Nobody ever denied that writing a proper driver wasn't  
+tricky.  You have to simultaneously be able to handle handle hot- 
+unplug, IO errors, interrupts, IO requests, suspend-to-RAM, and  
+hibernation.  If your driver mutual-exclusion is buggy then it  
+probably already bites you during hotplug or other similar  
+scenarios.  Let's at least make the problems much more reproducible  
+so we can fix the drivers properly instead of continuing to kludge  
+around it for all eternity.
+
+Cheers,
+Kyle Moffett
+
