@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbXGGXdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbXGGXdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbXGGXdU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 19:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXGGXdJ
+	id S1753138AbXGGXdq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 19:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbXGGXdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 19:33:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:31298 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbXGGXdH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 19:33:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=qZ1Fa77zp92AlXn1+lKvG5Q5Gdl0Or6khO8m00lwsBBGIC2SXHLPe6O/f9zsJ0FfYMk+LzgRRWEwck17DFUL1O3gT0wzzk8/ERl8l1n4D9Igcnux/5HaY5/2TKvH+oPLYDGqKPVpxJceG5F+fGRV/HG19RYaM+EE2byb0unBCBk=
-Date: Sun, 8 Jul 2007 01:33:00 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Enable legacy support for serial ports when SERIAL_8250_PNP is disabled
-Message-ID: <20070707233300.GA3267@dreamland.darkstar.lan>
+	Sat, 7 Jul 2007 19:33:37 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47077 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752059AbXGGXdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 19:33:36 -0400
+Date: Sun, 8 Jul 2007 01:33:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: oliver@neukum.org, paulus@samba.org, stern@rowland.harvard.edu,
+       johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+Subject: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+Message-ID: <20070707233315.GB3820@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org> <18060.14856.824473.325660@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <20070707121729.GC3111@elf.ucw.cz> <E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bjorn,
-your patch:
+Hi!
 
-commit 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26
-Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Date:   Tue May 8 00:36:07 2007 -0700
+> > We can just wait for all fuse requests to be serviced before
+> > proceeding further with freeze, right?
+> 
+> Right.  Nice way to slow down or stop the suspend with an unprivileged
+> process.  Avoiding that sort of DoS is one of the design goals of
+> fuse.
 
-    x86, serial: convert legacy COM ports to platform devices
+So you want me to handle _malicious_ filesystems now?
 
-disables probing using legacy code in favour of ACPI/PNP to avoid double
-discovery.
+That should be easy... :-). You already have nasty deadlocks in FUSE,
+and you solve them by "root can echo 1 > abort"... so allow me the
+same possibility.
 
-However if SERIAL_8250_PNP is not enabled the user is left without
-serial ports (been there, done that - my kernel config suddenly wasn't
-working anymore). So:
+We can tell fused we are freezing, and if all the requests are not
+serviced within, say, 30 seconds, we call the filesystem malicious and
+do echo 1 > abort.
 
-Enable probing of serial ports using legacy code when PNP code
-(SERIAL_8250_PNP) is not enabled.
+Not ideal, but neither is allowing malicious filesystems in the first
+place...
 
-Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
+> Look at it this way: the task of the freezer is to stop new I/O
+> hitting the hardware.  But it is totally indiscriminate about what it
+> stops, it tries to stop _everything_ even things which have nothing to
+> do with hardware.
+> 
+> Not nice.
 
----
-
- arch/i386/kernel/legacy_serial.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/i386/kernel/legacy_serial.c b/arch/i386/kernel/legacy_serial.c
-index 2151011..457d307 100644
---- a/arch/i386/kernel/legacy_serial.c
-+++ b/arch/i386/kernel/legacy_serial.c
-@@ -48,7 +48,11 @@ static struct platform_device x86_com_device = {
- 	},
- };
- 
-+#ifndef CONFIG_SERIAL_8250_PNP
-+static int force_legacy_probe = 1;
-+#else
- static int force_legacy_probe;
-+#endif
- module_param_named(force, force_legacy_probe, bool, 0);
- MODULE_PARM_DESC(force, "Force legacy serial port probe");
- 
-
-
-Luca
+Not nice, but we don't know any better for now. "Just fix all the
+drivers" basically means "just fix 90% of kernel".
+									Pavel
 -- 
-La vispa candela bruciava l'erbetta
-creando un'essenza alquanto sospetta;
-sembrava l'odore di una sacrestia
-ma presto mi accorsi che era maria.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
