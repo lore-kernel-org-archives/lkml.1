@@ -1,179 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbXGGC7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbXGGDA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbXGGC7p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 22:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbXGGC7h
+	id S1755728AbXGGDA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 23:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXGGDAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 22:59:37 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4126 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753675AbXGGC7g (ORCPT
+	Fri, 6 Jul 2007 23:00:19 -0400
+Received: from osiris.atheme.org ([69.60.119.211]:42037 "EHLO
+	osiris.atheme.org" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753737AbXGGDAS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 22:59:36 -0400
-Date: Fri, 6 Jul 2007 22:59:22 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Kyle Moffett <mrmacman_g4@mac.com>
-cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, <linux-kernel@vger.kernel.org>,
-       <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-In-Reply-To: <EAA83A3B-1534-458B-A6F8-D090D670D4E7@mac.com>
-Message-ID: <Pine.LNX.4.44L0.0707062210470.7605-100000@netrider.rowland.org>
+	Fri, 6 Jul 2007 23:00:18 -0400
+X-Greylist: delayed 1150 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jul 2007 23:00:18 EDT
+Date: Sat, 7 Jul 2007 02:41:05 +0000 (GMT)
+From: William Pitcock <nenolod@atheme-project.org>
+X-X-Sender: nenolod@osiris.atheme.org
+To: Adrian Bunk <bunk@stusta.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Message-ID: <Pine.LNX.4.64.0707070220440.20167@osiris.atheme.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jul 2007, Kyle Moffett wrote:
-
-> Except Linus already decreed (and I heartily agree) that hibernation  
-> and suspend-to-RAM were fundamentally completely different operations  
-> and therefore any attempts to share code were basically just making a  
-> big muddy mess of things.  Would a thread "Remove phase-of-the-moon  
-> calculations from network-recv code" be relevant to lunar observation  
-> just because the two had to do with the phases of the moon?  No!
-
-For that matter, shutting down a CPU and hibernation are fundamentally
-different operations -- but they both use the freezer.  Is that a big
-muddy mess?  But never mind; I won't discuss hibernation.
-
-> > A)  Decide what to do about remote wakeup requests.
+On Wed, 4 Jul 2007 19:32:29 +0200, Adrian Bunk wrote:
+> On Wed, Jul 04, 2007 at 02:35:39AM -0400, Darren wrote:
+>>
+>> I know this may sound kind of stupid, but how about not deprecating either,
+>> and fully supporting both sound systems? Maybe we can get them to work
+>> together, and the distro or user can choose whether they would like to use
+>> alsa or oss for that particular card (or have the distro choose the sound
+>> drivers that are best supported for that particular card). As it is now,
+>> most apps already support oss and alsa.
+>
+> It does not sound stupid and sounds good at first sight.
+>
+> But there are problems we've already seen with similar situations in
+> different parts of the kernel:
+> They would have different hardware support, features and bugs.
+>
+> And then a user user whose sound card is only supported by sound system A
+> needs a feature only available in sound system B.
+>
+> And the quality decreases since people will often not report bugs in
+> sound system A if sound system B works for them.
+>
+> OTOH, for a user it shouldn't matter whether there's OSS or ALSA, that's
+> mostly a difference for application developers. And since (as you say)
+> most applications already support both, there's no compelling reason for
+> providing more than one of them.
 > 
-> Why do we care?  If the wakeup request arrives before we go to sleep,  
-> we obviously aren't asleep and so can't wake up.  If it arrives after  
-> we go to sleep then it will wake us up.  Anything that depends on a  
-> wakeup arriving mid-sequence is 100% masochistic race condition.
+> cu
+> Adrian
+>
 
-You don't understand my point.  If a wakeup request arrives before the
-system goes to sleep, and it is serviced, then a device which ought to
-have been suspended will in fact be awake.  This will (if the parent's
-driver is written correctly) cause the sleep transition to abort.
+If the developers of ALSA made a nuclear reactor, it would have five 
+different control panels for controlling the rods in the reactor core, and 
+each would do something different and not what the documentation said.
 
-Not that there's necessarily anything wrong with that.  I just wanted 
-to be sure you were aware of the potential problems.
+Actually, I lied about that. It wouldn't have any usable documentation. 
+But, there would be a hidden feature that you could sound the overload 
+alarm by pulling out the stapler in the control office. Useful feature, 
+that.
 
-> > C)  Prevent devices and drivers from being registered or  
-> > unregistered; in particular decide what to do about hot-plug or hot- 
-> > unplug events.
-> 
-> (1b) Again, that's where the NO_BIND flag comes in.  If its set then  
-> any device probe events must sleep, otherwise they can go through.
+As an audio developer on Linux, I must say that developing with ALSA is 
+absolute fucking hell. If there was a way where both APIs could natively 
+be supported, more people would be happy with the current state of affairs 
+in the kernel.
 
-I didn't say "bind", I said "registered".  Admittedly, they are rather
-similar.
+The most fucked up thing that I can think of about the current state of 
+affairs in ALSA is dmix. Every other UNIX sound system like ALSA does it's 
+software mixing in kernel space. The applications never even know about 
+it. It's not only until recently (2005-2006 or so) that ALSA came close to 
+this, but there are still problems. Many cards need workarounds to make 
+dmix work because of the way it works, and the way that ALSA buffers data 
+around.
 
-Still, there are difficulties.  Let's say a driver has set the NO_BIND 
-flag for one of its devices.  A bind request comes in, and the driver 
-puts it on a waitqueue.  Note that the binding thread holds the device 
-semaphore; this is always true when a driver's probe routine is called.
+For the non-technically inclined, ALSA only keeps two fragments for 
+input/output data each. This is horribly unusable because most soundcard 
+fragments are only 1KB, so applications have to adopt ringbuffers to pass 
+data to ALSA. If you're doing video, this leads to possible timing issues 
+unless you sit down and well design your abstraction layer for audio I/O.
 
-Later on it comes time for the PM core to resume the device, which will
-start up the threads on the waitqueue.  Before doing so it must acquire
-the device semaphore.  Deadlock!
+So people switch to things like JACK and PulseAudio because it's the only 
+way they can get workable Audio I/O on ALSA.
 
-> If any of those things screw up suspend-to-RAM then it is 100% the  
-> drivers fault and no "process freezer" is going to fix it, end of  
-> story.
+What's even worse for the ALSA API is that it's designed around lowlatency 
+programming, but only a few drivers properly support it. Why do you need 
+lowlatency access to play a beep or a ding or whatever? The simple answer 
+is you don't.
 
-Why do you say that?  A "process freezer" can prevent bind and
-registration calls from occurring, since these calls have to run in
-process context.  Ergo a freezer _can_ fix some of these problems.
+ALSA could and can be done correctly, but OSS4 is already here and 
+provides an API which solves all of ALSA's current problems. So why waste 
+time with that, when OSS4 is already here and more friendly to the 
+developers of the software most Linux users use?
 
->  And "A" cannot be made reliable.  At some point you shut off  
-> interrupts right before going to sleep, and at that point any remote  
-> wakeup event is just going to get dropped until you actually enter  
-> sleep mode and the hardware takes over again.  If you miss a wakeup  
-> event then whatever sent it should just retry, just as with *every*  
-> other kind of network packet.
+If OSS4 and ALSA apis could run on the same base driver, then a lot more 
+people will be happier, as there will be choice available in which API to 
+use, e.g. OSS4 or the libasound self-abuse method.
 
-Who mentioned network packets?  And who says a remote wakeup event will 
-get dropped once interrupts are disabled?  More likely it will set a 
-bit somewhere that causes the system to wake up immediately after it 
-has gone to sleep.
+Hannu has ideas on how that could work. I suggest all of the kernel 
+developers listen, and listen well, or this mess will never be fixed in a 
+way that is truly usable.
 
-> > So what happens if a new subdevice arrives at the wrong time?  Do  
-> > you block instead of binding it?  While holding a mutex needed to  
-> > suspend the parent device?
-> 
-> That would be a driver bug.  If you have asynchronous probing then  
-> proper suspend handling includes being able to postpone driver probe  
-> events until after resume.
-
-One of your conditions (embodied in the pseudocode you posted earlier) 
-was that drivers should be told to prevent binding and registration 
-before the child devices are suspended.  Currently the PM core doesn't 
-do anything like that.  You can't blame the drivers for this lack.
-
-Of course it could be added.  Or perhaps more easily, the drivers that 
-support asynchronous probing could be notified when a suspend is about 
-to start so they could begin blocking bindings/registrations then.
-
-> > What about drivers trying to bind to existing devices?
-> 
-> While binding it will clearly be holding a mutex/spinlock on the  
-> parent device,
-
-("Parent device"?  Do you mean the device being bound?  If so then I
-agree.  Or do you mean the device's parent?  If so then your statement
-is not clear at all.  There is special-case code in the driver core to
-make sure it is true for USB devices, and it looks ugly as can be.)
-
-> so the suspend process will wait for it.  When binding  
-> is done the suspend_device() code will take the device lock and tell  
-> everything else to postpone further bind requests as above.
-
-My question referred to drivers trying to bind or unbind a device
-_after_ the device has been suspended.  I suppose you'll say that's
-covered by the NO_BIND flag.  But now we have the locking problem
-mentioned above: The thread trying to bind is holding a lock which is
-needed for resuming.
-
-> Most drivers have an implicit NO_BIND flag:  The device's interrupts  
-> are off and/or its in a low-power state.
-
-That won't cause binding to block or be postponed; it will cause it to
-fail.  Not the same thing at all.
-
->  USB is already terribly  
-> buggy with regards to suspend:  If you hotplug a device during  
-> suspend (like the touchpad in my powerbook powering down/up), then  
-> the USB stack will basically hang that controller.  The device is off  
-> and the hotplug triggers interrupts and IO, *EVEN* *WITHOUT*  
-> *USERSPACE*.
-
-As one of the people responsible for the USB power management 
-implementation, I would appreciate more details about this.  For 
-example, a dmesg log with CONFIG_USB_DEBUG turned on together with a
-complete description of the actions you took to provoke the bug.
-
-(I wonder how much of this "buginess" is caused by the lack of the 
-freezer in PPC.)
-
-> So if your driver doesn't already have a proper way of blocking IO  
-> during suspend then it probably doesn't suspend 50% of the time  
-> anyways.  A bug which bites *every* *time* is easy to fix, one which  
-> only bites when things hit a race condition is much harder.
-
-The USB drivers (at least, the ones with runtime PM support) rely on 
-the freezer to block I/O during suspend.  As far as I know, they do 
-suspend properly, on systems where the freezer is used.
-
-> That responsibility has been there ever since suspend-to-RAM support  
-> was added.  Nobody ever denied that writing a proper driver wasn't  
-> tricky.  You have to simultaneously be able to handle handle hot- 
-> unplug, IO errors, interrupts, IO requests, suspend-to-RAM, and  
-> hibernation.  If your driver mutual-exclusion is buggy then it  
-> probably already bites you during hotplug or other similar  
-> scenarios.  Let's at least make the problems much more reproducible  
-> so we can fix the drivers properly instead of continuing to kludge  
-> around it for all eternity.
-
-Is reproducibility really a problem at this stage?  A bug which bites 
-50% of the time might not be quite as easy to fix as one which occurs 
-every time, but it isn't terribly bad either.
-
-Alan Stern
-
+   -nenolod
