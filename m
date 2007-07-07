@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbXGGAJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbXGGAVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbXGGAJs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 20:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXGGAJj
+	id S1754348AbXGGAVY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 20:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbXGGAVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 20:09:39 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53128 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752692AbXGGAJj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 20:09:39 -0400
-Date: Sat, 7 Jul 2007 02:10:08 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Dave Jones <davej@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-Message-ID: <20070707001008.GV3492@stusta.de>
-References: <20070703164046.645090494@polymtl.ca> <20070703164516.377240547@polymtl.ca> <20070703181151.GB5800@martell.zuzino.mipt.ru> <20070703185748.GA4047@Krystal> <20070705132120.8edbc1f3.akpm@linux-foundation.org> <p73vecx21um.fsf@bingen.suse.de> <468EBEB2.4070605@redhat.com> <20070706232843.GT3492@stusta.de> <20070706233827.GC13125@redhat.com>
+	Fri, 6 Jul 2007 20:21:14 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60123 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752638AbXGGAVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 20:21:13 -0400
+Message-ID: <468EDC76.9050708@garzik.org>
+Date: Fri, 06 Jul 2007 20:21:10 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070706233827.GC13125@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: IDE/ATA development list <linux-ide@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: libata-dev.git clean up and branch status
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 07:38:27PM -0400, Dave Jones wrote:
-> On Sat, Jul 07, 2007 at 01:28:43AM +0200, Adrian Bunk wrote:
-> 
->  > Only if you want to squeeze the last bit of performance out of
->  > _debugging_ functionality.
->  > 
->  > You avoid all the pain if you simply don't use debugging functionality 
->  > on production systems.
-> 
-> I think you're mixing up profiling and debugging.   The former is
-> extremely valuable under production systems.
+libata-dev.git was left a bit grotty when I went on vacation.  That has 
+now been fixed.  The current branches are:
 
-profiling = debugging of performance problems
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
 
-My words were perhaps a bit sloppy, but profiling isn't part of normal 
-operation and if people use a separate kernel for such purposes we don't 
-need infrastructure for reducing performance penalties of enabled debug 
-options.
+master		Always vanilla Linus tree
 
-> 	Dave
+ALL		Always the "exported for testing" meta-branch
+		(currently == upstream + sil680-mmio + mv-ahci)
 
-cu
-Adrian
+upstream	queued for 2.6.23
+		Parent: master
 
--- 
+mv-ahci		Marvell 6121/6141 AHCI clone SATA support
+		Parent: upstream
+		Status: Works, once NCQ & PCI MSI are disabled.
+			Turn these off, then can go up.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+mv-ahci-pata	Marvell 6121/6141 AHCI clone PATA support
+		Parent: mv-ahci
+		Status: Need to update for proper use of PATA
+			controller commands (provides direct access to
+			PATA device shadow registers)
+
+mv-eh		sata_mv (50xx/60xx) conversion to new EH
+		Parent: upstream
+		Status: Required for hotplug, NCQ, etc.  Working, but
+			currently NCQ disks fail (even if NCQ not used)
+
+new-eh		pdc_adma, sata_qstor, sata_sx4 conversion to new EH
+		Parent: upstream
+		Status: All conversions complete...
+			and completely untested.
+
+sii-lbt		sata_sil Large [DMA] Block Transfer support
+		Parent: upstream
+		Status: Useful, but reported to fail in some cases
+
+sil680-mmio	pata_sil680 MMIO support
+		Parent: upstream
+		Status: dissolved into some argument about MMIO flushing
+
 
