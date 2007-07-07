@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbXGGR7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbXGGSGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645AbXGGR7X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 13:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXGGR7L
+	id S1754122AbXGGSGG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 14:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXGGSFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 13:59:11 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53701 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752721AbXGGR7J (ORCPT
+	Sat, 7 Jul 2007 14:05:54 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:6478 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbXGGSFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 13:59:09 -0400
-Date: Sat, 7 Jul 2007 19:59:39 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, Dave Jones <davej@redhat.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-Message-ID: <20070707175939.GI3492@stusta.de>
-References: <20070703185748.GA4047@Krystal> <20070705132120.8edbc1f3.akpm@linux-foundation.org> <p73vecx21um.fsf@bingen.suse.de> <468EBEB2.4070605@redhat.com> <20070706232843.GT3492@stusta.de> <20070706233827.GC13125@redhat.com> <20070707001008.GV3492@stusta.de> <y0mvecwusj3.fsf@ton.toronto.redhat.com> <20070707170157.GH3492@stusta.de> <20070707172011.GB943@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070707172011.GB943@1wt.eu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sat, 7 Jul 2007 14:05:53 -0400
+Date: Sat, 07 Jul 2007 12:05:33 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SATA exceptions
+In-reply-to: <fa.NhBdOmH9+RkW+QO72+TjPRwEKj0@ifi.uio.no>
+To: caglar@pardus.org.tr
+Cc: Tejun Heo <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Message-id: <468FD5ED.5060401@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 8BIT
+References: <fa.hBFih6KVHDFsBf6Qfg6XispiIuY@ifi.uio.no>
+ <fa.50UJZSgW/ChUl7O1Zks6ydq/1js@ifi.uio.no>
+ <fa.NhBdOmH9+RkW+QO72+TjPRwEKj0@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 07:20:12PM +0200, Willy Tarreau wrote:
-> On Sat, Jul 07, 2007 at 07:01:57PM +0200, Adrian Bunk wrote:
-> > On Sat, Jul 07, 2007 at 11:45:20AM -0400, Frank Ch. Eigler wrote:
->...
-> > You always have to decide between some debug code and some small bit of 
-> > performance. There's a reason why options to disable things like BUG() 
-> > or printk() are in the kernel config menus hidden behind CONFIG_EMBEDDED
-> > although they obviously have some performance impact.
+S.Çağlar Onur wrote:
+> 06 Tem 2007 Cum tarihinde, Tejun Heo şunları yazmıştı: 
+>> S.Çağlar Onur wrote:
+>>> [ 4260.278427] ata1.00: cmd ca/00:08:d0:88:bc/00:00:00:00:00/ee tag 0 cdb
+>>> 0x0 data 4096 out
+>>> [ 4260.278430]          res 51/40:01:d7:88:bc/00:00:0e:00:00/ee Emask 0x9
+>>> (media error)
+>> That's media error on sector 247236823 on WRITE.  Media errors on write
+>> are bad signs - it usually means the drive even failed to remap the
+>> sector because extra space ran out. 
 > 
-> It is not for the CPU performance they can be disabled, but for the code
-> size which is a real problem on embedded system. While you often have
-> mem/cpu_mhz ratios around 1GB/1GHz on servers and desktops, you more often
-> have ratios like 16MB/500MHz which is 1:32 of the former. That's why you
-> optimize for size at the expense of speed on such systems.
+> Hmm, more than 50GB is empty on disk :)
 
-The latter is not true for my two examples.
+It's not the free space on the drive that matters, it's the number of 
+free sectors in the spare sector pool on the drive, which is invisible 
+to software.
 
-CONFIG_PRINTK=n, CONFIG_BUG=n will obviously make the kernel both 
-smaller and faster. [1]
-
-> Regards,
-> Willy
-
-cu
-Adrian
-
-[1] faster due to less code to execute and positive cache effects due to 
-    the smaller code [2]
-[2] whether the "faster" is big enough that it is in any way measurable 
-    is a different question
+Your SMART log shows 309 reallocated sectors. That seems somewhat high..
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
