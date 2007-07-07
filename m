@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbXGGSdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXGGShN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbXGGSdu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 14:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXGGSdm
+	id S1754684AbXGGShN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 14:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbXGGSgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 14:33:42 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:22746 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868AbXGGSdm (ORCPT
+	Sat, 7 Jul 2007 14:36:52 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:37546 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751868AbXGGSgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 14:33:42 -0400
-Date: Sat, 7 Jul 2007 20:33:41 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Mark Lord <lkml@rtr.ca>
-cc: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PATA-disk named sda
-In-Reply-To: <468E8229.5040602@rtr.ca>
-Message-ID: <Pine.LNX.4.64.0707072033060.1536@fbirervta.pbzchgretzou.qr>
-References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>
- <200707061413.53182.surenkarapetyan@gmail.com>
- <20070706113618.1d5e216a.Christoph.Pleger@cs.uni-dortmund.de>
- <468E8229.5040602@rtr.ca>
+	Sat, 7 Jul 2007 14:36:51 -0400
+Message-ID: <468FDC91.2080300@bx.jp.nec.com>
+Date: Sun, 08 Jul 2007 03:33:53 +0900
+From: KII Keiichi <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
+       Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH -mm 8/9] netconsole: Update documentation for dynamic
+ reconfigurability
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in> <468CEAEC.7040102@bx.jp.nec.com> <Pine.LNX.4.64.0707051913001.19842@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <Pine.LNX.4.64.0707051913001.19842@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Satyam,
 
-On Jul 6 2007 13:55, Mark Lord wrote:
-> Christoph Pleger wrote:
->> Hello,
->> 
->> > In recent kernels both PATA and SATA (SCSI too) drives are handled by
->> > libata  library. It calls all the drives sd* . 
->> 
->> If so, what about the use of hdparm then? I could not change parameters
->> like DMA, MultSectIO and 32-Bit support with hdparm. sdparm also did not
->> do that work.
->
-> hdparm will still work for most functions,
-> but setting dma, multsectio, and 32-bit are now solely
-> the responsibility of the kernel (libata), for now.
+> BTW I did some testing myself, and have found another *embarrassing* bug:
+> if netconsole is loaded _without_ specifying any "netconsole=" parameter,
+> module is still kept loaded, but on unloading configfs_unregister_...()
+> obviously panics! :-) This should've been found by me earlier, just that
+> I never tested without specifying the parameter to modprobe :-(
 
-Yeah. `smartctl -d ata -a /dev/sda` is also one to work :)
+I tested your patches on the x86 architecture and report the results.
+It is no problem except for the above problem.
+I think that it is useful to use configfs(especially, mkdir and rmdir 
+because of adding/removing netconsole_target).
 
+I am going to test the your next iteration patches on x86 and IA64 
+architecutures. 
 
-
-	Jan
+Thanks
 -- 
+Keiichi KII
+NEC Corporation OSS Platform Development Division
+E-mail: k-keiichi@bx.jp.nec.com
+
+
+
+
