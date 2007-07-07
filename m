@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbXGGITn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbXGGIas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbXGGITn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 04:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXGGITb
+	id S1754535AbXGGIas (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 04:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbXGGIaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 04:19:31 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:23849 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbXGGIT3 (ORCPT
+	Sat, 7 Jul 2007 04:30:39 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53323 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752145AbXGGIaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 04:19:29 -0400
-Date: Sat, 7 Jul 2007 01:18:53 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 9/9] netconsole: Support dynamic reconfiguration using configfs
-Message-ID: <20070707081852.GC1011@tasint.org>
-Mail-Followup-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Keiichi Kii <k-keiichi@bx.jp.nec.com>,
-	Netdev <netdev@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <20070704110824.28520.11661.sendpatchset@cselinux1.cse.iitk.ac.in> <20070707060114.GB1011@tasint.org> <Pine.LNX.4.64.0707071216450.24470@cselinux1.cse.iitk.ac.in>
+	Sat, 7 Jul 2007 04:30:39 -0400
+Date: Sat, 7 Jul 2007 10:31:09 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: chris@zankel.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] include/asm-xtensa/io.h must #include <asm/page.h>
+Message-ID: <20070707083109.GG3492@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707071216450.24470@cselinux1.cse.iitk.ac.in>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 01:18:45PM +0530, Satyam Sharma wrote:
-> However, for items that are statically initialized (often the
-> group->cg_item members of subsystems or default groups) we often simply
-> set ci_namebuf and then call config_item_init() -- say via
-> config_group_init(), like I've done with the netconsole subsystem in this
-> patch -- but config_item_init() does not set ci_name for such items to
-> ci_namebuf. This means the ci_name member of _initialized_ config_items
-> with their names in ci_namebuf is left un-initialized (NULL, actually,
-> because the subsys / default group would likely be static).
+This patch fixes the following compile error with 
+-Werror-implicit-function-declaration:
 
-	Configfs notices subsystems and default groups and handles this.
-See configfs_register_subsystem() and create_default_group() in
-fs/configfs/dir.c
+<--  snip  -->
 
-> Right. We shouldn't special case (at least not without adding a comment
-> why that would be right) and we never know what might happen to the code
-> at some later day. So let's keep the get() / put() pair.
-
-	If you're keeping them, don't do the "empty_item", check the
-name.
-	Otherwise, the changes you describe sound good.
-
-Joel
+...
+  CC      kernel/time/clocksource.o
+In file included from 
+/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/include/linux/clocksource.h:18,
+                 from 
+/home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/kernel/time/clocksource.c:27:
+include2/asm/io.h: In function 'virt_to_phys':
+include2/asm/io.h:46: error: implicit declaration of function '__pa'
+include2/asm/io.h: In function 'phys_to_virt':
+include2/asm/io.h:51: error: implicit declaration of function '__va'
+include2/asm/io.h:51: warning: return makes pointer from integer without a cast
+make[3]: *** [kernel/time/clocksource.o] Error 1
 
 
--- 
+<--  snip  -->
 
-"I have never let my schooling interfere with my education."
-        - Mark Twain
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+---
+--- linux-2.6.22-rc6-mm1/include/asm-xtensa/io.h.old	2007-07-07 10:16:54.000000000 +0200
++++ linux-2.6.22-rc6-mm1/include/asm-xtensa/io.h	2007-07-07 10:17:08.000000000 +0200
+@@ -13,6 +13,7 @@
+ 
+ #ifdef __KERNEL__
+ #include <asm/byteorder.h>
++#include <asm/page.h>
+ 
+ #include <linux/types.h>
+ 
+
