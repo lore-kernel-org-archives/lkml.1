@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbXGGBnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbXGGBpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbXGGBnb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 21:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbXGGBnW
+	id S1754993AbXGGBpb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 21:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXGGBpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 21:43:22 -0400
-Received: from smtpout.mac.com ([17.250.248.186]:58154 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbXGGBnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 21:43:22 -0400
-In-Reply-To: <25263529-06F1-421B-95B9-5D6CBE8CDB5A@cs.uiowa.edu>
-References: <200707051251.52891.vda.linux@googlemail.com> <20070705143419.f214f5b2.akpm@linux-foundation.org> <6F17353B-D428-462B-B318-2FDEC11E8D66@cs.uiowa.edu> <9a8748490707060821m50e53fc2uba2552ea2e0d07a2@mail.gmail.com> <25263529-06F1-421B-95B9-5D6CBE8CDB5A@cs.uiowa.edu>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C60FF4E3-843B-458C-8BD8-F38896FD8373@mac.com>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Denis Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH 2/2] vsprintf.c: optimizing, part 2: base 10 conversion speedup, v2
-Date: Fri, 6 Jul 2007 21:43:08 -0400
-To: "Douglas W. Jones" <jones@cs.uiowa.edu>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Fri, 6 Jul 2007 21:45:24 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:37211 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbXGGBpX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 21:45:23 -0400
+Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070706222651.GG5777@v2.random>
+References: <20070706222651.GG5777@v2.random>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 06 Jul 2007 18:47:01 -0700
+Message-Id: <1183772822.21234.29.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 06, 2007, at 11:53:40, Douglas W. Jones wrote:
-> This implies my bemused permission to freely use anything developed  
-> from my tutorials on the web, not my endorsement of what was done  
-> with that material.  I say bemused because it seems far fetched to  
-> claim that I have any ownership interest in this material.  The  
-> author of a tutorial text clearly owns the tutorial organization  
-> and presentation of that text, but to claim ownership of the ideas  
-> being taught is strange.
+On Sat, 2007-07-07 at 00:26 +0200, Andrea Arcangeli wrote:
+..
+> The following simple bench seems to run fine on one real hardware and
+> on kvm (a friend of mine failed so far to run it on his hardware
+> though, so perhaps some driver triggers some remaining bugs) when
+> booted as init=/tmp/bench-static after “cp -a /dev/hda /tmp/”.
 
-The Signed-off-by stuff is sometimes one of those sad but easy little  
-things we do to avoid anybody getting stuck in court over patent/ 
-copyright later on, and to be able to prove that our GPLed stuff is  
-actually ours to GPL.  As it's an implementation of a simple modular  
-base-2 math concept I don't see any reason why you need to sign-off;  
-the only person who needs to do so is Denis Vlasenko (the person who  
-actually wrote the specific copyrighted code).  The real practical  
-use is to be able to follow the chain of "I got this from [...]" back  
-to its original source, which is especially valuable in the presence  
-of scum like SCO (they claimed some of Linus' code as their own).
+Hmm.. I didn't have any luck booting my machine with the patchset 
+(with 8k pagesize) :(
 
-So I wouldn't worry about it, the only person who really needs to do  
-anything is Denis.
+It fails to find the partition table on my hard drive.
 
-Cheers,
-Kyle Moffett
+Thanks,
+Badari
+
+....
+AMD8111: IDE controller at PCI slot 0000:00:07.1
+AMD8111: chipset revision 3
+AMD8111: not 100% native mode: will probe irqs later
+AMD8111: 0000:00:07.1 (rev 03) UDMA133 controller
+    ide0: BM-DMA at 0x1020-0x1027, BIOS settings: hda:DMA, hdb:pio
+    ide1: BM-DMA at 0x1028-0x102f, BIOS settings: hdc:DMA, hdd:pio
+hda: IC35L080AVVA07-0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hdc: TOSHIBA DVD-ROM SD-M1612, ATAPI CD/DVD-ROM drive
+ide1 at 0x170-0x177,0x376 on irq 15
+hda: max request size: 128KiB
+hda: 160836480 sectors (82348 MB) w/1863KiB Cache, CHS=65535/16/63, UDMA
+(100)
+hda: cache flushes supported
+ hda: unknown partition table <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+hdc: ATAPI 48X DVD-ROM drive, 512kB Cache, UDMA(33)
+Uniform CD-ROM driver Revision: 3.20
+ide-floppy driver 0.99.newide
+PNP: PS/2 Controller [PNP0303:PS2K,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
+serio: i8042 KBD port at 0x60,0x64 irq 1
+serio: i8042 AUX port at 0x60,0x64 irq 12
+mice: PS/2 mouse device common for all mice
+input: AT Translated Set 2 keyboard as /class/input/input0
+input: PC Speaker as /class/input/input1
+input: PS/2 Generic Mouse as /class/input/input2
+TCP cubic registered
+NET: Registered protocol family 1
+md: Autodetecting RAID arrays.
+md: autorun ...
+md: ... autorun DONE.
+VFS: Cannot open root device "hda2" or unknown-block(3,2)
+Please append a correct "root=" boot option; here are the available
+partitions:
+0300   80418240 hda driver: ide-disk
+1600    4194302 hdc driver: ide-cdrom
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-
+block(3,2)
+
+
