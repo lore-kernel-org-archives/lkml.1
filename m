@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbXGGVTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbXGGVU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbXGGVTT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 17:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXGGVTL
+	id S1756049AbXGGVU0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 17:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbXGGVUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 17:19:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36925 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751817AbXGGVTK (ORCPT
+	Sat, 7 Jul 2007 17:20:17 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:59215 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbXGGVUQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 17:19:10 -0400
-Date: Sat, 7 Jul 2007 14:18:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Patrick Caulfield <pcaulfie@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>, teigland@redhat.com,
-       cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22 regression fix] DLM must depend on SYSFS
-In-Reply-To: <20070707211110.GL3492@stusta.de>
-Message-ID: <alpine.LFD.0.999.0707071417500.31544@woody.linux-foundation.org>
-References: <20070707041402.GE3492@stusta.de>
- <alpine.LFD.0.999.0707071350380.31544@woody.linux-foundation.org>
- <20070707211110.GL3492@stusta.de>
+	Sat, 7 Jul 2007 17:20:16 -0400
+Date: Sat, 7 Jul 2007 23:18:59 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Bodo Eggert <7eggert@gmx.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][Patch] Allow not mounting a root fs
+In-Reply-To: <Pine.LNX.4.64.0707072030230.1536@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.58.0707072255260.3562@be1.lrz>
+References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <468DA42D.7050309@zytor.com>
+ <Pine.LNX.4.64.0707072030230.1536@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/pO87ROlKaTboN52zNJ/116FVxIDviMM1DwFO
+ etgxfEZANv+Ezczvpk9MMr5cGrNTC7jRt8qpgecyNvORdsH7QP
+ tCOc0vcC/XhYqoCmA+0Eg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 7 Jul 2007, Jan Engelhardt wrote:
+> On Jul 5 2007 19:08, H. Peter Anvin wrote:
 
-
-On Sat, 7 Jul 2007, Adrian Bunk wrote:
+> >> BTW: Is it possible to mount a tmpfs on / before extracting the cpio?
+> >
+> >Not in the stock kernel.  There have been some patches floating around
+> >for that, I think.
 > 
-> Usually I'm for the usage of "select" in such cases, but since this is 
-> with CONFIG_EMBEDDED=y where users can be expected to know better what 
-> they are doing I'd say a "depends on" is fine.
+> What would it buy? rootfs is a tmpfs, is not it?
 
-Fair enough.
+As far as I understand, it is a ramfs aka. non-swappable tmpfs without any 
+limit and including a chance of DoSing the system.
 
-		Linus
+Since I'm toying with root-on-initcpio, I'm looking for things that might 
+make the task some easier.
+
+Currently I'm thinking about changing the root=initramfs to root=tmpfs and
+additionally mounting a tmpfs on / before unpacking the cpios. OTOH, this 
+seems to be a little bit messy. OTOH again, in _that_ boot code, nobody
+should complain :)
+
+-- 
+"Whoever said the pen is mightier than the sword obviously never
+encountered automatic weapons."
+-Gen. Douglas MacArthur
