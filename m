@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbXGGR40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbXGGR6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753740AbXGGR40 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 13:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbXGGR4U
+	id S1754156AbXGGR6c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 13:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbXGGR6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 13:56:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33554 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752439AbXGGR4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 13:56:20 -0400
-Date: Sat, 7 Jul 2007 13:55:03 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Dave Jones <davej@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-Message-ID: <20070707175503.GI24475@redhat.com>
-References: <20070703181151.GB5800@martell.zuzino.mipt.ru> <20070703185748.GA4047@Krystal> <20070705132120.8edbc1f3.akpm@linux-foundation.org> <p73vecx21um.fsf@bingen.suse.de> <468EBEB2.4070605@redhat.com> <20070706232843.GT3492@stusta.de> <20070706233827.GC13125@redhat.com> <20070707001008.GV3492@stusta.de> <y0mvecwusj3.fsf@ton.toronto.redhat.com> <20070707170157.GH3492@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070707170157.GH3492@stusta.de>
-User-Agent: Mutt/1.4.1i
+	Sat, 7 Jul 2007 13:58:24 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:26667 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXGGR6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 13:58:23 -0400
+Date: Sat, 07 Jul 2007 11:57:59 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Disabling ADMA?  (was Re: [PATCH] drivers/ata: Add the SW NCQ
+ support to sata_nv for MCP51/MCP55/MCP61)
+In-reply-to: <468FB3A5.9000008@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Kuan Luo <kluo@nvidia.com>, Peer Chen <pchen@nvidia.com>,
+       Allen Martin <AMartin@nvidia.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ide@vger.kernel.org
+Message-id: <468FD427.8010904@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <15F501D1A78BD343BE8F4D8DB854566B059FE131@hkemmail01.nvidia.com>
+ <468FB3A5.9000008@garzik.org>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Adrian -
-
-On Sat, Jul 07, 2007 at 07:01:57PM +0200, Adrian Bunk wrote:
-> [...]
-> > Things are not so simple.  One might not know that one has a
-> > performance problem until one tries some analysis tools.  Rebooting
-> > into different kernels just to investigate does not work generally [...]
+Jeff Garzik wrote:
+> Kuan Luo wrote:
+>>     @@ -1714,3 +2761,6 @@ module_init(nv_init);
+>>      module_exit(nv_exit);
+>>      module_param_named(adma, adma_enabled, bool, 0444);
+>>      MODULE_PARM_DESC(adma, "Enable use of ADMA (Default: true)");
+>>     +module_param_named(ncq, ncq_enabled, bool, 0444);
+>>     +MODULE_PARM_DESC(ncq, "Enable use of NCQ (Default: false)");
 > 
-> I'm not getting this:
->
-> You'll only start looking into an analysis tool if you have a
-> performance problem, IOW if you are not satisfied with the
-> performance.
+> After looking through sata_nv bug reports, I am leaning towards 
+> disabling ADMA by default, and wanted to solicit comments.
+> 
+> While admittedly not knowing the root cause, it seems like every current 
+> outstanding sata_nv bug report that remains after switching out hardware 
+> can be solved by setting module option 'adma' to zero.  That's my first 
+> suggestion upon any bugzilla sata_nv bug, and it usually works.  You can 
+> look through bugs assigned to or CC'd to jgarzik@pobox.com (kernel.org 
+> bugs) jgarzik@redhat.com (redhat.com bugs) for examples.
 
-There may be people whose jobs entail continually suspecting
-performance problems.  Or one may run instrumentation code on a
-long-term basis specifically to locate performance spikes.
+Do you have some specific bug numbers? Other than this one:
 
-> And the debug code will not have been tested on this machine no matter 
-> whether it's enabled through a compile option or at runtime.
+http://bugzilla.kernel.org/show_bug.cgi?id=8421
 
-There is a big difference in favour of the former.  The additional
-instrumentation code may be small enough to inspect carefully.  The
-rest of the kernel would be unaffected.
+That one is hotplug-related, and it would seem only affects specific 
+boards as it works fine for me. Likely NVIDIA input would be needed on 
+that one to get much farther.
 
-> [...]  If you might be able to get a big part of tracing and other
-> debug code enabled with a performance penalty of a few percent of
-> _kernel_ performance, then you might get much debugging aid without
-> any effective impact on application performance.
+I didn't find any other sata_nv ADMA-related bugs in the kernel.org or 
+RH Bugzillas.
 
-Agreed.
+Most of the reports I've gotten recently have been in one of these 
+categories:
+
+-broken NCQ implementation on the drive (usually shows up as commands 
+timing out with CPB resp_flags of 2)
+-cabling or power problems (often showing errors in the SError register)
+
+There have been a few reports yet of problems with commands getting 
+issued and seeing to go nowhere. These can be difficult to diagnose. 
+However, in some cases there's evidence leaning toward this being a 
+drive issue as well, ex: this thread:
+
+http://groups.google.ca/group/linux.kernel/browse_frm/thread/2ebf329e3f6470eb/0d26dff9a30d29e9?lnk=gst
+
+Here there's a report of this drive model doing this on multiple 
+controllers.
+
+Keep in mind, in the case where a broken NCQ implementation on the drive 
+is the cause, disabling ADMA (and hence NCQ) will appear to "fix" the 
+problem when the proper course of action would be to blacklist NCQ on 
+that drive globally.
+
+Given the relative scarcity of problem reports (at least those I've 
+seen), and the fact that this is not obscure hardware (they must have 
+made millions of these nForce4 boards, and I think some may even still 
+be in production), I'm reluctant to say we should be switching ADMA off 
+by default.
+
+> 
+> I still need to review the SWNCQ patch in detail, but I presume it is 
+> possible to still use SWNCQ without ADMA?
+
+Yes, they're independent.
+
+> 
+> On a side note, I would rather default SWNCQ to 'on'.
 
 
-- FChE
