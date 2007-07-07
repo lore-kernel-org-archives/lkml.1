@@ -1,247 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbXGGQ3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbXGGQo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754397AbXGGQ3S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 12:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXGGQ3G
+	id S1753844AbXGGQo7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 12:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbXGGQou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 12:29:06 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:55648 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751868AbXGGQ3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 12:29:05 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       linux-sh <linuxsh-dev@lists.sourceforge.net>
-Date: Sat, 07 Jul 2007 22:20:54 +0530
-Message-Id: <20070707165054.1465.81110.sendpatchset@cselinux1.cse.iitk.ac.in>
-Subject: [PATCH -rc7][resend] sh: Silence bogus section mismatch warnings
+	Sat, 7 Jul 2007 12:44:50 -0400
+Received: from h155.mvista.com ([63.81.120.155]:55629 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752307AbXGGQot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 12:44:49 -0400
+Message-ID: <468FC376.2040405@ru.mvista.com>
+Date: Sat, 07 Jul 2007 20:46:46 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] [POWERPC] mmio ide support for mpc8349-itx target
+References: <20070707094852.9473.21013.stgit@localhost.localdomain> <20070707094900.9473.48577.stgit@localhost.localdomain>
+In-Reply-To: <20070707094900.9473.48577.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sh_machine_vector structures throughout arch/sh/boards/ are marked
-__initmv so that they go to the .machvec.init section, when SH_GENERIC ||
-SH_UNKNOWN. But when !SH_GENERIC && !SH_UNKNOWN, __initmv is not defined,
-so all the machine vector structures go to the .data section. But, all
-the .mv_setup members of various sh_machine_vector structures throughout
-the arch/sh/boards/ directory are set to point to functions that are
-marked as __init unconditionally.
+Hello.
 
-This leads to:
+Vitaly Bordug wrote:
 
-MODPOST vmlinux
-WARNING: arch/sh/boards/dreamcast/built-in.o(.data+0x0): Section mismatch:
-reference to .init.text: (between 'mv_dreamcast' and 'systemasic_int')
+> This updates relevant platform code
+> (freescale mpc8349itx target) to make the CompactFlash
+> work in TrueIDE mode.
 
-These are bogus warnings, sh_machine_vector structures are used only at
-init-time. So mark .mv_setup functions as __initmv too, to get rid of them.
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+    It would have been good if you tried to actualy compile your code. ;-)
 
----
+> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> index db0d003..b3e80ab 100644
+> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> @@ -42,7 +42,7 @@
+>  		#size-cells = <1>;
+>  		#interrupt-cells = <2>;
+>  		device_type = "soc";
+> -		ranges = <0 e0000000 00100000>;
+> +		ranges = <0 e0000000 1f000000>;
+>  		reg = <e0000000 00000200>;
+>  		bus-frequency = <0>;                    // from bootloader
+>  
+> @@ -229,6 +229,21 @@
+>  			descriptor-types-mask = <01010ebf>;
+>  		};
+>  
+> +		ide@10000000 {
+> + 			#interrupt-cells = <2>;
 
-First sent in http://lkml.org/lkml/2007/6/23/116 and then resent in
-http://lkml.org/lkml/2007/6/28/120. From http://lkml.org/lkml/2007/6/30/77
-I presume this can also be marked:
+    Hm, why define that prop for a node with no children?
 
-Tested-by: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+> + 			interrupts = <17 8>;
+> + 			interrupt-map = <0 0 0 1 700 17 8>;
+> + 			interrupt-map-mask = <0>;
+> + 
+> + 			#size-cells = <1>;
+> + 			#address-cells = <1>;
 
- arch/sh/boards/dreamcast/setup.c           |    2 +-
- arch/sh/boards/hp6xx/setup.c               |    2 +-
- arch/sh/boards/landisk/setup.c             |    2 +-
- arch/sh/boards/mpc1211/setup.c             |    2 +-
- arch/sh/boards/renesas/hs7751rvoip/setup.c |    2 +-
- arch/sh/boards/renesas/r7780rp/setup.c     |    2 +-
- arch/sh/boards/renesas/rts7751r2d/setup.c  |    2 +-
- arch/sh/boards/se/7343/setup.c             |    2 +-
- arch/sh/boards/se/770x/setup.c             |    4 ++--
- arch/sh/boards/se/7722/setup.c             |    2 +-
- arch/sh/boards/se/7780/setup.c             |    2 +-
- arch/sh/boards/sh03/setup.c                |    2 +-
- arch/sh/boards/snapgear/setup.c            |    2 +-
- arch/sh/boards/superh/microdev/setup.c     |    2 +-
- 14 files changed, 15 insertions(+), 15 deletions(-)
+    Same question here.
 
----
+> + 			reg = <10000000 10 10000200 10>;
+> + 
+> + 			device_type = "ide";
 
-diff -ruNp c/arch/sh/boards/dreamcast/setup.c d/arch/sh/boards/dreamcast/setup.c
---- c/arch/sh/boards/dreamcast/setup.c	2007-04-26 08:38:32.000000000 +0530
-+++ d/arch/sh/boards/dreamcast/setup.c	2007-06-23 18:35:28.000000000 +0530
-@@ -36,7 +36,7 @@ extern int systemasic_irq_demux(int);
- void *dreamcast_consistent_alloc(struct device *, size_t, dma_addr_t *, gfp_t);
- int dreamcast_consistent_free(struct device *, size_t, void *, dma_addr_t);
- 
--static void __init dreamcast_setup(char **cmdline_p)
-+static void __initmv dreamcast_setup(char **cmdline_p)
- {
- 	int i;
- 
-diff -ruNp c/arch/sh/boards/hp6xx/setup.c d/arch/sh/boards/hp6xx/setup.c
---- c/arch/sh/boards/hp6xx/setup.c	2007-06-20 17:55:36.000000000 +0530
-+++ d/arch/sh/boards/hp6xx/setup.c	2007-06-23 18:36:13.000000000 +0530
-@@ -55,7 +55,7 @@ static int __init hp6xx_devices_setup(vo
- 	return platform_add_devices(hp6xx_devices, ARRAY_SIZE(hp6xx_devices));
- }
- 
--static void __init hp6xx_setup(char **cmdline_p)
-+static void __initmv hp6xx_setup(char **cmdline_p)
- {
- 	u8 v8;
- 	u16 v;
-diff -ruNp c/arch/sh/boards/landisk/setup.c d/arch/sh/boards/landisk/setup.c
---- c/arch/sh/boards/landisk/setup.c	2007-06-20 17:55:36.000000000 +0530
-+++ d/arch/sh/boards/landisk/setup.c	2007-06-23 18:36:57.000000000 +0530
-@@ -85,7 +85,7 @@ static int __init landisk_devices_setup(
- 
- __initcall(landisk_devices_setup);
- 
--static void __init landisk_setup(char **cmdline_p)
-+static void __initmv landisk_setup(char **cmdline_p)
- {
-         /* LED ON */
- 	ctrl_outb(ctrl_inb(PA_LED) | 0x03, PA_LED);
-diff -ruNp c/arch/sh/boards/mpc1211/setup.c d/arch/sh/boards/mpc1211/setup.c
---- c/arch/sh/boards/mpc1211/setup.c	2007-04-26 08:38:32.000000000 +0530
-+++ d/arch/sh/boards/mpc1211/setup.c	2007-06-23 18:37:26.000000000 +0530
-@@ -311,7 +311,7 @@ __initcall(mpc1211_devices_setup);
- /* arch/sh/boards/mpc1211/rtc.c */
- void mpc1211_time_init(void);
- 
--static void __init mpc1211_setup(char **cmdline_p)
-+static void __initmv mpc1211_setup(char **cmdline_p)
- {
- 	unsigned char spd_buf[128];
- 
-diff -ruNp c/arch/sh/boards/renesas/hs7751rvoip/setup.c d/arch/sh/boards/renesas/hs7751rvoip/setup.c
---- c/arch/sh/boards/renesas/hs7751rvoip/setup.c	2007-04-26 08:38:32.000000000 +0530
-+++ d/arch/sh/boards/renesas/hs7751rvoip/setup.c	2007-06-23 18:37:48.000000000 +0530
-@@ -79,7 +79,7 @@ static int __init hs7751rvoip_cf_init(vo
- /*
-  * Initialize the board
-  */
--static void __init hs7751rvoip_setup(char **cmdline_p)
-+static void __initmv hs7751rvoip_setup(char **cmdline_p)
- {
- 	device_initcall(hs7751rvoip_cf_init);
- 
-diff -ruNp c/arch/sh/boards/renesas/r7780rp/setup.c d/arch/sh/boards/renesas/r7780rp/setup.c
---- c/arch/sh/boards/renesas/r7780rp/setup.c	2007-06-20 17:55:36.000000000 +0530
-+++ d/arch/sh/boards/renesas/r7780rp/setup.c	2007-06-23 18:38:12.000000000 +0530
-@@ -128,7 +128,7 @@ static void r7780rp_power_off(void)
- /*
-  * Initialize the board
-  */
--static void __init highlander_setup(char **cmdline_p)
-+static void __initmv highlander_setup(char **cmdline_p)
- {
- 	u16 ver = ctrl_inw(PA_VERREG);
- 	int i;
-diff -ruNp c/arch/sh/boards/renesas/rts7751r2d/setup.c d/arch/sh/boards/renesas/rts7751r2d/setup.c
---- c/arch/sh/boards/renesas/rts7751r2d/setup.c	2007-04-26 08:38:32.000000000 +0530
-+++ d/arch/sh/boards/renesas/rts7751r2d/setup.c	2007-06-23 18:38:34.000000000 +0530
-@@ -158,7 +158,7 @@ static void rts7751r2d_power_off(void)
- /*
-  * Initialize the board
-  */
--static void __init rts7751r2d_setup(char **cmdline_p)
-+static void __initmv rts7751r2d_setup(char **cmdline_p)
- {
- 	u16 ver = ctrl_inw(PA_VERREG);
- 
-diff -ruNp c/arch/sh/boards/se/7343/setup.c d/arch/sh/boards/se/7343/setup.c
---- c/arch/sh/boards/se/7343/setup.c	2007-04-26 08:38:32.000000000 +0530
-+++ d/arch/sh/boards/se/7343/setup.c	2007-06-23 18:39:02.000000000 +0530
-@@ -56,7 +56,7 @@ static int __init sh7343se_devices_setup
- 				    ARRAY_SIZE(sh7343se_platform_devices));
- }
- 
--static void __init sh7343se_setup(char **cmdline_p)
-+static void __initmv sh7343se_setup(char **cmdline_p)
- {
- 	device_initcall(sh7343se_devices_setup);
- }
-diff -ruNp c/arch/sh/boards/se/770x/setup.c d/arch/sh/boards/se/770x/setup.c
---- c/arch/sh/boards/se/770x/setup.c	2007-06-20 17:55:36.000000000 +0530
-+++ d/arch/sh/boards/se/770x/setup.c	2007-06-23 18:39:46.000000000 +0530
-@@ -18,14 +18,14 @@ void init_se_IRQ(void);
- /*
-  * Configure the Super I/O chip
-  */
--static void __init smsc_config(int index, int data)
-+static void __initmv smsc_config(int index, int data)
- {
- 	outb_p(index, INDEX_PORT);
- 	outb_p(data, DATA_PORT);
- }
- 
- /* XXX: Another candidate for a more generic cchip machine vector */
--static void __init smsc_setup(char **cmdline_p)
-+static void __initmv smsc_setup(char **cmdline_p)
- {
- 	outb_p(CONFIG_ENTER, CONFIG_PORT);
- 	outb_p(CONFIG_ENTER, CONFIG_PORT);
-diff -ruNp c/arch/sh/boards/se/7722/setup.c d/arch/sh/boards/se/7722/setup.c
---- c/arch/sh/boards/se/7722/setup.c	2007-06-20 17:55:36.000000000 +0530
-+++ d/arch/sh/boards/se/7722/setup.c	2007-06-23 18:40:15.000000000 +0530
-@@ -101,7 +101,7 @@ static int __init se7722_devices_setup(v
- }
- device_initcall(se7722_devices_setup);
- 
--static void __init se7722_setup(char **cmdline_p)
-+static void __initmv se7722_setup(char **cmdline_p)
- {
- 	ctrl_outw(0x010D, FPGA_OUT);    /* FPGA */
- 
-diff -ruNp c/arch/sh/boards/se/7780/setup.c d/arch/sh/boards/se/7780/setup.c
---- c/arch/sh/boards/se/7780/setup.c	2007-06-20 17:55:36.000000000 +0530
-+++ d/arch/sh/boards/se/7780/setup.c	2007-06-23 18:40:36.000000000 +0530
-@@ -78,7 +78,7 @@ device_initcall(se7780_devices_setup);
- #define GPIO_PMSELR      0xFFEA0080
- #define GPIO_PECR        0xFFEA0008
- 
--static void __init se7780_setup(char **cmdline_p)
-+static void __initmv se7780_setup(char **cmdline_p)
- {
- 	/* "SH-Linux" on LED Display */
- 	ctrl_outw( 'S' , PA_LED_DISP + (DISP_SEL0_ADDR << 1) );
-diff -ruNp c/arch/sh/boards/sh03/setup.c d/arch/sh/boards/sh03/setup.c
---- c/arch/sh/boards/sh03/setup.c	2007-04-26 08:38:32.000000000 +0530
-+++ d/arch/sh/boards/sh03/setup.c	2007-06-23 18:41:55.000000000 +0530
-@@ -44,7 +44,7 @@ static void __iomem *sh03_ioport_map(uns
- /* arch/sh/boards/sh03/rtc.c */
- void sh03_time_init(void);
- 
--static void __init sh03_setup(char **cmdline_p)
-+static void __initmv sh03_setup(char **cmdline_p)
- {
- 	board_time_init = sh03_time_init;
- }
-diff -ruNp c/arch/sh/boards/snapgear/setup.c d/arch/sh/boards/snapgear/setup.c
---- c/arch/sh/boards/snapgear/setup.c	2007-04-26 08:38:32.000000000 +0530
-+++ d/arch/sh/boards/snapgear/setup.c	2007-06-23 18:42:41.000000000 +0530
-@@ -88,7 +88,7 @@ static void __init init_snapgear_IRQ(voi
- /*
-  * Initialize the board
-  */
--static void __init snapgear_setup(char **cmdline_p)
-+static void __initmv snapgear_setup(char **cmdline_p)
- {
- 	board_time_init = secureedge5410_rtc_init;
- }
-diff -ruNp c/arch/sh/boards/superh/microdev/setup.c d/arch/sh/boards/superh/microdev/setup.c
---- c/arch/sh/boards/superh/microdev/setup.c	2007-06-20 17:55:36.000000000 +0530
-+++ d/arch/sh/boards/superh/microdev/setup.c	2007-06-23 18:43:51.000000000 +0530
-@@ -355,7 +355,7 @@ static int __init smsc_superio_setup(voi
- 	return 0;
- }
- 
--static void __init microdev_setup(char **cmdline_p)
-+static void __initmv microdev_setup(char **cmdline_p)
- {
- 	int * const fpgaRevisionRegister = (int*)(MICRODEV_FPGA_GP_BASE + 0x8ul);
- 	const int fpgaRevision = *fpgaRevisionRegister;
+    I think that already adopted device type is "ata", not "ide".
+
+> + 			compatible = "mmio-ide";
+> + 			interrupt-parent = < &ipic >;
+> + 		};
+> +
+>  		ipic: pic@700 {
+>  			interrupt-controller;
+>  			#address-cells = <0>;
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index cad1757..b3fe011 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -1103,3 +1103,116 @@ err:
+>  arch_initcall(cpm_smc_uart_of_init);
+>  
+>  #endif /* CONFIG_8xx */
+> +
+> +#ifdef CONFIG_MPC834x_ITX
+
+    Erm, isn't this stuff misplaced? Is this really SoC device? I remember 
+seeng this in the arch/ppc/ platform code before (in the internal tree)...
+
+> +#include <linux/ide.h>
+> +#include <linux/mmio-ide.h>
+> +#include <asm-ppc/mpc83xx.h>
+> +
+> +static void mmio_ide_outsw(unsigned long port, void *addr, u32 count)
+> +{
+> +	_outsw_ns((void __iomem *)port, addr, count);
+> +}
+> +
+> +static void mmio_ide_insw(unsigned long port, void *addr, u32 count)
+> +{
+> +	_insw_ns((void __iomem *)port, addr, count);
+> +}
+> +
+> +void mmio_ide_mmiops (ide_hwif_t *hwif)
+> +{
+> +	default_hwif_mmiops(hwif);
+> +	hwif->OUTL = NULL;
+
+    OUTL() method no longer exists.
+
+> +	hwif->OUTSW = mmio_ide_outsw;
+> +	hwif->OUTSL = NULL;
+> +	hwif->INL = NULL;
+
+    And neither INL() does.
+
+> +	hwif->INSW = mmio_ide_insw;
+> +	hwif->INSL = NULL;
+> +}
+> +
+> +void mmio_ide_selectproc (ide_drive_t *drive)
+> +{
+> +	u8 stat;
+> +
+> +	stat = drive->hwif->INB(IDE_STATUS_REG);
+> +	if ((stat & READY_STAT) && (stat & BUSY_STAT))
+> +		drive->present = 0;
+> +	else
+> +		drive->present = 1;
+> +}
+> +
+
+    Heh, attempt to emulate hotplug. :-)
+
+> +static int __init fsl_mmio_ide_of_init(void)
+> +{
+> +	struct device_node *np;
+> +	unsigned int i;
+> +
+> +	for (np = NULL, i = 0;
+> +	     (np = of_find_compatible_node(np, "ide", "mmio-ide")) != NULL;
+> +	     i++) {
+> +		int ret = 0;
+> +		struct resource res[3];
+> +		struct platform_device *pdev = NULL;
+> +		static struct mmio_ide_platform_data pdata = {
+> +			/* TODO: pass via OF? */
+> +			.byte_lanes_swapping = 0,
+> +			.regaddr_step        = 2,
+> +			.mmiops              = mmio_ide_mmiops,
+> +			.selectproc          = mmio_ide_selectproc,
+
+    Definitely, you won't be able to pass methods via of_platform_device. :-)
+
+> +		};
+> +
+> +		memset(res, 0, sizeof(res));
+> +
+> +		ret = of_address_to_resource(np, 0, &res[0]);
+> +		if (ret) {
+> +			printk(KERN_ERR "mmio-ide.%d: unable to get "
+> +			       "resource from OF\n",i );
+
+    CodingStyle: space after comma, no space before paren.
+
+[...]
+> +		res[2].name = "mmio-ide";
+> +		res[2].flags = IORESOURCE_IRQ;;
+
+    One ; too many here. ;-)
+
+MBR, Sergei
