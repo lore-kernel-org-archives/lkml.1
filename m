@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbXGGUwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbXGGU5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbXGGUwZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 16:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXGGUwS
+	id S1755399AbXGGU5R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 16:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXGGU5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 16:52:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57260 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751098AbXGGUwR (ORCPT
+	Sat, 7 Jul 2007 16:57:07 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38931 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbXGGU5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 16:52:17 -0400
-Date: Sat, 7 Jul 2007 13:51:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Patrick Caulfield <pcaulfie@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>, teigland@redhat.com,
-       cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22 regression fix] DLM must depend on SYSFS
-In-Reply-To: <20070707041402.GE3492@stusta.de>
-Message-ID: <alpine.LFD.0.999.0707071350380.31544@woody.linux-foundation.org>
-References: <20070707041402.GE3492@stusta.de>
+	Sat, 7 Jul 2007 16:57:06 -0400
+Message-ID: <468FFE18.4000500@zytor.com>
+Date: Sat, 07 Jul 2007 13:56:56 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][Patch] Allow not mounting a root fs
+References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <468DA42D.7050309@zytor.com> <Pine.LNX.4.64.0707072030230.1536@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0707072030230.1536@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Engelhardt wrote:
+> On Jul 5 2007 19:08, H. Peter Anvin wrote:
+>>> BTW: Is it possible to mount a tmpfs on / before extracting the cpio?
+>> Not in the stock kernel.  There have been some patches floating around
+>> for that, I think.
+> 
+> What would it buy? rootfs is a tmpfs, is not it?
 
+No, rootfs is ramfs.
 
-On Sat, 7 Jul 2007, Adrian Bunk wrote:
->
-> The dependency of DLM on SYSFS got lost in
-> commit 6ed7257b46709e87d79ac2b6b819b7e0c9184998 resulting in the 
-> following compile error with CONFIG_DLM=y, CONFIG_SYSFS=n:
-
-Hmm. Shouldn't we make that a "select", the way we already do for 
-CONFIGFS_FS? 
-
-		Linus
+	-hpa
