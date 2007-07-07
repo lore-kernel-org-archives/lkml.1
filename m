@@ -1,105 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbXGGRXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbXGGR3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753741AbXGGRXy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 13:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbXGGRXp
+	id S1754122AbXGGR3z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 13:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXGGR3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 13:23:45 -0400
-Received: from 1wt.eu ([62.212.114.60]:3300 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752239AbXGGRXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 13:23:45 -0400
-Date: Sat, 7 Jul 2007 19:20:12 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, Dave Jones <davej@redhat.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-Message-ID: <20070707172011.GB943@1wt.eu>
-References: <20070703181151.GB5800@martell.zuzino.mipt.ru> <20070703185748.GA4047@Krystal> <20070705132120.8edbc1f3.akpm@linux-foundation.org> <p73vecx21um.fsf@bingen.suse.de> <468EBEB2.4070605@redhat.com> <20070706232843.GT3492@stusta.de> <20070706233827.GC13125@redhat.com> <20070707001008.GV3492@stusta.de> <y0mvecwusj3.fsf@ton.toronto.redhat.com> <20070707170157.GH3492@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070707170157.GH3492@stusta.de>
-User-Agent: Mutt/1.5.11
+	Sat, 7 Jul 2007 13:29:47 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2970 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752558AbXGGR3q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 13:29:46 -0400
+Date: Sat, 7 Jul 2007 13:19:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, <linux-kernel@vger.kernel.org>,
+       <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+In-Reply-To: <1183781219.3388.225.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0707071255590.26860-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 07:01:57PM +0200, Adrian Bunk wrote:
-> On Sat, Jul 07, 2007 at 11:45:20AM -0400, Frank Ch. Eigler wrote:
-> > Adrian Bunk <bunk@stusta.de> writes:
+On Sat, 7 Jul 2007, Benjamin Herrenschmidt wrote:
+
+> > > so the suspend process will wait for it.  When binding  
+> > > is done the suspend_device() code will take the device lock and tell  
+> > > everything else to postpone further bind requests as above.
 > > 
-> > > [...]
-> > > profiling = debugging of performance problems
+> > My question referred to drivers trying to bind or unbind a device
+> > _after_ the device has been suspended.  I suppose you'll say that's
+> > covered by the NO_BIND flag.  But now we have the locking problem
+> > mentioned above: The thread trying to bind is holding a lock which is
+> > needed for resuming.
+> 
+> Why would it ? Just make it fail, maybe with some kind of -ERETRY... Or
+> it can spin with the lock not held if it want. That's a detail really.
+
+Spinning in the driver with the lock not held is impossible, since the 
+driver is called with the lock already acquired.
+
+Failing with -ERETRY is non-transparent.  I would prefer to block such 
+requests at their source, before the lock is acquired.  Perhaps in the 
+driver core, perhaps even earlier.
+
+(And rather than trying to manage a waitqueue or struct completion, it
+would be easiest to jump directly into the freezer!  The driver or the 
+core wouldn't have to worry about waking up all these blocked threads.)
+
+> > As one of the people responsible for the USB power management 
+> > implementation, I would appreciate more details about this.  For 
+> > example, a dmesg log with CONFIG_USB_DEBUG turned on together with a
+> > complete description of the actions you took to provoke the bug.
 > > 
-> > Indeed.
-> > 
-> > > My words were perhaps a bit sloppy, but profiling isn't part of
-> > > normal operation and if people use a separate kernel for such
-> > > purposes we don't need infrastructure for reducing performance
-> > > penalties of enabled debug options.
-> > 
-> > Things are not so simple.  One might not know that one has a
-> > performance problem until one tries some analysis tools.  Rebooting
-> > into different kernels just to investigate does not work generally:
-> > the erroneous phenomenon may have been short lived; the debug kernel,
-> > being "only" for debugging, may not be well tested => sufficiently
-> > trustworthy.
+> > (I wonder how much of this "buginess" is caused by the lack of the 
+> > freezer in PPC.)
 > 
-> I'm not getting this:
-> 
-> You'll only start looking into an analysis tool if you have a 
-> performance problem, IOW if you are not satisfied with the performance.
-> 
-> And the debug code will not have been tested on this machine no matter 
-> whether it's enabled through a compile option or at runtime.
+> No. The freezer will hide some of those problems under the carpet, but
+> not solve the basic issue which is the driver should be solid. Period.
 
-At least all the rest of the code will be untouched and you will not have
-to reboot the machine. If you reboot to another kernel, nothing ensures
-that you will have the same code sequences (in fact, gcc will reorder
-some parts of code such as loops just because of an additional 'if').
-So you know that the non-debug code you run will remain untouched. *This*
-is important, because the debug code is not there to debug itself, but
-to debug the rest.
+You're missing the point.  If the driver and the freezer are both 
+solid, there's no reason they can't share the work.  If many drivers 
+can pass off part of their workload to the single freezer, it's a net 
+win.
 
-> > Your question asking for an actual performance impact of dormant hooks
-> > is OTOH entirely legitimate.  It clearly depends on the placement of
-> > those hooks and thus their encounter rate, more so than their
-> > underlying technology (markers with whatever optimizations).  If the
-> > cost is small enough, you will likely find that people will be willing
-> > to pay a small fraction of average performance, in order to eke out
-> > large gains when finding occasional e.g. algorithmic bugs.
-> 
-> If you might be able to get a big part of tracing and other debug code 
-> enabled with a performance penalty of a few percent of _kernel_ 
-> performance, then you might get much debugging aid without any effective 
-> impact on application performance.
+So it isn't a question of how solid the drivers are; it's a question 
+of how solid the freezer is.  And bear in mind that if you convince 
+people the freezer is not solid enough to be used, then you will have 
+to find an alternative for purposes of hibernation.
 
-it largely depends on the application. Applications which require a lot
-of system calls will be more sensible to kernel debugging. Common sense
-also implies that such applications will be the ones for which kernel
-debugging will be relevant.
+> The freezer is a flawed concept in the first place.
 
-> You always have to decide between some debug code and some small bit of 
-> performance. There's a reason why options to disable things like BUG() 
-> or printk() are in the kernel config menus hidden behind CONFIG_EMBEDDED
-> although they obviously have some performance impact.
+<... Long and cogent argument which I will skip over for now ...>
 
-It is not for the CPU performance they can be disabled, but for the code
-size which is a real problem on embedded system. While you often have
-mem/cpu_mhz ratios around 1GB/1GHz on servers and desktops, you more often
-have ratios like 16MB/500MHz which is 1:32 of the former. That's why you
-optimize for size at the expense of speed on such systems.
+> Face it, we should seriously look into doing suspend/resume without a
+> freezer.
 
-> 
-> > - FChE
-> 
-> cu
-> Adrian
+I'm willing to try, although I think it will be a tremendous amount of 
+work to verify that every driver does the right thing.  There's lots of 
+support missing.  For example, don't you think we should block all 
+sysfs I/O during suspend?  And likewise for insmod/rmmod?
 
-Regards,
-Willy
+> I even tend to think that we could do STD that way too, in
+> fact, while Linus is right saying it's a different problem than STR, we
+> could even probably re-use some of the STR infrastructure in some
+> hackish way, still without a freezer. We could have ways to block page
+> cache writeout, for example, to prevent new post-snapshot dirty data
+> from hitting the platter, and use direct BIOs for writeout. That's just
+> an example.
+
+What about systems with no BIOS?  I think this would be very hard or 
+even impossible to make work.
+
+Alan Stern
 
