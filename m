@@ -1,84 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbXGGOmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbXGGOuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548AbXGGOmH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 10:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbXGGOl5
+	id S1754086AbXGGOuy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 10:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXGGOuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 10:41:57 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34157 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751323AbXGGOl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 10:41:56 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX18Ll5lHOWELLzAW2UHl0ZGME+qaprBdC+IRAujRj2
-	MCQTRGYbMGLgMB
-Message-ID: <468FBEB7.1000308@gmx.net>
-Date: Sat, 07 Jul 2007 18:26:31 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Sat, 7 Jul 2007 10:50:44 -0400
+Received: from lixom.net ([66.141.50.11]:54108 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751465AbXGGOun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 10:50:43 -0400
+Date: Sat, 7 Jul 2007 10:01:47 -0500
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] [ide] mmio ide support
+Message-ID: <20070707150147.GA2202@lixom.net>
+References: <20070707094852.9473.21013.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-2.61 is released
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070707094852.9473.21013.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: olof@lixom.net (Olof Johansson)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+On Sat, Jul 07, 2007 at 01:48:52PM +0400, Vitaly Bordug wrote:
+> 
+> This adds support for MMIO IDE device like CompactFlash 
+> in TrueIDE mode.
 
-I recently released man-pages-2.61.
+Doesn't this duplicate most of pata_platform, but as the
+no-longer-preferred legacy IDE device? Did you try using
+pata_platform instead?
 
-This release is now available for download at:
 
-    http://www.kernel.org/pub/linux/docs/manpages
-    or ftp://ftp.kernel.org/pub/linux/docs/manpages
-
-and soon at:
-
-    ftp://ftp.win.tue.nl/pub/linux-local/manpages
-
-A few of the changes that may of interest to readers of this list are
-supplied below.
-
-Cheers,
-
-Michael
-(man-pages maintenance is supported by Google, as a Google engineer 20%
-project.)
-
-==================== Changes in man-pages-2.61 ====================
-
-Changes to individual pages
----------------------------
-
-intro.2
-    mtk
-       Rewrite to reflect the fact that the _syscallN
-       macros are no longer available.
-
-select.2
-    mtk
-        Noted that 'timeout' can also be changed if select() is
-        interrupted by a signal.
-
-swapon.2
-    Ivana Varekova  / mtk
-        Update text for EPERM error describing the maximum number of
-        swap files.  (From downstream Fedora patch.)
-
-write.2
-    mtk
-        Added details about seekable files and file offset.
-        Noted that write() may write less than 'count' bytes, and
-        gave some examples of why this might occur.
-        Noted what happens if write() is interrupted by a signal.
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
-
+-Olof
