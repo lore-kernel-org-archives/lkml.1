@@ -1,95 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbXGGXCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbXGGXH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755135AbXGGXCr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 19:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXGGXCj
+	id S1754797AbXGGXH2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 19:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXGGXHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 19:02:39 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39681 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751900AbXGGXCj (ORCPT
+	Sat, 7 Jul 2007 19:07:19 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38972 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751900AbXGGXHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 19:02:39 -0400
-X-Sasl-enc: ic2Jl8W8RXBQ1LHtJ9bs3R7Lgvkyk5Yc0K3p1fsCT4XQ 1183849357
-Message-ID: <46901C8E.5050103@imap.cc>
-Date: Sun, 08 Jul 2007 01:06:54 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Sat, 7 Jul 2007 19:07:18 -0400
+Date: Sat, 7 Jul 2007 16:07:15 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: David Woodhouse <dwmw2@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       Patrick Caulfield <pcaulfie@redhat.com>,
+       David Teigland <teigland@redhat.com>, bluez-devel@lists.sourceforge.net,
+       Marcel Holtmann <marcel@holtmann.org>, Jiri Kosina <jkosina@suse.cz>,
+       Dmitry Torokhov <dtor@insightbb.com>
+Subject: Re: 2.6.22-rc7: known regressions with patches v2
+In-Reply-To: <6bffcb0e0707070959m12ba9b66n8587605eb1f6c21e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0707071557160.16503@schroedinger.engr.sgi.com>
+References: <468FBA20.8060509@googlemail.com>  <1183825391.3066.59.camel@shinybook.infradead.org>
+ <6bffcb0e0707070959m12ba9b66n8587605eb1f6c21e@mail.gmail.com>
 MIME-Version: 1.0
-To: yoann padioleau <padator@wanadoo.fr>
-CC: kernel-janitors@lists.osdl.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH] some kmalloc/memset ->kzalloc (tree wide)
-References: <878x9ta320.fsf@wanadoo.fr> <468F901B.2000000@imap.cc> <0BE121C2-D115-4A9A-A557-E65F0F8CBA26@wanadoo.fr>
-In-Reply-To: <0BE121C2-D115-4A9A-A557-E65F0F8CBA26@wanadoo.fr>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2C6F90DC9C6038B6DF6CDDAF"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2C6F90DC9C6038B6DF6CDDAF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sat, 7 Jul 2007, Michal Piotrowski wrote:
 
-Am 07.07.2007 15:36 schrieb yoann padioleau:
-> On 7 juil. 07, at 15:07, Tilman Schmidt wrote:
->=20
->> This misses the semantic distinction between the first and second
->> arguments of kcalloc(). The first argument is supposed to be the
->> number of elements to allocate and the second their size. As a
->> consequence, the following hunks in your pathc are wrong:
->=20
-> Yes you are right. Andrew Morton fixed the problem in a
-> subsequent patch.
+> > If you're looking for someone to blame, consider the fact that this has
+> > gone away now I've switched back to slab. :)
+> Yup, I forgot to add Christoph to CC  :)
 
-That's ok then. Andrew is doing an awesome job.
+Hmmmm.. Cannot see the corruption in the dump since it only includes 128 
+bytes and it seems to have occurred way into the object. If you want to 
+dump 32k to your syslog to see the corruption then look at the 
+print_trailer() function and change the parameter of the call to 
+print_section
 
-> I should have written a more precise semantic patch such as
->=20
-> @@
-> expression E;
-> constant c;
-> type T;
-> @@
->=20
-> - kzalloc(sizeof(T) * c, E)
-> + kcalloc(c, sizeof(T), E)
->=20
-> Note that sometimes the code is written as  kzalloc(c * sizeof(T), E)
-> as in   kzalloc(2 * sizeof(struct resource), GFP_KERNEL)  but
-> our transformation engine can handle the commutativity of '*' and still=
-
-> performs the right transformation.
-
-Cool. That transformation engine sure sounds like an interesting
-piece of code.
-
-Regards,
-Tilman
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+	print_section("Object", p, min(s->objsize, 128));
 
 
---------------enig2C6F90DC9C6038B6DF6CDDAF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+This is a 32k sized slab and SLAB does not allow debugging on power of two 
+slabs > pagesize.... No surprise that SLAB does not complain.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+What are these functions "malloc" and "free"? Would be good if those 
+would be using kmalloc_track_caller() so that we can figure out who called 
+them.
 
-iD8DBQFGkByYMdB4Whm86/kRAupNAJ9yElL3YpzfQw8w8zkiqUsg1Gn2NACfSYNB
-2+PnxZ69HAMztfvmUGvIAAU=
-=31zb
------END PGP SIGNATURE-----
 
---------------enig2C6F90DC9C6038B6DF6CDDAF--
