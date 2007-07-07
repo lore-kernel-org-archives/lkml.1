@@ -1,82 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbXGGBpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbXGGBp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbXGGBpb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 21:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXGGBpY
+	id S1755307AbXGGBp6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 21:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXGGBpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 21:45:24 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:37211 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbXGGBpX (ORCPT
+	Fri, 6 Jul 2007 21:45:49 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:9852 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbXGGBps (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 21:45:23 -0400
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070706222651.GG5777@v2.random>
-References: <20070706222651.GG5777@v2.random>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 06 Jul 2007 18:47:01 -0700
-Message-Id: <1183772822.21234.29.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 8bit
+	Fri, 6 Jul 2007 21:45:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Do8fwxSCIeTr/A0CSP1A68ACMaSfF4EaS8upBsqwIW+1f3G6I0dCP87kfaF0jeL1S5o7Bnr4uHcXpCl3WWbvMs/Ace2MkfXrBxttYygrGwps6ulXesQeVa15s8r2uT3GnMF8VX0MgXnE4vfH0Zv15GGd3SaakkUXz1E/UauJLp8=
+Message-ID: <787b0d920707061845o6cf314dakf45c839c4fc0e600@mail.gmail.com>
+Date: Fri, 6 Jul 2007 21:45:47 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: partially mounted cifs filesystem
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-07 at 00:26 +0200, Andrea Arcangeli wrote:
-..
-> The following simple bench seems to run fine on one real hardware and
-> on kvm (a friend of mine failed so far to run it on his hardware
-> though, so perhaps some driver triggers some remaining bugs) when
-> booted as init=/tmp/bench-static after “cp -a /dev/hda /tmp/”.
+I had one share mounted, from XP to Linux, and wanted another.
+At first I had an incorrect setting on the XP box, almost
+certainly related to permissions. The mount failed of course.
+Running "mount" showed that the filesystem was not mounted,
+but apparently it didn't remain fully unmounted either.
+There was also nothing under the mount point, and the "ls -l"
+data (directory size and link count) looked like ext3.
 
-Hmm.. I didn't have any luck booting my machine with the patchset 
-(with 8k pagesize) :(
+I changed settings on the XP box numerous times. After many
+frustrating attempts, I ran "umount" on the mount point and
+then successfully mounted the filesystem.
 
-It fails to find the partition table on my hard drive.
+I'll guess that the kernel returned an error for my early
+attempts at mounting, but left open a CIFS connection.
 
-Thanks,
-Badari
-
-....
-AMD8111: IDE controller at PCI slot 0000:00:07.1
-AMD8111: chipset revision 3
-AMD8111: not 100% native mode: will probe irqs later
-AMD8111: 0000:00:07.1 (rev 03) UDMA133 controller
-    ide0: BM-DMA at 0x1020-0x1027, BIOS settings: hda:DMA, hdb:pio
-    ide1: BM-DMA at 0x1028-0x102f, BIOS settings: hdc:DMA, hdd:pio
-hda: IC35L080AVVA07-0, ATA DISK drive
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-hdc: TOSHIBA DVD-ROM SD-M1612, ATAPI CD/DVD-ROM drive
-ide1 at 0x170-0x177,0x376 on irq 15
-hda: max request size: 128KiB
-hda: 160836480 sectors (82348 MB) w/1863KiB Cache, CHS=65535/16/63, UDMA
-(100)
-hda: cache flushes supported
- hda: unknown partition table <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-hdc: ATAPI 48X DVD-ROM drive, 512kB Cache, UDMA(33)
-Uniform CD-ROM driver Revision: 3.20
-ide-floppy driver 0.99.newide
-PNP: PS/2 Controller [PNP0303:PS2K,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-input: AT Translated Set 2 keyboard as /class/input/input0
-input: PC Speaker as /class/input/input1
-input: PS/2 Generic Mouse as /class/input/input2
-TCP cubic registered
-NET: Registered protocol family 1
-md: Autodetecting RAID arrays.
-md: autorun ...
-md: ... autorun DONE.
-VFS: Cannot open root device "hda2" or unknown-block(3,2)
-Please append a correct "root=" boot option; here are the available
-partitions:
-0300   80418240 hda driver: ide-disk
-1600    4194302 hdc driver: ide-cdrom
-Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-
-block(3,2)
-
-
+I suppose the cifs error handling is buggy.
