@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXGGShN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbXGGShh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbXGGShN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 14:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbXGGSgw
+	id S1755271AbXGGShh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 14:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbXGGSg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 14:36:52 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:37546 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868AbXGGSgv (ORCPT
+	Sat, 7 Jul 2007 14:36:56 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:40277 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbXGGSgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 14:36:51 -0400
-Message-ID: <468FDC91.2080300@bx.jp.nec.com>
-Date: Sun, 08 Jul 2007 03:33:53 +0900
+	Sat, 7 Jul 2007 14:36:53 -0400
+Message-ID: <468FDC8D.6080208@bx.jp.nec.com>
+Date: Sun, 08 Jul 2007 03:33:49 +0900
 From: KII Keiichi <k-keiichi@bx.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
@@ -21,37 +21,44 @@ CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Matt Mackall <mpm@selenic.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 8/9] netconsole: Update documentation for dynamic
- reconfigurability
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in> <468CEAEC.7040102@bx.jp.nec.com> <Pine.LNX.4.64.0707051913001.19842@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <Pine.LNX.4.64.0707051913001.19842@cselinux1.cse.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [PATCH -mm 7/9] netconsole: Support multiple logging targets
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in> <20070704110814.28520.94417.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070704110814.28520.94417.sendpatchset@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Satyam,
 
-> BTW I did some testing myself, and have found another *embarrassing* bug:
-> if netconsole is loaded _without_ specifying any "netconsole=" parameter,
-> module is still kept loaded, but on unloading configfs_unregister_...()
-> obviously panics! :-) This should've been found by me earlier, just that
-> I never tested without specifying the parameter to modprobe :-(
+The following comments aren't essential.
 
-I tested your patches on the x86 architecture and report the results.
-It is no problem except for the above problem.
-I think that it is useful to use configfs(especially, mkdir and rmdir 
-because of adding/removing netconsole_target).
+>  	if (!(event == NETDEV_UP || event == NETDEV_DOWN ||
+>  	      event == NETDEV_CHANGEADDR || event == NETDEV_CHANGENAME))
+> -	      	goto done;
+> +		goto done;
 
-I am going to test the your next iteration patches on x86 and IA64 
-architecutures. 
+The above diff lines are extra.
 
-Thanks
+> +	spin_lock_irqsave(&target_list_lock, flags);
+> +	list_for_each_entry(nt, &target_list, list) {
+> +		if (nt->np.dev == dev) {
+> +			switch (event) {
+> +			case NETDEV_UP:
+> +			case NETDEV_DOWN:
+> +				nt->dev_status = net_dev_is_up(nt->np.dev);
+> +				break;
+> +
+> +			case NETDEV_CHANGEADDR:
+> +				memcpy(nt->np.local_mac, dev->dev_addr, ETH_ALEN);
+
+The above line is over 80 characters.
+
+Thanks,
 -- 
 Keiichi KII
 NEC Corporation OSS Platform Development Division
 E-mail: k-keiichi@bx.jp.nec.com
-
 
 
 
