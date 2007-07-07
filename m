@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbXGGVj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbXGGVks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbXGGVj0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 17:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbXGGVjT
+	id S1755720AbXGGVks (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 17:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXGGVkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 17:39:19 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:7516 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752140AbXGGVjS (ORCPT
+	Sat, 7 Jul 2007 17:40:41 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:54682 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752140AbXGGVkk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 17:39:18 -0400
-Date: Sat, 7 Jul 2007 23:39:17 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Bodo Eggert <7eggert@gmx.de>
-cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][Patch] Allow not mounting a root fs
-In-Reply-To: <Pine.LNX.4.58.0707072255260.3562@be1.lrz>
-Message-ID: <Pine.LNX.4.64.0707072335160.1536@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <468DA42D.7050309@zytor.com>
- <Pine.LNX.4.64.0707072030230.1536@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.58.0707072255260.3562@be1.lrz>
+	Sat, 7 Jul 2007 17:40:40 -0400
+Message-ID: <46900851.4060403@gmail.com>
+Date: Sat, 07 Jul 2007 23:40:33 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PATA-disk named sda
+References: <20070706102132.14fbc600.Christoph.Pleger@cs.uni-dortmund.de>	<20070706111848.43551f33@the-village.bc.nu> <20070706143055.01aa9ef6.Christoph.Pleger@cs.uni-dortmund.de>
+In-Reply-To: <20070706143055.01aa9ef6.Christoph.Pleger@cs.uni-dortmund.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/06/2007 02:30 PM, Christoph Pleger wrote:
 
-On Jul 7 2007 23:18, Bodo Eggert wrote:
->> >> BTW: Is it possible to mount a tmpfs on / before extracting the cpio?
->> >
->> >Not in the stock kernel.  There have been some patches floating around
->> >for that, I think.
->> 
->> What would it buy? rootfs is a tmpfs, is not it?
->
->As far as I understand, it is a ramfs aka. non-swappable tmpfs without any 
->limit and including a chance of DoSing the system.
->
->Since I'm toying with root-on-initcpio, I'm looking for things that might 
->make the task some easier.
->
->Currently I'm thinking about changing the root=initramfs to root=tmpfs and
->additionally mounting a tmpfs on / before unpacking the cpios. OTOH, this 
->seems to be a little bit messy. OTOH again, in _that_ boot code, nobody
->should complain :)
+> And what about hdparm (setting 32bit I/O and multi-sector mode)? Suren 
+> wrote that 32bit I/O makes no sense when using DMA. Maybe that's right, 
+> but it does not correspond with my experiences. At least, I have the 
+> "feeling" that my IDE disks work much faster since I enabled 32bit 
+> support (DMA already was on before).
 
-Come to speak of it, I think you can have it much easier by having the kernel
-exporting the cpio image as a virtual file inside rootfs, so that you could
-re-extract it inside a tmpfs. In other words:
+hdparm -t /dev/hda (or /dev/sda -- it works for the SD interface as well) is 
+a quick test of a drive's sequential read speed.
 
-mount -t tmpfs tmpfs /mnt;
-cd /mnt;
-cpio -diuv </initramfs.cpio;
-#
-# switch_root nukes rootfs, pivot_roots and execs some init
-klibc_switch_root .; # or something like that
+I have, at the time, noticed at least on older controllers/drives (Intel 430 
+generation chipsets with things like 8G UDMA33 disks) that I could reliably 
+increase the result with something like 1MB/s (to a total of 6 to 8, so it 
+wasn't insignificant) by enabling 32-bit I/O. Had also understood that it 
+shouldn't make a difference with DMA, but just went "oh well" and stuck a 
+"hdparm -c1" in my bootup scripts.
 
-Of course this needs double the memory than directly mounting tmpfs as 
-rootfs, but it's an idea too.
+(if anyone tries; note that hdparm -a can have a large effect on that result 
+as well on some setups -- on machines where it does, -a 1024 usually gives 
+me best results)
 
-
-	Jan
--- 
+Rene.
