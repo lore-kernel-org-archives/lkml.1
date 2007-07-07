@@ -1,124 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbXGGXBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbXGGXCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbXGGXBh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 19:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbXGGXBG
+	id S1755135AbXGGXCr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 19:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXGGXCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 19:01:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34528 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752019AbXGGXBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 19:01:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
-Date: Sun, 8 Jul 2007 01:08:16 +0200
-User-Agent: KMail/1.9.5
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oliver Neukum <oliver@neukum.org>, Pavel Machek <pavel@ucw.cz>,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-References: <Pine.LNX.4.44L0.0707061039380.3737-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707061039380.3737-100000@iolanthe.rowland.org>
+	Sat, 7 Jul 2007 19:02:39 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39681 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751900AbXGGXCj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 19:02:39 -0400
+X-Sasl-enc: ic2Jl8W8RXBQ1LHtJ9bs3R7Lgvkyk5Yc0K3p1fsCT4XQ 1183849357
+Message-ID: <46901C8E.5050103@imap.cc>
+Date: Sun, 08 Jul 2007 01:06:54 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707080108.17371.rjw@sisk.pl>
+To: yoann padioleau <padator@wanadoo.fr>
+CC: kernel-janitors@lists.osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH] some kmalloc/memset ->kzalloc (tree wide)
+References: <878x9ta320.fsf@wanadoo.fr> <468F901B.2000000@imap.cc> <0BE121C2-D115-4A9A-A557-E65F0F8CBA26@wanadoo.fr>
+In-Reply-To: <0BE121C2-D115-4A9A-A557-E65F0F8CBA26@wanadoo.fr>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2C6F90DC9C6038B6DF6CDDAF"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 6 July 2007 17:01, Alan Stern wrote:
-> On Fri, 6 Jul 2007, Rafael J. Wysocki wrote:
-> 
-> > Hi,
-> > 
-> > The main limitation of the freezer is that it cannot handle uninterruptible
-> > tasks.  Namely, if there are uninterruptible tasks in the system, the freezer
-> > returns an error, which makes it impossible to suspend the system.
-> > 
-> > This mechanism is used to prevent the situations in which the suspend process
-> > can deadlock with a task holding a lock needed by it from happening.  However,
-> > AFAICS, the probability of that happening is very small and if the freezer is
-> > removed from the suspend code patch, then the suspend process will be exposed to
-> > deadlocking in this manner anyway.
-> > 
-> > Unfortunately, this mechanism also leads to severe limitations, such as that it
-> > makes the freezer unable to handle systems using FUSE in a reliable way.
-> > 
-> > This patch makes the freezer skip uninterruptible user space tasks (ie. such
-> > that have an mm of their own) when counting the tasks to be frozen.  As a
-> > result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set, but the
-> > freezer doesn't wait for them to enter the refrigerator.  Nevertheless, they
-> > will enter the refrigerator as soon as they change their state.
-> 
-> This is a very interesting idea.  Are you certain it is safe?  That is,
-> if a task is waiting for a mutex and sometime later the mutex becomes
-> available, will the task then enter the freezer immediately -- before
-> it can do any I/O or call any drivers?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2C6F90DC9C6038B6DF6CDDAF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Well, I _think_ it is safe, although I can't prove it.
+Am 07.07.2007 15:36 schrieb yoann padioleau:
+> On 7 juil. 07, at 15:07, Tilman Schmidt wrote:
+>=20
+>> This misses the semantic distinction between the first and second
+>> arguments of kcalloc(). The first argument is supposed to be the
+>> number of elements to allocate and the second their size. As a
+>> consequence, the following hunks in your pathc are wrong:
+>=20
+> Yes you are right. Andrew Morton fixed the problem in a
+> subsequent patch.
 
-> If you can't make this guarantee, then you might as well simply not try 
-> to freeze any user task until it returns from kernel mode to user mode.  
+That's ok then. Andrew is doing an awesome job.
 
-No, it's not that bad.  The majority of user land tasks are not uninterruptible
-and if they are, then usually for a very short time only.
+> I should have written a more precise semantic patch such as
+>=20
+> @@
+> expression E;
+> constant c;
+> type T;
+> @@
+>=20
+> - kzalloc(sizeof(T) * c, E)
+> + kcalloc(c, sizeof(T), E)
+>=20
+> Note that sometimes the code is written as  kzalloc(c * sizeof(T), E)
+> as in   kzalloc(2 * sizeof(struct resource), GFP_KERNEL)  but
+> our transformation engine can handle the commutativity of '*' and still=
 
-> And then you will face the problem of a user task doing I/O during 
-> hibernate after the atomic snapshot has been made.
+> performs the right transformation.
 
-I don't think that this is possible in normal conditions.  It would be possible
-if, for example, the task were waiting for an unavailable resource and that
-resource became available after the hibernation image had been created.
-In that case, however, to do any damage, the task would have to cause some
-filesystem-related data to be flushed in the same syscall (ie. before returning
-to user space).
+Cool. That transformation engine sure sounds like an interesting
+piece of code.
 
-Such situations may be prevented by a mechanizm detecting if any uniterruptible
-and freezing task has been woken up after creating the image and aborting the
-hibernation in that cases.  For this purpose, we only need to add an
-appropriate condition to try_to_wake_up() and make it start to trigger after,
-for example, enabling the nonboot CPUs.
+Regards,
+Tilman
 
-> I had in mind something more complicated.  My idea was to define 
-> certain mutexes as "freezable", with the thought that it would be okay 
-> for a task in the freezer to own freezable mutexes.  None of the 
-> mutexes needed by drivers or the PM core during a suspend transition 
-> should be freezable.
-> 
-> Presumably the VFS locks _would_ fall into the freezable category.  In 
-> order for this to work, we would have to guarantee the following:
-> 
-> 	A thread blocked in the kernel waiting for some response
-> 	from userspace is allowed to hold freezable mutexes but no
-> 	other locks.
-> 
-> 	When a thread tries to acquire a freezable mutex, it is allowed
-> 	to hold other freezable mutexes but no other locks.
-> 
-> 	When the freezer is running, any task that is blocked on a
-> 	freezable mutex (maybe also any task that tries to acquire 
-> 	an unlocked freezable mutex) would immediately go into the 
-> 	freezer.  So would any task waiting for a response from
-> 	userspace.
-> 
-> I think this would solve the VFS-related problems (FUSE's and others).  
-
-Well, the main difficluty with that would be to convince people to use it. ;-)
-
-> But obviously Raphael's approach is preferable, if it works.
-
-Right now, it sometimes fails to freeze all tasks that in theory should be
-freezable.  Investigating.
-
-Greetings,
-Rafael
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+--------------enig2C6F90DC9C6038B6DF6CDDAF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGkByYMdB4Whm86/kRAupNAJ9yElL3YpzfQw8w8zkiqUsg1Gn2NACfSYNB
+2+PnxZ69HAMztfvmUGvIAAU=
+=31zb
+-----END PGP SIGNATURE-----
+
+--------------enig2C6F90DC9C6038B6DF6CDDAF--
