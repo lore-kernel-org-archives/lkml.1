@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbXGGSGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbXGGSIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754122AbXGGSGG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 14:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXGGSFy
+	id S1754537AbXGGSIz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 14:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXGGSIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 14:05:54 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:6478 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbXGGSFx (ORCPT
+	Sat, 7 Jul 2007 14:08:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:36035 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbXGGSIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 14:05:53 -0400
-Date: Sat, 07 Jul 2007 12:05:33 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: SATA exceptions
-In-reply-to: <fa.NhBdOmH9+RkW+QO72+TjPRwEKj0@ifi.uio.no>
-To: caglar@pardus.org.tr
-Cc: Tejun Heo <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jgarzik@pobox.com>
-Message-id: <468FD5ED.5060401@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.hBFih6KVHDFsBf6Qfg6XispiIuY@ifi.uio.no>
- <fa.50UJZSgW/ChUl7O1Zks6ydq/1js@ifi.uio.no>
- <fa.NhBdOmH9+RkW+QO72+TjPRwEKj0@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Sat, 7 Jul 2007 14:08:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aXPyGuwhhkj4PdeHW/Z1K1SBgrQT6q6v0DSA9umbanDKbZVPgYSZwN4dKBGZuYi9nKdDrQVW39/2zfxuw1k30RUU20TTTLFODsVUOmQk1GILLFY+pDdGhFjmJp6vghd0Qqx5rMllrDBNTDda/zhcDp871VZUyYVu6p0ZulcXLrQ=
+Message-ID: <a781481a0707071108u7bedb6cfkc63067663ae619ca@mail.gmail.com>
+Date: Sat, 7 Jul 2007 23:38:45 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Albert Cahalan" <acahalan@gmail.com>
+Subject: Re: partially mounted cifs filesystem
+Cc: linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
+In-Reply-To: <787b0d920707061845o6cf314dakf45c839c4fc0e600@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <787b0d920707061845o6cf314dakf45c839c4fc0e600@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-S.Çağlar Onur wrote:
-> 06 Tem 2007 Cum tarihinde, Tejun Heo şunları yazmıştı: 
->> S.Çağlar Onur wrote:
->>> [ 4260.278427] ata1.00: cmd ca/00:08:d0:88:bc/00:00:00:00:00/ee tag 0 cdb
->>> 0x0 data 4096 out
->>> [ 4260.278430]          res 51/40:01:d7:88:bc/00:00:0e:00:00/ee Emask 0x9
->>> (media error)
->> That's media error on sector 247236823 on WRITE.  Media errors on write
->> are bad signs - it usually means the drive even failed to remap the
->> sector because extra space ran out. 
-> 
-> Hmm, more than 50GB is empty on disk :)
+Hi Albert,
 
-It's not the free space on the drive that matters, it's the number of 
-free sectors in the spare sector pool on the drive, which is invisible 
-to software.
+[ added linux-cifs-client to Cc: ]
 
-Your SMART log shows 309 reallocated sectors. That seems somewhat high..
+On 7/7/07, Albert Cahalan <acahalan@gmail.com> wrote:
+> I had one share mounted, from XP to Linux, and wanted another.
+> At first I had an incorrect setting on the XP box, almost
+> certainly related to permissions. The mount failed of course.
+> Running "mount" showed that the filesystem was not mounted,
+> but apparently it didn't remain fully unmounted either.
+> There was also nothing under the mount point, and the "ls -l"
+> data (directory size and link count) looked like ext3.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+That means nothing was mounted there ...
 
+> I changed settings on the XP box numerous times. After many
+> frustrating attempts, I ran "umount" on the mount point and
+> then successfully mounted the filesystem.
+
+... but still umount succeeded? Didn't it complain about nothing
+being mounted there in the first place? Surprising that it actually
+resolved the problem ...
+
+> I'll guess that the kernel returned an error for my early
+> attempts at mounting, but left open a CIFS connection.
+>
+> I suppose the cifs error handling is buggy.
+
+Yes, that could be the case. Could you please:
+
+1. Tell us which kernel version was it? .config?
+2. Was there some dmesg output from the failed mount(2) attempt?
+3. What was the mount command line / options?
+
+Then:
+
+1. Rebuild kernel with CIFS_DEBUG2.
+2. Revert back (on the XP share export side) to the buggy / incorrect
+settings -- so that you can try and reproduce the problem.
+3. Let us know if you could reproduce, if so, any debug ouput / etc?
+
+Thanks,
+Satyam
