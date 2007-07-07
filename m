@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbXGGULq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbXGGUNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbXGGULq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 16:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXGGULj
+	id S1755123AbXGGUNW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 16:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXGGUNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 16:11:39 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53775 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752988AbXGGULi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 16:11:38 -0400
-Date: Sat, 7 Jul 2007 22:12:08 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: spyro@f2s.com, john@dnsworld.co.uk
-Cc: linux-kernel@vger.kernel.org
-Subject: Status of the arm26 port?
-Message-ID: <20070707201208.GJ3492@stusta.de>
+	Sat, 7 Jul 2007 16:13:13 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:56151 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752694AbXGGUNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 16:13:12 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Sun, 8 Jul 2007 02:05:03 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: KII Keiichi <k-keiichi@bx.jp.nec.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
+       Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH -mm 8/9] netconsole: Update documentation for dynamic
+ reconfigurability
+In-Reply-To: <468FDC91.2080300@bx.jp.nec.com>
+Message-ID: <Pine.LNX.4.64.0707080158420.3789@cselinux1.cse.iitk.ac.in>
+References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070704110819.28520.50445.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <468CEAEC.7040102@bx.jp.nec.com> <Pine.LNX.4.64.0707051913001.19842@cselinux1.cse.iitk.ac.in>
+ <468FDC91.2080300@bx.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm wondering what the status of the arm26 port in the kernel is:
+Hi Keiichi,
 
-AFAIR gcc support for this architecture was deprecated in gcc 3.4 and 
-removed in gcc 4.0. This implies that either someone will have to re-add 
-support to gcc in the next 1-2 years or the kernel port will become 
-useless with the next increase of the minimum gcc requirement for the 
-kernel.
+On Sun, 8 Jul 2007, KII Keiichi wrote:
+> [...]
+> I tested your patches on the x86 architecture and report the results.
+> It is no problem except for the above problem.
+> I think that it is useful to use configfs(especially, mkdir and rmdir because
+> of adding/removing netconsole_target).
+> 
+> I am going to test the your next iteration patches on x86 and IA64
+> architecutures. 
 
-The other point is that I tried to cross-compile an arm26 defconfig.
-I gave up after running into several compile errors, and it doesn't seem 
-as if any recent kernel could be compiled.
+Thanks a lot for reviewing and testing this. I'll send out the next
+iteration by tommorrow.
 
-Is the arm26 kernel port already unused dead code or is some work for 
-getting it back into shape pending?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Satyam
