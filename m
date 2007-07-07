@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754396AbXGGQuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbXGGQ7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754396AbXGGQuM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 12:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXGGQuA
+	id S1754018AbXGGQ7g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 12:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXGGQ70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 12:50:00 -0400
-Received: from h155.mvista.com ([63.81.120.155]:55681 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752336AbXGGQt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 12:49:59 -0400
-Message-ID: <468FC4AC.9030701@ru.mvista.com>
-Date: Sat, 07 Jul 2007 20:51:56 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 7 Jul 2007 12:59:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:16504 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbXGGQ7Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 12:59:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VEX3mFhO1NCGM2IugAY5SiEtExbuBTD72A+UILIPDx16vFzO/LTNFKCJXTwMOPmywWhssOZUMtxFcADKnVdvvQlkK12vzyZq5GYZW3GYyRV+1R8fUOT72E3QD6h9rW3DokW5F23DwHvlc1pb3/LzmBhdY6wXJBodE8DWGl3FJLc=
+Message-ID: <6bffcb0e0707070959m12ba9b66n8587605eb1f6c21e@mail.gmail.com>
+Date: Sat, 7 Jul 2007 18:59:24 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "David Woodhouse" <dwmw2@infradead.org>
+Subject: Re: 2.6.22-rc7: known regressions with patches v2
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Adrian Bunk" <bunk@stusta.de>,
+       "Patrick Caulfield" <pcaulfie@redhat.com>,
+       "David Teigland" <teigland@redhat.com>,
+       bluez-devel@lists.sourceforge.net,
+       "Marcel Holtmann" <marcel@holtmann.org>,
+       "Jiri Kosina" <jkosina@suse.cz>, "Dmitry Torokhov" <dtor@insightbb.com>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <1183825391.3066.59.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/2] [ide] mmio ide support
-References: <20070707094852.9473.21013.stgit@localhost.localdomain> <200707071419.52650.arnd@arndb.de>
-In-Reply-To: <200707071419.52650.arnd@arndb.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <468FBA20.8060509@googlemail.com>
+	 <1183825391.3066.59.camel@shinybook.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
+On 07/07/07, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Sat, 2007-07-07 at 18:06 +0200, Michal Piotrowski wrote:
+> > FBDEV
+> >
+> > Subject         : SLUB kmalloc-32768: Poison check failed@0xc1e20000
+> > slab 0xc04de400
+> > References      : http://lkml.org/lkml/2007/7/4/305
+> > Last known good : ?
+> > Submitter       : David Woodhouse <dwmw2@infradead.org>
+> > Caused-By       : ?
+> > Handled-By      : ?
+> > Status          : unknown
+>
+> If you're looking for someone to blame, consider the fact that this has
+> gone away now I've switched back to slab. :)
+>
 
->>This adds support for MMIO IDE device like CompactFlash 
->>in TrueIDE mode.
+Yup, I forgot to add Christoph to CC  :)
 
->>Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com> 
->>Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+Regards,
+Michal
 
-> Hmm, are we still adding new IDE drivers? Do you also have a
-
-    Yes, why not?
-
-> driver for the new libata layer?
-
-    No (sorry for replying for Vitaly but I know the situation).
-
-> I think it would even be simpler to do.
-
-    Wel have no interest in it right now.
-
-> You could also make it an of_platform_driver at the same time
-> instead of adding more cruft to fsl_soc.c. Since we're already
-
-    That's a fair point (and fsl_soc.c doesn't seem proper place anyway).
-
-> about to add the electra_ide.c driver in 2.6.23, I guess there
-> should really be _one_ driver that is able to handle all
-> of_device based ATA hosts.
-
-    One driver to rule them all. :-)
-    That may be not so simple as it seems...
-
-MBR, Sergei
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
