@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbXGGDA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXGGD01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbXGGDA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 23:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXGGDAT
+	id S1755308AbXGGD01 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 23:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbXGGD0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 23:00:19 -0400
-Received: from osiris.atheme.org ([69.60.119.211]:42037 "EHLO
-	osiris.atheme.org" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753737AbXGGDAS (ORCPT
+	Fri, 6 Jul 2007 23:26:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57057 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754143AbXGGD0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 23:00:18 -0400
-X-Greylist: delayed 1150 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jul 2007 23:00:18 EDT
-Date: Sat, 7 Jul 2007 02:41:05 +0000 (GMT)
-From: William Pitcock <nenolod@atheme-project.org>
-X-X-Sender: nenolod@osiris.atheme.org
-To: Adrian Bunk <bunk@stusta.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Message-ID: <Pine.LNX.4.64.0707070220440.20167@osiris.atheme.org>
+	Fri, 6 Jul 2007 23:26:16 -0400
+Message-ID: <468F07BB.4000909@torque.net>
+Date: Fri, 06 Jul 2007 23:25:47 -0400
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       akpm@linux-foundation.org, jeff@garzik.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/3] clean gendisk out of scsi ULD structs
+References: <20070705140636.6dbabd6f.kristen.c.accardi@intel.com> <1183752169.3448.93.camel@localhost.localdomain>
+In-Reply-To: <1183752169.3448.93.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jul 2007 19:32:29 +0200, Adrian Bunk wrote:
-> On Wed, Jul 04, 2007 at 02:35:39AM -0400, Darren wrote:
->>
->> I know this may sound kind of stupid, but how about not deprecating either,
->> and fully supporting both sound systems? Maybe we can get them to work
->> together, and the distro or user can choose whether they would like to use
->> alsa or oss for that particular card (or have the distro choose the sound
->> drivers that are best supported for that particular card). As it is now,
->> most apps already support oss and alsa.
->
-> It does not sound stupid and sounds good at first sight.
->
-> But there are problems we've already seen with similar situations in
-> different parts of the kernel:
-> They would have different hardware support, features and bugs.
->
-> And then a user user whose sound card is only supported by sound system A
-> needs a feature only available in sound system B.
->
-> And the quality decreases since people will often not report bugs in
-> sound system A if sound system B works for them.
->
-> OTOH, for a user it shouldn't matter whether there's OSS or ALSA, that's
-> mostly a difference for application developers. And since (as you say)
-> most applications already support both, there's no compelling reason for
-> providing more than one of them.
+James Bottomley wrote:
+> On Thu, 2007-07-05 at 14:06 -0700, Kristen Carlson Accardi wrote:
+>> Since gendisk will now become part of struct scsi_device, we don't need
+>> to store this value in any private data structs where they already store
+>> scsi_device.  This series cleans up a few drivers which did this.
 > 
-> cu
-> Adrian
->
+> Actually, as Al pointed out, we do have lifetime rules issues with doing
+> this.  The problem is that gendisk itself always has a shorter lifetime
+> than scsi_device (not much shorter, usually, but if you execute a legal
+> ULD unbind manoeuvre you'll end up with a dangling gendisk pointer).
 
-If the developers of ALSA made a nuclear reactor, it would have five 
-different control panels for controlling the rods in the reactor core, and 
-each would do something different and not what the documentation said.
+What about having short-lived scsi_device objects? For example:
+one that lives long enough for a pass-through to send a
+SCSI command (and receive its response) to one of a target's
+well known logical units.
 
-Actually, I lied about that. It wouldn't have any usable documentation. 
-But, there would be a hidden feature that you could sound the overload 
-alarm by pulling out the stapler in the control office. Useful feature, 
-that.
+> The other problem with taking gendisk out of the ULD structure and
+> putting it into the scsi_device is that for the sg driver, we have two
+> of them (one for the attached ULD and one for the sg driver).
 
-As an audio developer on Linux, I must say that developing with ALSA is 
-absolute fucking hell. If there was a way where both APIs could natively 
-be supported, more people would be happy with the current state of affairs 
-in the kernel.
+Add the bsg driver and that would make three of them. Or; if
+the lu's peripheral device type was not of interest to sd, st,
+sr, and osst; back to two gendisk objects (i.e. one each
+for sg and bsg).
 
-The most fucked up thing that I can think of about the current state of 
-affairs in ALSA is dmix. Every other UNIX sound system like ALSA does it's 
-software mixing in kernel space. The applications never even know about 
-it. It's not only until recently (2005-2006 or so) that ALSA came close to 
-this, but there are still problems. Many cards need workarounds to make 
-dmix work because of the way it works, and the way that ALSA buffers data 
-around.
+> The fundamental issue seems to be that the gendisk is the holder of all
+> the other info (queue, ULD etc) not vice versa ... and this patch is
+> trying to reverse that relationship.
 
-For the non-technically inclined, ALSA only keeps two fragments for 
-input/output data each. This is horribly unusable because most soundcard 
-fragments are only 1KB, so applications have to adopt ringbuffers to pass 
-data to ALSA. If you're doing video, this leads to possible timing issues 
-unless you sit down and well design your abstraction layer for audio I/O.
+A minor issue is the name gendisk ... unless, of course,
+you go and look at its definition in linux/genhd.h in
+which case the name looks somewhat appropriate. It looks
+like a mess [queue, ULD name, major/minor(s), partitions,
+capacity, disk_stats, kobjects, etc]. That is a considerable
+amount of superfluous information for "just a tag for
+requests coming into (a) given queue" when that queue leads
+to a non-block device.
 
-So people switch to things like JACK and PulseAudio because it's the only 
-way they can get workable Audio I/O on ALSA.
-
-What's even worse for the ALSA API is that it's designed around lowlatency 
-programming, but only a few drivers properly support it. Why do you need 
-lowlatency access to play a beep or a ding or whatever? The simple answer 
-is you don't.
-
-ALSA could and can be done correctly, but OSS4 is already here and 
-provides an API which solves all of ALSA's current problems. So why waste 
-time with that, when OSS4 is already here and more friendly to the 
-developers of the software most Linux users use?
-
-If OSS4 and ALSA apis could run on the same base driver, then a lot more 
-people will be happier, as there will be choice available in which API to 
-use, e.g. OSS4 or the libasound self-abuse method.
-
-Hannu has ideas on how that could work. I suggest all of the kernel 
-developers listen, and listen well, or this mess will never be fixed in a 
-way that is truly usable.
-
-   -nenolod
+Doug Gilbert
