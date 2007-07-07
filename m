@@ -1,114 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbXGFXxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbXGGAJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbXGFXxA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 19:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXGFXww
+	id S1754062AbXGGAJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 20:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbXGGAJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 19:52:52 -0400
-Received: from ns1.suse.de ([195.135.220.2]:58147 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752518AbXGFXwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 19:52:51 -0400
-Date: Sat, 7 Jul 2007 01:52:28 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-Message-ID: <20070706235228.GL5777@v2.random>
-References: <20070706222651.GG5777@v2.random> <1183764801.10287.233.camel@localhost>
+	Fri, 6 Jul 2007 20:09:04 -0400
+Received: from styx.suse.cz ([82.119.242.94]:54847 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752488AbXGGAJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jul 2007 20:09:02 -0400
+Date: Sat, 7 Jul 2007 02:13:01 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Rik van Riel <riel@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jan Kratochvil <honza@jikos.cz>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Ernie Petrides <petrides@redhat.com>
+Subject: Re: [PATCH][RESEND] PIE randomization
+In-Reply-To: <468D5B28.8080308@redhat.com>
+Message-ID: <Pine.LNX.4.64.0707070205460.11634@jikos.suse.cz>
+References: <alpine.LRH.0.98.0705111338230.22353@twin.jikos.cz>
+ <20070511125629.3df919cf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
+ <20070511133651.63f8a14d.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz>
+ <Pine.LNX.4.64.0705161851120.25986@twin.jikos.cz>
+ <alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
+ <20070522161642.b71ddacb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231044540.22906@jikos.suse.cz> <20070704082554.GQ7012@devserv.devel.redhat.com>
+ <Pine.LNX.4.64.0707041927090.11634@jikos.suse.cz> <468D5A3A.1010306@redhat.com>
+ <468D5B28.8080308@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1183764801.10287.233.camel@localhost>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 06, 2007 at 04:33:21PM -0700, Dave Hansen wrote:
-> The patch looks really interesting, it's just a little hard to parse
-> with all of the s/4096/PAGE_SIZE/ bits around.  Those cleanups, along
-> with the s/PAGE_SIZE/HARD_PAGE_SIZE/ parts would be great in a
-> separated-out patch so that the really juicy bits (like the pte
-> handling) where the new logic is stand out better.  
+On Thu, 5 Jul 2007, Rik van Riel wrote:
 
-Agreed.
+> So the original patch has:
+> #define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
+> For some reason(?) it got changed to the clearly buggy:
+> #define BAD_ADDR(x) ((unsigned long)(x) >= PAGE_MASK)
+> Jiri's patch undoes that second buggy define, which is very
+> different from the original that was sent in by you and Ernie.
 
-> I think it would help readability to have something like:
-> 
-> #define PAGES_PER_HARD_PAGE (1<<(PAGE_SHIFT-HARD_PAGE_SHIFT))
+This is a part of execshield patch, fthe pie-compiled binary executable 
+memory layout randomization was extracted from - see 
+http://people.redhat.com/~mingo/exec-shield/exec-shield-nx-2.6.19.patch
 
-Indeed.
+Note that load_elf_interp() in vanilla kernel differs from the 
+execshield's (and pie-randomization.patch) version.
 
-> 
-> which would look like this:
-> 
-> -	if (unlikely(!pfn_valid(pfn))) {
-> +	if (unlikely(!pfn_valid(pfn * PAGES_PER_HARD_PAGE))) {
+The fix makes the BAD_ADDR check whether the address belongs to the 
+ERR_PTR range, which seems valid for all uses of BAD_ADDR in the patched 
+binfmt_elf.c (do_brk(), elf_map(), do_mmap() etc return valid address or 
+err ptr) ... am I missing something obvious here?
 
-I normally prefer to shift left/right than to multiply/divide, so feel
-free to suggest another define name with just
-PAGE_SHIFT-HARD_PAGE_SHIFT, then you can #define PAGES_PER_HARD_PAGE
-(1<<definename).
-
-> Instead of having hardpfn_t, would it be more useful to tag the types
-> with sparse?  That's probably something that other interested parties
-> could work on.
-
-Ouch, hardpfn_t so far is unused ;). I initially wanted to try to make
-things more type safe, but then it didn't work out very well so I
-deferred it.
-
-BTW, in a parallel thread (the thread where I've been suggested to
-post this), Rik rightfully mentioned Bill once also tried to get this
-working and basically asked for the differences. I don't know exactly
-what Bill did, I only remember well the major reason he did it. Below
-I add some more comment on the Bill, taken from my answer to Rik:
-
----------------
-Right, I almost forgot he also tried enlarging the PAGE_SIZE at some
-point, back then it was for the 32bit systems with 64G of ram, to
-reduce the mem_map array, something my patch achieves too btw.
-
-I thought his approach was of the old type, not backwards compatible,
-the one we also thought for amd64, and I seem to remember he was
-trying to solve the backwards compatibility issue without much
-success.
-
-But really I'm unsure how Bill could achieve anything backwards
-compatible back then without anon-vma... anon-vma is the enabler. I
-remember he worked on enlarging the PAGE_SIZE back then, but I don't
-recall him exposing HARD_PAGE_SIZE to the common code either (actually
-I never seen his code so I can't be sure of this). Even if he had pte
-chains back then, reaching the pte wasn't enough and I doubt he could
-unwalk the pagetable tree from pte up to pmd up to pgd/mm, up to vma
-to read the vm_pgoff that btw was meaningless back then for the anon
-vmas ;).
-
-Things are very complex, but I think it's possible by doing proper
-math on vm_pgoff, vm_start/vm_end and address, just with that 4 things
-we should have enough info to know which parts of each page to map in
-which pte, and that's all we need to solve it. At the second mprotect
-of 4k over the same 8k page will get two vmas queued in the same
-anon-vma. So we check both vmas and looking at the vm_pgoff(hardpage
-units)+(((address-vm_start)&~PAGE_MASK)>>HARD_PAGE_SHIFT we should be
-able to tell if the ptes behind the vma need to be updated and if the
-second vma can be merged back.
-
-The idea to make it work is to synchronously map all the ptes for all
-indexes covered by each page as long as they're in the range
-vm_start>>HARD_PAGE_SHIFT to vm_end >> HARD_PAGE_SHIFT. We should
-threat a page fault like a multiple page fault. Then when you mprotect
-or mremap you already know which ptes are mapped and that you need to
-unmap/update by looking the start/end hard-page-indexes, and you also
-have to always check all vmas that could possibly map that page, if
-the page cross the vm_start/vm_end boundary.
-
-Easy definitely not, but feasible I hope yes because I couldn't think
-of a case where we can't figure out which part of the page to map in
-which pte. I wish I had it implemented before posting because then I
-would be 100% sure it was feasible ;).
-
-Now if somebody here can think of a case where we can't know where to
-map which part of the page in which pte, then *that* would be very
-interesting and it could save some wasted development effort. Unless
-this happens, I guess I can keep trying to make it work, hopefully now
-with some help.
+-- 
+Jiri Kosina
+SUSE Labs
