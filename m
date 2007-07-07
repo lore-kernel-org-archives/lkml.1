@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbXGGKZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbXGGLHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754333AbXGGKZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 06:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbXGGKZS
+	id S1754176AbXGGLHm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 07:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbXGGLHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 06:25:18 -0400
-Received: from ns2.suse.de ([195.135.220.15]:48731 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752488AbXGGKZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 06:25:17 -0400
-Date: Sat, 7 Jul 2007 12:25:02 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-Message-ID: <20070707102502.GH29213@v2.random>
-References: <20070706222651.GG5777@v2.random> <18063.14949.850984.791608@cargo.ozlabs.ibm.com>
+	Sat, 7 Jul 2007 07:07:33 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45632 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751963AbXGGLHc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 07:07:32 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 7 Jul 2007 07:05:15 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: can everything related to OSS's DMASOUND_PMAC get whacked?
+Message-ID: <Pine.LNX.4.64.0707070658400.22169@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18063.14949.850984.791608@cargo.ozlabs.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 05:01:57PM +1000, Paul Mackerras wrote:
-> Andrea Arcangeli writes:
-> 
-> > So my whole idea is to once and for all to decuple the size of the
-> > pte-entry (4k on x86/amd64) with the page allocator granularity. The
-> > HARD_PAGE_SHIFT will be 4k still, the common code PAGE_SIZE will be
-> > variable and configurable at compile time with CONFIG_PAGE_SHIFT.
-> 
-> How does the page cache work with your scheme?  For example if I have
-> 1000 1kB files cached in the page cache, and 16k PAGE_SIZE, does that
-> use up 4M, or 16M?
 
-It uses 16M of course. Like I said before:
+  (apologies for not asking more specifically but i poked a couple
+folks and never got a reply.)
 
-   This whole issue is really a pure tradeoff between memory consumption
-   and I/O and CPU performance (and for the dvd-ram and xfs also a way to
+  the file sound/oss/dmasound/Makefile makes reference to a
+non-existent variable CONFIG_DMASOUND_PMAC:
 
-The CONFIG_PAGE_SHIFT allows you to ship a "monster" kernel for db
-usage with hundred gigs of ram, with 64k page size and 64k blocksize,
-getting the whole advantages. We of course must make sure that
-CONFIG_PAGE_SHIFT=12 doesn't provide any slowdown.
+==========
+#
+# Makefile for the DMA sound driver
+#
 
-Then us mere mortals will enjoy running with 8k page size too, with
-our 2-4G of ram. I used 8k page size with an alpha workstation back in
-2000 and I didn't feel any substantial ram waste, I had about 2G of
-ram. Ok, now the kernel is larger, but even git learnt using packs ;)
+dmasound_pmac-y                 += dmasound_awacs.o \
+                                   trans_16.o dac3550a.o tas_common.o \
+                                   tas3001c.o tas3001c_tables.o \
+                                   tas3004.o tas3004_tables.o
+
+obj-$(CONFIG_DMASOUND_ATARI)    += dmasound_core.o dmasound_atari.o
+obj-$(CONFIG_DMASOUND_PMAC)     += dmasound_core.o dmasound_pmac.o
+obj-$(CONFIG_DMASOUND_PAULA)    += dmasound_core.o dmasound_paula.o
+obj-$(CONFIG_DMASOUND_Q40)      += dmasound_core.o dmasound_q40.o
+==========
+
+  if one removes that reference and stuff related to it, the snowball
+eventually produces the following diffstat:
+
+ sound/oss/dmasound/Makefile          |    6
+ sound/oss/dmasound/awacs_defs.h      |  251 -
+ sound/oss/dmasound/dac3550a.c        |  209 -
+ sound/oss/dmasound/dmasound.h        |    4
+ sound/oss/dmasound/dmasound_awacs.c  | 3215 -------------------------
+ sound/oss/dmasound/tas3001c.c        |  849 ------
+ sound/oss/dmasound/tas3001c.h        |   64
+ sound/oss/dmasound/tas3001c_tables.c |  375 --
+ sound/oss/dmasound/tas3004.c         | 1138 --------
+ sound/oss/dmasound/tas3004.h         |   77
+ sound/oss/dmasound/tas3004_tables.c  |  301 --
+ sound/oss/dmasound/tas_common.c      |  214 -
+ sound/oss/dmasound/tas_common.h      |  284 --
+ sound/oss/dmasound/tas_eq_prefs.h    |   24
+ sound/oss/dmasound/tas_ioctl.h       |   23
+ sound/oss/dmasound/trans_16.c        |  898 ------
+ 16 files changed, 7932 deletions(-)
+
+so:
+
+  1) thoughts?
+  2) what exactly is OSS' status with respect to whether it's worth
+investing any time in doing cleanup on it and ripping out unreferenced
+content?
+
+thanks.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
