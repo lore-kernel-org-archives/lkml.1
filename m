@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbXGGMa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbXGGMyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852AbXGGMa6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 08:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXGGMat
+	id S1754645AbXGGMyI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 08:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXGGMx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 08:30:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56803 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbXGGMas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 08:30:48 -0400
-Date: Sat, 7 Jul 2007 08:30:04 -0400
-From: Jakub Jelinek <jakub@redhat.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Rik van Riel <riel@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jan Kratochvil <honza@jikos.cz>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Ernie Petrides <petrides@redhat.com>
-Subject: Re: [PATCH][RESEND] PIE randomization
-Message-ID: <20070707123004.GZ7012@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz> <Pine.LNX.4.64.0705161851120.25986@twin.jikos.cz> <alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz> <20070522161642.b71ddacb.akpm@linux-foundation.org> <Pine.LNX.4.64.0705231044540.22906@jikos.suse.cz> <20070704082554.GQ7012@devserv.devel.redhat.com> <Pine.LNX.4.64.0707041927090.11634@jikos.suse.cz> <468D5A3A.1010306@redhat.com> <468D5B28.8080308@redhat.com> <Pine.LNX.4.64.0707070205460.11634@jikos.suse.cz>
-Mime-Version: 1.0
+	Sat, 7 Jul 2007 08:53:57 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:24172 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbXGGMx5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 08:53:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=YFaT//cECMUs5V/XXK49OznJ8Ih111xGNg4cxNL7Lxy5/Sb1YsF4nYSSwz/GRC77OC/HtBENWG8smnSCEgbCDYbC99dSzYNf57D7sZ6D3hBCvItty7jRFiZWPNj+WoFxeVtuQn6UTcbHytJf5c0+u0//ACpL4i/gxWOtvcEMneo=
+Date: Sat, 7 Jul 2007 16:53:53 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fs/proc/mmu.c: headers butchery
+Message-ID: <20070707125353.GA5910@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707070205460.11634@jikos.suse.cz>
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 02:13:01AM +0200, Jiri Kosina wrote:
-> On Thu, 5 Jul 2007, Rik van Riel wrote:
-> 
-> > So the original patch has:
-> > #define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
-> > For some reason(?) it got changed to the clearly buggy:
-> > #define BAD_ADDR(x) ((unsigned long)(x) >= PAGE_MASK)
-> > Jiri's patch undoes that second buggy define, which is very
-> > different from the original that was sent in by you and Ernie.
-> 
-> This is a part of execshield patch, fthe pie-compiled binary executable 
-> memory layout randomization was extracted from - see 
-> http://people.redhat.com/~mingo/exec-shield/exec-shield-nx-2.6.19.patch
-> 
-> Note that load_elf_interp() in vanilla kernel differs from the 
-> execshield's (and pie-randomization.patch) version.
-> 
-> The fix makes the BAD_ADDR check whether the address belongs to the 
-> ERR_PTR range, which seems valid for all uses of BAD_ADDR in the patched 
-> binfmt_elf.c (do_brk(), elf_map(), do_mmap() etc return valid address or 
-> err ptr) ... am I missing something obvious here?
+fs/proc/mmu.c consists of only one function which uses only:
+1) struct vmalloc_info *
+2) struct vm_struct *
+3) struct vmalloc_info
+4) vmlist
+5) VMALLOC_TOTAL, VMALLOC_START, VMALLOC_END
+6) read_lock, read_unlock
+7) vmlist_lock
+8) struct vm_struct
 
-I believe BAD_ADDR macro was changes from ((unsigned long)(x) >= TASK_SIZE)
-(which is the right test for invalid user addresses, stronger check than
->= PAGE_MASK) to >= PAGE_MASK only because of the one check of the return
-value of load_elf_interp.  All other uses of BAD_ADDR macro are either on
-userland addresses (what do_mmap, elf_map, do_brk etc. return;
-where TASK_SIZE or more is certainly wrong) or in one case still on unbiased
-ELF p_vaddr:
-if (BAD_ADDR(k) || elf_ppnt->p_filesz > elf_ppnt->p_memsz ||
-in load_elf_binary (where >= TASK_SIZE check is ok too).
+This gives us linux/spinlock.h, asm/pgtable.h, "internal.h", linux/vmalloc.h.
+asm/pgtable.h uses PKMAP_BASE on i386, for which asm/highmem.h is needed.
+But, linux/highmem.h is actually used to make it compile everywhere.
+I'll deal later with this particular i386 surprise.
 
-So perhaps doing this instead of changing BAD_ADDR to IS_ERR_VAL
-might be better:
+Cross-compile tested on many archs and configs.
 
-Signed-off-by: Jakub Jelinek <jakub@redhat.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
---- linux/fs/binfmt_elf.c	2007-06-08 21:53:45.000000000 +0200
-+++ linux/fs/binfmt_elf.c	2007-07-07 14:19:14.000000000 +0200
-@@ -80,7 +80,7 @@ static struct linux_binfmt elf_format = 
- 		.hasvdso	= 1
- };
+ fs/proc/mmu.c |   21 ++-------------------
+ 1 file changed, 2 insertions(+), 19 deletions(-)
+
+--- a/fs/proc/mmu.c
++++ b/fs/proc/mmu.c
+@@ -8,27 +8,10 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
+-
+-#include <linux/types.h>
+-#include <linux/errno.h>
+-#include <linux/time.h>
+-#include <linux/kernel.h>
+-#include <linux/string.h>
+-#include <linux/mman.h>
+-#include <linux/proc_fs.h>
+-#include <linux/mm.h>
+-#include <linux/mmzone.h>
+-#include <linux/pagemap.h>
+-#include <linux/swap.h>
+-#include <linux/slab.h>
+-#include <linux/smp.h>
+-#include <linux/seq_file.h>
+-#include <linux/hugetlb.h>
++#include <linux/spinlock.h>
+ #include <linux/vmalloc.h>
+-#include <asm/uaccess.h>
++#include <linux/highmem.h>
+ #include <asm/pgtable.h>
+-#include <asm/tlb.h>
+-#include <asm/div64.h>
+ #include "internal.h"
  
--#define BAD_ADDR(x) ((unsigned long)(x) >= PAGE_MASK)
-+#define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
- 
- static int set_brk(unsigned long start, unsigned long end)
- {
-@@ -1015,7 +1015,7 @@ static int load_elf_binary(struct linux_
- 						    interpreter,
- 						    &interp_map_addr,
- 						    load_bias);
--			if (!BAD_ADDR(elf_entry)) {
-+			if (!IS_ERR((void *)elf_entry)) {
- 				/* load_elf_interp() returns relocation adjustment */
- 				interp_load_addr = elf_entry;
- 				elf_entry += loc->interp_elf_ex.e_entry;
+ void get_vmalloc_info(struct vmalloc_info *vmi)
 
-
-	Jakub
