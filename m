@@ -1,94 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbXGGUGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbXGGUHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673AbXGGUGy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 16:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbXGGUGm
+	id S1755281AbXGGUHQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 16:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbXGGUGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 16:06:42 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:58382 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752547AbXGGUGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 16:06:41 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Sun, 8 Jul 2007 01:58:31 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: KII Keiichi <k-keiichi@bx.jp.nec.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -mm 4/9] netconsole: Introduce netconsole_netdev_notifier
-In-Reply-To: <468FDC87.6050702@bx.jp.nec.com>
-Message-ID: <Pine.LNX.4.64.0707080116220.3789@cselinux1.cse.iitk.ac.in>
-References: <20070704110739.28520.5036.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070704110759.28520.37301.sendpatchset@cselinux1.cse.iitk.ac.in>
- <468FDC87.6050702@bx.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 7 Jul 2007 16:06:49 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38211 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753929AbXGGUGs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 16:06:48 -0400
+Date: Sat, 7 Jul 2007 21:13:06 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] [ide] mmio ide support
+Message-ID: <20070707211306.2ef074cf@the-village.bc.nu>
+In-Reply-To: <20070707094852.9473.21013.stgit@localhost.localdomain>
+References: <20070707094852.9473.21013.stgit@localhost.localdomain>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 07 Jul 2007 13:48:52 +0400
+Vitaly Bordug <vitb@kernel.crashing.org> wrote:
 
-On Sun, 8 Jul 2007, KII Keiichi wrote:
-> [...]
-> Should we avoid the automatic update of netconsole_target until we can notice all 
-> necessary members of netconsole_target updated automatically?
 > 
-> I had thought about automatic updating of the netconsole_target(i.e. local IP address 
-> and network device).
-> But I thought that the netconsole(netpoll) can only be related to a network device
-> because the user of netconsole is free to be able to set local IP address and 
-> MAC address of netconsole and it is difficult to monitor change of local IP address.
-[...]
-> But, in the case, we must think of the case of changing IP address 
-> because we can change IP address without disabling the network device and 
-> can't hook the event of changing IP address.
+> This adds support for MMIO IDE device like CompactFlash 
+> in TrueIDE mode.
 
-Well, updating the local _IP_ address (for a particular interface) as
-and when it changes would also be good ... it is another piece of info
-exposed (read-write) to userspace through configfs, so makes sense to
-keep it uptodate. But note that the two event notifications that we
-care about currently are simply to keep up with changes in local _MAC_
-address and interface name.
+Really we should be working towards libata support for all new devices.
+This looks like a candidate for the existing (or a little enhanced)
+pata_platform driver.
 
-Regarding local_ip, the present behaviour is:
+> +config BLK_DEV_MMIOIDE
+> +	tristate "Memory Mapped IDE support"
 
-(1) If the user did not specify any local IP address (that is left that
-field empty or zero), netpoll_setup() automatically fills it up with the
-IP of the local network interface device that it is attached to: from
-net_device->ip_ptr->ifa_list->ifa_local
+Please pick a better description. This isn't a generic option for
+enabling MMIO based IDE as you make it sound.
 
-(2) If user specified some local IP address, netpoll_setup() blindly
-copies that into np->local_ip and that would later get used when
-constructing the eth/ip/udp packet to be sent (containing the logging
-data), as can be seen in netpoll_send_udp(). If the local IP changes
-at some point after netpoll_setup(), nothing updates np->local_ip
-accordingly.
 
-So this patch just continues preserving the current behaviour, but yes,
-it could make sense to trap protocol address changes and update the
-local_ip field too when that happens (as long as it doesn't break
-anything, as Matt warned earlier). I'm not aware of any existing
-netdevice notifier that'll do this, so I'll look around (or trace
-an ifconfig(8) / ip(8) to see what actually happens).
+Also we have an accepted match name for ATA platform devices - and adding
+another one messes it up irrespective of whether you want libata or
+legacy IDE support. If you use the same matches then your platform code,
+and everyone elses platform code can work with both drivers, except for
+hotpluggability.
 
-> Or I propose updating netconsole_taget informations when the network device up/down.
-> The MAC address and network interface name can be changed when 
-> the network device is disabled.
+Other bugs
 
-Actually, what happens is that if you: (1) disable / down the interface,
-(2) change name / MAC address while it was down, and then (3) bring it
-back up, then on coming back up, *both* the NETDEV_CHANGE{NAME,ADDR} and
-the NETDEV_UP notifier chains are called out. If you just brought it
-down and back up without setting any params, the other chains would not
-be called out, but NETDEV_UP would. In this case, it's unnecessary to
-update the params, because nothing got changed. And if something did
-get changed, the corresponding chain would get called anyway, so it's
-clearly best to update only the appropriate params, only when the
-corresponding event notification comes along.
+- Your remove code releases the resources before the hwif which means it
+races another user trying to claim the resource
+- Be careful with ide_unregister. It exists and you can call it but its
+actually not very safe and there are lots of unfixed races in the IDE
+layer if you do
 
-Satyam
+
+The "should we have a legacy ide driver that matches the libata
+pata_platform" question I don't really care about. Its a waste of effort
+in many ways but if you've written the code the work is done so why not
+use it.
+
+However it needs to be *compatible* so that platform devices can be
+claimed by either so the kernel build can pick legacy IDE v libata and
+not have to #ifdef all the platform code.
+
+Alan
