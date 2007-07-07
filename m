@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbXGGSPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbXGGSaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752529AbXGGSPI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 14:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbXGGSO5
+	id S1753929AbXGGSaa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 14:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXGGSaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 14:14:57 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:52493 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752699AbXGGSO4 (ORCPT
+	Sat, 7 Jul 2007 14:30:21 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:53943 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752558AbXGGSaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 14:14:56 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] [ide] mmio ide support
-Date: Sat, 7 Jul 2007 20:07:10 +0200
-User-Agent: KMail/1.9.6
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-References: <20070707094852.9473.21013.stgit@localhost.localdomain> <200707071419.52650.arnd@arndb.de> <468FC4AC.9030701@ru.mvista.com>
-In-Reply-To: <468FC4AC.9030701@ru.mvista.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 7 Jul 2007 14:30:21 -0400
+Subject: Re: [1/2] 2.6.22-rc7: known regressions
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dtor@insightbb.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <1183775126.3066.5.camel@shinybook.infradead.org>
+References: <468A7D14.1050505@googlemail.com>
+	 <d120d5000707051403r1d946375nb119ff86b26580ef@mail.gmail.com>
+	 <Pine.LNX.4.64.0707070019110.11634@jikos.suse.cz>
+	 <200707062033.18211.dtor@insightbb.com>
+	 <Pine.LNX.4.64.0707070257040.11634@jikos.suse.cz>
+	 <1183771730.2789.1.camel@shinybook.infradead.org>
+	 <1183775126.3066.5.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Sat, 07 Jul 2007 20:28:33 +0200
+Message-Id: <1183832913.6351.130.camel@aeonflux.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707072007.10448.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18UzfamQu6eQ7SYgiQ9lycvJa/Wnkt+eIY386a
- Yz/f2eQwsR9dJczz2X5URnBUIN79uBWBDyHUzd23r+F6xd8nwI
- EUiRFaWhzPzlbJUKo2GWQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 July 2007, Sergei Shtylyov wrote:
-> Arnd Bergmann wrote:
-> 
-> >>This adds support for MMIO IDE device like CompactFlash 
-> >>in TrueIDE mode.
-> 
-> >>Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com> 
-> >>Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> 
-> > Hmm, are we still adding new IDE drivers? Do you also have a
-> 
->     Yes, why not?
+Hi David,
 
-The last time someone (I think Akira Iguchi) wanted to add
-a new powerpc specific IDE driver, that was rejected based
-on the argument that drivers/ide/ is going away soon. Most
-current distros have already moved over to using libata
-exclusively.
-
-> > about to add the electra_ide.c driver in 2.6.23, I guess there
-> > should really be _one_ driver that is able to handle all
-> > of_device based ATA hosts.
+> > I suspect it's more likely that hci_conn_del_sysfs() is running and
+> > removing the object representing the ACL connection. That's what the
+> > input device's remove event is reporting as 'PHYSDEVPATH' on the
+> > occasions that it _doesn't_ oops. 
 > 
->     One driver to rule them all. :-)
->     That may be not so simple as it seems...
+> Yes, that seems to be it. It happens when we hit the idle_timeout and
+> the kernel tears down the connection. Adding a mdelay(5000) into
+> hidp_session() just before calling input_unregister_device(), and
+> hard-coding idle_to to 1 second, makes it nice and easy to reproduce...
+> 
+> Marcel? Can we deregister the input devices earlier...?
 
-It's certainly not easy to support all ATA chips that
-have special capabilities and bugs, but the electra and the
-mpc8349-itx both seem to support only the most basic ATA
-PIO mode anyway, which does not require much special
-handling beyond finding the right mmio addresses.
+looks good to me.
 
-	Arnd <><
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+
+Regards
+
+Marcel
+
+
