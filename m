@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbXGGEfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbXGGEwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754423AbXGGEfY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 00:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbXGGEfN
+	id S1754478AbXGGEwJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 00:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbXGGEv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 00:35:13 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49160 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbXGGEfM (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 00:35:12 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: linux-kernel@vger.kernel.org
-Subject: cpufreq 'choice' Kconfig oddness in 2.6.22-rc6-mm1..
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1183782910_7487P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sat, 7 Jul 2007 00:51:59 -0400
+Received: from gw.goop.org ([64.81.55.164]:42179 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750751AbXGGEv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 00:51:58 -0400
+Message-ID: <468F1BEC.5080508@goop.org>
+Date: Fri, 06 Jul 2007 21:51:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: William Lee Irwin III <wli@holomorphy.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: state of stack patches
+References: <468D55D1.7070308@goop.org> <20070706213121.GI11781@holomorphy.com>
+In-Reply-To: <20070706213121.GI11781@holomorphy.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Sat, 07 Jul 2007 00:35:10 -0400
-Message-ID: <6443.1183782910@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1183782910_7487P
-Content-Type: text/plain; charset=us-ascii
+William Lee Irwin III wrote:
+> On Thu, Jul 05, 2007 at 01:34:25PM -0700, Jeremy Fitzhardinge wrote:
+>   
+>> What's the state of your stack patches?  I'm still using the ones you 
+>> posted some time ago, and they seem like useful things to have in the 
+>> kernel.  Is there anything preventing you from pushing them upstream?
+>>     
+>
+> Just one thing: 2.6.22. I can, of course, do updating for -mm, -ak, et al.
+>   
 
-So I was looking at drivers/cpufreq/Kconfig, and wondering...
+Yes, I was thinking they're the just the thing to cook in -mm for a 
+while, until the appropriate upstream time comes.
 
-Is there a specific reason why we have a 'choice' clause that allows selecting
-'performance' or 'userspace' as the default governor, and no obvious way to
-select powersave, ondemand, or conservative as a default? Or was this an
-oversight I should cook up a patch for?  Looks like the Kconfig and a bit
-of cut-n-paste in include/linux/cpufreq.h is all that's needed?
-
-
-
-
---==_Exmh_1183782910_7487P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGjxf+cC3lWbTT17ARAp7PAKC7DCT2Og8TKhJKRxrf8fJ4/C3daACgu6jk
-zQeTZe8wB87w6wq5evJ4SSs=
-=AuAo
------END PGP SIGNATURE-----
-
---==_Exmh_1183782910_7487P--
+    J
