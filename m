@@ -1,39 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbXGGU5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbXGGVKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbXGGU5R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 16:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXGGU5H
+	id S1755117AbXGGVKx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 17:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXGGVKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 16:57:07 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38931 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbXGGU5G (ORCPT
+	Sat, 7 Jul 2007 17:10:43 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:53826 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751955AbXGGVKk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 16:57:06 -0400
-Message-ID: <468FFE18.4000500@zytor.com>
-Date: Sat, 07 Jul 2007 13:56:56 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sat, 7 Jul 2007 17:10:40 -0400
+Date: Sat, 7 Jul 2007 23:11:10 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Patrick Caulfield <pcaulfie@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>, teigland@redhat.com,
+       cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22 regression fix] DLM must depend on SYSFS
+Message-ID: <20070707211110.GL3492@stusta.de>
+References: <20070707041402.GE3492@stusta.de> <alpine.LFD.0.999.0707071350380.31544@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][Patch] Allow not mounting a root fs
-References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <468DA42D.7050309@zytor.com> <Pine.LNX.4.64.0707072030230.1536@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0707072030230.1536@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707071350380.31544@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jul 5 2007 19:08, H. Peter Anvin wrote:
->>> BTW: Is it possible to mount a tmpfs on / before extracting the cpio?
->> Not in the stock kernel.  There have been some patches floating around
->> for that, I think.
+On Sat, Jul 07, 2007 at 01:51:55PM -0700, Linus Torvalds wrote:
 > 
-> What would it buy? rootfs is a tmpfs, is not it?
+> 
+> On Sat, 7 Jul 2007, Adrian Bunk wrote:
+> >
+> > The dependency of DLM on SYSFS got lost in
+> > commit 6ed7257b46709e87d79ac2b6b819b7e0c9184998 resulting in the 
+> > following compile error with CONFIG_DLM=y, CONFIG_SYSFS=n:
+> 
+> Hmm. Shouldn't we make that a "select", the way we already do for 
+> CONFIGFS_FS? 
 
-No, rootfs is ramfs.
+"select" is more user friendly while "depends on" makes it easier to 
+disable options.
 
-	-hpa
+Usually I'm for the usage of "select" in such cases, but since this is 
+with CONFIG_EMBEDDED=y where users can be expected to know better what 
+they are doing I'd say a "depends on" is fine.
+
+CONFIGFS_FS as a helper for some few file systems is also a different 
+situation from SYSFS that is a dependency of much more options.
+
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
