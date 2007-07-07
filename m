@@ -1,106 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbXGGFGD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbXGGFHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbXGGFGD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 01:06:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbXGGFFy
+	id S1755342AbXGGFHd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 01:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbXGGFH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 01:05:54 -0400
-Received: from 1wt.eu ([62.212.114.60]:3290 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbXGGFFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 01:05:53 -0400
-Date: Sat, 7 Jul 2007 07:02:15 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       mbligh@google.com
-Subject: Re: [patch 10/10] Scheduler profiling - Use immediate values
-Message-ID: <20070707050214.GA943@1wt.eu>
-References: <20070703181151.GB5800@martell.zuzino.mipt.ru> <20070703185748.GA4047@Krystal> <20070705132120.8edbc1f3.akpm@linux-foundation.org> <p73vecx21um.fsf@bingen.suse.de> <468EBEB2.4070605@redhat.com> <20070706232843.GT3492@stusta.de> <20070706234315.GA19804@Krystal> <20070707022526.GC3492@stusta.de> <20070707023511.GA25778@Krystal> <20070707040307.GD3492@stusta.de>
-Mime-Version: 1.0
+	Sat, 7 Jul 2007 01:07:26 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:45170 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbXGGFHZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 01:07:25 -0400
+Date: Fri, 6 Jul 2007 22:09:43 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.21.6
+Message-ID: <20070707050943.GA20585@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070707040307.GD3492@stusta.de>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 06:03:07AM +0200, Adrian Bunk wrote:
-> On Fri, Jul 06, 2007 at 10:35:11PM -0400, Mathieu Desnoyers wrote:
-> > * Adrian Bunk (bunk@stusta.de) wrote:
-> > > On Fri, Jul 06, 2007 at 07:43:15PM -0400, Mathieu Desnoyers wrote:
-> > > > * Adrian Bunk (bunk@stusta.de) wrote:
-> > > > > On Fri, Jul 06, 2007 at 06:14:10PM -0400, Chuck Ebbert wrote:
-> > > > > > On 07/06/2007 07:44 AM, Andi Kleen wrote:
-> > > > > > > I think the optimization is a good idea, although i dislike it
-> > > > > > > that it is complicated for the dynamic markers. If it was just
-> > > > > > > static it would be much simpler.
-> > > > > > 
-> > > > > > Another thing to consider is that there might be hundreds of these
-> > > > > > probes/tracepoints active in an instrumented kernel. The overhead
-> > > > > > adds up fast, so the gain may be worth all the pain.
-> > > > > 
-> > > > > Only if you want to squeeze the last bit of performance out of
-> > > > > _debugging_ functionality.
-> > > > > 
-> > > > > You avoid all the pain if you simply don't use debugging functionality 
-> > > > > on production systems.
-> > > > > 
-> > > > 
-> > > > Adrian,
-> > > > 
-> > > > Please have a look at my markers posts, especially:
-> > > > 
-> > > > http://www.ussg.iu.edu/hypermail/linux/kernel/0707.0/0669.html
-> > > > 
-> > > > And also look into OLS 2007 proceedings for Martin Bligh's paper on
-> > > > Debugging Google sized clusters. It basically makes the case for adding
-> > > > functionnality to debug _user space_ problems on production systems that
-> > > > can be turned on dynamically.
-> > > 
-> > > Using a different kernel for tracing still fulfills all the requirements 
-> > > listed in section 5 of your paper...
-> > > 
-> > 
-> > Not exactly. I assume you understand that rebooting 1000 live production
-> > servers to find the source of a rare bug or the cause of a performance
-> > issue is out of question.
-> > 
-> > Moreover, strategies like enabling flight recorder traces on a few nodes
-> > on demand to detect performance problems can only be deployed in
-> > production environment if they are part of the standard production
-> > kernel.
-> > 
-> > Also, managing two different kernels is often out of question. Not only
-> > is it a maintainance burden, but just switching to the "debug" kernel
-> > can impact the system's behavior so badly that it could make the problem
-> > disappear.
-> 
-> As can turning tracing on at runtime.
-> 
-> And you can always define requirements in a way that your solution is 
-> the only one...
+We (the -stable team) are announcing the release of the 2.6.21.6 kernel.
+This has a fix for a security problem with netfilter messages.  Any 2.6.21
+user using netfilter is strongly urged to upgrade.
 
-On large production environments, you always lose a certain percentage of
-machines at each reboot. Most often, it's the CR2032 lithium battery which
-is dead and which causes all or parts of the CMOS settings to vanish, hanging
-the system at boot. Then you play with the ON/OFF switch and a small
-percentage of the power supplies refuse to restart and some disks refuse
-to spin up.
+I'll also be replying to this message with a copy of the patch between
+2.6.21.5 and 2.6.21.6
 
-Fortunately this does not happen with all machines, but if you have such
-problems with 1% of your machines, you lose 10 machines when you reboot
-1000 of them. Those problems require a lot of man power, which explains
-why such systems are rarely updated.
+The updated 2.6.21.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.21.y.git;a=summary
 
-Causing that much trouble just to enable debugging is clearly
-unacceptable, and your debug kernel will simply never be used. Not to
-mention the fact that people will never trust it because it's almost
-never used !
+thanks,
 
-Regards,
-Willy
+greg k-h
+
+---------
+
+ Makefile                               |    2 +-
+ net/netfilter/nf_conntrack_h323_asn1.c |    4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+Summary of changes from v2.6.21.5 to v2.6.21.6
+==============================================
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.21.6
+
+Jing Min Zhao (1):
+      nf_conntrack_h323: add checking of out-of-range on choices' index values
 
