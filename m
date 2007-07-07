@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbXGGB2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbXGGBew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbXGGB2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 21:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbXGGB2W
+	id S1754670AbXGGBew (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 21:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbXGGBeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 21:28:22 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:48828 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752171AbXGGB2W (ORCPT
+	Fri, 6 Jul 2007 21:34:44 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:59324 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752482AbXGGBen (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 21:28:22 -0400
-Subject: Re: [1/2] 2.6.22-rc7: known regressions
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Dmitry Torokhov <dtor@insightbb.com>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
-In-Reply-To: <Pine.LNX.4.64.0707070257040.11634@jikos.suse.cz>
-References: <468A7D14.1050505@googlemail.com>
-	 <d120d5000707051403r1d946375nb119ff86b26580ef@mail.gmail.com>
-	 <Pine.LNX.4.64.0707070019110.11634@jikos.suse.cz>
-	 <200707062033.18211.dtor@insightbb.com>
-	 <Pine.LNX.4.64.0707070257040.11634@jikos.suse.cz>
+	Fri, 6 Jul 2007 21:34:43 -0400
+Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070706222651.GG5777@v2.random>
+References: <20070706222651.GG5777@v2.random>
 Content-Type: text/plain
-Date: Fri, 06 Jul 2007 21:28:50 -0400
-Message-Id: <1183771730.2789.1.camel@shinybook.infradead.org>
+Date: Fri, 06 Jul 2007 18:36:21 -0700
+Message-Id: <1183772181.21234.25.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-07 at 03:05 +0200, Jiri Kosina wrote:
-> On Fri, 6 Jul 2007, Dmitry Torokhov wrote:
+On Sat, 2007-07-07 at 00:26 +0200, Andrea Arcangeli wrote:
+> Hello,
 > 
-> > This is for devices using boot protocol, not full HID as far as I 
-> > understand.
+..
 > 
-> David,
+> If you want to help/look here the patch:
 > 
-> could you please try with the trivial patch below and report the output? 
-> I'd be interested to know whether we are by any chance really seeing 
-> double input_unregister_device() for the same input_dev somehow. Thanks.
+> 	http://www.kernel.org/pub/linux/kernel/people/andrea/patches/v2.6/2.6.22-rc7/hard-page-size
+> 
 
-I suspect it's more likely that hci_conn_del_sysfs() is running and
-removing the object representing the ACL connection. That's what the
-input device's remove event is reporting as 'PHYSDEVPATH' on the
-occasions that it _doesn't_ oops.
+Very interesting patch set. I really would like to support for it.
+I would like to play with, please keep the patchset uptodate.
 
--- 
-dwmw2
+Here is the small nit fix ..
+
+Thanks,
+Badari
+
+ mm/migrate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.22-rc7/mm/migrate.c
+===================================================================
+--- linux-2.6.22-rc7.orig/mm/migrate.c	2007-07-01 12:54:24.000000000 -0700
++++ linux-2.6.22-rc7/mm/migrate.c	2007-07-06 19:58:43.000000000 -0700
+@@ -169,7 +169,7 @@ static void remove_migration_pte(struct 
+ 		goto out;
+ 
+ 	get_page(new);
+-	pte = pte_mkold(mk_pte(new, vma->vm_page_prot));
++	pte = pte_mkold(mk_pte(new, addr, vma->vm_page_prot));
+ 	if (is_write_migration_entry(entry))
+ 		pte = pte_mkwrite(pte);
+ 	set_pte_at(mm, addr, ptep, pte);
+
 
 
