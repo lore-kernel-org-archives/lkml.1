@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbXGGBDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbXGGB2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbXGGBDZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jul 2007 21:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbXGGBDA
+	id S1754513AbXGGB2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jul 2007 21:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbXGGB2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jul 2007 21:03:00 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53158 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753507AbXGGBC7 (ORCPT
+	Fri, 6 Jul 2007 21:28:22 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:48828 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171AbXGGB2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jul 2007 21:02:59 -0400
-Date: Sat, 7 Jul 2007 03:03:30 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: ralf@linux-mips.org
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] include/asm-mips/processor.h: "extern inline" ->
-	"static inline"
-Message-ID: <20070707010330.GY3492@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 6 Jul 2007 21:28:22 -0400
+Subject: Re: [1/2] 2.6.22-rc7: known regressions
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Dmitry Torokhov <dtor@insightbb.com>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <Pine.LNX.4.64.0707070257040.11634@jikos.suse.cz>
+References: <468A7D14.1050505@googlemail.com>
+	 <d120d5000707051403r1d946375nb119ff86b26580ef@mail.gmail.com>
+	 <Pine.LNX.4.64.0707070019110.11634@jikos.suse.cz>
+	 <200707062033.18211.dtor@insightbb.com>
+	 <Pine.LNX.4.64.0707070257040.11634@jikos.suse.cz>
+Content-Type: text/plain
+Date: Fri, 06 Jul 2007 21:28:50 -0400
+Message-Id: <1183771730.2789.1.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"extern inline" will have different semantics with gcc 4.3,
-and "static inline" is correct here.
+On Sat, 2007-07-07 at 03:05 +0200, Jiri Kosina wrote:
+> On Fri, 6 Jul 2007, Dmitry Torokhov wrote:
+> 
+> > This is for devices using boot protocol, not full HID as far as I 
+> > understand.
+> 
+> David,
+> 
+> could you please try with the trivial patch below and report the output? 
+> I'd be interested to know whether we are by any chance really seeing 
+> double input_unregister_device() for the same input_dev somehow. Thanks.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+I suspect it's more likely that hci_conn_del_sysfs() is running and
+removing the object representing the ACL connection. That's what the
+input device's remove event is reporting as 'PHYSDEVPATH' on the
+occasions that it _doesn't_ oops.
 
----
---- linux-2.6.22-rc6-mm1/include/asm-mips/processor.h.old	2007-07-07 01:06:35.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/include/asm-mips/processor.h	2007-07-07 01:06:57.000000000 +0200
-@@ -237,7 +237,7 @@
- 
- #define ARCH_HAS_PREFETCH
- 
--extern inline void prefetch(const void *addr)
-+static inline void prefetch(const void *addr)
- {
- 	__asm__ __volatile__(
- 	"	.set	mips4		\n"
+-- 
+dwmw2
+
 
