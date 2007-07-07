@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbXGGVtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbXGGWFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbXGGVtk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 17:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbXGGVtc
+	id S1754311AbXGGWFQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 18:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXGGWFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 17:49:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:50682 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbXGGVtc convert rfc822-to-8bit (ORCPT
+	Sat, 7 Jul 2007 18:05:05 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:41520 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115AbXGGWFD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 17:49:32 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [2.6 patch] re-add required code to include/asm-v850/unistd.h
-Date: Sat, 7 Jul 2007 23:41:15 +0200
-User-Agent: KMail/1.9.6
-Cc: Miles Bader <miles@gnu.org>, linux-kernel@vger.kernel.org
-References: <20070707211124.GN3492@stusta.de>
-In-Reply-To: <20070707211124.GN3492@stusta.de>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sat, 7 Jul 2007 18:05:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=KG59af2icdpLyrKdxw4t2mTdV6eYQUhAqCnFW65/e4Zl0emVMBbm2WLl3buKi3B8LKLUPpK5G3sHCXvecq3gVOkx0qhn+e+QbkDphzeWUOl+g9zl2eymIDrnmszwTby9kcxRbZqnVqQmVEugp5yoQ7hak65cmVY+47pJS0C0QE4=
+Message-ID: <46900E24.7090406@gmail.com>
+Date: Sun, 08 Jul 2007 00:05:24 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707072341.16389.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+lWXId9WNR1zrVNO1a4MaZJ5a46mvQFv+zH9S
- 6aWIEmv184z+spO3fBk1m/pdVbebAKM6iV23gZ8nlmpKqEqe90
- zD6NF5K4oMjrk654nJozA==
+To: yoann padioleau <padator@wanadoo.fr>
+CC: akpm@linux-foundation.org, kernel-janitors@lists.osdl.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: kcalloc prototype [Was: + some-kmalloc-memset-kzalloc-tree-wide.patch
+ added to -mm tree]
+References: <200707062316.l66NGQXp026235@imap1.linux-foundation.org> <468F2A02.10402@gmail.com> <1CA436EC-008F-4FB1-8589-9276EA637F48@wanadoo.fr>
+In-Reply-To: <1CA436EC-008F-4FB1-8589-9276EA637F48@wanadoo.fr>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 July 2007, Adrian Bunk wrote:
+yoann padioleau napsal(a):
+>> static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
 > 
-> Commit f5738ceed46782aea7663d62cb6398eb05fc4ce0 removed a bit too much, 
-> resulting in the following compile error:
+> you are right, but why the type of kcalloc is not
+> static inline void *kcalloc(int n, size_t size, gfp_t flags) ?
 
-Sorry about the trouble this has caused you.
+Maybe C89 calloc prototype...
 
->  #ifdef __KERNEL__
->  
-> +/* Syscall protocol:
-> +   Syscall number in r12, args in r6-r9, r13-r14
-> +   Return value in r10
-> +   Trap 0 for `short' syscalls, where all the args can fit in function
-> +   call argument registers, and trap 1 when there are additional args in
-> +   r13-r14.  */
-> +
-> +#define SYSCALL_NUM    "r12"
-> +#define SYSCALL_ARG0   "r6"
-> +#define SYSCALL_ARG1   "r7"
-> +#define SYSCALL_ARG2   "r8"
-> +#define SYSCALL_ARG3   "r9"
-> +#define SYSCALL_ARG4   "r13"
-> +#define SYSCALL_ARG5   "r14"
-> +#define SYSCALL_RET    "r10"
-> +
-> +#define SYSCALL_SHORT_TRAP     "0"
-> +#define SYSCALL_LONG_TRAP      "1"
-> +
-> +/* Registers clobbered by any syscall.  This _doesn't_ include the syscall
-> +   number (r12) or the `extended arg' registers (r13, r14), even though
-> +   they are actually clobbered too (this is because gcc's `asm' statement
-> +   doesn't allow a clobber to be used as an input or output).  */
-> +#define SYSCALL_CLOBBERS       "r1", "r5", "r11", "r15", "r16", \
-> +                               "r17", "r18", "r19"
-> +
-> +/* Registers clobbered by a `short' syscall.  This includes all clobbers
-> +   except the syscall number (r12).  */
-> +#define SYSCALL_SHORT_CLOBBERS SYSCALL_CLOBBERS, "r13", "r14"
-> +
-
-Wouldn't it be more appropriate to just open-code the contents of these
-macros in the place where they are used?
-
-Even better probably would be to convert the v850 kernel_thread code
-to call do_fork directly, like most other architectures do.
-
-	Arnd <><
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
