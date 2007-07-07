@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbXGGO4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbXGGO4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbXGGO4R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 10:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbXGGO4G
+	id S1754830AbXGGO4s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 10:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbXGGO4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 10:56:06 -0400
-Received: from lixom.net ([66.141.50.11]:35418 "EHLO mail.lixom.net"
+	Sat, 7 Jul 2007 10:56:40 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:32936 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbXGGO4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 10:56:05 -0400
-Date: Sat, 7 Jul 2007 10:07:08 -0500
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] [POWERPC] mmio ide support for mpc8349-itx target
-Message-ID: <20070707150708.GA5387@lixom.net>
-References: <20070707094852.9473.21013.stgit@localhost.localdomain> <20070707094900.9473.48577.stgit@localhost.localdomain>
+	id S1751474AbXGGO4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 10:56:38 -0400
+Subject: Re: 2.6.22-rc6 bad page error
+In-Reply-To: <6bffcb0e0707070648v4d4af21i7c77ac931bfaaed7@mail.gmail.com>
+ "from Michal Piotrowski at Jul 7, 2007 03:48:36 pm"
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Date: Sat, 7 Jul 2007 09:56:36 -0500 (CDT)
+CC: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070707094900.9473.48577.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: olof@lixom.net (Olof Johansson)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070707145636.0034BDBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 01:49:00PM +0400, Vitaly Bordug wrote:
+Michal Piotrowski wrote:
+> Hi Bob,
 > 
-> This updates relevant platform code
-> (freescale mpc8349itx target) to make the CompactFlash
-> work in TrueIDE mode.
+> On 05/07/07, Bob Tracy <rct@gherkin.frus.com> wrote:
+> > This happened on an Alpha computer (433au) running 2.6.22-rc6.
+> 
+> Can you reproduce this bug on 2.6.22-rc7-git6?
+> 
+> >  The
+> > error was triggered when I started up a NX KDE session, which I've
+> > done successfully on all occasions prior to this one.  In other words,
+> > I wasn't doing anything out of the ordinary...  The machine is still up
+> > and running as I type this, and can't/won't be rebooted for a few hours
+> > if there's any other troubleshooting information I need to retrieve that
+> > might be helpful.
 
-Shouldn't you be writing a PCMCIA driver instead for the CF, so it
-handles other devices as well? Then you get storage "for free", as
-well as hotplug, etc.
+ACK on the suggestion to try -rc7-git6, but I'll probably wait until
+Monday to give it a try.  The client side of my NX "test fixture" is
+at my day job location :-).
 
-It's not hard:
-
-http://patchwork.ozlabs.org/linuxppc/patch?person=124&id=12044
-
-
--Olof
-
+-- 
+-----------------------------------------------------------------------
+Bob Tracy               | "Eagles may soar, but weasels don't get
+rct@frus.com            |  sucked into jet engines."       --Anon
+-----------------------------------------------------------------------
