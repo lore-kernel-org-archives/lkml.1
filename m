@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbXGHMWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbXGHMXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbXGHMWL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 08:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbXGHMV5
+	id S1754944AbXGHMXV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 08:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXGHMXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 08:21:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46483 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751743AbXGHMVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 08:21:47 -0400
-Date: Sun, 8 Jul 2007 14:21:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [PATCH 09/20] KVM: MMU: Fix Wrong tlb flush order
-Message-ID: <20070708122137.GB30226@elte.hu>
-References: <11838956891287-git-send-email-avi@qumranet.com> <1183895689306-git-send-email-avi@qumranet.com>
-MIME-Version: 1.0
+	Sun, 8 Jul 2007 08:23:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3498 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751667AbXGHMXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 08:23:13 -0400
+Date: Sun, 8 Jul 2007 12:09:33 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oliver Neukum <oliver@neukum.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
+Message-ID: <20070708120933.GA3866@ucw.cz>
+References: <Pine.LNX.4.44L0.0707061039380.3737-100000@iolanthe.rowland.org> <200707080108.17371.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1183895689306-git-send-email-avi@qumranet.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200707080108.17371.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Avi Kivity <avi@qumranet.com> wrote:
-
-> From: Shaohua Li <shaohua.li@intel.com>
+> > And then you will face the problem of a user task doing I/O during 
+> > hibernate after the atomic snapshot has been made.
 > 
-> Need to flush the tlb after updating a pte, not before.
+> I don't think that this is possible in normal conditions.  It would be possible
+> if, for example, the task were waiting for an unavailable resource and that
+> resource became available after the hibernation image had been created.
+> In that case, however, to do any damage, the task would have to cause some
+> filesystem-related data to be flushed in the same syscall (ie. before returning
+> to user space).
 
->  		rmap_remove(vcpu, spte);
-> -		kvm_flush_remote_tlbs(vcpu->kvm);
->  		set_shadow_pte(spte, *spte & ~PT_WRITABLE_MASK);
-> +		kvm_flush_remote_tlbs(vcpu->kvm);
+I agree that it is relatively unlikely to trigger (if you avoid
+freezing the tasks that were uninterruptible for long), but it will
+trigger in error cases etc.
 
-hm, isnt this a must-have fix for v2.6.22 (and .21) as well?
+> Such situations may be prevented by a mechanizm detecting if any uniterruptible
+> and freezing task has been woken up after creating the image and aborting the
+> hibernation in that cases.  For this purpose, we only need to add an
+> appropriate condition to try_to_wake_up() and make it start to trigger after,
+> for example, enabling the nonboot CPUs.
 
-	Ingo
+I don't know how to do that mechanism... but if we knew where to trap
+filesystem writes, we could simply freeze at that point, and at that
+point only, no?
+						Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
