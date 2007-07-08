@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbXGHTCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbXGHTFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757126AbXGHTCI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 15:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbXGHTBz
+	id S1757443AbXGHTFU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 15:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756336AbXGHTFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 15:01:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38473 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754726AbXGHTBy (ORCPT
+	Sun, 8 Jul 2007 15:05:09 -0400
+Received: from dns.hk.18mail.cn ([210.245.210.181]:38602 "EHLO
+	hkm1.server.hk.18mail.cn" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756225AbXGHTFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 15:01:54 -0400
-Date: Sun, 8 Jul 2007 12:00:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: Ulrich Drepper <drepper@redhat.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc6(mm1) Unable to handle kernel NULL pointer dereference
- - git-bisect result
-In-Reply-To: <20070708185118.GL21668@ftp.linux.org.uk>
-Message-ID: <alpine.LFD.0.999.0707081158340.31544@woody.linux-foundation.org>
-References: <20070708051452.GA4140@gentoox2.trippelsdorf.de>
- <20070708012016.455ce8d5.akpm@linux-foundation.org>
- <20070708100911.GA4196@gentoox2.trippelsdorf.de> <20070708152808.GA5902@gentoox2.trippelsdorf.de>
- <469119A3.6030409@redhat.com> <20070708173416.GG21668@ftp.linux.org.uk>
- <469121DA.6030600@redhat.com> <alpine.LFD.0.999.0707081058120.31544@woody.linux-foundation.org>
- <alpine.LFD.0.999.0707081126260.31544@woody.linux-foundation.org>
- <alpine.LFD.0.999.0707081130420.31544@woody.linux-foundation.org>
- <20070708185118.GL21668@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sun, 8 Jul 2007 15:05:08 -0400
+X-Greylist: delayed 1001 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jul 2007 15:05:08 EDT
+Subject: [PATCH] Update 2.4 maintainer in document
+From: Li Yang <leo@zh-kernel.org>
+Reply-To: leo@zh-kernel.org
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: zh-kernel.org
+Date: Mon, 09 Jul 2007 03:05:07 +0800
+Message-Id: <1183921507.6235.31.camel@leo-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Update the maintainer of 2.4 kernel in Documentations/SubmittingPatches.
+
+Signed-off-by: Li Yang <leo@zh-kernel.org>
+---
+ Documentation/SubmittingDrivers |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/SubmittingDrivers
+b/Documentation/SubmittingDrivers
+index d7e2642..24f2eb4 100644
+--- a/Documentation/SubmittingDrivers
++++ b/Documentation/SubmittingDrivers
+@@ -36,8 +36,7 @@ Linux 2.4:
+ 	If the code area has a general maintainer then please submit it to
+ 	the maintainer listed in MAINTAINERS in the kernel file. If the
+ 	maintainer does not respond or you cannot find the appropriate
+-	maintainer then please contact Marcelo Tosatti
+-	<marcelo.tosatti@cyclades.com>.
++	maintainer then please contact Willy Tarreau <w@1wt.eu>.
+ 
+ Linux 2.6:
+ 	The same rules apply as 2.4 except that you should follow linux-kernel
 
 
-On Sun, 8 Jul 2007, Al Viro wrote:
->
-> I think that we need to go the other way round - gather nameidata
-> ->nd and ->dentry into struct path and pass pointer to that instead...
 
-Yeah, that sounds fine too.
-
-> But that's .23-rc1 fodder, if not .23-rc2 one (we might want to
-> do -rc2 with just that, to avoid conflicts with pending patches).
-> Definitely not for .22-final.
-
-Oh, absolutely. I wasn't implying that we would want to do it today, but 
-as it is now, just looking at that code makes my eyes water.. So it would 
-be nice to fix that up.
-
-One reason I would almost prefer an "nd", though, is that it would allow 
-us to in general always just convert anythign that now looks up a path to 
-look up "a path or file descriptor" instead. Those things need "nd" right 
-now, and if it's a "struct path", then you'll always have the two 
-different cases, rather than just the common "release_nd()" at the end.
-
-		Linus
