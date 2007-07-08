@@ -1,203 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbXGHDJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbXGHDJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbXGHDJY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 23:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbXGHDIr
+	id S1756483AbXGHDJi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 23:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbXGHDIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 23:08:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47696 "EHLO
+	Sat, 7 Jul 2007 23:08:48 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47688 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755101AbXGHDIp (ORCPT
+	with ESMTP id S1755088AbXGHDIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 7 Jul 2007 23:08:45 -0400
-Message-Id: <20070708030844.800426889@sgi.com>
+Message-Id: <20070708030844.327742445@sgi.com>
 References: <20070708030538.729027694@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 07 Jul 2007 20:05:44 -0700
+Date: Sat, 07 Jul 2007 20:05:42 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
 Cc: dgc@sgi.com
-Subject: [patch 06/12] Slab defragmentation: Support dentry defragmentation
-Content-Disposition: inline; filename=slub_defrag_dentry
+Subject: [patch 04/12] Slab defragmentation: Logic to trigger defragmentation from memory reclaim
+Content-Disposition: inline; filename=slab_defrag_trigger
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get() uses the dcache lock and then works with dget_locked to obtain a
-reference to the dentry. An additional complication is that the dentry
-may be in process of being freed or it may just have been allocated.
-We add an additional flag to d_flags to be able to determined the
-status of an object.
+At some point slab defragmentation needs to be triggered. The logical
+point for this is after slab shrinking was performed in vmscan.c. At
+that point the fragmentation ratio of a slab was increased by objects
+being freed. So we call kmem_cache_defrag from there.
 
-kick() is called after get() has been used and after the slab has dropped
-all of its own locks. The dentry pruning for unused entries works in a
-straighforward way.
+slab_shrink() from vmscan.c is called in some contexts to do
+global shrinking of slabs and in others to do shrinking for
+a particular zone. Pass the zone to slab_shrink, so that slab_shrink
+can call kmem_cache_defrag() and restrict the defragmentation to
+the node that is under memory pressure.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/dcache.c            |  113 +++++++++++++++++++++++++++++++++++++++++++++----
- include/linux/dcache.h |    5 ++
- 2 files changed, 110 insertions(+), 8 deletions(-)
+ fs/drop_caches.c     |    2 +-
+ include/linux/mm.h   |    2 +-
+ include/linux/slab.h |    1 +
+ mm/vmscan.c          |   27 ++++++++++++++++++++-------
+ 4 files changed, 23 insertions(+), 9 deletions(-)
 
-Index: linux-2.6.22-rc4-mm2/fs/dcache.c
+Index: linux-2.6.22-rc6-mm1/include/linux/slab.h
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/fs/dcache.c	2007-06-26 12:00:37.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/fs/dcache.c	2007-06-26 12:08:49.000000000 -0700
-@@ -135,6 +135,7 @@ static struct dentry *d_kill(struct dent
+--- linux-2.6.22-rc6-mm1.orig/include/linux/slab.h	2007-07-04 09:53:59.000000000 -0700
++++ linux-2.6.22-rc6-mm1/include/linux/slab.h	2007-07-04 09:56:22.000000000 -0700
+@@ -96,6 +96,7 @@ void kmem_cache_free(struct kmem_cache *
+ unsigned int kmem_cache_size(struct kmem_cache *);
+ const char *kmem_cache_name(struct kmem_cache *);
+ int kmem_ptr_validate(struct kmem_cache *cachep, const void *ptr);
++int kmem_cache_defrag(int node);
  
- 	list_del(&dentry->d_u.d_child);
- 	dentry_stat.nr_dentry--;	/* For d_free, below */
-+	dentry->d_flags &= ~DCACHE_ENTRY_VALID;
- 	/*drops the locks, at that point nobody can reach this dentry */
- 	dentry_iput(dentry);
- 	parent = dentry->d_parent;
-@@ -951,6 +952,7 @@ struct dentry *d_alloc(struct dentry * p
- 	if (parent)
- 		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
- 	dentry_stat.nr_dentry++;
-+	dentry->d_flags |= DCACHE_ENTRY_VALID;
- 	spin_unlock(&dcache_lock);
- 
- 	return dentry;
-@@ -2108,18 +2110,113 @@ static void __init dcache_init_early(voi
- 		INIT_HLIST_HEAD(&dentry_hashtable[loop]);
+ /*
+  * Please use this macro to create slab caches. Simply specify the
+Index: linux-2.6.22-rc6-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/mm/vmscan.c	2007-07-04 09:53:59.000000000 -0700
++++ linux-2.6.22-rc6-mm1/mm/vmscan.c	2007-07-04 09:59:08.000000000 -0700
+@@ -152,10 +152,18 @@ EXPORT_SYMBOL(unregister_shrinker);
+  * are eligible for the caller's allocation attempt.  It is used for balancing
+  * slab reclaim versus page reclaim.
+  *
++ * zone is the zone for which we are shrinking the slabs. If the intent
++ * is to do a global shrink then zone may be NULL. Specification of a
++ * zone is currently only used to limit slab defragmentation to a NUMA node.
++ * The performace of shrink_slab would be better (in particular under NUMA)
++ * if it could be targeted as a whole to the zone that is under memory
++ * pressure but the VFS infrastructure does not allow that at the present
++ * time.
++ *
+  * Returns the number of slab objects which we shrunk.
+  */
+ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+-			unsigned long lru_pages)
++			unsigned long lru_pages, struct zone *zone)
+ {
+ 	struct shrinker *shrinker;
+ 	unsigned long ret = 0;
+@@ -218,6 +226,8 @@ unsigned long shrink_slab(unsigned long 
+ 		shrinker->nr += total_scan;
+ 	}
+ 	up_read(&shrinker_rwsem);
++	if (gfp_mask & __GFP_FS)
++		kmem_cache_defrag(zone ? zone_to_nid(zone) : -1);
+ 	return ret;
  }
  
-+/*
-+ * The slab is holding off frees. Thus we can safely examine
-+ * the object without the danger of it vanishing from under us.
-+ */
-+static void *get_dentries(struct kmem_cache *s, int nr, void **v)
-+{
-+	struct dentry *dentry;
-+	int i;
-+
-+	spin_lock(&dcache_lock);
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+		/*
-+		 * if DCACHE_ENTRY_VALID is not set then the dentry
-+		 * may be already in the process of being freed.
-+		 */
-+		if (!(dentry->d_flags & DCACHE_ENTRY_VALID))
-+			v[i] = NULL;
-+		else
-+			dget_locked(dentry);
-+	}
-+	spin_unlock(&dcache_lock);
-+	return 0;
-+}
-+
-+/*
-+ * Slab has dropped all the locks. Get rid of the
-+ * refcount we obtained earlier and also rid of the
-+ * object.
-+ */
-+static void kick_dentries(struct kmem_cache *s, int nr, void **v, void *private)
-+{
-+	struct dentry *dentry;
-+	int abort = 0;
-+	int i;
-+
-+	/*
-+	 * First invalidate the dentries without holding the dcache lock
-+	 */
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+
-+		if (dentry)
-+			d_invalidate(dentry);
-+	}
-+
-+	/*
-+	 * If we are the last one holding a reference then the dentries can
-+	 * be freed. We  need the dcache_lock.
-+	 */
-+	spin_lock(&dcache_lock);
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+		if (!dentry)
-+			continue;
-+
-+		if (abort)
-+			goto put_dentry;
-+
-+		spin_lock(&dentry->d_lock);
-+		if (atomic_read(&dentry->d_count) > 1) {
-+			/*
-+			 * Reference count was increased. This means that we
-+			 * cannot free one object which makes it impossible
-+			 * to reclaim this slab. So it is best to abandon the
-+			 * freeing of further objects.
-+			 */
-+			abort = 1;
-+			spin_unlock(&dentry->d_lock);
-+put_dentry:
-+			spin_unlock(&dcache_lock);
-+			dput(dentry);
-+			spin_lock(&dcache_lock);
-+			continue;
-+		}
-+
-+		/* Remove from LRU */
-+		if (!list_empty(&dentry->d_lru)) {
-+			dentry_stat.nr_unused--;
-+			list_del_init(&dentry->d_lru);
-+		}
-+		/* Drop the entry */
-+		prune_one_dentry(dentry, 1);
-+	}
-+	spin_unlock(&dcache_lock);
-+
-+	/*
-+	 * dentries are freed using RCU so we need to wait until RCU
-+	 * operations arei complete
-+	 */
-+	if (!abort)
-+		synchronize_rcu();
-+}
-+
-+static struct kmem_cache_ops dentry_kmem_cache_ops = {
-+	.get = get_dentries,
-+	.kick = kick_dentries,
-+};
-+
- static void __init dcache_init(unsigned long mempages)
- {
- 	int loop;
+@@ -1163,7 +1173,8 @@ unsigned long try_to_free_pages(struct z
+ 		if (!priority)
+ 			disable_swap_token();
+ 		nr_reclaimed += shrink_zones(priority, zones, &sc);
+-		shrink_slab(sc.nr_scanned, gfp_mask, lru_pages);
++		shrink_slab(sc.nr_scanned, gfp_mask, lru_pages,
++						NULL);
+ 		if (reclaim_state) {
+ 			nr_reclaimed += reclaim_state->reclaimed_slab;
+ 			reclaim_state->reclaimed_slab = 0;
+@@ -1333,7 +1344,7 @@ loop_again:
+ 			nr_reclaimed += shrink_zone(priority, zone, &sc);
+ 			reclaim_state->reclaimed_slab = 0;
+ 			nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
+-						lru_pages);
++						lru_pages, zone);
+ 			nr_reclaimed += reclaim_state->reclaimed_slab;
+ 			total_scanned += sc.nr_scanned;
+ 			if (zone->all_unreclaimable)
+@@ -1601,7 +1612,7 @@ unsigned long shrink_all_memory(unsigned
+ 	/* If slab caches are huge, it's better to hit them first */
+ 	while (nr_slab >= lru_pages) {
+ 		reclaim_state.reclaimed_slab = 0;
+-		shrink_slab(nr_pages, sc.gfp_mask, lru_pages);
++		shrink_slab(nr_pages, sc.gfp_mask, lru_pages, NULL);
+ 		if (!reclaim_state.reclaimed_slab)
+ 			break;
  
--	/* 
--	 * A constructor could be added for stable state like the lists,
--	 * but it is probably not worth it because of the cache nature
--	 * of the dcache. 
--	 */
--	dentry_cache = KMEM_CACHE(dentry,
--		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD);
--	
-+	dentry_cache = KMEM_CACHE_OPS(dentry,
-+		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD,
-+		&dentry_kmem_cache_ops);
-+
- 	register_shrinker(&dcache_shrinker);
+@@ -1639,7 +1650,7 @@ unsigned long shrink_all_memory(unsigned
  
- 	/* Hash may have been set up in dcache_init_early */
-Index: linux-2.6.22-rc4-mm2/include/linux/dcache.h
+ 			reclaim_state.reclaimed_slab = 0;
+ 			shrink_slab(sc.nr_scanned, sc.gfp_mask,
+-					count_lru_pages());
++					count_lru_pages(), NULL);
+ 			ret += reclaim_state.reclaimed_slab;
+ 			if (ret >= nr_pages)
+ 				goto out;
+@@ -1656,7 +1667,8 @@ unsigned long shrink_all_memory(unsigned
+ 	if (!ret) {
+ 		do {
+ 			reclaim_state.reclaimed_slab = 0;
+-			shrink_slab(nr_pages, sc.gfp_mask, count_lru_pages());
++			shrink_slab(nr_pages, sc.gfp_mask,
++					count_lru_pages(), NULL);
+ 			ret += reclaim_state.reclaimed_slab;
+ 		} while (ret < nr_pages && reclaim_state.reclaimed_slab > 0);
+ 	}
+@@ -1816,7 +1828,8 @@ static int __zone_reclaim(struct zone *z
+ 		 * Note that shrink_slab will free memory on all zones and may
+ 		 * take a long time.
+ 		 */
+-		while (shrink_slab(sc.nr_scanned, gfp_mask, order) &&
++		while (shrink_slab(sc.nr_scanned, gfp_mask, order,
++						zone) &&
+ 			zone_page_state(zone, NR_SLAB_RECLAIMABLE) >
+ 				slab_reclaimable - nr_pages)
+ 			;
+Index: linux-2.6.22-rc6-mm1/fs/drop_caches.c
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/include/linux/dcache.h	2007-06-26 12:00:37.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/include/linux/dcache.h	2007-06-26 12:07:36.000000000 -0700
-@@ -177,6 +177,11 @@ d_iput:		no		no		no       yes
+--- linux-2.6.22-rc6-mm1.orig/fs/drop_caches.c	2007-07-04 09:53:59.000000000 -0700
++++ linux-2.6.22-rc6-mm1/fs/drop_caches.c	2007-07-04 09:56:22.000000000 -0700
+@@ -52,7 +52,7 @@ void drop_slab(void)
+ 	int nr_objects;
  
- #define DCACHE_INOTIFY_PARENT_WATCHED	0x0020 /* Parent inode is watched */
+ 	do {
+-		nr_objects = shrink_slab(1000, GFP_KERNEL, 1000);
++		nr_objects = shrink_slab(1000, GFP_KERNEL, 1000, NULL);
+ 	} while (nr_objects > 10);
+ }
  
-+#define DCACHE_ENTRY_VALID	0x0040	/*
-+					 * Entry is valid and not in the
-+					 * process of being created or
-+					 * destroyed.
-+					 */
- extern spinlock_t dcache_lock;
- 
- /**
+Index: linux-2.6.22-rc6-mm1/include/linux/mm.h
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/include/linux/mm.h	2007-07-04 09:53:59.000000000 -0700
++++ linux-2.6.22-rc6-mm1/include/linux/mm.h	2007-07-04 09:56:22.000000000 -0700
+@@ -1248,7 +1248,7 @@ int in_gate_area_no_task(unsigned long a
+ int drop_caches_sysctl_handler(struct ctl_table *, int, struct file *,
+ 					void __user *, size_t *, loff_t *);
+ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+-			unsigned long lru_pages);
++			unsigned long lru_pages, struct zone *zone);
+ extern void drop_pagecache_sb(struct super_block *);
+ void drop_pagecache(void);
+ void drop_slab(void);
 
 -- 
