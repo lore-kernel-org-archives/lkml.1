@@ -1,162 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbXGHL7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbXGHL74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbXGHL7k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 07:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXGHLzX
+	id S1756785AbXGHL74 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 07:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbXGHLzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 07:55:23 -0400
-Received: from il.qumranet.com ([82.166.9.18]:38408 "EHLO il.qumranet.com"
+	Sun, 8 Jul 2007 07:55:25 -0400
+Received: from il.qumranet.com ([82.166.9.18]:38409 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752153AbXGHLyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752090AbXGHLyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Jul 2007 07:54:46 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 13/20] KVM: Clean up #includes
-Date: Sun,  8 Jul 2007 14:54:42 +0300
-Message-Id: <11838956891257-git-send-email-avi@qumranet.com>
+Subject: [PATCH 14/20] HOTPLUG: Add CPU_DYING notifier
+Date: Sun,  8 Jul 2007 14:54:43 +0300
+Message-Id: <11838956892953-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.2.2
 In-Reply-To: <11838956891287-git-send-email-avi@qumranet.com>
 References: <11838956891287-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove unnecessary ones, and rearange the remaining in the standard order.
+KVM wants a notification when a cpu is about to die, so it can disable
+hardware extensions, but at a time when user processes cannot be scheduled
+on the cpu, so it doesn't try to use virtualization extensions after they
+have been disabled.
+
+This adds a CPU_DYING notification.  The notification is called in atomic
+context on the doomed cpu.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm_main.c |   18 +++++++-----------
- drivers/kvm/mmu.c      |   10 ++++++----
- drivers/kvm/svm.c      |    7 ++++---
- drivers/kvm/vmx.c      |    5 +++--
- 4 files changed, 20 insertions(+), 20 deletions(-)
+ include/linux/notifier.h |    3 +++
+ kernel/cpu.c             |   16 ++++++++++++++--
+ 2 files changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 26ca90f..ea02719 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -16,37 +16,33 @@
-  */
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index 9431101..576f2bb 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -196,6 +196,8 @@ extern int __srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+ #define CPU_DEAD		0x0007 /* CPU (unsigned)v dead */
+ #define CPU_LOCK_ACQUIRE	0x0008 /* Acquire all hotcpu locks */
+ #define CPU_LOCK_RELEASE	0x0009 /* Release all hotcpu locks */
++#define CPU_DYING		0x000A /* CPU (unsigned)v not running any task,
++				        * not handling interrupts, soon dead */
  
- #include "kvm.h"
-+#include "x86_emulate.h"
-+#include "segment_descriptor.h"
+ /* Used for CPU hotplug events occuring while tasks are frozen due to a suspend
+  * operation in progress
+@@ -208,6 +210,7 @@ extern int __srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+ #define CPU_DOWN_PREPARE_FROZEN	(CPU_DOWN_PREPARE | CPU_TASKS_FROZEN)
+ #define CPU_DOWN_FAILED_FROZEN	(CPU_DOWN_FAILED | CPU_TASKS_FROZEN)
+ #define CPU_DEAD_FROZEN		(CPU_DEAD | CPU_TASKS_FROZEN)
++#define CPU_DYING_FROZEN	(CPU_DYING | CPU_TASKS_FROZEN)
  
- #include <linux/kvm.h>
- #include <linux/module.h>
- #include <linux/errno.h>
--#include <linux/magic.h>
--#include <asm/processor.h>
- #include <linux/percpu.h>
- #include <linux/gfp.h>
--#include <asm/msr.h>
- #include <linux/mm.h>
- #include <linux/miscdevice.h>
- #include <linux/vmalloc.h>
--#include <asm/uaccess.h>
- #include <linux/reboot.h>
--#include <asm/io.h>
- #include <linux/debugfs.h>
- #include <linux/highmem.h>
- #include <linux/file.h>
--#include <asm/desc.h>
- #include <linux/sysdev.h>
- #include <linux/cpu.h>
--#include <linux/file.h>
--#include <linux/fs.h>
--#include <linux/mount.h>
- #include <linux/sched.h>
- #include <linux/cpumask.h>
- #include <linux/smp.h>
- #include <linux/anon_inodes.h>
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_NOTIFIER_H */
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 208cf34..181ae70 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -103,11 +103,19 @@ static inline void check_for_tasks(int cpu)
+ 	write_unlock_irq(&tasklist_lock);
+ }
  
--#include "x86_emulate.h"
--#include "segment_descriptor.h"
-+#include <asm/processor.h>
-+#include <asm/msr.h>
-+#include <asm/io.h>
-+#include <asm/uaccess.h>
-+#include <asm/desc.h>
- 
- MODULE_AUTHOR("Qumranet");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index 49ffbd3..b297a6b 100644
---- a/drivers/kvm/mmu.c
-+++ b/drivers/kvm/mmu.c
-@@ -16,16 +16,18 @@
-  * the COPYING file in the top-level directory.
-  *
-  */
++struct take_cpu_down_param {
++	unsigned long mod;
++	void *hcpu;
++};
 +
-+#include "vmx.h"
-+#include "kvm.h"
-+
- #include <linux/types.h>
- #include <linux/string.h>
--#include <asm/page.h>
- #include <linux/mm.h>
- #include <linux/highmem.h>
- #include <linux/module.h>
--#include <asm/cmpxchg.h>
+ /* Take this CPU down. */
+-static int take_cpu_down(void *unused)
++static int take_cpu_down(void *_param)
+ {
++	struct take_cpu_down_param *param = _param;
+ 	int err;
  
--#include "vmx.h"
--#include "kvm.h"
-+#include <asm/page.h>
-+#include <asm/cmpxchg.h>
++	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
++				param->hcpu);
+ 	/* Ensure this CPU doesn't handle any more interrupts. */
+ 	err = __cpu_disable();
+ 	if (err < 0)
+@@ -127,6 +135,10 @@ static int _cpu_down(unsigned int cpu, int tasks_frozen)
+ 	cpumask_t old_allowed, tmp;
+ 	void *hcpu = (void *)(long)cpu;
+ 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
++	struct take_cpu_down_param tcd_param = {
++		.mod = mod,
++		.hcpu = hcpu,
++	};
  
- #undef MMU_DEBUG
+ 	if (num_online_cpus() == 1)
+ 		return -EBUSY;
+@@ -153,7 +165,7 @@ static int _cpu_down(unsigned int cpu, int tasks_frozen)
+ 	set_cpus_allowed(current, tmp);
  
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index a0d4428..bc818cc 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -14,16 +14,17 @@
-  *
-  */
+ 	mutex_lock(&cpu_bitmask_lock);
+-	p = __stop_machine_run(take_cpu_down, NULL, cpu);
++	p = __stop_machine_run(take_cpu_down, &tcd_param, cpu);
+ 	mutex_unlock(&cpu_bitmask_lock);
  
-+#include "kvm_svm.h"
-+#include "x86_emulate.h"
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/vmalloc.h>
- #include <linux/highmem.h>
- #include <linux/profile.h>
- #include <linux/sched.h>
--#include <asm/desc.h>
- 
--#include "kvm_svm.h"
--#include "x86_emulate.h"
-+#include <asm/desc.h>
- 
- MODULE_AUTHOR("Qumranet");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index 7d04ffa..80628f6 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -17,17 +17,18 @@
- 
- #include "kvm.h"
- #include "vmx.h"
-+#include "segment_descriptor.h"
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/highmem.h>
- #include <linux/profile.h>
- #include <linux/sched.h>
-+
- #include <asm/io.h>
- #include <asm/desc.h>
- 
--#include "segment_descriptor.h"
--
- MODULE_AUTHOR("Qumranet");
- MODULE_LICENSE("GPL");
- 
+ 	if (IS_ERR(p) || cpu_online(cpu)) {
 -- 
 1.5.2.2
 
