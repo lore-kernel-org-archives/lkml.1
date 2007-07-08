@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbXGHAld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbXGHAnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbXGHAld (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 20:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbXGHAlY
+	id S1755821AbXGHAnR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 20:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbXGHAnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 20:41:24 -0400
-Received: from gate.crashing.org ([63.228.1.57]:32995 "EHLO gate.crashing.org"
+	Sat, 7 Jul 2007 20:43:07 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33009 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138AbXGHAlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 20:41:24 -0400
+	id S1753138AbXGHAnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 20:43:06 -0400
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Kyle Moffett <mrmacman_g4@mac.com>,
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
        Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
        linux-pm@lists.linux-foundation.org
-In-Reply-To: <20070707114917.GC2789@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0707061034540.3737-100000@iolanthe.rowland.org>
-	 <1183779845.3388.206.camel@localhost.localdomain>
-	 <20070707114917.GC2789@elf.ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.0707071215140.19734-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0707071215140.19734-100000@netrider.rowland.org>
 Content-Type: text/plain
-Date: Sun, 08 Jul 2007 10:40:46 +1000
-Message-Id: <1183855247.3388.231.camel@localhost.localdomain>
+Date: Sun, 08 Jul 2007 10:42:42 +1000
+Message-Id: <1183855362.3388.233.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-07 at 13:49 +0200, Pavel Machek wrote:
+On Sat, 2007-07-07 at 12:17 -0400, Alan Stern wrote:
+> On Sat, 7 Jul 2007, Benjamin Herrenschmidt wrote:
+> 
+> > > > And guess what ? It's what we do on powerbooks, and it works fine,
+> > > > without a freezer :-)
+> 
+> > If you remember, one of the things I've been advocating has always been
+> > that we should put on hold all plug activity (unplug might be alright as
+> > long as the user events are just delayed) when we start suspending. No
+> > new devices, no new bindings. "hub" type devices are respondible for
+> > bringing in the new stuff after resume.
+> 
+> Which is exactly my point.  It _doesn't_ work fine without a freezer, 
+> because the USB stack currently relies on the freezer to prevent plug 
+> activity.
 
-> And anyway I believe that current issue (fuse deadlocks with s2ram)
-> should be present on powerbooks, too... it is just way harder to
-> trigger. All that is neccessary is fused (or one of its helpers) to
-> get frozen by accessing suspended device.
+Putting on hold plug activity has nothing, NOTHING, to do with the half
+assed piece of deadlocking crap we have now we call a freezer.
 
-I don't see any fuse specific issue without a freezer, but I see generic
-issues such as kmalloc blocking in a driver with a mutex held etc... but
-I've talked about these already. They have nothing to do with the
-freezer though.
+As long as you guys keep mixing up all the issues and coming up with
+totally bogus solutions that cannot work, we won't have a useful suspend
+(either to RAM or to disk) in linux.
 
 Ben.
 
