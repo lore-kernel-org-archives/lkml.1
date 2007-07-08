@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbXGHJ64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbXGHKDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbXGHJ64 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 05:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXGHJ6t
+	id S1756507AbXGHKDK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 06:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXGHKC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 05:58:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39998 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753155AbXGHJ6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 05:58:48 -0400
-Date: Sun, 8 Jul 2007 11:58:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux@bohmer.net
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: PI mutex support on ARM
-Message-ID: <20070708095841.GA4601@elte.hu>
-References: <3efb10970707080124i7a9323c5o9257b4adcb2ac493@mail.gmail.com>
+	Sun, 8 Jul 2007 06:02:58 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:18100 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753916AbXGHKC5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 06:02:57 -0400
+Date: Sun, 8 Jul 2007 12:02:56 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       drepper@redhat.com
+Subject: Re: utimensat (man-pages-2.61 is released)
+In-Reply-To: <20070708073042.238020@gmx.net>
+Message-ID: <Pine.LNX.4.64.0707081159530.1536@fbirervta.pbzchgretzou.qr>
+References: <468FBEB7.1000308@gmx.net> <Pine.LNX.4.64.0707072057030.1536@fbirervta.pbzchgretzou.qr>
+ <20070708073042.238020@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3efb10970707080124i7a9323c5o9257b4adcb2ac493@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Remy Bohmer <l.pinguin@gmail.com> wrote:
+On Jul 8 2007 09:30, Michael Kerrisk wrote:
+>> On Jul 7 2007 18:26, Michael Kerrisk wrote:
+>> >
+>> >I recently released man-pages-2.61.
+>> 
+>> utimensat() was introduced in Linux 2.6.22-rc1.
+>
+>Yes, I am aware.
+>
+>> I am kindly hinting that it does not yet have a manpage yet :)
+>
+>Such a hint is a good idea.  But strangely, you send it to me,
+>rather than the author of the system call.  Why is that?
 
-> --- linux-2.6.21.orig/include/asm/futex.h	2007-04-26 05:08:32.000000000 +0200
+Related manpages (futimesat(2)) does not list an author.
+So I were to guess who wrote it: you, or Ulrich, or a contributor.
 
-patch format problem: never diff the asm/ files, diff the asm-arm/ 
-files.
 
-> +	local_irq_save(flags);
-> +
-> +	err = get_user(uval, uaddr);
-
-is it safe to do a get_user() with irqs off?
-
-> +	if (err)
-> +	{
-> +		local_irq_restore(flags);
-> +		 return -EFAULT;
-> +	}
-
-(style problems. Use scripts/checkpatch.pl to verify your patches.)
-
-> +	local_irq_restore(flags);
-
-is this method of atomic ops SMP-safe?
-
-	Ingo
+	Jan
+-- 
