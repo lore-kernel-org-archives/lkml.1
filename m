@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbXGHKMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbXGHKW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbXGHKMS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 06:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbXGHKMG
+	id S1756854AbXGHKW5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 06:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbXGHKWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 06:12:06 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:8572 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755691AbXGHKMD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 06:12:03 -0400
-Date: Sun, 8 Jul 2007 12:12:03 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jim Cromie <jim.cromie@gmail.com>
-cc: Linux kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, davem@davemloft.net
-Subject: Re: Coding style on function signatures  (was: Convert tasklets to
- work queues )
-In-Reply-To: <46903483.3020205@gmail.com>
-Message-ID: <Pine.LNX.4.64.0707081209260.1536@fbirervta.pbzchgretzou.qr>
-References: <20070622182051.859570787@goodmis.org> <20070622182315.571740041@goodmis.org>
- <20070623095359.4667514e.akpm@linux-foundation.org>
- <alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org>
- <20070623115252.fc36f20c.rdunlap@xenotime.net>
- <alpine.LFD.0.98.0706231209130.3593@woody.linux-foundation.org>
- <46903483.3020205@gmail.com>
+	Sun, 8 Jul 2007 06:22:49 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39393 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754271AbXGHKWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 06:22:48 -0400
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: queued spinlock code and results
+References: <20070708043228.GB22397@wotan.suse.de>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 08 Jul 2007 13:18:10 +0200
+In-Reply-To: <20070708043228.GB22397@wotan.suse.de>
+Message-ID: <p733azz16vh.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nick Piggin <npiggin@suse.de> writes:
 
-On Jul 7 2007 18:49, Jim Cromie wrote:
-> forex:
->
-> static ssize_t
-> store_fan_div (struct device *dev, struct device_attribute *devattr,
->                   const char *buf, size_t count)
-> {...}
->
-> IIRC, many like the entire sig on one line, because its grep friendly.
-> I personally like the above, but grep-ability is hard to argue against.
->
-> The above has 2 violations (of strict-grep-ability rule)
-> 1 - return sig is separate
+> I made some tests of the queued spinlock code using userspace test code on
+> 64-bit processors. I believe the xadd based code no longer has any theoretical
+> memory ordering problems.
 
-I can only think of one case where it's ok, when the first line is quite long
-already:
+Linus, the background of this is that on 8 socket Opteron systems
+the current spinlocks can become very unfair to the point of severe 
+starvation. These boxes are becomming more common.
 
-static __attribute__((pure)) inline const uint32_t
-hashfunction(parameter1, parameter2, ...)
-{
-}
+> The threaded results also attempt to have an unfairness count, which is the
+> max number of times in a row that a lock is acquired,  when all other threads
+> are also executing in the loop -- the reason xadd for example is not always
+> 0 there is because the other threads may not have reached the lock before
+> the current thread was able to get it several times (eg. if an interrupt
+> comes in, this could happen).
 
+Interesting. I was also thinking about switching the lock types
+at boot time. Since all the lock calls are out of line this would
+be reasonably easy.
 
-	Jan
--- 
+I would say the main drawback of switchable and queued locks 
+would be also that they require a larger spinlock_t thus increasing
+cache usage
+
+e.g. it would probably hurt for the large spinlock tables used 
+by TCP, but then those should be fixed anyways to be smaller.
+
+-Andi
+
