@@ -1,204 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbXGHDKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbXGHDK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756721AbXGHDKl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 23:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756210AbXGHDJO
+	id S1756823AbXGHDK6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 23:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbXGHDJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 23:09:14 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46563 "EHLO
+	Sat, 7 Jul 2007 23:09:16 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47698 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755116AbXGHDIp (ORCPT
+	with ESMTP id S1755174AbXGHDIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 23:08:45 -0400
-Message-Id: <20070708030844.093584299@sgi.com>
+	Sat, 7 Jul 2007 23:08:46 -0400
+Message-Id: <20070708030845.265903427@sgi.com>
 References: <20070708030538.729027694@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 07 Jul 2007 20:05:41 -0700
+Date: Sat, 07 Jul 2007 20:05:46 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
 Cc: dgc@sgi.com
-Subject: [patch 03/12] Slab defragmentation: Updates to slabinfo.c
-Content-Disposition: inline; filename=slab_defrag_slabinfo_updates
+Subject: [patch 08/12] Slab defragmentation: Support generic defragmentation for inode slab caches
+Content-Disposition: inline; filename=slub_defrag_inode_generic
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--D lists caches that support defragmentation
+This implements the ability to remove inodes in a particular slab
+from the inode cache. In order to remove an inode we may have to write out
+the pages of an inode, the inode itself and remove the dentries referring
+to the node.
 
--C lists caches that use a ctor.
-
-Change field names for defrag_ratio and remote_node_defrag_ratio.
+Provide generic functionality that can be used by filesystems that have
+their own inode caches to also tie into the defragmentation functions
+that are made available here.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- Documentation/vm/slabinfo.c |   52 +++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 44 insertions(+), 8 deletions(-)
+ fs/inode.c         |  101 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fs.h |    5 ++
+ 2 files changed, 105 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.22-rc6-mm1/Documentation/vm/slabinfo.c
+Index: linux-2.6.22-rc6-mm1/fs/inode.c
 ===================================================================
---- linux-2.6.22-rc6-mm1.orig/Documentation/vm/slabinfo.c	2007-07-05 19:00:27.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/Documentation/vm/slabinfo.c	2007-07-05 19:04:14.000000000 -0700
-@@ -30,6 +30,8 @@ struct slabinfo {
- 	int hwcache_align, object_size, objs_per_slab;
- 	int sanity_checks, slab_size, store_user, trace;
- 	int order, poison, reclaim_account, red_zone;
-+	int defrag, ctor;
-+	int defrag_ratio, remote_node_defrag_ratio;
- 	unsigned long partial, objects, slabs;
- 	int numa[MAX_NODES];
- 	int numa_partial[MAX_NODES];
-@@ -56,6 +58,8 @@ int show_slab = 0;
- int skip_zero = 1;
- int show_numa = 0;
- int show_track = 0;
-+int show_defrag = 0;
-+int show_ctor = 0;
- int show_first_alias = 0;
- int validate = 0;
- int shrink = 0;
-@@ -90,18 +94,20 @@ void fatal(const char *x, ...)
- void usage(void)
- {
- 	printf("slabinfo 5/7/2007. (c) 2007 sgi. clameter@sgi.com\n\n"
--		"slabinfo [-ahnpvtsz] [-d debugopts] [slab-regexp]\n"
-+		"slabinfo [-aCDefhilnosSrtTvz1] [-d debugopts] [slab-regexp]\n"
- 		"-a|--aliases           Show aliases\n"
-+		"-C|--ctor              Show slabs with ctors\n"
- 		"-d<options>|--debug=<options> Set/Clear Debug options\n"
--		"-e|--empty		Show empty slabs\n"
-+		"-D|--defrag            Show defragmentable caches\n"
-+		"-e|--empty             Show empty slabs\n"
- 		"-f|--first-alias       Show first alias\n"
- 		"-h|--help              Show usage information\n"
- 		"-i|--inverted          Inverted list\n"
- 		"-l|--slabs             Show slabs\n"
- 		"-n|--numa              Show NUMA information\n"
--		"-o|--ops		Show kmem_cache_ops\n"
-+		"-o|--ops               Show kmem_cache_ops\n"
- 		"-s|--shrink            Shrink slabs\n"
--		"-r|--report		Detailed report on single slabs\n"
-+		"-r|--report            Detailed report on single slabs\n"
- 		"-S|--Size              Sort by size\n"
- 		"-t|--tracking          Show alloc/free information\n"
- 		"-T|--Totals            Show summary information\n"
-@@ -281,7 +287,7 @@ int line = 0;
- void first_line(void)
- {
- 	printf("Name                   Objects Objsize    Space "
--		"Slabs/Part/Cpu  O/S O %%Fr %%Ef Flg\n");
-+		"Slabs/Part/Cpu  O/S O %%Ra %%Ef Flg\n");
+--- linux-2.6.22-rc6-mm1.orig/fs/inode.c	2007-07-03 17:19:26.000000000 -0700
++++ linux-2.6.22-rc6-mm1/fs/inode.c	2007-07-03 17:28:46.000000000 -0700
+@@ -1351,6 +1351,105 @@ static int __init set_ihash_entries(char
+ }
+ __setup("ihash_entries=", set_ihash_entries);
+ 
++static void *get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	int i;
++
++	spin_lock(&inode_lock);
++	for (i = 0; i < nr; i++) {
++		struct inode *inode = v[i];
++
++		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
++			v[i] = NULL;
++		else
++			__iget(inode);
++	}
++	spin_unlock(&inode_lock);
++	return NULL;
++}
++
++/*
++ * Function for filesystems that embedd struct inode into their own
++ * structures. The offset is the offset of the struct inode in the fs inode.
++ */
++void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
++						unsigned long offset)
++{
++	int i;
++
++	for (i = 0; i < nr; i++)
++		v[i] += offset;
++
++	return get_inodes(s, nr, v);
++}
++EXPORT_SYMBOL(fs_get_inodes);
++
++void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
++{
++	struct inode *inode;
++	int i;
++	int abort = 0;
++	LIST_HEAD(freeable);
++	struct super_block *sb;
++
++	for (i = 0; i < nr; i++) {
++		inode = v[i];
++		if (!inode)
++			continue;
++
++		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
++			if (remove_inode_buffers(inode))
++				invalidate_mapping_pages(&inode->i_data,
++								0, -1);
++		}
++
++		/* Invalidate children and dentry */
++		if (S_ISDIR(inode->i_mode)) {
++			struct dentry *d = d_find_alias(inode);
++
++			if (d) {
++				d_invalidate(d);
++				dput(d);
++			}
++		}
++
++		if (inode->i_state & I_DIRTY)
++			write_inode_now(inode, 1);
++
++		d_prune_aliases(inode);
++	}
++
++	mutex_lock(&iprune_mutex);
++	for (i = 0; i < nr; i++) {
++		inode = v[i];
++		if (!inode)
++			continue;
++
++		sb = inode->i_sb;
++		iput(inode);
++		if (abort || !(sb->s_flags & MS_ACTIVE))
++			continue;
++
++		spin_lock(&inode_lock);
++		abort =  !can_unuse(inode);
++
++		if (!abort) {
++			list_move(&inode->i_list, &freeable);
++			inode->i_state |= I_FREEING;
++			inodes_stat.nr_unused--;
++		}
++		spin_unlock(&inode_lock);
++	}
++	dispose_list(&freeable);
++	mutex_unlock(&iprune_mutex);
++}
++EXPORT_SYMBOL(kick_inodes);
++
++static struct kmem_cache_ops inode_kmem_cache_ops = {
++	.get = get_inodes,
++	.kick = kick_inodes
++};
++
+ /*
+  * Initialize the waitqueues and inode hash table.
+  */
+@@ -1389,7 +1488,7 @@ void __init inode_init(unsigned long mem
+ 					 (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
+ 					 SLAB_MEM_SPREAD),
+ 					 init_once,
+-					 NULL);
++					 &inode_kmem_cache_ops);
+ 	register_shrinker(&icache_shrinker);
+ 
+ 	/* Hash may have been set up in inode_init_early */
+Index: linux-2.6.22-rc6-mm1/include/linux/fs.h
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/include/linux/fs.h	2007-07-03 17:19:27.000000000 -0700
++++ linux-2.6.22-rc6-mm1/include/linux/fs.h	2007-07-03 17:28:46.000000000 -0700
+@@ -1769,6 +1769,11 @@ static inline void insert_inode_hash(str
+ 	__insert_inode_hash(inode, inode->i_ino);
  }
  
- /*
-@@ -324,7 +330,7 @@ void slab_numa(struct slabinfo *s, int m
- 		return;
- 
- 	if (!line) {
--		printf("\n%-21s:", mode ? "NUMA nodes" : "Slab");
-+		printf("\n%-21s: Rto ", mode ? "NUMA nodes" : "Slab");
- 		for(node = 0; node <= highest_node; node++)
- 			printf(" %4d", node);
- 		printf("\n----------------------");
-@@ -333,6 +339,7 @@ void slab_numa(struct slabinfo *s, int m
- 		printf("\n");
- 	}
- 	printf("%-21s ", mode ? "All slabs" : s->name);
-+	printf("%3d ", s->remote_node_defrag_ratio);
- 	for(node = 0; node <= highest_node; node++) {
- 		char b[20];
- 
-@@ -406,6 +413,8 @@ void report(struct slabinfo *s)
- 		printf("** Slabs are destroyed via RCU\n");
- 	if (s->reclaim_account)
- 		printf("** Reclaim accounting active\n");
-+	if (s->defrag)
-+		printf("** Defragmentation at %d%%\n", s->defrag_ratio);
- 
- 	printf("\nSizes (bytes)     Slabs              Debug                Memory\n");
- 	printf("------------------------------------------------------------------------\n");
-@@ -452,6 +461,12 @@ void slabcache(struct slabinfo *s)
- 	if (show_empty && s->slabs)
- 		return;
- 
-+	if (show_defrag && !s->defrag)
-+		return;
++/* Helper functions for inode defragmentation support in filesystems */
++extern void kick_inodes(struct kmem_cache *, int, void **, void *);
++extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
++						unsigned long offset);
 +
-+	if (show_ctor && !s->ctor)
-+		return;
-+
- 	store_size(size_str, slab_size(s));
- 	sprintf(dist_str,"%lu/%lu/%d", s->slabs, s->partial, s->cpu_slabs);
- 
-@@ -462,6 +477,10 @@ void slabcache(struct slabinfo *s)
- 		*p++ = '*';
- 	if (s->cache_dma)
- 		*p++ = 'd';
-+	if (s->defrag)
-+		*p++ = 'D';
-+	if (s->ctor)
-+		*p++ = 'C';
- 	if (s->hwcache_align)
- 		*p++ = 'A';
- 	if (s->poison)
-@@ -481,7 +500,7 @@ void slabcache(struct slabinfo *s)
- 	printf("%-21s %8ld %7d %8s %14s %4d %1d %3ld %3ld %s\n",
- 		s->name, s->objects, s->object_size, size_str, dist_str,
- 		s->objs_per_slab, s->order,
--		s->slabs ? (s->partial * 100) / s->slabs : 100,
-+		s->slabs ? (s->objects * 100) / (s->slabs * s->objs_per_slab) : 100,
- 		s->slabs ? (s->objects * s->object_size * 100) /
- 			(s->slabs * (page_size << s->order)) : 100,
- 		flags);
-@@ -1071,7 +1090,16 @@ void read_slab_dir(void)
- 			decode_numa_list(slab->numa, t);
- 			slab->store_user = get_obj("store_user");
- 			slab->trace = get_obj("trace");
-+			slab->defrag_ratio = get_obj("defrag_ratio");
-+			slab->remote_node_defrag_ratio =
-+					get_obj("remote_node_defrag_ratio");
- 			chdir("..");
-+			if (read_slab_obj(slab, "ops")) {
-+				if (strstr(buffer, "ctor :"))
-+					slab->ctor = 1;
-+				if (strstr(buffer, "kick :"))
-+					slab->defrag = 1;
-+			}
- 			if (slab->name[0] == ':')
- 				alias_targets++;
- 			slab++;
-@@ -1121,7 +1149,9 @@ void output_slabs(void)
- 
- struct option opts[] = {
- 	{ "aliases", 0, NULL, 'a' },
-+	{ "ctor", 0, NULL, 'C' },
- 	{ "debug", 2, NULL, 'd' },
-+	{ "defrag", 0, NULL, 'D' },
- 	{ "empty", 0, NULL, 'e' },
- 	{ "first-alias", 0, NULL, 'f' },
- 	{ "help", 0, NULL, 'h' },
-@@ -1146,7 +1176,7 @@ int main(int argc, char *argv[])
- 
- 	page_size = getpagesize();
- 
--	while ((c = getopt_long(argc, argv, "ad::efhil1noprstvzTS",
-+	while ((c = getopt_long(argc, argv, "ad::efhil1noprstvzCDTS",
- 						opts, NULL)) != -1)
- 	switch(c) {
- 		case '1':
-@@ -1196,6 +1226,12 @@ int main(int argc, char *argv[])
- 		case 'z':
- 			skip_zero = 0;
- 			break;
-+		case 'C':
-+			show_ctor = 1;
-+			break;
-+		case 'D':
-+			show_defrag = 1;
-+			break;
- 		case 'T':
- 			show_totals = 1;
- 			break;
+ extern struct file * get_empty_filp(void);
+ extern void file_move(struct file *f, struct list_head *list);
+ extern void file_kill(struct file *f);
 
 -- 
