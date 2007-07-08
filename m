@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbXGHDuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbXGHDuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbXGHDuA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 23:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbXGHDtd
+	id S1756767AbXGHDuj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 23:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbXGHDuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 23:49:33 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34575 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756325AbXGHDtc (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 23:49:32 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Mattia Dongili <malattia@linux.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: cpufreq 'choice' Kconfig oddness in 2.6.22-rc6-mm1..
-In-Reply-To: Your message of "Sat, 07 Jul 2007 15:50:01 +0900."
-             <20070707065001.GA15181@inferi.kami.home>
-From: Valdis.Kletnieks@vt.edu
-References: <6443.1183782910@turing-police.cc.vt.edu>
-            <20070707065001.GA15181@inferi.kami.home>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1183866569_3529P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 07 Jul 2007 23:49:29 -0400
-Message-ID: <17231.1183866569@turing-police.cc.vt.edu>
+	Sat, 7 Jul 2007 23:50:20 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49236 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755404AbXGHDuR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 23:50:17 -0400
+Message-Id: <20070708034952.022985379@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Sat, 07 Jul 2007 20:49:52 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@vger.kernel.org
+Cc: suresh.b.siddha@intel.com
+Cc: corey.d.gough@intel.com
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: akpm@linux-foundation.org
+Subject: [patch 00/10] [RFC] SLUB patches for more functionality, performance and maintenance
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1183866569_3529P
-Content-Type: text/plain; charset=us-ascii
+This series here contains a number of patches that need some discussion or
+evaluation. They apply on top of 2.6.22-rc6-mm1 + slub patches already
+in mm.
 
-On Sat, 07 Jul 2007 15:50:01 +0900, Mattia Dongili said:
-> On Sat, Jul 07, 2007 at 12:35:10AM -0400, Valdis.Kletnieks@vt.edu wrote:
-> > So I was looking at drivers/cpufreq/Kconfig, and wondering...
-> > 
-> > Is there a specific reason why we have a 'choice' clause that allows selecting
-> > 'performance' or 'userspace' as the default governor, and no obvious way to
-> > select powersave, ondemand, or conservative as a default? Or was this an
-> 
-> Yes, ondemand and conservative may refuse to load/work on systems with
-> a high transition latency and that is sometimes discovered only at
-> runtime. This makes them not selectable as default governors.
+1. Page allocator pass through
 
-D'Oh! :)  I was trying to set ondemand as the default, only after verifying
-that ondemand works as desired on my laptop.  I forgot that we probably need
-to also allow for people who don't test before making things default....
+SLOB does pass through all larger kmalloc requests directly to the page
+allocator. The advantage is that the allocator overhead is eliminated
+and that we do not need to provide kmalloc slabs >= PAGE_SIZE.
+This patch does the same thing in SLUB.
 
-> > oversight I should cook up a patch for?  Looks like the Kconfig and a bit
-> > of cut-n-paste in include/linux/cpufreq.h is all that's needed?
-> 
-> No, some more work is needed (e.g.: falling back to a different governor
-> if the selected fails). Thomas Renninger has posted patches on
-> cpufreq-devel to accomplish that.
+For allocation whose size is know the call to the slab may be converted to
+a call to the page allocator at compile time.
 
-OK - I'll keep an eye open and test them out whenever they hit -mm.
-In the meantime, an 'echo ondemand' into the right /sys file is working
-for me as a workaround.
+The result of doing so is also that the behavior of SLUB for pagesize
+and higher kmalloc allocation will conform to SLAB. Meaning large
+kmalloc allocations are no longer debuggable and are guaranteed to be
+page aligned.
 
+Do we want this?
 
---==_Exmh_1183866569_3529P
-Content-Type: application/pgp-signature
+2. A series of performance enhancements patches
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+The patches improve the producer / consumer scenario. If objects are
+always allocated on one processor and released on another then both
+will use distinct cachelines to store their information in order to
+avoid a bouncing cacheline.
 
-iD8DBQFGkF7JcC3lWbTT17ARAgWJAKCT3r85ch8thwsnciab5NeE3YkmvwCg7hGq
-f+9jNsMUSg/yloyIfSpyb1A=
-=MZre
------END PGP SIGNATURE-----
+In order to do so we have to introduce a per cpu structure to keep
+per cpu allocation lists in distinct cachelines from the remote free
+information in the page struct. If we introduce a per cpu structure
+then we also need to allocate that in a NUMA aware fashion from the
+local node.
 
---==_Exmh_1183866569_3529P--
+Having a per cpu structure allows to avoid the use of certain fields
+in the page struct which in turn allows us to avoid using page->mapping
+and increasing the maximum number of objects per slab. More optimizations
+become possible by shifting information from the kmem_cache structure
+that is used in the hotpath to the per cpu structure thereby minimizing
+cacheline coverage.
+
+Finally there is an implementation of slab_alloc/slab_free using a cmpxchg
+instead of current interrupt enable disable approach. This was inspired by
+LTTng's approach. A cmpxchg is less costly than interrupt enabe/disable
+but means more complexity in managing the resulting race conditions.
+The disadvantage is that the allocation / free paths become very
+complex and fragile.
+
+All of these patches need to be evaluated as to what impact they
+have on a variety of loads.
+
+3. Removal of SLOB and SLAB.
+
+We would like to consolidate and only have one slab allocator in the future.
+Two patches are included that remove SLOB and SLAB. There is only minimal
+justification for retaining SLOB. So I think we could remove SLOB for 2.6.23.
+
+SLAB is the reference that SLUB must be measured against to avoid regressions.
+On the other hand it will be a problem to support new functionality like
+Slab defragmentation since its design makes it difficult to implement comparable
+features. So I think that we need to keep SLAB around for one more cycle and
+then we may be able to get rid of it. Or we can keep it in the tree for
+awhile and produce more and more shims for new slab functionality.
+
+-- 
