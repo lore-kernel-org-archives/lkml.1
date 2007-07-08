@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbXGHHTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbXGHHWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbXGHHTz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 03:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXGHHTq
+	id S1756185AbXGHHWt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 03:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXGHHWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 03:19:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:35614 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752605AbXGHHTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 03:19:46 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18064.36870.150985.222090@cargo.ozlabs.ibm.com>
-Date: Sun, 8 Jul 2007 17:19:34 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
- RAM pathway
-In-Reply-To: <Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
-References: <1183676393.3388.89.camel@localhost.localdomain>
-	<Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Sun, 8 Jul 2007 03:22:42 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:43987 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbXGHHWm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 03:22:42 -0400
+To: pavel@ucw.cz
+CC: miklos@szeredi.hu, oliver@neukum.org, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+In-reply-to: <20070707233315.GB3820@elf.ucw.cz> (message from Pavel Machek on
+	Sun, 8 Jul 2007 01:33:15 +0200)
+Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+References: <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org> <18060.14856.824473.325660@cargo.ozlabs.ibm.com> <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <20070707121729.GC3111@elf.ucw.cz> <E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu> <20070707233315.GB3820@elf.ucw.cz>
+Message-Id: <E1I7R5c-0007q3-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 08 Jul 2007 09:21:52 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern writes:
+> > > We can just wait for all fuse requests to be serviced before
+> > > proceeding further with freeze, right?
+> > 
+> > Right.  Nice way to slow down or stop the suspend with an unprivileged
+> > process.  Avoiding that sort of DoS is one of the design goals of
+> > fuse.
+> 
+> So you want me to handle _malicious_ filesystems now?
 
-> In answer to both questions: We need the freezer in order to implement 
-> hibernate.  Even if we take your advice and stop using the freezer 
-> during suspend, these issues would still remain and would need to be 
-> solved.
+What I'd like, is a suspend, that works reliably, regardless of the
+state of any userspace filesystem, network servers and such.
 
-Stepping back for a minute, let's think about what the freezer is
-trying to achieve.  I think that currently there are three basic
-design goals:
+> That should be easy... :-). You already have nasty deadlocks in FUSE,
+> and you solve them by "root can echo 1 > abort"... so allow me the
+> same possibility.
+> 
+> We can tell fused we are freezing, and if all the requests are not
+> serviced within, say, 30 seconds, we call the filesystem malicious and
+> do echo 1 > abort.
 
-A. Ensure that device drivers don't get I/O requests after being
-   suspended.
+Arbitrary time limits, nice.  Not.
 
-B. Ensure that driver suspend routines don't end up blocking forever
-   on mutexes or semaphores held by frozen tasks.
+This freezer is like an old house that's close to collapsing, and you
+are basically just thinking of where to prop it up further.  To
+continute this brilliant analogy, Rafael's patch at least demolishes
+the worst part of the house, where bricks are already falling on our
+head ;)
 
-C. Provide a way to get an atomic snapshot of memory for hibernation.
+> Not ideal, but neither is allowing malicious filesystems in the first
+> place...
 
-Now, it's easy enough to freeze all processes (or all except one), if
-you don't have goal B.  Just offline non-boot cpus and disable
-interrupts, or use stop_machine().  But goal B implies that you can't
-necessarily just stop all tasks wherever they are.  In fact it means
-there are points where it is safe to stop a given task, and there may
-be points where it isn't safe to stop it - and there is no practical
-way to determine those points reliably.[1]
+Malicious programs are not something specific to fuse.  A lot of the
+multiuser/multitasking OS design is about isolating things, so such a
+program is limited in the damage it can do.
 
-That implies to me that we can have a freezer as long as we do nothing
-that can sleep, while tasks are frozen.  In other words, I think the
-freezer is a viable option for hibernation as long as we restrict
-driver hibernate routines to doing only things which don't sleep.  I
-_think_ that should be doable since hibernate routines only need to
-wait for outstanding DMAs to complete, as I understand it, which can
-be done by polling.
+> > Look at it this way: the task of the freezer is to stop new I/O
+> > hitting the hardware.  But it is totally indiscriminate about what it
+> > stops, it tries to stop _everything_ even things which have nothing to
+> > do with hardware.
+> > 
+> > Not nice.
+> 
+> Not nice, but we don't know any better for now. "Just fix all the
+> drivers" basically means "just fix 90% of kernel".
 
-Paul.
+And how much of that 90% currently has any power management?
 
-[1] For a start, there's no way to determine which mutexes a task
-holds.  Even if there were, we would then also have to know which
-mutexes it is going to try to acquire before it releases the one we
-want, which is pretty much unknowable.
-
-One can say "we'll only freeze kernel tasks that ask to be frozen" but
-then one has no way to guarantee A, and we still don't reliably
-guarantee B if we have user-level filesystems or device drivers.
+Miklos
