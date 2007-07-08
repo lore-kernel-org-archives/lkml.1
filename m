@@ -1,179 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbXGHDK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbXGHDL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbXGHDK6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 23:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbXGHDJQ
+	id S1756262AbXGHDL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 23:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbXGHDJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 23:09:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47698 "EHLO
+	Sat, 7 Jul 2007 23:09:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47697 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755174AbXGHDIq (ORCPT
+	with ESMTP id S1755158AbXGHDIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 7 Jul 2007 23:08:46 -0400
-Message-Id: <20070708030845.265903427@sgi.com>
+Message-Id: <20070708030845.032023558@sgi.com>
 References: <20070708030538.729027694@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 07 Jul 2007 20:05:46 -0700
+Date: Sat, 07 Jul 2007 20:05:45 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
 Cc: dgc@sgi.com
-Subject: [patch 08/12] Slab defragmentation: Support generic defragmentation for inode slab caches
-Content-Disposition: inline; filename=slub_defrag_inode_generic
+Subject: [patch 07/12] Slab defragmentation: Support for buffer_head defrag
+Content-Disposition: inline; filename=slub_defrag_buffer_heads
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements the ability to remove inodes in a particular slab
-from the inode cache. In order to remove an inode we may have to write out
-the pages of an inode, the inode itself and remove the dentries referring
-to the node.
-
-Provide generic functionality that can be used by filesystems that have
-their own inode caches to also tie into the defragmentation functions
-that are made available here.
+Limited defragmentation support for buffer heads. Simply try to free the
+buffers in a sparsely populated slab page.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/inode.c         |  101 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/fs.h |    5 ++
- 2 files changed, 105 insertions(+), 1 deletion(-)
+ fs/buffer.c |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 65 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.22-rc6-mm1/fs/inode.c
+Index: linux-2.6.22-rc6-mm1/fs/buffer.c
 ===================================================================
---- linux-2.6.22-rc6-mm1.orig/fs/inode.c	2007-07-03 17:19:26.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/fs/inode.c	2007-07-03 17:28:46.000000000 -0700
-@@ -1351,6 +1351,105 @@ static int __init set_ihash_entries(char
+--- linux-2.6.22-rc6-mm1.orig/fs/buffer.c	2007-07-04 11:14:01.000000000 -0700
++++ linux-2.6.22-rc6-mm1/fs/buffer.c	2007-07-04 17:23:02.000000000 -0700
+@@ -3078,12 +3078,75 @@ static int buffer_cpu_notify(struct noti
+ 	return NOTIFY_OK;
  }
- __setup("ihash_entries=", set_ihash_entries);
  
-+static void *get_inodes(struct kmem_cache *s, int nr, void **v)
++/*
++ * Get references on buffers.
++ *
++ * We obtain references on the page that uses the buffer. v[i] will point to
++ * the corresponding page after get_buffers() is through.
++ *
++ * We are safe from the underlying page being removed simply by doing
++ * a get_page_unless_zero. The buffer head removal may race at will.
++ * try_to_free_buffes will later take appropriate locks to remove the
++ * buffers if they are still there.
++ *
++ * TODO: Write out dirty buffers to increase the chance of kick_buffers
++ * to be successful.
++ */
++static void *get_buffers(struct kmem_cache *s, int nr, void **v)
 +{
++	struct page *page;
++	struct buffer_head *bh;
 +	int i;
 +
-+	spin_lock(&inode_lock);
 +	for (i = 0; i < nr; i++) {
-+		struct inode *inode = v[i];
-+
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
-+			v[i] = NULL;
++		bh = v[i];
++		page = bh->b_page;
++		if (page && PagePrivate(page) && get_page_unless_zero(page))
++			v[i] = page;
 +		else
-+			__iget(inode);
++			v[i] = NULL;
 +	}
-+	spin_unlock(&inode_lock);
 +	return NULL;
 +}
 +
 +/*
-+ * Function for filesystems that embedd struct inode into their own
-+ * structures. The offset is the offset of the struct inode in the fs inode.
++ * Despite its name: kick_buffers operates on a list of pointers to
++ * page structs that was setup by get_buffer
 + */
-+void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
-+						unsigned long offset)
++static void kick_buffers(struct kmem_cache *s, int nr, void **v,
++							void *private)
 +{
++	struct page *page;
 +	int i;
 +
-+	for (i = 0; i < nr; i++)
-+		v[i] += offset;
-+
-+	return get_inodes(s, nr, v);
-+}
-+EXPORT_SYMBOL(fs_get_inodes);
-+
-+void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
-+{
-+	struct inode *inode;
-+	int i;
-+	int abort = 0;
-+	LIST_HEAD(freeable);
-+	struct super_block *sb;
-+
 +	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+		if (!inode)
++		page = v[i];
++
++		if (!page)
 +			continue;
 +
-+		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
-+			if (remove_inode_buffers(inode))
-+				invalidate_mapping_pages(&inode->i_data,
-+								0, -1);
++		if (!TestSetPageLocked(page)) {
++			if (PagePrivate(page))
++				try_to_free_buffers(page);
++			unlock_page(page);
 +		}
-+
-+		/* Invalidate children and dentry */
-+		if (S_ISDIR(inode->i_mode)) {
-+			struct dentry *d = d_find_alias(inode);
-+
-+			if (d) {
-+				d_invalidate(d);
-+				dput(d);
-+			}
-+		}
-+
-+		if (inode->i_state & I_DIRTY)
-+			write_inode_now(inode, 1);
-+
-+		d_prune_aliases(inode);
++		put_page(page);
 +	}
-+
-+	mutex_lock(&iprune_mutex);
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+		if (!inode)
-+			continue;
-+
-+		sb = inode->i_sb;
-+		iput(inode);
-+		if (abort || !(sb->s_flags & MS_ACTIVE))
-+			continue;
-+
-+		spin_lock(&inode_lock);
-+		abort =  !can_unuse(inode);
-+
-+		if (!abort) {
-+			list_move(&inode->i_list, &freeable);
-+			inode->i_state |= I_FREEING;
-+			inodes_stat.nr_unused--;
-+		}
-+		spin_unlock(&inode_lock);
-+	}
-+	dispose_list(&freeable);
-+	mutex_unlock(&iprune_mutex);
 +}
-+EXPORT_SYMBOL(kick_inodes);
 +
-+static struct kmem_cache_ops inode_kmem_cache_ops = {
-+	.get = get_inodes,
-+	.kick = kick_inodes
++static struct kmem_cache_ops buffer_head_kmem_cache_ops = {
++	.get = get_buffers,
++	.kick = kick_buffers,
 +};
 +
- /*
-  * Initialize the waitqueues and inode hash table.
-  */
-@@ -1389,7 +1488,7 @@ void __init inode_init(unsigned long mem
- 					 (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
- 					 SLAB_MEM_SPREAD),
- 					 init_once,
--					 NULL);
-+					 &inode_kmem_cache_ops);
- 	register_shrinker(&icache_shrinker);
- 
- 	/* Hash may have been set up in inode_init_early */
-Index: linux-2.6.22-rc6-mm1/include/linux/fs.h
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/include/linux/fs.h	2007-07-03 17:19:27.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/include/linux/fs.h	2007-07-03 17:28:46.000000000 -0700
-@@ -1769,6 +1769,11 @@ static inline void insert_inode_hash(str
- 	__insert_inode_hash(inode, inode->i_ino);
- }
- 
-+/* Helper functions for inode defragmentation support in filesystems */
-+extern void kick_inodes(struct kmem_cache *, int, void **, void *);
-+extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
-+						unsigned long offset);
 +
- extern struct file * get_empty_filp(void);
- extern void file_move(struct file *f, struct list_head *list);
- extern void file_kill(struct file *f);
+ void __init buffer_init(void)
+ {
+ 	int nrpages;
+ 
+-	bh_cachep = KMEM_CACHE(buffer_head,
+-			SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD);
++	bh_cachep = KMEM_CACHE_OPS(buffer_head,
++			SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD,
++			&buffer_head_kmem_cache_ops);
+ 
+ 	/*
+ 	 * Limit the bh occupancy to 10% of ZONE_NORMAL
 
 -- 
