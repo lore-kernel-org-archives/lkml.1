@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbXGHMCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbXGHMCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758318AbXGHMCB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 08:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbXGHL5g
+	id S1755915AbXGHMCZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 08:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757901AbXGHMBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 07:57:36 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:31485 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757126AbXGHL5e (ORCPT
+	Sun, 8 Jul 2007 08:01:47 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46676 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758200AbXGHMBo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 07:57:34 -0400
-Date: Sun, 8 Jul 2007 13:58:14 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Tim Hull <thully@umich.edu>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Gerald Britton <gbritton@doomcom.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: MacBook makes whining noise when usb-uhci active
-Message-ID: <20070708115814.GA17462@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Tim Hull <thully@umich.edu>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Gerald Britton <gbritton@doomcom.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	linux-kernel@vger.kernel.org
-References: <9a7c669e0707071551v2705320dn876ad208fa60a537@mail.gmail.com> <Pine.LNX.4.44L0.0707072210470.10912-100000@netrider.rowland.org> <20070708025457.GA2822@zante.sekrit.org> <20070708042712.GC12052@khazad-dum.debian.net> <9a7c669e0707072141i7d0f6f65r8cdeee908202620d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9a7c669e0707072141i7d0f6f65r8cdeee908202620d@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 8 Jul 2007 08:01:44 -0400
+Date: Sun, 8 Jul 2007 07:58:06 -0400
+Message-Id: <200707081158.l68Bw61u021912@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ezk@cs.sunysb.edu,
+       jsipek@cs.sunysb.edu, linux-kernel@vger.kernel.org,
+       unionfs@filesystems.org, axboe@kernel.dk
+Subject: Re: 2.6.22-rc6-mm1: UNION_FS=y + BLOCK=n = compile error 
+In-reply-to: Your message of "Sat, 07 Jul 2007 04:01:42 +0200."
+             <20070707020142.GA3492@stusta.de> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 08, 2007 at 12:41:55AM -0400, Tim Hull wrote:
-> After reading the ThinkPad wiki link, I've found that the problem has
-> to do with the C3 and C4 ACPI states.  I'm guessing that the 2.6.18
-> kernel I was using on Debian Etch just happened to not support full
-> power management on my MacBook - hence, the problem didn't occur.
+I'm adding Jens Axboe to the CC list (BLOCK layer maintainer).
+
+In message <20070707020142.GA3492@stusta.de>, Adrian Bunk writes:
+> On Thu, Jun 28, 2007 at 03:43:21AM -0700, Andrew Morton wrote:
+> >...
+> > Changes since 2.6.22-rc4-mm2:
+> >...
+> >  git-unionfs.patch
+> >...
+> >  git trees
+> >...
 > 
-> Sorry for all of this - I guess I'll pass this info on to Apple and
-> see if they may be able to fix this with a firmware update (it occurs
-> on OS X too).
+> CONFIG_UNION_FS=y, CONFIG_BLOCK=n results in the following compile error:
+> 
+> <--  snip  -->
+> 
+> ...
+>   CC      fs/unionfs/file.o
+> /home/bunk/linux/kernel-2.6/linux-2.6.22-rc6-mm1/fs/unionfs/file.c:147: error: â€˜file_fsyncâ€™ undeclared here (not in a function)
+> make[3]: *** [fs/unionfs/file.o] Error 1
+> ...
+> 
+> <--  snip  -->
+> 
+> cu
+> Adrian
 
-The most likely source of a noise as you seem to describe is a
-ceramic capacitor. An alternative is some coil, but that you
-usually only hear in cases where a high frequency is used inside
-a voltage convertor (in order to reduce transformator or coil
-sizes) and I doubt that anything like that is possible in a
-laptop... I'd have the hear the actual sound to know what it is.
-99% chance it's a ceramic capacitor that has to absorb some
-pulsed current.
+Adrian, thanks.  I was able to reproduce this compiler error.  But I think
+there may be a problem with the mainline kernel itself.
 
-If you'd replace the capacitor with another one of a different
-type (same capacity, of course), for example a styroflex one,
-then the noise would go away. It's very difficult to find out
-which it is however ;). The only method that I know is by
-touching each capacitor (ie with pliers) while it is making noise,
-which will cause the sound to change a little if you have the
-right one.
+Unionfs defines its fsync file op to file_fsync.  file_fsync, defined in
+fs/sync.c, appears to be a generic syncing function that can be used by
+other file systems.  In fact, the comment above it says "Generic function to
+fsync a file."  From fs/Makefile, it looks like sync.c gets compiled
+regardless whether CONFIG_BLOCK is defined or not.
 
--- 
-Carlo Wood <carlo@alinoe.com>
+Moreover, file_fsync() makes a call to sync_blockdev(), clearly a function
+which depends on CONFIG_BLOCK=y.  However, include/linux/buffer_head.h
+defines sync_blockdev() to a noop if CONFIG_BLOCK=n:
+
+  static inline int sync_blockdev(struct block_device *bdev) { return 0; }
+
+This further indicates to me that someone went through the effort of making
+file_fsync available and operational *even* if CONFIG_BLOCK=n.
+
+But here's the problem: if CONFIG_BLOCK=n, the function file_fsync exists
+and gets compiled into the kernel, but the extern definition for it is not
+compiled in (it's wrapped in an #ifdef CONFIG_BLOCK in buffer_head.h).  This
+looks to me like a discrepancy: why compile the file_fsync function, and
+even ensure that it will find a dummy sync_blockdev() symbol, if one doesn't
+provide an extern for it?
+
+One more oddity: the EXPORT_SYMBOL for fs/sync.c:file_fsync() is in
+fs/buffer.c, and buffer.c does not get compiled if CONFIG_BLOCK=n.  I
+thought all EXPORT_SYMBOL calls are supposed to be near their respective
+functions, no?
+
+I suggest one of two things:
+
+1. If you agree with me as to this discrepancy, then we can move the extern
+   for file_fsync() outside the #ifdef CONFIG_BLOCK in buffer_head.h -- it
+   should be defined regardless.  Then move the EXPORT_SYMBOL(file_fsync)
+   from buffer.c to sync.  I can provide a small patch right away.
+
+2. If you disagree, then I can change Unionfs to avoid calling file_fsync
+   directly.  I can define a unionfs_fsync file method which does the usual
+   stuff (pass the op to the layer below).
+
+My preference is option #1; I'd like to avoid defining any more stackable
+wrappers than I have to.
+
+Thanks,
+Erez.
