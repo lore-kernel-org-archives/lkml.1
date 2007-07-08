@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbXGHRC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbXGHRHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbXGHRC7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 13:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbXGHRCu
+	id S1754804AbXGHRHK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 13:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbXGHRG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 13:02:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51867 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751836AbXGHRCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 13:02:49 -0400
-Date: Sun, 8 Jul 2007 10:02:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       drepper@redhat.com
-Subject: Re: 2.6.22-rc6(mm1) Unable to handle kernel NULL pointer dereference
- - git-bisect result
-In-Reply-To: <20070708152808.GA5902@gentoox2.trippelsdorf.de>
-Message-ID: <alpine.LFD.0.999.0707080958280.31544@woody.linux-foundation.org>
-References: <20070708051452.GA4140@gentoox2.trippelsdorf.de>
- <20070708012016.455ce8d5.akpm@linux-foundation.org>
- <20070708100911.GA4196@gentoox2.trippelsdorf.de>
- <20070708152808.GA5902@gentoox2.trippelsdorf.de>
+	Sun, 8 Jul 2007 13:06:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45969 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752419AbXGHRG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 13:06:58 -0400
+Message-ID: <469119A3.6030409@redhat.com>
+Date: Sun, 08 Jul 2007 10:06:43 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Markus Trippelsdorf <markus@trippelsdorf.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: 2.6.22-rc6(mm1) Unable to handle kernel NULL pointer	dereference
+ - git-bisect result
+References: <20070708051452.GA4140@gentoox2.trippelsdorf.de> <20070708012016.455ce8d5.akpm@linux-foundation.org> <20070708100911.GA4196@gentoox2.trippelsdorf.de> <20070708152808.GA5902@gentoox2.trippelsdorf.de>
+In-Reply-To: <20070708152808.GA5902@gentoox2.trippelsdorf.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-
-On Sun, 8 Jul 2007, Markus Trippelsdorf wrote:
-> 
+Markus Trippelsdorf wrote:
 > I tested this further and it turned out that the Linus tree is also
 > affected. So I ran git-bisect, after I found out that version
 > 2.6.21.6 was not affected by this bug.
 
-git-bisect is wonderful.
+Try this patch.  The vfs_permission test can be skipped since the VFS
+isn't involved.  We got the inode etc from a file descriptor.
 
-> gentoox2 linux # git bisect bad
-> 1c710c896eb461895d3c399e15bb5f20b39c9073 is first bad commit
-> commit 1c710c896eb461895d3c399e15bb5f20b39c9073
-> Author: Ulrich Drepper <drepper@redhat.com>
 
-Ok, I see what's wrong.
+Signed-Off-By: Ulrich Drepper <drepper@redhat.com>
 
-We're doing "vfs_permission()" and passing in "nd" to it when "times" is 
-NULL, but Uli didn't even *initialize* it for the case of
+diff --git a/fs/utimes.c b/fs/utimes.c
+index 480f7c8..873edcb 100644
+- --- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -106,7 +106,8 @@ long do_utimes(int dfd, char __user *filename, struct timespec *times, int flags
+                 if (IS_IMMUTABLE(inode))
+                         goto dput_and_out;
 
-	filename == NULL && dfd != AT_FDCWD
+- -               if (current->fsuid != inode->i_uid &&
++               if (f == NULL &&
++                   current->fsuid != inode->i_uid &&
+                    (error = vfs_permission(&nd, MAY_WRITE)) != 0)
+                        goto dput_and_out;
+        }
 
-so yeah, it's broken.
 
-I was planning on doing 2.6.22 today, so I'm actually inclined to revert 
-the commit entirely, even though it looks like it's probably fairly 
-trivial to fix.
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-But if we get a really quick and obvious fix, I guess I'll apply it. I 
-have to say, the new do_utimes() code is pretty ugly compared to the old 
-one exactly in the added special cases (the ones that caused this bug..)
-
-Uli?
-
-		Linus
+iD8DBQFGkRmj2ijCOnn/RHQRAkuyAJ41CIDhT8yKb6SKX14ylFXznO6gfwCfdtEo
+4Gt9hPsotmKddwE2xdYkJmQ=
+=JyVn
+-----END PGP SIGNATURE-----
