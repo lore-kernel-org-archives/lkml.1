@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbXGHXVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbXGHXZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758520AbXGHXVE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 19:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXGHXUx
+	id S1758282AbXGHXZI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 19:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXGHXY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 19:20:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:49487 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758060AbXGHXUw (ORCPT
+	Sun, 8 Jul 2007 19:24:58 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34429
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbXGHXY5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 19:20:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ACz/ujIbb++9e+n8bH0zDZWpHRYHsbihilzpn8/uDNWrloenMjcBneoil5of5tDqRP8VP49q16YpUFpbcB58tSsp7nhgqXiB4uOjRIHRH/iQBf6suHFYq7PusQGZytriVu7feMT7QfDjquj3cn09aX9LURQ20+YgTzq3NhsZ14w=
-Message-ID: <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com>
-Date: Mon, 9 Jul 2007 01:20:51 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Flavio Curti" <lists.fcu@no-way.org>
-Subject: Re: panics with 16port Promise Supertrack EX Controller
-Cc: linux-kernel@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>
-In-Reply-To: <20070708225246.GD16285@no-way.org>
+	Sun, 8 Jul 2007 19:24:57 -0400
+Date: Sun, 8 Jul 2007 16:20:46 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@ucw.cz>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: hibernation/snapshot design [was Re: [PATCH] Remove process
+ freezer from suspend to RAM pathway]
+In-Reply-To: <20070708230042.GH5401@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0707081614211.25614@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
+ <200707082115.27363.rjw@sisk.pl> <1183928612.3388.289.camel@localhost.localdomain>
+ <200707082345.27859.rjw@sisk.pl> <1183931688.3388.316.camel@localhost.localdomain>
+ <20070708221315.GF5401@elf.ucw.cz> <Pine.LNX.4.64.0707081519210.25614@asgard.lang.hm>
+ <20070708230042.GH5401@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070708225246.GD16285@no-way.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Flavio,
+On Mon, 9 Jul 2007, Pavel Machek wrote:
 
-On 09/07/07, Flavio Curti <lists.fcu@no-way.org> wrote:
-> Hello
+>>>>> Actaully, I'm perfectly fine with that, as long as each task blocked by
+>>>>> the
+>>>>> driver due to suspend has PF_FROZEN (or something similar) set.  Then, at
+>>>>> least theoretically, we'll be able to drop the freezer from the suspend
+>>>>> code
+>>>>> path and move it after device_suspend() (or the hibernation-specific
+>>>>> equivalent) for hibernation (in that case there shouldn't be a problem
+>>>>> with
+>>>>> any task waiting on I/O while the freezer is running ;-)).
+>>>>
+>>>> I don't see the need for a freezer for snapshot but that's a different
+>>>> issue. (stop_machine looks good enough to me).
+>>>
+>>> Freezer is not needed for snapshot -- it is needed so that we can
+>>> write out the snapshot to disk without the need for special
+>>> drivers/block/simple-ide-for-suspend.c. (We are doing snapshot, then
+>>> write to disk from userland code in uswsusp).
+>>
+>> instead of trying to freeze most of the system, could you do something
+>> like start a virtual machine sandbox to write the data out, and not let
+>> any userspace other then the sandbox operate?
+>>
+>> you would need to throw away disk buffers so that you don't mix current
+>> pending I/O with I/O from the sandbox, and this would be a visable change
+>> for how suspend is setup, but wouldn't this work?
 >
-> I have a problem with a server running 2.6.22rc4.
+> It feels kind of expensive, but yes, we could use another kernel for
+> doing the dump. Kdump people are using that. We could use hypervisor
+> for doing the dump. Xen people are doing that. (But I do not think any
+> of those solutions is suitable for "lets hibernate my notebook" case).
 
-Jul  8 00:19:13 dorade.cyberlink.ch EFLAGS: 00210046   (2.6.22-rc7-dorade #1)
+expensive and reliable beats efficiant and unrelaible.
 
-Is this a regression?
+why do you say that neither would work for the "lets hibernate my 
+notebook" case?
 
-> The machine panics
-> after some days of running fine, the machine inst heavy loaded.
->
-> The Controller detects as stex device:
->
-> scsi0 : stex
-> scsi 0:0:0:0: Direct-Access Promise 1X2 Mirror      1.10 PQ: 0 ANSI: 3
-> scsi 0:0:2:0: Direct-Access Promise  12+2 Disk RAID6  1.10 PQ: 0 ANSI: 3
-> scsi 0:0:16:0: Processor Promise RAID Console     1.00 PQ: 0 ANSI: 3
-> sd 0:0:0:0: [sda] 976642048 512-byte hardware sectors (500041 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> sd 0:0:0:0: [sda] 976642048 512-byte hardware sectors (500041 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
->  sda: sda1 sda2
-> sd 0:0:0:0: [sda] Attached SCSI disk
-> sd 0:0:2:0: [sdb] Very big device.  Trying to use READ CAPACITY(16).
-> sd 0:0:2:0: [sdb] 11719704576 512-byte hardware sectors (6000489 MB)
-> sd 0:0:2:0: [sdb] Write Protect is off
-> sd 0:0:2:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> sd 0:0:2:0: [sdb] Very big device.  Trying to use READ CAPACITY(16).
-> sd 0:0:2:0: [sdb] 11719704576 512-byte hardware sectors (6000489 MB)
-> sd 0:0:2:0: [sdb] Write Protect is off
-> sd 0:0:2:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
->  sdb: sdb1
-> sd 0:0:2:0: [sdb] Attached SCSI disk
-> sd 0:0:0:0: Attached scsi generic sg0 type 0
-> sd 0:0:2:0: Attached scsi generic sg1 type 0
-> scsi 0:0:16:0: Attached scsi generic sg2 type 3
->
-> Im not sure where the problem is (controller/lvm/ext3), so if anyone has
-> an idea, Im happy to try it out...
-
-kernel BUG at block/as-iosched.c:1084!
-
-BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[REQ_ASYNC]));
-
->
-> Thank you
->
-> Flavio Curti
->
-> --
-> http://no-way.org/~fcu/
->
->
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+David Lang
