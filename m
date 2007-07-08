@@ -1,97 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbXGHGUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbXGHHTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbXGHGUA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 02:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbXGHGTv
+	id S1755875AbXGHHTz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 03:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXGHHTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 02:19:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:47407 "EHLO ozlabs.org"
+	Sun, 8 Jul 2007 03:19:46 -0400
+Received: from ozlabs.org ([203.10.76.45]:35614 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbXGHGTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 02:19:50 -0400
-Subject: maps2-make-proc-pid-smaps-optional-under-config_embedded.patch
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 08 Jul 2007 16:19:34 +1000
-Message-Id: <1183875574.6005.275.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1752605AbXGHHTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 03:19:46 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18064.36870.150985.222090@cargo.ozlabs.ibm.com>
+Date: Sun, 8 Jul 2007 17:19:34 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to
+ RAM pathway
+In-Reply-To: <Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
+References: <1183676393.3388.89.camel@localhost.localdomain>
+	<Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt wrote:
-> This interface is primarily useful for doing memory profiling and not much use
-> on deployed embedded boxes.  Make it optional.  Together with
-> /proc/pid/clear_refs, this save a few K.
+Alan Stern writes:
 
-How about a single config option for all these?
+> In answer to both questions: We need the freezer in order to implement 
+> hibernate.  Even if we take your advice and stop using the freezer 
+> during suspend, these issues would still remain and would need to be 
+> solved.
 
-===
-maps2-CONFIG_PROC_PAGE_MONITOR.patch
+Stepping back for a minute, let's think about what the freezer is
+trying to achieve.  I think that currently there are three basic
+design goals:
 
-Merge the three config options PROC_SMAPS/PROC_CLEAR_REFS/PROC_PAGEMAP
-and report the approximate memory usage (i386 SMP).
+A. Ensure that device drivers don't get I/O requests after being
+   suspended.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+B. Ensure that driver suspend routines don't end up blocking forever
+   on mutexes or semaphores held by frozen tasks.
 
-diff -r 5a7ada4f5442 init/Kconfig
---- a/init/Kconfig	Sun Jul 08 15:29:26 2007 +1000
-+++ b/init/Kconfig	Sun Jul 08 16:01:35 2007 +1000
-@@ -636,32 +636,14 @@ config SLOB
- 
- endchoice
- 
--config PROC_SMAPS
--	default y
--	bool "Enable /proc/pid/smaps support" if EMBEDDED && PROC_FS && MMU
--	help
--	  The /proc/pid/smaps interface reports a process's private and
--          shared memory per mapping. Disabling this interface will reduce
--          the size of the kernel for small machines.
--
--config PROC_CLEAR_REFS
--	default y
--	bool "Enable /proc/pid/clear_refs support" if EMBEDDED && PROC_FS && MMU
--	help
--	  The /proc/pid/clear_refs interface allows clearing the
--          referenced bits on a process's memory maps to allow monitoring
--          working set size. Disabling this interface will reduce
--          the size of the kernel for small machines.
--
--config PROC_PAGEMAP
--	default y
--	bool "Enable /proc/pid/pagemap support" if EMBEDDED && PROC_FS && MMU
--	help
--	  The /proc/pid/pagemap interface allows reading the
--          kernel's virtual memory to page frame mapping to determine which
--          individual pages a process has mapped and which pages it shares
--          with other processes. Disabling this interface will reduce the
--          size of the kernel for small machines.
-+config PROC_PAGE_MONITOR
-+	default y
-+	bool "Enable /proc page monitoring" if EMBEDDED && PROC_FS && MMU
-+	help
-+	  Various /proc files exist to monitor process memory utilization:
-+	  /proc/pid/smaps, /proc/pid/clear_refs and /proc/pid/pagemap.
-+	  Disabling these interfaces will reduce the size of the kernel by
-+	  approximately 4kb.
- 
- config PROC_KPAGEMAP
- 	default y
-@@ -670,7 +652,7 @@ config PROC_KPAGEMAP
- 	  The /proc/pid/kpagemap interface allows reading the
-           kernel's per-page flag and usage counts to gather precise
-           information on page-level memory usage. Disabling this interface
--          will reduce the size of the kernel for small machines.
-+          will reduce the size of the kernel by around 600 bytes.
- 
- endmenu		# General setup
- 
+C. Provide a way to get an atomic snapshot of memory for hibernation.
 
+Now, it's easy enough to freeze all processes (or all except one), if
+you don't have goal B.  Just offline non-boot cpus and disable
+interrupts, or use stop_machine().  But goal B implies that you can't
+necessarily just stop all tasks wherever they are.  In fact it means
+there are points where it is safe to stop a given task, and there may
+be points where it isn't safe to stop it - and there is no practical
+way to determine those points reliably.[1]
 
+That implies to me that we can have a freezer as long as we do nothing
+that can sleep, while tasks are frozen.  In other words, I think the
+freezer is a viable option for hibernation as long as we restrict
+driver hibernate routines to doing only things which don't sleep.  I
+_think_ that should be doable since hibernate routines only need to
+wait for outstanding DMAs to complete, as I understand it, which can
+be done by polling.
+
+Paul.
+
+[1] For a start, there's no way to determine which mutexes a task
+holds.  Even if there were, we would then also have to know which
+mutexes it is going to try to acquire before it releases the one we
+want, which is pretty much unknowable.
+
+One can say "we'll only freeze kernel tasks that ask to be frozen" but
+then one has no way to guarantee A, and we still don't reliably
+guarantee B if we have user-level filesystems or device drivers.
