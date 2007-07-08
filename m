@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbXGHMXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbXGHMXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754944AbXGHMXV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 08:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXGHMXO
+	id S1756049AbXGHMXi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 08:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbXGHMX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 08:23:14 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3498 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751667AbXGHMXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 08:23:13 -0400
-Date: Sun, 8 Jul 2007 12:09:33 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oliver Neukum <oliver@neukum.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
-Message-ID: <20070708120933.GA3866@ucw.cz>
-References: <Pine.LNX.4.44L0.0707061039380.3737-100000@iolanthe.rowland.org> <200707080108.17371.rjw@sisk.pl>
+	Sun, 8 Jul 2007 08:23:29 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:50225 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752047AbXGHMX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 08:23:28 -0400
+Date: Sun, 8 Jul 2007 14:23:25 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Midhun Agnihotram" <agnimidhun@gmail.com>
+Cc: "Nobin Mathew" <nobin.mathew@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: platform_driver_register() ??
+Message-ID: <20070708142325.479d380e@poseidon.drzeus.cx>
+In-Reply-To: <4dde4acb0707050221k5a73a4abt2db9e8b0f7c74ae1@mail.gmail.com>
+References: <4dde4acb0707030028p2c078a22jd537853f145c2518@mail.gmail.com>
+	<8d6898730707030558o5e110b0v257ffc6350c76069@mail.gmail.com>
+	<20070703211513.5245946b@poseidon.drzeus.cx>
+	<4dde4acb0707050221k5a73a4abt2db9e8b0f7c74ae1@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707080108.17371.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 5 Jul 2007 14:51:35 +0530
+"Midhun Agnihotram" <agnimidhun@gmail.com> wrote:
 
-> > And then you will face the problem of a user task doing I/O during 
-> > hibernate after the atomic snapshot has been made.
 > 
-> I don't think that this is possible in normal conditions.  It would be possible
-> if, for example, the task were waiting for an unavailable resource and that
-> resource became available after the hibernation image had been created.
-> In that case, however, to do any damage, the task would have to cause some
-> filesystem-related data to be flushed in the same syscall (ie. before returning
-> to user space).
+>     Is it necessary that the firmware (may be bootloader) notify about
+> the MMC host to Linux? The kernel documentation (platform.txt) says :
+> 
+>  "The firmware should notify the platform bus about devices before the
+> legacy drivers have had a chance to load."
+> 
+>    Have I interpreted the above sentence correctly?
+> 
 
-I agree that it is relatively unlikely to trigger (if you avoid
-freezing the tasks that were uninterruptible for long), but it will
-trigger in error cases etc.
+I don't know what the meaning of that sentence was supposed to be, but
+platform devices are everything the kernel cannot probe in a "normal"
+way. Usually this covers devices that cannot be probed at all, but must
+be listed some other way (i.e. manually).
 
-> Such situations may be prevented by a mechanizm detecting if any uniterruptible
-> and freezing task has been woken up after creating the image and aborting the
-> hibernation in that cases.  For this purpose, we only need to add an
-> appropriate condition to try_to_wake_up() and make it start to trigger after,
-> for example, enabling the nonboot CPUs.
+Commonly the arch and machine specific code adds the devices. The
+machine code is usually specific to a certain hardware, so the code
+"knows" which devices are present, even though it can't probe them.
 
-I don't know how to do that mechanism... but if we knew where to trap
-filesystem writes, we could simply freeze at that point, and at that
-point only, no?
-						Pavel
+So to answer your question; no, the firmware doesn't have to tell Linux
+about the devices.
+
+Rgds
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
