@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbXGHOba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbXGHOhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbXGHOba (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 10:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXGHObX
+	id S1755530AbXGHOhb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 10:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbXGHOhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 10:31:23 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2931 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752666AbXGHObW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 10:31:22 -0400
-Date: Sun, 8 Jul 2007 10:31:21 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Sysfs and suicidal attributes
-Message-ID: <Pine.LNX.4.44L0.0707081015430.5323-100000@netrider.rowland.org>
+	Sun, 8 Jul 2007 10:37:24 -0400
+Received: from [212.12.190.146] ([212.12.190.146]:34012 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751257AbXGHOhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 10:37:23 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Hibernation Redesign (was: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM)
+Date: Sun, 8 Jul 2007 17:37:21 +0300
+User-Agent: KMail/1.5
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707081737.21932.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun:
+Pavel Machek wrote:
+> We are stuck with refrigerator for now, and at least for hibernation,
+> I don't see any feasible alternative.
 
-You remember the problem we faced with "suicidal" sysfs attributes and 
-the device_schedule_callback() routine that fixes it?
+Feasible alternative?
 
-Well, it turns out that this approach may confict with suspend/resume
-processing.  In brief, it's not a good idea to unregister devices while
-a suspend is in progress, but on the other hand it's not a good idea to
-block keventd waiting until the suspend is over.
+Freezing is the only way to successfully suspend, in kernel space that is.  
+The problem here is:  Why do we freeze in kernel space?
 
-There are some ways around this such as using a different workqueue, 
-one that could safely be blocked during the suspend.  But I had another 
-thought.
+APM didn't freeze in kernel space, and neither should ACPI.  The only reason 
+you would want to freeze in kernel space is because your system does not 
+have APM or ACPI or anything else to freeze from BIOS level.
 
-I haven't paid much attention to your sysfs updates.  Is it still true
-that calls to show/store methods are mutually exclusive with attribute
-unregistration?  Assuming the answer is Yes, would it be possible to
-bypass that mutual exclusion in certain explicit cases?  Here's what I
-have in mind:
+So the problem is really easy to solve: either call the APM suspend functions 
+or install ACPI soft-extensions to implement hibernation from BIOS level.
 
-	The user writes to an attribute file.
+But there is a catch:  Hibernation from BIOS level probably requires a 
+diskdriver, which isn't always available from BIOS level or is really slow.  
 
-	The sysfs core calls the attribute's store method.
+So you are back to freezing in kernel space, but this time you know why, and 
+that you need a system that simply halts to disk after issuing sync-out 
+requests to all peripheral devices involved.  Which sounds like the freezer 
+in mainline, does it not?  And if it does, then what's the problem?
 
-	The method tells the sysfs core to pretend that the call
-	temporarily doesn't exist, or has completed, or something
-	like that.
 
-	The method safely unregisters the attribute file, with no
-	mutual exclusion problems and no deadlock.  Of course, the
-	unregistration will still block until all _other_ method
-	calls for this attribute are complete.
+Thanks!
 
-	The method tells the sysfs core to stop pretending and
-	go back to its normal state.
-
-	The method returns, and the sysfs core takes whatever actions
-	are needed to fully release the attribute file.
-
-The idea is that there could be a way to allow unregistration while a 
-method is still running, if the method specifically requests it.  If we 
-could do this then device_schedule_callback() would be unnecessary.
-
-What do you think?
-
-Alan Stern
+--
+Al
 
