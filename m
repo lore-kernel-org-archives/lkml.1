@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbXGHOhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbXGHPOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbXGHOhb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 10:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbXGHOhY
+	id S1754981AbXGHPOE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 11:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXGHPNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 10:37:24 -0400
-Received: from [212.12.190.146] ([212.12.190.146]:34012 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751257AbXGHOhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 10:37:23 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Hibernation Redesign (was: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM)
-Date: Sun, 8 Jul 2007 17:37:21 +0300
-User-Agent: KMail/1.5
+	Sun, 8 Jul 2007 11:13:54 -0400
+Received: from il.qumranet.com ([82.166.9.18]:60287 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753246AbXGHPNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 11:13:53 -0400
+Message-ID: <4690FF37.7020801@qumranet.com>
+Date: Sun, 08 Jul 2007 18:13:59 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       shaohua.li@intel.com
+Subject: Re: [PATCH][RFC] kvm-scheduler integration
+References: <11838994974161-git-send-email-avi@qumranet.com> <20070708133539.GA12597@elte.hu> <4690E973.7000606@qumranet.com> <20070708134850.GB22911@elte.hu> <4690EC47.6060904@qumranet.com> <20070708135905.GA24991@elte.hu>
+In-Reply-To: <20070708135905.GA24991@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707081737.21932.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> We are stuck with refrigerator for now, and at least for hibernation,
-> I don't see any feasible alternative.
+Ingo Molnar wrote:
+> * Avi Kivity <avi@qumranet.com> wrote:
+>
+>   
+>>>> Won't that increase task_struct (16 bytes on 64-bit) unnecessarily?  
+>>>> The function pointers are common to all virtual machines.
+>>>>         
+>>> well, this function pointer could then be reused by other virtual 
+>>> machines as well, couldnt it?
+>>>       
+>> I don't get this.  If we add a couple of members to task_struct, it 
+>> can't be reused.  The values will be the same across all tasks, but 
+>> the memory will be gone (including tasks which aren't virtual 
+>> machines).
+>>     
+>
+> i mean, the function pointer is set by KVM, but it could be set to a 
+> different value by other hypervisors.
+>
+>   
 
-Feasible alternative?
+What other hypervisors? ;-)
 
-Freezing is the only way to successfully suspend, in kernel space that is.  
-The problem here is:  Why do we freeze in kernel space?
+Oh, if Rusty wants it for lguest I can put a pointer or a chain into 
+task_struct.  But I doubt it -- with paravirtualization there are no 
+costly new registers to swap.
 
-APM didn't freeze in kernel space, and neither should ACPI.  The only reason 
-you would want to freeze in kernel space is because your system does not 
-have APM or ACPI or anything else to freeze from BIOS level.
-
-So the problem is really easy to solve: either call the APM suspend functions 
-or install ACPI soft-extensions to implement hibernation from BIOS level.
-
-But there is a catch:  Hibernation from BIOS level probably requires a 
-diskdriver, which isn't always available from BIOS level or is really slow.  
-
-So you are back to freezing in kernel space, but this time you know why, and 
-that you need a system that simply halts to disk after issuing sync-out 
-requests to all peripheral devices involved.  Which sounds like the freezer 
-in mainline, does it not?  And if it does, then what's the problem?
-
+> but ... no strong feelings either way, your patch is certainly fine.
+>
+> Acked-by: Ingo Molnar <mingo@elte.hu>
+>   
 
 Thanks!
 
---
-Al
+-- 
+error compiling committee.c: too many arguments to function
 
