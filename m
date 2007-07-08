@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbXGHSiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbXGHSjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbXGHSiT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 14:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXGHSiN
+	id S1757573AbXGHSjS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 14:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXGHSjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 14:38:13 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1109 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753606AbXGHSiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 14:38:12 -0400
-Date: Sun, 8 Jul 2007 18:37:41 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oliver Neukum <oliver@neukum.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
-Message-ID: <20070708183741.GA4891@ucw.cz>
-References: <Pine.LNX.4.44L0.0707061039380.3737-100000@iolanthe.rowland.org> <200707080108.17371.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707080108.17371.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+	Sun, 8 Jul 2007 14:39:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39807 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754580AbXGHSjJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 14:39:09 -0400
+Date: Sun, 8 Jul 2007 11:38:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+cc: Al Viro <viro@ftp.linux.org.uk>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc6(mm1) Unable to handle kernel NULL pointer dereference
+ - git-bisect result
+In-Reply-To: <alpine.LFD.0.999.0707081126260.31544@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0707081130420.31544@woody.linux-foundation.org>
+References: <20070708051452.GA4140@gentoox2.trippelsdorf.de>
+ <20070708012016.455ce8d5.akpm@linux-foundation.org>
+ <20070708100911.GA4196@gentoox2.trippelsdorf.de> <20070708152808.GA5902@gentoox2.trippelsdorf.de>
+ <469119A3.6030409@redhat.com> <20070708173416.GG21668@ftp.linux.org.uk>
+ <469121DA.6030600@redhat.com> <alpine.LFD.0.999.0707081058120.31544@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0707081126260.31544@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > And then you will face the problem of a user task doing I/O during 
-> > hibernate after the atomic snapshot has been made.
+
+On Sun, 8 Jul 2007, Linus Torvalds wrote:
 > 
-> I don't think that this is possible in normal conditions.  It would be possible
-> if, for example, the task were waiting for an unavailable resource and that
-> resource became available after the hibernation image had been created.
-> In that case, however, to do any damage, the task would have to cause some
-> filesystem-related data to be flushed in the same syscall (ie. before returning
-> to user space).
-> 
-> Such situations may be prevented by a mechanizm detecting if any uniterruptible
-> and freezing task has been woken up after creating the image and aborting the
-> hibernation in that cases.  For this purpose, we only need to add an
-> appropriate condition to try_to_wake_up() and make it start to trigger after,
-> for example, enabling the nonboot CPUs.
+> This would seem to be the minimal change, and I think it's right.
 
-Hmm, okay, I see how you meant it. Yes, it probably could work... but
-I'd say it is seriously ugly.
+Side note: I considered just changing do_utimes() to use 
+ATIME_SET/MTIME_SET instead, which would simplify the logic a lot..
 
-Imagine task waking up after complete image is written... we'd have to
-invalidate the image before aborting the suspend.
+But it turns out that the semantics for A/MTIME_SET is that only the owner 
+of the file can do that. So the "!times" case is simply _fundamentally_ 
+different from a permissions check standpoint, and there we have to check 
+for "writable" rather than anything else (although ownership will override 
+it).
 
-Actually, we could do better: we could just refuse to run those tasks
-after atomic snapshot... and hope we don't deadlock,because the
-uninterruptible task holds some important lock... but I still think it
-is too ugly.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+So rather than simplify the thing, I had to add code. Oh, well.
+
+I do think that it would be even nicer to just have a function that fills 
+in the "struct nameidata" from the dfd. I think we should be able to: the 
+"struct file" really does have the "f_path" thing with both dentry and mnt 
+information, and that would clean up that whole ugly "filepointer-vs-nd" 
+thing a lot.
+
+That would be an "Al cleanup", though. What do you think, Al?
+
+			Linus
