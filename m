@@ -1,68 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbXGHNlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbXGHNnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896AbXGHNlP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 09:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXGHNlD
+	id S1755603AbXGHNnh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 09:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXGHNnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 09:41:03 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55818 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752624AbXGHNlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 09:41:01 -0400
-Message-ID: <4690E973.7000606@qumranet.com>
-Date: Sun, 08 Jul 2007 16:41:07 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 8 Jul 2007 09:43:31 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:26261 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752624AbXGHNna (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 09:43:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAP+GkEarR7PE/2dsb2JhbAA
+X-IronPort-AV: i="4.16,513,1175497200"; 
+   d="scan'208"; a="178438000:sNHT24681762"
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: Re: [PATCH 11/20] KVM: SVM: Reliably detect if SVM was disabled by BIOS
+X-Message-Flag: Warning: May contain useful information
+References: <11838956891287-git-send-email-avi@qumranet.com>
+	<11838956892580-git-send-email-avi@qumranet.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sun, 08 Jul 2007 06:43:26 -0700
+In-Reply-To: <11838956892580-git-send-email-avi@qumranet.com> (Avi Kivity's message of "Sun,  8 Jul 2007 14:54:40 +0300")
+Message-ID: <aday7hr105d.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       shaohua.li@intel.com
-Subject: Re: [PATCH][RFC] kvm-scheduler integration
-References: <11838994974161-git-send-email-avi@qumranet.com> <20070708133539.GA12597@elte.hu>
-In-Reply-To: <20070708133539.GA12597@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Jul 2007 13:43:26.0903 (UTC) FILETIME=[F6281C70:01C7C165]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Avi Kivity <avi@qumranet.com> wrote:
->
->   
->> +#ifdef CONFIG_SCHED_KVM
->> +static __read_mostly struct sched_kvm_hooks kvm_hooks;
->> +#endif
->>     
->
-> please just add a current->put_vcpu() function pointer instead of this 
-> hooks thing.
->
->   
+seems like we probably want this for 2.6.22... it fixes a panic that
+I've seen actually reported by several users.  Is there any risk to
+merging it?
 
-Won't that increase task_struct (16 bytes on 64-bit) unnecessarily?  The 
-function pointers are common to all virtual machines.
-
->>  static inline void prepare_task_switch(struct rq *rq, struct task_struct *next)
->>  {
->> +	unload_kvm_vcpu(current);
->>  	prepare_lock_switch(rq, next);
->>  	prepare_arch_switch(next);
->>  }
->> @@ -1860,6 +1912,7 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
->>  	prev_state = prev->state;
->>  	finish_arch_switch(prev);
->>  	finish_lock_switch(rq, prev);
->> +	reload_kvm_vcpu(current);
->>     
->
-> ok, this looks certainly cheap enough from a scheduler POV, and it 
-> cleans up the whole KVM/scheduling interaction quite nicely. (I'd not 
-> bother with tweaking the migration logic, there's enough incentive for 
-> the scheduler to keep tasks from migrating unnecessarily.)
->   
-
-Okay.
-
--- 
-error compiling committee.c: too many arguments to function
-
+i guess getting it into 2.6.22.1 would be OK too.
