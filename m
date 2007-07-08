@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbXGHHax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbXGHHf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbXGHHax (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 03:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbXGHHap
+	id S1756334AbXGHHf5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 03:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXGHHft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 03:30:45 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36800 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752629AbXGHHao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 03:30:44 -0400
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 08 Jul 2007 09:30:42 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-In-Reply-To: <Pine.LNX.4.64.0707072057030.1536@fbirervta.pbzchgretzou.qr>
-Message-ID: <20070708073042.238020@gmx.net>
-MIME-Version: 1.0
-References: <468FBEB7.1000308@gmx.net>
- <Pine.LNX.4.64.0707072057030.1536@fbirervta.pbzchgretzou.qr>
-Subject: Re: man-pages-2.61 is released
-To: Jan Engelhardt <jengelh@computergmbh.de>
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX18EhH84acwEUO0xm4lStNN2iFgsN+8z3yhU8xU4HY
- Do1c7vA2Wo5XCXyXtuRqrhvq7in3TtYLreRg== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: lqCpfsxpYW0tRsLsGmdpzNp8amthc5so
+	Sun, 8 Jul 2007 03:35:49 -0400
+Received: from main.gmane.org ([80.91.229.2]:38282 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752629AbXGHHfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 03:35:48 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway (philosophical)
+Date: Sun, 8 Jul 2007 07:35:25 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnf915mk.bju.olecom@flower.upol.cz>
+References: <1183676393.3388.89.camel@localhost.localdomain> <Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Jul 7 2007 18:26, Michael Kerrisk wrote:
-> >
-> >I recently released man-pages-2.61.
-> 
-> utimensat() was introduced in Linux 2.6.22-rc1.
+* Alan Stern <Date: Fri, 6 Jul 2007 11:13:14 -0400 (EDT)>
 
-Yes, I am aware.
+>> Why are you guys working so hard and spending so much energy to try to
+>> avoid doing the right thing is beyond my understanding...
+>> 
+>> > It _does_ apply to kernel threads.  That's exactly why I wrote above 
+>> > that kernel threads which try to do I/O during a suspend will need 
+>> > extra attention.
+>> 
+>> Ok none at all if you don't have a freezer.
+>
+> In answer to both questions: We need the freezer in order to
 
-> I am kindly hinting that it does not yet have a manpage yet :)
+Non of *complex* living creatures survive motionless freezing (with
+ice).
 
-Such a hint is a good idea.  But strangely, you send it to me,
-rather than the author of the system call.  Why is that?
-
-Rhetorically,
-
-Michael
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
-
-Want to help with man page maintenance?  
-Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages , 
-read the HOWTOHELP file and grep the source 
-files for 'FIXME'.
+That's why stupid me just don't care about all that stuff in the
+Linux. It's nice to see somebody approaches this from technical, but not
+off-topical POV :). 
+____
 
