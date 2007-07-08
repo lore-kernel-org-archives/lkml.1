@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbXGHLz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbXGHLzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbXGHLz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 07:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXGHLyp
+	id S1755270AbXGHLzv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 07:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXGHLyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 07:54:45 -0400
-Received: from il.qumranet.com ([82.166.9.18]:38355 "EHLO il.qumranet.com"
+	Sun, 8 Jul 2007 07:54:47 -0400
+Received: from il.qumranet.com ([82.166.9.18]:38357 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751085AbXGHLyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751170AbXGHLyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Jul 2007 07:54:43 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
+Cc: linux-kernel@vger.kernel.org, Nitin A Kamble <nitin.a.kamble@intel.com>,
        Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 04/20] KVM: VMX: Fix interrupt checking on lightweight exit
-Date: Sun,  8 Jul 2007 14:54:33 +0300
-Message-Id: <1183895689337-git-send-email-avi@qumranet.com>
+Subject: [PATCH 01/20] KVM: Implement emulation of "pop reg" instruction (opcode 0x58-0x5f)
+Date: Sun,  8 Jul 2007 14:54:30 +0300
+Message-Id: <11838956893135-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.2.2
 In-Reply-To: <11838956891287-git-send-email-avi@qumranet.com>
 References: <11838956891287-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gregory Haskins <ghaskins@novell.com>
+From: Nitin A Kamble <nitin.a.kamble@intel.com>
 
-With kernel-injected interrupts, we need to check for interrupts on
-lightweight exits too.
+For use in real mode.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Nitin A Kamble <nitin.a.kamble@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/vmx.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/kvm/x86_emulate.c |   17 +++++++++++++++--
+ 1 files changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index d06c362..b47ddcc 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -1992,13 +1992,13 @@ static int vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	int r;
- 
- preempted:
--	if (!vcpu->mmio_read_completed)
--		do_interrupt_requests(vcpu, kvm_run);
--
- 	if (vcpu->guest_debug.enabled)
- 		kvm_guest_debug_pre(vcpu);
- 
- again:
-+	if (!vcpu->mmio_read_completed)
-+		do_interrupt_requests(vcpu, kvm_run);
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index a4a8481..46c3806 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -98,8 +98,11 @@ static u8 opcode_table[256] = {
+ 	0, 0, 0, 0,
+ 	/* 0x40 - 0x4F */
+ 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+-	/* 0x50 - 0x5F */
+-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++	/* 0x50 - 0x57 */
++	0, 0, 0, 0, 0, 0, 0, 0,
++	/* 0x58 - 0x5F */
++	ImplicitOps, ImplicitOps, ImplicitOps, ImplicitOps,
++	ImplicitOps, ImplicitOps, ImplicitOps, ImplicitOps,
+ 	/* 0x60 - 0x6F */
+ 	0, 0, 0, DstReg | SrcMem32 | ModRM | Mov /* movsxd (x86/64) */ ,
+ 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+@@ -1153,6 +1156,16 @@ special_insn:
+ 	case 0xf4:              /* hlt */
+ 		ctxt->vcpu->halt_request = 1;
+ 		goto done;
++	case 0x58 ... 0x5f: /* pop reg */
++		dst.ptr = (unsigned long *)&_regs[b & 0x7];
 +
- 	vmx_save_host_state(vcpu);
- 	kvm_load_guest_fpu(vcpu);
++		if ((rc = ops->read_std(register_address(ctxt->ss_base,
++			_regs[VCPU_REGS_RSP]), dst.ptr, op_bytes, ctxt)) != 0)
++			goto done;
++
++		register_address_increment(_regs[VCPU_REGS_RSP], dst.bytes);
++		dst.orig_val = dst.val; /* Disable writeback. */
++		break;
+ 	}
+ 	goto writeback;
  
 -- 
 1.5.2.2
