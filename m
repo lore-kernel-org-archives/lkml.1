@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbXGHLq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbXGHLyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbXGHLq1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 07:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXGHLqS
+	id S1754484AbXGHLyz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 07:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbXGHLyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 07:46:18 -0400
-Received: from ozlabs.org ([203.10.76.45]:58085 "EHLO ozlabs.org"
+	Sun, 8 Jul 2007 07:54:45 -0400
+Received: from il.qumranet.com ([82.166.9.18]:38356 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751584AbXGHLqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 07:46:18 -0400
-Subject: maps2-add-proc-kpagemap-interface.patch
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 08 Jul 2007 21:46:02 +1000
-Message-Id: <1183895162.6005.338.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1750999AbXGHLyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 07:54:43 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 00/20] KVM updates for 2.6.23, part 2
+Date: Sun,  8 Jul 2007 14:54:29 +0300
+Message-Id: <11838956891287-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> + * Each entry is a pair of unsigned longs representing the
-> + * corresponding physical page, the first containing the page flags
-> + * and the second containing the page use count.
-> + *
-> + * The first 4 bytes of this file form a simple header:
-> + *
-> + * first byte:   0 for big endian, 1 for little
-> + * second byte:  page shift (eg 12 for 4096 byte pages)
-> + * third byte:   entry size in bytes (currently either 4 or 8)
-> + * fourth byte:  header size
+This is the second set of updates for the 2.6.23 merge window.  This time
+around, the patchset includes the cpu hotplug fixes (which also make
+suspend and resume robust in the presence of running virtual machines). Also
+included are a few fixes and core updates.
 
-Hi Matt,
+Avi Kivity (11):
+      KVM: VMX: Reinitialize the real-mode tss when entering real mode
+      KVM: VMX: Remove unnecessary code in vmx_tlb_flush()
+      KVM: Remove kvmfs in favor of the anonymous inodes source
+      KVM: Clean up #includes
+      HOTPLUG: Add CPU_DYING notifier
+      HOTPLUG: Adapt cpuset hotplug callback to CPU_DYING
+      HOTPLUG: Adapt thermal throttle to CPU_DYING
+      SMP: Implement on_cpu()
+      KVM: Keep track of which cpus have virtualization enabled
+      KVM: Tune hotplug/suspend IPIs
+      KVM: Use CPU_DYING for disabling virtualization
 
-	This comment is worded badly: if the "entry is a pair" then "entry size
-in bytes" would be 8 or 16.
+Eddie Dong (1):
+      KVM: Add support for in-kernel pio handlers
 
-> +	pfn = src / KPMSIZE - 1;
-> +	count = min_t(size_t, count, ((max_pfn + 1) * KPMSIZE) - src);
+Gregory Haskins (2):
+      KVM: Adds support for in-kernel mmio handlers
+      KVM: VMX: Fix interrupt checking on lightweight exit
 
-Is min_t required here?  KPMSIZE is a sizeof() expression, so I'd expect
-both sides to be type-compatible...
+Joerg Roedel (1):
+      KVM: SVM: Reliably detect if SVM was disabled by BIOS
 
-> +	page = (unsigned long *)__get_free_page(GFP_USER);
-> +	if (!page)
-> +		return -ENOMEM;
+Luca Tettamanti (2):
+      KVM: Fix x86 emulator writeback
+      KVM: Avoid useless memory write when possible
 
-An explicit "struct kpagemap { unsigned long flags, count; };" would
-simplify your iteration, clear up the code and get rid of the KPMSIZE &
-KPMMASK macros.
+Nitin A Kamble (2):
+      KVM: Implement emulation of "pop reg" instruction (opcode 0x58-0x5f)
+      KVM: Implement emulation of instruction "ret" (opcode 0xc3)
 
-But again I'd query the necessity of this cache page at all.
-
-> +		if (copy_to_user(buf, page, chunk)) {
-> +			ret = -EFAULT;
-> +			break;
-> +		}
-> +		ret += chunk;
-> +		src += chunk;
-> +		buf += chunk;
-> +		count -= chunk;
-> +		cond_resched();
-
-No cond_resched() needed here, either.
-
-Cheers,
-Rusty.
+Shaohua Li (1):
+      KVM: MMU: Fix Wrong tlb flush order
 
