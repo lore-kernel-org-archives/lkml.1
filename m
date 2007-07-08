@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbXGHSTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbXGHSTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757036AbXGHSTW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 14:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbXGHSTP
+	id S1757437AbXGHSTf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 14:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbXGHSTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 14:19:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36759 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753804AbXGHSTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 14:19:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Sun, 8 Jul 2007 20:26:53 +0200
-User-Agent: KMail/1.9.5
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <Pine.LNX.4.44L0.0707072218030.10912-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707072218030.10912-100000@netrider.rowland.org>
+	Sun, 8 Jul 2007 14:19:24 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:5047 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757143AbXGHSTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 14:19:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=PqS7fGR54IdmdTr62A3WUwx/9CuPLh698FjPPxxPbCEtSNjvAmLkhk3OlMHVx/y+eP8zSQ7P0xzaOLJzoh7WRxyUydpOfI4hnWSMjFR2xkykix9ekqGqqVAOZyi7fWPGDbe1GC8hMC7hRrp4H4Jkl0c/5Nl3C6g+d0EVu3LF9Go=
+Message-ID: <c43b2e150707081119h36d2fcadva5fa4ea00e68599a@mail.gmail.com>
+Date: Sun, 8 Jul 2007 20:19:21 +0200
+From: wixor <wixorpeek@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: getrusage time measurements variations
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707082026.54145.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 8 July 2007 04:24, Alan Stern wrote:
-> On Sun, 8 Jul 2007, Benjamin Herrenschmidt wrote:
-> 
-> > > Which is exactly my point.  It _doesn't_ work fine without a freezer, 
-> > > because the USB stack currently relies on the freezer to prevent plug 
-> > > activity.
-> > 
-> > Putting on hold plug activity has nothing, NOTHING, to do with the half
-> > assed piece of deadlocking crap we have now we call a freezer.
-> 
-> You're wrong; it _does_ have something to do with the freezer.  The 
-> connection is that the code uses the freezer to put plug activity on 
-> hold.
-> 
-> You probably meant to say that it _should_ have nothing to do with the 
-> freezer.  That's a different matter.  But in any case you should write 
-> what you actually mean, rather than just putting down something as 
-> inflammatory as possible.
-> 
-> > As long as you guys keep mixing up all the issues and coming up with
-> > totally bogus solutions that cannot work, we won't have a useful suspend
-> > (either to RAM or to disk) in linux.
-> 
-> In my defense, you should realize that until Rafael's notifier chain
-> was added (just a few weeks ago, still not in mainline I believe) there
-> was no other way to do it.  Plug activity needs to be stopped before
-> the child devices are suspended, and the PM core does not send any
-> notification to drivers at that time.  All it does is activate the 
-> freezer.
+Hello all,
+I've been doing some getrusage tests using this:
 
-Exactly.
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/resource.h>
 
-And if we really want to get rid of the freezer, we need to _prepare_ for
-that.  At least, we need to have an idea of how we will do thing when the
-freezer is not there.
+int main(void)
+{
+    unsigned int i;
+    struct rusage ru;
+    for(i=1;i;i++) asm volatile("nop");
+    getrusage(RUSAGE_SELF, &ru);
+    printf("%dsec %dusec\n",ru.ru_utime.tv_sec,ru.ru_utime.tv_usec);
+    return 0;
+}
 
-For example, how will we check if the system is not in a state in which the
-resume is likely to fail?
+What is good is that results do not seem to depend on other thread
+activity nor disk i/o. However, each time I run this program, result
+varies (from 4.039 sec to 4.062 sec). Does the actual execution time
+change each time? User time should not contain .so library loading
+time, nor memory allocation time (kernel part) nor anything like this.
+Does getrusage measure time so accurately (1usec precision), even if
+HZ is set to, let's say, 100?
 
-There are more questions like that, IMO, and we should at least have a list
-of them _before_ we remove the freezer.
+But that's not very bad... Problems start, when I run this with heavy
+network i/o load. I'm using ne1000 network adapter (on isa bus...
+well, that's very old stuff), which seem to generate interrupt on each
+packet it receives - top reports very high "hi" values, up to 20%.
+Results from getrusage change to 5.2 sec. Is this variation the same
+one as above, but in greater scale? Can this be eliminated?
 
-Greetings,
-Rafael
+My problem is, that I'd like to measure user time of process with
+1msec resolution, but what is most important, I want the result to be
+the same each time I run program. Can it be done with standard linux
+kernels, or should I try some "real-time" versions?
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Thanks for responses, and please CC me, I'm not in the list.
+--
+wixor
