@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbXGHDuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbXGHDuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbXGHDuj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 23:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbXGHDuU
+	id S1756920AbXGHDuz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 23:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbXGHDuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 23:50:20 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49236 "EHLO
+	Sat, 7 Jul 2007 23:50:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49238 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755404AbXGHDuR (ORCPT
+	with ESMTP id S1755582AbXGHDuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 7 Jul 2007 23:50:17 -0400
-Message-Id: <20070708034952.022985379@sgi.com>
+Message-Id: <20070708035016.643212528@sgi.com>
+References: <20070708034952.022985379@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 07 Jul 2007 20:49:52 -0700
+Date: Sat, 07 Jul 2007 20:49:55 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@vger.kernel.org
@@ -20,72 +21,81 @@ Cc: suresh.b.siddha@intel.com
 Cc: corey.d.gough@intel.com
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: akpm@linux-foundation.org
-Subject: [patch 00/10] [RFC] SLUB patches for more functionality, performance and maintenance
+Subject: [patch 03/10] SLUB: Do not use page->mapping
+Content-Disposition: inline; filename=slub_free_up_mapping
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series here contains a number of patches that need some discussion or
-evaluation. They apply on top of 2.6.22-rc6-mm1 + slub patches already
-in mm.
+After moving the lockless_freelist to kmem_cache_cpu we no longer need
+page->lockless_freelist. Restructure the use of the struct page fields in
+such a way that we never touch the mapping field.
 
-1. Page allocator pass through
+This is turn allows us to remove the special casing of SLUB when determining
+the mapping of a page (needed for corner cases of virtual caches machines that
+need to flush caches of processors mapping a page).
 
-SLOB does pass through all larger kmalloc requests directly to the page
-allocator. The advantage is that the allocator overhead is eliminated
-and that we do not need to provide kmalloc slabs >= PAGE_SIZE.
-This patch does the same thing in SLUB.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-For allocation whose size is know the call to the slab may be converted to
-a call to the page allocator at compile time.
+---
+ include/linux/mm.h       |    4 ----
+ include/linux/mm_types.h |    9 ++-------
+ mm/slub.c                |    2 --
+ 3 files changed, 2 insertions(+), 13 deletions(-)
 
-The result of doing so is also that the behavior of SLUB for pagesize
-and higher kmalloc allocation will conform to SLAB. Meaning large
-kmalloc allocations are no longer debuggable and are guaranteed to be
-page aligned.
-
-Do we want this?
-
-2. A series of performance enhancements patches
-
-The patches improve the producer / consumer scenario. If objects are
-always allocated on one processor and released on another then both
-will use distinct cachelines to store their information in order to
-avoid a bouncing cacheline.
-
-In order to do so we have to introduce a per cpu structure to keep
-per cpu allocation lists in distinct cachelines from the remote free
-information in the page struct. If we introduce a per cpu structure
-then we also need to allocate that in a NUMA aware fashion from the
-local node.
-
-Having a per cpu structure allows to avoid the use of certain fields
-in the page struct which in turn allows us to avoid using page->mapping
-and increasing the maximum number of objects per slab. More optimizations
-become possible by shifting information from the kmem_cache structure
-that is used in the hotpath to the per cpu structure thereby minimizing
-cacheline coverage.
-
-Finally there is an implementation of slab_alloc/slab_free using a cmpxchg
-instead of current interrupt enable disable approach. This was inspired by
-LTTng's approach. A cmpxchg is less costly than interrupt enabe/disable
-but means more complexity in managing the resulting race conditions.
-The disadvantage is that the allocation / free paths become very
-complex and fragile.
-
-All of these patches need to be evaluated as to what impact they
-have on a variety of loads.
-
-3. Removal of SLOB and SLAB.
-
-We would like to consolidate and only have one slab allocator in the future.
-Two patches are included that remove SLOB and SLAB. There is only minimal
-justification for retaining SLOB. So I think we could remove SLOB for 2.6.23.
-
-SLAB is the reference that SLUB must be measured against to avoid regressions.
-On the other hand it will be a problem to support new functionality like
-Slab defragmentation since its design makes it difficult to implement comparable
-features. So I think that we need to keep SLAB around for one more cycle and
-then we may be able to get rid of it. Or we can keep it in the tree for
-awhile and produce more and more shims for new slab functionality.
+Index: linux-2.6.22-rc6-mm1/include/linux/mm.h
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/include/linux/mm.h	2007-07-05 19:05:02.000000000 -0700
++++ linux-2.6.22-rc6-mm1/include/linux/mm.h	2007-07-05 19:05:24.000000000 -0700
+@@ -632,10 +632,6 @@ static inline struct address_space *page
+ 	VM_BUG_ON(PageSlab(page));
+ 	if (unlikely(PageSwapCache(page)))
+ 		mapping = &swapper_space;
+-#ifdef CONFIG_SLUB
+-	else if (unlikely(PageSlab(page)))
+-		mapping = NULL;
+-#endif
+ 	else if (unlikely((unsigned long)mapping & PAGE_MAPPING_ANON))
+ 		mapping = NULL;
+ 	return mapping;
+Index: linux-2.6.22-rc6-mm1/include/linux/mm_types.h
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/include/linux/mm_types.h	2007-07-05 19:00:19.000000000 -0700
++++ linux-2.6.22-rc6-mm1/include/linux/mm_types.h	2007-07-05 19:05:24.000000000 -0700
+@@ -49,13 +49,8 @@ struct page {
+ #if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
+ 	    spinlock_t ptl;
+ #endif
+-	    struct {			/* SLUB uses */
+-	    	void **lockless_freelist;
+-		struct kmem_cache *slab;	/* Pointer to slab */
+-	    };
+-	    struct {
+-		struct page *first_page;	/* Compound pages */
+-	    };
++	    struct kmem_cache *slab;	/* SLUB: Pointer to slab */
++	    struct page *first_page;	/* Compound tail pages */
+ 	};
+ 	union {
+ 		pgoff_t index;		/* Our offset within mapping. */
+Index: linux-2.6.22-rc6-mm1/mm/slub.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/mm/slub.c	2007-07-05 19:05:16.000000000 -0700
++++ linux-2.6.22-rc6-mm1/mm/slub.c	2007-07-05 19:05:24.000000000 -0700
+@@ -1109,7 +1109,6 @@ static struct page *new_slab(struct kmem
+ 		atomic_long_inc(&n->nr_slabs);
+ 
+ 	page->inuse = 0;
+-	page->lockless_freelist = NULL;
+ 	page->offset = s->offset / sizeof(void *);
+ 	page->slab = s;
+ 
+@@ -1163,7 +1162,6 @@ static void __free_slab(struct kmem_cach
+ 		NR_SLAB_RECLAIMABLE : NR_SLAB_UNRECLAIMABLE,
+ 		- pages);
+ 
+-	page->mapping = NULL;
+ 	__free_pages(page, s->order);
+ }
+ 
 
 -- 
