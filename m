@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbXGHVIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbXGHVIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbXGHVIL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 17:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756965AbXGHVH6
+	id S1758171AbXGHVIf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 17:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757224AbXGHVIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 17:07:58 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35413 "EHLO amd.ucw.cz"
+	Sun, 8 Jul 2007 17:08:25 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35424 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757034AbXGHVH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 17:07:57 -0400
-Date: Sun, 8 Jul 2007 23:07:29 +0200
+	id S1757265AbXGHVIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 17:08:24 -0400
+Date: Sun, 8 Jul 2007 23:08:09 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Kyle Moffett <mrmacman_g4@mac.com>,
        Nigel Cunningham <nigel@nigel.suspend2.net>,
        Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
        linux-pm@lists.linux-foundation.org
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Message-ID: <20070708210729.GC5401@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org> <1183871661.3388.282.camel@localhost.localdomain> <200707082115.27363.rjw@sisk.pl> <1183928612.3388.289.camel@localhost.localdomain>
+Message-ID: <20070708210809.GD5401@elf.ucw.cz>
+References: <200707082046.36864.rjw@sisk.pl> <Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1183928612.3388.289.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,30 +32,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > > I just think that the freezer approach, as it is, is backward. We can't
-> > > have a 3rd party try to discriminate what to freeze and what not, it
-> > > will always get something wrong, and in some cases with the wrong timing
-> > > or ordering.
+> > I'm all for changing this infrastructure, but in an organized way (ie. we
+> > discuss what to do next, we do that and then we go to the next step) and in
+> > the order that everyone will be comfortable with.
 > > 
-> > Nice discussion, except for one thing: the freezer doesn't decide what to
-> > freeze.  For example, even right now kernel threads decide if they want to be
-> > frozen.
+> > So, let's finish this thread and start over from discussing what needs to be
+> > done, how (ie. in what order etc.) we are going to do that and who is going to
+> > do what.  Shall we?
 > 
-> Somewhat... userspace doesn't and workqueues are a gray area.
-
-But userspace must not be neccessary for kernel functioning, so that's
-quite okay. And we do need to solve the workqueues.
-
-> Also, I've been thinking this "icebox" idea a bit more and it seems in
-> fact a bit racy in some areas, at least for use by things like drivers,
-> unless we end up doing something aking to an RCU on suspend, waiting for
-> all tasks to reach userland once, but that has the same annoyances as
-> the current freezer.
+> IMO we should start by using the new notifier chain and by implementing 
+> a central "icebox" routine.  Then we can forbid device registration 
+> during suspend.
 > 
-> Thus I'm tempted to go back to saying that driver can handle things
-> locally :-)
+> It might also be a good idea to add a freezable keventd-like workqueue 
+> specifically intended for things that need to block during a suspend.  
+> Although maybe this will end up being unnecessary; it's too soon to 
+> tell.
 
-:-). Or perhaps freezer is not _that_ evil after all?
+We actually had patches for freezeable workqueues at one point.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
