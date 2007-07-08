@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbXGHDvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbXGHDvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbXGHDvh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 23:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbXGHDuZ
+	id S1756944AbXGHDvz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 23:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbXGHDu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 23:50:25 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49244 "EHLO
+	Sat, 7 Jul 2007 23:50:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49242 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755638AbXGHDuS (ORCPT
+	with ESMTP id S1755622AbXGHDuS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 7 Jul 2007 23:50:18 -0400
-Message-Id: <20070708035016.869389788@sgi.com>
+Message-Id: <20070708035016.428005217@sgi.com>
 References: <20070708034952.022985379@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 07 Jul 2007 20:49:56 -0700
+Date: Sat, 07 Jul 2007 20:49:54 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@vger.kernel.org
@@ -21,264 +21,544 @@ Cc: suresh.b.siddha@intel.com
 Cc: corey.d.gough@intel.com
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: akpm@linux-foundation.org
-Subject: [patch 04/10] SLUB: Move page->offset to kmem_cache_cpu->offset
-Content-Disposition: inline; filename=slub_move_offset_to_cpu
+Subject: [patch 02/10] SLUB: Avoid page struct cacheline bouncing due to remote frees to cpu slab
+Content-Disposition: inline; filename=slub_performance_conc_free_alloc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need the offset during slab_alloc and slab_free. In both cases we also
-reference the cacheline of the kmem_cache_cpu structure. We can therefore
-move the offset field into the kmem_cache_cpu structure freeing up 16 bits
-in the page flags.
+A remote free may access the same page struct that also contains the lockless
+freelist for the cpu slab. If objects have a short lifetime and are freed by
+a different processor then remote frees back to the slab from which we are
+currently allocating are frequent. The cacheline with the page struct needs
+to be repeately acquired in exclusive mode by both the allocating thread and
+the freeing thread. If this is frequent enough then performance will suffer
+because of cacheline bouncing.
 
-Moving the offset allows an allocation from slab_alloc() without
-touching the page struct in the hot path.
+This patchset puts the lockless_freelist pointer in its own cacheline. In
+order to make that happen we introduce a per cpu structure called
+kmem_cache_cpu.
 
-The only thing left in slab_free() that touches the page struct cacheline for
-per cpu freeing is the checking of SlabDebug(page). The next patch deals with
-that.
+Instead of keeping an array of pointers to page structs we now keep an array
+to a per cpu structure that--among other things--contains the pointer to the
+lockless freelist. The freeing thread can then keep possession of exclusive
+access to the page struct cacheline while the allocating thread keeps its
+exclusive access to the cacheline containing the per cpu structure.
 
-Use the available 16 bits to broaden page->inuse. That way we can have more
-than 64k objects per slab and can get rid of the checks for that limitation.
+This works as long as the allocating cpu is able to service its request
+from the lockless freelist. If the lockless freelist runs empty then the
+allocating thread needs to acquire exclusive access to the cacheline with
+the page struct lock the slab.
 
-No need anymore to shrink the order of slabs if we boot with 2M sized slabs
-(slub_min_order=9).
+The allocating thread will then check if new objects were freed to the per
+cpu slab. If so it will keep the slab as the cpu slab and continue with the
+recently remote freed objects. So the allocating thread can take a series
+of just freed remote pages and dish them out again. Ideally allocations
+could be just recycling objects in the same slab this way which will lead
+to an ideal allocation / remote free pattern.
 
-No need anymore to switch off the offset calculation for very large slabs
-since the field in the kmem_cache_cpu structure is 32 bits and so the offset
-field can now handle slab sizes of up to 8GB.
+The number of objects that can be handled in this way is limited by the
+capacity of one slab. Increasing slab size via slub_min_objects/
+slub_max_order may increase the number of objects and therefore performance.
+
+If the allocating thread runs out of objects and finds that no objects were
+put back by the remote processor then it will retrieve a new slab (from the
+partial lists or from the page allocator) and start with a whole
+new set of objects while the remote thread may still be freeing objects to
+the old cpu slab. This may then repeat until the new slab is also exhausted.
+If remote freeing has freed objects in the earlier slab then that earlier
+slab will now be on the partial freelist and the allocating thread will
+pick that slab next for allocation. So the loop is extended. However,
+both threads need to take the list_lock to make the swizzling via
+the partial list happen.
+
+It is likely that this kind of scheme will keep the objects being passed
+around to a small set that can be kept in the cpu caches leading to increased
+performance.
+
+More code cleanups become possible:
+
+- Instead of passing a cpu we can now pass a kmem_cache_cpu structure around.
+  Allows reducing the number of parameters to various functions.
+- Can define a new node_match() function for NUMA to encapsulate locality
+  checks.
+
+
+Effect on allocations:
+
+Cachelines touched before this patch:
+
+	Write:	page cache struct and first cacheline of object
+
+Cachelines touched after this patch:
+
+	Write:	kmem_cache_cpu cacheline and first cacheline of object
+	Read: page cache struct (but see later patch that avoids touching
+		that cacheline)
+
+
+The handling when the lockless alloc list runs empty gets to be a bit more
+complicated since another cacheline has now to be written to. But that is
+halfway out of the hot path.
+
+Effect on freeing:
+
+Cachelines touched before this patch:
+
+	Write: page_struct and first cacheline of object
+
+Cachelines touched after this patch depending on how we free:
+
+  Write(to cpu_slab):	kmem_cache_cpu struct and first cacheline of object
+  Write(to other):	page struct and first cacheline of object
+
+  Read(to cpu_slab):	page struct to id slab etc. (but see later patch that
+  			avoids touching the page struct on free)
+  Read(to other):	cpu local kmem_cache_cpu struct to verify its not
+  			the cpu slab.
+
+
+
+Summary:
+
+Pro:
+	- Distinct cachelines so that concurrent remote frees and local
+	  allocs on a cpuslab can occur without cacheline bouncing.
+	- Avoids potential bouncing cachelines because of neighboring
+	  per cpu pointer updates in kmem_cache's cpu_slab structure since
+	  it now grows to a cacheline (Therefore remove the comment
+	  that talks about that concern).
+
+Cons:
+	- Freeing objects now requires the reading of one additional
+	  cacheline. That can be mitigated for some cases by the following
+	  patches but its not possible to completely eliminate these
+	  references.
+
+	- Memory usage grows slightly.
+
+	The size of each per cpu object is blown up from one word
+	(pointing to the page_struct) to one cacheline with various data.
+	So this is NR_CPUS*NR_SLABS*L1_BYTES more memory use. Lets say
+	NR_SLABS is 100 and a cache line size of 128 then we have just
+	increased SLAB metadata requirements by 12.8k per cpu.
+	(Another later patch reduces these requirements)
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/mm_types.h |    5 ---
- include/linux/slub_def.h |    1 
- mm/slub.c                |   75 ++++++++++-------------------------------------
- 3 files changed, 19 insertions(+), 62 deletions(-)
+ include/linux/slub_def.h |    9 +-
+ mm/slub.c                |  191 ++++++++++++++++++++++++++++-------------------
+ 2 files changed, 124 insertions(+), 76 deletions(-)
 
+Index: linux-2.6.22-rc6-mm1/include/linux/slub_def.h
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/include/linux/slub_def.h	2007-07-06 16:08:36.000000000 -0700
++++ linux-2.6.22-rc6-mm1/include/linux/slub_def.h	2007-07-06 16:08:40.000000000 -0700
+@@ -11,6 +11,13 @@
+ #include <linux/workqueue.h>
+ #include <linux/kobject.h>
+ 
++struct kmem_cache_cpu {
++	void **freelist;
++	struct page *page;
++	int node;
++	/* Lots of wasted space */
++} ____cacheline_aligned_in_smp;
++
+ struct kmem_cache_node {
+ 	spinlock_t list_lock;	/* Protect partial list and nr_partial */
+ 	unsigned long nr_partial;
+@@ -63,7 +70,7 @@ struct kmem_cache {
+ 				 */
+ 	struct kmem_cache_node *node[MAX_NUMNODES];
+ #endif
+-	struct page *cpu_slab[NR_CPUS];
++	struct kmem_cache_cpu cpu_slab[NR_CPUS];
+ };
+ 
+ /*
 Index: linux-2.6.22-rc6-mm1/mm/slub.c
 ===================================================================
---- linux-2.6.22-rc6-mm1.orig/mm/slub.c	2007-07-06 23:35:49.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/mm/slub.c	2007-07-07 12:02:41.000000000 -0700
-@@ -207,11 +207,6 @@ static inline void ClearSlabDebug(struct
- #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
+--- linux-2.6.22-rc6-mm1.orig/mm/slub.c	2007-07-06 16:08:36.000000000 -0700
++++ linux-2.6.22-rc6-mm1/mm/slub.c	2007-07-06 16:08:40.000000000 -0700
+@@ -90,7 +90,7 @@
+  * 			One use of this flag is to mark slabs that are
+  * 			used for allocations. Then such a slab becomes a cpu
+  * 			slab. The cpu slab may be equipped with an additional
+- * 			lockless_freelist that allows lockless access to
++ * 			freelist that allows lockless access to
+  * 			free objects in addition to the regular freelist
+  * 			that requires the slab lock.
+  *
+@@ -140,11 +140,6 @@ static inline void ClearSlabDebug(struct
+ /*
+  * Issues still to be resolved:
+  *
+- * - The per cpu array is updated for each new slab and and is a remote
+- *   cacheline for most nodes. This could become a bouncing cacheline given
+- *   enough frequent updates. There are 16 pointers in a cacheline, so at
+- *   max 16 cpus could compete for the cacheline which may be okay.
+- *
+  * - Support PAGE_ALLOC_DEBUG. Should be easy to do.
+  *
+  * - Variable sizing of the per node arrays
+@@ -286,6 +281,11 @@ static inline struct kmem_cache_node *ge
  #endif
- 
--/*
-- * The page->inuse field is 16 bit thus we have this limitation
-- */
--#define MAX_OBJECTS_PER_SLAB 65535
--
- /* Internal SLUB flags */
- #define __OBJECT_POISON 0x80000000	/* Poison object */
- 
-@@ -741,11 +736,6 @@ static int check_slab(struct kmem_cache 
- 		slab_err(s, page, "Not a valid slab page");
- 		return 0;
- 	}
--	if (page->offset * sizeof(void *) != s->offset) {
--		slab_err(s, page, "Corrupted offset %lu",
--			(unsigned long)(page->offset * sizeof(void *)));
--		return 0;
--	}
- 	if (page->inuse > s->objects) {
- 		slab_err(s, page, "inuse %u > max %u",
- 			s->name, page->inuse, s->objects);
-@@ -884,8 +874,6 @@ bad:
- 		slab_fix(s, "Marking all objects used");
- 		page->inuse = s->objects;
- 		page->freelist = NULL;
--		/* Fix up fields that may be corrupted */
--		page->offset = s->offset / sizeof(void *);
- 	}
- 	return 0;
  }
-@@ -1001,30 +989,12 @@ __setup("slub_debug", setup_slub_debug);
- static void kmem_cache_open_debug_check(struct kmem_cache *s)
+ 
++static inline struct kmem_cache_cpu *get_cpu_slab(struct kmem_cache *s, int cpu)
++{
++	return &s->cpu_slab[cpu];
++}
++
+ static inline int check_valid_pointer(struct kmem_cache *s,
+ 				struct page *page, const void *object)
  {
+@@ -1399,33 +1399,34 @@ static void unfreeze_slab(struct kmem_ca
+ /*
+  * Remove the cpu slab
+  */
+-static void deactivate_slab(struct kmem_cache *s, struct page *page, int cpu)
++static void deactivate_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
+ {
++	struct page *page = c->page;
  	/*
--	 * The page->offset field is only 16 bit wide. This is an offset
--	 * in units of words from the beginning of an object. If the slab
--	 * size is bigger then we cannot move the free pointer behind the
--	 * object anymore.
--	 *
--	 * On 32 bit platforms the limit is 256k. On 64bit platforms
--	 * the limit is 512k.
--	 *
--	 * Debugging or ctor may create a need to move the free
--	 * pointer. Fail if this happens.
-+	 * Enable debugging if selected on the kernel commandline.
+ 	 * Merge cpu freelist into freelist. Typically we get here
+ 	 * because both freelists are empty. So this is unlikely
+ 	 * to occur.
  	 */
--	if (s->objsize >= 65535 * sizeof(void *)) {
--		BUG_ON(s->flags & (SLAB_RED_ZONE | SLAB_POISON |
--				SLAB_STORE_USER | SLAB_DESTROY_BY_RCU));
--		BUG_ON(s->ctor);
--	}
--	else
--		/*
--		 * Enable debugging if selected on the kernel commandline.
--		 */
--		if (slub_debug && (!slub_debug_slabs ||
--		    strncmp(slub_debug_slabs, s->name,
--		    	strlen(slub_debug_slabs)) == 0))
--				s->flags |= slub_debug;
-+	if (slub_debug && (!slub_debug_slabs ||
-+	    strncmp(slub_debug_slabs, s->name,
-+	    	strlen(slub_debug_slabs)) == 0))
-+			s->flags |= slub_debug;
- }
- #else
- static inline void setup_object_debug(struct kmem_cache *s,
-@@ -1109,7 +1079,6 @@ static struct page *new_slab(struct kmem
- 		atomic_long_inc(&n->nr_slabs);
- 
- 	page->inuse = 0;
--	page->offset = s->offset / sizeof(void *);
- 	page->slab = s;
- 
- 	start = page_address(page);
-@@ -1410,10 +1379,10 @@ static void deactivate_slab(struct kmem_
+-	while (unlikely(page->lockless_freelist)) {
++	while (unlikely(c->freelist)) {
+ 		void **object;
  
  		/* Retrieve object from cpu_freelist */
- 		object = c->freelist;
--		c->freelist = c->freelist[page->offset];
-+		c->freelist = c->freelist[c->offset];
+-		object = page->lockless_freelist;
+-		page->lockless_freelist = page->lockless_freelist[page->offset];
++		object = c->freelist;
++		c->freelist = c->freelist[page->offset];
  
  		/* And put onto the regular freelist */
--		object[page->offset] = page->freelist;
-+		object[c->offset] = page->freelist;
+ 		object[page->offset] = page->freelist;
  		page->freelist = object;
  		page->inuse--;
  	}
-@@ -1509,7 +1478,7 @@ load_freelist:
+-	s->cpu_slab[cpu] = NULL;
++	c->page = NULL;
+ 	unfreeze_slab(s, page);
+ }
+ 
+-static inline void flush_slab(struct kmem_cache *s, struct page *page, int cpu)
++static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
+ {
+-	slab_lock(page);
+-	deactivate_slab(s, page, cpu);
++	slab_lock(c->page);
++	deactivate_slab(s, c);
+ }
+ 
+ /*
+@@ -1434,18 +1435,17 @@ static inline void flush_slab(struct kme
+  */
+ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
+ {
+-	struct page *page = s->cpu_slab[cpu];
++	struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
+ 
+-	if (likely(page))
+-		flush_slab(s, page, cpu);
++	if (likely(c && c->page))
++		flush_slab(s, c);
+ }
+ 
+ static void flush_cpu_slab(void *d)
+ {
+ 	struct kmem_cache *s = d;
+-	int cpu = smp_processor_id();
+ 
+-	__flush_cpu_slab(s, cpu);
++	__flush_cpu_slab(s, smp_processor_id());
+ }
+ 
+ static void flush_all(struct kmem_cache *s)
+@@ -1462,6 +1462,19 @@ static void flush_all(struct kmem_cache 
+ }
+ 
+ /*
++ * Check if the objects in a per cpu structure fit numa
++ * locality expectations.
++ */
++static inline int node_match(struct kmem_cache_cpu *c, int node)
++{
++#ifdef CONFIG_NUMA
++	if (node != -1 && c->node != node)
++		return 0;
++#endif
++	return 1;
++}
++
++/*
+  * Slow path. The lockless freelist is empty or we need to perform
+  * debugging duties.
+  *
+@@ -1479,45 +1492,46 @@ static void flush_all(struct kmem_cache 
+  * we need to allocate a new slab. This is slowest path since we may sleep.
+  */
+ static void *__slab_alloc(struct kmem_cache *s,
+-		gfp_t gfpflags, int node, void *addr, struct page *page)
++		gfp_t gfpflags, int node, void *addr, struct kmem_cache_cpu *c)
+ {
+ 	void **object;
+-	int cpu = smp_processor_id();
++	struct page *new;
+ 
+-	if (!page)
++	if (!c->page)
+ 		goto new_slab;
+ 
+-	slab_lock(page);
+-	if (unlikely(node != -1 && page_to_nid(page) != node))
++	slab_lock(c->page);
++	if (unlikely(!node_match(c, node)))
+ 		goto another_slab;
+ load_freelist:
+-	object = page->freelist;
++	object = c->page->freelist;
+ 	if (unlikely(!object))
+ 		goto another_slab;
+-	if (unlikely(SlabDebug(page)))
++	if (unlikely(SlabDebug(c->page)))
  		goto debug;
  
- 	object = c->page->freelist;
--	c->freelist = object[c->page->offset];
-+	c->freelist = object[c->offset];
- 	c->page->inuse = s->objects;
- 	c->page->freelist = NULL;
- 	c->node = page_to_nid(c->page);
-@@ -1561,7 +1530,7 @@ debug:
+-	object = page->freelist;
+-	page->lockless_freelist = object[page->offset];
+-	page->inuse = s->objects;
+-	page->freelist = NULL;
+-	slab_unlock(page);
++	object = c->page->freelist;
++	c->freelist = object[c->page->offset];
++	c->page->inuse = s->objects;
++	c->page->freelist = NULL;
++	c->node = page_to_nid(c->page);
++	slab_unlock(c->page);
+ 	return object;
+ 
+ another_slab:
+-	deactivate_slab(s, page, cpu);
++	deactivate_slab(s, c);
+ 
+ new_slab:
+-	page = get_partial(s, gfpflags, node);
+-	if (page) {
+-		s->cpu_slab[cpu] = page;
++	new = get_partial(s, gfpflags, node);
++	if (new) {
++		c->page = new;
+ 		goto load_freelist;
+ 	}
+ 
+-	page = new_slab(s, gfpflags, node);
+-	if (page) {
+-		cpu = smp_processor_id();
+-		if (s->cpu_slab[cpu]) {
++	new = new_slab(s, gfpflags, node);
++	if (new) {
++		c = get_cpu_slab(s, smp_processor_id());
++		if (c->page) {
+ 			/*
+ 			 * Someone else populated the cpu_slab while we
+ 			 * enabled interrupts, or we have gotten scheduled
+@@ -1525,34 +1539,32 @@ new_slab:
+ 			 * requested node even if __GFP_THISNODE was
+ 			 * specified. So we need to recheck.
+ 			 */
+-			if (node == -1 ||
+-				page_to_nid(s->cpu_slab[cpu]) == node) {
++			if (node_match(c, node)) {
+ 				/*
+ 				 * Current cpuslab is acceptable and we
+ 				 * want the current one since its cache hot
+ 				 */
+-				discard_slab(s, page);
+-				page = s->cpu_slab[cpu];
+-				slab_lock(page);
++				discard_slab(s, new);
++				slab_lock(c->page);
+ 				goto load_freelist;
+ 			}
+ 			/* New slab does not fit our expectations */
+-			flush_slab(s, s->cpu_slab[cpu], cpu);
++			flush_slab(s, c);
+ 		}
+-		slab_lock(page);
+-		SetSlabFrozen(page);
+-		s->cpu_slab[cpu] = page;
++		slab_lock(new);
++		SetSlabFrozen(new);
++		c->page = new;
+ 		goto load_freelist;
+ 	}
+ 	return NULL;
+ debug:
+-	object = page->freelist;
+-	if (!alloc_debug_processing(s, page, object, addr))
++	object = c->page->freelist;
++	if (!alloc_debug_processing(s, c->page, object, addr))
  		goto another_slab;
  
- 	c->page->inuse++;
--	c->page->freelist = object[c->page->offset];
-+	c->page->freelist = object[c->offset];
- 	slab_unlock(c->page);
+-	page->inuse++;
+-	page->freelist = object[page->offset];
+-	slab_unlock(page);
++	c->page->inuse++;
++	c->page->freelist = object[c->page->offset];
++	slab_unlock(c->page);
  	return object;
  }
-@@ -1592,7 +1561,7 @@ static void __always_inline *slab_alloc(
+ 
+@@ -1569,20 +1581,20 @@ debug:
+ static void __always_inline *slab_alloc(struct kmem_cache *s,
+ 		gfp_t gfpflags, int node, void *addr)
+ {
+-	struct page *page;
+ 	void **object;
+ 	unsigned long flags;
++	struct kmem_cache_cpu *c;
+ 
+ 	local_irq_save(flags);
+-	page = s->cpu_slab[smp_processor_id()];
+-	if (unlikely(!page || !page->lockless_freelist ||
+-			(node != -1 && page_to_nid(page) != node)))
++	c = get_cpu_slab(s, smp_processor_id());
++	if (unlikely(!c->page || !c->freelist ||
++					!node_match(c, node)))
+ 
+-		object = __slab_alloc(s, gfpflags, node, addr, page);
++		object = __slab_alloc(s, gfpflags, node, addr, c);
  
  	else {
- 		object = c->freelist;
--		c->freelist = object[c->page->offset];
-+		c->freelist = object[c->offset];
+-		object = page->lockless_freelist;
+-		page->lockless_freelist = object[page->offset];
++		object = c->freelist;
++		c->freelist = object[c->page->offset];
  	}
  	local_irq_restore(flags);
  
-@@ -1625,7 +1594,7 @@ EXPORT_SYMBOL(kmem_cache_alloc_node);
-  * handling required then we can return immediately.
-  */
- static void __slab_free(struct kmem_cache *s, struct page *page,
--					void *x, void *addr)
-+				void *x, void *addr, unsigned int offset)
+@@ -1680,12 +1692,13 @@ static void __always_inline slab_free(st
  {
- 	void *prior;
  	void **object = (void *)x;
-@@ -1635,7 +1604,7 @@ static void __slab_free(struct kmem_cach
- 	if (unlikely(SlabDebug(page)))
- 		goto debug;
- checks_ok:
--	prior = object[page->offset] = page->freelist;
-+	prior = object[offset] = page->freelist;
- 	page->freelist = object;
- 	page->inuse--;
+ 	unsigned long flags;
++	struct kmem_cache_cpu *c;
  
-@@ -1695,10 +1664,10 @@ static void __always_inline slab_free(st
  	local_irq_save(flags);
- 	c = get_cpu_slab(s, smp_processor_id());
- 	if (likely(page == c->page && !SlabDebug(page))) {
--		object[page->offset] = c->freelist;
-+		object[c->offset] = c->freelist;
- 		c->freelist = object;
+-	if (likely(page == s->cpu_slab[smp_processor_id()] &&
+-						!SlabDebug(page))) {
+-		object[page->offset] = page->lockless_freelist;
+-		page->lockless_freelist = object;
++	c = get_cpu_slab(s, smp_processor_id());
++	if (likely(page == c->page && !SlabDebug(page))) {
++		object[page->offset] = c->freelist;
++		c->freelist = object;
  	} else
--		__slab_free(s, page, x, addr);
-+		__slab_free(s, page, x, addr, c->offset);
+ 		__slab_free(s, page, x, addr);
  
- 	local_irq_restore(flags);
+@@ -1878,6 +1891,24 @@ static unsigned long calculate_alignment
+ 	return ALIGN(align, sizeof(void *));
  }
-@@ -1794,8 +1763,7 @@ static inline int slab_order(int size, i
- 	 * If we would create too many object per slab then reduce
- 	 * the slab order even if it goes below slub_min_order.
- 	 */
--	while (min_order > 0 &&
--		(PAGE_SIZE << min_order) >= MAX_OBJECTS_PER_SLAB * size)
-+	while (min_order > 0 && PAGE_SIZE << min_order)
- 			min_order--;
  
- 	for (order = max(min_order,
-@@ -1812,9 +1780,6 @@ static inline int slab_order(int size, i
- 		if (rem <= slab_size / fract_leftover)
- 			break;
++static void init_kmem_cache_cpu(struct kmem_cache *s,
++			struct kmem_cache_cpu *c)
++{
++	c->page = NULL;
++	c->freelist = NULL;
++	c->node = 0;
++}
++
++static inline int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu)
++		init_kmem_cache_cpu(s, get_cpu_slab(s, cpu));
++
++	return 1;
++}
++
+ static void init_kmem_cache_node(struct kmem_cache_node *n)
+ {
+ 	n->nr_partial = 0;
+@@ -2120,8 +2151,12 @@ static int kmem_cache_open(struct kmem_c
+ #ifdef CONFIG_NUMA
+ 	s->remote_node_defrag_ratio = 100;
+ #endif
+-	if (init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
++	if (!init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
++		goto error;
++
++	if (alloc_kmem_cache_cpus(s, gfpflags & ~SLUB_DMA))
+ 		return 1;
++
+ error:
+ 	if (flags & SLAB_PANIC)
+ 		panic("Cannot create slab %s size=%lu realsize=%u "
+@@ -2966,7 +3001,7 @@ void __init kmem_cache_init(void)
+ #endif
  
--		/* If the next size is too high then exit now */
--		if (slab_size * 2 >= MAX_OBJECTS_PER_SLAB * size)
--			break;
+ 	kmem_size = offsetof(struct kmem_cache, cpu_slab) +
+-				nr_cpu_ids * sizeof(struct page *);
++				nr_cpu_ids * sizeof(struct kmem_cache_cpu);
+ 
+ 	printk(KERN_INFO "SLUB: Genslabs=%d, HWalign=%d, Order=%d-%d, MinObjects=%d,"
+ 		" CPUs=%d, Nodes=%d\n",
+@@ -3582,11 +3617,14 @@ static unsigned long slab_objects(struct
+ 	per_cpu = nodes + nr_node_ids;
+ 
+ 	for_each_possible_cpu(cpu) {
+-		struct page *page = s->cpu_slab[cpu];
+-		int node;
++		struct page *page;
++		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
++
++		if (!c)
++			continue;
+ 
++		page = c->page;
+ 		if (page) {
+-			node = page_to_nid(page);
+ 			if (flags & SO_CPU) {
+ 				int x = 0;
+ 
+@@ -3595,9 +3633,9 @@ static unsigned long slab_objects(struct
+ 				else
+ 					x = 1;
+ 				total += x;
+-				nodes[node] += x;
++				nodes[c->node] += x;
+ 			}
+-			per_cpu[node]++;
++			per_cpu[c->node]++;
+ 		}
  	}
  
- 	return order;
-@@ -1894,6 +1859,7 @@ static void init_kmem_cache_cpu(struct k
- {
- 	c->page = NULL;
- 	c->freelist = NULL;
-+	c->offset = s->offset / sizeof(void *);
- 	c->node = 0;
- }
- 
-@@ -2115,14 +2081,7 @@ static int calculate_sizes(struct kmem_c
- 	 */
- 	s->objects = (PAGE_SIZE << s->order) / size;
- 
--	/*
--	 * Verify that the number of objects is within permitted limits.
--	 * The page->inuse field is only 16 bit wide! So we cannot have
--	 * more than 64k objects per slab.
--	 */
--	if (!s->objects || s->objects > MAX_OBJECTS_PER_SLAB)
--		return 0;
--	return 1;
-+	return !!s->objects;
- 
- }
- 
-Index: linux-2.6.22-rc6-mm1/include/linux/mm_types.h
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/include/linux/mm_types.h	2007-07-06 23:35:49.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/include/linux/mm_types.h	2007-07-06 23:35:50.000000000 -0700
-@@ -24,10 +24,7 @@ struct page {
- 					 * to show when page is mapped
- 					 * & limit reverse map searches.
- 					 */
--		struct {	/* SLUB uses */
--			short unsigned int inuse;
--			short unsigned int offset;
--		};
-+		unsigned int inuse;	/* SLUB: Nr of objects */
- 	};
- 	union {
- 	    struct {
-Index: linux-2.6.22-rc6-mm1/include/linux/slub_def.h
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/include/linux/slub_def.h	2007-07-06 23:35:49.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/include/linux/slub_def.h	2007-07-07 12:01:39.000000000 -0700
-@@ -15,6 +15,7 @@ struct kmem_cache_cpu {
- 	void **freelist;
- 	struct page *page;
+@@ -3643,14 +3681,17 @@ static int any_slab_objects(struct kmem_
  	int node;
-+	unsigned int offset;
- 	/* Lots of wasted space */
- } ____cacheline_aligned_in_smp;
+ 	int cpu;
  
+-	for_each_possible_cpu(cpu)
+-		if (s->cpu_slab[cpu])
++	for_each_possible_cpu(cpu) {
++		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
++
++		if (c && c->page)
+ 			return 1;
++	}
+ 
+-	for_each_node(node) {
++	for_each_online_node(node) {
+ 		struct kmem_cache_node *n = get_node(s, node);
+ 
+-		if (n->nr_partial || atomic_read(&n->nr_slabs))
++		if (n && (n->nr_partial || atomic_read(&n->nr_slabs)))
+ 			return 1;
+ 	}
+ 	return 0;
 
 -- 
