@@ -1,93 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbXGHWyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbXGHXA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbXGHWyR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 18:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXGHWyG
+	id S1755083AbXGHXA5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 19:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXGHXAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 18:54:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37473 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751331AbXGHWyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 18:54:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: hibernation/snapshot design [was Re: [PATCH] Remove process freezer from suspend to RAM pathway]
-Date: Mon, 9 Jul 2007 01:01:27 +0200
-User-Agent: KMail/1.9.5
+	Sun, 8 Jul 2007 19:00:48 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:32946 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751835AbXGHXAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 19:00:47 -0400
+Date: Mon, 9 Jul 2007 01:00:42 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: david@lang.hm
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Alan Stern <stern@rowland.harvard.edu>,
        Kyle Moffett <mrmacman_g4@mac.com>,
        Nigel Cunningham <nigel@nigel.suspend2.net>,
        Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, Miklos Szeredi <miklos@szeredi.hu>
-References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org> <1183931688.3388.316.camel@localhost.localdomain> <20070708221315.GF5401@elf.ucw.cz>
-In-Reply-To: <20070708221315.GF5401@elf.ucw.cz>
+       linux-pm@lists.linux-foundation.org
+Subject: Re: hibernation/snapshot design [was Re: [PATCH] Remove process freezer from suspend to RAM pathway]
+Message-ID: <20070708230042.GH5401@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org> <200707082115.27363.rjw@sisk.pl> <1183928612.3388.289.camel@localhost.localdomain> <200707082345.27859.rjw@sisk.pl> <1183931688.3388.316.camel@localhost.localdomain> <20070708221315.GF5401@elf.ucw.cz> <Pine.LNX.4.64.0707081519210.25614@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707090101.28832.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0707081519210.25614@asgard.lang.hm>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!
 
-On Monday, 9 July 2007 00:13, Pavel Machek wrote:
-> Hi!
+> >>>Actaully, I'm perfectly fine with that, as long as each task blocked by 
+> >>>the
+> >>>driver due to suspend has PF_FROZEN (or something similar) set.  Then, at
+> >>>least theoretically, we'll be able to drop the freezer from the suspend 
+> >>>code
+> >>>path and move it after device_suspend() (or the hibernation-specific
+> >>>equivalent) for hibernation (in that case there shouldn't be a problem 
+> >>>with
+> >>>any task waiting on I/O while the freezer is running ;-)).
+> >>
+> >>I don't see the need for a freezer for snapshot but that's a different
+> >>issue. (stop_machine looks good enough to me).
+> >
+> >Freezer is not needed for snapshot -- it is needed so that we can
+> >write out the snapshot to disk without the need for special
+> >drivers/block/simple-ide-for-suspend.c. (We are doing snapshot, then
+> >write to disk from userland code in uswsusp).
 > 
-> > > Actaully, I'm perfectly fine with that, as long as each task blocked by the
-> > > driver due to suspend has PF_FROZEN (or something similar) set.  Then, at
-> > > least theoretically, we'll be able to drop the freezer from the suspend code
-> > > path and move it after device_suspend() (or the hibernation-specific
-> > > equivalent) for hibernation (in that case there shouldn't be a problem with
-> > > any task waiting on I/O while the freezer is running ;-)).
-> > 
-> > I don't see the need for a freezer for snapshot but that's a different
-> > issue. (stop_machine looks good enough to me).
+> instead of trying to freeze most of the system, could you do something 
+> like start a virtual machine sandbox to write the data out, and not let 
+> any userspace other then the sandbox operate?
 > 
-> Freezer is not needed for snapshot -- it is needed so that we can
-> write out the snapshot to disk without the need for special
-> drivers/block/simple-ide-for-suspend.c. (We are doing snapshot, then
-> write to disk from userland code in uswsusp).
+> you would need to throw away disk buffers so that you don't mix current 
+> pending I/O with I/O from the sandbox, and this would be a visable change 
+> for how suspend is setup, but wouldn't this work?
 
-Yes.
+It feels kind of expensive, but yes, we could use another kernel for
+doing the dump. Kdump people are using that. We could use hypervisor
+for doing the dump. Xen people are doing that. (But I do not think any
+of those solutions is suitable for "lets hibernate my notebook" case).
 
-BTW, this patch:
-
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc7/patches/15-freezer-make-kernel-threads-nonfreezable-by-default.patch
-
-that's queued up in -mm contains a freezer documentation update, in which the
-reasons of using it, as well as its limitations, are described.
-
-To summarize what was previously said in this thread:
-
-* Apparently, we agree that the freezer is _generally_ not needed for suspend
-  (ie. any transition to a system sleep state other than hibernation), but some
-  of us (eg. me) think that it wouldn't be reasonable to drop the freezer from
-  the suspend code path _right_ _now_ .
-
-* Some of us, including you, Nigel and me, think that the freezer is needed
-  for hibernation (please see the document in the patch above for details).
-  In the (very) long run this might be avoided too, but (IMO) certainly not at
-  this point.
-
-* We seem to agree that in order to remove the freezer from the suspend code
-  path some work needs to be done on device drivers, driver midlayers and the
-  PM core.  We also need to do some work on the PM core in order to introduce
-  a separate hibernation framework and IMO it would be reasonable to
-  synchronize these efforts.
-
-* We are now to decide what to do so that the freezer can be safely removed
-  from the suspend code path and how to integrate that change with the
-  hibernation code path (if possible and reasonable).
-
-* The freezer vs FUSE issue that started this thread remains unresolved, so
-  it would be desirable to provide a short-term fix (need not be very nice).
-
-Greetings,
-Rafael
-
-
+									Pavel
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
