@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbXGHSZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbXGHS3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbXGHSZZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 14:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbXGHSZN
+	id S1757290AbXGHS3e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 14:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbXGHS31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 14:25:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35239 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592AbXGHSZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 14:25:12 -0400
-Message-ID: <46912BF5.8080201@redhat.com>
-Date: Sun, 08 Jul 2007 11:24:53 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc6(mm1) Unable to handle kernel NULL pointer dereference
- - git-bisect result
-References: <20070708051452.GA4140@gentoox2.trippelsdorf.de> <20070708012016.455ce8d5.akpm@linux-foundation.org> <20070708100911.GA4196@gentoox2.trippelsdorf.de> <20070708152808.GA5902@gentoox2.trippelsdorf.de> <469119A3.6030409@redhat.com> <20070708173416.GG21668@ftp.linux.org.uk> <469121DA.6030600@redhat.com> <alpine.LFD.0.999.0707081058120.31544@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707081058120.31544@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 8 Jul 2007 14:29:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59752 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753098AbXGHS30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 14:29:26 -0400
+Date: Sun, 8 Jul 2007 19:28:24 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, pavel@ucw.cz, oliver@neukum.org,
+       paulus@samba.org, stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+Message-ID: <20070708182824.GI21668@ftp.linux.org.uk>
+References: <200707050858.03638.oliver@neukum.org> <20070708123748.GB3866@ucw.cz> <E1I7Xfc-0008PO-00@dorka.pomaz.szeredi.hu> <200707082008.57879.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707082008.57879.rjw@sisk.pl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Sun, Jul 08, 2007 at 08:08:56PM +0200, Rafael J. Wysocki wrote:
+> Well, the system that cannot access its filesystems is not in a consistent
+> state, so it generally is not reasonable to suspend or hibernate it.
+> 
+> In fact, NFS and similar filesystems should always be unmounted before the
+> suspend/hibernation to avoid problems that may arise after the resume, if
+> they become unavailable at that time.
 
-Linus Torvalds wrote:
-> notify_change() does *not* do permission checks for 
-> ATTR_CTIME/MTIME/ATIME.
-
-Then I don't understand
-
-        /* Check for setting the inode time. */
-        if (ia_valid & (ATTR_MTIME_SET | ATTR_ATIME_SET)) {
-                if (current->fsuid != inode->i_uid && !capable(CAP_FOWNER))
-                        goto error;
-        }
-
-in inode_change_ok.  This seems to me exactly like the check needed.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGkSv12ijCOnn/RHQRAkp8AJ9q9vuy1ACjiYHteRac4Q86WO5wlgCfbr11
-I0d6V5VGJGmpkuc9NsO6lkE=
-=imhB
------END PGP SIGNATURE-----
+Ah, thanks for clarifying that. [mentally putting the entire thing into
+"unusable due to idiotic design imposing idiotic limitations" bin and
+stepping out of this thread]
