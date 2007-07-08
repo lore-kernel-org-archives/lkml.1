@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbXGHKlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbXGHKnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757261AbXGHKlP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 06:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbXGHKlB
+	id S1757301AbXGHKnP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 06:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbXGHKnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 06:41:01 -0400
-Received: from ns2.suse.de ([195.135.220.15]:40014 "EHLO mx2.suse.de"
+	Sun, 8 Jul 2007 06:43:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58731 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753600AbXGHKlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 06:41:00 -0400
-Date: Sun, 8 Jul 2007 12:40:50 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: queued spinlock code and results
-Message-ID: <20070708104050.GC11305@wotan.suse.de>
-References: <20070708043228.GB22397@wotan.suse.de> <p733azz16vh.fsf@bingen.suse.de>
-Mime-Version: 1.0
+	id S1751992AbXGHKnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 06:43:01 -0400
+Date: Sun, 8 Jul 2007 12:42:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org, suresh.b.siddha@intel.com,
+       corey.d.gough@intel.com, Pekka Enberg <penberg@cs.helsinki.fi>,
+       akpm@linux-foundation.org, Matt Mackall <mpm@selenic.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+Message-ID: <20070708104243.GA12175@elte.hu>
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <4690B1A4.4010703@yahoo.com.au> <20070708095422.GA2744@elte.hu> <4690BB0A.4030801@yahoo.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p733azz16vh.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <4690BB0A.4030801@yahoo.com.au>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 08, 2007 at 01:18:10PM +0200, Andi Kleen wrote:
-> Nick Piggin <npiggin@suse.de> writes:
-> 
-> > I made some tests of the queued spinlock code using userspace test code on
-> > 64-bit processors. I believe the xadd based code no longer has any theoretical
-> > memory ordering problems.
-> 
-> Linus, the background of this is that on 8 socket Opteron systems
-> the current spinlocks can become very unfair to the point of severe 
-> starvation. These boxes are becomming more common.
-> 
-> > The threaded results also attempt to have an unfairness count, which is the
-> > max number of times in a row that a lock is acquired,  when all other threads
-> > are also executing in the loop -- the reason xadd for example is not always
-> > 0 there is because the other threads may not have reached the lock before
-> > the current thread was able to get it several times (eg. if an interrupt
-> > comes in, this could happen).
-> 
-> Interesting. I was also thinking about switching the lock types
-> at boot time. Since all the lock calls are out of line this would
-> be reasonably easy.
-> 
-> I would say the main drawback of switchable and queued locks 
-> would be also that they require a larger spinlock_t thus increasing
-> cache usage
 
-Technically the queued locks require twice the size (but I think
-the implementation can handle 256 CPUs with 16 bits, while dec based
-can only handle 128 with 8 bits -- not a big deal I know, but we'll
-probably get there soon).
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-However currently spinlocks are much bigger than they could be anyway
-(4 bytes, could be 1). Although often the alignment of data structures
-will make the gain not so big.
+> >cool. I was referring to something else: people were running -rt on 
+> >their beefy desktop boxes with several gigs of RAM they complained 
+> >about the slowdown that is caused by SLOB's linear list walking.
+> 
+> That is what I meant by scalable to large memories. It is not perfect, 
+> but it is much better now. I noticed huge slowdowns too when test 
+> booting the slob RCU patch on my 4GB desktop, so I did a few things to 
+> improve freelist walking as well (the patches are in -mm, prefixed 
+> with slob-).
 
-But that said, I don't like to justify slightly suboptimal code by
-saying that existing code is even less optimal :)
+ah, good - i only looked at the upstream mm/slob.c git-log. I like those 
+4 slob-* patches in -mm: in particular slob-remove-bigblock-tracking.patch
+and slob-rework-freelist-handling.patch are really elegant. Simplicity of 
+slob does not seem to suffer either.
 
-One other upshot of the queued spinlocks is that they don't need
-the break_lock field, or any of the associated logic with that
-(because it is trivial to test whether a lock is held and also how
-many others are spinning on it). So that gives us for free an
-avenue into more advanced congestion or spin backoff algorithms.
-
+	Ingo
