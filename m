@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbXGHTsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbXGHTvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbXGHTsj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 15:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbXGHTsc
+	id S1757179AbXGHTvj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 15:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbXGHTvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 15:48:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35169 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754474AbXGHTsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 15:48:32 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video mode
-Date: Sun, 8 Jul 2007 21:48:04 +0200
-User-Agent: KMail/1.9.6
-Cc: Daniel Drake <dsd@gentoo.org>, Jan Beulich <jbeulich@novell.com>,
-       linux-kernel@vger.kernel.org, zwane@infradead.org,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Antonino A. Daplas" <adaplas@pol.net>
-References: <4678191D.76E4.0078.0@novell.com> <4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org>
-In-Reply-To: <20070708111404.1486e73c.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707082148.04803.ak@suse.de>
+	Sun, 8 Jul 2007 15:51:32 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:48015 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755167AbXGHTvb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 15:51:31 -0400
+To: rjw@sisk.pl
+CC: miklos@szeredi.hu, pavel@ucw.cz, oliver@neukum.org, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org, nigel@nigel.suspend2.net
+In-reply-to: <200707082008.57879.rjw@sisk.pl>
+Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+References: <200707050858.03638.oliver@neukum.org> <20070708123748.GB3866@ucw.cz> <E1I7Xfc-0008PO-00@dorka.pomaz.szeredi.hu> <200707082008.57879.rjw@sisk.pl>
+Message-Id: <E1I7clo-0000JY-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 08 Jul 2007 21:50:12 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 July 2007 20:14:04 Andrew Morton wrote:
-> On Sun, 08 Jul 2007 09:27:55 -0400 Daniel Drake <dsd@gentoo.org> wrote:
-> 
-> > Andrew Morton wrote:
-> > > On Sat, 30 Jun 2007 18:25:31 -0400 Daniel Drake <dsd@gentoo.org> wrote:
-> > >> This patch solves a 2.6.20.11 (and 2.6.21) regression added by the patch 
-> > >> titled "x86: Don't probe for DDC on VBE1.2"
-> > >>
-> > >> The regression caused the screen resolution to be incorrectly adjusted 
-> > >> by 6 pixels. This patch makes it go back to normal again.
-> > >>
-> > >> https://bugs.gentoo.org/show_bug.cgi?id=181067
-> > >>
-> > >> Please apply this patch or discuss further :)
-> > > 
-> > > Well drat.  I didn't merge the patch because it conflicts with
-> > > git-newsetup, and Peter believes that git-newsetup already contains an
-> > > equivalent fix.  Testing 2.6.22-rc6-mm1 would confirm that.  Please.
+> > > Well, fix userspace filesystems and maybe NFS. If they react to
+> > > sigstop in timely manner, they will work with suspend properly, too.
 > > 
-> > 2.6.22-rc6-mm1 has the same problem (it is not fixed there).
-> > 
+> > Which is pretty much impossible, given the unix filesystem API.  To be
+> > able to react to sigstop, the operations in question need to be
+> > restartable.  Which they are not, so they can't react to sigstop.  End
+> > of story.
 > 
-> Well damn, we've let this slide for too long.
+> Or not.  That depends on your willingness to cooperate, I'd say. :-)
+
+Do you actually understand what I'm talking about?  Because it sure
+doesn't depend on my cooperation.
+
+Maybe I'm stupid, and I'm missing something obvious.  In that case
+please explain how you propose to make filesystem operations, like
+rename() restartable.
+
+> > You may not like the fact that one process can cause another to go
+> > into uninterruptible sleep, but in fact there's nothing wrong with
+> > that.
 > 
-> Guys, 2.6.22 is days away.  Do we think that the below is safe to merge
-> now?
+> Well, this introduces interdependencies between processes that do not exist
+> otherwise.  Even if that isn't wrong per se, it's something that needs
+> consideration in any case.
+> 
+> IMO, FUSE breaks one of the assumptions that the freezer is based on and
+> saying that the freezer is broken because of that is unfair.
 
-I feel uneasy with the patch that late and i don't think the bug is 
-particularly critical.
+The freezer is not broken because of that, it's broken anyway.  What
+we are seeing is a _symptom_ of it being broken.
 
--Andi
+And by broken, I don't mean it's buggy or that it was badly designed.
+I just mean, that it's simply not what suspend should depend on, to
+protect drivers.
+
+> > So the fact that the freezer can't handle this is unfortunate, but
+> > it's just a symptom of the brokenness of it, not something that fuse
+> > introduced.  Not being able to suspend with NFS (or other network
+> > filesystems) when the network is lost shows that this is a deeper
+> > problem.
+> 
+> Well, the system that cannot access its filesystems is not in a consistent
+> state, so it generally is not reasonable to suspend or hibernate it.
+
+Saying the system must be in a "consistent" state, and defining
+consistent as "every process is stopped", is just an arbitrary
+limitation that fits what the freezer does now.  Yes the _hardware_
+state must be consistent, but that has nothing to do with either fuse
+or NFS.  Can't you see that?
+
+> > As stated otherwise in the thread, suspend2 in fact allowed processes
+> > to be in uninterruptible sleep instead, without negative side effects.
+> 
+> And yet, Nigel thinks that the freezer is necessary for the hibernation.
+> Strange, no?
+
+I'm totally ignorant about why the freezer is necessary for hibernate.
+Please explain.
+
+Yes, we need to make sure, that nothing is scheduled during (and
+possibly after) taking the snapshot.  But AFAICS that could be
+achieved by unplugging all but one CPU.
+
+Miklos
