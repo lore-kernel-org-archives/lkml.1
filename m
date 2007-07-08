@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbXGHAnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbXGHAsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755821AbXGHAnR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 20:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbXGHAnH
+	id S1755798AbXGHAsH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 20:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbXGHArz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 20:43:07 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33009 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138AbXGHAnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 20:43:06 -0400
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-In-Reply-To: <Pine.LNX.4.44L0.0707071215140.19734-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0707071215140.19734-100000@netrider.rowland.org>
-Content-Type: text/plain
-Date: Sun, 08 Jul 2007 10:42:42 +1000
-Message-Id: <1183855362.3388.233.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sat, 7 Jul 2007 20:47:55 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:11050 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753804AbXGHAry (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jul 2007 20:47:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=FEYtB+hup2msKPuHvQLFgBnFUhi/5yQbIHTe9Jcgwf+XZHJzX79FJWFG+UXYFnNQx/NrVJBwk1Lpwo14t19tHO1wbmjLpXsEcEI9mYvKgxhbIAYGLoJ7WBR2cCqZyXkNBp/Tvj3bw8wBIyv85sIeKk68USUdEQ87MPI1TFUwREM=
+Message-ID: <46903483.3020205@gmail.com>
+Date: Sat, 07 Jul 2007 18:49:07 -0600
+From: Jim Cromie <jim.cromie@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Linux kernel <linux-kernel@vger.kernel.org>
+CC: Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Coding style on function signatures  (was: Convert tasklets to work
+ queues )
+References: <20070622182051.859570787@goodmis.org> <20070622182315.571740041@goodmis.org> <20070623095359.4667514e.akpm@linux-foundation.org> <alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org> <20070623115252.fc36f20c.rdunlap@xenotime.net> <alpine.LFD.0.98.0706231209130.3593@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706231209130.3593@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-07 at 12:17 -0400, Alan Stern wrote:
-> On Sat, 7 Jul 2007, Benjamin Herrenschmidt wrote:
-> 
-> > > > And guess what ? It's what we do on powerbooks, and it works fine,
-> > > > without a freezer :-)
-> 
-> > If you remember, one of the things I've been advocating has always been
-> > that we should put on hold all plug activity (unplug might be alright as
-> > long as the user events are just delayed) when we start suspending. No
-> > new devices, no new bindings. "hub" type devices are respondible for
-> > bringing in the new stuff after resume.
-> 
-> Which is exactly my point.  It _doesn't_ work fine without a freezer, 
-> because the USB stack currently relies on the freezer to prevent plug 
-> activity.
-
-Putting on hold plug activity has nothing, NOTHING, to do with the half
-assed piece of deadlocking crap we have now we call a freezer.
-
-As long as you guys keep mixing up all the issues and coming up with
-totally bogus solutions that cannot work, we won't have a useful suspend
-(either to RAM or to disk) in linux.
-
-Ben.
+Linus Torvalds wrote:
+>
+>   
+> Yes, code should be less than 80 characters wide. 
+>
+> But hey, sometimes it's just more readable to have one line that is 
+> slightly longer than it should be, than to split something that is awkward 
+> to split. 
+>
+>   
+< cc-list heavily trimmed >
 
 
+could you speak to the specific case of function signatures ?
+I saw nothing in CodingStyle specifically about this.
+(I skimmed, and grepped for signature)
+
+forex:
+
+static ssize_t
+store_fan_div (struct device *dev, struct device_attribute *devattr,
+                    const char *buf, size_t count)
+{...}
+
+
+IIRC, many like the entire sig on one line, because its grep friendly.
+I personally like the above, but grep-ability is hard to argue against.
+
+The above has 2 violations (of strict-grep-ability rule)
+1 - return sig is separate
+2 - arg-list is split
