@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbXGHNcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbXGHNf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755427AbXGHNcR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 09:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXGHNcF
+	id S1755451AbXGHNf4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 09:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXGHNft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 09:32:05 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51805 "EHLO gate.crashing.org"
+	Sun, 8 Jul 2007 09:35:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38997 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750999AbXGHNcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 09:32:04 -0400
-In-Reply-To: <468FC376.2040405@ru.mvista.com>
-References: <20070707094852.9473.21013.stgit@localhost.localdomain> <20070707094900.9473.48577.stgit@localhost.localdomain> <468FC376.2040405@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3F401C47-2A18-4692-AA71-D0D5FE24D94F@kernel.crashing.org>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Content-Transfer-Encoding: 7bit
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] [POWERPC] mmio ide support for mpc8349-itx target
-Date: Sun, 8 Jul 2007 15:31:43 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-X-Mailer: Apple Mail (2.752.2)
+	id S1752506AbXGHNfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 09:35:48 -0400
+Date: Sun, 8 Jul 2007 15:35:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       shaohua.li@intel.com
+Subject: Re: [PATCH][RFC] kvm-scheduler integration
+Message-ID: <20070708133539.GA12597@elte.hu>
+References: <11838994974161-git-send-email-avi@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11838994974161-git-send-email-avi@qumranet.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> +		ide@10000000 {
->> + 			#interrupt-cells = <2>;
->
->     Hm, why define that prop for a node with no children?
->
->> + 			interrupts = <17 8>;
->> + 			interrupt-map = <0 0 0 1 700 17 8>;
->> + 			interrupt-map-mask = <0>;
 
-This map-mask makes no sense either.  And neither does
-the map itself.
+* Avi Kivity <avi@qumranet.com> wrote:
 
->> +
->> + 			#size-cells = <1>;
->> + 			#address-cells = <1>;
->
->     Same question here.
+> +#ifdef CONFIG_SCHED_KVM
+> +static __read_mostly struct sched_kvm_hooks kvm_hooks;
+> +#endif
 
-The ide node might want children, namely disks or optical
-drives or such, but #size-cells should be 0.
+please just add a current->put_vcpu() function pointer instead of this 
+hooks thing.
 
->> + 			reg = <10000000 10 10000200 10>;
->> +
->> + 			device_type = "ide";
->
->     I think that already adopted device type is "ata", not "ide".
+>  static inline void prepare_task_switch(struct rq *rq, struct task_struct *next)
+>  {
+> +	unload_kvm_vcpu(current);
+>  	prepare_lock_switch(rq, next);
+>  	prepare_arch_switch(next);
+>  }
+> @@ -1860,6 +1912,7 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
+>  	prev_state = prev->state;
+>  	finish_arch_switch(prev);
+>  	finish_lock_switch(rq, prev);
+> +	reload_kvm_vcpu(current);
 
-"ata" is not a hardware thing, "ide" is.  Or so I'm told.
-I'd leave out the "device_type" completely though, certainly
-if you can't point me at a published device binding :-)
+ok, this looks certainly cheap enough from a scheduler POV, and it 
+cleans up the whole KVM/scheduling interaction quite nicely. (I'd not 
+bother with tweaking the migration logic, there's enough incentive for 
+the scheduler to keep tasks from migrating unnecessarily.)
 
-
-Segher
+	Ingo
