@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbXGHVEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXGHVF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbXGHVEQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 17:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbXGHVEE
+	id S1758037AbXGHVF2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 17:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756886AbXGHVFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 17:04:04 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51669 "EHLO gate.crashing.org"
+	Sun, 8 Jul 2007 17:05:19 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:53280 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756806AbXGHVED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 17:04:03 -0400
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-In-Reply-To: <200707082115.27363.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
-	 <1183871661.3388.282.camel@localhost.localdomain>
-	 <200707082115.27363.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Mon, 09 Jul 2007 07:03:32 +1000
-Message-Id: <1183928612.3388.289.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1756806AbXGHVFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 17:05:18 -0400
+Subject: Re: 2.6.22-rc6 bad page error
+In-Reply-To: <Pine.LNX.4.64.0707071852240.12481@blonde.wat.veritas.com>
+ "from Hugh Dickins at Jul 7, 2007 07:38:58 pm"
+To: Hugh Dickins <hugh@veritas.com>
+Date: Sun, 8 Jul 2007 16:05:12 -0500 (CDT)
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070708210512.7EE80DBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-08 at 21:15 +0200, Rafael J. Wysocki wrote:
-> On Sunday, 8 July 2007 07:14, Benjamin Herrenschmidt wrote:
-> [--snip--]
-> > 
-> > I just think that the freezer approach, as it is, is backward. We can't
-> > have a 3rd party try to discriminate what to freeze and what not, it
-> > will always get something wrong, and in some cases with the wrong timing
-> > or ordering.
-> 
-> Nice discussion, except for one thing: the freezer doesn't decide what to
-> freeze.  For example, even right now kernel threads decide if they want to be
-> frozen.
+Hugh Dickins wrote:
+> (...) I'm expecting this to be a regression we introduced in
+> 2.6.15, rather than recently in 2.6.22 (now, that's better isn't it ;-?)
 
-Somewhat... userspace doesn't and workqueues are a gray area.
+I was reasonably certain this wasn't a recent regression.  I share a set
+of speakers between two machines, and I hadn't used sound on the Alpha
+in quite a while.
 
-Also, I've been thinking this "icebox" idea a bit more and it seems in
-fact a bit racy in some areas, at least for use by things like drivers,
-unless we end up doing something aking to an RCU on suspend, waiting for
-all tasks to reach userland once, but that has the same annoyances as
-the current freezer.
+> Thanks for reporting: please let us all know whether this
+> patch does fix your problem: I may be guessing wrong.
 
-Thus I'm tempted to go back to saying that driver can handle things
-locally :-)
+ACK.  I'll build the kernel today, and fire up the test fixture
+tomorrow.
 
-Ben.
-
+-- 
+-----------------------------------------------------------------------
+Bob Tracy               | "Eagles may soar, but weasels don't get
+rct@frus.com            |  sucked into jet engines."       --Anon
+-----------------------------------------------------------------------
