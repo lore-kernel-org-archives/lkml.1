@@ -1,497 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbXGHVi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbXGHVp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758385AbXGHVi6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 17:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757457AbXGHVit
+	id S1758132AbXGHVp1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 17:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbXGHVpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 17:38:49 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54888 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757215AbXGHVir (ORCPT
+	Sun, 8 Jul 2007 17:45:19 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:37647 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757111AbXGHVpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 17:38:47 -0400
-Date: Sun, 8 Jul 2007 23:39:14 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
-Message-ID: <20070708213914.GT3492@stusta.de>
-References: <20070701202037.GC10869@stusta.de> <20070702232255.GH6403@redhat.com> <20070702234313.GB3492@stusta.de> <20070703003648.GA31035@redhat.com> <20070703010611.GD3492@stusta.de> <20070703011354.GB31035@redhat.com>
+	Sun, 8 Jul 2007 17:45:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=CAte8B3tpD4Cs0Nvczps7lm040QXzZUL8DAOv1Z6izt8UDo39XRFjhkSXvjm4xiN3llIRCNKooWaLFiacBEtKK2ieAdWOAwj0NQ42GuNDvG3ZVtVIM0dQk4uRFtzRsrpUnXw9gupw+bsj842l8f5rWkHbQD8aTtCJ98k/S86ZSc=
+Message-ID: <6278d2220707081445s6c5029a6la5ae0fd019176f74@mail.gmail.com>
+Date: Sun, 8 Jul 2007 22:45:15 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: [2.6.22-rc7] khubd NULL deref oops...
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070703011354.GB31035@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 09:13:54PM -0400, Dave Jones wrote:
-> On Tue, Jul 03, 2007 at 03:06:11AM +0200, Adrian Bunk wrote:
-> 
->  > >  > @@ -65,1 +60,1 @@
->  > >  > -	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
->  > >  > +	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
->  > >  > --- linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.old	2007-02-17 23:29:53.000000000 +0100
->  > >  > +++ linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2007-02-17 23:30:44.000000000 +0100
->  > > 
->  > > This won't apply either.
->  > 
->  >   git-apply --unidiff-zero
-> 
-> git-apply isn't the same thing as git-applymbox. (which doesn't know that option)
-> The former involves a lot more hassle to get the changelog & comments
-> pasted in, along with it getting attribution correct automatically.
+When plugging in a USB 2 mass-storage device which I've been seeing
+problems with, I caught a khubd oops [1]. Kernel is 2.6.22-rc7 on ia32
+built with Ubuntu's 2.6.22 .config.
 
-Next try...
+Let me know if you need more details,
+  Daniel
 
-> 	Dave
+--- [1]
 
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-This patch contains the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI.
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Acked-by: Dave Jones <davej@redhat.com>
-
----
-
- Documentation/feature-removal-schedule.txt        |   22 -
- arch/i386/kernel/cpu/cpufreq/Kconfig              |   18 
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  280 --------------
- arch/x86_64/kernel/cpufreq/Kconfig                |    6 
- 4 files changed, 21 insertions(+), 305 deletions(-)
-
---- linux-2.6.19-rc6-mm2/arch/i386/kernel/cpu/cpufreq/Kconfig.old	2006-12-01 07:23:38.000000000 +0100
-+++ linux-2.6.19-rc6-mm2/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-12-01 07:24:02.000000000 +0100
-@@ -109,7 +109,7 @@
- config X86_SPEEDSTEP_CENTRINO
- 	tristate "Intel Enhanced SpeedStep"
- 	select CPU_FREQ_TABLE
--	select X86_SPEEDSTEP_CENTRINO_TABLE if (!X86_SPEEDSTEP_CENTRINO_ACPI)
-+	select X86_SPEEDSTEP_CENTRINO_TABLE
- 	help
- 	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
- 	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs. However,
-@@ -121,20 +121,6 @@
- 
- 	  If in doubt, say N.
- 
--config X86_SPEEDSTEP_CENTRINO_ACPI
--	bool "Use ACPI tables to decode valid frequency/voltage (deprecated)"
--	depends on X86_SPEEDSTEP_CENTRINO && ACPI_PROCESSOR
--	depends on !(X86_SPEEDSTEP_CENTRINO = y && ACPI_PROCESSOR = m)
--	help
--	  This is deprecated and this functionality is now merged into
--	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
--	  speedstep_centrino.
--	  Use primarily the information provided in the BIOS ACPI tables
--	  to determine valid CPU frequency and voltage pairings. It is
--	  required for the driver to work on non-Banias CPUs.
--
--	  If in doubt, say Y.
--
- config X86_SPEEDSTEP_CENTRINO_TABLE
- 	bool "Built-in tables for Banias CPUs"
- 	depends on X86_SPEEDSTEP_CENTRINO
-@@ -222,7 +207,7 @@
- config X86_ACPI_CPUFREQ_PROC_INTF
- 	bool "/proc/acpi/processor/../performance interface (deprecated)"
- 	depends on PROC_FS
--	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K7_ACPI || X86_POWERNOW_K8_ACPI
-+	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K7_ACPI || X86_POWERNOW_K8_ACPI
- 	help
- 	  This enables the deprecated /proc/acpi/processor/../performance
- 	  interface. While it is helpful for debugging, the generic,
---- linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.old	2007-02-17 23:29:53.000000000 +0100
-+++ linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2007-02-17 23:30:44.000000000 +0100
-@@ -21,12 +21,6 @@
- #include <linux/delay.h>
- #include <linux/compiler.h>
- 
--#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
--#include <linux/acpi.h>
--#include <linux/dmi.h>
--#include <acpi/processor.h>
--#endif
--
- #include <asm/msr.h>
- #include <asm/processor.h>
- #include <asm/cpufeature.h>
-@@ -257,9 +251,7 @@
- 		/* Matched a non-match */
- 		dprintk("no table support for CPU model \"%s\"\n",
- 		       cpu->x86_model_id);
--#ifndef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
--		dprintk("try compiling with CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI enabled\n");
--#endif
-+		dprintk("try using the acpi-cpufreq driver\n");
- 		return -ENOENT;
- 	}
- 
-@@ -346,213 +338,6 @@
- }
- 
- 
--#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
--
--static struct acpi_processor_performance *acpi_perf_data[NR_CPUS];
--
--/*
-- * centrino_cpu_early_init_acpi - Do the preregistering with ACPI P-States
-- * library
-- *
-- * Before doing the actual init, we need to do _PSD related setup whenever
-- * supported by the BIOS. These are handled by this early_init routine.
-- */
--static int centrino_cpu_early_init_acpi(void)
--{
--	unsigned int	i, j;
--	struct acpi_processor_performance	*data;
--
--	for_each_possible_cpu(i) {
--		data = kzalloc(sizeof(struct acpi_processor_performance), 
--				GFP_KERNEL);
--		if (!data) {
--			for_each_possible_cpu(j) {
--				kfree(acpi_perf_data[j]);
--				acpi_perf_data[j] = NULL;
--			}
--			return (-ENOMEM);
--		}
--		acpi_perf_data[i] = data;
--	}
--
--	acpi_processor_preregister_performance(acpi_perf_data);
--	return 0;
--}
--
--
--#ifdef CONFIG_SMP
--/*
-- * Some BIOSes do SW_ANY coordination internally, either set it up in hw
-- * or do it in BIOS firmware and won't inform about it to OS. If not
-- * detected, this has a side effect of making CPU run at a different speed
-- * than OS intended it to run at. Detect it and handle it cleanly.
-- */
--static int bios_with_sw_any_bug;
--static int sw_any_bug_found(struct dmi_system_id *d)
--{
--	bios_with_sw_any_bug = 1;
--	return 0;
--}
--
--static struct dmi_system_id sw_any_bug_dmi_table[] = {
--	{
--		.callback = sw_any_bug_found,
--		.ident = "Supermicro Server X6DLP",
--		.matches = {
--			DMI_MATCH(DMI_SYS_VENDOR, "Supermicro"),
--			DMI_MATCH(DMI_BIOS_VERSION, "080010"),
--			DMI_MATCH(DMI_PRODUCT_NAME, "X6DLP"),
--		},
--	},
--	{ }
--};
--#endif
--
--/*
-- * centrino_cpu_init_acpi - register with ACPI P-States library
-- *
-- * Register with the ACPI P-States library (part of drivers/acpi/processor.c)
-- * in order to determine correct frequency and voltage pairings by reading
-- * the _PSS of the ACPI DSDT or SSDT tables.
-- */
--static int centrino_cpu_init_acpi(struct cpufreq_policy *policy)
--{
--	unsigned long			cur_freq;
--	int				result = 0, i;
--	unsigned int			cpu = policy->cpu;
--	struct acpi_processor_performance	*p;
--
--	p = acpi_perf_data[cpu];
--
--	/* register with ACPI core */
--	if (acpi_processor_register_performance(p, cpu)) {
--		dprintk(PFX "obtaining ACPI data failed\n");
--		return -EIO;
--	}
--
--	policy->shared_type = p->shared_type;
--	/*
--	 * Will let policy->cpus know about dependency only when software 
--	 * coordination is required.
--	 */
--	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL ||
--	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
--		policy->cpus = p->shared_cpu_map;
--	}
--
--#ifdef CONFIG_SMP
--	dmi_check_system(sw_any_bug_dmi_table);
--	if (bios_with_sw_any_bug && cpus_weight(policy->cpus) == 1) {
--		policy->shared_type = CPUFREQ_SHARED_TYPE_ALL;
--		policy->cpus = cpu_core_map[cpu];
--	}
--#endif
--
--	/* verify the acpi_data */
--	if (p->state_count <= 1) {
--		dprintk("No P-States\n");
--		result = -ENODEV;
--		goto err_unreg;
--	}
--
--	if ((p->control_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
--	    (p->status_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
--		dprintk("Invalid control/status registers (%x - %x)\n",
--			p->control_register.space_id, p->status_register.space_id);
--		result = -EIO;
--		goto err_unreg;
--	}
--
--	for (i=0; i<p->state_count; i++) {
--		if ((p->states[i].control & INTEL_MSR_RANGE) !=
--		    (p->states[i].status & INTEL_MSR_RANGE)) {
--			dprintk("Different MSR bits in control (%llu) and status (%llu)\n",
--				p->states[i].control, p->states[i].status);
--			result = -EINVAL;
--			goto err_unreg;
--		}
--
--		if (!p->states[i].core_frequency) {
--			dprintk("Zero core frequency for state %u\n", i);
--			result = -EINVAL;
--			goto err_unreg;
--		}
--
--		if (p->states[i].core_frequency > p->states[0].core_frequency) {
--			dprintk("P%u has larger frequency (%llu) than P0 (%llu), skipping\n", i,
--				p->states[i].core_frequency, p->states[0].core_frequency);
--			p->states[i].core_frequency = 0;
--			continue;
--		}
--	}
--
--	centrino_model[cpu] = kzalloc(sizeof(struct cpu_model), GFP_KERNEL);
--	if (!centrino_model[cpu]) {
--		result = -ENOMEM;
--		goto err_unreg;
--	}
--
--	centrino_model[cpu]->model_name=NULL;
--	centrino_model[cpu]->max_freq = p->states[0].core_frequency * 1000;
--	centrino_model[cpu]->op_points =  kmalloc(sizeof(struct cpufreq_frequency_table) *
--					     (p->state_count + 1), GFP_KERNEL);
--        if (!centrino_model[cpu]->op_points) {
--                result = -ENOMEM;
--                goto err_kfree;
--        }
--
--        for (i=0; i<p->state_count; i++) {
--		centrino_model[cpu]->op_points[i].index = p->states[i].control & INTEL_MSR_RANGE;
--		centrino_model[cpu]->op_points[i].frequency = p->states[i].core_frequency * 1000;
--		dprintk("adding state %i with frequency %u and control value %04x\n", 
--			i, centrino_model[cpu]->op_points[i].frequency, centrino_model[cpu]->op_points[i].index);
--	}
--	centrino_model[cpu]->op_points[p->state_count].frequency = CPUFREQ_TABLE_END;
--
--	cur_freq = get_cur_freq(cpu);
--
--	for (i=0; i<p->state_count; i++) {
--		if (!p->states[i].core_frequency) {
--			dprintk("skipping state %u\n", i);
--			centrino_model[cpu]->op_points[i].frequency = CPUFREQ_ENTRY_INVALID;
--			continue;
--		}
--		
--		if (extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0) !=
--		    (centrino_model[cpu]->op_points[i].frequency)) {
--			dprintk("Invalid encoded frequency (%u vs. %u)\n",
--				extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0),
--				centrino_model[cpu]->op_points[i].frequency);
--			result = -EINVAL;
--			goto err_kfree_all;
--		}
--
--		if (cur_freq == centrino_model[cpu]->op_points[i].frequency)
--			p->state = i;
--	}
--
--	/* notify BIOS that we exist */
--	acpi_processor_notify_smm(THIS_MODULE);
--	printk("speedstep-centrino with X86_SPEEDSTEP_CENTRINO_ACPI "
--	       "config is deprecated.\n "
--	       "Use X86_ACPI_CPUFREQ (acpi-cpufreq) instead.\n" );
--
--	return 0;
--
-- err_kfree_all:
--	kfree(centrino_model[cpu]->op_points);
-- err_kfree:
--	kfree(centrino_model[cpu]);
-- err_unreg:
--	acpi_processor_unregister_performance(p, cpu);
--	dprintk(PFX "invalid ACPI data\n");
--	return (result);
--}
--#else
--static inline int centrino_cpu_init_acpi(struct cpufreq_policy *policy) { return -ENODEV; }
--static inline int centrino_cpu_early_init_acpi(void) { return 0; }
--#endif
--
- static int centrino_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
-@@ -568,27 +353,25 @@
- 	if (cpu_has(cpu, X86_FEATURE_CONSTANT_TSC))
- 		centrino_driver.flags |= CPUFREQ_CONST_LOOPS;
- 
--	if (centrino_cpu_init_acpi(policy)) {
--		if (policy->cpu != 0)
--			return -ENODEV;
-+	if (policy->cpu != 0)
-+		return -ENODEV;
- 
--		for (i = 0; i < N_IDS; i++)
--			if (centrino_verify_cpu_id(cpu, &cpu_ids[i]))
--				break;
--
--		if (i != N_IDS)
--			centrino_cpu[policy->cpu] = &cpu_ids[i];
--
--		if (!centrino_cpu[policy->cpu]) {
--			dprintk("found unsupported CPU with "
--			"Enhanced SpeedStep: send /proc/cpuinfo to "
--			MAINTAINER "\n");
--			return -ENODEV;
--		}
-+	for (i = 0; i < N_IDS; i++)
-+		if (centrino_verify_cpu_id(cpu, &cpu_ids[i]))
-+			break;
- 
--		if (centrino_cpu_init_table(policy)) {
--			return -ENODEV;
--		}
-+	if (i != N_IDS)
-+		centrino_cpu[policy->cpu] = &cpu_ids[i];
-+
-+	if (!centrino_cpu[policy->cpu]) {
-+		dprintk("found unsupported CPU with "
-+		"Enhanced SpeedStep: send /proc/cpuinfo to "
-+		MAINTAINER "\n");
-+		return -ENODEV;
-+	}
-+
-+	if (centrino_cpu_init_table(policy)) {
-+		return -ENODEV;
- 	}
- 
- 	/* Check to see if Enhanced SpeedStep is enabled, and try to
-@@ -634,20 +417,6 @@
- 
- 	cpufreq_frequency_table_put_attr(cpu);
- 
--#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
--	if (!centrino_model[cpu]->model_name) {
--		static struct acpi_processor_performance *p;
--
--		if (acpi_perf_data[cpu]) {
--			p = acpi_perf_data[cpu];
--			dprintk("unregistering and freeing ACPI data\n");
--			acpi_processor_unregister_performance(p, cpu);
--			kfree(centrino_model[cpu]->op_points);
--			kfree(centrino_model[cpu]);
--		}
--	}
--#endif
--
- 	centrino_model[cpu] = NULL;
- 
- 	return 0;
-@@ -841,25 +610,12 @@
- 	if (!cpu_has(cpu, X86_FEATURE_EST))
- 		return -ENODEV;
- 
--	centrino_cpu_early_init_acpi();
--
- 	return cpufreq_register_driver(&centrino_driver);
- }
- 
- static void __exit centrino_exit(void)
- {
--#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
--	unsigned int j;
--#endif
--	
- 	cpufreq_unregister_driver(&centrino_driver);
--
--#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
--	for_each_possible_cpu(j) {
--		kfree(acpi_perf_data[j]);
--		acpi_perf_data[j] = NULL;
--	}
--#endif
- }
- 
- MODULE_AUTHOR ("Jeremy Fitzhardinge <jeremy@goop.org>");
---- linux-2.6.20-mm1/Documentation/feature-removal-schedule.txt.old	2007-02-17 23:33:09.000000000 +0100
-+++ linux-2.6.20-mm1/Documentation/feature-removal-schedule.txt	2007-02-17 23:33:46.000000000 +0100
-@@ -214,28 +214,6 @@
- 
- ---------------------------
- 
--What:	ACPI hooks (X86_SPEEDSTEP_CENTRINO_ACPI) in speedstep-centrino driver
--When:	December 2006
--Why:	Speedstep-centrino driver with ACPI hooks and acpi-cpufreq driver are
--	functionally very much similar. They talk to ACPI in same way. Only
--	difference between them is the way they do frequency transitions.
--	One uses MSRs and the other one uses IO ports. Functionaliy of
--	speedstep_centrino with ACPI hooks is now merged into acpi-cpufreq.
--	That means one common driver will support all Intel Enhanced Speedstep
--	capable CPUs. That means less confusion over name of
--	speedstep-centrino driver (with that driver supposed to be used on
--	non-centrino platforms). That means less duplication of code and
--	less maintenance effort and no possibility of these two drivers
--	going out of sync.
--	Current users of speedstep_centrino with ACPI hooks are requested to
--	switch over to acpi-cpufreq driver. speedstep-centrino will continue
--	to work using older non-ACPI static table based scheme even after this
--	date.
--
--Who:	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
--
-----------------------------
--
- What:	/sys/firmware/acpi/namespace
- When:	2.6.21
- Why:	The ACPI namespace is effectively the symbol list for
---- linux-2.6.22-rc6-mm1/arch/x86_64/kernel/cpufreq/Kconfig.old	2007-07-08 23:29:23.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/arch/x86_64/kernel/cpufreq/Kconfig	2007-07-08 23:29:34.000000000 +0200
-@@ -48,10 +48,6 @@
- 
- 	  If in doubt, say N.
- 
--config X86_SPEEDSTEP_CENTRINO_ACPI
--	bool
--	depends on X86_SPEEDSTEP_CENTRINO
--
- config X86_ACPI_CPUFREQ
- 	tristate "ACPI Processor P-States driver"
- 	select CPU_FREQ_TABLE
-@@ -73,7 +69,7 @@
- config X86_ACPI_CPUFREQ_PROC_INTF
- 	bool "/proc/acpi/processor/../performance interface (deprecated)"
- 	depends on PROC_FS
--	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
-+	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
- 	help
- 	  This enables the deprecated /proc/acpi/processor/../performance
- 	  interface. While it is helpful for debugging, the generic,
+[ 4764.112000] usb 5-3: new high speed USB device using ehci_hcd and address 8
+[ 4764.244000] PM: Adding info for usb:5-3
+[ 4764.244000] PM: Adding info for No Bus:usbdev5.8_ep00
+[ 4764.244000] usb 5-3: configuration #1 chosen from 1 choice
+[ 4764.244000] PM: Adding info for usb:5-3:1.0
+[ 4764.244000] scsi6 : SCSI emulation for USB Mass Storage devices
+[ 4764.244000] PM: Adding info for No Bus:host6
+[ 4764.244000] PM: Adding info for No Bus:usbdev5.8_ep81
+[ 4764.244000] PM: Adding info for No Bus:usbdev5.8_ep02
+[ 4764.244000] PM: Adding info for No Bus:usbdev5.8
+[ 4764.244000] usb-storage: device found at 8
+[ 4764.244000] usb-storage: waiting for device to settle before scanning
+[ 4769.244000] usb-storage: device scan complete
+[ 4769.244000] PM: Adding info for No Bus:target6:0:0
+[ 4769.244000] scsi 6:0:0:0: Direct-Access     Maxtor 6 Y120L0
+  0811 PQ: 0 ANSI: 0
+[ 4769.244000] PM: Adding info for No Bus:target6:0:1
+[ 4769.244000] PM: Removing info for No Bus:target6:0:1
+[ 4769.244000] PM: Adding info for No Bus:target6:0:2
+[ 4769.244000] PM: Removing info for No Bus:target6:0:2
+[ 4769.244000] PM: Adding info for No Bus:target6:0:3
+[ 4769.244000] PM: Removing info for No Bus:target6:0:3
+[ 4769.244000] PM: Adding info for No Bus:target6:0:4
+[ 4769.244000] PM: Removing info for No Bus:target6:0:4
+[ 4769.244000] PM: Adding info for No Bus:target6:0:5
+[ 4769.244000] PM: Removing info for No Bus:target6:0:5
+[ 4769.244000] PM: Adding info for No Bus:target6:0:6
+[ 4769.244000] PM: Removing info for No Bus:target6:0:6
+[ 4769.244000] PM: Adding info for No Bus:target6:0:7
+[ 4769.244000] PM: Removing info for No Bus:target6:0:7
+[ 4769.244000] PM: Adding info for scsi:6:0:0:0
+[ 4769.248000] sd 6:0:0:0: [sdb] 240121728 512-byte hardware sectors (122942 MB)
+[ 4769.248000] sd 6:0:0:0: [sdb] Test WP failed, assume Write Enabled
+[ 4769.248000] sd 6:0:0:0: [sdb] Assuming drive cache: write through
+[ 4769.248000] sd 6:0:0:0: [sdb] 240121728 512-byte hardware sectors (122942 MB)
+[ 4769.252000] sd 6:0:0:0: [sdb] Test WP failed, assume Write Enabled
+[ 4769.252000] sd 6:0:0:0: [sdb] Assuming drive cache: write through
+[ 4769.252000]  sdb: sdb1 < sdb5 sdb6<6>usb 5-3: reset high speed USB
+device using ehci_hcd and address 8
+[ 4769.544000] usb 5-3: device descriptor read/64, error -71
+[ 4769.760000] usb 5-3: device descriptor read/64, error -71
+[ 4769.976000] usb 5-3: reset high speed USB device using ehci_hcd and address 8
+[ 4770.088000] usb 5-3: device descriptor read/64, error -71
+[ 4770.304000] usb 5-3: device descriptor read/64, error -71
+[ 4770.520000] usb 5-3: reset high speed USB device using ehci_hcd and address 8
+[ 4770.928000] usb 5-3: device not accepting address 8, error -71
+[ 4771.040000] usb 5-3: reset high speed USB device using ehci_hcd and address 8
+[ 4771.448000] usb 5-3: device not accepting address 8, error -71
+[ 4771.448000] usb 5-3: USB disconnect, address 8
+[ 4771.448000] PM: Removing info for No Bus:usbdev5.8_ep81
+[ 4771.448000] PM: Removing info for No Bus:usbdev5.8_ep02
+[ 4771.448000] BUG: unable to handle kernel NULL pointer dereference
+at virtual address 00000000
+[ 4771.448000]  printing eip:
+[ 4771.448000] c0255cc7
+[ 4771.448000] *pde = 00000000
+[ 4771.448000] Oops: 0000 [#1]
+[ 4771.448000] SMP
+[ 4771.448000] Modules linked in: usb_storage ide_core libusual
+binfmt_misc nfs lockd sunrpc ipv6 sonypi ppdev acpi_cpufreq
+cpufreq_stats cpufreq_powersave cpufreq_conservative cpufreq_userspace
+cpufreq_ondemand freq_table button ac video dock container sbs battery
+af_packet sbp2 parport_pc lp parport fuse snd_hda_intel snd_pcm_oss
+snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss joydev snd_seq_midi
+snd_rawmidi snd_seq_midi_event tifm_7xx1 pcmcia snd_seq snd_timer
+snd_seq_device sky2 serio_raw tifm_core snd soundcore yenta_socket
+rsrc_nonstatic pcmcia_core psmouse iTCO_wdt iTCO_vendor_support
+snd_page_alloc shpchp pci_hotplug intel_agp agpgart evdev ext3 jbd
+mbcache sg sd_mod sr_mod cdrom ata_generic ata_piix ohci1394 ieee1394
+libata scsi_mod ehci_hcd uhci_hcd usbcore thermal processor fan
+[ 4771.448000] CPU:    0
+[ 4771.448000] EIP:    0060:[<c0255cc7>]    Not tainted VLI
+[ 4771.448000] EFLAGS: 00010202   (2.6.22-rc7-50 #1)
+[ 4771.448000] EIP is at make_class_name+0x27/0x80
+[ 4771.448000] eax: 00000000   ebx: ffffffff   ecx: ffffffff   edx: 0000000b
+[ 4771.448000] esi: f89ffca6   edi: 00000000   ebp: 00000000   esp: f7d05e5c
+[ 4771.448000] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+[ 4771.448000] Process khubd (pid: 2188, ti=f7d04000 task=c190f480
+task.ti=f7d04000)
+[ 4771.448000] Stack: dfc9a608 dfc9a494 dfc9a600 dfc9a608 f8a12ac0
+c0255e59 00000000 f8a12b88
+[ 4771.448000]        dfc9a600 dfc9a494 00000246 00000000 c0255ee8
+dfc9a400 f89f9b56 dfc9a400
+[ 4771.448000]        efc26800 f89f71fb efc26830 efc26800 f89f17e5
+efc26af8 f41ce818 f8be1100
+[ 4771.448000] Call Trace:
+[ 4771.448000]  [<c0255e59>] class_device_del+0x99/0x120
+[ 4771.448000]  [<c0255ee8>] class_device_unregister+0x8/0x10
+[ 4771.448000]  [<f89f9b56>] __scsi_remove_device+0x26/0x60 [scsi_mod]
+[ 4771.448000]  [<f89f71fb>] scsi_forget_host+0x4b/0x60 [scsi_mod]
+[ 4771.448000]  [<f89f17e5>] scsi_remove_host+0x55/0xe0 [scsi_mod]
+[ 4771.448000]  [<f8bd2c3e>] storage_disconnect+0xe/0x20 [usb_storage]
+[ 4771.448000]  [<f8a4ea24>] usb_unbind_interface+0x44/0x90 [usbcore]
+[ 4771.448000]  [<c0255408>] __device_release_driver+0x68/0xa0
+[ 4771.448000]  [<c0255813>] device_release_driver+0x23/0x40
+[ 4771.448000]  [<c0254d1c>] bus_remove_device+0x5c/0x90
+[ 4771.448000]  [<c0253020>] device_del+0x160/0x260
+[ 4771.448000]  [<f8a4bf28>] usb_disable_device+0x78/0xe0 [usbcore]
+[ 4771.448000]  [<f8a48285>] usb_disconnect+0x95/0x130 [usbcore]
+[ 4771.448000]  [<f8a48910>] hub_thread+0x270/0xc30 [usbcore]
+[ 4771.448000]  [<c012a4e6>] do_exit+0x516/0x800
+[ 4771.448000]  [<c0139b00>] autoremove_wake_function+0x0/0x40
+[ 4771.448000]  [<f8a486a0>] hub_thread+0x0/0xc30 [usbcore]
+[ 4771.448000]  [<c0139834>] kthread+0x34/0x60
+[ 4771.448000]  [<c0139800>] kthread+0x0/0x60
+[ 4771.448000]  [<c0105397>] kernel_thread_helper+0x7/0x10
+[ 4771.448000]  =======================
+[ 4771.448000] Code: 00 00 00 00 55 57 56 53 83 ec 04 31 ed 83 cb ff
+89 c6 89 c7 89 14 24 89 d9 89 e8 f2 ae f7 d1 49 8b 04 24 89 ca 89 d9
+8b 38 89 e8 <f2> ae f7 d1 49 8d 44 0a 02 ba d0 00 00 00 e8 06 36 f2 ff
+31 d2
+[ 4771.448000] EIP: [<c0255cc7>] make_class_name+0x27/0x80 SS:ESP 0068:f7d05e5c
+[ 4771.448000] sd 6:0:0:0: [sdb] Result: hostbyte=DID_NO_CONNECT
+driverbyte=DRIVER_OK,SUGGEST_OK
+[ 4771.448000] end_request: I/O error, dev sdb, sector 163846928
+[ 4771.448000] printk: 84 messages suppressed.
+[ 4771.448000] Buffer I/O error on device sdb, logical block 20480866
+[ 4771.448000] Buffer I/O error on device sdb, logical block 20480866
+[ 4771.448000]  >
+[ 4771.448000] sd 6:0:0:0: [sdb] Attached SCSI disk
+[ 4771.448000] sd 6:0:0:0: Attached scsi generic sg2 type 0
+[ 4771.556000] Buffer I/O error on device sdb, logical block 30015200
+-- 
+Daniel J Blueman
