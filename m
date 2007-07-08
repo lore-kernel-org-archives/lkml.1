@@ -1,134 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbXGHDM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbXGHDZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbXGHDM5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jul 2007 23:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbXGHDJY
+	id S1756210AbXGHDZu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jul 2007 23:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbXGHDZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jul 2007 23:09:24 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46570 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755206AbXGHDIq (ORCPT
+	Sat, 7 Jul 2007 23:25:42 -0400
+Received: from eldorado.sekrit.org ([72.5.28.212]:58257 "EHLO
+	eldorado.sekrit.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755080AbXGHDZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jul 2007 23:08:46 -0400
-Message-Id: <20070708030845.503538007@sgi.com>
-References: <20070708030538.729027694@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Sat, 07 Jul 2007 20:05:47 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: dgc@sgi.com
-Subject: [patch 09/12] Slab defragmentation: Support defragmentation for extX filesystem inodes
-Content-Disposition: inline; filename=slub_defrag_fs_ext234
+	Sat, 7 Jul 2007 23:25:41 -0400
+X-Greylist: delayed 1842 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Jul 2007 23:25:41 EDT
+Date: Sat, 7 Jul 2007 22:54:57 -0400
+From: Gerald Britton <gbritton@doomcom.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tim Hull <thully@umich.edu>, linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: MacBook makes whining noise when usb-uhci active
+Message-ID: <20070708025457.GA2822@zante.sekrit.org>
+References: <9a7c669e0707071551v2705320dn876ad208fa60a537@mail.gmail.com> <Pine.LNX.4.44L0.0707072210470.10912-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0707072210470.10912-100000@netrider.rowland.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the generic API for inodes established earlier to support all extX
-filesystem.
+On Sat, Jul 07, 2007 at 10:17:34PM -0400, Alan Stern wrote:
+> > [2.] Full description of the problem/report: On my MacBook (first generation
+> > Core Duo 1.83GHz), I can hear a faint whining noise that becomes audible
+> > when usb-uhci is loaded and remains audible except when the USB ports are in
+> > use (i.e. the noise temporarily stops when I'm copying music to my iPod).
+> 
+> You have a USB keyboard, right?  So the ports are always in use -- 
+> unless you unplug the keyboard.
+> 
+> > This problem occurs on both 2.6.21  and 2.6.22-rc7, but does not occur on
+> > 2.6.18.  Unloading usb-uhci when booted in 2.6.22-rc7 makes the whining
+> > noise stop, but the system is useless in this state for obvious reasons.
+> > The same whine does occur in OS X that occurs in 2.6.22-rc7 (though it does
+> > NOT occur in 2.6.18)
+> 
+> Anyway it's clearly a hardware problem, even if it is triggered by 
+> something in software.  About all I can suggest is to surround the 
+> MacBook with something sound-absorbent.  (Not very helpful, I agree.)
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+I have a similar problem with my new Thinkpad X60 Tablet.  In this case,
+I have a high pitched whine which is only caused when USB drivers are loaded,
+I am on battery, and there are no devices connected to USB.  I suspect
+something involved with CONFIG_USB_SUSPEND (which is enabled) is causing this
+whine, but I haven't dug deeper to find out a more precise cause.
 
----
- fs/ext2/super.c |   16 ++++++++++++++--
- fs/ext3/super.c |   14 +++++++++++++-
- fs/ext4/super.c |   14 +++++++++++++-
- 3 files changed, 40 insertions(+), 4 deletions(-)
+For reference, I'm running Fedora 7's 2.6.21-1.3228.fc7 x86_64.
 
-Index: linux-2.6.22-rc6-mm1/fs/ext2/super.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/fs/ext2/super.c	2007-07-03 17:19:26.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/fs/ext2/super.c	2007-07-03 17:28:49.000000000 -0700
-@@ -168,14 +168,26 @@ static void init_once(void * foo, struct
- 	mutex_init(&ei->truncate_mutex);
- 	inode_init_once(&ei->vfs_inode);
- }
-- 
-+
-+static void *ext2_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct ext2_inode_info, vfs_inode));
-+}
-+
-+static struct kmem_cache_ops ext2_kmem_cache_ops = {
-+	.get = ext2_get_inodes,
-+	.kick = kick_inodes
-+};
-+
- static int init_inodecache(void)
- {
- 	ext2_inode_cachep = kmem_cache_create("ext2_inode_cache",
- 					     sizeof(struct ext2_inode_info),
- 					     0, (SLAB_RECLAIM_ACCOUNT|
- 						SLAB_MEM_SPREAD),
--					     init_once, NULL);
-+					     init_once,
-+					     &ext2_kmem_cache_ops);
- 	if (ext2_inode_cachep == NULL)
- 		return -ENOMEM;
- 	return 0;
-Index: linux-2.6.22-rc6-mm1/fs/ext3/super.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/fs/ext3/super.c	2007-07-03 17:19:26.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/fs/ext3/super.c	2007-07-03 17:28:49.000000000 -0700
-@@ -484,13 +484,25 @@ static void init_once(void * foo, struct
- 	inode_init_once(&ei->vfs_inode);
- }
- 
-+static void *ext3_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct ext3_inode_info, vfs_inode));
-+}
-+
-+static struct kmem_cache_ops ext3_kmem_cache_ops = {
-+	.get = ext3_get_inodes,
-+	.kick = kick_inodes
-+};
-+
- static int init_inodecache(void)
- {
- 	ext3_inode_cachep = kmem_cache_create("ext3_inode_cache",
- 					     sizeof(struct ext3_inode_info),
- 					     0, (SLAB_RECLAIM_ACCOUNT|
- 						SLAB_MEM_SPREAD),
--					     init_once, NULL);
-+					     init_once,
-+					     &ext3_kmem_cache_ops);
- 	if (ext3_inode_cachep == NULL)
- 		return -ENOMEM;
- 	return 0;
-Index: linux-2.6.22-rc6-mm1/fs/ext4/super.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/fs/ext4/super.c	2007-07-03 17:19:26.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/fs/ext4/super.c	2007-07-03 17:28:49.000000000 -0700
-@@ -544,13 +544,25 @@ static void init_once(void * foo, struct
- 	inode_init_once(&ei->vfs_inode);
- }
- 
-+static void *ext4_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct ext4_inode_info, vfs_inode));
-+}
-+
-+static struct kmem_cache_ops ext4_kmem_cache_ops = {
-+	.get = ext4_get_inodes,
-+	.kick = kick_inodes
-+};
-+
- static int init_inodecache(void)
- {
- 	ext4_inode_cachep = kmem_cache_create("ext4_inode_cache",
- 					     sizeof(struct ext4_inode_info),
- 					     0, (SLAB_RECLAIM_ACCOUNT|
- 						SLAB_MEM_SPREAD),
--					     init_once, NULL);
-+					     init_once,
-+					     &ext4_kmem_cache_ops);
- 	if (ext4_inode_cachep == NULL)
- 		return -ENOMEM;
- 	return 0;
+				-- Gerald
 
--- 
+
