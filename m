@@ -1,121 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756286AbXGHRrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbXGHSBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756286AbXGHRrU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 13:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbXGHRrM
+	id S1756120AbXGHSBv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 14:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXGHSBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 13:47:12 -0400
-Received: from 1wt.eu ([62.212.114.60]:3312 "EHLO 1wt.eu"
+	Sun, 8 Jul 2007 14:01:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36670 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751723AbXGHRrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 13:47:12 -0400
-Date: Sun, 8 Jul 2007 19:46:13 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v19
-Message-ID: <20070708174612.GA4035@1wt.eu>
-References: <20070706173319.GA2356@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753331AbXGHSBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 14:01:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+Date: Sun, 8 Jul 2007 20:08:56 +0200
+User-Agent: KMail/1.9.5
+Cc: pavel@ucw.cz, oliver@neukum.org, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+References: <200707050858.03638.oliver@neukum.org> <20070708123748.GB3866@ucw.cz> <E1I7Xfc-0008PO-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I7Xfc-0008PO-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070706173319.GA2356@elte.hu>
-User-Agent: Mutt/1.5.11
+Message-Id: <200707082008.57879.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo !
-
-On Fri, Jul 06, 2007 at 07:33:19PM +0200, Ingo Molnar wrote:
+On Sunday, 8 July 2007 16:23, Miklos Szeredi wrote:
+> > > > > > We can just wait for all fuse requests to be serviced before
+> > > > > > proceeding further with freeze, right?
+> > > > > 
+> > > > > Right.  Nice way to slow down or stop the suspend with an unprivileged
+> > > > > process.  Avoiding that sort of DoS is one of the design goals of
+> > > > > fuse.
+> > > > 
+> > > > So you want me to handle _malicious_ filesystems now?
+> > > 
+> > > What I'd like, is a suspend, that works reliably, regardless of the
+> > > state of any userspace filesystem, network servers and such.
+> > 
+> > Well, fix userspace filesystems and maybe NFS. If they react to
+> > sigstop in timely manner, they will work with suspend properly, too.
 > 
-> i'm pleased to announce release -v19 of the CFS scheduler patchset.
+> Which is pretty much impossible, given the unix filesystem API.  To be
+> able to react to sigstop, the operations in question need to be
+> restartable.  Which they are not, so they can't react to sigstop.  End
+> of story.
+
+Or not.  That depends on your willingness to cooperate, I'd say. :-)
+
+> > > > That should be easy... :-). You already have nasty deadlocks in FUSE,
+> > > > and you solve them by "root can echo 1 > abort"... so allow me the
+> > > > same possibility.
+> > > > 
+> > > > We can tell fused we are freezing, and if all the requests are not
+> > > > serviced within, say, 30 seconds, we call the filesystem malicious and
+> > > > do echo 1 > abort.
+> > > 
+> > > Arbitrary time limits, nice.  Not.
+> > > 
+> > > This freezer is like an old house that's close to collapsing, and you
+> > 
+> > Nice way to have useful discussion. Not.
 > 
-> The rolled-up CFS patch against today's -git kernel, v2.6.22-rc7, 
-> v2.6.22-rc6-mm1, v2.6.21.5 or v2.6.20.14 can be downloaded from the 
-> usual place:
+> Sorry, didn't mean to offend you.
 > 
->     http://people.redhat.com/mingo/cfs-scheduler/
->  
-> The biggest user-visible change in -v19 is reworked sleeper fairness: 
-> it's similar in behavior to -v18 but works more consistently across nice 
-> levels. Fork-happy workloads (like kernel builds) should behave better 
-> as well. There are also a handful of speedups: unsigned math, 32-bit 
-> speedups, O(1) task pickup, debloating and other micro-optimizations.
+> > Look, Linux was not designed with malicious filesystems in mind. In
+> > particular, suspend was not designed with malicious filesystems in
+> > mind, and VFS was not designed with malicious filesystems in mind.
+> > That's why you have the nastiness with deadlocks... which you are
+> > unable/unwilling to solve because you'd have to redesign VFS and meet
+> > Al Viro.
+> 
+> No, I don't think we need to redesign the VFS, and also I think the
+> malicious filesystem thing has been adequately taken care of in fuse.
+> 
+> You may not like the fact that one process can cause another to go
+> into uninterruptible sleep, but in fact there's nothing wrong with
+> that.
 
-Interestingly, I also noticed the possibility of O(1) task pickup when
-playing with v18, but did not detect any noticeable improvement with it.
-Of course, it depends on the workload and I probably didn't perform the
-most relevant tests.
+Well, this introduces interdependencies between processes that do not exist
+otherwise.  Even if that isn't wrong per se, it's something that needs
+consideration in any case.
 
-V19 works very well here on 2.6.20.14. I could start 32k busy loops at
-nice +19 (I exhausted the 32k pids limit), and could still perform normal
-operations. I noticed that 'vmstat' scans all the pid entries under /proc,
-which takes ages to collect data before displaying a line. Obviously, the
-system sometimes shows some short latencies, but not much more than what
-you get from and SSH through a remote DSL connection.
+IMO, FUSE breaks one of the assumptions that the freezer is based on and
+saying that the freezer is broken because of that is unfair.
 
-Here's a vmstat 1 output :
+> The effects are localized to the mount owner, it won't cause 
+> any system-wide ill, it's in fact no worse than a malicious process
+> doing ptrace().
+> 
+> And as explained above it's unavoidable due to the well established
+> userspace API.  The _point_ of fuse is to let this API be used by
+> unmodified programs and the filesystem be provided by a userspace
+> process.  After showing me the right way to do this with Podfuk, this
+> should not come as a surprise to you.
+> 
+> So the fact that the freezer can't handle this is unfortunate, but
+> it's just a symptom of the brokenness of it, not something that fuse
+> introduced.  Not being able to suspend with NFS (or other network
+> filesystems) when the network is lost shows that this is a deeper
+> problem.
 
- r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
-32437  0  0      0 809724    488   6196    0    0     1     0  135     0 24 72 4
-32436  0  0      0 811336    488   6196    0    0     0     0  717     0 78 22 0
-32436  0  0      0 812956    488   6196    0    0     0     0  727     0 79 21 0
-32436  0  0      0 810164    400   6196    0    0     0     0  707     0 80 20 0
-32436  0  0      0 815116    400   6436    0    0     0     0  769     0 77 23 0
-32436  0  0      0 811644    400   6436    0    0     0     0  715     0 80 20 0
+Well, the system that cannot access its filesystems is not in a consistent
+state, so it generally is not reasonable to suspend or hibernate it.
 
-Amusingly, I started mpg123 during this test and it skipped quite a bit.
-After setting all tasks to SCHED_IDLE, it did not skip anymore. All this
-seems to behave like one could expect.
+In fact, NFS and similar filesystems should always be unmounted before the
+suspend/hibernation to avoid problems that may arise after the resume, if
+they become unavailable at that time.
 
-I also started 30k processes distributed in 130 groups of 234 chained by pipes
-in which one byte is passed. I get an average of 8000 in the run queue. The
-context switch rate is very low and sometimes even null in this test, maybe
-some of them are starving, I really do not know :
+> And for some reason you seem not to accept that.  You think that the
+> problem is with fuse, NFS, CIFS, whatever, and not the freezer, when
+> in fact it's quite clear, that neither of the above should have
+> anything to do with power management.
 
- r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
-7752  0  1      0 656892    244   4196    0    0     0     0  725     0 16 84  0
-7781  0  1      0 656768    244   4196    0    0     0     0  724     0 16 84  0
-8000  0  1      0 656916    244   4196    0    0     0     0 2631     0  9 91  0
-8025  0  1      0 656916    244   4196    0    0     0     0 2023     0 11 89  0
-8083  0  1      0 659124    244   4196    0    0     0     0 3379     0 10 90  0
-8054  0  1      0 658752    244   4196    0    0     0     0  726     0 17 83  0
+IMHO, it's not _that_ clear.
 
-With fewer of them, I can achieve very high context switch rates, well above
-what I got with v18 (around 515k) :
+> Even if it was possible to fix them, it would still be just fixing the
+> symptoms. 
 
- r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
-48  0  0      0 1977580   5196  49900    0    0     0    28  261 579893 23 77  0
-44  0  0      0 1977580   5196  49900    0    0     0     0  253 578454 17 83  0
-48  0  0      0 1977580   5196  49900    0    0     0     0  254 574118 22 78  0
-41  0  0      0 1977580   5196  49900    0    0     0     0  253 579261 23 77  0
+I don't think we need to fix the network filesystems.
 
-(this is still on my dual athlon 1.5 GHz).
+If there's a mounted filesystem and we have at least one process waiting for
+it to become available in the D state (ie. uninterruptible), then the system is
+not in a consistent state and should not be suspended.
 
-In my tree, I have replaced the rbtree with the ebtree we talked about,
-but it did not bring any performance boost because, eventhough insert()
-and delete() are faster, the scheduler is already quite good at avoiding
-them as much as possible, mostly relying on rb_next() which has the same
-cost in both trees. All in all, the only variations I noticed were caused
-by cacheline alignment when I tried to reorder fields in the eb_node. So
-I will stop my experimentations here since I don't see any more room for
-improvement.
+> > Now.. freezer already includes timeout; if some part of kernel knows
+> > nothing about suspend or had crashed, it will abort after some time,
+> > telling you which part to blame. Another timeout for detecting
+> > malicious userspace filesystems will not hurt much in this old house.
+> > (Maybe you don't want to auto abort them, just tell user what happened.
+> > 
+> > We are stuck with refrigerator for now, and at least for hibernation,
+> > I don't see any feasible alternative.
+> 
+> Even for hibernation, I don't see, why we would need all processes
+> being effectively in a stopped state.
+> 
+> As stated otherwise in the thread, suspend2 in fact allowed processes
+> to be in uninterruptible sleep instead, without negative side effects.
 
->  - debug: split out the debugging data into CONFIG_SCHED_DEBUG.
+And yet, Nigel thinks that the freezer is necessary for the hibernation.
+Strange, no?
 
-Hmmm that must be why I do not have /proc/sched_debug anymore ;-)
+> The current freezer does too much for suspend and for hibernate too.
 
-> As usual, any sort of feedback, bugreport, fix and suggestion is more 
-> than welcome!
+Yes, it does.  It's quilte similar to the BKL in that.  Still, for now, there's
+no infrastructure for a more fine grained approach and instead of working
+on introducing one, we're losing time in this thread.
 
-Done !
+> > > Malicious programs are not something specific to fuse.  A lot of the
+> > > multiuser/multitasking OS design is about isolating things, so such a
+> > > program is limited in the damage it can do.
+> > 
+> > I'm talking malicious _filesystems_ here, and yes, fuse is first of
+> > this kind. We want to handle unresponding NFS, but I believe handling
+> > malicious NFS server nicely is slightly out of scope.
+> 
+> It doesn't have to be malicious, it's enough if the server crashes, or
+> the network connection is lost.
+> 
+> Do we want to maintain the status quo, just because we can live with
+> it?
 
-Cheers,
-Willy
+Say you're standing on a cliff and you have three choices:
+(1) stay where you are (well, this is not attractive in the long run)
+(2) jump down
+(3) look for a path to go down slowly?
 
+Which one will you choose?
+
+> > > > Not nice, but we don't know any better for now. "Just fix all the
+> > > > drivers" basically means "just fix 90% of kernel".
+> > > 
+> > > And how much of that 90% currently has any power management?
+> > 
+> > Anything that's used in today's notebooks, I'd say...
+> 
+> Which is what, 10% of all the drivers?  Then it really not as bad as
+> you try to make it sound.  And with the late suspend call (whatever it
+> does) that can take care of most of those, it really becomes just a
+> few drivers and subsystems to fix.
+
+Are they fixed _now_?
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
