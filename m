@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbXGHKnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbXGHKs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757301AbXGHKnP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 06:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbXGHKnD
+	id S1756759AbXGHKs7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 06:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbXGHKsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 06:43:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58731 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751992AbXGHKnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 06:43:01 -0400
-Date: Sun, 8 Jul 2007 12:42:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org, suresh.b.siddha@intel.com,
-       corey.d.gough@intel.com, Pekka Enberg <penberg@cs.helsinki.fi>,
-       akpm@linux-foundation.org, Matt Mackall <mpm@selenic.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-Message-ID: <20070708104243.GA12175@elte.hu>
-References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <4690B1A4.4010703@yahoo.com.au> <20070708095422.GA2744@elte.hu> <4690BB0A.4030801@yahoo.com.au>
+	Sun, 8 Jul 2007 06:48:50 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55471 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751085AbXGHKst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 06:48:49 -0400
+Cc: drepper@redhat.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 08 Jul 2007 12:48:48 +0200
+From: "Michael Kerrisk" <mtk-manpages@gmx.net>
+In-Reply-To: <Pine.LNX.4.64.0707081159530.1536@fbirervta.pbzchgretzou.qr>
+Message-ID: <20070708104848.238020@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4690BB0A.4030801@yahoo.com.au>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <468FBEB7.1000308@gmx.net>
+ <Pine.LNX.4.64.0707072057030.1536@fbirervta.pbzchgretzou.qr>
+ <20070708073042.238020@gmx.net>
+ <Pine.LNX.4.64.0707081159530.1536@fbirervta.pbzchgretzou.qr>
+Subject: Re: utimensat (man-pages-2.61 is released)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+X-Authenticated: #24879014
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX192cetweqt2ndu1c8b5lYMP7ir76d/RavkZ31QW4T
+ H+7qisR96YJflZvvK41GIKIv4oJyb2qASExg== 
+Content-Transfer-Encoding: 7bit
+X-GMX-UID: dbD5KYhkMydhbfHKEWtlL6JjaGRhZhoV
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> >cool. I was referring to something else: people were running -rt on 
-> >their beefy desktop boxes with several gigs of RAM they complained 
-> >about the slowdown that is caused by SLOB's linear list walking.
+> On Jul 8 2007 09:30, Michael Kerrisk wrote:
+> >> On Jul 7 2007 18:26, Michael Kerrisk wrote:
+> >> >
+> >> >I recently released man-pages-2.61.
+> >> 
+> >> utimensat() was introduced in Linux 2.6.22-rc1.
+> >
+> >Yes, I am aware.
+> >
+> >> I am kindly hinting that it does not yet have a manpage yet :)
+> >
+> >Such a hint is a good idea.  But strangely, you send it to me,
+> >rather than the author of the system call.  Why is that?
 > 
-> That is what I meant by scalable to large memories. It is not perfect, 
-> but it is much better now. I noticed huge slowdowns too when test 
-> booting the slob RCU patch on my 4GB desktop, so I did a few things to 
-> improve freelist walking as well (the patches are in -mm, prefixed 
-> with slob-).
+> Related manpages (futimesat(2)) does not list an author.
+> So I were to guess who wrote it: you, or Ulrich, or a contributor.
 
-ah, good - i only looked at the upstream mm/slob.c git-log. I like those 
-4 slob-* patches in -mm: in particular slob-remove-bigblock-tracking.patch
-and slob-rework-freelist-handling.patch are really elegant. Simplicity of 
-slob does not seem to suffer either.
+An author of which -- the man page itself, or the system call?
+Looking at the source of almost any page in man-pages certainly
+shows the author of the page.  In the case of the futimesat(2)
+man page: yes, I was the author.
 
-	Ingo
+So yes, I sometimes write pages for system calls that were 
+written by others.  But this suffers serious limitations:
+
+* Many people are changing the kernel-userland API; leaving me
+  to write the documentation does not scale well.  (To begin
+  with there is the problem: how can I even tell what has
+  changed in a new release?  But here I must thank Andrew,
+  who helps a bit by forwarding me things he notices.)
+
+* I am fallible: I sometimes make mistakes of understanding
+  when interpreting other people's code.
+
+* Even when I do not make mistakes, when I write a man page by
+  reading someone else's code, all I am doing is interpreting.
+  The implementation may not match the (code) author's
+  intention (aka a bug).  I may just be accurately documented
+  buggy behaviour, or accurately describing design mistakes.
+  (Yes, sometimes I'm smart enough to recognize the bugs and
+  call them, but that is far from guaranteed.)
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+
+Want to help with man page maintenance?  
+Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages , 
+read the HOWTOHELP file and grep the source 
+files for 'FIXME'.
+
