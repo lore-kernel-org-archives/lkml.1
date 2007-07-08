@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbXGHQPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbXGHQYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755705AbXGHQPw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 12:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbXGHQPp
+	id S1756369AbXGHQYO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 12:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbXGHQX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 12:15:45 -0400
-Received: from wx-out-0506.google.com ([66.249.82.225]:46814 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754288AbXGHQPo (ORCPT
+	Sun, 8 Jul 2007 12:23:58 -0400
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:23185 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754572AbXGHQX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 12:15:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=QXoOE6wfdKFLE32UBV1Nr96JrK98Xl+o7jpq/zMwHuixnvGdFuWafD9jpujeKdP7dla9OcC8ET6lel3J8OpZ3v0rf+flwY1E2fkIl6L92pKHeYlelBLaWlZjJFu9HgPr+cNWUR4QhG94Ohs1IVKifVSyhk87BZIzToIbW3E/7tg=
-Message-ID: <dcf706c60707080915w7660a2exe629c5def78549da@mail.gmail.com>
-Date: Sun, 8 Jul 2007 18:15:43 +0200
-From: "Sasa Ostrouska" <casaxa@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: KVM-AMD OOPS
+	Sun, 8 Jul 2007 12:23:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PwSDDjamQiekItrl/gVblUgF+DhFUpanpj4rIkKLXgEUQgDnXuEUagOlwGR/eXoWgy+s7bAEPxu55FAQX3oOy3Tms4ng+3yDiVGWaxqLkiB1a4RqU77CJG7fu1+4SRQkm+ESD8a5HqBNJ/jrrhkoWB5UHEHHokGdAGFrrWRL7mQ=  ;
+X-YMail-OSG: nSO8lMEVM1kBOgjc4tKXosVRcYs156dglvoclyLWnSQ6mXcxLsIbLBQED1XZ9SGJrVRmEZ2z8g--
+From: David Brownell <david-b@pacbell.net>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+Date: Sun, 8 Jul 2007 09:23:54 -0700
+User-Agent: KMail/1.9.6
+Cc: Al Viro <viro@ftp.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>,
+       linux-kernel@vger.kernel.org, johannes@sipsolutions.net
+References: <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070708123748.GB3866@ucw.cz> <20070708135829.GF21668@ftp.linux.org.uk>
+In-Reply-To: <20070708135829.GF21668@ftp.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200707080923.54998.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi people,
+On Sunday 08 July 2007, Al Viro wrote:
+> On Sun, Jul 08, 2007 at 12:37:48PM +0000, Pavel Machek wrote:
+> > I'm talking malicious _filesystems_ here, and yes, fuse is first of
+> > this kind. We want to handle unresponding NFS, but I believe handling
+> > malicious NFS server nicely is slightly out of scope.
+> 
+> If your variant doesn't handle compromised NFS server, your variant is
+> needs to be fixed...
 
-I have kernel 2.6.21.5 and when trying to insert the kvm-amd module I
-get this oops:
+That would depend on the type of compromise, right?
 
-root@rcserver:~# modprobe kvm-amd
-int3: 0000 [1] PREEMPT SMP
-CPU 1
-Modules linked in: kvm_amd snd_seq_dummy snd_seq_oss
-snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss
-nls_iso8859_1 ntfs nls_base usb_storage libusual capability commoncap
-lp psmouse snd_hda_intel snd_hda_codec snd_pcm snd_timer ohci_hcd
-ehci_hcd 8139too rtc_cmos snd soundcore snd_page_alloc usbcore k8temp
-mii rtc_core rtc_lib i2c_nforce2 parport_pc parport
-Pid: 2898, comm: modprobe Tainted: P       2.6.21.5 #1
-RIP: 0010:[<ffffffff80572364>]  [<ffffffff80572364>]
-register_cpu_notifier+0x1/0x31
-RSP: 0000:ffff81006e34df40  EFLAGS: 00000246
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00000000c0010117
-RDX: 000000000000ffff RSI: ffff81006e219640 RDI: ffffffff80536510
-RBP: ffffffff880d8840 R08: 0000000000000000 R09: 000000000006b5f4
-R10: 0000000000000000 R11: 0000000000000000 R12: 00000000005296b0
-R13: 00007fff51fe55c0 R14: 0000000000000000 R15: 0000000000000000
-FS:  00002b4e58e18b00(0000) GS:ffff810002e794c0(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 000000000050df64 CR3: 000000007a0f3000 CR4: 00000000000006e0
-Process modprobe (pid: 2898, threadinfo ffff81006e34c000, task ffff81007bc48400)
-Stack:  ffffffff8039e024 ffff81006e34c000 ffffffff880d8840 0000000000005e19
- ffffffff8024537c 0000000000000000 00007fff51fe50c0 00000000004142d0
- ffffffff8020967e 0000000000000206 00000000005230e0 000000000052f4c9
-Call Trace:
- [<ffffffff8039e024>] kvm_init_arch+0x90/0x145
- [<ffffffff8024537c>] sys_init_module+0xad/0x168
- [<ffffffff8020967e>] system_call+0x7e/0x83
+Remember that the fundamental contract between a client and
+a server includes the client extending some trust to that
+server.  Whether it's appropriate to extend that trust (at
+any given moment) is an out-of-band security issue.  Trust
+is not a protocol issue ... more like an operational issue,
+and only slightly an implementation issue.
+
+A malicious filesystem could do many things.  It could send
+private data off to someone who wasn't intended to receive
+that data.  It could return falsified data.  It could do any
+variety of things outside the protocol specification...
+
+And *MOST* of those would be impractical to defend against
+in code.  Which is why I have such a hard time agreeing
+with your comment about "fixing" a client that doesn't try
+to defend itself.  (Unless by "client" you also include the
+whole operational side of the client, including regular
+re-validation of the trust extended to that server... which
+would at best minimize damage caused by compromises.)
 
 
-Code: cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc
-RIP  [<ffffffff80572364>] register_cpu_notifier+0x1/0x31
- RSP <ffff81006e34df40>
-note: modprobe[2898] exited with preempt_count 1
-Segmentation fault
 
-Message from syslogd@rcserver at Sun Jul  8 21:00:33 2007 ...
-rcserver kernel: int3: 0000 [1] PREEMPT SMP
-root@rcserver:~#
-
-This is on a x86-64 machine. If you need additional info please
-contact by e-mail as i'm not subscribed to the list.
-
-Best Regards
-Sasa Ostrouska
