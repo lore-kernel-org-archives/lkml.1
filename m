@@ -1,88 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbXGHXUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbXGHXVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757991AbXGHXUr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 19:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXGHXUl
+	id S1758520AbXGHXVE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 19:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXGHXUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 19:20:41 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58902 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751280AbXGHXUk (ORCPT
+	Sun, 8 Jul 2007 19:20:53 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:49487 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758060AbXGHXUw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 19:20:40 -0400
-Date: Mon, 9 Jul 2007 09:20:31 +1000
-From: David Chinner <dgc@sgi.com>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-Message-ID: <20070708232031.GF12413810@sgi.com>
-References: <20070706222651.GG5777@v2.random>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 8 Jul 2007 19:20:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ACz/ujIbb++9e+n8bH0zDZWpHRYHsbihilzpn8/uDNWrloenMjcBneoil5of5tDqRP8VP49q16YpUFpbcB58tSsp7nhgqXiB4uOjRIHRH/iQBf6suHFYq7PusQGZytriVu7feMT7QfDjquj3cn09aX9LURQ20+YgTzq3NhsZ14w=
+Message-ID: <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com>
+Date: Mon, 9 Jul 2007 01:20:51 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Flavio Curti" <lists.fcu@no-way.org>
+Subject: Re: panics with 16port Promise Supertrack EX Controller
+Cc: linux-kernel@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>
+In-Reply-To: <20070708225246.GD16285@no-way.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070706222651.GG5777@v2.random>
-User-Agent: Mutt/1.4.2.1i
+References: <20070708225246.GD16285@no-way.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 12:26:51AM +0200, Andrea Arcangeli wrote:
-> The xfs developers for example want to enlarge their filesystem
-> blocksize (the filesystem blocksize has a tradeoff similar to the
-> PAGE_SIZE, the larger the faster the filesystem but more disk space is
-> potentially wasted),
+Hi Flavio,
 
-I think you've misunderstood why large block sizes are important to
-XFS.  The major benefits to XFS of larger block size have almost
-nothing to do with data layout or in memory indexing - it comes from
-metadata btree's getting much broader and so we can search much
-larger spaces using the same number of seeks. It's metadata
-scalability that I'm concerned about here, not file data.
+On 09/07/07, Flavio Curti <lists.fcu@no-way.org> wrote:
+> Hello
+>
+> I have a problem with a server running 2.6.22rc4.
 
-IOWs, larger pages in the page cache are not directly related to
-improving data I/O performance of the filesystem, but to allow us
-to greatly improve metadata scalability of the filesystem by
-allowing us to increase the fundamental block size of the filesystem.
-This, in turn, improves the data I/O scalability of the filesystem.
+Jul  8 00:19:13 dorade.cyberlink.ch EFLAGS: 00210046   (2.6.22-rc7-dorade #1)
 
-And given that XFS has different metadata block sizes (even on 4k
-block size filesystems), it would be really handy to be able to
-allocate different sized large pages to match all those different
-block sizes so we could avoid having to play vmap() games....
+Is this a regression?
 
-> they also want to use the “normal” writeback
-> pagecache efficient behavior when using a writable fs on top of a
-> dvd-ram with an hardblocksize of 64k.
+> The machine panics
+> after some days of running fine, the machine inst heavy loaded.
+>
+> The Controller detects as stex device:
+>
+> scsi0 : stex
+> scsi 0:0:0:0: Direct-Access Promise 1X2 Mirror      1.10 PQ: 0 ANSI: 3
+> scsi 0:0:2:0: Direct-Access Promise  12+2 Disk RAID6  1.10 PQ: 0 ANSI: 3
+> scsi 0:0:16:0: Processor Promise RAID Console     1.00 PQ: 0 ANSI: 3
+> sd 0:0:0:0: [sda] 976642048 512-byte hardware sectors (500041 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> sd 0:0:0:0: [sda] 976642048 512-byte hardware sectors (500041 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sda: sda1 sda2
+> sd 0:0:0:0: [sda] Attached SCSI disk
+> sd 0:0:2:0: [sdb] Very big device.  Trying to use READ CAPACITY(16).
+> sd 0:0:2:0: [sdb] 11719704576 512-byte hardware sectors (6000489 MB)
+> sd 0:0:2:0: [sdb] Write Protect is off
+> sd 0:0:2:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> sd 0:0:2:0: [sdb] Very big device.  Trying to use READ CAPACITY(16).
+> sd 0:0:2:0: [sdb] 11719704576 512-byte hardware sectors (6000489 MB)
+> sd 0:0:2:0: [sdb] Write Protect is off
+> sd 0:0:2:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sdb: sdb1
+> sd 0:0:2:0: [sdb] Attached SCSI disk
+> sd 0:0:0:0: Attached scsi generic sg0 type 0
+> sd 0:0:2:0: Attached scsi generic sg1 type 0
+> scsi 0:0:16:0: Attached scsi generic sg2 type 3
+>
+> Im not sure where the problem is (controller/lvm/ext3), so if anyone has
+> an idea, Im happy to try it out...
 
-In this case "they" != "XFS developers" - you're lumping several
-different groups of ppl that want large pages for I/O into one
-group.
+kernel BUG at block/as-iosched.c:1084!
 
-This is where simply increasing the page size falls down - if you
-want to use large block size on your DVD drive (i.e. every desktop
-machine out there) you need to use (say) a 64k page size which is
-less than ideal for caching the kernel trees that you are currently
-compiling.
+BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[REQ_ASYNC]));
 
-e.g. I was recently asked what the downsides of moving from a 16k
-page to a 64k page size would be - the back-of-the-envelope
-calculations I did for a cached kernel tree showed it's foot-print
-increased from about 300MB to ~1.2GB of RAM because 80% of the files
-in the kernel tree I looked at were smaller than 16k and all that
-happened is we wasted much more memory on those files.  That's not
-what you want for your desktop, yet we would like 32-64k pages for
-the DVD drives.
+>
+> Thank you
+>
+> Flavio Curti
+>
+> --
+> http://no-way.org/~fcu/
+>
+>
 
-The point that seems to be ignored is that this is not a "one size
-fits all" type of problem.  This is why the variable page cache may
-be a better solution if the fragmentation issues can be solved.
-They've been solved before, so I don't see why they can't be solved
-again.
+Regards,
+Michal
 
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+LOG
+http://www.stardust.webpages.pl/log/
