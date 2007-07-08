@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbXGHURw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbXGHUW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757925AbXGHURw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 16:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXGHURm
+	id S1757556AbXGHUW1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 16:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbXGHUWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 16:17:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:28561 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756748AbXGHURl (ORCPT
+	Sun, 8 Jul 2007 16:22:21 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4396 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756284AbXGHUWU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 16:17:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M3i8CqLFrYx6xQi0GJs7U8wF6sZE6ZW7s3l2KFPBCMKGt/RUXK+22G8NPcPMd4ucpgg8FkJe+GGYBzIyhp3S32Ux0Fuzhl47nXU2VK3yMiLF/uMlGH4UubpG3jZNf9KV1kAsAu7qQv3knMfSMDq/5/T3ghzw6olQSgKsKgTb5Mc=
-Message-ID: <3efb10970707081317k22de079dr9a5cad6a42cf5b3b@mail.gmail.com>
-Date: Sun, 8 Jul 2007 22:17:40 +0200
-From: "Remy Bohmer" <l.pinguin@gmail.com>
-Reply-To: linux@bohmer.net
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: PI mutex support on ARM
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <20070708095841.GA4601@elte.hu>
+	Sun, 8 Jul 2007 16:22:20 -0400
+Date: Sun, 8 Jul 2007 16:22:19 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       <linux-kernel@vger.kernel.org>, <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+In-Reply-To: <200707082046.36864.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3efb10970707080124i7a9323c5o9257b4adcb2ac493@mail.gmail.com>
-	 <20070708095841.GA4601@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+On Sun, 8 Jul 2007, Rafael J. Wysocki wrote:
 
-> patch format problem: never diff the asm/ files, diff the asm-arm/ files.
-Yeah, of course, I know, I believe I made a real mess of this one ...
+> I'm all for changing this infrastructure, but in an organized way (ie. we
+> discuss what to do next, we do that and then we go to the next step) and in
+> the order that everyone will be comfortable with.
+> 
+> So, let's finish this thread and start over from discussing what needs to be
+> done, how (ie. in what order etc.) we are going to do that and who is going to
+> do what.  Shall we?
 
-> is it safe to do a get_user() with irqs off?
-rhetorical question ;-))
-I was wondering, Is it safe to use a normal spinlock here, like this?
+IMO we should start by using the new notifier chain and by implementing 
+a central "icebox" routine.  Then we can forbid device registration 
+during suspend.
 
-------- 8-< -------------
-	spin_lock(&futex_lock);
+It might also be a good idea to add a freezable keventd-like workqueue 
+specifically intended for things that need to block during a suspend.  
+Although maybe this will end up being unnecessary; it's too soon to 
+tell.
 
-	err = get_user(uval, uaddr);
-	if ((!err) && (uval == oldval))
-		err = put_user(newval, uaddr);
+Alan Stern
 
-	spin_unlock(&futex_lock);
-------- 8-< -------------
-
-> is this method of atomic ops SMP-safe?
-another rhetorical question ;-))
-Nope, I already knew that, that why I mentioned that it probably only
-worked on UP...
-
-Remy
