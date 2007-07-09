@@ -1,70 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbXGIHkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbXGIHyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753728AbXGIHkT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 03:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXGIHkH
+	id S1752813AbXGIHyJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 03:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXGIHx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 03:40:07 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:21129 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751205AbXGIHkG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 03:40:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=lTS80LeZj50rq8wnjN3AvIUNmeUrTGdbqzH3fwyEjjzjpM4s6ZOO6aTqkxSXU5XCNBW/d8NoP+SVCITZTSZKVsH0jf5bz//BjT0yufdfwx9xluCRkXrXzeAznMCz4J54lDepoCTdJB0L0IUCEUbxq2VwdBuSXx4tOjoQ6GcuTUI=  ;
-X-YMail-OSG: dKg7CtQVM1kbA4UuZVJL_FhFnxAc1DD5C2cN76_sjZU62h31XPzfHVeKEaRJ2wE.kXejiJMweA--
-Message-ID: <4691E64F.5070506@yahoo.com.au>
-Date: Mon, 09 Jul 2007 17:39:59 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 9 Jul 2007 03:53:58 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:46992 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbXGIHx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 03:53:57 -0400
+Message-ID: <4691E0C8.4070905@openvz.org>
+Date: Mon, 09 Jul 2007 11:16:24 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linux-mm@kvack.org, Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC/PATCH] Use mmu_gather for fork() instead of flush_tlb_mm()
-References: <1183952874.3388.349.camel@localhost.localdomain>	 <1183962981.5961.3.camel@localhost.localdomain> <1183963544.5961.6.camel@localhost.localdomain>
-In-Reply-To: <1183963544.5961.6.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Dave Hansen <haveblue@us.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Eric W Biederman <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>
+Subject: Re: [-mm PATCH 1/8] Memory controller resource counters (v2)
+References: <20070706052029.11677.16964.sendpatchset@balbir-laptop>	 <20070706052043.11677.56208.sendpatchset@balbir-laptop> <1183742642.10287.151.camel@localhost>
+In-Reply-To: <1183742642.10287.151.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> Use mmu_gather for fork() instead of flush_tlb_mm()
+Dave Hansen wrote:
+> On Thu, 2007-07-05 at 22:20 -0700, Balbir Singh wrote:
+>> +/*
+>> + * the core object. the container that wishes to account for some
+>> + * resource may include this counter into its structures and use
+>> + * the helpers described beyond
+>> + */
 > 
-> This patch uses an mmu_gather for copying page tables instead of
-> flush_tlb_mm(). This allows archs like ppc32 with hash table to
-> avoid walking the page tables a second time to invalidate hash
-> entries, and to only flush PTEs that have actually been changed
-> from RW to RO.
+> I'm going to nitpick a bit here.  Nothing major, I promise. ;)
 > 
-> Note that this contain a small change to the mmu gather stuff,
-> it must not call free_pages_and_swap_cache() if no page have been
-> queued up for freeing (if we are only invalidating PTEs). Calling
-> it on fork can deadlock (I haven't dug why but it looks like a
-> good idea to test anyway if we're going to use the mmu_gather for
-> more than just removing pages).
+> Could we make these comments into nice sentences with capitalization?  I
+> think it makes them easier to read in long comments.
 > 
-> If the patch gets accepted, I will split that bit from the rest
-> of the patch and send it separately.
+> How about something like this for the comment:
 > 
-> The main possible issue I see is with huge pages. Arch code might
-> have relied on flush_tlb_mm() and might not cope with
-> tlb_remove_tlb_entry() called for huge PTEs.
+> /*
+>  * A container wishing to account for a resource should include this
+>  * structure into one of its own.  It may use the helpers below.
+>  */
 > 
-> Other possible issues are if archs make assumptions about
-> flush_tlb_mm() being called in fork for different unrelated reasons.
+> The one above is worded a little bit strangely.
 > 
-> Ah also, we could probably improve the tracking of start/end, in
-> the case of lock breaking, the outside function will still finish
-> the batch with the entire range. It doesn't matter on ppc and x86
-> I think though.
+>> +struct res_counter {
+>> +	/*
+>> +	 * the current resource consumption level
+>> +	 */
+>> +	unsigned long usage;
+>> +	/*
+>> +	 * the limit that usage cannot exceed
+>> +	 */
+>> +	unsigned long limit;
+>> +	/*
+>> +	 * the number of insuccessful attempts to consume the resource
+>> +	 */
+> 
+> unsuccessful
+> 
+>> +	unsigned long failcnt;
+>> +	/*
+>> +	 * the lock to protect all of the above.
+>> +	 * the routines below consider this to be IRQ-safe
+>> +	 */
+>> +	spinlock_t lock;
+>> +};
+> 
+> Do we really need all of these comments?  Some of them are a wee bit
+> self-explanatory.  I think we mostly know what a limit is. ;)
 
-Would it be better off to start off with a new API for this? The
-mmu gather I think is traditionally entirely for dealing with
-page removal...
+Since this is a new entities in the kernel and not many people
+deal with the resource management, I think that nothing bad in
+having them.
 
--- 
-SUSE Labs, Novell Inc.
+page->_count, signal_struct->shared_pending, mm_struct->mm_users and
+others do not bother anyone with their comments either.
+
+>> +/*
+>> + * helpers to interact with userspace
+>> + * res_counter_read/_write - put/get the specified fields from the
+>> + * res_counter struct to/from the user
+>> + *
+>> + * @cnt:     the counter in question
+>> + * @member:  the field to work with (see RES_xxx below)
+>> + * @buf:     the buffer to opeate on,...
+>> + * @nbytes:  its size...
+>> + * @pos:     and the offset.
+>> + */
+>> +
+>> +ssize_t res_counter_read(struct res_counter *cnt, int member,
+>> +		const char __user *buf, size_t nbytes, loff_t *pos);
+>> +ssize_t res_counter_write(struct res_counter *cnt, int member,
+>> +		const char __user *buf, size_t nbytes, loff_t *pos);
+>> +
+>> +/*
+>> + * the field descriptors. one for each member of res_counter
+>> + */
+>> +
+>> +enum {
+>> +	RES_USAGE,
+>> +	RES_LIMIT,
+>> +	RES_FAILCNT,
+>> +};
+>> +
+
+[snip]
+
+>> diff -puN /dev/null kernel/res_counter.c
+>> --- /dev/null	2007-06-01 08:12:04.000000000 -0700
+>> +++ linux-2.6.22-rc6-balbir/kernel/res_counter.c	2007-07-05 13:45:17.000000000 -0700
+>> @@ -0,0 +1,121 @@
+>> +/*
+>> + * resource containers
+>> + *
+>> + * Copyright 2007 OpenVZ SWsoft Inc
+>> + *
+>> + * Author: Pavel Emelianov <xemul@openvz.org>
+>> + *
+>> + */
+>> +
+>> +#include <linux/types.h>
+>> +#include <linux/parser.h>
+>> +#include <linux/fs.h>
+>> +#include <linux/res_counter.h>
+>> +#include <linux/uaccess.h>
+>> +
+>> +void res_counter_init(struct res_counter *cnt)
+>> +{
+>> +	spin_lock_init(&cnt->lock);
+>> +	cnt->limit = (unsigned long)LONG_MAX;
+>> +}
+>> +
+>> +int res_counter_charge_locked(struct res_counter *cnt, unsigned long val)
+>> +{
+>> +	if (cnt->usage <= cnt->limit - val) {
+>> +		cnt->usage += val;
+>> +		return 0;
+>> +	}
+>> +
+>> +	cnt->failcnt++;
+>> +	return -ENOMEM;
+>> +}
+> 
+> More nitpicking...
+> 
+> Can we leave the normal control flow in the lowest indentation level,
+> and have only errors in the indented if(){} blocks?  Something like
+> this:
+
+As far as I know gcc usually makes the "true" branch to be 
+in the straight code flow and in general case this does not 
+trash the CPU pipeline.
+
+>> +int res_counter_charge_locked(struct res_counter *cnt, unsigned long
+> val)
+>> +{
+>> +	if (cnt->usage > cnt->limit - val) {
+>> +		cnt->failcnt++;
+>> +		return -ENOMEM;
+>> +	}
+>> +	cnt->usage += val;
+>> +	return 0;
+>> +}
+> 
+> Also, can you do my poor brain a favor an expand "cnt" to "counter"?
+> You're not saving _that_ much typing ;)
+
+Good catch. We use cnt for booth container and counter :)
+
+>> +int res_counter_charge(struct res_counter *cnt, unsigned long val)
+>> +{
+>> +	int ret;
+>> +	unsigned long flags;
+>> +
+>> +	spin_lock_irqsave(&cnt->lock, flags);
+>> +	ret = res_counter_charge_locked(cnt, val);
+>> +	spin_unlock_irqrestore(&cnt->lock, flags);
+>> +	return ret;
+>> +}
+>> +
+>> +void res_counter_uncharge_locked(struct res_counter *cnt, unsigned long val)
+>> +{
+>> +	if (unlikely(cnt->usage < val)) {
+>> +		WARN_ON(1);
+>> +		val = cnt->usage;
+>> +	}
+>> +
+>> +	cnt->usage -= val;
+>> +}
+> 
+> It actually looks like the WARN_ON() macros "return" values.  You should
+> be able to:
+> 
+> 	if (WARN_ON(cnt->usage < val))
+> 		val = count->usage;
+
+Oh.. I do not trust these macros actually. One day some guy will
+make CONFIG_OPTIMIZE_WARN_ON and will remove all these checks
+out. Consider me a paranoiac.
+
+>> +void res_counter_uncharge(struct res_counter *cnt, unsigned long val)
+>> +{
+>> +	unsigned long flags;
+>> +
+>> +	spin_lock_irqsave(&cnt->lock, flags);
+>> +	res_counter_uncharge_locked(cnt, val);
+>> +	spin_unlock_irqrestore(&cnt->lock, flags);
+>> +}
+>> +
+>> +
+>> +static inline unsigned long *res_counter_member(struct res_counter *cnt, int member)
+>> +{
+>> +	switch (member) {
+>> +	case RES_USAGE:
+>> +		return &cnt->usage;
+>> +	case RES_LIMIT:
+>> +		return &cnt->limit;
+>> +	case RES_FAILCNT:
+>> +		return &cnt->failcnt;
+>> +	};
+>> +
+>> +	BUG();
+>> +	return NULL;
+>> +}
+>>
+>> +ssize_t res_counter_read(struct res_counter *cnt, int member,
+>> +		const char __user *userbuf, size_t nbytes, loff_t *pos)
+>> +{
+>> +	unsigned long *val;
+>> +	char buf[64], *s;
+>> +
+>> +	s = buf;
+>> +	val = res_counter_member(cnt, member);
+>> +	s += sprintf(s, "%lu\n", *val);
+>> +	return simple_read_from_buffer((void __user *)userbuf, nbytes,
+>> +			pos, buf, s - buf);
+>> +}
+> 
+> Why do we need that cast?  
+
+simple_read_from_buffer do not take const char * as the 1st arg
+
+>> +ssize_t res_counter_write(struct res_counter *cnt, int member,
+>> +		const char __user *userbuf, size_t nbytes, loff_t *pos)
+>> +{
+>> +	int ret;
+>> +	char *buf, *end;
+>> +	unsigned long tmp, *val;
+>> +
+>> +	buf = kmalloc(nbytes + 1, GFP_KERNEL);
+> 
+> Do we need some checking on nbytes?  Is it sanitized before it gets
+> here?
+
+I think we need some kind of simple_strtol_from_user() and
+simple_strtol_to_user() instead. Since this code is the only user of
+it I didn't make a separate patch for these yet.
+
+>> +	ret = -ENOMEM;
+>> +	if (buf == NULL)
+>> +		goto out;
+>> +
+>> +	buf[nbytes] = 0;
+> 
+> Please use '\0'.  0 isn't a char. 
+>  
+>> +	ret = -EFAULT;
+>> +	if (copy_from_user(buf, userbuf, nbytes))
+>> +		goto out_free;
+>> +
+>> +	ret = -EINVAL;
+>> +	tmp = simple_strtoul(buf, &end, 10);
+>> +	if (*end != '\0')
+>> +		goto out_free;
+>> +
+>> +	val = res_counter_member(cnt, member);
+>> +	*val = tmp;
+>> +	ret = nbytes;
+>> +out_free:
+>> +	kfree(buf);
+>> +out:
+>> +	return ret;
+>> +}
+>> _
+>>
+> -- Dave
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
