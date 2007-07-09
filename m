@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbXGIQab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbXGIQat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbXGIQab (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbXGIQXv
+	id S1760068AbXGIQat (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbXGIQXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:23:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42028 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:23:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42032 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758101AbXGIQXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:23:49 -0400
+	id S1755447AbXGIQXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:23:50 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
 Cc: cluster-devel@redhat.com, David Teigland <teigland@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [DLM] canceling deadlocked lock
-Date: Mon,  9 Jul 2007 17:02:27 +0100
-Message-Id: <11839970324005-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [DLM] dumping master locks
+Date: Mon,  9 Jul 2007 17:02:28 +0100
+Message-Id: <1183997034982-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970302426-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970324005-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -39,175 +39,259 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183997026104-git-send-email-swhiteho@redhat.com>
  <11839970282009-git-send-email-swhiteho@redhat.com>
  <11839970302426-git-send-email-swhiteho@redhat.com>
+ <11839970324005-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Teigland <teigland@redhat.com>
 
-Add a function that can be used through libdlm by a system daemon to cancel
-another process's deadlocked lock.  A completion ast with EDEADLK is returned
-to the process waiting for the lock.
+Add a new debugfs file that dumps a compact list of mastered locks.
+This will be used by a userland daemon to collect state for deadlock
+detection.
+
+Also, for the existing function that prints all lock state, lock the rsb
+before going through the lock lists since they can be changing in the
+course of normal dlm activity.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
-index a7435a8..a006fa5 100644
---- a/fs/dlm/dlm_internal.h
-+++ b/fs/dlm/dlm_internal.h
-@@ -216,6 +216,7 @@ struct dlm_args {
- #define DLM_IFL_ENDOFLIFE	0x00200000
- #define DLM_IFL_WATCH_TIMEWARN	0x00400000
- #define DLM_IFL_TIMEOUT_CANCEL	0x00800000
-+#define DLM_IFL_DEADLOCK_CANCEL	0x01000000
- #define DLM_IFL_USER		0x00000001
- #define DLM_IFL_ORPHAN		0x00000002
+diff --git a/fs/dlm/debug_fs.c b/fs/dlm/debug_fs.c
+index 9e27a16..184be98 100644
+--- a/fs/dlm/debug_fs.c
++++ b/fs/dlm/debug_fs.c
+@@ -27,6 +27,8 @@ static struct dentry *dlm_root;
  
-diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index df91578..de943af 100644
---- a/fs/dlm/lock.c
-+++ b/fs/dlm/lock.c
-@@ -300,6 +300,11 @@ static void queue_cast(struct dlm_rsb *r, struct dlm_lkb *lkb, int rv)
- 		rv = -ETIMEDOUT;
+ struct rsb_iter {
+ 	int entry;
++	int master;
++	int header;
+ 	struct dlm_ls *ls;
+ 	struct list_head *next;
+ 	struct dlm_rsb *rsb;
+@@ -86,6 +88,8 @@ static int print_resource(struct dlm_rsb *res, struct seq_file *s)
+ 	struct dlm_lkb *lkb;
+ 	int i, lvblen = res->res_ls->ls_lvblen, recover_list, root_list;
+ 
++	lock_rsb(res);
++
+ 	seq_printf(s, "\nResource %p Name (len=%d) \"", res, res->res_length);
+ 	for (i = 0; i < res->res_length; i++) {
+ 		if (isprint(res->res_name[i]))
+@@ -152,6 +156,59 @@ static int print_resource(struct dlm_rsb *res, struct seq_file *s)
+ 		seq_printf(s, "\n");
  	}
- 
-+	if (rv == -DLM_ECANCEL && (lkb->lkb_flags & DLM_IFL_DEADLOCK_CANCEL)) {
-+		lkb->lkb_flags &= ~DLM_IFL_DEADLOCK_CANCEL;
-+		rv = -EDEADLK;
+  out:
++	unlock_rsb(res);
++	return 0;
++}
++
++static void print_master_lock(struct seq_file *s, struct dlm_lkb *lkb,
++			      struct dlm_rsb *r)
++{
++	struct dlm_user_args *ua;
++	unsigned int waiting = 0;
++	uint64_t xid = 0;
++
++	if (lkb->lkb_flags & DLM_IFL_USER) {
++		ua = (struct dlm_user_args *) lkb->lkb_astparam;
++		if (ua)
++			xid = ua->xid;
 +	}
 +
- 	lkb->lkb_lksb->sb_status = rv;
- 	lkb->lkb_lksb->sb_flags = lkb->lkb_sbflags;
- 
-@@ -4450,6 +4455,54 @@ int dlm_user_cancel(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
- 	return error;
- }
- 
-+int dlm_user_deadlock(struct dlm_ls *ls, uint32_t flags, uint32_t lkid)
++	if (lkb->lkb_timestamp)
++		waiting = jiffies_to_msecs(jiffies - lkb->lkb_timestamp);
++
++	/* id nodeid remid pid xid flags sts grmode rqmode time_ms len name */
++
++	seq_printf(s, "%x %d %x %u %llu %x %d %d %d %u %d \"%s\"\n",
++		   lkb->lkb_id,
++		   lkb->lkb_nodeid,
++		   lkb->lkb_remid,
++		   lkb->lkb_ownpid,
++		   (unsigned long long)xid,
++		   lkb->lkb_exflags,
++		   lkb->lkb_status,
++		   lkb->lkb_grmode,
++		   lkb->lkb_rqmode,
++		   waiting,
++		   r->res_length,
++		   r->res_name);
++}
++
++static int print_master_resource(struct dlm_rsb *r, struct seq_file *s)
 +{
 +	struct dlm_lkb *lkb;
-+	struct dlm_args args;
-+	struct dlm_user_args *ua;
-+	struct dlm_rsb *r;
-+	int error;
 +
-+	dlm_lock_recovery(ls);
-+
-+	error = find_lkb(ls, lkid, &lkb);
-+	if (error)
-+		goto out;
-+
-+	ua = (struct dlm_user_args *)lkb->lkb_astparam;
-+
-+	error = set_unlock_args(flags, ua, &args);
-+	if (error)
-+		goto out_put;
-+
-+	/* same as cancel_lock(), but set DEADLOCK_CANCEL after lock_rsb */
-+
-+	r = lkb->lkb_resource;
-+	hold_rsb(r);
 +	lock_rsb(r);
 +
-+	error = validate_unlock_args(lkb, &args);
-+	if (error)
-+		goto out_r;
-+	lkb->lkb_flags |= DLM_IFL_DEADLOCK_CANCEL;
++	list_for_each_entry(lkb, &r->res_grantqueue, lkb_statequeue)
++		print_master_lock(s, lkb, r);
 +
-+	error = _cancel_lock(r, lkb);
-+ out_r:
++	list_for_each_entry(lkb, &r->res_convertqueue, lkb_statequeue)
++		print_master_lock(s, lkb, r);
++
++	list_for_each_entry(lkb, &r->res_waitqueue, lkb_statequeue)
++		print_master_lock(s, lkb, r);
++
 +	unlock_rsb(r);
-+	put_rsb(r);
-+
-+	if (error == -DLM_ECANCEL)
-+		error = 0;
-+	/* from validate_unlock_args() */
-+	if (error == -EBUSY)
-+		error = 0;
-+ out_put:
-+	dlm_put_lkb(lkb);
-+ out:
-+	dlm_unlock_recovery(ls);
-+	return error;
-+}
-+
- /* lkb's that are removed from the waiters list by revert are just left on the
-    orphans list with the granted orphan locks, to be freed by purge */
- 
-diff --git a/fs/dlm/lock.h b/fs/dlm/lock.h
-index 99ab463..1720313 100644
---- a/fs/dlm/lock.h
-+++ b/fs/dlm/lock.h
-@@ -49,6 +49,7 @@ int dlm_user_cancel(struct dlm_ls *ls,  struct dlm_user_args *ua_tmp,
- 	uint32_t flags, uint32_t lkid);
- int dlm_user_purge(struct dlm_ls *ls, struct dlm_user_proc *proc,
- 	int nodeid, int pid);
-+int dlm_user_deadlock(struct dlm_ls *ls, uint32_t flags, uint32_t lkid);
- void dlm_clear_proc_locks(struct dlm_ls *ls, struct dlm_user_proc *proc);
- 
- static inline int is_master(struct dlm_rsb *r)
-diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index 329da1b..6438941 100644
---- a/fs/dlm/user.c
-+++ b/fs/dlm/user.c
-@@ -156,6 +156,7 @@ static int lkb_is_endoflife(struct dlm_lkb *lkb, int sb_status, int type)
- 		return 1;
- 	case -DLM_ECANCEL:
- 	case -ETIMEDOUT:
-+	case -EDEADLK:
- 		if (lkb->lkb_grmode == DLM_LOCK_IV)
- 			return 1;
- 		break;
-@@ -320,6 +321,22 @@ static int device_user_unlock(struct dlm_user_proc *proc,
- 	return error;
+ 	return 0;
  }
  
-+static int device_user_deadlock(struct dlm_user_proc *proc,
-+				struct dlm_lock_params *params)
+@@ -209,7 +266,7 @@ static struct rsb_iter *rsb_iter_init(struct dlm_ls *ls)
+ {
+ 	struct rsb_iter *ri;
+ 
+-	ri = kmalloc(sizeof *ri, GFP_KERNEL);
++	ri = kzalloc(sizeof *ri, GFP_KERNEL);
+ 	if (!ri)
+ 		return NULL;
+ 
+@@ -267,7 +324,17 @@ static int rsb_seq_show(struct seq_file *file, void *iter_ptr)
+ {
+ 	struct rsb_iter *ri = iter_ptr;
+ 
+-	print_resource(ri->rsb, file);
++	if (ri->master) {
++		if (ri->header) {
++			seq_printf(file, "id nodeid remid pid xid flags sts "
++					 "grmode rqmode time_ms len name\n");
++			ri->header = 0;
++		}
++		if (is_master(ri->rsb))
++			print_master_resource(ri->rsb, file);
++	} else {
++		print_resource(ri->rsb, file);
++	}
+ 
+ 	return 0;
+ }
+@@ -303,6 +370,83 @@ static const struct file_operations rsb_fops = {
+ };
+ 
+ /*
++ * Dump master lock state
++ */
++
++static struct rsb_iter *master_iter_init(struct dlm_ls *ls, loff_t *pos)
 +{
-+	struct dlm_ls *ls;
-+	int error;
++	struct rsb_iter *ri;
 +
-+	ls = dlm_find_lockspace_local(proc->lockspace);
-+	if (!ls)
-+		return -ENOENT;
++	ri = kzalloc(sizeof *ri, GFP_KERNEL);
++	if (!ri)
++		return NULL;
 +
-+	error = dlm_user_deadlock(ls, params->flags, params->lkid);
++	ri->ls = ls;
++	ri->entry = 0;
++	ri->next = NULL;
++	ri->master = 1;
 +
-+	dlm_put_lockspace(ls);
-+	return error;
++	if (*pos == 0)
++		ri->header = 1;
++
++	if (rsb_iter_next(ri)) {
++		rsb_iter_free(ri);
++		return NULL;
++	}
++
++	return ri;
 +}
 +
- static int create_misc_device(struct dlm_ls *ls, char *name)
- {
- 	int error, len;
-@@ -545,6 +562,14 @@ static ssize_t device_write(struct file *file, const char __user *buf,
- 		error = device_user_unlock(proc, &kbuf->i.lock);
- 		break;
- 
-+	case DLM_USER_DEADLOCK:
-+		if (!proc) {
-+			log_print("no locking on control device");
-+			goto out_sig;
-+		}
-+		error = device_user_deadlock(proc, &kbuf->i.lock);
-+		break;
++static void *master_seq_start(struct seq_file *file, loff_t *pos)
++{
++	struct rsb_iter *ri;
++	loff_t n = *pos;
 +
- 	case DLM_USER_CREATE_LOCKSPACE:
- 		if (proc) {
- 			log_print("create/remove only on control device");
-diff --git a/include/linux/dlm_device.h b/include/linux/dlm_device.h
-index f7b9b57..9642277 100644
---- a/include/linux/dlm_device.h
-+++ b/include/linux/dlm_device.h
-@@ -92,6 +92,7 @@ struct dlm_lock_result {
- #define DLM_USER_CREATE_LOCKSPACE  4
- #define DLM_USER_REMOVE_LOCKSPACE  5
- #define DLM_USER_PURGE        6
-+#define DLM_USER_DEADLOCK     7
++	ri = master_iter_init(file->private, pos);
++	if (!ri)
++		return NULL;
++
++	while (n--) {
++		if (rsb_iter_next(ri)) {
++			rsb_iter_free(ri);
++			return NULL;
++		}
++	}
++
++	return ri;
++}
++
++static struct seq_operations master_seq_ops = {
++	.start = master_seq_start,
++	.next  = rsb_seq_next,
++	.stop  = rsb_seq_stop,
++	.show  = rsb_seq_show,
++};
++
++static int master_open(struct inode *inode, struct file *file)
++{
++	struct seq_file *seq;
++	int ret;
++
++	ret = seq_open(file, &master_seq_ops);
++	if (ret)
++		return ret;
++
++	seq = file->private_data;
++	seq->private = inode->i_private;
++
++	return 0;
++}
++
++static const struct file_operations master_fops = {
++	.owner   = THIS_MODULE,
++	.open    = master_open,
++	.read    = seq_read,
++	.llseek  = seq_lseek,
++	.release = seq_release
++};
++
++/*
+  * dump lkb's on the ls_waiters list
+  */
  
- /* Arbitrary length restriction */
- #define MAX_LS_NAME_LEN 64
+@@ -369,6 +513,20 @@ int dlm_create_debug_file(struct dlm_ls *ls)
+ 		return -ENOMEM;
+ 	}
+ 
++	memset(name, 0, sizeof(name));
++	snprintf(name, DLM_LOCKSPACE_LEN+8, "%s_master", ls->ls_name);
++
++	ls->ls_debug_master_dentry = debugfs_create_file(name,
++							 S_IFREG | S_IRUGO,
++							 dlm_root,
++							 ls,
++							 &master_fops);
++	if (!ls->ls_debug_master_dentry) {
++		debugfs_remove(ls->ls_debug_waiters_dentry);
++		debugfs_remove(ls->ls_debug_rsb_dentry);
++		return -ENOMEM;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -378,6 +536,8 @@ void dlm_delete_debug_file(struct dlm_ls *ls)
+ 		debugfs_remove(ls->ls_debug_rsb_dentry);
+ 	if (ls->ls_debug_waiters_dentry)
+ 		debugfs_remove(ls->ls_debug_waiters_dentry);
++	if (ls->ls_debug_master_dentry)
++		debugfs_remove(ls->ls_debug_master_dentry);
+ }
+ 
+ int dlm_register_debugfs(void)
+diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
+index a006fa5..f2c8549 100644
+--- a/fs/dlm/dlm_internal.h
++++ b/fs/dlm/dlm_internal.h
+@@ -470,6 +470,7 @@ struct dlm_ls {
+ 
+ 	struct dentry		*ls_debug_rsb_dentry; /* debugfs */
+ 	struct dentry		*ls_debug_waiters_dentry; /* debugfs */
++	struct dentry		*ls_debug_master_dentry; /* debugfs */
+ 
+ 	wait_queue_head_t	ls_uevent_wait;	/* user part of join/leave */
+ 	int			ls_uevent_result;
 -- 
 1.5.1.2
 
