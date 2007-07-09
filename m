@@ -1,89 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbXGIIr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbXGIIt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753611AbXGIIr6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 04:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbXGIIrt
+	id S1754513AbXGIIt7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 04:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXGIItw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 04:47:49 -0400
-Received: from web32605.mail.mud.yahoo.com ([68.142.207.232]:22842 "HELO
-	web32605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751316AbXGIIrt (ORCPT
+	Mon, 9 Jul 2007 04:49:52 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:42779 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbXGIItv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 04:47:49 -0400
-X-YMail-OSG: tX3qQ1IVM1lCtNjpeYf.nh9osZLNFgBlt_Y4IH43EfDhs9JfKLd6VqCOpe.jmDztblHPniZ62MHm_OB.45UrWzOZLg--
-X-RocketYMMF: knobi.rm
-Date: Mon, 9 Jul 2007 01:47:48 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Reply-To: spamtrap@knobisoft.de
-Subject: Re: Understanding I/O behaviour
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <9a8748490707081428p11a9b728m8cec7cc2a122d907@mail.gmail.com>
+	Mon, 9 Jul 2007 04:49:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bHUGpqDzESX9IgldVKxL37Xnxgg1lkmglO+dsFYLujnMwCwt8gGNc0nWPQat60oEOfqYgSB4kJL/Y3gU6XqklL0JETJWbjFcRCWeMZ4mjF9G0ECxVp/3wPB3QexN414QlVaEByaZVf7d62HdZl7kBtD9/SSn1nKJM/mjK61uFQc=
+Message-ID: <ca35ce500707090149x78a424f6t9d687893c0d657f6@mail.gmail.com>
+Date: Mon, 9 Jul 2007 10:49:49 +0200
+From: mikie <mikie.pl@gmail.com>
+To: "Indan Zupancic" <indan@nul.nu>
+Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
+Cc: "Duncan Sands" <duncan.sands@math.u-psud.fr>, linux-kernel@vger.kernel.org
+In-Reply-To: <58019.81.207.0.53.1183749400.squirrel@secure.samage.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <212660.59998.qm@web32605.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
+	 <200707061620.44348.duncan.sands@math.u-psud.fr>
+	 <58019.81.207.0.53.1183749400.squirrel@secure.samage.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Jesper Juhl <jesper.juhl@gmail.com> wrote:
-
-> On 05/07/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> > On 05/07/07, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
-> > > Hi,
-> > >
+2007/7/6, Indan Zupancic <indan@nul.nu>:
+> On Fri, July 6, 2007 16:20, Duncan Sands wrote:
+> > On Friday 6 July 2007 14:54:18 mikie wrote:
+> >> Hi,
+> >>
+> >> I experience some problems with the speedtch.c module, especially in
+> >> regards to its firmware loader.
+> >> I am not quite sure if this module is going to load the firmware
+> >> itself or does it use some external software to do that ?
 > >
-> > I'd suspect you can't get both at 100%.
-> >
-> > I'd guess you are probably using a 100Hz no-preempt kernel.  Have
-> you
-> > tried a 1000Hz + preempt kernel?   Sure, you'll get a bit lower
-> > overall throughput, but interactive responsiveness should be better
-> -
-> > if it is, then you could experiment with various combinations of
-> > CONFIG_PREEMPT, CONFIG_PREEMPT_VOLUNTARY, CONFIG_PREEMPT_NONE and
-> > CONFIG_HZ_1000, CONFIG_HZ_300, CONFIG_HZ_250, CONFIG_HZ_100 to see
-> > what gives you the best balance between throughput and interactive
-> > responsiveness (you could also throw CONFIG_PREEMPT_BKL and/or
-> > CONFIG_NO_HZ, but I don't think the impact will be as significant
-> as
-> > with the other options, so to keep things simple I'd leave those
-> out
-> > at first) .
-> >
-> > I'd guess that something like CONFIG_PREEMPT_VOLUNTARY +
-> CONFIG_HZ_300
-> > would probably be a good compromise for you, but just to see if
-> > there's any effect at all, start out with CONFIG_PREEMPT +
-> > CONFIG_HZ_1000.
-> >
-> 
-> I'm currious, did you ever try playing around with CONFIG_PREEMPT*
-> and
-> CONFIG_HZ* to see if that had any noticable impact on interactive
-> performance and stuff like logging into the box via ssh etc...?
-> 
-> -- 
-> Jesper Juhl <jesper.juhl@gmail.com>
-> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-> Plain text mails only, please      http://www.expita.com/nomime.html
-> 
-> 
-Hi Jesper,
+> > It loads it itself, using some external software!
+>
+> For information, it generates a hotplug event and the kernel calls the
+> program written at /proc/sys/kernel/hotplug with certain information.
+> That used to be /sbin/hotplug, became later udev, but today in general
+> udev reads the uevents generated by the kernel.
 
- my initial kernel was voluntary@100HZ. I have switched to 300HZ, but
-have not observed much difference. The config is now:
+On my system the /proc/sys/kernel/hotplug points to /sbin/hotplug.
+I copied your script to /sbin/hotplug and also added simple logging,
+so I can see whenever the script is being started. It turns out that
+the script is not started at all by the kernel...
 
-config-2.6.22-rc7:# CONFIG_PREEMPT_NONE is not set
-config-2.6.22-rc7:CONFIG_PREEMPT_VOLUNTARY=y
-config-2.6.22-rc7:# CONFIG_PREEMPT is not set
-config-2.6.22-rc7:CONFIG_PREEMPT_BKL=y
+I am afraid that the kernel generates uevents only, could this be true?
 
-Cheers
+The timeout value in /sys/class/firmware/timeout is 60 and it seems to
+be working correctly (see logs with exactly 1 minute delay before next
+find_firmware event)
+As I check the debug log I can see some uevents :
 
+Jul  9 09:03:19 srv kernel: speedtch 1-2:1.0: usbatm_usb_probe: using
+3392 byte buffer for rx channel 0xc5577ca0
+Jul  9 09:03:19 srv kernel: speedtch 1-2:1.0: usbatm_usb_probe: using
+3392 byte buffer for tx channel 0xc5577ce8
+Jul  9 09:03:19 srv kernel: speedtch 1-2:1.0: speedtch_find_firmware:
+looking for speedtch-1.bin.2.00
+Jul  9 09:03:19 srv kernel: DEV: registering device: ID = '1-2:1.0'
+Jul  9 09:03:19 srv kernel: PM: Adding info for No Bus:1-2:1.0
+Jul  9 09:03:19 srv kernel: dev_uevent: class uevent() returned -19
+Jul  9 09:03:19 srv kernel: bound device '1-2:1.0' to driver 'speedtch'
+Jul  9 09:03:19 srv kernel: usb: Bound Device 1-2:1.0 to Driver speedtch
+Jul  9 09:04:07 srv kernel: drivers/usb/atm/speedtch.c: speedtch_usb_cleanup
+Jul  9 09:04:07 srv kernel: bus usb: remove driver speedtch
+Jul  9 09:04:07 srv kernel: speedtch 1-2:1.0: usbatm_usb_disconnect entered
+Jul  9 09:04:19 srv kernel: DEV: Unregistering device. ID = '1-2:1.0'
+Jul  9 09:04:19 srv kernel: PM: Removing info for No Bus:1-2:1.0
+Jul  9 09:04:19 srv kernel: speedtch 1-2:1.0: speedtch_find_firmware:
+looking for speedtch-1.bin.2
+Jul  9 09:04:19 srv kernel: DEV: registering device: ID = '1-2:1.0'
+Jul  9 09:04:19 srv kernel: PM: Adding info for No Bus:1-2:1.0
+Jul  9 09:04:19 srv kernel: dev_uevent: class uevent() returned -19
+Jul  9 09:05:19 srv kernel: DEV: Unregistering device. ID = '1-2:1.0'
+Jul  9 09:05:19 srv kernel: PM: Removing info for No Bus:1-2:1.0
+Jul  9 09:05:19 srv kernel: speedtch 1-2:1.0: speedtch_find_firmware:
+looking for speedtch-1.bin
+Jul  9 09:05:19 srv kernel: DEV: registering device: ID = '1-2:1.0'
+Jul  9 09:05:19 srv kernel: PM: Adding info for No Bus:1-2:1.0
+Jul  9 09:05:19 srv kernel: dev_uevent: class uevent() returned -19
+Jul  9 09:06:19 srv kernel: DEV: Unregistering device. ID = '1-2:1.0'
+Jul  9 09:06:19 srv kernel: PM: Removing info for No Bus:1-2:1.0
+Jul  9 09:06:19 srv kernel: speedtch 1-2:1.0: speedtch_unbind entered
+Jul  9 09:06:19 srv kernel: speedtch 1-2:1.1: usbatm_usb_disconnect entered
+Jul  9 09:06:19 srv kernel: speedtch 1-2:1.1: usbatm_usb_disconnect:
+NULL instance!
 
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
+Mostly I think I should be worried about "dev_uevent: class uevent()
+returned -19".
+It sounds like the uevent failed? I do not have udevd, but still I
+thought that in such case the kernel will use the script from
+/proc/sys/kernel/hotplug but apparently it does not. Is there any
+config option to choose between udev or hotplug in the kernel source ?
+
+Regards,
+MK
