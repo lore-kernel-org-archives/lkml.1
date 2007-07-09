@@ -1,47 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbXGIWML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbXGIWUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760145AbXGIWML (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 18:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXGIWL7
+	id S1756552AbXGIWUH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 18:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbXGIWT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 18:11:59 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:15451 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754198AbXGIWL6 (ORCPT
+	Mon, 9 Jul 2007 18:19:56 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:48162 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754368AbXGIWT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 18:11:58 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CABZPkkarR7PD/2dsb2JhbAA
-X-IronPort-AV: i="4.16,519,1175497200"; 
-   d="scan'208"; a="179147426:sNHT3578356008"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 00/13] IB/ehca: eHCA2 enablement & some fixes
-X-Message-Flag: Warning: May contain useful information
-References: <200707091502.22407.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 09 Jul 2007 15:11:42 -0700
-In-Reply-To: <200707091502.22407.fenkes@de.ibm.com> (Joachim Fenkes's message of "Mon, 9 Jul 2007 15:02:21 +0200")
-Message-ID: <adak5t9w7kx.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Mon, 9 Jul 2007 18:19:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QO+/gDwvC/XUmb2LGm0XBmu9RmcvEfzJ2tT39ONQ/G59OETyZr2LjGHCu6bx3ERCAQML4Fmwoq9Gdf7BHAfg8CownSg0/gAnv3XvT3roTYLGWnyFC/adhyjVGb9xK4gJQTrQDXXo5SzZC9OTbjKsq1LVB/4CWLOgUA8L2l3NSLA=
+Message-ID: <9a8748490707091519g3a0a098dx1e9188083c5a74b4@mail.gmail.com>
+Date: Tue, 10 Jul 2007 00:19:54 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Charles Shannon Hendrix" <shannon@widomaker.com>
+Subject: Re: BUG: kernel crash report, odd...
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070709220848.GA6782@widomaker.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Jul 2007 22:11:42.0531 (UTC) FILETIME=[21616930:01C7C276]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070709220848.GA6782@widomaker.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, I applied these for 2.6.23 and fixed a bunch of minor things
-that scripts/checkpatch.pl complained about (since I was in a mood to
-do mindless things).  In the future please run that yourself and clean
-up the obvious things.  I generally don't worry about the 80 column
-stuff, but it will catch most whitespace problems and tell you that
-foo(x,y) should be foo(x, y) etc.  So you don't have to completely
-silence the script but at least take a look at the output.
+On 10/07/07, Charles Shannon Hendrix <shannon@widomaker.com> wrote:
+>
+> A system I was using a few minutes ago dumped this to the syslog:
+>
+> Jul  9 17:50:38 daydream kernel: [76022.613000] BUG: unable to handle
+> kernel NUL
+> L pointer dereference at virtual address 00000010
+> Jul  9 17:50:38 daydream kernel: [76022.613000]  printing eip:
+> Jul  9 17:50:38 daydream kernel: [76022.613000] c01ace66
+> Jul  9 17:50:38 daydream kernel: [76022.613000] *pde = 00000000
+> Jul  9 17:50:38 daydream kernel: [76022.613000] Oops: 0000 [#1]
+>
+>
+> There was no other information either before or after.
+>
+> What I saw was my KDE desktop stopped responding to events.
+>
+> Machine didn't respond to power switch.
+>
+> Unfortunately, that's all I know.
+>
+> In the past when I had bugs like this, I got a fairly extensive kernel
+> error message, but this time the above is the only thing I saw.
+>
+It does look a little short... probably the rest just didn't make it to disk...
+
+> I have not had kernel bugs like this until I started running 2.6.20 on a
+> new Kubuntu install.
+>
+> Same hardware, but Slackware and my own custom 2.6.19 kernel never
+> crashed.
+>
+Different kernel source version, different configuration, probably
+different compiler, Slackware doesn't patch the vanilla kernel - I
+believe (k)ubuntu does.   All in all that equals a significantly
+different kernel binary you have been running in those two cases.
+
+> Is there anything I can do, in case this happens again, to try and
+> capture more information?
+>
+0. Make sure the kernels loglevel is set so that you get all messages.
+
+1. Make sure syslog is setup to capture all kernel messages, both
+errors, warnings, notices, debug messages etc.
+
+2. If you can, check output of 'dmesg' instead of just what made it to syslog.
+
+3. If you have a second PC, setup serial console or netconsole to
+capture kernel messages on that second box. This can sometimes capture
+messages that don't make it to disk.
+
+4. Build a custom kernel with some (or all) of the debug options under
+the Kernel Hacking menu enabled.
+
+5. Even when the system hangs you may in some cases be able to get
+some info (or just sync the disks and do a reboot) via magic sysrq.
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
