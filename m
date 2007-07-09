@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbXGIR6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbXGIR7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759593AbXGIR6a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 13:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbXGIR6Y
+	id S1759689AbXGIR7r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 13:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXGIR7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 13:58:24 -0400
-Received: from xenotime.net ([66.160.160.81]:34616 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754710AbXGIR6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 13:58:23 -0400
-Date: Mon, 9 Jul 2007 11:01:51 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] docbook: don't reference file without kernel-doc
-Message-Id: <20070709110151.1189b7fc.rdunlap@xenotime.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jul 2007 13:59:40 -0400
+Received: from styx.suse.cz ([82.119.242.94]:41816 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754469AbXGIR7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 13:59:40 -0400
+Date: Mon, 9 Jul 2007 20:14:43 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kirill Korotaev <dev@openvz.org>, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Lost JBD fix
+Message-ID: <20070709181443.GF30433@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="rwEMma7ioTxnRzrJ"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Remove include/linux/rmap.h from kernel-api.tmpl since it no longer
-contains kernel-doc.  Fixes this warning:
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Warning(linux-2.6.22//include/linux/rmap.h): no structured comments found
+  Hi Andrew,
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/DocBook/kernel-api.tmpl |    1 -
- 1 file changed, 1 deletion(-)
+  it seems we've accidentally lost one JBD fix (probably it was my mistake
+when rediffing some checkpointing changes) as Kirill has noted. A transaction
+can currently be released when there are still some buffers on one of its
+checkpointing lists. Attached patch should fix it (it still seems to apply
+fine). Please apply it. Thanks.
 
---- linux-2.6.22.orig/Documentation/DocBook/kernel-api.tmpl
-+++ linux-2.6.22/Documentation/DocBook/kernel-api.tmpl
-@@ -157,7 +157,6 @@ X!Ilib/string.c
- !Earch/i386/lib/usercopy.c
-      </sect1>
-      <sect1><title>More Memory Management Functions</title>
--!Iinclude/linux/rmap.h
- !Emm/readahead.c
- !Emm/filemap.c
- !Emm/memory.c
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
+
+--rwEMma7ioTxnRzrJ
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="jbd-2.6.16-rc1-2-commit_remove_trans_fix.diff"
+
+We have to check that also the second checkpoint list is non-empty before
+dropping the transaction.
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.16-rc1/fs/jbd/commit.c linux-2.6.16-rc1-1-checkpoint-fix/fs/jbd/commit.c
+--- linux-2.6.16-rc1/fs/jbd/commit.c	2006-01-15 00:20:12.000000000 +0100
++++ linux-2.6.16-rc1-1-checkpoint-fix/fs/jbd/commit.c	2006-01-17 23:35:19.000000000 +0100
+@@ -829,7 +829,8 @@ restart_loop:
+ 	journal->j_committing_transaction = NULL;
+ 	spin_unlock(&journal->j_state_lock);
+ 
+-	if (commit_transaction->t_checkpoint_list == NULL) {
++	if (commit_transaction->t_checkpoint_list == NULL &&
++	    commit_transaction->t_checkpoint_io_list == NULL) {
+ 		__journal_drop_transaction(journal, commit_transaction);
+ 	} else {
+ 		if (journal->j_checkpoint_transactions == NULL) {
+
+--rwEMma7ioTxnRzrJ--
