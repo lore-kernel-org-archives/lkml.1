@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764137AbXGKNOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764820AbXGKNOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764137AbXGKNOJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 09:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761975AbXGKNNz
+	id S1764820AbXGKNOZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 09:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763091AbXGKNN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 09:13:55 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1592 "EHLO spitz.ucw.cz"
+	Wed, 11 Jul 2007 09:13:57 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1591 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759096AbXGKNNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 09:13:54 -0400
-Date: Mon, 9 Jul 2007 13:29:05 +0000
+	id S1761371AbXGKNNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 09:13:55 -0400
+Date: Mon, 9 Jul 2007 19:36:04 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: sysrq-t dumps of s2ram/fuse deadlock (was Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-Message-ID: <20070709132905.GA5212@ucw.cz>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707031456.36027.rjw@sisk.pl>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
+       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+Message-ID: <20070709193603.GA5722@ucw.cz>
+References: <20070705194909.337398431@intel.com> <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200707031456.36027.rjw@sisk.pl>
+In-Reply-To: <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-Can we get them? They are neccessary for debugging 'what in suspend
-calls fuse' problem. And yes, that problem is there even when you
-remove freezer.
+> This patch will modify the scsi subsystem to allow
+> users to set a power management policy for the link.
+> 
+> The scsi subsystem will create a new sysfs file for each
+> host in /sys/class/scsi_host called "link_power_management_policy".
+> This file can have 3 possible values:
+> 
+> Value		Meaning
+> -------------------------------------------------------------------
+> min_power	User wishes the link to conserve power as much as
+> 		possible, even at the cost of some performance
+> 
+> max_performance User wants priority to be on performance, not power
+> 		savings
+> 
+> medium_power	User wants power savings, with less performance cost
+> 		than min_power (but less power savings as well).
 
-Matthew, you seem to be the only one able to produce them...
+Has that anything to do with HIPM vs. DIPM? 
+
 							Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
