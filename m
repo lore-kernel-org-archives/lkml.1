@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760619AbXGIWJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbXGIWML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760619AbXGIWJB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 18:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756652AbXGIWIw
+	id S1760145AbXGIWML (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 18:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXGIWL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 18:08:52 -0400
-Received: from wilma.widomaker.com ([204.17.220.5]:2264 "EHLO
-	wilma.widomaker.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757320AbXGIWIv (ORCPT
+	Mon, 9 Jul 2007 18:11:59 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:15451 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbXGIWL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 18:08:51 -0400
-Date: Mon, 9 Jul 2007 18:08:49 -0400
-To: linux-kernel@vger.kernel.org
-Subject: BUG: kernel crash report, odd...
-Message-ID: <20070709220848.GA6782@widomaker.com>
+	Mon, 9 Jul 2007 18:11:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CABZPkkarR7PD/2dsb2JhbAA
+X-IronPort-AV: i="4.16,519,1175497200"; 
+   d="scan'208"; a="179147426:sNHT3578356008"
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 00/13] IB/ehca: eHCA2 enablement & some fixes
+X-Message-Flag: Warning: May contain useful information
+References: <200707091502.22407.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 09 Jul 2007 15:11:42 -0700
+In-Reply-To: <200707091502.22407.fenkes@de.ibm.com> (Joachim Fenkes's message of "Mon, 9 Jul 2007 15:02:21 +0200")
+Message-ID: <adak5t9w7kx.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: shannon@widomaker.com (Charles Shannon Hendrix)
+X-OriginalArrivalTime: 09 Jul 2007 22:11:42.0531 (UTC) FILETIME=[21616930:01C7C276]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-A system I was using a few minutes ago dumped this to the syslog:
-
-Jul  9 17:50:38 daydream kernel: [76022.613000] BUG: unable to handle
-kernel NUL
-L pointer dereference at virtual address 00000010
-Jul  9 17:50:38 daydream kernel: [76022.613000]  printing eip:
-Jul  9 17:50:38 daydream kernel: [76022.613000] c01ace66
-Jul  9 17:50:38 daydream kernel: [76022.613000] *pde = 00000000
-Jul  9 17:50:38 daydream kernel: [76022.613000] Oops: 0000 [#1]
-
-
-There was no other information either before or after.
-
-What I saw was my KDE desktop stopped responding to events.
-
-Machine didn't respond to power switch.
-
-Unfortunately, that's all I know.
-
-In the past when I had bugs like this, I got a fairly extensive kernel
-error message, but this time the above is the only thing I saw.
-
-I have not had kernel bugs like this until I started running 2.6.20 on a
-new Kubuntu install.
-
-Same hardware, but Slackware and my own custom 2.6.19 kernel never
-crashed.
-
-Is there anything I can do, in case this happens again, to try and
-capture more information?
-
--- 
-shannon           | An Irishman is never drunk as long as he can hold onto 
-                  | one blade of grass and not fall off the face of the earth.
+thanks, I applied these for 2.6.23 and fixed a bunch of minor things
+that scripts/checkpatch.pl complained about (since I was in a mood to
+do mindless things).  In the future please run that yourself and clean
+up the obvious things.  I generally don't worry about the 80 column
+stuff, but it will catch most whitespace problems and tell you that
+foo(x,y) should be foo(x, y) etc.  So you don't have to completely
+silence the script but at least take a look at the output.
