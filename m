@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbXGIBAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbXGIBM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758677AbXGIBAe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 21:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbXGIBA0
+	id S1758662AbXGIBM3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 21:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbXGIBMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 21:00:26 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:15087 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbXGIBAZ (ORCPT
+	Sun, 8 Jul 2007 21:12:20 -0400
+Received: from smtp151.iad.emailsrvr.com ([207.97.245.151]:40994 "EHLO
+	smtp151.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016AbXGIBMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 21:00:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RH5dg5bu8J2+tbQAxmU2wgr5Qxv9PiopKpsVMApbvYCORHNT43z3ZbJ9wzLOdz7VJ0ikUffxrC9fo/DouTxtcOZwRg5JInYRAaQ3TYEuLGQOFoS3BhpUJ44kzwAO2PVGt/yXRW1/8eAjoOUu70DNyuRCF1p4ThowyzoxlIeMMXU=
-Message-ID: <41840b750707081800g1465eeeet12365fed84241c29@mail.gmail.com>
-Date: Sun, 8 Jul 2007 21:00:24 -0400
-From: "Shem Multinymous" <multinymous@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: [Hdaps-devel] [PATCH] hdaps - switch to using input-polldev
-Cc: hdaps-devel@lists.sourceforge.net, rlove@rlove.org,
-       "Linux Kernel ML" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Michael Riepe" <michael@mr511.de>,
-       "Henrique de Moraes Holschuh" <hmh@debian.org>
-In-Reply-To: <200705252354.43730.dtor@insightbb.com>
+	Sun, 8 Jul 2007 21:12:20 -0400
+Message-ID: <46918B1C.9030604@gentoo.org>
+Date: Sun, 08 Jul 2007 21:10:52 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       zwane@infradead.org, Andi Kleen <ak@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Antonino A. Daplas" <adaplas@pol.net>
+Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
+ mode
+References: <4678191D.76E4.0078.0@novell.com>	<4686D85B.6090803@gentoo.org>	<20070630154230.4ad373fa.akpm@linux-foundation.org>	<4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org>
+In-Reply-To: <20070708111404.1486e73c.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705252354.43730.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/25/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> HWMON: hdaps - convert to use input-polldev.
->
-> Switch to using input-polldev skeleton instead of implementing
-> polling loop by itself. This also fixes problem with trylock
-> on a mutex in atomic context.
->
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Andrew Morton wrote:
+>>> Well drat.  I didn't merge the patch because it conflicts with
+>>> git-newsetup, and Peter believes that git-newsetup already contains an
+>>> equivalent fix.  Testing 2.6.22-rc6-mm1 would confirm that.  Please.
+>> 2.6.22-rc6-mm1 has the same problem (it is not fixed there).
+>>
+> 
+> Well damn, we've let this slide for too long.
+> 
+> Guys, 2.6.22 is days away.  Do we think that the below is safe to merge
+> now?
+> 
+> Add Daniel, this does fix things for you, doesn't it?
 
-There's a couple of inherent problems with this patch (now in -mm).
+I don't have the issue, I'm just proxying for a bug reporter on the 
+Gentoo bugzilla. According to him, Jan's patch does solve the problem:
 
-First, the hdaps driver regularly polls the embedded controller, which
-in turns regularly polls the hardware. If the two polling rates differ
-or fluctuate, we lose events. AFAICT, the delayed workqueues used by
-input-polldev can get very laggy under load. That's very bad for
-sensitive clients like hdapsd (the hard disk shock protection daemon).
+https://bugs.gentoo.org/show_bug.cgi?id=181067#c8
 
-Second, this is incompatible with the much-needed addition of a 2nd
-input device relying on the same data. The existing hdaps input device
-does "joystick emulation", i.e., reports values after calibration and
-fuzzing. Userspace programs that need the raw data, like hdapsd,
-currently have to poll the sysfs attribute, which is inefficient,
-lag-prone and induces unnecessary interrupts on tickless sytems. To
-solve this we'll have to add a 2nd input device to hdaps, for
-reporting the raw accelerometer data. (Michael Riepe and me are now
-working on such a patch.) But these two input devices need to share
-their polling of the underlying EC hardware, and this is impossible
-using input-polldev.
+Thanks,
+Daniel
 
-Since this patch will  degrade accuracy and will eventually be
-reverted anyway, I suggest retracting it.
-
-As for the mutex in atomic context issue, isn't it best addressed by
-making mutex_trylock() do the sensible thing in softirqt?
-
-  Shem
