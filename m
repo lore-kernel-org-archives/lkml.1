@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbXGIA5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbXGIBAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758637AbXGIA5n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 20:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbXGIA5g
+	id S1758677AbXGIBAe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 21:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbXGIBA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 20:57:36 -0400
-Received: from smtpout.mac.com ([17.250.248.173]:65179 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753653AbXGIA5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 20:57:35 -0400
-In-Reply-To: <1183941217.3388.324.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org> <1183929611.3388.303.camel@localhost.localdomain> <200707090006.32712.rjw@sisk.pl> <1183941217.3388.324.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FFA29D56-3400-4EA3-8CE8-C1EF75484510@mac.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+	Sun, 8 Jul 2007 21:00:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:15087 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbXGIBAZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 21:00:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RH5dg5bu8J2+tbQAxmU2wgr5Qxv9PiopKpsVMApbvYCORHNT43z3ZbJ9wzLOdz7VJ0ikUffxrC9fo/DouTxtcOZwRg5JInYRAaQ3TYEuLGQOFoS3BhpUJ44kzwAO2PVGt/yXRW1/8eAjoOUu70DNyuRCF1p4ThowyzoxlIeMMXU=
+Message-ID: <41840b750707081800g1465eeeet12365fed84241c29@mail.gmail.com>
+Date: Sun, 8 Jul 2007 21:00:24 -0400
+From: "Shem Multinymous" <multinymous@gmail.com>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Subject: Re: [Hdaps-devel] [PATCH] hdaps - switch to using input-polldev
+Cc: hdaps-devel@lists.sourceforge.net, rlove@rlove.org,
+       "Linux Kernel ML" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, "Michael Riepe" <michael@mr511.de>,
+       "Henrique de Moraes Holschuh" <hmh@debian.org>
+In-Reply-To: <200705252354.43730.dtor@insightbb.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Sun, 8 Jul 2007 20:57:29 -0400
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+Content-Disposition: inline
+References: <200705252354.43730.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 08, 2007, at 20:33:37, Benjamin Herrenschmidt wrote:
->>  	drivers_sysfs_write()
->> 		while(!suspend_trylock())
->> 			try_to_icebox() --> or even try_to_freeze(), what's the  
->> difference?
->>
->>  		hit hardware
->> 		unlock_suspend()
->>
->> where the PM core must wait for the suspend lock to get released  
->> (say with a timeout)?
+On 5/25/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+> HWMON: hdaps - convert to use input-polldev.
 >
-> Somewhat. What I'd like is to have that a construct of that sort on  
-> a per-driver basis though :-) Now the question is, in what way  
-> would the above be different from a simple suspend mutex ? I've  
-> been using mutexes in the past for a couple of drivers (iirc,  
-> that's how I did it for dmasound_pmac, though that driver is long  
-> past obsolescence now).
+> Switch to using input-polldev skeleton instead of implementing
+> polling loop by itself. This also fixes problem with trylock
+> on a mutex in atomic context.
+>
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 
-I agree completely.  It's a bit trickier if you want to do work in  
-uninterruptable contexts:
+There's a couple of inherent problems with this patch (now in -mm).
 
-driver_suspend_callback(...)
-{
-	dev_suspend_lock(dev);
-	put_hardware_to_sleep(dev);
-}
+First, the hdaps driver regularly polls the embedded controller, which
+in turns regularly polls the hardware. If the two polling rates differ
+or fluctuate, we lose events. AFAICT, the delayed workqueues used by
+input-polldev can get very laggy under load. That's very bad for
+sensitive clients like hdapsd (the hard disk shock protection daemon).
 
-driver_resume_callback(...)
-{
-	wake_hardware_up(dev);
-	dev_suspend_unlock(dev);
-}
+Second, this is incompatible with the much-needed addition of a 2nd
+input device relying on the same data. The existing hdaps input device
+does "joystick emulation", i.e., reports values after calibration and
+fuzzing. Userspace programs that need the raw data, like hdapsd,
+currently have to poll the sysfs attribute, which is inefficient,
+lag-prone and induces unnecessary interrupts on tickless sytems. To
+solve this we'll have to add a 2nd input device to hdaps, for
+reporting the raw accelerometer data. (Michael Riepe and me are now
+working on such a patch.) But these two input devices need to share
+their polling of the underlying EC hardware, and this is impossible
+using input-polldev.
 
-Then for sleep-capable contexts:
-	dev_suspend_lock(dev);
-	dev_suspend_unlock(dev);
+Since this patch will  degrade accuracy and will eventually be
+reverted anyway, I suggest retracting it.
 
-And for no-sleep contexts like interrupts etc:
-	if (!dev_suspend_trylock(dev))
-		return postpone_work_for_later(dev, ...);
-	do_stuff_with(dev);
-	dev_suspend_unlock(dev);
+As for the mutex in atomic context issue, isn't it best addressed by
+making mutex_trylock() do the sensible thing in softirqt?
 
-You could do this with a straight mutex except for the  
-dev_suspend_trylock/unlock bit in uninterruptable contexts, but I  
-seem to recall somebody saying that could be made to work if there  
-was a real need for it.  Alternatively you could just drive the  
-"Generic Mutex" guys up the wall by inventing your own pseudo-mutex  
-with a spinlock, a boolean value, and a waitqueue.
-
-Then when you put your driver to sleep, things trying to do IO will  
-automatically "freeze" themselves exactly until the device is woken  
-again.
-
-Assuming the driver model and subsystem get the ordering right for  
-which devices to suspend/resume, then it's impossible to deadlock or  
-cause hardware confusion.  And even further, if you manage to make  
-the automagic mutex-debugging code work with the noninterruptable  
-trylock it will yell at you when the driver model does nasty deadlock- 
-y things.
-
-On the other hand, if the driver model *doesn't* get the ordering  
-right then it's fundamentally impossible to reliably suspend and resume.
-
-Cheers,
-Kyle Moffett
-
+  Shem
