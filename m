@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbXGIJYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbXGIJ1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755135AbXGIJYR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 05:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbXGIJYI
+	id S1754599AbXGIJ1x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 05:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXGIJ1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 05:24:08 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:41216 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbXGIJYH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 05:24:07 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Mon, 9 Jul 2007 11:23:56 +0200
-User-Agent: KMail/1.9.7
-Cc: Alan Stern <stern@rowland.harvard.edu>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org> <200707090847.43378.oliver@neukum.org> <1183972420.5961.26.camel@localhost.localdomain>
-In-Reply-To: <1183972420.5961.26.camel@localhost.localdomain>
+	Mon, 9 Jul 2007 05:27:46 -0400
+Received: from wapgw.hccnet.nl ([62.251.0.19]:41804 "EHLO wapgw.hccnet.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbXGIJ1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 05:27:46 -0400
+X-Greylist: delayed 1802 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jul 2007 05:27:45 EDT
+Message-ID: <4691F8D6.30600@hccnet.nl>
+Date: Mon, 09 Jul 2007 10:59:02 +0200
+From: Gert Vervoort <gert.vervoort@hccnet.nl>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707091123.57400.oliver@neukum.org>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.22: dvb header files break compilation on x86-64
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 9. Juli 2007 schrieb Benjamin Herrenschmidt:
-> On Mon, 2007-07-09 at 08:47 +0200, Oliver Neukum wrote:
-> > Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > > > But I'm not sure it's a good idea in the long run.  Think of a printer 
-> > > > daemon, for example.  It shouldn't have to experience unexpected I/O 
-> > > > problems merely because someone has decided to put the system to sleep.
-> > > 
-> > > Why not ? Printer is offline when machine is asleep... trying to print
-> > 
-> > Not necessarily. The machine must survive going to sleep while you are
-> > printing. Any other error return than -ERESTARTSYS is not an option.
-> > We can't simply change the ABI.
-> 
-> Ugh ? Why returning an error from the printer driver to the userland
-> print server/daemon would prevent the machine from "surviving" ? I would
-> be happy with -EIO personally :-)
 
-Surviving is a bit strongly worded.
+Some of the linux/dvb header files include libc header files and break compilation on x86-64 in compat_ioctl.c:
 
-Suspension is to be transparent. Apart from a jump in the system clock
-user space must not notice, thus returning errors due to suspension is
-not an option.
 
-	Regards
-		Oliver
+   CC      fs/timerfd.o
+   CC      fs/eventfd.o
+   CC      fs/compat.o
+   CC      fs/compat_ioctl.o
+In file included from fs/compat_ioctl.c:111:
+include/linux/dvb/audio.h:27:20: error: stdint.h: No such file or directory
+In file included from fs/compat_ioctl.c:112:
+include/linux/dvb/dmx.h:28:18: error: time.h: No such file or directory
+make[1]: *** [fs/compat_ioctl.o] Error 1
+make: *** [fs] Error 2
+[root@apollo linux-2.6.x]#
+
+
+    Gert
+
 
