@@ -1,60 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbXGINJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbXGINOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbXGINJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 09:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXGINJN
+	id S1754578AbXGINOJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 09:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbXGINN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 09:09:13 -0400
-Received: from edu.joroinen.fi ([194.89.68.130]:38802 "EHLO edu.joroinen.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752633AbXGINJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 09:09:12 -0400
-Date: Mon, 9 Jul 2007 16:09:10 +0300
-From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-To: Dmitry Melekhov <dm@belkam.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: scsi lun online resize
-Message-ID: <20070709130910.GH4106@edu.joroinen.fi>
-References: <46652EB3.4060903@belkam.com> <20070705125951.GF4106@edu.joroinen.fi> <468D1344.30007@belkam.com>
+	Mon, 9 Jul 2007 09:13:57 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:37538 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751578AbXGINN4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 09:13:56 -0400
+Date: Mon, 9 Jul 2007 14:06:06 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] include/asm-mips/processor.h: "extern inline" ->
+	"static inline"
+Message-ID: <20070709130605.GA5467@linux-mips.org>
+References: <20070707010330.GY3492@stusta.de> <20070709102754.GB24487@linux-mips.org> <20070709122240.GY3492@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <468D1344.30007@belkam.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070709122240.GY3492@stusta.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 08:50:28PM +0500, Dmitry Melekhov wrote:
-> Pasi Kärkkäinen wrote:
-> >On Tue, Jun 05, 2007 at 02:36:51PM +0500, Dmitry Melekhov wrote:
-> >  
-> >>Hello!
-> >>
-> >>I'm playing with iscsi on linux.
-> >>And I have following problem:
-> >>
-> >>If I change lun size on target side and then do echo "1" >/sys/block/
-> >>sdb/device/rescan
-> >>device size is changed only if /dev/sdb is not mounted, if it is
-> >>mounted fdisk shows no size change, so lun can't be resized online.
-> >>
-> >>open-iscsi guys say this is general linux problem, not iscsi specific.
-> >>Could you tell me is there any solution?
-> >>
-> >>    
-> >
-> >Do you have partition table on /dev/sdb, or are you using /dev/sdb 
-> >directly? 
-> >
-> >  
-> I tried both...
-> 
+On Mon, Jul 09, 2007 at 02:22:40PM +0200, Adrian Bunk wrote:
 
-Did you try:
+> In C99 (and therefore in gcc >= 4.3), "extern inline" means that the 
+> function should be compiled inline where the inline definition is seen, 
+> and that the compiler should also emit a copy of the function body with 
+> an externally visible symbol.
 
-echo "- - -" > /sys/class/scsi_host/hostX/scan
+Uh, indeed.  Thanks for the reminder.  Patch applied.
 
-That works at least with Qlogic iSCSI HBA (qla4xxx).
-
--- Pasi
+  Ralf
