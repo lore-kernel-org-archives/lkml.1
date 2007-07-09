@@ -1,82 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbXGIBOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbXGIBPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758727AbXGIBOe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 21:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXGIBO1
+	id S1758787AbXGIBPQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 21:15:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbXGIBPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 21:14:27 -0400
-Received: from trinity.phys.uwm.edu ([129.89.57.159]:42013 "EHLO
-	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754580AbXGIBO0 (ORCPT
+	Sun, 8 Jul 2007 21:15:05 -0400
+Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:49927
+	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755016AbXGIBPD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 21:14:26 -0400
-Date: Sun, 8 Jul 2007 20:14:10 -0500 (CDT)
-From: Bruce Allen <ballen@gravity.phys.uwm.edu>
-X-X-Sender: ballen@trinity.phys.uwm.edu
-To: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
-       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Kai Makisara <Kai.Makisara@kolumbus.fi>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Jan Dvorak <fermentol@gmail.com>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Klaus Fuerstberger <kfuerstberger@arcor.de>,
-       Bruce Allen <bruce.allen@aei.mpg.de>
-Subject: Re: SMART problems in 2.6.22
-In-Reply-To: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
-Message-ID: <Pine.LNX.4.63.0707082003360.23123@trinity.phys.uwm.edu>
-References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sun, 8 Jul 2007 21:15:03 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jul 2007 21:15:03 EDT
+Date: Sun, 8 Jul 2007 18:08:22 -0700
+From: Phil Oester <kernel@linuxace.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+Message-ID: <20070709010822.GA32652@linuxace.com>
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is another similar report:
+On Sun, Jul 08, 2007 at 04:52:52PM -0700, Linus Torvalds wrote:
+> Anybody? Should I make just the shortlogs available instead (I don't save 
+> those, but I post those for the later -rc's - usually the -rc1 and -rc2's 
+> are too big for the mailing list, but they are still a lot smaller and 
+> more readable than the *full* logs are)?
+> 
+> Or do people really want the full logs, and don't use git?
 
-http://article.gmane.org/gmane.linux.utilities.smartmontools/4704/match=diamondmax
+I don't use git, and sometimes find it useful to view the changelogs to look
+for when a particular change occurred.  Doing so via:
 
-Again, this indicates that SMART is enabled.  But it's not clear what the 
-kernel version here is.  The report indicates that the problem started 
-with an FC7 kernel upgrade
+	http://kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.X
 
-Bruce
+where X is decremented from current rev is handy.  Please keep them around.
 
-On Sun, 8 Jul 2007, Bruce Allen wrote:
-
-> Mark, David, Doug, Tejin, Alan, Jeff, LKML,
->
-> I'm afraid that there may be some problem with SMART + libata in the 2.6.22 
-> kernel.  An hour ago I discovered that I missed a month of correspondence 
-> (some LKML, some private) about this problem which Alan, Tejun, Jeff, Mark 
-> and others copied to me -- it was automatically shoved into one of my 
-> mailboxes by my mail client.  Sorry about that.  So I am trying to catch up 
-> to see if there is some real problem or not.
->
-> Here is a typical bug report that worries me:
-> http://article.gmane.org/gmane.linux.utilities.smartmontools/4712
->
-> Here is another similar report:
-> http://thread.gmane.org/gmane.linux.utilities.smartmontools/4713
->
-> And another report:
-> http://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg358354.html
->
-> From some of the earlier threads that I missed (below) I have the impression 
-> that the problem may be a very simple one, namely that starting with 2.6.22 
-> one needs to run a command to enable SMART when a box is first booted -- the 
-> kernel no longer does this as part of the init/setup of the disks. But that 
-> is NOT consistent with the first two reports above, which show 'SMART 
-> ENABLED'.
->
-> Here are some of the earlier threads that I completely missed:
->
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0706.1/0849.html
-> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg164863.html
->
-> Before I go off half-cocked, could anyone shed some light on this?  Is there 
-> a real problem here or just something dumb?
->
-> Cheers,
-> 	Bruce
->
+Phil
