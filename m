@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbXGIQj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbXGIQkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759956AbXGIQj6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758238AbXGIQYr
+	id S1755096AbXGIQkZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758322AbXGIQYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42360 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42391 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756947AbXGIQYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:24:40 -0400
+	id S1758508AbXGIQYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:24:45 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Patrick Caulfield <pcaulfie@redhat.com>,
+Cc: cluster-devel@redhat.com, Wendy Cheng <wcheng@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [DLM] Telnet to port 21064 can stop all lockspaces
-Date: Mon,  9 Jul 2007 17:02:54 +0100
-Message-Id: <11839970852076-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [GFS2] inode size inconsistency
+Date: Mon,  9 Jul 2007 17:02:55 +0100
+Message-Id: <11839970871671-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970832750-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970852076-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -66,46 +66,43 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <11839970793713-git-send-email-swhiteho@redhat.com>
  <11839970813260-git-send-email-swhiteho@redhat.com>
  <11839970832750-git-send-email-swhiteho@redhat.com>
+ <11839970852076-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick Caulfield <pcaulfie@redhat.com>
+From: Wendy Cheng <wcheng@redhat.com>
 
-This patch fixes Red Hat bz#245892
+This should have been part of the NFS patch #1 but somehow I missed it
+when packaging the patches. It is not a critical issue as the others (I
+hope). RHEL 5.1 31.el5 kernel runs fine without this change.
 
-Opening a tcp connection from a cluster member to another cluster member
-targeting the dlm port it is enough to stop every dlm operation in the cluster.
-This means that GFS and rgmanager will hang.
+Our truncate code is chopped into two parts, one for vfs inode changes
+(in vmtruncate()) and one of gfs inode (in gfs2_truncatei()). These two
+operatons are, unfortunately, not atomic. So it could happens that
+vmtruncate() succeeds (inode->i_size is changed) but gfs2_truncatei
+fails (say kernel temporarily out of memory). This would leave gfs inode
+i_di.di_size out of sync with vfs inode i_size. It will later confuse
+gfs2_commit_write() if a write is issued. Last time I checked, it will
+cause file corruption.
 
-Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
+Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index fc0bff7..73d44f5 100644
---- a/fs/dlm/lowcomms.c
-+++ b/fs/dlm/lowcomms.c
-@@ -720,11 +720,17 @@ static int tcp_accept_from_sock(struct connection *con)
- 			INIT_WORK(&othercon->rwork, process_recv_sockets);
- 			set_bit(CF_IS_OTHERCON, &othercon->flags);
- 			newcon->othercon = othercon;
-+			othercon->sock = newsock;
-+			newsock->sk->sk_user_data = othercon;
-+			add_sock(newsock, othercon);
-+			addcon = othercon;
-+		}
-+		else {
-+			printk("Extra connection from node %d attempted\n", nodeid);
-+			result = -EAGAIN;
-+			up_write(&newcon->sock_sem);
-+			goto accept_err;
- 		}
--		othercon->sock = newsock;
--		newsock->sk->sk_user_data = othercon;
--		add_sock(newsock, othercon);
--		addcon = othercon;
+diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
+index 84051b9..911c115 100644
+--- a/fs/gfs2/ops_inode.c
++++ b/fs/gfs2/ops_inode.c
+@@ -903,8 +903,8 @@ static int setattr_size(struct inode *inode, struct iattr *attr)
  	}
- 	else {
- 		newsock->sk->sk_user_data = newcon;
+ 
+ 	error = gfs2_truncatei(ip, attr->ia_size);
+-	if (error)
+-		return error;
++	if (error && (inode->i_size != ip->i_di.di_size))
++		i_size_write(inode, ip->i_di.di_size);
+ 
+ 	return error;
+ }
 -- 
 1.5.1.2
 
