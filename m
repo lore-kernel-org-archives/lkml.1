@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbXGICGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbXGICKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbXGICGU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 22:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757864AbXGICGM
+	id S1758907AbXGICKN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 22:10:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757483AbXGICKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 22:06:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:21816 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757305AbXGICGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 22:06:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=JEkdSba7On6sfC7EPU/tsXh4hjGgDI4MdnwnQ5G7Uxh2LvwclCT/qAxek3KHbXWMEUPUevqYAyvcINUw91JHUD2ATM2bwyKB5KCsqJWal4GlNl14MKkjMXBWbCiYE/A0l6ELhoX2yS3ntsX5XWbgh+ef0Borx69bfUdzegOk+/8=
-Date: Mon, 9 Jul 2007 06:06:06 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       sam@ravenborg.org
-Subject: Re: [PATCH] fixup binutils printing from scripts/ver_linux
-Message-ID: <20070709020606.GA5761@martell.zuzino.mipt.ru>
-References: <200707090147.58611.jesper.juhl@gmail.com>
+	Sun, 8 Jul 2007 22:10:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44198 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757305AbXGICKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 22:10:00 -0400
+Message-ID: <469198E4.6000200@garzik.org>
+Date: Sun, 08 Jul 2007 22:09:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707090147.58611.jesper.juhl@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bruce Allen <ballen@gravity.phys.uwm.edu>
+CC: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
+       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kai Makisara <Kai.Makisara@kolumbus.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Bruce Allen <bruce.allen@aei.mpg.de>
+Subject: Re: SMART problems in 2.6.22
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <Pine.LNX.4.63.0707082003360.23123@trinity.phys.uwm.edu>
+In-Reply-To: <Pine.LNX.4.63.0707082003360.23123@trinity.phys.uwm.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 01:47:58AM +0200, Jesper Juhl wrote:
-> I just found that scripts/ver_linux does not print the binutils version 
-> properly on my Slackware 12.0 system.
+On the base point, libata has never enabled SMART on its own.  That's 
+always up to the BIOS, etc.
 
-> --- a/scripts/ver_linux
-> +++ b/scripts/ver_linux
-> @@ -21,9 +21,8 @@ gcc --version 2>&1| grep gcc | awk \
->  make --version 2>&1 | awk -F, '{print $1}' | awk \
->        '/GNU Make/{print "Gnu make              ",$NF}'
->  
-> -ld -v | awk -F\) '{print $1}' | awk \
-> -'/BFD/{print "binutils              ",$NF} \
-> -/^GNU/{print "binutils              ",$4}'
-> +echo "binutils               $(ld -v | awk -F \) \
-> +{'print $2'} | tr -d ' ')"
+It's possible that the recent addition of ACPI support will cause disks 
+to be in different modes than previously expected.  ACPI supplies ATA 
+taskfiles to be pushed to the disk, and who knows what's in there...
 
-NAK. It starts reporting here empty binutils field.
-FWIW,
+	Jeff
 
-	$ ld -v
-	GNU ld version 2.16.1
+
 
