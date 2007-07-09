@@ -1,137 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXGIL2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbXGILal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbXGIL2m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 07:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXGIL2g
+	id S1757209AbXGILal (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 07:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXGILae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 07:28:36 -0400
-Received: from il.qumranet.com ([82.166.9.18]:37291 "EHLO il.qumranet.com"
+	Mon, 9 Jul 2007 07:30:34 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:52652 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753100AbXGIL2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 07:28:35 -0400
-Message-ID: <46921BE9.4040801@qumranet.com>
-Date: Mon, 09 Jul 2007 14:28:41 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, KVM <kvm-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 17/20] SMP: Implement on_cpu()
-References: <11838956891287-git-send-email-avi@qumranet.com> <11838956893094-git-send-email-avi@qumranet.com> <p73lkdqzpdm.fsf@bingen.suse.de> <4691D9C1.4050309@qumranet.com> <20070709071640.GB10864@one.firstfloor.org> <46920270.3080309@qumranet.com>
-In-Reply-To: <46920270.3080309@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751835AbXGILad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 07:30:33 -0400
+Date: Mon, 9 Jul 2007 13:30:25 +0200
+From: DervishD <lkml@dervishd.net>
+To: Douglas Gilbert <dougg@torque.net>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: Re: cdparanoia not setting count and/or reply_len properly
+Message-ID: <20070709113025.GB3015@DervishD>
+Mail-Followup-To: Douglas Gilbert <dougg@torque.net>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-scsi@vger.kernel.org
+References: <20070708103928.GA20349@DervishD> <4690DA1B.3010901@s5r6.in-berlin.de> <4691ACEA.8000607@torque.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4691ACEA.8000607@torque.net>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Andi Kleen wrote:
->>> Well, smp_call_function_single() is arch specific whereas on_cpu() is
->>>     
->>
->> Yes, but the few instances should be relatively easy to fix.
->>
->>  
->>> generic code.  Perhaps rename smp_call_function_single() to
->>> __smp_call_function_single() and on_cpu() to 
->>> smp_call_function_single()?
->>>     
->>
->> The low level function checks for this anyways. Instead of erroring
->> it should just DTRT.
->>   
->
-> Okay.  I'll make that change.
->
->
+    Hi Douglas :)
 
-Here it is (whitespace-mangled, don't try to apply).
+ * Douglas Gilbert <dougg@torque.net> dixit:
+> >>     I don't know if cdparanoia should be fixed, but certainly the
+> >> warning could be issued only if CONFIG_SCSI_VERBOSE is set. This way you
+> >> will have the message if something goes wrong and you want more info,
+> >> but in cases where the warning is harmless your log will be clean...
+> >>
+> >>     Anyway, this message is not for make suggestions, but for asking for
+> >> information: why is this warning happening? naugthy cdparanoia? naughty
+> >> kernel? I'm a bit confused and I want to use my external DVD drive for
+> >> ripping from time to time, to "exercise" it...
+> 
+> In Fedora 7 I see this:
+> 
+> # cdparanoia --version
+> cdparanoia III release 9.8 (March 23, 2001)
+> (C) 2001 Monty <monty@xiph.org> and Xiphophorus
 
-diff --git a/arch/i386/kernel/smpcommon.c b/arch/i386/kernel/smpcommon.c
-index 1868ae1..bbfe85a 100644
---- a/arch/i386/kernel/smpcommon.c
-+++ b/arch/i386/kernel/smpcommon.c
-@@ -47,7 +47,7 @@ int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
- EXPORT_SYMBOL(smp_call_function);
- 
- /**
-- * smp_call_function_single - Run a function on another CPU
-+ * smp_call_function_single - Run a function on a specific CPU
-  * @cpu: The target CPU.  Cannot be the calling CPU.
-  * @func: The function to run. This must be fast and non-blocking.
-  * @info: An arbitrary pointer to pass to the function.
-@@ -66,9 +66,11 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
- 	int ret;
- 	int me = get_cpu();
- 	if (cpu == me) {
--		WARN_ON(1);
-+		local_irq_disable();
-+		func(info);
-+		local_irq_enable();
- 		put_cpu();
--		return -EBUSY;
-+		return 0;
- 	}
- 
- 	ret = smp_call_function_mask(cpumask_of_cpu(cpu), func, info, wait);
-diff --git a/arch/x86_64/kernel/smp.c b/arch/x86_64/kernel/smp.c
-index 2ff4685..e6e5017 100644
---- a/arch/x86_64/kernel/smp.c
-+++ b/arch/x86_64/kernel/smp.c
-@@ -357,7 +357,7 @@ __smp_call_function_single(int cpu, void (*func) (void *info), void *info,
- }
- 
- /*
-- * smp_call_function_single - Run a function on another CPU
-+ * smp_call_function_single - Run a function on a specific CPU
-  * @func: The function to run. This must be fast and non-blocking.
-  * @info: An arbitrary pointer to pass to the function.
-  * @nonatomic: Currently unused.
-@@ -372,16 +372,19 @@ __smp_call_function_single(int cpu, void (*func) (void *info), void *info,
- int smp_call_function_single (int cpu, void (*func) (void *info), void *info,
- 	int nonatomic, int wait)
- {
-+	/* Can deadlock when called with interrupts disabled */
-+	WARN_ON(irqs_disabled());
-+
- 	/* prevent preemption and reschedule on another processor */
- 	int me = get_cpu();
- 	if (cpu == me) {
-+		local_irq_disable();
-+		func(info);
-+		local_irq_enable();
- 		put_cpu();
- 		return 0;
- 	}
- 
--	/* Can deadlock when called with interrupts disabled */
--	WARN_ON(irqs_disabled());
--
- 	spin_lock_bh(&call_lock);
- 	__smp_call_function_single(cpu, func, info, nonatomic, wait);
- 	spin_unlock_bh(&call_lock);
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index 613edd2..ed38a3d 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -118,7 +118,11 @@ static inline void smp_send_reschedule(int cpu) { }
- static inline int smp_call_function_single(int cpuid, void (*func) (void *info),
- 					   void *info, int retry, int wait)
- {
--	return -EBUSY;
-+	WARN_ON(cpuid != 0);
-+	local_irq_disable();
-+	func(info);
-+	local_irq_enable();
-+	return 0;
- }
- 
- #endif /* !SMP */
+    Same version here.
 
+> So, given that date, lk 2.4.2 was out but it was probably
+> a bit early to start using the sg version 3 interface
+> which first appeared in lk 2.4.1 . So that "lets annoy
+> the user" message was added by someone who got burnt by
+> the old sg version 2 interface and decided people needed
+> to be warned. The warning comes from this code is sg.c :
 
-If there are no objections, I will push it (split up) through my kvm updates patchset, as other kvm patches depend on it.  I will submit patches to other archs through the arch maintainers as kvm doesn't care about them yet.
+    OK, grand. So it's cdparanoia's fault.
 
+>         /*
+>          * SG_DXFER_TO_FROM_DEV is functionally equivalent to SG_DXFER_FROM_DEV,
+>          * but is is possible that the app intended SG_DXFER_TO_DEV, because the
+> re
+>          * is a non-zero input_size, so emit a warning.
+>          */
+>         if (hp->dxfer_direction == SG_DXFER_TO_FROM_DEV)
+>                 if (printk_ratelimit())
+>                         printk(KERN_WARNING
+>                                "sg_write: data in/out %d/%d bytes for SCSI comma
+> nd 0x%x--"
+>                                "guessing data in;\n" KERN_WARNING "   "
+>                                "program %s not setting count and/or reply_len pr
+> operly\n",
+>                                old_hdr.reply_len - (int)SZ_SG_HEADER,
+>                                input_size, (unsigned int) cmnd[0],
+>                                current->comm);
+
+    Yes, I did read the code, and I didn't find any reason for it to
+exist, but I didn't understand the purpose of SG_DXFER_TO_FROM_DEV.
+Thanks for explaining this :))
+
+> It is probably about time that cdparanoia was updated ...
+
+    I think the same, but given that it works, Monty probably doesn't
+have much motivation to update it. I don't know if the problem resides
+in the cdparanoia program itself (so using the DAE problem from cdrkit
+will fix the issue) or in the paranoia library. In this case, the
+problem will affect any program using the library.
+
+    Anyway, if you need any testing, just tell :)
+
+    Thanks a lot!
+
+    Raúl Núñez de Arenas Coronado
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
