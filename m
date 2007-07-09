@@ -1,46 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbXGILdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXGILeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbXGILdi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 07:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbXGILdb
+	id S1757447AbXGILeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 07:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbXGILeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 07:33:31 -0400
-Received: from no-way.org ([212.55.212.131]:41982 "EHLO no-way.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751835AbXGILda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 07:33:30 -0400
-X-Greylist: delayed 1704 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jul 2007 07:33:30 EDT
-Date: Mon, 9 Jul 2007 12:45:25 +0200
-From: Flavio Curti <fcu@no-way.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Flavio Curti <lists.fcu@no-way.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: panics with 16port Promise Supertrack EX Controller
-Message-ID: <20070709104525.GE16285@no-way.org>
-References: <20070708225246.GD16285@no-way.org> <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com>
+	Mon, 9 Jul 2007 07:34:10 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:41080 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751835AbXGILeJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 07:34:09 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Mon, 9 Jul 2007 07:32:03 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: technically, profile/oprofile Kconfig stuff is set up incorrectly
+Message-ID: <Pine.LNX.4.64.0707090727300.17061@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 01:20:51AM +0200, Michal Piotrowski wrote:
-> On 09/07/07, Flavio Curti <lists.fcu@no-way.org> wrote:
-> Jul  8 00:19:13 dorade.cyberlink.ch EFLAGS: 00210046   
-> (2.6.22-rc7-dorade #1)
-> Is this a regression?
 
-I also tried 2.6.21.5, which showed the same problem. So I doubt it's a
-2.6.22rc7 problem.
+  as a short follow up to my previous patches, it might be worth
+pointing out that profiling in general is defined improperly WRT
+Kconfig, since *general* profiling is defined inside the more specific
+Kconfig files for *oprofiling*:
 
-I'll try a different scheduler as suggested.
+  $ ls arch/*/oprofile/Kconfig
 
-Kind regards
+  that makes no sense, as it leads to incorrect Kconfig files like
+arch/blackfin/oprofile/Kconfig:
 
-Flavio Curti
+=============================
+menu "Profiling support"
+depends on EXPERIMENTAL
 
---
-http://no-way.org/~fcu/
+config PROFILING
+        bool "Profiling support (EXPERIMENTAL)"
+        help
+          Say Y here to enable the extended profiling support mechanisms used
+          by profilers such as OProfile.
+
+config OPROFILE
+        tristate "OProfile system profiling (EXPERIMENTAL)"
+        depends on PROFILING
+        help
+          OProfile is a profiling system capable of profiling the
+          whole system, include the kernel, kernel modules, libraries,
+          and applications.
+
+          If unsure, say N.
+
+config HARDWARE_PM
+        tristate "Hardware Performance Monitor Profiling"
+        depends on PROFILING
+        help
+          take use of hardware performance monitor to profiling the kernel
+          and application.
+
+          If unsure, say N.
+
+endmenu
+==========================
+
+where non-oprofile content (HARDWARE_PM) is now defined within the
+oprofile subdirectory.
+
+  the whole selection of profiling really should be moved up a level,
+with oprofile content as a subdirectory, or something similar.
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
