@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbXGIKHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbXGIKIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbXGIKHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 06:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXGIKG4
+	id S1756054AbXGIKIm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 06:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXGIKIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 06:06:56 -0400
-Received: from mail35.syd.optusnet.com.au ([211.29.133.51]:37508 "EHLO
-	mail35.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751315AbXGIKG4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 06:06:56 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-Subject: 2.6.22-ck1
-Date: Mon, 9 Jul 2007 20:06:49 +1000
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Message-Id: <200707092006.49316.kernel@kolivas.org>
-X-Length: 2336
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 9 Jul 2007 06:08:35 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40456 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751315AbXGIKIe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 06:08:34 -0400
+Date: Mon, 9 Jul 2007 11:14:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+Message-ID: <20070709111431.2fd3fba9@the-village.bc.nu>
+In-Reply-To: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.22-ck1 is the last ever -ck release.
+Are the shortlogs useful - yes .. they catch what appear to be mistakes
 
-So long, and thanks for all the fish
+Specifically: What happened to the aacraid ioctl security fix ? Did someone decide it
+wasn't needed or did it get lost somewhere on the way ?
 
+While this looks scary the only obvious exploit cases are where the user can
+open a device level file on an AACraid. Very few people put scanners or CD
+devices on one so the actual impact is probably minimal.
 
-This patchset is designed to improve system responsiveness and interactivity. 
-It is configurable to any workload but the default -ck patch is aimed at the 
-desktop and -cks is available with more emphasis on serverspace.
+Alan
 
+--
 
-Apply to 2.6.22
-http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.22/2.6.22-ck1/patch-2.6.22-ck1.bz2
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-or server version
-http://www.kernel.org/pub/linux/kernel/people/ck/patches/cks/patch-2.6.22-cks1.bz2
-
-web:
-http://kernel.kolivas.org
-
-wiki:
-http://ck.wikia.com
-
-all patches:
-http://www.kernel.org/pub/linux/kernel/people/ck/patches/
-
-
-Full patch list:
-
-sched-staircase-deadline-cpu-scheduler.patch
-sched-range.patch
-sched-iso-5.5.patch
-track_mutexes-1.patch
-sched-idleprio-2.4.patch
-sched-limit_policy_changes.patch
-sched-ck-add-above-background-load-function.patch
-cfq-ioprio_inherit_rt_class.patch
-cfq-iso_idleprio_ionice.patch
-mm-swap_prefetch-41.patch 
-mm-convert_swappiness_to_mapped.patch
-mm-lots_watermark.diff
-mm-kswapd_inherit_prio-1.patch 
-mm-prio_dependant_scan-2.patch
-mm-background_scan-2.patch
-mm-filesize_dependant_lru_cache_add.patch
-mm-idleprio_prio.patch
-kconfig-expose_vmsplit_option.patch
-hz-default_1000.patch 
-hz-no_default_250.patch 
-hz-raise_max-2.patch
-ck-desktop-tune.patch
-ck-final-version.patch
-
-
-さようなら、いままで魚をありがとう
-
--- 
--ck
+--- drivers/scsi/aacraid/linit.c~	2007-07-09 10:51:55.653223304 +0100
++++ drivers/scsi/aacraid/linit.c	2007-07-09 10:51:55.653223304 +0100
+@@ -453,6 +453,8 @@
+ static int aac_ioctl(struct scsi_device *sdev, int cmd, void __user * arg)
+ {
+ 	struct aac_dev *dev = (struct aac_dev *)sdev->host->hostdata;
++	if (!capable(CAP_SYS_RAWIO))
++		return -EPERM;
+ 	return aac_do_ioctl(dev, cmd, arg);
+ }
+ 
+@@ -645,6 +647,8 @@
+ static int aac_compat_ioctl(struct scsi_device *sdev, int cmd, void __user *arg)
+ {
+ 	struct aac_dev *dev = (struct aac_dev *)sdev->host->hostdata;
++	if (!capable(CAP_SYS_RAWIO))
++		return -EPERM;
+ 	return aac_compat_do_ioctl(dev, cmd, (unsigned long)arg);
+ }
+ 
