@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbXGIBPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbXGIBaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbXGIBPQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 21:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbXGIBPF
+	id S1758695AbXGIBaV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 21:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756210AbXGIBaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 21:15:05 -0400
-Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:49927
-	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755016AbXGIBPD (ORCPT
+	Sun, 8 Jul 2007 21:30:08 -0400
+Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:25647 "HELO
+	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754830AbXGIBaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 21:15:03 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jul 2007 21:15:03 EDT
-Date: Sun, 8 Jul 2007 18:08:22 -0700
-From: Phil Oester <kernel@linuxace.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-Message-ID: <20070709010822.GA32652@linuxace.com>
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
+	Sun, 8 Jul 2007 21:30:07 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jul 2007 21:30:07 EDT
+X-YMail-OSG: Tsphkg8VM1n23b3ECH0ePzADsYRJLJEwXSfhpDLo2s_rr0HxyVCeKKtdxliIQJ8s724vu.Zw2RuTrN8jp3g6y9ibTcveLKY74LUtYeuvT4.oxMqrudc-
+Subject: [BUG] IT8212 libata driver *still* hard-freezes system on boot on
+	2.6.22 final.
+From: Rodney Gordon II <meff@spherevision.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Sun, 08 Jul 2007 20:23:24 -0500
+Message-Id: <1183944204.8932.8.camel@ghreen.sphere>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 08, 2007 at 04:52:52PM -0700, Linus Torvalds wrote:
-> Anybody? Should I make just the shortlogs available instead (I don't save 
-> those, but I post those for the later -rc's - usually the -rc1 and -rc2's 
-> are too big for the mailing list, but they are still a lot smaller and 
-> more readable than the *full* logs are)?
-> 
-> Or do people really want the full logs, and don't use git?
+Have been quite busy, and I regret I haven't tried a rc kernel in
+awhile, but, this bug has gone un-fixed still.. Thought I'd throw in
+another "heads up"..
 
-I don't use git, and sometimes find it useful to view the changelogs to look
-for when a particular change occurred.  Doing so via:
+2.6.22 hang: http://spherevision.org/sync/visual/itelock.jpg
+lspci -vvv: http://spherevision.org/sync/tmp/lspci.out
 
-	http://kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.X
+Pentium-D 830 3.0GHz Dualcore on a ASUS P5LD2 with latest bios rev.
+1804.
 
-where X is decremented from current rev is handy.  Please keep them around.
+SysRq does not work when this locks up.
 
-Phil
+Patches, info, things to try, anything is welcome, I am available for
+awhile now and will try anything to get this working.
+
+Cheers,
+-r
+
