@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbXGIMWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbXGIM0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756026AbXGIMWT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbXGIMWK
+	id S1753727AbXGIM0d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXGIM0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:22:10 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:55419 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751981AbXGIMWJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:22:09 -0400
-Date: Mon, 9 Jul 2007 14:22:40 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] include/asm-mips/processor.h: "extern inline" ->
-	"static inline"
-Message-ID: <20070709122240.GY3492@stusta.de>
-References: <20070707010330.GY3492@stusta.de> <20070709102754.GB24487@linux-mips.org>
+	Mon, 9 Jul 2007 08:26:21 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:18697 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751578AbXGIM0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:26:20 -0400
+Date: Mon, 9 Jul 2007 14:26:28 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Tejun Heo <htejun@gmail.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Some NCQ numbers...
+Message-ID: <20070709122627.GQ5267@kernel.dk>
+References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com> <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com> <1183560034.3418.15.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070709102754.GB24487@linux-mips.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1183560034.3418.15.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 11:27:55AM +0100, Ralf Baechle wrote:
-> On Sat, Jul 07, 2007 at 03:03:30AM +0200, Adrian Bunk wrote:
+On Wed, Jul 04 2007, James Bottomley wrote:
+> On Wed, 2007-07-04 at 10:19 +0900, Tejun Heo wrote:
+> > Michael Tokarev wrote:
+> > > Well.  It looks like the results does not depend on the
+> > > elevator.  Originally I tried with deadline, and just
+> > > re-ran the test with noop (hence the long delay with
+> > > the answer) - changing linux elevator changes almost
+> > > nothing in the results - modulo some random "fluctuations".
+> > 
+> > I see.  Thanks for testing.
+> > 
+> > > In any case, NCQ - at least in this drive - just does
+> > > not work.  Linux with its I/O elevator may help to
+> > > speed things up a bit, but the disk does nothing in
+> > > this area.  NCQ doesn't slow things down either - it
+> > > just does not work.
+> > > 
+> > > The same's for ST3250620NS "enterprise" drives.
+> > > 
+> > > By the way, Seagate announced Barracuda ES 2 series
+> > > (in range 500..1200Gb if memory serves) - maybe with
+> > > those, NCQ will work better?
+> > 
+> > No one would know without testing.
+> > 
+> > > Or maybe it's libata which does not implement NCQ
+> > > "properly"?  (As I shown before, with almost all
+> > > ol'good SCSI drives TCQ helps alot - up to 2x the
+> > > difference and more - with multiple I/O threads)
+> > 
+> > Well, what the driver does is minimal.  It just passes through all the
+> > commands to the harddrive.  After all, NCQ/TCQ gives the harddrive more
+> > responsibility regarding request scheduling.
 > 
-> > "extern inline" will have different semantics with gcc 4.3,
-> > and "static inline" is correct here.
-> 
-> The idea was to have a linker error in case gcc should deciede for some
-> reason not to inline this function
+> Actually, in many ways the result support a theory of SCSI TCQ Jens used
+> when designing the block layer.  The original TCQ theory held that the
+> drive could make much better head scheduling decisions than the
+> Operating System, so you just used TCQ to pass all the outstanding I/O
+> unfiltered down to the drive to let it schedule.  However, the I/O
+> results always seemed to indicate that the effect of TCQ was negligible
+> at around 4 outstanding commands, leading to the second theory that all
+> TCQ was good for was saturating the transport, and making scheduling
+> decisions was, indeed, better left to the OS (hence all our I/O
+> schedulers).
 
-If that's the intention, please use __always_inline instead.
+Indeed, the above I still find to be true. The only real case where
+larger depths make a real difference, is a pure random reads (or writes,
+with write caching off) workload. And those situations are largely
+synthetic, hence benchmarks tend to show NCQ being a lot more beneficial
+since they construct workloads that consist 100% of random IO. Real life
+is rarely so black and white.
 
-> which as I understand will continue
-> to be the behaviour of gcc 4.3?
+Additionally, there are cases where drive queue depths hurt a lot. The
+drive has no knowledge of fairness, or process-to-io mappings. So AS/CFQ
+has to artificially limit queue depths competing IO processes doing
+semi (or fully) sequential workloads, or throughput plummets.
 
-In C99 (and therefore in gcc >= 4.3), "extern inline" means that the 
-function should be compiled inline where the inline definition is seen, 
-and that the compiler should also emit a copy of the function body with 
-an externally visible symbol.
-
-You don't want this.
-
->   Ralf
-
-cu
-Adrian
+So while NCQ has some benefits, I typically tend to prefer managing the
+IO queue largely in software instead of punting to (often) buggy
+firmware.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jens Axboe
 
