@@ -1,92 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbXGIMcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbXGIMfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbXGIMcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXGIMcN
+	id S1754597AbXGIMfT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXGIMfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:32:13 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43066 "EHLO gate.crashing.org"
+	Mon, 9 Jul 2007 08:35:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:47867 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751691AbXGIMcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:32:12 -0400
-Subject: Re: [RFC/PATCH] Use mmu_gather for fork() instead of flush_tlb_mm()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-mm@kvack.org, Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <46920A0C.3040400@yahoo.com.au>
-References: <1183952874.3388.349.camel@localhost.localdomain>
-	 <1183962981.5961.3.camel@localhost.localdomain>
-	 <1183963544.5961.6.camel@localhost.localdomain>
-	 <4691E64F.5070506@yahoo.com.au>
-	 <1183972349.5961.25.camel@localhost.localdomain>
-	 <4691FFDC.5020808@yahoo.com.au>
-	 <1183974458.5961.42.camel@localhost.localdomain>
-	 <46920A0C.3040400@yahoo.com.au>
-Content-Type: text/plain
-Date: Mon, 09 Jul 2007 22:32:06 +1000
-Message-Id: <1183984326.5961.62.camel@localhost.localdomain>
+	id S1752106AbXGIMfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:35:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+Date: Mon, 9 Jul 2007 12:31:00 +0000 (UTC)
+Message-ID: <loom.20070709T142907-124@post.gmane.org>
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 88.138.57.125 (Mozilla/5.0 (X11; U; Linux i686; fr; rv:1.8.1.4) Gecko/20070508 Iceweasel/2.0.0.4 (Debian-2.0.0.4-1))
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-09 at 20:12 +1000, Nick Piggin wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Mon, 2007-07-09 at 19:29 +1000, Nick Piggin wrote:
-> > 
-> >>They could just #define one to the other though, there are only a
-> >>small
-> >>number of them. Is there a downside to not making them distinct? i386
-> >>for example probably would just keep doing a tlb flush for fork and
-> >>not
-> >>want to worry about touching the tlb gather stuff.
-> > 
-> > 
-> > But the tlb gather stuff just does ... a flush_tlb_mm() on x86 :-)
+Ingo Molnar <mingo <at> elte.hu> writes:
+
+
+> A year ago the -rt kernel defaulted to the SLOB for a few releases, and 
+> barring some initial scalability issues (which were solved in -rt) it 
+> worked pretty well on generic PCs, so i dont buy the 'it doesnt work' 
+> argument either.
 > 
-> But it still does the get_cpu of the mmu gather data structure and
-> has to look in there and touch the cacheline. You're also having to
-> do more work when unlocking/relocking the ptl etc.
+Last time I tried it, I cannot mount (or mount very slowly) jffs2 flash with 
+slob.
+Changing slob to slab fix the issue.
 
-Hrm... true. I forgot about the cost of get_cpu. Do you think it will by
-measurable at all in practice ? I doubt it but heh...
 
-The place where I see a possible issue is indeed when dropping the lock,
-in things like copy_pte_range, we would want to flush the batch in order
-to be able to schedule.
-
-That means we would end up probably doing flush_tlb_mm() once for every
-lock drop instead of just once on x86, unless there's a smart way to
-deal with that case... After all, when we do such lock dropping, we
-don't actually need to dismiss the batch, the only reason we do so is to
-re-enable preempt, because we may be migrated to another CPU.
-
-But I wonder if it's worth bothering.... we drop the lock when have
-need_resched() or there is contention on the lock. In both of these
-cases, I doubt the added flush will matter noticeably...
-
-If you think it will, then we could probably make the implementation a
-bit more subtle, and allow to "put" a current batch (unblock
-preemption), and only actually complete/flush it if a context switch
-happens. It's not totally trivial to do with the current APIs though
-mostly because of the passing of start/end when completing the batch.
-
-Technically, on x86, I believe we don't even need to do anything but the
--last- flush in fact. So we could just add a pair of tlb_pause/resume
-for the lock dropping :-)
-
-But if we're going to do a spearate API, then what would you have it
-look like ? It would have all of the same issues no ? 
-
-I suppose best is to do a few tests to see if there's any measurable
-performance regression with my patch on x86 (btw, it may not build with
-hugetlbfs, I forgot a #include). Do you have some test gear around ? I
-lack x86 hardware myself...
-
-I'm also interested in the possible impact on ia64. I wonder if they can
-benefit from more targetted flushing in fork()
-
-Ben.
-
+Matthieu
 
