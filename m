@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbXGIUIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbXGIUMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbXGIUIz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 16:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbXGIUIr
+	id S1758783AbXGIUMQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 16:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbXGIUMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 16:08:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46512 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751090AbXGIUIq (ORCPT
+	Mon, 9 Jul 2007 16:12:03 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:6946 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753028AbXGIUMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 16:08:46 -0400
-Date: Mon, 9 Jul 2007 13:08:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: queued spinlock code and results
-In-Reply-To: <alpine.LFD.0.999.0707091250550.3412@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0707091256510.3412@woody.linux-foundation.org>
-References: <20070708043228.GB22397@wotan.suse.de>
- <Pine.LNX.4.64.0707091140440.15898@alien.or.mcafeemobile.com>
- <alpine.LFD.0.999.0707091212410.3412@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707091241350.15898@alien.or.mcafeemobile.com>
- <alpine.LFD.0.999.0707091250550.3412@woody.linux-foundation.org>
+	Mon, 9 Jul 2007 16:12:01 -0400
+Message-ID: <46929691.8050103@fr.ibm.com>
+Date: Mon, 09 Jul 2007 22:12:01 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Pavel Emelianov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       Kirill Korotaev <dev@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 0/16] Pid namespaces
+References: <468DF6F7.1010906@openvz.org> <20070709120236.GC4509@MAIL.13thfloor.at> <46923521.4040109@openvz.org> <20070709195240.GA27189@MAIL.13thfloor.at>
+In-Reply-To: <20070709195240.GA27189@MAIL.13thfloor.at>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 9 Jul 2007, Linus Torvalds wrote:
+>>>> 3. Suka assumes that pid namespace can live without proc mount
+>>>>    and tries to make the code work with pid_ns->proc_mnt change
+>>>>    from NULL to not-NULL from times to times.
+>>>>    My code calls the kern_mount() at the namespace creation and
+>>>>    thus the pid_namespace always works with proc.
+>>> shouldn't that be done by userspace instead?
+>> It can be. But when the namespace is being created there's no
+>> any userspace in it yet.
 > 
-> There are no issues with the 255-CPU cap on 32-bit x86. It's just not 
-> relevant to anybody. So the _only_ thing that matters is speed and to a 
-> secondary degree size.
+> I'm not talking about the 'userspace inside the space'
+> I'm talking about the userspace creating the space
+> (what if I do not want to have any proc mount?)
 
-..of course, from a pure speed standpoint, the "lock dec" one seems to 
-be the fastest, with the difference bwteen the 16-bit/32-bit "lock xadd" 
-being comparatively totally in the noise.
+yes, can't we let the user doing the unshare or clone decide whether
+it needs to mount /proc or not in the new pid namespace ?
 
-Which is what I'd expect.
+that's already optional on the host. 
 
-The difference between a 16-bit and 32-bit xadd should basically not be 
-likely to be really measurable (ie we're likely talking about a single CPU 
-cycle - if that - for the decode of the operand size override, and since 
-both variants need it for _one_ of the operations, it likely ends up being 
-about instruction scheduling noise), while the difference between a "dec" 
-and "xadd" could be the difference between a native uop and microcoded.
-
-[ Not that "xadd" couldn't be as fast as a "dec" in theory, but it's much 
-  less likely to be that. It obviously has to actually write to two 
-  targets: the register -and- memory, and that tends to require at least 
-  an extra uop.
-
-  And together with being a r-op-w memory instruction to begin with (which 
-  is generally the "most complex" normal instruction), and not a very 
-  often used instruction, the end result is that it would often tend to be 
-  handled specially somehow - either in a special decode unit, or as 
-  actual microcode. ]
-
-So from a pure performance standpoint, xadd will likely continue to lose 
-against dec. So the reason to choose xadd in the first place isn't "best 
-performance", but "best performance given fairness".
-
-And any performance difference between xadd and dec is going to be much 
-bigger than any difference between 16/32-bit versions of xadd.
-
-So I wouldn't get too hung up on a potential single cycle, and it's 
-arguably more important to make the (inlined) "unlock" thing be as simple 
-and small as possible.
-
-			Linus
+C.
