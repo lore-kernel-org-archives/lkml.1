@@ -1,153 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbXGIPVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbXGIPXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479AbXGIPVh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 11:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXGIPV3
+	id S1755976AbXGIPXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 11:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXGIPXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 11:21:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55347 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750796AbXGIPV2 (ORCPT
+	Mon, 9 Jul 2007 11:23:16 -0400
+Received: from sccrmhc12.comcast.net ([204.127.200.82]:39654 "EHLO
+	sccrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbXGIPXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 11:21:28 -0400
-Message-ID: <46925270.2010308@sgi.com>
-Date: Mon, 09 Jul 2007 17:21:20 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060527)
+	Mon, 9 Jul 2007 11:23:15 -0400
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: hibernation/snapshot design
+References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
+	<200707082115.27363.rjw@sisk.pl>
+	<1183928612.3388.289.camel@localhost.localdomain>
+	<200707082345.27859.rjw@sisk.pl>
+	<1183931688.3388.316.camel@localhost.localdomain>
+	<20070708221315.GF5401@elf.ucw.cz>
+	<Pine.LNX.4.64.0707081519210.25614@asgard.lang.hm>
+	<20070708230042.GH5401@elf.ucw.cz>
+	<Pine.LNX.4.64.0707081614211.25614@asgard.lang.hm>
+	<20070708232819.GJ5401@elf.ucw.cz>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Mon, 09 Jul 2007 11:23:12 -0400
+In-Reply-To: <20070708232819.GJ5401@elf.ucw.cz> (Pavel Machek's message of
+	"Mon\, 9 Jul 2007 01\:28\:19 +0200")
+Message-ID: <873azxwqhr.fsf@jbms.ath.cx>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-altix@sgi.com, linux-kernel@vger.kernel.org, akpm@osdl.org,
-       Bruce Losure <blosure@sgi.com>
-Subject: Re: [PATCH] mbcs: Remove lots of global symbols
-References: <20070709145048.6de579fa@the-village.bc.nu>
-In-Reply-To: <20070709145048.6de579fa@the-village.bc.nu>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> MBCS has a collection of things that searches say are not used elsewhere
-> and could be static. If this is the case they should be static, if not
-> then someone at SGI should rename things like "soft_list" so they don't
-> pollute the global namespace with generic names...
-> 
-> Signed-off-by: Alan Cox <alan@redhat.com>
+Pavel Machek <pavel@ucw.cz> writes:
 
-Hi Alan,
+[snip]
 
-Bruce says the changes should be fine, so
+>> why do you say that neither would work for the "lets hibernate my 
+>> notebook" case?
 
-Signed-off-by: Bruce Losure <blosure@sgi.com>
+> Both would work. One would eat 8-64MB of your RAM, permanently;
 
-Cheers,
-Jes
+As I have stated in other messages, the kdump approach would not waste
+any RAM permanently.  The reason that kdump must reserve memory at boot
+is that on panic, it cannot attempt to nicely stop drivers, and
+consequently there might be ongoing DMAs that could clobber anything but
+the reserved area; this reason does not apply to hibernate, though.
+I'll quote a previous message in which I stated a solution that can be
+used:
 
+Immediately before jumping to the new kernel, the first X bytes (where X
+is the amount of memory the new kernel will get, typically 16MB or 64MB)
+of physical memory are backed up into the arbitrary discontiguous pages
+that are made available.  This will not take very long, because copying
+even 64MB of memory is extremely fast.  Then the new kernel is free to
+use the first X bytes of contiguous physical memory.  Problem solved.
 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc6-mm1/drivers/char/mbcs.c linux-2.6.22-rc6-mm1/drivers/char/mbcs.c
-> --- linux.vanilla-2.6.22-rc6-mm1/drivers/char/mbcs.c	2007-07-02 20:47:23.000000000 +0100
-> +++ linux-2.6.22-rc6-mm1/drivers/char/mbcs.c	2007-07-09 12:11:02.250630816 +0100
-> @@ -39,14 +39,14 @@
->  #else
->  #define DBG(fmt...)
->  #endif
-> -int mbcs_major;
-> +static int mbcs_major;
->  
-> -LIST_HEAD(soft_list);
-> +static LIST_HEAD(soft_list);
->  
->  /*
->   * file operations
->   */
-> -const struct file_operations mbcs_ops = {
-> +static const struct file_operations mbcs_ops = {
->  	.open = mbcs_open,
->  	.llseek = mbcs_sram_llseek,
->  	.read = mbcs_sram_read,
-> @@ -377,7 +377,7 @@
->  	return rv;
->  }
->  
-> -int mbcs_open(struct inode *ip, struct file *fp)
-> +static int mbcs_open(struct inode *ip, struct file *fp)
->  {
->  	struct mbcs_soft *soft;
->  	int minor;
-> @@ -394,7 +394,7 @@
->  	return -ENODEV;
->  }
->  
-> -ssize_t mbcs_sram_read(struct file * fp, char __user *buf, size_t len, loff_t * off)
-> +static ssize_t mbcs_sram_read(struct file * fp, char __user *buf, size_t len, loff_t * off)
->  {
->  	struct cx_dev *cx_dev = fp->private_data;
->  	struct mbcs_soft *soft = cx_dev->soft;
-> @@ -418,7 +418,7 @@
->  	return rv;
->  }
->  
-> -ssize_t
-> +static ssize_t
->  mbcs_sram_write(struct file * fp, const char __user *buf, size_t len, loff_t * off)
->  {
->  	struct cx_dev *cx_dev = fp->private_data;
-> @@ -443,7 +443,7 @@
->  	return rv;
->  }
->  
-> -loff_t mbcs_sram_llseek(struct file * filp, loff_t off, int whence)
-> +static loff_t mbcs_sram_llseek(struct file * filp, loff_t off, int whence)
->  {
->  	loff_t newpos;
->  
-> @@ -491,7 +491,7 @@
->  	soft->gscr_addr = mbcs_pioaddr(soft, MBCS_GSCR_START);
->  }
->  
-> -int mbcs_gscr_mmap(struct file *fp, struct vm_area_struct *vma)
-> +static int mbcs_gscr_mmap(struct file *fp, struct vm_area_struct *vma)
->  {
->  	struct cx_dev *cx_dev = fp->private_data;
->  	struct mbcs_soft *soft = cx_dev->soft;
-> @@ -793,7 +793,7 @@
->  	return 0;
->  }
->  
-> -const struct cx_device_id __devinitdata mbcs_id_table[] = {
-> +static const struct cx_device_id __devinitdata mbcs_id_table[] = {
->  	{
->  	 .part_num = MBCS_PART_NUM,
->  	 .mfg_num = MBCS_MFG_NUM,
-> @@ -807,7 +807,7 @@
->  
->  MODULE_DEVICE_TABLE(cx, mbcs_id_table);
->  
-> -struct cx_drv mbcs_driver = {
-> +static struct cx_drv mbcs_driver = {
->  	.name = DEVICE_NAME,
->  	.id_table = mbcs_id_table,
->  	.probe = mbcs_probe,
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc6-mm1/drivers/char/mbcs.h linux-2.6.22-rc6-mm1/drivers/char/mbcs.h
-> --- linux.vanilla-2.6.22-rc6-mm1/drivers/char/mbcs.h	2007-07-02 20:47:23.000000000 +0100
-> +++ linux-2.6.22-rc6-mm1/drivers/char/mbcs.h	2007-07-09 12:12:40.045763696 +0100
-> @@ -542,12 +542,12 @@
->  	struct semaphore algolock;
->  };
->  
-> -extern int mbcs_open(struct inode *ip, struct file *fp);
-> -extern ssize_t mbcs_sram_read(struct file *fp, char __user *buf, size_t len,
-> +static int mbcs_open(struct inode *ip, struct file *fp);
-> +static ssize_t mbcs_sram_read(struct file *fp, char __user *buf, size_t len,
->  			      loff_t * off);
-> -extern ssize_t mbcs_sram_write(struct file *fp, const char __user *buf, size_t len,
-> +static ssize_t mbcs_sram_write(struct file *fp, const char __user *buf, size_t len,
->  			       loff_t * off);
-> -extern loff_t mbcs_sram_llseek(struct file *filp, loff_t off, int whence);
-> -extern int mbcs_gscr_mmap(struct file *fp, struct vm_area_struct *vma);
-> +static loff_t mbcs_sram_llseek(struct file *filp, loff_t off, int whence);
-> +static int mbcs_gscr_mmap(struct file *fp, struct vm_area_struct *vma);
->  
->  #endif				// __MBCS_H__
-
+-- 
+Jeremy Maitin-Shepard
