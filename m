@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbXGIQdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760617AbXGIQdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760572AbXGIQdL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758243AbXGIQYK
+	id S1760617AbXGIQdc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758079AbXGIQYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42106 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42118 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758227AbXGIQYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:24:04 -0400
+	id S1755452AbXGIQYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:24:06 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] Add nanosecond timestamp feature
-Date: Mon,  9 Jul 2007 17:02:35 +0100
-Message-Id: <11839970481383-git-send-email-swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, Josef Bacik <jwhiter@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH] [DLM] fix reference counting
+Date: Mon,  9 Jul 2007 17:02:36 +0100
+Message-Id: <1183997050365-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970463325-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970481383-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -46,313 +47,34 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <11839970421091-git-send-email-swhiteho@redhat.com>
  <11839970442448-git-send-email-swhiteho@redhat.com>
  <11839970463325-git-send-email-swhiteho@redhat.com>
+ <11839970481383-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Josef Bacik <jwhiter@redhat.com>
 
-This adds a nanosecond timestamp feature to the GFS2 filesystem. Due
-to the way that the on-disk format works, older filesystems will just
-appear to have this field set to zero. When mounted by an older version
-of GFS2, the filesystem will simply ignore the extra fields so that
-it will again appear to have whole second resolution, so that its
-trivially backward compatible.
+This is a fix for the patch
 
+021d2ff3a08019260a1dc002793c92d6bf18afb6
+
+I left off a dlm_hold_rsb which causes the box to panic if you try to use
+debugfs.  This patch fixes the problem.  Sorry about that,
+
+Signed-off-by: Josef Bacik <jwhiter@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index b784cf3..d16044c 100644
---- a/fs/gfs2/bmap.c
-+++ b/fs/gfs2/bmap.c
-@@ -772,7 +772,7 @@ static int do_strip(struct gfs2_inode *ip, struct buffer_head *dibh,
- 			gfs2_free_data(ip, bstart, blen);
+diff --git a/fs/dlm/debug_fs.c b/fs/dlm/debug_fs.c
+index 184be98..9f5de37 100644
+--- a/fs/dlm/debug_fs.c
++++ b/fs/dlm/debug_fs.c
+@@ -250,6 +250,7 @@ static int rsb_iter_next(struct rsb_iter *ri)
+ 			goto top;
+                 }
+ 		ri->rsb = list_entry(ri->next, struct dlm_rsb, res_hashchain);
++		dlm_hold_rsb(ri->rsb);
+ 		read_unlock(&ls->ls_rsbtbl[i].lock);
+ 		dlm_put_rsb(old);
  	}
- 
--	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
- 
- 	gfs2_dinode_out(ip, dibh->b_data);
- 
-@@ -847,7 +847,7 @@ static int do_grow(struct gfs2_inode *ip, u64 size)
- 	}
- 
- 	ip->i_di.di_size = size;
--	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
- 
- 	error = gfs2_meta_inode_buffer(ip, &dibh);
- 	if (error)
-@@ -958,7 +958,7 @@ static int trunc_start(struct gfs2_inode *ip, u64 size)
- 
- 	if (gfs2_is_stuffed(ip)) {
- 		ip->i_di.di_size = size;
--		ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+		ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
- 		gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 		gfs2_dinode_out(ip, dibh->b_data);
- 		gfs2_buffer_clear_tail(dibh, sizeof(struct gfs2_dinode) + size);
-@@ -970,7 +970,7 @@ static int trunc_start(struct gfs2_inode *ip, u64 size)
- 
- 		if (!error) {
- 			ip->i_di.di_size = size;
--			ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+			ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
- 			ip->i_di.di_flags |= GFS2_DIF_TRUNC_IN_PROG;
- 			gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 			gfs2_dinode_out(ip, dibh->b_data);
-@@ -1043,7 +1043,7 @@ static int trunc_end(struct gfs2_inode *ip)
- 			ip->i_no_addr;
- 		gfs2_buffer_clear_tail(dibh, sizeof(struct gfs2_dinode));
- 	}
--	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
- 	ip->i_di.di_flags &= ~GFS2_DIF_TRUNC_IN_PROG;
- 
- 	gfs2_trans_add_bh(ip->i_gl, dibh, 1);
-diff --git a/fs/gfs2/dir.c b/fs/gfs2/dir.c
-index 2f15404..f793e31 100644
---- a/fs/gfs2/dir.c
-+++ b/fs/gfs2/dir.c
-@@ -130,7 +130,7 @@ static int gfs2_dir_write_stuffed(struct gfs2_inode *ip, const char *buf,
- 	memcpy(dibh->b_data + offset + sizeof(struct gfs2_dinode), buf, size);
- 	if (ip->i_di.di_size < offset + size)
- 		ip->i_di.di_size = offset + size;
--	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
- 	gfs2_dinode_out(ip, dibh->b_data);
- 
- 	brelse(dibh);
-@@ -228,7 +228,7 @@ out:
- 
- 	if (ip->i_di.di_size < offset + copied)
- 		ip->i_di.di_size = offset + copied;
--	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
- 
- 	gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 	gfs2_dinode_out(ip, dibh->b_data);
-@@ -1622,7 +1622,7 @@ int gfs2_dir_add(struct inode *inode, const struct qstr *name,
- 				break;
- 			gfs2_trans_add_bh(ip->i_gl, bh, 1);
- 			ip->i_di.di_entries++;
--			ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+			ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
- 			gfs2_dinode_out(ip, bh->b_data);
- 			brelse(bh);
- 			error = 0;
-@@ -1708,7 +1708,7 @@ int gfs2_dir_del(struct gfs2_inode *dip, const struct qstr *name)
- 		gfs2_consist_inode(dip);
- 	gfs2_trans_add_bh(dip->i_gl, bh, 1);
- 	dip->i_di.di_entries--;
--	dip->i_inode.i_mtime = dip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	dip->i_inode.i_mtime = dip->i_inode.i_ctime = CURRENT_TIME;
- 	gfs2_dinode_out(dip, bh->b_data);
- 	brelse(bh);
- 	mark_inode_dirty(&dip->i_inode);
-@@ -1756,7 +1756,7 @@ int gfs2_dir_mvino(struct gfs2_inode *dip, const struct qstr *filename,
- 		gfs2_trans_add_bh(dip->i_gl, bh, 1);
- 	}
- 
--	dip->i_inode.i_mtime = dip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	dip->i_inode.i_mtime = dip->i_inode.i_ctime = CURRENT_TIME;
- 	gfs2_dinode_out(dip, bh->b_data);
- 	brelse(bh);
- 	return 0;
-diff --git a/fs/gfs2/eattr.c b/fs/gfs2/eattr.c
-index 40e1d37..2a7435b 100644
---- a/fs/gfs2/eattr.c
-+++ b/fs/gfs2/eattr.c
-@@ -300,7 +300,7 @@ static int ea_dealloc_unstuffed(struct gfs2_inode *ip, struct buffer_head *bh,
- 
- 	error = gfs2_meta_inode_buffer(ip, &dibh);
- 	if (!error) {
--		ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+		ip->i_inode.i_ctime = CURRENT_TIME;
- 		gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 		gfs2_dinode_out(ip, dibh->b_data);
- 		brelse(dibh);
-@@ -717,7 +717,7 @@ static int ea_alloc_skeleton(struct gfs2_inode *ip, struct gfs2_ea_request *er,
- 					    (er->er_mode & S_IFMT));
- 			ip->i_inode.i_mode = er->er_mode;
- 		}
--		ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+		ip->i_inode.i_ctime = CURRENT_TIME;
- 		gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 		gfs2_dinode_out(ip, dibh->b_data);
- 		brelse(dibh);
-@@ -852,7 +852,7 @@ static int ea_set_simple_noalloc(struct gfs2_inode *ip, struct buffer_head *bh,
- 			(ip->i_inode.i_mode & S_IFMT) == (er->er_mode & S_IFMT));
- 		ip->i_inode.i_mode = er->er_mode;
- 	}
--	ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	ip->i_inode.i_ctime = CURRENT_TIME;
- 	gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 	gfs2_dinode_out(ip, dibh->b_data);
- 	brelse(dibh);
-@@ -1133,7 +1133,7 @@ static int ea_remove_stuffed(struct gfs2_inode *ip, struct gfs2_ea_location *el)
- 
- 	error = gfs2_meta_inode_buffer(ip, &dibh);
- 	if (!error) {
--		ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+		ip->i_inode.i_ctime = CURRENT_TIME;
- 		gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 		gfs2_dinode_out(ip, dibh->b_data);
- 		brelse(dibh);
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index a31a4b8..3ef0f05 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -178,11 +178,11 @@ static int gfs2_dinode_in(struct gfs2_inode *ip, const void *buf)
- 	di->di_blocks = be64_to_cpu(str->di_blocks);
- 	gfs2_set_inode_blocks(&ip->i_inode);
- 	ip->i_inode.i_atime.tv_sec = be64_to_cpu(str->di_atime);
--	ip->i_inode.i_atime.tv_nsec = 0;
-+	ip->i_inode.i_atime.tv_nsec = be32_to_cpu(str->di_atime_nsec);
- 	ip->i_inode.i_mtime.tv_sec = be64_to_cpu(str->di_mtime);
--	ip->i_inode.i_mtime.tv_nsec = 0;
-+	ip->i_inode.i_mtime.tv_nsec = be32_to_cpu(str->di_mtime_nsec);
- 	ip->i_inode.i_ctime.tv_sec = be64_to_cpu(str->di_ctime);
--	ip->i_inode.i_ctime.tv_nsec = 0;
-+	ip->i_inode.i_ctime.tv_nsec = be32_to_cpu(str->di_ctime_nsec);
- 
- 	di->di_goal_meta = be64_to_cpu(str->di_goal_meta);
- 	di->di_goal_data = be64_to_cpu(str->di_goal_data);
-@@ -317,7 +317,7 @@ int gfs2_change_nlink(struct gfs2_inode *ip, int diff)
- 	else
- 		drop_nlink(&ip->i_inode);
- 
--	ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+	ip->i_inode.i_ctime = CURRENT_TIME;
- 
- 	gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 	gfs2_dinode_out(ip, dibh->b_data);
-@@ -648,6 +648,7 @@ static void init_dinode(struct gfs2_inode *dip, struct gfs2_glock *gl,
- 	struct gfs2_sbd *sdp = GFS2_SB(&dip->i_inode);
- 	struct gfs2_dinode *di;
- 	struct buffer_head *dibh;
-+	struct timespec tv = CURRENT_TIME;
- 
- 	dibh = gfs2_meta_new(gl, inum->no_addr);
- 	gfs2_trans_add_bh(gl, dibh, 1);
-@@ -663,7 +664,7 @@ static void init_dinode(struct gfs2_inode *dip, struct gfs2_glock *gl,
- 	di->di_nlink = 0;
- 	di->di_size = 0;
- 	di->di_blocks = cpu_to_be64(1);
--	di->di_atime = di->di_mtime = di->di_ctime = cpu_to_be64(get_seconds());
-+	di->di_atime = di->di_mtime = di->di_ctime = cpu_to_be64(tv.tv_sec);
- 	di->di_major = cpu_to_be32(MAJOR(dev));
- 	di->di_minor = cpu_to_be32(MINOR(dev));
- 	di->di_goal_meta = di->di_goal_data = cpu_to_be64(inum->no_addr);
-@@ -693,6 +694,9 @@ static void init_dinode(struct gfs2_inode *dip, struct gfs2_glock *gl,
- 	di->di_entries = 0;
- 	memset(&di->__pad4, 0, sizeof(di->__pad4));
- 	di->di_eattr = 0;
-+	di->di_atime_nsec = cpu_to_be32(tv.tv_nsec);
-+	di->di_mtime_nsec = cpu_to_be32(tv.tv_nsec);
-+	di->di_ctime_nsec = cpu_to_be32(tv.tv_nsec);
- 	memset(&di->di_reserved, 0, sizeof(di->di_reserved));
- 
- 	brelse(dibh);
-@@ -1135,10 +1139,11 @@ int gfs2_glock_nq_atime(struct gfs2_holder *gh)
- 	struct gfs2_glock *gl = gh->gh_gl;
- 	struct gfs2_sbd *sdp = gl->gl_sbd;
- 	struct gfs2_inode *ip = gl->gl_object;
--	s64 curtime, quantum = gfs2_tune_get(sdp, gt_atime_quantum);
-+	s64 quantum = gfs2_tune_get(sdp, gt_atime_quantum);
- 	unsigned int state;
- 	int flags;
- 	int error;
-+	struct timespec tv = CURRENT_TIME;
- 
- 	if (gfs2_assert_warn(sdp, gh->gh_flags & GL_ATIME) ||
- 	    gfs2_assert_warn(sdp, !(gh->gh_flags & GL_ASYNC)) ||
-@@ -1156,8 +1161,7 @@ int gfs2_glock_nq_atime(struct gfs2_holder *gh)
- 	    (sdp->sd_vfs->s_flags & MS_RDONLY))
- 		return 0;
- 
--	curtime = get_seconds();
--	if (curtime - ip->i_inode.i_atime.tv_sec >= quantum) {
-+	if (tv.tv_sec - ip->i_inode.i_atime.tv_sec >= quantum) {
- 		gfs2_glock_dq(gh);
- 		gfs2_holder_reinit(LM_ST_EXCLUSIVE, gh->gh_flags & ~LM_FLAG_ANY,
- 				   gh);
-@@ -1168,8 +1172,8 @@ int gfs2_glock_nq_atime(struct gfs2_holder *gh)
- 		/* Verify that atime hasn't been updated while we were
- 		   trying to get exclusive lock. */
- 
--		curtime = get_seconds();
--		if (curtime - ip->i_inode.i_atime.tv_sec >= quantum) {
-+		tv = CURRENT_TIME;
-+		if (tv.tv_sec - ip->i_inode.i_atime.tv_sec >= quantum) {
- 			struct buffer_head *dibh;
- 			struct gfs2_dinode *di;
- 
-@@ -1183,11 +1187,12 @@ int gfs2_glock_nq_atime(struct gfs2_holder *gh)
- 			if (error)
- 				goto fail_end_trans;
- 
--			ip->i_inode.i_atime.tv_sec = curtime;
-+			ip->i_inode.i_atime = tv;
- 
- 			gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 			di = (struct gfs2_dinode *)dibh->b_data;
- 			di->di_atime = cpu_to_be64(ip->i_inode.i_atime.tv_sec);
-+			di->di_atime_nsec = cpu_to_be32(ip->i_inode.i_atime.tv_nsec);
- 			brelse(dibh);
- 
- 			gfs2_trans_end(sdp);
-@@ -1290,6 +1295,9 @@ void gfs2_dinode_out(const struct gfs2_inode *ip, void *buf)
- 	str->di_entries = cpu_to_be32(di->di_entries);
- 
- 	str->di_eattr = cpu_to_be64(di->di_eattr);
-+	str->di_atime_nsec = cpu_to_be32(ip->i_inode.i_atime.tv_nsec);
-+	str->di_mtime_nsec = cpu_to_be32(ip->i_inode.i_mtime.tv_nsec);
-+	str->di_ctime_nsec = cpu_to_be32(ip->i_inode.i_ctime.tv_nsec);
- }
- 
- void gfs2_dinode_print(const struct gfs2_inode *ip)
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 0443e25..b467272 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -104,6 +104,7 @@ static void init_vfs(struct super_block *sb, unsigned noatime)
- 	sb->s_magic = GFS2_MAGIC;
- 	sb->s_op = &gfs2_super_ops;
- 	sb->s_export_op = &gfs2_export_ops;
-+	sb->s_time_gran = 1;
- 	sb->s_maxbytes = MAX_LFS_FILESIZE;
- 
- 	if (sb->s_flags & (MS_NOATIME | MS_NODIRATIME))
-diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-index 919a661..9cc07f4 100644
---- a/fs/gfs2/ops_inode.c
-+++ b/fs/gfs2/ops_inode.c
-@@ -757,7 +757,7 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
- 		error = gfs2_meta_inode_buffer(ip, &dibh);
- 		if (error)
- 			goto out_end_trans;
--		ip->i_inode.i_ctime = CURRENT_TIME_SEC;
-+		ip->i_inode.i_ctime = CURRENT_TIME;
- 		gfs2_trans_add_bh(ip->i_gl, dibh, 1);
- 		gfs2_dinode_out(ip, dibh->b_data);
- 		brelse(dibh);
-diff --git a/include/linux/gfs2_ondisk.h b/include/linux/gfs2_ondisk.h
-index 2c4e24f..a44a6a0 100644
---- a/include/linux/gfs2_ondisk.h
-+++ b/include/linux/gfs2_ondisk.h
-@@ -259,8 +259,11 @@ struct gfs2_dinode {
- 	struct gfs2_inum __pad4; /* Unused even in current gfs1 */
- 
- 	__be64 di_eattr;	/* extended attribute block number */
-+	__be32 di_atime_nsec;   /* nsec portion of atime */
-+	__be32 di_mtime_nsec;   /* nsec portion of mtime */
-+	__be32 di_ctime_nsec;   /* nsec portion of ctime */
- 
--	__u8 di_reserved[56];
-+	__u8 di_reserved[44];
- };
- 
- /*
 -- 
 1.5.1.2
 
