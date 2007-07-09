@@ -1,93 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbXGIC6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbXGIC6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759518AbXGIC6X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 22:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758925AbXGIC6J
+	id S1759582AbXGIC6r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 22:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758727AbXGIC6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 22:58:09 -0400
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:49760 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758680AbXGIC6I (ORCPT
+	Sun, 8 Jul 2007 22:58:37 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:40572 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758750AbXGIC6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 22:58:08 -0400
-Date: Sun, 8 Jul 2007 22:58:05 -0400 (EDT)
+	Sun, 8 Jul 2007 22:58:36 -0400
+Date: Sun, 8 Jul 2007 22:58:33 -0400 (EDT)
 From: James Morris <jmorris@namei.org>
 X-X-Sender: jmorris@d.namei
 To: Linus Torvalds <torvalds@linux-foundation.org>
 cc: Stephen Smalley <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org
-Subject: [PATCH 05/11] security: revalidate rw permissions for sys_splice
- and sys_vmsplice
+Subject: [PATCH 06/11] selinux: introduce schedule points in policydb_destroy()
 In-Reply-To: <Line.LNX.4.64.0707082253040.12256@d.namei>
-Message-ID: <Line.LNX.4.64.0707082257390.12256@d.namei>
+Message-ID: <Line.LNX.4.64.0707082258100.12256@d.namei>
 References: <Line.LNX.4.64.0707082253040.12256@d.namei>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Revalidate read/write permissions for splice(2) and vmslice(2), in case 
-security policy has changed since the files were opened.
+From: Eric Paris <eparis@redhat.com>
 
+During the LSPP testing we found that it was possible for
+policydb_destroy() to take 10+ seconds of kernel time to complete.
+Basically all policydb_destroy() does is walk some (possibly long) lists
+and free the memory it finds.  Turning off slab debugging config options
+made the problem go away since the actual functions which took most of
+the time were (as seen by oprofile)
+
+> 121202   23.9879  .check_poison_obj
+> 78247    15.4864  .check_slabp
+
+were caused by that.  So I decided to also add some voluntary schedule
+points in that code so config voluntary preempt would be enough to solve
+the problem.  Something similar was done in places like
+shmem_free_pages() when we have to walk a list of memory and free it.
+This was tested by the LSPP group on the hardware which could reproduce
+the problem just loading a new policy and was found to not trigger the
+softlock detector.  It takes just as much processing time, but the
+kernel doesn't spend all that time stuck doing one thing and never
+scheduling.
+
+Someday a better way to handle memory might make the time needed in this
+function a lot less, but this fixes the current issue as it stands
+today.
+
+Signed-off-by: Eric Paris <eparis@redhat.com>
 Signed-off-by: James Morris <jmorris@namei.org>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
 ---
- fs/splice.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+ security/selinux/ss/policydb.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/fs/splice.c b/fs/splice.c
-index e7d7080..98025ec 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -28,6 +28,7 @@
- #include <linux/module.h>
- #include <linux/syscalls.h>
- #include <linux/uio.h>
-+#include <linux/security.h>
+diff --git a/security/selinux/ss/policydb.c b/security/selinux/ss/policydb.c
+index 0ac1021..f05f97a 100644
+--- a/security/selinux/ss/policydb.c
++++ b/security/selinux/ss/policydb.c
+@@ -21,6 +21,7 @@
+  */
  
- struct partial_page {
- 	unsigned int offset;
-@@ -931,6 +932,10 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
- 	if (unlikely(ret < 0))
- 		return ret;
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/errno.h>
+@@ -598,6 +599,7 @@ void policydb_destroy(struct policydb *p)
+ 	struct range_trans *rt, *lrt = NULL;
  
-+	ret = security_file_permission(out, MAY_WRITE);
-+	if (unlikely(ret < 0))
-+		return ret;
-+
- 	return out->f_op->splice_write(pipe, out, ppos, len, flags);
- }
+ 	for (i = 0; i < SYM_NUM; i++) {
++		cond_resched();
+ 		hashtab_map(p->symtab[i].table, destroy_f[i], NULL);
+ 		hashtab_destroy(p->symtab[i].table);
+ 	}
+@@ -612,6 +614,7 @@ void policydb_destroy(struct policydb *p)
+ 	avtab_destroy(&p->te_avtab);
  
-@@ -953,6 +958,10 @@ static long do_splice_to(struct file *in, loff_t *ppos,
- 	if (unlikely(ret < 0))
- 		return ret;
+ 	for (i = 0; i < OCON_NUM; i++) {
++		cond_resched();
+ 		c = p->ocontexts[i];
+ 		while (c) {
+ 			ctmp = c;
+@@ -623,6 +626,7 @@ void policydb_destroy(struct policydb *p)
  
-+	ret = security_file_permission(in, MAY_READ);
-+	if (unlikely(ret < 0))
-+		return ret;
-+
- 	return in->f_op->splice_read(in, ppos, pipe, len, flags);
- }
+ 	g = p->genfs;
+ 	while (g) {
++		cond_resched();
+ 		kfree(g->fstype);
+ 		c = g->head;
+ 		while (c) {
+@@ -639,18 +643,21 @@ void policydb_destroy(struct policydb *p)
+ 	cond_policydb_destroy(p);
  
-@@ -1271,6 +1280,7 @@ static int get_iovec_page_array(const struct iovec __user *iov,
- static long do_vmsplice(struct file *file, const struct iovec __user *iov,
- 			unsigned long nr_segs, unsigned int flags)
- {
-+	long err;
- 	struct pipe_inode_info *pipe;
- 	struct page *pages[PIPE_BUFFERS];
- 	struct partial_page partial[PIPE_BUFFERS];
-@@ -1289,6 +1299,10 @@ static long do_vmsplice(struct file *file, const struct iovec __user *iov,
- 	else if (unlikely(!nr_segs))
- 		return 0;
+ 	for (tr = p->role_tr; tr; tr = tr->next) {
++		cond_resched();
+ 		kfree(ltr);
+ 		ltr = tr;
+ 	}
+ 	kfree(ltr);
  
-+	err = security_file_permission(file, MAY_WRITE);
-+	if (unlikely(err < 0))
-+		return err;
-+
- 	spd.nr_pages = get_iovec_page_array(iov, nr_segs, pages, partial,
- 					    flags & SPLICE_F_GIFT);
- 	if (spd.nr_pages <= 0)
+ 	for (ra = p->role_allow; ra; ra = ra -> next) {
++		cond_resched();
+ 		kfree(lra);
+ 		lra = ra;
+ 	}
+ 	kfree(lra);
+ 
+ 	for (rt = p->range_tr; rt; rt = rt -> next) {
++		cond_resched();
+ 		if (lrt) {
+ 			ebitmap_destroy(&lrt->target_range.level[0].cat);
+ 			ebitmap_destroy(&lrt->target_range.level[1].cat);
 -- 
 1.5.0.6
 
