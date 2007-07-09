@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbXGIBz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbXGIB5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbXGIBz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 21:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbXGIBzR
+	id S1758849AbXGIB5S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 21:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757864AbXGIB5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 21:55:17 -0400
-Received: from smtp.xtech.com.ar ([200.68.115.49]:2710 "EHLO smtp.xtech.com.ar"
+	Sun, 8 Jul 2007 21:57:09 -0400
+Received: from smtp.xtech.com.ar ([200.68.115.49]:2714 "EHLO smtp.xtech.com.ar"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757455AbXGIBzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 21:55:15 -0400
+	id S1757455AbXGIB5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 21:57:09 -0400
 From: Diego Woitasen <diego@woitasen.com.ar>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Diego Woitasen <diego@woitasen.com.ar>
-Subject: [PATCH] Use the tsk argument in init_new_context()
-Date: Sun,  8 Jul 2007 22:55:08 -0300
-Message-Id: <1183946108509-git-send-email-diego@woitasen.com.ar>
+Subject: [PATCH] Remove unneded lock_kernel() in driver/block/loop.c
+Date: Sun,  8 Jul 2007 22:57:01 -0300
+Message-Id: <118394622153-git-send-email-diego@woitasen.com.ar>
 X-Mailer: git-send-email 1.5.2.3
 X-Bogosity: No, tests=bogofilter, spamicity=0.000000, version=0.94.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 Signed-off-by: Diego Woitasen <diego@woitasen.com.ar>
 ---
- arch/i386/kernel/ldt.c   |    2 +-
- arch/x86_64/kernel/ldt.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/block/loop.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/arch/i386/kernel/ldt.c b/arch/i386/kernel/ldt.c
-index e0b2d17..c2eb4fb 100644
---- a/arch/i386/kernel/ldt.c
-+++ b/arch/i386/kernel/ldt.c
-@@ -96,7 +96,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 0ed5470..1cc004e 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -1286,7 +1286,6 @@ static long lo_compat_ioctl(struct file *file, unsigned int cmd, unsigned long a
+ 	struct loop_device *lo = inode->i_bdev->bd_disk->private_data;
+ 	int err;
  
- 	init_MUTEX(&mm->context.sem);
- 	mm->context.size = 0;
--	old_mm = current->mm;
-+	old_mm = tsk->mm;
- 	if (old_mm && old_mm->context.size > 0) {
- 		down(&old_mm->context.sem);
- 		retval = copy_ldt(&mm->context, &old_mm->context);
-diff --git a/arch/x86_64/kernel/ldt.c b/arch/x86_64/kernel/ldt.c
-index bc9ffd5..99a92ed 100644
---- a/arch/x86_64/kernel/ldt.c
-+++ b/arch/x86_64/kernel/ldt.c
-@@ -100,7 +100,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- 
- 	init_MUTEX(&mm->context.sem);
- 	mm->context.size = 0;
--	old_mm = current->mm;
-+	old_mm = tsk->mm;
- 	if (old_mm && old_mm->context.size > 0) {
- 		down(&old_mm->context.sem);
- 		retval = copy_ldt(&mm->context, &old_mm->context);
+-	lock_kernel();
+ 	switch(cmd) {
+ 	case LOOP_SET_STATUS:
+ 		mutex_lock(&lo->lo_ctl_mutex);
+@@ -1312,7 +1311,6 @@ static long lo_compat_ioctl(struct file *file, unsigned int cmd, unsigned long a
+ 		err = -ENOIOCTLCMD;
+ 		break;
+ 	}
+-	unlock_kernel();
+ 	return err;
+ }
+ #endif
 -- 
 1.5.2.3
 
