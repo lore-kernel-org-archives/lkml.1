@@ -1,88 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbXGIAzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbXGIA5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758577AbXGIAzv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 20:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbXGIAzn
+	id S1758637AbXGIA5n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 20:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbXGIA5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 20:55:43 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:35065 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753221AbXGIAzm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 20:55:42 -0400
-Message-ID: <469185F9.4060604@zytor.com>
-Date: Sun, 08 Jul 2007 17:48:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Daniel Drake <dsd@gentoo.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       zwane@infradead.org, Andi Kleen <ak@suse.de>,
-       "Antonino A. Daplas" <adaplas@pol.net>
-Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
- mode
-References: <4678191D.76E4.0078.0@novell.com>	<4686D85B.6090803@gentoo.org> <20070630154230.4ad373fa.akpm@linux-foundation.org> <4690E65B.5050607@gentoo.org>
-In-Reply-To: <4690E65B.5050607@gentoo.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------050004050603020905060700"
+	Sun, 8 Jul 2007 20:57:36 -0400
+Received: from smtpout.mac.com ([17.250.248.173]:65179 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753653AbXGIA5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 20:57:35 -0400
+In-Reply-To: <1183941217.3388.324.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org> <1183929611.3388.303.camel@localhost.localdomain> <200707090006.32712.rjw@sisk.pl> <1183941217.3388.324.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FFA29D56-3400-4EA3-8CE8-C1EF75484510@mac.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Sun, 8 Jul 2007 20:57:29 -0400
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050004050603020905060700
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Jul 08, 2007, at 20:33:37, Benjamin Herrenschmidt wrote:
+>>  	drivers_sysfs_write()
+>> 		while(!suspend_trylock())
+>> 			try_to_icebox() --> or even try_to_freeze(), what's the  
+>> difference?
+>>
+>>  		hit hardware
+>> 		unlock_suspend()
+>>
+>> where the PM core must wait for the suspend lock to get released  
+>> (say with a timeout)?
+>
+> Somewhat. What I'd like is to have that a construct of that sort on  
+> a per-driver basis though :-) Now the question is, in what way  
+> would the above be different from a simple suspend mutex ? I've  
+> been using mutexes in the past for a couple of drivers (iirc,  
+> that's how I did it for dmasound_pmac, though that driver is long  
+> past obsolescence now).
 
-Daniel Drake wrote:
-> 
-> 2.6.22-rc6-mm1 has the same problem (it is not fixed there).
-> 
+I agree completely.  It's a bit trickier if you want to do work in  
+uninterruptable contexts:
 
-I believe this patch should fix it for 2.6.22-rc6-mm1.  I will check
-this into the newsetup tree.
+driver_suspend_callback(...)
+{
+	dev_suspend_lock(dev);
+	put_hardware_to_sleep(dev);
+}
 
-	-hpa
+driver_resume_callback(...)
+{
+	wake_hardware_up(dev);
+	dev_suspend_unlock(dev);
+}
 
---------------050004050603020905060700
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
+Then for sleep-capable contexts:
+	dev_suspend_lock(dev);
+	dev_suspend_unlock(dev);
 
-diff --git a/arch/i386/boot/video-vesa.c b/arch/i386/boot/video-vesa.c
-index 3c21bd7..e6aa9eb 100644
---- a/arch/i386/boot/video-vesa.c
-+++ b/arch/i386/boot/video-vesa.c
-@@ -28,7 +28,7 @@ static void vesa_store_mode_params_graphics(void);
- 
- static int vesa_probe(void)
- {
--#ifdef CONFIG_VIDEO_VESA
-+#if defined(CONFIG_VIDEO_VESA) || defined(CONFIG_FIRMWARE_EDID)
- 	u16 ax;
- 	u16 mode;
- 	addr_t mode_ptr;
-@@ -47,7 +47,8 @@ static int vesa_probe(void)
- 	    vginfo.signature != VESA_MAGIC ||
- 	    vginfo.version < 0x0102)
- 		return 0;	/* Not present */
--
-+#endif /* CONFIG_VIDEO_VESA || CONFIG_FIRMWARE_EDID */
-+#ifdef CONFIG_VIDEO_VESA
- 	set_fs(vginfo.video_mode_ptr.seg);
- 	mode_ptr = vginfo.video_mode_ptr.off;
- 
-@@ -96,7 +97,7 @@ static int vesa_probe(void)
- 	return nmodes;
- #else
- 	return 0;
--#endif
-+#endif /* CONFIG_VIDEO_VESA */
- }
- 
- static int vesa_set_mode(struct mode_info *mode)
+And for no-sleep contexts like interrupts etc:
+	if (!dev_suspend_trylock(dev))
+		return postpone_work_for_later(dev, ...);
+	do_stuff_with(dev);
+	dev_suspend_unlock(dev);
 
---------------050004050603020905060700--
+You could do this with a straight mutex except for the  
+dev_suspend_trylock/unlock bit in uninterruptable contexts, but I  
+seem to recall somebody saying that could be made to work if there  
+was a real need for it.  Alternatively you could just drive the  
+"Generic Mutex" guys up the wall by inventing your own pseudo-mutex  
+with a spinlock, a boolean value, and a waitqueue.
+
+Then when you put your driver to sleep, things trying to do IO will  
+automatically "freeze" themselves exactly until the device is woken  
+again.
+
+Assuming the driver model and subsystem get the ordering right for  
+which devices to suspend/resume, then it's impossible to deadlock or  
+cause hardware confusion.  And even further, if you manage to make  
+the automagic mutex-debugging code work with the noninterruptable  
+trylock it will yell at you when the driver model does nasty deadlock- 
+y things.
+
+On the other hand, if the driver model *doesn't* get the ordering  
+right then it's fundamentally impossible to reliably suspend and resume.
+
+Cheers,
+Kyle Moffett
+
