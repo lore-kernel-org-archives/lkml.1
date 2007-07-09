@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbXGIViS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbXGIVma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbXGIViS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 17:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbXGIViK
+	id S1757933AbXGIVma (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 17:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbXGIVmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 17:38:10 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:54630 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754002AbXGIViI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 17:38:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAB5HkkarR7MV/2dsb2JhbAA
-X-IronPort-AV: i="4.16,518,1175497200"; 
-   d="scan'208"; a="501399880:sNHT402957376"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 08/13] IB/ehca: Lock renaming, static initializers
-X-Message-Flag: Warning: May contain useful information
-References: <200707091502.22407.fenkes@de.ibm.com>
-	<200707091529.04073.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 09 Jul 2007 14:38:03 -0700
-In-Reply-To: <200707091529.04073.fenkes@de.ibm.com> (Joachim Fenkes's message of "Mon, 9 Jul 2007 15:29:03 +0200")
-Message-ID: <adavectw950.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Jul 2007 21:38:04.0112 (UTC) FILETIME=[6E4F1D00:01C7C271]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	Mon, 9 Jul 2007 17:42:23 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:33471 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754265AbXGIVmW (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 17:42:22 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Dave Jones <davej@redhat.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Liunx power consumption on laptops -- Enormous progress in the last few months
+In-Reply-To: Your message of "Fri, 06 Jul 2007 13:02:10 EDT."
+             <20070706170210.GA11214@redhat.com>
+From: Valdis.Kletnieks@vt.edu
+References: <468D4D82.8030009@linux.intel.com> <468E6F0C.1090601@redhat.com> <468E6F4C.8000601@linux.intel.com>
+            <20070706170210.GA11214@redhat.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1184017334_3383P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 09 Jul 2007 17:42:14 -0400
+Message-ID: <9264.1184017334@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > +DEFINE_SPINLOCK(hcall_lock);
+--==_Exmh_1184017334_3383P
+Content-Type: text/plain; charset=us-ascii
 
-This can be static.  (I fixed it up when I applied the patch)
+On Fri, 06 Jul 2007 13:02:10 EDT, Dave Jones said:
+> On Fri, Jul 06, 2007 at 09:35:24AM -0700, Arjan van de Ven wrote:
+> 
+>  > > Where is the ondemand-fix.patch? I can't find any link to it.
+>  > 
+>  > just click on it in the graph ;_
+>  > 
+>  > it's also http://www.linuxpowertop.org/patches/ondemand-fix.patch 
+>  > (which is submitted already to the maintainers)
+> 
+> Should be in cpufreq.git (and thus, -mm) too, waiting for .23 to open up.
+
+Somebody should fix http://ww.linuxpowertop.org/known.php then, it says:
+
+"The kernels ondemand CPU frequency management function currently has a
+high-frequency timer that samples to see if the CPU is idle. Intel fixed this
+and the patches to the kernel to effectively remove this timer are included in
+Linus' tree as of 2.6.22-rc1."
+
+which confused me no end when I was looking at this stuff and wondering why
+it was in the -mm tree if Linus already picked it up. :)
+
+--==_Exmh_1184017334_3383P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGkqu2cC3lWbTT17ARAjcKAKC1Opn/Y8foWsNq/s+Zl1uX1L5JvwCeLdAx
+Awip8PB74mAQPjwIMmgwKwU=
+=8Bqz
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1184017334_3383P--
