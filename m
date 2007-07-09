@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbXGIMOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbXGIMWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756530AbXGIMOg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbXGIMO2
+	id S1756026AbXGIMWT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbXGIMWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:14:28 -0400
-Received: from il.qumranet.com ([82.166.9.18]:34369 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbXGIMO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:14:28 -0400
-Message-ID: <469226AA.6010801@qumranet.com>
-Date: Mon, 09 Jul 2007 15:14:34 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 9 Jul 2007 08:22:10 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:55419 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751981AbXGIMWJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:22:09 -0400
+Date: Mon, 9 Jul 2007 14:22:40 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] include/asm-mips/processor.h: "extern inline" ->
+	"static inline"
+Message-ID: <20070709122240.GY3492@stusta.de>
+References: <20070707010330.GY3492@stusta.de> <20070709102754.GB24487@linux-mips.org>
 MIME-Version: 1.0
-To: Sasa Ostrouska <casaxa@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: KVM-AMD OOPS
-References: <dcf706c60707080915w7660a2exe629c5def78549da@mail.gmail.com>	 <4691BF62.2060207@goop.org> <4691DEE3.5050305@argo.co.il>	 <469223F1.8000904@qumranet.com> <dcf706c60707090510w4a1293cbw69c8e0d47640f77d@mail.gmail.com>
-In-Reply-To: <dcf706c60707090510w4a1293cbw69c8e0d47640f77d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070709102754.GB24487@linux-mips.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sasa Ostrouska wrote:
-> On 7/9/07, Avi Kivity <avi@qumranet.com> wrote:
->>
->> Please post your .config.
->>
->
-> Here is my config:
->
-[config config config]
+On Mon, Jul 09, 2007 at 11:27:55AM +0100, Ralf Baechle wrote:
+> On Sat, Jul 07, 2007 at 03:03:30AM +0200, Adrian Bunk wrote:
+> 
+> > "extern inline" will have different semantics with gcc 4.3,
+> > and "static inline" is correct here.
+> 
+> The idea was to have a linker error in case gcc should deciede for some
+> reason not to inline this function
 
-> #
-> # Virtualization
-> #
-> CONFIG_KVM=y
-> CONFIG_KVM_INTEL=m
-> CONFIG_KVM_AMD=m
+If that's the intention, please use __always_inline instead.
 
-Ah, kvm is built in but the arch modules aren't.
+> which as I understand will continue
+> to be the behaviour of gcc 4.3?
 
-Anybody know how to disallow A to be a module if B is builtin?
+In C99 (and therefore in gcc >= 4.3), "extern inline" means that the 
+function should be compiled inline where the inline definition is seen, 
+and that the compiler should also emit a copy of the function body with 
+an externally visible symbol.
 
-Or maybe I should just make that code a static inline.
+You don't want this.
+
+>   Ralf
+
+cu
+Adrian
 
 -- 
-error compiling committee.c: too many arguments to function
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
