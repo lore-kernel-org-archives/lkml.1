@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbXGIScr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbXGIShj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbXGIScr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 14:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXGIScj
+	id S1757362AbXGIShj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbXGIShc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 14:32:39 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55828 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752419AbXGISci (ORCPT
+	Mon, 9 Jul 2007 14:37:32 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:54153 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753989AbXGIShb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 14:32:38 -0400
-Date: Mon, 9 Jul 2007 20:33:09 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Rob Landley <rob@landley.net>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, gh@us.ibm.com,
-       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
-       joe@perches.com, auke-jan.h.kok@intel.com, hansendc@us.ibm.com,
-       davem@davemloft.net, Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       linux-doc@vger.kernel.org
-Subject: Re: Documentation of kernel messages (Summary)
-Message-ID: <20070709183309.GH3492@stusta.de>
-References: <1181747217.29512.9.camel@localhost.localdomain> <4691C480.5010600@linux-foundation.jp> <4691C95F.7080502@zytor.com> <200707091248.24994.rob@landley.net>
+	Mon, 9 Jul 2007 14:37:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=f93aHy+yC8h63LR8zf6MDFifUSGmq2UtL+/d2smb2cA6mRfpvwqj3D8kTFCmdfP/24Bu58kE1CsAtzqBmTxI6S/fFqNzZ1qqE/xRsiJ6d+tD92uGRWVzFi3q0OAunLzLZ5UUJcMSJCw0IrmOBI2jZJd0WZnrBc4nRAu7A2LT3s0=
+Message-ID: <46928066.7000705@gmail.com>
+Date: Tue, 10 Jul 2007 03:37:26 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200707091248.24994.rob@landley.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: caglar@pardus.org.tr
+CC: Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: SATA exceptions
+References: <fa.hBFih6KVHDFsBf6Qfg6XispiIuY@ifi.uio.no> <fa.NhBdOmH9+RkW+QO72+TjPRwEKj0@ifi.uio.no> <468FD5ED.5060401@shaw.ca> <200707080035.05718.caglar@pardus.org.tr>
+In-Reply-To: <200707080035.05718.caglar@pardus.org.tr>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 12:48:24PM -0400, Rob Landley wrote:
->...
-> [regarding translated documentation]
+Hello,
+
+S.Çağlar Onur wrote:
+> 07 Tem 2007 Cts tarihinde, Robert Hancock şunları yazmıştı: 
+>> It's not the free space on the drive that matters, it's the number of
+>> free sectors in the spare sector pool on the drive, which is invisible
+>> to software.
+>>
+>> Your SMART log shows 309 reallocated sectors. That seems somewhat high..
 > 
-> For my part, I can't _tell_ when a given translation is out of date because I 
-> can't read it, and I certainly can't update it.  So I agree with Eric and I'm 
-> linking to sites hosting kernel documentation in other languages rather than 
-> hosting them myself.  I've got a good link to a Japanese site, need to ping 
-> the contributors of the chinese documentation and see if they have a site for 
-> it...
->...
+> Ah sorry to misinterpret the content:), its a quiet new piece of hardware (at 
+> most ~1.5 month old) and  "Reallocated_Event_Count" constantly increases 
+> (currently its increased to 313) and although i'm not 100 percent sure these 
+> errors only occured with kernels > 2.6.18 (or 2.6.18 didn't report these 
+> cause according to kern.log these only visible with 2.6.22+) 
 
-Include the last git commit on this file in the translated document?
+OS and driver can't really do much about the reallocation event.  Some
+number of reallocations is okay but if you it going up constantly, you
+probably have a dying disk.
 
-This would also make it easier for a translator to update a document 
-because a diff on the original document since the last translation would 
-be trivial.
+> We bought 3 HP Pavillon dv2385ea and one of them only runs with 2.6.18 and its 
+> smartctl output follows as a reference;
+>
+>   5 Reallocated_Sector_Ct   0x0033   253   253   010    Pre-fail  
+> 196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   
 
-> Rob
-
-cu
-Adrian
+Hmm... This is pretty high too.  Do the counts increase on this machine too?
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+tejun
