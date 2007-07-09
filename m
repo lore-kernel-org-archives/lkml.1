@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXGIVoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXGIVrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759429AbXGIVoh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 17:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbXGIVoa
+	id S1759429AbXGIVrB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 17:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbXGIVqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 17:44:30 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:45911 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755014AbXGIVo3 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 17:44:29 -0400
-Date: Mon, 9 Jul 2007 17:44:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Martin Bligh <mbligh@mbligh.org>
-Cc: Christoph Lameter <clameter@sgi.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality, performance and maintenance
-Message-ID: <20070709214426.GC1026@Krystal>
-References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de> <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com> <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com> <4692A1D0.50308@mbligh.org>
+	Mon, 9 Jul 2007 17:46:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36175 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755379AbXGIVqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 17:46:54 -0400
+Date: Mon, 9 Jul 2007 17:46:50 -0400
+From: Dave Jones <davej@redhat.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Liunx power consumption on laptops -- Enormous progress in the
+	last few months
+Message-ID: <20070709214650.GE29368@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Valdis.Kletnieks@vt.edu,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+References: <468D4D82.8030009@linux.intel.com> <468E6F0C.1090601@redhat.com> <468E6F4C.8000601@linux.intel.com> <20070706170210.GA11214@redhat.com> <9264.1184017334@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <4692A1D0.50308@mbligh.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:11:19 up 2 days, 11:16,  4 users,  load average: 0.05, 0.19, 0.23
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <9264.1184017334@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jul 09, 2007 at 05:42:14PM -0400, Valdis.Kletnieks@vt.edu wrote:
+ > On Fri, 06 Jul 2007 13:02:10 EDT, Dave Jones said:
+ > > On Fri, Jul 06, 2007 at 09:35:24AM -0700, Arjan van de Ven wrote:
+ > > 
+ > >  > > Where is the ondemand-fix.patch? I can't find any link to it.
+ > >  > 
+ > >  > just click on it in the graph ;_
+ > >  > 
+ > >  > it's also http://www.linuxpowertop.org/patches/ondemand-fix.patch 
+ > >  > (which is submitted already to the maintainers)
+ > > 
+ > > Should be in cpufreq.git (and thus, -mm) too, waiting for .23 to open up.
+ > 
+ > Somebody should fix http://ww.linuxpowertop.org/known.php then, it says:
+ > 
+ > "The kernels ondemand CPU frequency management function currently has a
+ > high-frequency timer that samples to see if the CPU is idle. Intel fixed this
+ > and the patches to the kernel to effectively remove this timer are included in
+ > Linus' tree as of 2.6.22-rc1."
+ > 
+ > which confused me no end when I was looking at this stuff and wondering why
+ > it was in the -mm tree if Linus already picked it up. :)
 
-* Martin Bligh (mbligh@mbligh.org) wrote:
-> Christoph Lameter wrote:
-> >On Mon, 9 Jul 2007, Martin Bligh wrote:
-> >
-> >>Those numbers came from Mathieu Desnoyers (LTTng) if you
-> >>want more details.
-> >
-> >Okay the source for these numbers is in his paper for the OLS 2006: Volume 
-> >1 page 208-209? I do not see the exact number that you referred to there.
-> 
+There were two sets of fixes to ondemand.  The first round did in fact
+go into .22rc1  The others I deemed too late in the cycle to go into .22
+(Though they have been flawless, so if there was enough demand (ha!) we could
+ even push them to -stable once they're in mainline).
 
-Hrm, the reference page number is wrong: it is in OLS 2006, Vol. 1 page
-216 (section 4.5.2 Scalability). I originally pulled out the page number
-from my local paper copy. oops.
-
-
-> Nope, he was a direct co-author on the paper, was
-> working here, and measured it.
-> 
-> >He seems to be comparing spinlock acquire / release vs. cmpxchg. So I 
-> >guess you got your material from somewhere else?
-> >
-
-I ran a test specifically for this paper where I got this result
-comparing the local irq enable/disable to local cmpxchg.
-
-> >Also the cmpxchg used there is the lockless variant. cmpxchg 29 cycles w/o 
-> >lock prefix and 112 with lock prefix.
-
-Yep, I volountarily used the variant without lock prefix because the
-data is per cpu and I disable preemption.
-
-> >
-> >I see you reference another paper by Desnoyers: 
-> >http://tree.celinuxforum.org/CelfPubWiki/ELC2006Presentations?action=AttachFile&do=get&target=celf2006-desnoyers.pdf
-> >
-> >I do not see anything relevant there. Where did those numbers come from?
-> >
-> >The lockless cmpxchg is certainly an interesting idea. Certain for some 
-> >platforms I could disable preempt and then do a lockless cmpxchg.
-> 
-
-Yes, preempt disabling or, eventually, the new thread migration
-disabling I just proposed as an RFC on LKML. (that would make -rt people
-happier)
-
-> Mathieu, can you give some more details? Obviously the exact numbers
-> will vary by archicture, machine size, etc, but it's a good point
-> for discussion.
-> 
-
-Sure, also note that the UP cmpxchg (see asm-$ARCH/local.h in 2.6.22) is
-faster on architectures like powerpc and MIPS where it is possible to
-remove some memory barriers.
-
-See 2.6.22 Documentation/local_ops.txt for a thorough discussion. Don't
-hesitate ping me if you have more questions.
-
-Regards,
-
-Mathieu
-
+	Dave
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+http://www.codemonkey.org.uk
