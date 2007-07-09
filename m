@@ -1,88 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbXGIM6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbXGIM7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbXGIM6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbXGIM6f
+	id S1755498AbXGIM7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXGIM7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:58:35 -0400
-Received: from il.qumranet.com ([82.166.9.18]:59884 "EHLO il.qumranet.com"
+	Mon, 9 Jul 2007 08:59:46 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:65061 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbXGIM6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:58:34 -0400
-Message-ID: <46923100.8000407@qumranet.com>
-Date: Mon, 09 Jul 2007 15:58:40 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1752743AbXGIM7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:59:44 -0400
+Message-ID: <469230E8.5000005@rfo.atmel.com>
+Date: Mon, 09 Jul 2007 14:58:16 +0200
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Sasa Ostrouska <casaxa@gmail.com>,
-       linux-kernel@vger.kernel.org, Chandra Seetharaman <sekharan@us.ibm.com>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: KVM-AMD OOPS
-References: <dcf706c60707080915w7660a2exe629c5def78549da@mail.gmail.com> <4691BF62.2060207@goop.org> <4691E08F.4050908@gmail.com>
-In-Reply-To: <4691E08F.4050908@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       wux@landicorp.com, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Hamish Guthrie <hamish@prodigi.ch>,
+       Andrew Victor <andrew@sanpeople.com>, Marc Pignat <marc.pignat@hevs.ch>,
+       m.kozlowski@tuxland.pl
+Subject: [PATCH] mmc: at91_mci: fix hanging and rework to match flowcharts
+References: <4688EC94.1090901@rfo.atmel.com>
+In-Reply-To: <4688EC94.1090901@rfo.atmel.com>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
 Content-Transfer-Encoding: 7bit
+X-ESAFE-STATUS: Mail clean
+X-ESAFE-DETAILS: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Jeremy Fitzhardinge napsal(a):
->   
->> Sasa Ostrouska wrote:
->>     
->>> root@rcserver:~# modprobe kvm-amd
->>> int3: 0000 [1] PREEMPT SMP
->>> CPU 1
->>> Modules linked in: kvm_amd snd_seq_dummy snd_seq_oss
->>> snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss
->>> nls_iso8859_1 ntfs nls_base usb_storage libusual capability commoncap
->>> lp psmouse snd_hda_intel snd_hda_codec snd_pcm snd_timer ohci_hcd
->>> ehci_hcd 8139too rtc_cmos snd soundcore snd_page_alloc usbcore k8temp
->>> mii rtc_core rtc_lib i2c_nforce2 parport_pc parport
->>> Pid: 2898, comm: modprobe Tainted: P       2.6.21.5 #1
->>> RIP: 0010:[<ffffffff80572364>]  [<ffffffff80572364>]
->>> register_cpu_notifier+0x1/0x31
->>> RSP: 0000:ffff81006e34df40  EFLAGS: 00000246
->>> RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00000000c0010117
->>> RDX: 000000000000ffff RSI: ffff81006e219640 RDI: ffffffff80536510
->>> RBP: ffffffff880d8840 R08: 0000000000000000 R09: 000000000006b5f4
->>> R10: 0000000000000000 R11: 0000000000000000 R12: 00000000005296b0
->>> R13: 00007fff51fe55c0 R14: 0000000000000000 R15: 0000000000000000
->>> FS:  00002b4e58e18b00(0000) GS:ffff810002e794c0(0000)
->>> knlGS:0000000000000000
->>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->>> CR2: 000000000050df64 CR3: 000000007a0f3000 CR4: 00000000000006e0
->>> Process modprobe (pid: 2898, threadinfo ffff81006e34c000, task
->>> ffff81007bc48400)
->>> Stack:  ffffffff8039e024 ffff81006e34c000 ffffffff880d8840
->>> 0000000000005e19
->>> ffffffff8024537c 0000000000000000 00007fff51fe50c0 00000000004142d0
->>> ffffffff8020967e 0000000000000206 00000000005230e0 000000000052f4c9
->>> Call Trace:
->>> [<ffffffff8039e024>] kvm_init_arch+0x90/0x145
->>> [<ffffffff8024537c>] sys_init_module+0xad/0x168
->>> [<ffffffff8020967e>] system_call+0x7e/0x83
->>>
->>>
->>> Code: cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc
->>>       
->> This is the init section poison pattern.  Looks like an init function
->> was used after the code was freed.
->>     
->
-> This?
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=65edc68c345cbe21d0b0375c3452a3ed5e322868;hp=054cc8a2d808822dadf488a61729e3e550f114c4
->
-> Could you revert it and test?
->
->   
+Fixes hanging using multi block operations (seen during CMD25).
+Follows closely the datasheet flowcharts.
 
-There's actually a patch (by me) after that to allow modules to call the 
-cpu hotplug functions if !CONFIG_HOTPLUG_CPU; but in this case kvm was 
-built in while kvm-amd.ko is a module, which confused that logic.
+This piece of code handles better big file writing. I had to take care 
+of the notbusy signal during write (at91_mci_handle_cmdrdy function) and 
+to rearrange the AT91_MCI_ENDRX and AT91_MCI_RXBUFF flag usage.
 
+Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+---
+This second patch is rebuild following Mariusz and Pierre comments.
 
--- 
-error compiling committee.c: too many arguments to function
+This patch is applied on top of the "typo" one :
+http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/mmc-at91_mci-typo.patch 
+
+It is cooked with the help of Wu Xuan and Marc Pignat. Big thanks to them.
+
+It has been tested on several systems and reported to work ok :
+at91rm9200 ok w/ 1 wire
+at91sam9261 ok w/ 1 wire
+at91sam926[03] ok w/ 4 wires
+The code takes care of those specificities.
+
+ drivers/mmc/host/at91_mci.c |  199 ++++++++++++++++++----------------
+ 1 file changed, 108 insertions(+), 91 deletions(-)
+
+Index: b/drivers/mmc/host/at91_mci.c
+===================================================================
+--- a/drivers/mmc/host/at91_mci.c
++++ b/drivers/mmc/host/at91_mci.c
+@@ -80,8 +78,6 @@
+ 
+ #define DRIVER_NAME "at91_mci"
+ 
+-#undef	SUPPORT_4WIRE
+-
+ #define FL_SENT_COMMAND	(1 << 0)
+ #define FL_SENT_STOP	(1 << 1)
+ 
+@@ -270,8 +266,6 @@ static void at91_mci_post_dma_read(struc
+ 	}
+ 
+ 	while (host->in_use_index < host->transfer_index) {
+-		unsigned int *buffer;
+-
+ 		struct scatterlist *sg;
+ 
+ 		pr_debug("finishing index %d\n", host->in_use_index);
+@@ -282,20 +276,22 @@ static void at91_mci_post_dma_read(struc
+ 
+ 		dma_unmap_page(NULL, sg->dma_address, sg->length, DMA_FROM_DEVICE);
+ 
+-		/* Swap the contents of the buffer */
+-		buffer = kmap_atomic(sg->page, KM_BIO_SRC_IRQ) + sg->offset;
+-		pr_debug("buffer = %p, length = %d\n", buffer, sg->length);
+-
+ 		data->bytes_xfered += sg->length;
+ 
+ 		if (cpu_is_at91rm9200()) {	/* AT91RM9200 errata */
++			unsigned int *buffer;
+ 			int index;
+ 
++			/* Swap the contents of the buffer */
++			buffer = kmap_atomic(sg->page, KM_BIO_SRC_IRQ) + sg->offset;
++			pr_debug("buffer = %p, length = %d\n", buffer, sg->length);
++
+ 			for (index = 0; index < (sg->length / 4); index++)
+ 				buffer[index] = swab32(buffer[index]);
++
++			kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
+ 		}
+ 
+-		kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
+ 		flush_dcache_page(sg->page);
+ 	}
+ 
+@@ -303,8 +299,8 @@ static void at91_mci_post_dma_read(struc
+ 	if (host->transfer_index < data->sg_len)
+ 		at91_mci_pre_dma_read(host);
+ 	else {
++		at91_mci_write(host, AT91_MCI_IDR, AT91_MCI_ENDRX);
+ 		at91_mci_write(host, AT91_MCI_IER, AT91_MCI_RXBUFF);
+-		at91_mci_write(host, ATMEL_PDC_PTCR, ATMEL_PDC_RXTDIS | ATMEL_PDC_TXTDIS);
+ 	}
+ 
+ 	pr_debug("post dma read done\n");
+@@ -325,7 +321,6 @@ static void at91_mci_handle_transmitted(
+ 
+ 	/* Now wait for cmd ready */
+ 	at91_mci_write(host, AT91_MCI_IDR, AT91_MCI_TXBUFE);
+-	at91_mci_write(host, AT91_MCI_IER, AT91_MCI_NOTBUSY);
+ 
+ 	cmd = host->cmd;
+ 	if (!cmd) return;
+@@ -333,18 +328,53 @@ static void at91_mci_handle_transmitted(
+ 	data = cmd->data;
+ 	if (!data) return;
+ 
++	if (cmd->data->flags & MMC_DATA_MULTI) {
++		pr_debug("multiple write : wait for BLKE...\n");
++		at91_mci_write(host, AT91_MCI_IER, AT91_MCI_BLKE);
++	} else
++		at91_mci_write(host, AT91_MCI_IER, AT91_MCI_NOTBUSY);
++
+ 	data->bytes_xfered = host->total_length;
+ }
+ 
++/*Handle after command sent ready*/
++static int at91_mci_handle_cmdrdy(struct at91mci_host *host)
++{
++	if (!host->cmd)
++		return 1;
++	else if (!host->cmd->data) {
++		if (host->flags & FL_SENT_STOP) {
++			/*After multi block write, we must wait for NOTBUSY*/
++			at91_mci_write(host, AT91_MCI_IER, AT91_MCI_NOTBUSY);
++		} else return 1;
++	} else if (host->cmd->data->flags & MMC_DATA_WRITE) {
++		/*After sendding multi-block-write command, start DMA transfer*/
++		at91_mci_write(host, AT91_MCI_IER, AT91_MCI_TXBUFE);
++		at91_mci_write(host, AT91_MCI_IER, AT91_MCI_BLKE);
++		at91_mci_write(host, ATMEL_PDC_PTCR, ATMEL_PDC_TXTEN);
++	}
++
++	/* command not completed, have to wait */
++	return 0;
++}
++
++
+ /*
+  * Enable the controller
+  */
+ static void at91_mci_enable(struct at91mci_host *host)
+ {
++	unsigned int mr;
++
+ 	at91_mci_write(host, AT91_MCI_CR, AT91_MCI_MCIEN);
+ 	at91_mci_write(host, AT91_MCI_IDR, 0xffffffff);
+ 	at91_mci_write(host, AT91_MCI_DTOR, AT91_MCI_DTOMUL_1M | AT91_MCI_DTOCYC);
+-	at91_mci_write(host, AT91_MCI_MR, AT91_MCI_PDCMODE | 0x34a);
++	mr = AT91_MCI_PDCMODE | 0x34a;
++
++	if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
++		mr |= AT91_MCI_RDPROOF | AT91_MCI_WRPROOF;
++
++	at91_mci_write(host, AT91_MCI_MR, mr);
+ 
+ 	/* use Slot A or B (only one at same time) */
+ 	at91_mci_write(host, AT91_MCI_SDCR, host->board->slot_b);
+@@ -360,9 +390,8 @@ static void at91_mci_disable(struct at91
+ 
+ /*
+  * Send a command
+- * return the interrupts to enable
+  */
+-static unsigned int at91_mci_send_command(struct at91mci_host *host, struct mmc_command *cmd)
++static void at91_mci_send_command(struct at91mci_host *host, struct mmc_command *cmd)
+ {
+ 	unsigned int cmdr, mr;
+ 	unsigned int block_length;
+@@ -373,8 +402,7 @@ static unsigned int at91_mci_send_comman
+ 
+ 	host->cmd = cmd;
+ 
+-	/* Not sure if this is needed */
+-#if 0
++	/* Needed for leaving busy state before CMD1 */
+ 	if ((at91_mci_read(host, AT91_MCI_SR) & AT91_MCI_RTOE) && (cmd->opcode == 1)) {
+ 		pr_debug("Clearing timeout\n");
+ 		at91_mci_write(host, AT91_MCI_ARGR, 0);
+@@ -384,7 +412,7 @@ static unsigned int at91_mci_send_comman
+ 			pr_debug("Clearing: SR = %08X\n", at91_mci_read(host, AT91_MCI_SR));
+ 		}
+ 	}
+-#endif
++
+ 	cmdr = cmd->opcode;
+ 
+ 	if (mmc_resp_type(cmd) == MMC_RSP_NONE)
+@@ -441,50 +469,48 @@ static unsigned int at91_mci_send_comman
+ 		at91_mci_write(host, ATMEL_PDC_TCR, 0);
+ 		at91_mci_write(host, ATMEL_PDC_TNPR, 0);
+ 		at91_mci_write(host, ATMEL_PDC_TNCR, 0);
++		ier = AT91_MCI_CMDRDY;
++	} else {
++		/* zero block length and PDC mode */
++		mr = at91_mci_read(host, AT91_MCI_MR) & 0x7fff;
++		at91_mci_write(host, AT91_MCI_MR, mr | (block_length << 16) | AT91_MCI_PDCMODE);
++
++		/*
++		 * Disable the PDC controller
++		 */
++		at91_mci_write(host, ATMEL_PDC_PTCR, ATMEL_PDC_RXTDIS | ATMEL_PDC_TXTDIS);
+ 
+-		at91_mci_write(host, AT91_MCI_ARGR, cmd->arg);
+-		at91_mci_write(host, AT91_MCI_CMDR, cmdr);
+-		return AT91_MCI_CMDRDY;
+-	}
+-
+-	mr = at91_mci_read(host, AT91_MCI_MR) & 0x7fff;	/* zero block length and PDC mode */
+-	at91_mci_write(host, AT91_MCI_MR, mr | (block_length << 16) | AT91_MCI_PDCMODE);
++		if (cmdr & AT91_MCI_TRCMD_START) {
++			data->bytes_xfered = 0;
++			host->transfer_index = 0;
++			host->in_use_index = 0;
++			if (cmdr & AT91_MCI_TRDIR) {
++				/*
++				 * Handle a read
++				 */
++				host->buffer = NULL;
++				host->total_length = 0;
+ 
+-	/*
+-	 * Disable the PDC controller
+-	 */
+-	at91_mci_write(host, ATMEL_PDC_PTCR, ATMEL_PDC_RXTDIS | ATMEL_PDC_TXTDIS);
+-
+-	if (cmdr & AT91_MCI_TRCMD_START) {
+-		data->bytes_xfered = 0;
+-		host->transfer_index = 0;
+-		host->in_use_index = 0;
+-		if (cmdr & AT91_MCI_TRDIR) {
+-			/*
+-			 * Handle a read
+-			 */
+-			host->buffer = NULL;
+-			host->total_length = 0;
+-
+-			at91_mci_pre_dma_read(host);
+-			ier = AT91_MCI_ENDRX /* | AT91_MCI_RXBUFF */;
+-		}
+-		else {
+-			/*
+-			 * Handle a write
+-			 */
+-			host->total_length = block_length * blocks;
+-			host->buffer = dma_alloc_coherent(NULL,
+-						  host->total_length,
+-						  &host->physical_address, GFP_KERNEL);
+-
+-			at91_mci_sg_to_dma(host, data);
+-
+-			pr_debug("Transmitting %d bytes\n", host->total_length);
+-
+-			at91_mci_write(host, ATMEL_PDC_TPR, host->physical_address);
+-			at91_mci_write(host, ATMEL_PDC_TCR, host->total_length / 4);
+-			ier = AT91_MCI_TXBUFE;
++				at91_mci_pre_dma_read(host);
++				ier = AT91_MCI_ENDRX /* | AT91_MCI_RXBUFF */;
++			}
++			else {
++				/*
++				 * Handle a write
++				 */
++				host->total_length = block_length * blocks;
++				host->buffer = dma_alloc_coherent(NULL,
++						host->total_length,
++						&host->physical_address, GFP_KERNEL);
++
++				at91_mci_sg_to_dma(host, data);
++
++				pr_debug("Transmitting %d bytes\n", host->total_length);
++
++				at91_mci_write(host, ATMEL_PDC_TPR, host->physical_address);
++				at91_mci_write(host, ATMEL_PDC_TCR, host->total_length / 4);
++				ier = AT91_MCI_CMDRDY;
++			}
+ 		}
+ 	}
+ 
+@@ -499,24 +525,9 @@ static unsigned int at91_mci_send_comman
+ 	if (cmdr & AT91_MCI_TRCMD_START) {
+ 		if (cmdr & AT91_MCI_TRDIR)
+ 			at91_mci_write(host, ATMEL_PDC_PTCR, ATMEL_PDC_RXTEN);
+-		else
+-			at91_mci_write(host, ATMEL_PDC_PTCR, ATMEL_PDC_TXTEN);
+ 	}
+-	return ier;
+-}
+ 
+-/*
+- * Wait for a command to complete
+- */
+-static void at91_mci_process_command(struct at91mci_host *host, struct mmc_command *cmd)
+-{
+-	unsigned int ier;
+-
+-	ier = at91_mci_send_command(host, cmd);
+-
+-	pr_debug("setting ier to %08X\n", ier);
+-
+-	/* Stop on errors or the required value */
++	/* Enable selected interrupts */
+ 	at91_mci_write(host, AT91_MCI_IER, AT91_MCI_ERRORS | ier);
+ }
+ 
+@@ -527,11 +538,11 @@ static void at91_mci_process_next(struct
+ {
+ 	if (!(host->flags & FL_SENT_COMMAND)) {
+ 		host->flags |= FL_SENT_COMMAND;
+-		at91_mci_process_command(host, host->request->cmd);
++		at91_mci_send_command(host, host->request->cmd);
+ 	}
+ 	else if ((!(host->flags & FL_SENT_STOP)) && host->request->stop) {
+ 		host->flags |= FL_SENT_STOP;
+-		at91_mci_process_command(host, host->request->stop);
++		at91_mci_send_command(host, host->request->stop);
+ 	}
+ 	else
+ 		mmc_request_done(host->mmc, host->request);
+@@ -698,29 +709,33 @@ static irqreturn_t at91_mci_irq(int irq,
+ 			at91_mci_handle_transmitted(host);
+ 		}
+ 
++		if (int_status & AT91_MCI_ENDRX) {
++			pr_debug("ENDRX\n");
++			at91_mci_post_dma_read(host);
++		}
++
+ 		if (int_status & AT91_MCI_RXBUFF) {
+ 			pr_debug("RX buffer full\n");
+-			at91_mci_write(host, AT91_MCI_IER, AT91_MCI_CMDRDY);
++			at91_mci_write(host, ATMEL_PDC_PTCR, ATMEL_PDC_RXTDIS | ATMEL_PDC_TXTDIS);
++			at91_mci_write(host, AT91_MCI_IDR, AT91_MCI_RXBUFF | AT91_MCI_ENDRX);
++			completed = 1;
+ 		}
+ 
+ 		if (int_status & AT91_MCI_ENDTX)
+ 			pr_debug("Transmit has ended\n");
+ 
+-		if (int_status & AT91_MCI_ENDRX) {
+-			pr_debug("Receive has ended\n");
+-			at91_mci_post_dma_read(host);
+-		}
+-
+ 		if (int_status & AT91_MCI_NOTBUSY) {
+ 			pr_debug("Card is ready\n");
+-			at91_mci_write(host, AT91_MCI_IER, AT91_MCI_CMDRDY);
++			completed = 1;
+ 		}
+ 
+ 		if (int_status & AT91_MCI_DTIP)
+ 			pr_debug("Data transfer in progress\n");
+ 
+-		if (int_status & AT91_MCI_BLKE)
++		if (int_status & AT91_MCI_BLKE) {
+ 			pr_debug("Block transfer has ended\n");
++			completed = 1;
++		}
+ 
+ 		if (int_status & AT91_MCI_TXRDY)
+ 			pr_debug("Ready to transmit\n");
+@@ -730,7 +745,7 @@ static irqreturn_t at91_mci_irq(int irq,
+ 
+ 		if (int_status & AT91_MCI_CMDRDY) {
+ 			pr_debug("Command ready\n");
+-			completed = 1;
++			completed = at91_mci_handle_cmdrdy(host);
+ 		}
+ 	}
+ 
+@@ -830,11 +845,11 @@ static int __init at91_mci_probe(struct 
+ 	host->bus_mode = 0;
+ 	host->board = pdev->dev.platform_data;
+ 	if (host->board->wire4) {
+-#ifdef SUPPORT_4WIRE
+-		mmc->caps |= MMC_CAP_4_BIT_DATA;
+-#else
+-		printk("AT91 MMC: 4 wire bus mode not supported by this driver - using 1 wire\n");
+-#endif
++		if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
++			mmc->caps |= MMC_CAP_4_BIT_DATA;
++		else
++			printk("AT91 MMC: 4 wire bus mode not supported"
++				" - using 1 wire\n");
+ 	}
+ 
+ 	/*
+
 
