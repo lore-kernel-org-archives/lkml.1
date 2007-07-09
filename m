@@ -1,98 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbXGIFPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbXGIFXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759258AbXGIFPc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 01:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbXGIFPX
+	id S1753254AbXGIFXg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 01:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbXGIFX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 01:15:23 -0400
-Received: from jp1.linux-foundation.org ([207.189.120.31]:36303 "EHLO
-	jp1.osdl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751543AbXGIFPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 01:15:22 -0400
-Message-ID: <4691C480.5010600@linux-foundation.jp>
-Date: Mon, 09 Jul 2007 14:15:44 +0900
-From: "Kunai, Takashi" <kunai@linux-foundation.jp>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 9 Jul 2007 01:23:27 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:62640 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbXGIFX0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 01:23:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Wcff2L1Y5xtkP3eoBfUsW25wduBbwsNTQAP9xVyQzAeF8uuwxkZ2bWxMiUU3YMiJvarXbNzGO6fJ7Tkw7dRv9Y9ThhnWNAklSjoYf6pOdvFCURROcB1XNF9fMU/YPTFKTYossWeESGmomR/iwmmn44d23fESch3/U+ZABFG+ZSM=
+Message-ID: <a44ae5cd0707082223t50499b60m3183927750e0590e@mail.gmail.com>
+Date: Sun, 8 Jul 2007 22:23:25 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: 2.6.22 -- net/core/dev.c:1515: error: 'NETIF_F_IPV6_CSUM' undeclared (first use in this function)
 MIME-Version: 1.0
-To: holzheu@linux.vnet.ibm.com
-CC: Rob Landley <rob@landley.net>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, gh@us.ibm.com,
-       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
-       hpa@zytor.com, joe@perches.com, auke-jan.h.kok@intel.com,
-       hansendc@us.ibm.com, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
-       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Subject: Re: Documentation of kernel messages (Summary)
-References: <1181747217.29512.9.camel@localhost.localdomain>	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>	 <1182779321.7142.15.camel@localhost.localdomain>	 <200706251144.48658.rob@landley.net> <1182957079.6643.13.camel@localhost.localdomain>
-In-Reply-To: <1182957079.6643.13.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Micheal,
+CC      net/core/dev.o
+net/core/dev.c: In function 'dev_queue_xmit':
+net/core/dev.c:1515: error: 'NETIF_F_IPV6_CSUM' undeclared (first use
+in this function)
+net/core/dev.c:1515: error: (Each undeclared identifier is reported only once
+net/core/dev.c:1515: error: for each function it appears in.)
+make[2]: *** [net/core/dev.o] Error 1
+make[1]: *** [net/core] Error 2
 
-This is a late response to your summary below.
+CONFIG_NET=y
 
-First of all, there is a lot of interest in this issue among Japanese
-vendor community. Recently, I have built a Japanese mailing list to
-discuss this issue. I'm posting this comment resulting from such discussion.
-
-(1) Your kernel development proposal will be greatly supported by
-Japanese vendor community. At the same time, it needs support from the
-kernel communities, as well.
-(2) As for message ID's, you proposed 3 ways; (a)adding message numbers,
-(b)printk hashes and (c)Format strings. (a) seems difficult to get
-supports from kernel developers and (c) lacks uniqueness of each
-message. Though (b) also lacks uniqueness, adding component id and/or
-file name (files name could be hashed, as well), it could achieve some
-practical level of uniqueness. To avoid ugly message format, it could be
-possible to introduce a system parameter to suppress this hash ids.
-Thus, our preference is (b).
-(3) As for a documentation file, outside of kernel source tree would be
-fine.
-(4) When this kernel message scheme become feasible, it will be needed
-to talk about the standardized contents of each description
-(meanings/actions/etc).
-
-Takashi Kunai
--- 
-Kunai, Takashi
-The Linux Foundation Japan (New since '07/2/5)
-Shibuya Mark City West 22nd Floor
-1-12-1 Dogenzaka,Shibuya-ku,Tokyo,Japan
-zip150-0043 tel+81-3-4360-5493
-
-Michael Holzheu wrote:
-> On Mon, 2007-06-25 at 11:44 -0400, Rob Landley wrote:
->> On Monday 25 June 2007 09:48:41 Michael Holzheu wrote:
->>> Hi all,
->>>
->>> Any idea, how to proceed with this topic? Do you think that any of the
->>> suggested solutions for documentation / translation of kernel messages
->>> will have a chance to be included in the kernel?
->> Personally?  No to the second question, which renders the first "do it 
->> yourself outside of the tree".
-> 
-> If that is the opinion of the majority here, fine. If there is no hard
-> rule on how to define printk macros, one option for us would be to
-> define some new s390 specific printk macros for our device drivers.
-> Similar to hundreds of other driver specific printk macros in the
-> kernel.
-> 
->> Just a guess, and I don't speak for anyone else here, but I think most of us 
->> are waiting to see how long it takes you to lose interest.
-> 
-> :-) Work is not always fun. Sometimes it is just a duty.
-> 
-> Michael
-> 
-> 
-> 
-> 
-
-
-
-
-
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+# CONFIG_XFRM_USER is not set
+# CONFIG_XFRM_SUB_POLICY is not set
+# CONFIG_XFRM_MIGRATE is not set
+# CONFIG_NET_KEY is not set
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+# CONFIG_IP_PNP_BOOTP is not set
+# CONFIG_IP_PNP_RARP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
+# CONFIG_ARPD is not set
+# CONFIG_SYN_COOKIES is not set
+# CONFIG_INET_AH is not set
+# CONFIG_INET_ESP is not set
+# CONFIG_INET_IPCOMP is not set
+# CONFIG_INET_XFRM_TUNNEL is not set
+CONFIG_INET_TUNNEL=m
+CONFIG_INET_XFRM_MODE_TRANSPORT=m
+CONFIG_INET_XFRM_MODE_TUNNEL=m
+# CONFIG_INET_XFRM_MODE_BEET is not set
+CONFIG_INET_DIAG=m
+CONFIG_INET_TCP_DIAG=m
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=y
+# CONFIG_TCP_MD5SIG is not set
+# CONFIG_IP_VS is not set
+CONFIG_IPV6=m
+# CONFIG_IPV6_PRIVACY is not set
+# CONFIG_IPV6_ROUTER_PREF is not set
+# CONFIG_IPV6_OPTIMISTIC_DAD is not set
+# CONFIG_INET6_AH is not set
+# CONFIG_INET6_ESP is not set
+# CONFIG_INET6_IPCOMP is not set
+# CONFIG_IPV6_MIP6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+CONFIG_INET6_XFRM_MODE_TRANSPORT=m
+CONFIG_INET6_XFRM_MODE_TUNNEL=m
+# CONFIG_INET6_XFRM_MODE_BEET is not set
+# CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
+CONFIG_IPV6_SIT=m
+# CONFIG_IPV6_TUNNEL is not set
+# CONFIG_IPV6_MULTIPLE_TABLES is not set
+# CONFIG_NETWORK_SECMARK is not set
+CONFIG_NETFILTER=y
+# CONFIG_NETFILTER_DEBUG is not set
