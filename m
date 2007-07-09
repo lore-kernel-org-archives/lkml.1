@@ -1,93 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbXGIWUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757790AbXGIWVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbXGIWUH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 18:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbXGIWT4
+	id S1757790AbXGIWVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 18:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbXGIWVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 18:19:56 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:48162 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754368AbXGIWT4 (ORCPT
+	Mon, 9 Jul 2007 18:21:13 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37385 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754439AbXGIWVM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 18:19:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QO+/gDwvC/XUmb2LGm0XBmu9RmcvEfzJ2tT39ONQ/G59OETyZr2LjGHCu6bx3ERCAQML4Fmwoq9Gdf7BHAfg8CownSg0/gAnv3XvT3roTYLGWnyFC/adhyjVGb9xK4gJQTrQDXXo5SzZC9OTbjKsq1LVB/4CWLOgUA8L2l3NSLA=
-Message-ID: <9a8748490707091519g3a0a098dx1e9188083c5a74b4@mail.gmail.com>
-Date: Tue, 10 Jul 2007 00:19:54 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Charles Shannon Hendrix" <shannon@widomaker.com>
-Subject: Re: BUG: kernel crash report, odd...
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070709220848.GA6782@widomaker.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 9 Jul 2007 18:21:12 -0400
+Date: Mon, 9 Jul 2007 23:27:42 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Backlund <tmb@mandriva.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Problem with SiS Ide/Pata/Sata on 2.6.22-rc7-git4
+Message-ID: <20070709232742.004def28@the-village.bc.nu>
+In-Reply-To: <4692A7C3.9030802@mandriva.org>
+References: <4692A7C3.9030802@mandriva.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070709220848.GA6782@widomaker.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/07/07, Charles Shannon Hendrix <shannon@widomaker.com> wrote:
->
-> A system I was using a few minutes ago dumped this to the syslog:
->
-> Jul  9 17:50:38 daydream kernel: [76022.613000] BUG: unable to handle
-> kernel NUL
-> L pointer dereference at virtual address 00000010
-> Jul  9 17:50:38 daydream kernel: [76022.613000]  printing eip:
-> Jul  9 17:50:38 daydream kernel: [76022.613000] c01ace66
-> Jul  9 17:50:38 daydream kernel: [76022.613000] *pde = 00000000
-> Jul  9 17:50:38 daydream kernel: [76022.613000] Oops: 0000 [#1]
->
->
-> There was no other information either before or after.
->
-> What I saw was my KDE desktop stopped responding to events.
->
-> Machine didn't respond to power switch.
->
-> Unfortunately, that's all I know.
->
-> In the past when I had bugs like this, I got a fairly extensive kernel
-> error message, but this time the above is the only thing I saw.
->
-It does look a little short... probably the rest just didn't make it to disk...
+> If you modprobe only sis5513
+>   OR
+> If you modprobe only sis5513 and then sata_sis/pata_sis:
+>   - you get this:
+>     (the hdb drive does not get detected/usable)
 
-> I have not had kernel bugs like this until I started running 2.6.20 on a
-> new Kubuntu install.
->
-> Same hardware, but Slackware and my own custom 2.6.19 kernel never
-> crashed.
->
-Different kernel source version, different configuration, probably
-different compiler, Slackware doesn't patch the vanilla kernel - I
-believe (k)ubuntu does.   All in all that equals a significantly
-different kernel binary you have been running in those two cases.
+Don't mix old and new IDE like that. We allow both so you can use old SIS
+and new Jmicron etc for example but there are some cases where trying to
+load both old and new IDE support for the same chip will do strange
+things.
 
-> Is there anything I can do, in case this happens again, to try and
-> capture more information?
->
-0. Make sure the kernels loglevel is set so that you get all messages.
-
-1. Make sure syslog is setup to capture all kernel messages, both
-errors, warnings, notices, debug messages etc.
-
-2. If you can, check output of 'dmesg' instead of just what made it to syslog.
-
-3. If you have a second PC, setup serial console or netconsole to
-capture kernel messages on that second box. This can sometimes capture
-messages that don't make it to disk.
-
-4. Build a custom kernel with some (or all) of the debug options under
-the Kernel Hacking menu enabled.
-
-5. Even when the system hangs you may in some cases be able to get
-some info (or just sync the disks and do a reboot) via magic sysrq.
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Alan
