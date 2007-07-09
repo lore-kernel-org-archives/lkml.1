@@ -1,52 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXGIPxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbXGIPzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbXGIPxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 11:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXGIPw5
+	id S1757644AbXGIPzV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 11:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXGIPzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 11:52:57 -0400
-Received: from andromeda.dapyr.net ([69.45.6.100]:37397 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754328AbXGIPw4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 11:52:56 -0400
-From: darnok@68k.org
-Date: Mon, 9 Jul 2007 11:53:02 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Inhibit NMI watchdog when Alt-SysRq-T operation is underway.
-Message-ID: <20070709155302.GB26570@andromeda.dapyr.net>
-References: <20070709140242.GA18098@andromeda.dapyr.net>
+	Mon, 9 Jul 2007 11:55:09 -0400
+Received: from xenotime.net ([66.160.160.81]:60688 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753936AbXGIPzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 11:55:07 -0400
+Date: Mon, 9 Jul 2007 08:58:41 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>, matthew@wil.cx
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH 4/4][Doc] Document pci_iomap()
+Message-Id: <20070709085841.179a8c33.rdunlap@xenotime.net>
+In-Reply-To: <200707081809.20312.eike-kernel@sf-tec.de>
+References: <200707081754.03824.eike-kernel@sf-tec.de>
+	<200707081809.20312.eike-kernel@sf-tec.de>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070709140242.GA18098@andromeda.dapyr.net>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 10:02:42AM -0400, Konrad Rzeszutek wrote:
-> On large memory configuration with not so fast CPUs the NMI watchdog 
-> is triggered when memory addresses are being gathered and printed. 
-> The code paths for Alt-SysRq-t are sprinkled with touch_nmi_watchdog 
-> in various places but not in this routine (or in the loop that utilizes
-> this function). The patch has been tested for regression on large CPU+memory 
-> configuration (128 logical CPUs + 224 GB) and 1,2,4,16-CPU sockets with various 
-> memory sizes (1,2,4,6,20). 
+On Sun, 8 Jul 2007 18:09:19 +0200 Rolf Eike Beer wrote:
 
-And the patch:
+> This useful interface is hardly mentioned anywhere in the in-tree
+> documentation.
+> 
+> Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
 
-diff --git a/arch/x86_64/kernel/traps.c b/arch/x86_64/kernel/traps.c
-index aac1c0b..b6e7d67 100644
---- a/arch/x86_64/kernel/traps.c
-+++ b/arch/x86_64/kernel/traps.c
-@@ -330,6 +330,10 @@ static int print_trace_stack(void *data,
- 
- static void print_trace_address(void *data, unsigned long addr)
- {
-+	static int i = 0;		
-+	if (i && ((i % 8) == 0)) 
-+		touch_nmi_watchdog();
-+	i++;
- 	printk_address(addr);
- }
- 
+Hi Rolf,
+
+quilt says:
+
+Warning: trailing whitespace in lines 250,251,254 of lib/iomap.c
+
+> ---
+> commit 2cb2450818804edcbcb1486a4df0db06e5d49969
+> tree 2c53fbd2e0be832767446a8684561200b437a695
+> parent 288a3f1fd00365669ed9ad725b15ff67004cee0a
+> author Rolf Eike Beer <eike-kernel@sf-tec.de> Mon, 14 Aug 2006 14:20:30 +0200
+> committer Rolf Eike Beer <eike-kernel@sf-tec.de> Mon, 14 Aug 2006 14:20:30 +0200
+> 
+>  Documentation/DocBook/deviceiobook.tmpl |    1 +
+>  include/asm-i386/io.h                   |    3 +++
+>  lib/iomap.c                             |   15 ++++++++++++++-
+>  3 files changed, 18 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/DocBook/deviceiobook.tmpl b/Documentation/DocBook/deviceiobook.tmpl
+> index 90ed23d..4f85515 100644
+> --- a/Documentation/DocBook/deviceiobook.tmpl
+> +++ b/Documentation/DocBook/deviceiobook.tmpl
+> @@ -317,6 +317,7 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_lock, flags)
+>    <chapter id="pubfunctions">
+>       <title>Public Functions Provided</title>
+>  !Einclude/asm-i386/io.h
+
+Weird.  After applying this patch, I am getting this kdoc warning:
+
+  DOCPROC Documentation/DocBook/deviceiobook.xml
+Warning(/var/linsrc/linux-2.6.22//include/asm-i386/io.h): no structured comments found
+
+but the warning is not correct... :(
+Oh, the !E should be !I for the io.h file.
+Would you correct that also?  :)
+
+
+> +!Elib/iomap.c
+>    </chapter>
+>  
+>  </book>
+> diff --git a/include/asm-i386/io.h b/include/asm-i386/io.h
+> index b3724fe..e176483 100644
+> --- a/include/asm-i386/io.h
+> +++ b/include/asm-i386/io.h
+> @@ -112,6 +112,9 @@ extern void __iomem * __ioremap(unsigned long offset, unsigned long size, unsign
+>   * writew/writel functions and the other mmio helpers. The returned
+>   * address is not guaranteed to be usable directly as a virtual
+>   * address. 
+> + *
+> + * If the area you are trying to map is a PCI BAR you should have a
+> + * look on pci_iomap().
+
+      look at
+
+>   */
+>  
+>  static inline void __iomem * ioremap(unsigned long offset, unsigned long size)
+> diff --git a/lib/iomap.c b/lib/iomap.c
+> index 55689c5..8de891d 100644
+> --- a/lib/iomap.c
+> +++ b/lib/iomap.c
+> @@ -202,7 +202,20 @@ void ioport_unmap(void __iomem *addr)
+>  EXPORT_SYMBOL(ioport_map);
+>  EXPORT_SYMBOL(ioport_unmap);
+>  
+> -/* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+> +/**
+> + * pci_iomap - create a virtual mapping cookie for a PCI BAR
+> + * @dev: PCI device that owns the BAR
+> + * @bar: BAR number
+> + * @maxlen: length of the memory to map
+> + *
+> + * Using this function you will get a __iomem address to your device BAR.
+> + * You can access it using ioread*() and iowrite*(). These functions hide 
+> + * the details if this is a MMIO or PIO address space and will just do what 
+> + * you expect from them in the correct way.
+> + *
+> + * @maxlen specifies the maximum length to map. If you want to get access to 
+> + * the complete BAR without checking for their length first pass %0 here.
+
+s/their/its/
+s/first/first,/
+
+> + **/
+>  void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+>  {
+>  	unsigned long start = pci_resource_start(dev, bar);
+> 
+
+Please make these minor corrections.  Looks good to me.
+Matthew, OK with you?
+
+Thanks.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
