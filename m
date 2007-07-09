@@ -1,71 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbXGIFeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbXGIFey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752719AbXGIFeH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 01:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbXGIFd4
+	id S1753344AbXGIFey (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 01:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbXGIFer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 01:33:56 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:23220 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750989AbXGIFdz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 01:33:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=mu+8IA6H1O6R5URSdesl/QIpkkqYXn8trgeroc4CixZ7X1drG+0UG1/pXtATzM6TzKhFsdsRipDXcMAe18hijLL58XFzcHHI6p2bOS1hMymTqgKaJ3Hhpnsnd6Ov9Yl8FQXTXBuGJRzWmXu+fbokjYNk8VF8/J7xe4mEaSBCVOY=  ;
-X-YMail-OSG: mgzHIv0VM1k_GG7VmrnE2TJ51hUAXhqO8faxQcI_k7Kb3KdCfqASpM_R4IMUMAZpV2U_Dpo_RQ--
-Message-ID: <4691C8BE.2050807@yahoo.com.au>
-Date: Mon, 09 Jul 2007 15:33:50 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 9 Jul 2007 01:34:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46679 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750989AbXGIFeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 01:34:46 -0400
+From: Neil Brown <neilb@suse.de>
+To: Turbo Fredriksson <turbo@bayour.com>
+Date: Mon, 9 Jul 2007 15:34:28 +1000
 MIME-Version: 1.0
-CC: Jeremy Maitin-Shepard <jbms@cmu.edu>, Al Boldi <a1426z@gawab.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Hibernation Redesign
-References: <200707081737.21932.a1426z@gawab.com> <87tzsew712.fsf@jbms.ath.cx>	<4691B9A5.6060203@yahoo.com.au> <87k5taw5vc.fsf@jbms.ath.cx>	<4691BD6F.8000809@yahoo.com.au> <87fy3yw50p.fsf@jbms.ath.cx> <4691C08A.90707@yahoo.com.au>
-In-Reply-To: <4691C08A.90707@yahoo.com.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Message-ID: <18065.51428.849286.225118@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>
+Subject: Re: Moving MD/LVM from PPC to x86
+In-Reply-To: message from Turbo Fredriksson on Sunday July 8
+References: <87wsxneqs0.fsf@pumba.bayour.com>
+	<20070629215416.GA12786@agk.fab.redhat.com>
+	<876455erlw.fsf@pumba.bayour.com>
+	<18054.9063.45466.586046@notabene.brown>
+	<873azy4pq0.fsf@pumba.bayour.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Jeremy Maitin-Shepard wrote:
+On Sunday July 8, turbo@bayour.com wrote:
+> Quoting Neil Brown <neilb@suse.de>:
 > 
->> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> > Version 0.90 MD superblocks (still the default) uses host-endian
+> > values so you cannot move between architectures directly.  However
+> > isn't too hard to make it work. 
+> > Firstly, use
+> >    mdadm --examine --metadata=0.swap /dev/DEVICE
 > 
-> 
->>> Yes, I have a rough idea about how page reclaim works. But I just
->>> mean it would not be trivial to load the new kernel into physically
->>> discontiguous memory. Possible of course, but I don't think kexec or
->>> the setup code could quite cope ATM.
->>
->>
->>
->> It would indeed be a pain for the new kernel to be loaded and have to
->> use discontiguous memory.  The trick is, though, that this is not
->> necessary.  Immediately before jumping to the new kernel, the first X
->> bytes (where X is the amount of memory the new kernel will get,
->> typically 16MB or 64MB) of physical memory are backed up into the
->> arbitrary discontiguous pages that are made available.  This will not
->> take very long, because copying even 64MB of memory is extremely fast.
->> Then the new kernel is free to use the first X bytes of contiguous
->> physical memory.  Problem solved.
-> 
-> 
-> Ah, that sounds like it would be the right way to go. Good thinking.
+> ----- s n i p -----
+> ppc:~# mdadm --examine --metadata=0.swap /dev/md0
+> mdadm: No super block found on /dev/md0 (Expected magic a92b4efc, got 00000000)
+> ppc:~# mdadm --examine --metadata=0.swap /dev/md1
+> mdadm: No super block found on /dev/md1 (Expected magic a92b4efc, got 00000000)
+> ppc:~# mdadm --examine --metadata=0.swap /dev/md2
+> mdadm: No super block found on /dev/md2 (Expected magic a92b4efc, got 00000000)
 
-Hmm, considering it is not a crash situation, it might even be
-better again to simply reuse the exising kernel text and kernel
-page table and memory map information if possible. That would
-probably only require a meg or two to reinit drivers, load a
-suspend-to-disk-init, and do the IO.
+You --examine component devices of an array, not the whole array.
 
-OTOH it would likely be more complex than just freeing up a bit
-of memory and relocating it.
+> ppc:~# mdadm --examine --metadata=0.swap /dev/sda1
+> mdadm: No super block found on /dev/sda1 (Expected magic a92b4efc, got fc4e2ba9)
 
--- 
-SUSE Labs, Novell Inc.
+This suggests that the superblock is currently the correct byteorder
+for the current host.  You use
+   mdadm --examine --metadata=0.swap /dev/sda1
+
+when you have moved a devices from one host to different host with the
+opposite endian-ness (e.g. bigendian to littlendian).
+
+> 
+> > to check that you have the right devices.
+> > Then
+> >
+> >   mdadm --assemble /dev/md0 --update=byteorder /dev/DEV0 /dev/DEV1  ....
+> >
+> > That should assemble the array and update the superblocks so that they
+> > are in the right byteorder and will assemble easily in future.
+> 
+> Is this safe, changing the byteorder on all the physical devices (that are
+> part of my MD's)?
+> Will it still work on the PPC?
+
+I cannot remember where you were moving 'from' or 'to', but what you
+have to do is:
+
+  1/ move the devices to the new computer.
+  2/ use "mdadm --examine" to make sure they are where you expect them
+      to be.  Use "--metdata=0.swap" if the byteorder is different on
+      the new machine.
+  3/ Once you are satisfied that things look right, use
+       mdadm --assemble /dev/md0 --update=byteorder ....
+    to assemble the array.  This will change the byteorder in the
+    superblocks.  After you have done this, the array will assemble
+    normally on the new machine, but will not if you move it back to the
+    old machine. If you want to use the old machine again, you need to
+    use --update=byteorder again.
+
+Does that make it clear?
+
+NeilBrown
