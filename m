@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbXGIUtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbXGIUxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbXGIUtr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 16:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXGIUtk
+	id S1758110AbXGIUxZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 16:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbXGIUxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 16:49:40 -0400
-Received: from ns1.suse.de ([195.135.220.2]:49087 "EHLO mx1.suse.de"
+	Mon, 9 Jul 2007 16:53:18 -0400
+Received: from waste.org ([66.93.16.53]:37755 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754659AbXGIUtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 16:49:39 -0400
-Date: Mon, 9 Jul 2007 22:49:38 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: Determine version of kernel that produced vmcore
-Message-ID: <20070709204938.GA21663@suse.de>
-Mail-Followup-To: kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-References: <20070706132814.GA7079@suse.de> <20070706145804.GA31409@localdomain> <20070709092154.GA19705@suse.de> <20070709114131.GA18750@localdomain>
+	id S1754478AbXGIUxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 16:53:17 -0400
+Date: Mon, 9 Jul 2007 15:52:32 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+Message-ID: <20070709205232.GU11115@waste.org>
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070709114131.GA18750@localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20070708035018.074510057@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+First, WTF wasn't I cc:ed on this? Are you actually trying to me make
+me fuming mad?
 
-* Dan Aloni <da-x@monatomic.org> [2007-07-09 13:41]:
-> > > A patch that I am working on will make it possible to integrate
-> > > the output of 'makedumpinfo -g' into vmlinux as the final build
-> > > stage of the kernel. This information will be presented itself
-> > > as /proc/kcore.info for the first kernel throughout its entire
-> > > execution.
-> > 
-> > That sounds good. But I doubt that kernel developers like the idea of
-> > needing another utility in the build process ...
+On Sat, Jul 07, 2007 at 08:50:01PM -0700, Christoph Lameter wrote:
+> Maintenance of slab allocators becomes a problem as new features for
+> allocators are developed. The SLOB allocator in particular has been lagging
+> behind in many ways in the past:
 > 
-> I don't think it would add much complexity to build process as it 
-> is now, just like the other tools that transparently do post-linking 
-> modifications. As far as the developer is concerned, there's just
-> the vmlinux and/or bzImage files that get emitted at the end.
+> - Had no support for SLAB_DESTROY_BY_RCU for years (but no one noticed)
 
-I didn't complain about the complexity but about the requirement of an
-additional tool. However, I think it will be configurable.
+We've been over this 50 times. The target users were never affected.
+And it's fixed. So why the HELL are you mentioning this again? 
+ 
+> - Still has no support for slab reclaim counters. This may currently not
+>   be necessary if one would restrict the supported configurations for
+>   functionality relying on these. But even that has not been done.
 
-> > > Then inside initramfs of the first kernel, a small 
-> > > util will modify the vmlinux file of the kdump kernel before it
-> > > gets loaded so that another special file appearing as 
-> > > /proc/vmcore.info under the kdump kernel will present the same
-> > > info. 
-> > 
-> > Where do you get the info from? If you're in the kdump initrd,
-> > then the kdump kernel is already loaded. Do you want to attach the
-> > info from the crashed kernel to the initrd of the kdump kernel?
+We've been over this 50 times. Last time around, I inspected all the
+code paths and demonstrated that despite your handwaving, IT DIDN'T
+MATTER.
+
+> The only current advantage over SLUB in terms of memory savings is through
+> SLOBs kmalloc layout that is not power of two based like SLAB and SLUB which
+> allows to eliminate some memory waste.
 > 
-> Not exactly. Let me describe the procedure in greater detail.
-> Basically, it would go like this:
-> 
-> 1. <normal bootloader boot>
-> 2. <normal initramfs>
-> 3. embed_configfile /proc/kcore.info /vmlinux-kdump
-> 4. kexec -l vmlinux-kdump <....>
-> 5. <boot continues>
-> 6. <crash>
-> 7. <kdump kernel boot>
-> 8. <kdump initramfs runs>
-> 9. makedumpfile -i /proc/vmcore.info <....>
+> Through that SLOB has still a slight memory advantage over SLUB of ~350k in
+> for a standard server configuration. It is likely that the savings are is
+> smaller for real embedded configurations that have less functionality.
 
-I don't see why an additional tool would be needed here. kexec already
-modifies symbols, so why not adding the functionality into kexec? The
-advantage would be that there's no on-disk modification necessary.
+Sometimes I do not think there is a cluebat large enough for you. 350K
+is FREAKING HUGE on a cell phone. That's most of a kernel!
 
-Another issue: Some parameters of makedumpfile (currently the page
-size) are read from the running system. If you build the configuration
-file while building the kernel, you always have the .config which
-contains the page size. So it would be possible to extend the
-makedumpfile utility to read that parts from a .config, and that would
-remove a dependency that page size of the running kernel matches the
-page size of the building kernel. On IA64, that's not always the case.
-
-> BTW I think there could be a confusion between makedumpfile's 
-> CONFIGFILE and the .config file, so we should pick a different 
-> name for it...
-
-Aggreed. Your suggestion? :)
-
-
-Thanks,
-   Bernhard
+-- 
+Mathematics is the supreme nostalgia of our time.
