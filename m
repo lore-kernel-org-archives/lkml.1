@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbXGIUGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbXGIUI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbXGIUGk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 16:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbXGIUGc
+	id S1758762AbXGIUI3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 16:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbXGIUIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 16:06:32 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:33527 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbXGIUGb (ORCPT
+	Mon, 9 Jul 2007 16:08:22 -0400
+Received: from deliverator3.gatech.edu ([130.207.165.163]:57666 "EHLO
+	deliverator3.gatech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbXGIUIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 16:06:31 -0400
-Message-ID: <46929540.2090405@fr.ibm.com>
-Date: Mon, 09 Jul 2007 22:06:24 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 9 Jul 2007 16:08:22 -0400
+X-Greylist: delayed 1257 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jul 2007 16:08:22 EDT
+Message-ID: <1184010444.469290cce48df@webmail.mail.gatech.edu>
+Date: Mon, 09 Jul 2007 15:47:24 -0400
+From: vraghavan3@mail.gatech.edu
+To: linux-kernel@vger.kernel.org
+Subject: Reading a physical memory location
 MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@gmail.com>
-CC: Pavel Emelianov <xemul@openvz.org>, Kirill Korotaev <dev@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/16] Pid namespaces
-References: <468DF6F7.1010906@openvz.org> <1184003180.21234.39.camel@dyn9047017100.beaverton.ibm.com>
-In-Reply-To: <1184003180.21234.39.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 64.102.85.146
+X-Authenticated-User: vraghavan3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty wrote:
-> On Fri, 2007-07-06 at 12:01 +0400, Pavel Emelianov wrote:
->> This is "submition for inclusion" of hierarchical, not kconfig
->> configurable, zero overheaded ;) pid namespaces.
-> 
-> Not able to boot my ppc64 machine with the patchset :(
 
-I can't boot either on a x86_64 but I don't even have logs to send :(
 
-C.
+--
+Hey all,
+
+I know the physical address of a string which is loaded into flash memory. I
+want to read the string at the known physical memory location from within a
+kernel module. I initially tried reading the "/dev/mem" file using open(),
+lseek() and read(). But I guess its not possible to call these functions from a
+kernel module.
+
+Is there some way of reading the contents of this physical memory location from
+within a kernel module?
+
+Thank You
+Veena
