@@ -1,97 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbXGISst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbXGISu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759248AbXGISst (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 14:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbXGISsm
+	id S1759536AbXGISu0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXGISuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 14:48:42 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:3626 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754788AbXGISsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 14:48:41 -0400
-Date: Mon, 9 Jul 2007 22:49:17 +0400
-From: Dmitry Monakhov <dmonakhov@sw.ru>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch] mm: recheck lock rlim after f_op->mmap() method
-Message-ID: <20070709184917.GA8720@dnb.sw.ru>
-Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SWsoft.
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Mon, 9 Jul 2007 14:50:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38871 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754158AbXGISuQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 14:50:16 -0400
+Subject: [RFT][PATCH] mm: drop behind
+From: Peter Zijlstra <peterz@infradead.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Mon, 09 Jul 2007 20:50:08 +0200
+Message-Id: <1184007008.1913.45.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some device drivers can change vm_flags in their f_op->mmap
-method. In order to be on the safe side we have to recheck
-lock rlimit. Now we have to check lock rlimit from two places,
-let's move this common code to helper functon.
+Use the read-ahead code to provide hints to page reclaim.
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+This patch has the potential to solve the streaming-IO trashes my
+desktop problem.
+
+It tries to aggressively reclaim pages that were loaded in a strong
+sequential pattern and have been consumed. Thereby limiting the damage
+to the current resident set.
+
+I'm posting this in the hope that people will test this in a variety of
+workloads and report back (success or regression). It seems to work
+reasonably well on my desktop for things that sequentially consume large
+files: burning dvds, md5sum dvds, cat dvds > /dev/null
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- mm/mmap.c |   33 ++++++++++++++++++++++++++-------
- 1 files changed, 26 insertions(+), 7 deletions(-)
+ include/linux/swap.h |    1 +
+ mm/readahead.c       |   38 +++++++++++++++++++++++++++++++++++++-
+ mm/swap.c            |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 89 insertions(+), 1 deletion(-)
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 906ed40..5c89f1d 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -885,6 +885,18 @@ void vm_stat_account(struct mm_struct *mm, unsigned long flags,
- }
- #endif /* CONFIG_PROC_FS */
+Index: linux-2.6/mm/swap.c
+===================================================================
+--- linux-2.6.orig/mm/swap.c
++++ linux-2.6/mm/swap.c
+@@ -31,6 +31,7 @@
+ #include <linux/cpu.h>
+ #include <linux/notifier.h>
+ #include <linux/init.h>
++#include <linux/rmap.h>
  
-+static int check_lock_limit(unsigned long delta, struct mm_struct* mm)
+ /* How many pages do we try to swap or page in/out together? */
+ int page_cluster;
+@@ -178,6 +179,7 @@ EXPORT_SYMBOL(mark_page_accessed);
+ static DEFINE_PER_CPU(struct pagevec, lru_add_pvecs) = { 0, };
+ static DEFINE_PER_CPU(struct pagevec, lru_add_active_pvecs) = { 0, };
+ static DEFINE_PER_CPU(struct pagevec, lru_add_tail_pvecs) = { 0, };
++static DEFINE_PER_CPU(struct pagevec, lru_demote_pvecs) = { 0, };
+ 
+ void fastcall lru_cache_add(struct page *page)
+ {
+@@ -224,6 +226,37 @@ static void __pagevec_lru_add_tail(struc
+ 	pagevec_reinit(pvec);
+ }
+ 
++static void __pagevec_lru_demote(struct pagevec *pvec)
 +{
-+	unsigned long locked, lock_limit;
-+	locked = delta >> PAGE_SHIFT;
-+	locked += mm->locked_vm;
-+	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
-+	lock_limit >>= PAGE_SHIFT;
-+	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		return -EAGAIN;
-+	return 0;
++	int i;
++	struct zone *zone = NULL;
++
++	for (i = 0; i < pagevec_count(pvec); i++) {
++		struct page *page = pvec->pages[i];
++		struct zone *pagezone = page_zone(page);
++
++		if (pagezone != zone) {
++			if (zone)
++				spin_unlock_irq(&zone->lru_lock);
++			zone = pagezone;
++			spin_lock_irq(&zone->lru_lock);
++		}
++		if (PageLRU(page)) {
++			page_referenced(page, 0);
++			if (PageActive(page)) {
++				ClearPageActive(page);
++				__dec_zone_state(zone, NR_ACTIVE);
++				__inc_zone_state(zone, NR_INACTIVE);
++			}
++			list_move_tail(&page->lru, &zone->inactive_list);
++		}
++	}
++	if (zone)
++		spin_unlock_irq(&zone->lru_lock);
++	release_pages(pvec->pages, pvec->nr, pvec->cold);
++	pagevec_reinit(pvec);
 +}
 +
- /*
-  * The caller must hold down_write(current->mm->mmap_sem).
-  */
-@@ -954,13 +966,9 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
- 	}
- 	/* mlock MCL_FUTURE? */
- 	if (vm_flags & VM_LOCKED) {
--		unsigned long locked, lock_limit;
--		locked = len >> PAGE_SHIFT;
--		locked += mm->locked_vm;
--		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
--		lock_limit >>= PAGE_SHIFT;
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
--			return -EAGAIN;
-+		error = check_lock_limit(len, mm);
-+		if (error)
-+			return error;
- 	}
+ static void __lru_add_drain(int cpu)
+ {
+ 	struct pagevec *pvec = &per_cpu(lru_add_pvecs, cpu);
+@@ -237,6 +270,9 @@ static void __lru_add_drain(int cpu)
+ 	pvec = &per_cpu(lru_add_tail_pvecs, cpu);
+ 	if (pagevec_count(pvec))
+ 		__pagevec_lru_add_tail(pvec);
++	pvec = &per_cpu(lru_demote_pvecs, cpu);
++	if (pagevec_count(pvec))
++		__pagevec_lru_demote(pvec);
+ }
  
- 	inode = file ? file->f_path.dentry->d_inode : NULL;
-@@ -1101,6 +1109,17 @@ munmap_back:
- 		error = file->f_op->mmap(file, vma);
- 		if (error)
- 			goto unmap_and_free_vma;
-+		
-+		if (vma->vm_flags & VM_LOCKED
-+				&& !(vm_flags & VM_LOCKED)) {
-+		/*
-+		 * VM_LOCKED was added in f_op->mmap() method,
-+		 * so we have to recheck limit.
-+		 */
-+			error = check_lock_limit(len, mm);
-+			if (error)
-+				goto unmap_and_free_vma;
+ void lru_add_drain(void)
+@@ -448,6 +484,21 @@ void fastcall lru_cache_add_tail(struct 
+ }
+ 
+ /*
++ * Function used to forcefully demote a page to the tail of the inactive
++ * list.
++ */
++void fastcall lru_demote(struct page *page)
++{
++	if (likely(get_page_unless_zero(page))) {
++		struct pagevec *pvec = &get_cpu_var(lru_demote_pvecs);
++
++		if (!pagevec_add(pvec, page))
++			__pagevec_lru_demote(pvec);
++		put_cpu_var(lru_demote_pvecs);
++	}
++}
++
++/*
+  * Try to drop buffers from the pages in a pagevec
+  */
+ void pagevec_strip(struct pagevec *pvec)
+Index: linux-2.6/include/linux/swap.h
+===================================================================
+--- linux-2.6.orig/include/linux/swap.h
++++ linux-2.6/include/linux/swap.h
+@@ -181,6 +181,7 @@ extern unsigned int nr_free_pagecache_pa
+ extern void FASTCALL(lru_cache_add(struct page *));
+ extern void FASTCALL(lru_cache_add_active(struct page *));
+ extern void FASTCALL(lru_cache_add_tail(struct page *));
++extern void FASTCALL(lru_demote(struct page *));
+ extern void FASTCALL(activate_page(struct page *));
+ extern void FASTCALL(mark_page_accessed(struct page *));
+ extern void lru_add_drain(void);
+Index: linux-2.6/mm/readahead.c
+===================================================================
+--- linux-2.6.orig/mm/readahead.c
++++ linux-2.6/mm/readahead.c
+@@ -15,6 +15,7 @@
+ #include <linux/backing-dev.h>
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/pagevec.h>
++#include <linux/swap.h>
+ 
+ void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+ {
+@@ -441,13 +442,18 @@ EXPORT_SYMBOL_GPL(page_cache_sync_readah
+  * page_cache_async_ondemand() should be called when a page is used which
+  * has the PG_readahead flag: this is a marker to suggest that the application
+  * has used up enough of the readahead window that we should start pulling in
+- * more pages. */
++ * more pages.
++ */
+ void
+ page_cache_async_readahead(struct address_space *mapping,
+ 			   struct file_ra_state *ra, struct file *filp,
+ 			   struct page *page, pgoff_t offset,
+ 			   unsigned long req_size)
+ {
++	unsigned long demote_idx = offset - min(offset, ra->size);
++	struct page *pages[16];
++	unsigned nr_pages, i;
++
+ 	/* no read-ahead */
+ 	if (!ra->ra_pages)
+ 		return;
+@@ -466,6 +472,36 @@ page_cache_async_readahead(struct addres
+ 	if (bdi_read_congested(mapping->backing_dev_info))
+ 		return;
+ 
++	/*
++	 * Read-ahead use once: when the ra window is maximal this is a good
++	 * hint that there is sequential IO, which implies that the pages that
++	 * have been used thus far can be reclaimed
++	 */
++	if (ra->size == ra->ra_pages) do {
++		nr_pages = find_get_pages(mapping,
++				demote_idx, ARRAY_SIZE(pages), pages);
++
++		for (i = 0; i < nr_pages; i++) {
++			page = pages[i];
++			demote_idx = page_index(page);
++
++			/*
++			 * The page is active. This means there are other
++			 * users. We should not take away somebody else's
++			 * pages, so do not drop behind beyond this point.
++			 */
++			if (demote_idx < offset && !PageActive(page)) {
++				lru_demote(page);
++			} else {
++				demote_idx = offset;
++				break;
++			}
 +		}
- 	} else if (vm_flags & VM_SHARED) {
- 		error = shmem_zero_setup(vma);
- 		if (error)
--- 
-1.5.2.2
++		demote_idx++;
++
++		release_pages(pages, nr_pages, 0);
++	} while (demote_idx < offset);
++
+ 	/* do read-ahead */
+ 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+ }
 
 
