@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbXGIUSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbXGIUS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756655AbXGIUSn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 16:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbXGIUSa
+	id S1755173AbXGIUS4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 16:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbXGIUSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 16:18:30 -0400
-Received: from pool-70-109-119-137.alb.east.verizon.net ([70.109.119.137]:50113
-	"EHLO gaimboi.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752852AbXGIUS3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 16:18:29 -0400
-X-Greylist: delayed 2569 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jul 2007 16:18:28 EDT
-Message-ID: <46928EB3.9020506@tmr.com>
-Date: Mon, 09 Jul 2007 15:38:27 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Mon, 9 Jul 2007 16:18:37 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:58372 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755194AbXGIUSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 16:18:35 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Gerd Hoffmann <kraxel@redhat.com>
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13-rc1
+Date: Mon, 9 Jul 2007 16:18:32 -0400
+User-Agent: KMail/1.9.7
+Cc: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Karel Zak <kzak@redhat.com>,
+       List util-linux-ng <util-linux-ng@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070703221156.GY14825@petra.dvoda.cz> <20070706193514.GO17650@tasint.org> <4691E1DB.7050600@redhat.com>
+In-Reply-To: <4691E1DB.7050600@redhat.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, jgarzik@pobox.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, saw@saw.sw.com.sg,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [2.6 patch] the overdue eepro100 removal
-References: <20070701202139.GM10869@stusta.de> <46894BD5.9080609@tmr.com> <46897212.30104@intel.com> <468D15F4.6020106@tmr.com> <20070709125208.GZ3492@stusta.de> <4692701B.3030506@tmr.com> <20070709175251.GG3492@stusta.de>
-In-Reply-To: <20070709175251.GG3492@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1463785.NvCHn0EJo3";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707091618.39831.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Mon, Jul 09, 2007 at 01:27:55PM -0400, Bill Davidsen wrote:
+--nextPart1463785.NvCHn0EJo3
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> For how many years do you know that there's a new and actively 
-> maintained e100 driver for your hardware?
-> 
-> And if you don't follow a stable line like the 2.6.16 kernel or a 
-> distribution kernel it's simply a part of the current development model 
-> that some kernel parts change. If changing one driver results in a big 
-> problem in your setup you should reconsider your setup. And every new 
-> kernel except for -stable kernels will anyway require a revalidation, so 
-> changing the network driver as part of this shouldn't be a big issue.
-> 
-Nothing is a "big issue" if you can force someone else to do the work. 
-And if you have no impact from a production outage if some new driver 
-works for hours and then does something unexpected.
+On Monday 09 July 2007, Gerd Hoffmann wrote:
+> Joel Becker wrote:
+> > 	And if you think that all packages should Just Work on all
+> > Linuxen, with out any build-time detection, try determining the
+> > differing udev layouts of FC6, FC7, Debian, Ubuntu, SuSE9, SuSE10, etc.
+>
+> s/build/run/ time check IMHO.  Otherwise things blow up if the user
+> upgrades fc6 to 7 ...
 
->>> Why didn't _you_ try the e100 driver when you validated your systems after 
->>> you upgraded them to kernel 2.6, and if you did and it didn't work, where 
->>> is your bug report?
->>>   
->> Is that a joke, or subtle irony? Do you generally validate drivers you 
->> don't use just because your hardware might be able to support them? I don't 
->> validate various accelerated video drivers on systems running mostly text 
->> console, never check sound options on systems with an audio application, 
->> etc. After I tried the e100 driver on the first few systems and found 
->> issues (which may be resolved by now) I went back to eepro100 and used what 
->> worked. And used the driver for any new systems in other installs.
-> 
-> And exactly this is the reason why the eepro100 driver has to be 
-> removed, and that this will result in a better hardware support for 
-> everyone in the long term.
-> 
+API's change, ABI's dont
+-mike
 
-If this was a case of a kernel change requiring an effort to keep the 
-driver I would not be suggesting someone take time to update the driver 
-from threads to tasklets or fartlets or whatever the next ultimate irq 
-handling happens to be. But when there's zero effort at the moment to 
-retain the driver, I think it's change for the sake of change.
+--nextPart1463785.NvCHn0EJo3
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iQIVAwUARpKYH0FjO5/oN/WBAQJRvhAAlVcc9rfikVcv8mxcimcMKo8JhQSSeV5j
+D7V2ogvRR74Cul78H8O0CMXWIndPVHlxdagOxlGMJFA4acjSR8CX+nxkeXa0HOBB
+6j8g/ds8WCQzNHmWeFYWTz9SMB3+w+uFOu6EJKkd+c2f4uVzvH9sDZZ+qodU/qE+
+L5jcVbz/z7qnqpvottk7ZtJMLwMGoECBK04S9JuPvqmoj2Yv948+Ai/CJ4THvPaE
+hn8AEQVyowhzXOsjc09UCNErwCpv880LuBsi6cpTPrnk9NRe2LKQFpEm3TZzJy94
+NljK4kYK0UIDDb8bDibwU78rskKIB5Tc2SbLsNwegcHzWCEnYVtF1FrvBKXaaEdG
+Z2EAALp1LMt4Z0eY5N3EMOIv/WnNOA+h2FxZD1KVt0Uw5QhCgvMlX8Qm/pD1Ke1K
+G7xRos/7S50E7q0sQzvIZlV7thCCGR9noGmLnVbprOh1h7KtkFuiHSZZleiP8DW7
+ijFpf05KnVzpbxR1hceIZeCiWBQXsOAyoIvl+PYYcwHfWIF77GMS3IRfnr113cQf
+xk+jKxj9Qci1pAxwYU8Z7WxoukD6JCxxseVVcNuhNn+hGxdIsFIRfQVYVeoFHUT7
+rdD1B02jFrgb70gJBwXBQRZDNhO2QnOP6VqpiNP81StXtdoCsd4g0wat2h5WZJKq
+XJqwBpD9iD8=
+=6DMG
+-----END PGP SIGNATURE-----
+
+--nextPart1463785.NvCHn0EJo3--
