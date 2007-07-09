@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761214AbXGIQjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbXGIQj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761214AbXGIQjj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758552AbXGIQYp
+	id S1759956AbXGIQj6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758238AbXGIQYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42356 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42360 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754917AbXGIQYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:24:39 -0400
+	id S1756947AbXGIQYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:24:40 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, "S. Wendy Cheng" <wcheng@redhat.com>,
+Cc: cluster-devel@redhat.com, Patrick Caulfield <pcaulfie@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] Fix gfs2_block_truncate_page err return
-Date: Mon,  9 Jul 2007 17:02:53 +0100
-Message-Id: <11839970832750-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [DLM] Telnet to port 21064 can stop all lockspaces
+Date: Mon,  9 Jul 2007 17:02:54 +0100
+Message-Id: <11839970852076-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970813260-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970832750-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -65,30 +65,47 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <11839970773694-git-send-email-swhiteho@redhat.com>
  <11839970793713-git-send-email-swhiteho@redhat.com>
  <11839970813260-git-send-email-swhiteho@redhat.com>
+ <11839970832750-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: S. Wendy Cheng <wcheng@redhat.com>
+From: Patrick Caulfield <pcaulfie@redhat.com>
 
-Code segment inside gfs2_block_truncate_page() doesn't set the return
-code correctly. This causes NFSD erroneously returns EIO back to client
-with setattr procedure call (truncate error).
+This patch fixes Red Hat bz#245892
 
-Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
+Opening a tcp connection from a cluster member to another cluster member
+targeting the dlm port it is enough to stop every dlm operation in the cluster.
+This means that GFS and rgmanager will hang.
+
+Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index d16044c..cd805a6 100644
---- a/fs/gfs2/bmap.c
-+++ b/fs/gfs2/bmap.c
-@@ -927,6 +927,7 @@ static int gfs2_block_truncate_page(struct address_space *mapping)
- 		/* Uhhuh. Read error. Complain and punt. */
- 		if (!buffer_uptodate(bh))
- 			goto unlock;
-+		err = 0;
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index fc0bff7..73d44f5 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -720,11 +720,17 @@ static int tcp_accept_from_sock(struct connection *con)
+ 			INIT_WORK(&othercon->rwork, process_recv_sockets);
+ 			set_bit(CF_IS_OTHERCON, &othercon->flags);
+ 			newcon->othercon = othercon;
++			othercon->sock = newsock;
++			newsock->sk->sk_user_data = othercon;
++			add_sock(newsock, othercon);
++			addcon = othercon;
++		}
++		else {
++			printk("Extra connection from node %d attempted\n", nodeid);
++			result = -EAGAIN;
++			up_write(&newcon->sock_sem);
++			goto accept_err;
+ 		}
+-		othercon->sock = newsock;
+-		newsock->sk->sk_user_data = othercon;
+-		add_sock(newsock, othercon);
+-		addcon = othercon;
  	}
- 
- 	if (sdp->sd_args.ar_data == GFS2_DATA_ORDERED || gfs2_is_jdata(ip))
+ 	else {
+ 		newsock->sk->sk_user_data = newcon;
 -- 
 1.5.1.2
 
