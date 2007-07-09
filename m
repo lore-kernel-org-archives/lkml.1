@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbXGIJMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbXGIJOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753098AbXGIJMo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 05:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXGIJMg
+	id S1754470AbXGIJOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 05:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXGIJOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 05:12:36 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54573 "EHLO gate.crashing.org"
+	Mon, 9 Jul 2007 05:14:38 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54598 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbXGIJMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 05:12:35 -0400
-Subject: Re: [RFC/PATCH] Use mmu_gather for fork() instead of flush_tlb_mm()
+	id S1750759AbXGIJOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 05:14:37 -0400
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-mm@kvack.org, Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <4691E64F.5070506@yahoo.com.au>
-References: <1183952874.3388.349.camel@localhost.localdomain>
-	 <1183962981.5961.3.camel@localhost.localdomain>
-	 <1183963544.5961.6.camel@localhost.localdomain>
-	 <4691E64F.5070506@yahoo.com.au>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <200707090847.43378.oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
+	 <1183929611.3388.303.camel@localhost.localdomain>
+	 <200707090847.43378.oliver@neukum.org>
 Content-Type: text/plain
-Date: Mon, 09 Jul 2007 19:12:29 +1000
-Message-Id: <1183972349.5961.25.camel@localhost.localdomain>
+Date: Mon, 09 Jul 2007 19:13:40 +1000
+Message-Id: <1183972420.5961.26.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-09 at 17:39 +1000, Nick Piggin wrote:
+On Mon, 2007-07-09 at 08:47 +0200, Oliver Neukum wrote:
+> Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
+> > > But I'm not sure it's a good idea in the long run.  Think of a printer 
+> > > daemon, for example.  It shouldn't have to experience unexpected I/O 
+> > > problems merely because someone has decided to put the system to sleep.
+> > 
+> > Why not ? Printer is offline when machine is asleep... trying to print
+> 
+> Not necessarily. The machine must survive going to sleep while you are
+> printing. Any other error return than -ERESTARTSYS is not an option.
+> We can't simply change the ABI.
 
-> Would it be better off to start off with a new API for this? The
-> mmu gather I think is traditionally entirely for dealing with
-> page removal...
-
-It would be weird because the new API would mostly duplicate this one,
-and we would end up with duplicated hooks..
-
-I think it's fine to have one mmu_gather construct to gather changes to
-PTEs, it doesn't have to contain freed pages, though it can. Appart from
-that simple nr test, it's entirely the same code and the existing
-implementation for all archs should just work (well, should, I haven't
-actually looked in details yet :-)
-
-Maybe we can use a separate call than tlb_remove_tlb_entry() tho,
-something like tlb_invalidate_entry(), which by default would do the
-same but that archs can override if they want to distinguish page
-freeing and simple invalidations at that level.
-
-That means adding a suitable default __tlb_invalidate_entry() to all
-archs but that shouldn't be too hard with a bit of help from the various
-maintainers.
-
-But I think the rest of the mmu_gather interface should stay the same.
-
-I would like to add a few more things to it next, mostly:
-
- - tlb_gather_lockdrop() (or find a better name) called just before we
-drop the page table / PTE lock. That would allow me to bring back ppc64
-to use the normal mmu_gather API instead of hijacking the lazy mmu stuff
-as it's doing now by flushing my batches before the lock is dropped.
-
- - start moving over pretty much everything that walks page tables to it
-
-So that in the end, we basically go down to:
-
- - flush_tlb_page() for single page invalidates (protection faults for
-example)
-
- - mmu_gather batches for everything else userland
-
- - possibly stick to something else for kernel mappings, to be
-discussed. I'm find with doing batches there too :-)
-
-The current situation is just too messy imho, and generalizing batches
-will be useful to platforms like hash table ppc's or funky TLBs.
+Ugh ? Why returning an error from the printer driver to the userland
+print server/daemon would prevent the machine from "surviving" ? I would
+be happy with -EIO personally :-)
 
 Ben.
-
 
 
