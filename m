@@ -1,75 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbXGIW7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbXGIW61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760296AbXGIW7e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 18:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760766AbXGIW7F
+	id S1760236AbXGIW61 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 18:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbXGIW6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 18:59:05 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:65047 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758845AbXGIW7D (ORCPT
+	Mon, 9 Jul 2007 18:58:20 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:46758 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754535AbXGIW6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 18:59:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EyGoOQ2stL5g4G9AVpVIHbPVPnAbenBLRYlI3MJEJcg6ctuAcJr5cZlLwtDx8Gi+v+Zbbci1re0CmfE35vHZHwzQEIOdAR0Exmf3/h9EgAVq9I/1XoXXCvBQITJPEDxP/fXuE5gPDOpRqwdJOIAljmR9cBYXIrKNlJMHV8Od9C4=
-Message-ID: <a781481a0707091559x7103fea6vc74c06f451e66d55@mail.gmail.com>
-Date: Tue, 10 Jul 2007 04:29:01 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: Documentation of kernel messages (Summary)
-Cc: "Kunai, Takashi" <kunai@linux-foundation.jp>, holzheu@linux.vnet.ibm.com,
-       "Rob Landley" <rob@landley.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, gh@us.ibm.com,
-       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
-       hpa@zytor.com, joe@perches.com, auke-jan.h.kok@intel.com,
-       hansendc@us.ibm.com, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
-       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-In-Reply-To: <200707090901.47900.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 9 Jul 2007 18:58:19 -0400
+Date: Mon, 9 Jul 2007 18:58:17 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality, performance and maintenance
+Message-ID: <20070709225817.GA5111@Krystal>
+References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de> <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com> <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com> <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal> <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1181747217.29512.9.camel@localhost.localdomain>
-	 <1182957079.6643.13.camel@localhost.localdomain>
-	 <4691C480.5010600@linux-foundation.jp>
-	 <200707090901.47900.oliver@neukum.org>
+In-Reply-To: <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:35:11 up 2 days, 12:40,  3 users,  load average: 0.14, 0.18, 0.18
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/9/07, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Montag, 9. Juli 2007 schrieb Kunai, Takashi:
-> > (b)printk hashes and (c)Format strings. (a) seems difficult to get
-> > supports from kernel developers and (c) lacks uniqueness of each
-> > message. Though (b) also lacks uniqueness, adding component id and/or
->
-> We have generators for hash functions that guarantee unique results
-> for a set of inputs.
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Mon, 9 Jul 2007, Mathieu Desnoyers wrote:
+> 
+> > > >He seems to be comparing spinlock acquire / release vs. cmpxchg. So I 
+> > > >guess you got your material from somewhere else?
+> > > >
+> > 
+> > I ran a test specifically for this paper where I got this result
+> > comparing the local irq enable/disable to local cmpxchg.
+> 
+> 
+> The numbers are pretty important and suggest that we can obtain 
+> a significant speed increase by avoid local irq disable enable in the slab 
+> allocator fast paths. Do you some more numbers? Any other publication that 
+> mentions these?
+> 
 
-Right, perfect hash generators require the input set to be known
-*a priori*.
+The original publication in which I released the idea was my LTTng paper
+at OLS 2006. Outside this, I have not found other paper that talks about
+this idea.
 
-> They are even GPLed. As you are operating against
-> a known target, that should work.
+The test code is basically just disabling interrupts, reading the TSC
+at the beginning and end and does 20000 loops of local_cmpxchg. I can
+send you the code if you want it.
 
-But, I'm not sure they'd be operating against a known target -- I don't
-really know what exactly would be hashed, but if it's kernel printk()
-messages (the format string, obviously), then please remember that
-new messages would get added all the time, and unless we're also
-willing to change the hash function every time a printk() gets added
-to the kernel (whew!) it's going to be a problem -- especially because
-we don't really want to generate new hash functions for every kernel
-version / or for every kernel build, because we'd obviously like the
-same error message to hash to the same value across versions.
+> 
+> > Yep, I volountarily used the variant without lock prefix because the
+> > data is per cpu and I disable preemption.
+> 
+> local_cmpxchg generates this?
+> 
 
-If we really care about uniqueness, the only solution I see is to use
-a strong/cryptographic hash function (say SHA-1, which would never
-change in the future) that generates the hashes for all the printk()
-messages that are getting compiled-in at build-time ... but it would be
-slow, of course.
+Yes.
 
-Satyam
+> > Yes, preempt disabling or, eventually, the new thread migration
+> > disabling I just proposed as an RFC on LKML. (that would make -rt people
+> > happier)
+> 
+> Right.
+> 
+> > Sure, also note that the UP cmpxchg (see asm-$ARCH/local.h in 2.6.22) is
+> > faster on architectures like powerpc and MIPS where it is possible to
+> > remove some memory barriers.
+> 
+> UP cmpxchg meaning local_cmpxchg?
+> 
+
+Yes.
+
+> > See 2.6.22 Documentation/local_ops.txt for a thorough discussion. Don't
+> > hesitate ping me if you have more questions.
+> 
+> That is pretty thin and does not mention atomic_cmpxchg. You way want to 
+> expand on your ideas a bit.
+
+Sure, the idea goes as follow: if you have a per cpu variable that needs
+to be concurrently modified in a coherent manner by any context (NMI,
+irq, bh, process) running on the given CPU, you only need to use an
+operation atomic wrt to the given CPU. You just have to make sure that
+only this CPU will modify the variable (therefore, you must disable
+preemption around modification) and you have to make sure that the
+read-side, which can come from any CPU, is accessing this variable
+atomically. Also, you have to be aware that the read-side might see an
+older version of the other cpu's value because there is no SMP write
+memory barrier involved. The value, however, will always be up to date
+if the variable is read from the "local" CPU.
+
+What applies to local_inc, given as example in the local_ops.txt
+document, applies integrally to local_cmpxchg. And I would say that
+local_cmpxchg is by far the cheapest locking mechanism I have found, and
+use today, for my kernel tracer. The idea emerged from my need to trace
+every execution context, including NMIs, while still providing good
+performances. local_cmpxchg was the perfect fit; that's why I deployed
+it in local.h in each and every architecture.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
