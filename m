@@ -1,133 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbXGIPzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbXGIP7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757644AbXGIPzV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 11:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXGIPzJ
+	id S1757111AbXGIP7u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 11:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbXGIP7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 11:55:09 -0400
-Received: from xenotime.net ([66.160.160.81]:60688 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753936AbXGIPzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 11:55:07 -0400
-Date: Mon, 9 Jul 2007 08:58:41 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>, matthew@wil.cx
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH 4/4][Doc] Document pci_iomap()
-Message-Id: <20070709085841.179a8c33.rdunlap@xenotime.net>
-In-Reply-To: <200707081809.20312.eike-kernel@sf-tec.de>
-References: <200707081754.03824.eike-kernel@sf-tec.de>
-	<200707081809.20312.eike-kernel@sf-tec.de>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 9 Jul 2007 11:59:43 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:45095 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753960AbXGIP7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 11:59:42 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=S44POKubqNYSif4bY5rXgi76Jb+eG7Ew4Ti12lIkr1NUh+Kvlen/BgM20L4buOHbV
+	tCoiwqeBjGoqXzdLlk1Pw==
+Message-ID: <46925B5D.8000507@google.com>
+Date: Mon, 09 Jul 2007 08:59:25 -0700
+From: Martin Bligh <mbligh@google.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality, performance
+ and maintenance
+References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de> <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jul 2007 18:09:19 +0200 Rolf Eike Beer wrote:
-
-> This useful interface is hardly mentioned anywhere in the in-tree
-> documentation.
+Christoph Lameter wrote:
+> On Sun, 8 Jul 2007, Andi Kleen wrote:
 > 
-> Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
-
-Hi Rolf,
-
-quilt says:
-
-Warning: trailing whitespace in lines 250,251,254 of lib/iomap.c
-
-> ---
-> commit 2cb2450818804edcbcb1486a4df0db06e5d49969
-> tree 2c53fbd2e0be832767446a8684561200b437a695
-> parent 288a3f1fd00365669ed9ad725b15ff67004cee0a
-> author Rolf Eike Beer <eike-kernel@sf-tec.de> Mon, 14 Aug 2006 14:20:30 +0200
-> committer Rolf Eike Beer <eike-kernel@sf-tec.de> Mon, 14 Aug 2006 14:20:30 +0200
+>> Christoph Lameter <clameter@sgi.com> writes:
+>>
+>>> A cmpxchg is less costly than interrupt enabe/disable
+>> That sounds wrong.
 > 
->  Documentation/DocBook/deviceiobook.tmpl |    1 +
->  include/asm-i386/io.h                   |    3 +++
->  lib/iomap.c                             |   15 ++++++++++++++-
->  3 files changed, 18 insertions(+), 1 deletions(-)
+> Martin Bligh was able to significantly increase his LTTng performance 
+> by using cmpxchg. See his article in the 2007 proceedings of the OLS 
+> Volume 1, page 39.
 > 
-> diff --git a/Documentation/DocBook/deviceiobook.tmpl b/Documentation/DocBook/deviceiobook.tmpl
-> index 90ed23d..4f85515 100644
-> --- a/Documentation/DocBook/deviceiobook.tmpl
-> +++ b/Documentation/DocBook/deviceiobook.tmpl
-> @@ -317,6 +317,7 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_lock, flags)
->    <chapter id="pubfunctions">
->       <title>Public Functions Provided</title>
->  !Einclude/asm-i386/io.h
-
-Weird.  After applying this patch, I am getting this kdoc warning:
-
-  DOCPROC Documentation/DocBook/deviceiobook.xml
-Warning(/var/linsrc/linux-2.6.22//include/asm-i386/io.h): no structured comments found
-
-but the warning is not correct... :(
-Oh, the !E should be !I for the io.h file.
-Would you correct that also?  :)
-
-
-> +!Elib/iomap.c
->    </chapter>
->  
->  </book>
-> diff --git a/include/asm-i386/io.h b/include/asm-i386/io.h
-> index b3724fe..e176483 100644
-> --- a/include/asm-i386/io.h
-> +++ b/include/asm-i386/io.h
-> @@ -112,6 +112,9 @@ extern void __iomem * __ioremap(unsigned long offset, unsigned long size, unsign
->   * writew/writel functions and the other mmio helpers. The returned
->   * address is not guaranteed to be usable directly as a virtual
->   * address. 
-> + *
-> + * If the area you are trying to map is a PCI BAR you should have a
-> + * look on pci_iomap().
-
-      look at
-
->   */
->  
->  static inline void __iomem * ioremap(unsigned long offset, unsigned long size)
-> diff --git a/lib/iomap.c b/lib/iomap.c
-> index 55689c5..8de891d 100644
-> --- a/lib/iomap.c
-> +++ b/lib/iomap.c
-> @@ -202,7 +202,20 @@ void ioport_unmap(void __iomem *addr)
->  EXPORT_SYMBOL(ioport_map);
->  EXPORT_SYMBOL(ioport_unmap);
->  
-> -/* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
-> +/**
-> + * pci_iomap - create a virtual mapping cookie for a PCI BAR
-> + * @dev: PCI device that owns the BAR
-> + * @bar: BAR number
-> + * @maxlen: length of the memory to map
-> + *
-> + * Using this function you will get a __iomem address to your device BAR.
-> + * You can access it using ioread*() and iowrite*(). These functions hide 
-> + * the details if this is a MMIO or PIO address space and will just do what 
-> + * you expect from them in the correct way.
-> + *
-> + * @maxlen specifies the maximum length to map. If you want to get access to 
-> + * the complete BAR without checking for their length first pass %0 here.
-
-s/their/its/
-s/first/first,/
-
-> + **/
->  void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
->  {
->  	unsigned long start = pci_resource_start(dev, bar);
+> His numbers were:
 > 
+> interrupts enable disable : 210.6ns
+> local cmpxchg             : 9.0ns
 
-Please make these minor corrections.  Looks good to me.
-Matthew, OK with you?
+Those numbers came from Mathieu Desnoyers (LTTng) if you
+want more details.
 
-Thanks.
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
