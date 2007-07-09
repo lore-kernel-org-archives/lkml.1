@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbXGIQ1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbXGIQ1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759323AbXGIQ1a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbXGIQXf
+	id S1758959AbXGIQ1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757800AbXGIQXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:23:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41928 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:23:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41931 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757544AbXGIQXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757556AbXGIQXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 9 Jul 2007 12:23:32 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
 Cc: cluster-devel@redhat.com, David Teigland <teigland@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [DLM] add lock timeouts and warnings [2/6]
-Date: Mon,  9 Jul 2007 17:02:18 +0100
-Message-Id: <11839970143164-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [DLM] dlm_device interface changes [3/6]
+Date: Mon,  9 Jul 2007 17:02:19 +0100
+Message-Id: <11839970162125-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970122624-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970143164-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -30,677 +30,319 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183997008395-git-send-email-swhiteho@redhat.com>
  <11839970101065-git-send-email-swhiteho@redhat.com>
  <11839970122624-git-send-email-swhiteho@redhat.com>
+ <11839970143164-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Teigland <teigland@redhat.com>
 
-New features: lock timeouts and time warnings.  If the DLM_LKF_TIMEOUT
-flag is set, then the request/conversion will be canceled after waiting
-the specified number of centiseconds (specified per lock).  This feature
-is only available for locks requested through libdlm (can be enabled for
-kernel dlm users if there's a use for it.)
+Change the user/kernel device interface used by libdlm:
+- Add ability for userspace to check the version of the interface.  libdlm
+  can now adapt to different versions of the kernel interface.
+- Increase the size of the flags passed in a lock request so all possible
+  flags can be used from userspace.
+- Add an opaque "xid" value for each lock.  This "transaction id" will be
+  used later to associate locks with each other during deadlock detection.
+- Add a "timeout" value for each lock.  This is used along with the
+  DLM_LKF_TIMEOUT flag.
 
-If the new DLM_LSFL_TIMEWARN flag is set when creating the lockspace, then
-a warning message will be sent to userspace (using genetlink) after a
-request/conversion has been waiting for a given number of centiseconds
-(configurable per node).  The time warnings will be used in the future
-to do deadlock detection in userspace.
+Also, remove a fragment of unused code in device_read().
+
+This patch requires updating libdlm which is backward compatible with
+older kernels.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/dlm/Makefile b/fs/dlm/Makefile
-index 604cf7d..d248e60 100644
---- a/fs/dlm/Makefile
-+++ b/fs/dlm/Makefile
-@@ -8,6 +8,7 @@ dlm-y :=			ast.o \
- 				member.o \
- 				memory.o \
- 				midcomms.o \
-+				netlink.o \
- 				lowcomms.o \
- 				rcom.o \
- 				recover.o \
-diff --git a/fs/dlm/config.c b/fs/dlm/config.c
-index 5a3d390..2909abf 100644
---- a/fs/dlm/config.c
-+++ b/fs/dlm/config.c
-@@ -90,6 +90,7 @@ struct cluster {
- 	unsigned int cl_scan_secs;
- 	unsigned int cl_log_debug;
- 	unsigned int cl_protocol;
-+	unsigned int cl_timewarn_cs;
- };
- 
- enum {
-@@ -103,6 +104,7 @@ enum {
- 	CLUSTER_ATTR_SCAN_SECS,
- 	CLUSTER_ATTR_LOG_DEBUG,
- 	CLUSTER_ATTR_PROTOCOL,
-+	CLUSTER_ATTR_TIMEWARN_CS,
- };
- 
- struct cluster_attribute {
-@@ -162,6 +164,7 @@ CLUSTER_ATTR(toss_secs, 1);
- CLUSTER_ATTR(scan_secs, 1);
- CLUSTER_ATTR(log_debug, 0);
- CLUSTER_ATTR(protocol, 0);
-+CLUSTER_ATTR(timewarn_cs, 1);
- 
- static struct configfs_attribute *cluster_attrs[] = {
- 	[CLUSTER_ATTR_TCP_PORT] = &cluster_attr_tcp_port.attr,
-@@ -174,6 +177,7 @@ static struct configfs_attribute *cluster_attrs[] = {
- 	[CLUSTER_ATTR_SCAN_SECS] = &cluster_attr_scan_secs.attr,
- 	[CLUSTER_ATTR_LOG_DEBUG] = &cluster_attr_log_debug.attr,
- 	[CLUSTER_ATTR_PROTOCOL] = &cluster_attr_protocol.attr,
-+	[CLUSTER_ATTR_TIMEWARN_CS] = &cluster_attr_timewarn_cs.attr,
- 	NULL,
- };
- 
-@@ -916,6 +920,7 @@ int dlm_our_addr(struct sockaddr_storage *addr, int num)
- #define DEFAULT_SCAN_SECS          5
- #define DEFAULT_LOG_DEBUG          0
- #define DEFAULT_PROTOCOL           0
-+#define DEFAULT_TIMEWARN_CS      500 /* 5 sec = 500 centiseconds */
- 
- struct dlm_config_info dlm_config = {
- 	.ci_tcp_port = DEFAULT_TCP_PORT,
-@@ -927,6 +932,7 @@ struct dlm_config_info dlm_config = {
- 	.ci_toss_secs = DEFAULT_TOSS_SECS,
- 	.ci_scan_secs = DEFAULT_SCAN_SECS,
- 	.ci_log_debug = DEFAULT_LOG_DEBUG,
--	.ci_protocol = DEFAULT_PROTOCOL
-+	.ci_protocol = DEFAULT_PROTOCOL,
-+	.ci_timewarn_cs = DEFAULT_TIMEWARN_CS
- };
- 
-diff --git a/fs/dlm/config.h b/fs/dlm/config.h
-index 967cc3d..a3170fe 100644
---- a/fs/dlm/config.h
-+++ b/fs/dlm/config.h
-@@ -27,6 +27,7 @@ struct dlm_config_info {
- 	int ci_scan_secs;
- 	int ci_log_debug;
- 	int ci_protocol;
-+	int ci_timewarn_cs;
- };
- 
- extern struct dlm_config_info dlm_config;
 diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
-index 30994d6..65a5fc0 100644
+index 65a5fc0..a8d6e99 100644
 --- a/fs/dlm/dlm_internal.h
 +++ b/fs/dlm/dlm_internal.h
-@@ -213,8 +213,10 @@ struct dlm_args {
- #define DLM_IFL_OVERLAP_UNLOCK  0x00080000
- #define DLM_IFL_OVERLAP_CANCEL  0x00100000
- #define DLM_IFL_ENDOFLIFE	0x00200000
-+#define DLM_IFL_WATCH_TIMEWARN	0x00400000
- #define DLM_IFL_USER		0x00000001
- #define DLM_IFL_ORPHAN		0x00000002
-+#define DLM_IFL_TIMEOUT_CANCEL	0x00000004
+@@ -151,6 +151,7 @@ struct dlm_args {
+ 	void			*bastaddr;
+ 	int			mode;
+ 	struct dlm_lksb		*lksb;
++	unsigned long		timeout;
+ };
  
- struct dlm_lkb {
- 	struct dlm_rsb		*lkb_resource;	/* the rsb */
-@@ -243,6 +245,9 @@ struct dlm_lkb {
- 	struct list_head	lkb_wait_reply;	/* waiting for remote reply */
- 	struct list_head	lkb_astqueue;	/* need ast to be sent */
- 	struct list_head	lkb_ownqueue;	/* list of locks for a process */
-+	struct list_head	lkb_time_list;
-+	unsigned long		lkb_timestamp;
-+	unsigned long		lkb_timeout_cs;
  
- 	char			*lkb_lvbptr;
- 	struct dlm_lksb		*lkb_lksb;      /* caller's status block */
-@@ -447,6 +452,9 @@ struct dlm_ls {
- 	struct mutex		ls_orphans_mutex;
- 	struct list_head	ls_orphans;
+@@ -528,6 +529,7 @@ struct dlm_user_args {
+ 	void __user		*castaddr;
+ 	void __user		*bastparam;
+ 	void __user		*bastaddr;
++	uint64_t		xid;
+ };
  
-+	struct mutex		ls_timeout_mutex;
-+	struct list_head	ls_timeout;
-+
- 	struct list_head	ls_nodes;	/* current nodes in ls */
- 	struct list_head	ls_nodes_gone;	/* dead node list, recovery */
- 	int			ls_num_nodes;	/* number of nodes in ls */
-@@ -472,6 +480,7 @@ struct dlm_ls {
- 	struct task_struct	*ls_recoverd_task;
- 	struct mutex		ls_recoverd_active;
- 	spinlock_t		ls_recover_lock;
-+	unsigned long		ls_recover_begin; /* jiffies timestamp */
- 	uint32_t		ls_recover_status; /* DLM_RS_ */
- 	uint64_t		ls_recover_seq;
- 	struct dlm_recover	*ls_recover_args;
-@@ -501,6 +510,7 @@ struct dlm_ls {
- #define LSFL_RCOM_READY		3
- #define LSFL_RCOM_WAIT		4
- #define LSFL_UEVENT_WAIT	5
-+#define LSFL_TIMEWARN		6
- 
- /* much of this is just saving user space pointers associated with the
-    lock that we pass back to the user lib with an ast */
+ #define DLM_PROC_FLAGS_CLOSING 1
 diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index 09668ec..ab986df 100644
+index ab986df..ad3797a 100644
 --- a/fs/dlm/lock.c
 +++ b/fs/dlm/lock.c
-@@ -82,10 +82,13 @@ static int send_bast(struct dlm_rsb *r, struct dlm_lkb *lkb, int mode);
- static int send_lookup(struct dlm_rsb *r, struct dlm_lkb *lkb);
- static int send_remove(struct dlm_rsb *r);
- static int _request_lock(struct dlm_rsb *r, struct dlm_lkb *lkb);
-+static int _cancel_lock(struct dlm_rsb *r, struct dlm_lkb *lkb);
- static void __receive_convert_reply(struct dlm_rsb *r, struct dlm_lkb *lkb,
- 				    struct dlm_message *ms);
- static int receive_extralen(struct dlm_message *ms);
- static void do_purge(struct dlm_ls *ls, int nodeid, int pid);
-+static void del_timeout(struct dlm_lkb *lkb);
-+void dlm_timeout_warn(struct dlm_lkb *lkb);
+@@ -1098,6 +1098,8 @@ void dlm_scan_timeout(struct dlm_ls *ls)
+ 		}
  
- /*
-  * Lock compatibilty matrix - thanks Steve
-@@ -286,8 +289,17 @@ static void queue_cast(struct dlm_rsb *r, struct dlm_lkb *lkb, int rv)
- 	if (is_master_copy(lkb))
- 		return;
- 
-+	del_timeout(lkb);
-+
- 	DLM_ASSERT(lkb->lkb_lksb, dlm_print_lkb(lkb););
- 
-+	/* if the operation was a cancel, then return -DLM_ECANCEL, if a
-+	   timeout caused the cancel then return -ETIMEDOUT */
-+	if (rv == -DLM_ECANCEL && (lkb->lkb_flags & DLM_IFL_TIMEOUT_CANCEL)) {
-+		lkb->lkb_flags &= ~DLM_IFL_TIMEOUT_CANCEL;
-+		rv = -ETIMEDOUT;
-+	}
-+
- 	lkb->lkb_lksb->sb_status = rv;
- 	lkb->lkb_lksb->sb_flags = lkb->lkb_sbflags;
- 
-@@ -581,6 +593,7 @@ static int create_lkb(struct dlm_ls *ls, struct dlm_lkb **lkb_ret)
- 	kref_init(&lkb->lkb_ref);
- 	INIT_LIST_HEAD(&lkb->lkb_ownqueue);
- 	INIT_LIST_HEAD(&lkb->lkb_rsb_lookup);
-+	INIT_LIST_HEAD(&lkb->lkb_time_list);
- 
- 	get_random_bytes(&bucket, sizeof(bucket));
- 	bucket &= (ls->ls_lkbtbl_size - 1);
-@@ -993,6 +1006,125 @@ void dlm_scan_rsbs(struct dlm_ls *ls)
- 	}
+ 		if (do_cancel) {
++			log_debug("timeout cancel %x node %d %s", lkb->lkb_id,
++				  lkb->lkb_nodeid, r->res_name);
+ 			lkb->lkb_flags &= ~DLM_IFL_WATCH_TIMEWARN;
+ 			lkb->lkb_flags |= DLM_IFL_TIMEOUT_CANCEL;
+ 			del_timeout(lkb);
+@@ -1864,7 +1866,7 @@ static void confirm_master(struct dlm_rsb *r, int error)
  }
  
-+static void add_timeout(struct dlm_lkb *lkb)
-+{
-+	struct dlm_ls *ls = lkb->lkb_resource->res_ls;
-+
-+	if (is_master_copy(lkb))
-+		return;
-+
-+	if (lkb->lkb_exflags & DLM_LKF_TIMEOUT)
-+		goto add_it;
-+
-+	if (test_bit(LSFL_TIMEWARN, &ls->ls_flags) &&
-+	    !(lkb->lkb_exflags & DLM_LKF_NODLCKWT)) {
-+		lkb->lkb_flags |= DLM_IFL_WATCH_TIMEWARN;
-+		goto add_it;
-+	}
-+	return;
-+
-+ add_it:
-+	DLM_ASSERT(list_empty(&lkb->lkb_time_list), dlm_print_lkb(lkb););
-+	mutex_lock(&ls->ls_timeout_mutex);
-+	hold_lkb(lkb);
-+	lkb->lkb_timestamp = jiffies;
-+	list_add_tail(&lkb->lkb_time_list, &ls->ls_timeout);
-+	mutex_unlock(&ls->ls_timeout_mutex);
-+}
-+
-+static void del_timeout(struct dlm_lkb *lkb)
-+{
-+	struct dlm_ls *ls = lkb->lkb_resource->res_ls;
-+
-+	mutex_lock(&ls->ls_timeout_mutex);
-+	if (!list_empty(&lkb->lkb_time_list)) {
-+		list_del_init(&lkb->lkb_time_list);
-+		unhold_lkb(lkb);
-+	}
-+	mutex_unlock(&ls->ls_timeout_mutex);
-+}
-+
-+/* FIXME: is it safe to look at lkb_exflags, lkb_flags, lkb_timestamp, and
-+   lkb_lksb_timeout without lock_rsb?  Note: we can't lock timeout_mutex
-+   and then lock rsb because of lock ordering in add_timeout.  We may need
-+   to specify some special timeout-related bits in the lkb that are just to
-+   be accessed under the timeout_mutex. */
-+
-+void dlm_scan_timeout(struct dlm_ls *ls)
-+{
-+	struct dlm_rsb *r;
-+	struct dlm_lkb *lkb;
-+	int do_cancel, do_warn;
-+
-+	for (;;) {
-+		if (dlm_locking_stopped(ls))
-+			break;
-+
-+		do_cancel = 0;
-+		do_warn = 0;
-+		mutex_lock(&ls->ls_timeout_mutex);
-+		list_for_each_entry(lkb, &ls->ls_timeout, lkb_time_list) {
-+
-+			if ((lkb->lkb_exflags & DLM_LKF_TIMEOUT) &&
-+			    time_after_eq(jiffies, lkb->lkb_timestamp +
-+					  lkb->lkb_timeout_cs * HZ/100))
-+				do_cancel = 1;
-+
-+			if ((lkb->lkb_flags & DLM_IFL_WATCH_TIMEWARN) &&
-+			    time_after_eq(jiffies, lkb->lkb_timestamp +
-+				   	   dlm_config.ci_timewarn_cs * HZ/100))
-+				do_warn = 1;
-+
-+			if (!do_cancel && !do_warn)
-+				continue;
-+			hold_lkb(lkb);
-+			break;
-+		}
-+		mutex_unlock(&ls->ls_timeout_mutex);
-+
-+		if (!do_cancel && !do_warn)
-+			break;
-+
-+		r = lkb->lkb_resource;
-+		hold_rsb(r);
-+		lock_rsb(r);
-+
-+		if (do_warn) {
-+			/* clear flag so we only warn once */
-+			lkb->lkb_flags &= ~DLM_IFL_WATCH_TIMEWARN;
-+			if (!(lkb->lkb_exflags & DLM_LKF_TIMEOUT))
-+				del_timeout(lkb);
-+			dlm_timeout_warn(lkb);
-+		}
-+
-+		if (do_cancel) {
-+			lkb->lkb_flags &= ~DLM_IFL_WATCH_TIMEWARN;
-+			lkb->lkb_flags |= DLM_IFL_TIMEOUT_CANCEL;
-+			del_timeout(lkb);
-+			_cancel_lock(r, lkb);
-+		}
-+
-+		unlock_rsb(r);
-+		unhold_rsb(r);
-+		dlm_put_lkb(lkb);
-+	}
-+}
-+
-+/* This is only called by dlm_recoverd, and we rely on dlm_ls_stop() stopping
-+   dlm_recoverd before checking/setting ls_recover_begin. */
-+
-+void dlm_adjust_timeouts(struct dlm_ls *ls)
-+{
-+	struct dlm_lkb *lkb;
-+	long adj = jiffies - ls->ls_recover_begin;
-+
-+	ls->ls_recover_begin = 0;
-+	mutex_lock(&ls->ls_timeout_mutex);
-+	list_for_each_entry(lkb, &ls->ls_timeout, lkb_time_list)
-+		lkb->lkb_timestamp += adj;
-+	mutex_unlock(&ls->ls_timeout_mutex);
-+}
-+
- /* lkb is master or local copy */
- 
- static void set_lvb_lock(struct dlm_rsb *r, struct dlm_lkb *lkb)
-@@ -1902,6 +2034,9 @@ static int validate_unlock_args(struct dlm_lkb *lkb, struct dlm_args *args)
- 		if (is_overlap(lkb))
- 			goto out;
- 
-+		/* don't let scand try to do a cancel */
-+		del_timeout(lkb);
-+
- 		if (lkb->lkb_flags & DLM_IFL_RESEND) {
- 			lkb->lkb_flags |= DLM_IFL_OVERLAP_CANCEL;
- 			rv = -EBUSY;
-@@ -1933,6 +2068,9 @@ static int validate_unlock_args(struct dlm_lkb *lkb, struct dlm_args *args)
- 		if (is_overlap_unlock(lkb))
- 			goto out;
- 
-+		/* don't let scand try to do a cancel */
-+		del_timeout(lkb);
-+
- 		if (lkb->lkb_flags & DLM_IFL_RESEND) {
- 			lkb->lkb_flags |= DLM_IFL_OVERLAP_UNLOCK;
- 			rv = -EBUSY;
-@@ -1993,6 +2131,7 @@ static int do_request(struct dlm_rsb *r, struct dlm_lkb *lkb)
- 		error = -EINPROGRESS;
- 		add_lkb(r, lkb, DLM_LKSTS_WAITING);
- 		send_blocking_asts(r, lkb);
-+		add_timeout(lkb);
+ static int set_lock_args(int mode, struct dlm_lksb *lksb, uint32_t flags,
+-			 int namelen, uint32_t parent_lkid, void *ast,
++			 int namelen, unsigned long timeout_cs, void *ast,
+ 			 void *astarg, void *bast, struct dlm_args *args)
+ {
+ 	int rv = -EINVAL;
+@@ -1907,10 +1909,6 @@ static int set_lock_args(int mode, struct dlm_lksb *lksb, uint32_t flags,
+ 	if (flags & DLM_LKF_VALBLK && !lksb->sb_lvbptr)
  		goto out;
- 	}
  
-@@ -2040,6 +2179,7 @@ static int do_convert(struct dlm_rsb *r, struct dlm_lkb *lkb)
- 		del_lkb(r, lkb);
- 		add_lkb(r, lkb, DLM_LKSTS_CONVERT);
- 		send_blocking_asts(r, lkb);
-+		add_timeout(lkb);
+-	/* parent/child locks not yet supported */
+-	if (parent_lkid)
+-		goto out;
+-
+ 	if (flags & DLM_LKF_CONVERT && !lksb->sb_lkid)
  		goto out;
- 	}
  
-@@ -3110,9 +3250,10 @@ static void receive_request_reply(struct dlm_ls *ls, struct dlm_message *ms)
- 		lkb->lkb_remid = ms->m_lkid;
- 		if (is_altmode(lkb))
- 			munge_altmode(lkb, ms);
--		if (result)
-+		if (result) {
- 			add_lkb(r, lkb, DLM_LKSTS_WAITING);
--		else {
-+			add_timeout(lkb);
-+		} else {
- 			grant_lock_pc(r, lkb, ms);
- 			queue_cast(r, lkb, 0);
- 		}
-@@ -3178,6 +3319,7 @@ static void __receive_convert_reply(struct dlm_rsb *r, struct dlm_lkb *lkb,
- 			munge_demoted(lkb, ms);
- 		del_lkb(r, lkb);
- 		add_lkb(r, lkb, DLM_LKSTS_CONVERT);
-+		add_timeout(lkb);
- 		break;
+@@ -1922,6 +1920,7 @@ static int set_lock_args(int mode, struct dlm_lksb *lksb, uint32_t flags,
+ 	args->astaddr = ast;
+ 	args->astparam = (long) astarg;
+ 	args->bastaddr = bast;
++	args->timeout = timeout_cs;
+ 	args->mode = mode;
+ 	args->lksb = lksb;
+ 	rv = 0;
+@@ -1976,6 +1975,7 @@ static int validate_lock_args(struct dlm_ls *ls, struct dlm_lkb *lkb,
+ 	lkb->lkb_lksb = args->lksb;
+ 	lkb->lkb_lvbptr = args->lksb->sb_lvbptr;
+ 	lkb->lkb_ownpid = (int) current->pid;
++	lkb->lkb_timeout_cs = args->timeout;
+ 	rv = 0;
+  out:
+ 	return rv;
+@@ -2423,7 +2423,7 @@ int dlm_lock(dlm_lockspace_t *lockspace,
+ 	if (error)
+ 		goto out;
  
- 	case 0:
+-	error = set_lock_args(mode, lksb, flags, namelen, parent_lkid, ast,
++	error = set_lock_args(mode, lksb, flags, namelen, 0, ast,
+ 			      astarg, bast, &args);
+ 	if (error)
+ 		goto out_put;
+@@ -4175,7 +4175,7 @@ int dlm_recover_process_copy(struct dlm_ls *ls, struct dlm_rcom *rc)
+ 
+ int dlm_user_request(struct dlm_ls *ls, struct dlm_user_args *ua,
+ 		     int mode, uint32_t flags, void *name, unsigned int namelen,
+-		     uint32_t parent_lkid)
++		     unsigned long timeout_cs)
+ {
+ 	struct dlm_lkb *lkb;
+ 	struct dlm_args args;
+@@ -4203,7 +4203,7 @@ int dlm_user_request(struct dlm_ls *ls, struct dlm_user_args *ua,
+ 	   When DLM_IFL_USER is set, the dlm knows that this is a userspace
+ 	   lock and that lkb_astparam is the dlm_user_args structure. */
+ 
+-	error = set_lock_args(mode, &ua->lksb, flags, namelen, parent_lkid,
++	error = set_lock_args(mode, &ua->lksb, flags, namelen, timeout_cs,
+ 			      DLM_FAKE_USER_AST, ua, DLM_FAKE_USER_AST, &args);
+ 	lkb->lkb_flags |= DLM_IFL_USER;
+ 	ua->old_mode = DLM_LOCK_IV;
+@@ -4240,7 +4240,8 @@ int dlm_user_request(struct dlm_ls *ls, struct dlm_user_args *ua,
+ }
+ 
+ int dlm_user_convert(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+-		     int mode, uint32_t flags, uint32_t lkid, char *lvb_in)
++		     int mode, uint32_t flags, uint32_t lkid, char *lvb_in,
++		     unsigned long timeout_cs)
+ {
+ 	struct dlm_lkb *lkb;
+ 	struct dlm_args args;
+@@ -4268,6 +4269,7 @@ int dlm_user_convert(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+ 	if (lvb_in && ua->lksb.sb_lvbptr)
+ 		memcpy(ua->lksb.sb_lvbptr, lvb_in, DLM_USER_LVB_LEN);
+ 
++	ua->xid = ua_tmp->xid;
+ 	ua->castparam = ua_tmp->castparam;
+ 	ua->castaddr = ua_tmp->castaddr;
+ 	ua->bastparam = ua_tmp->bastparam;
+@@ -4275,8 +4277,8 @@ int dlm_user_convert(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+ 	ua->user_lksb = ua_tmp->user_lksb;
+ 	ua->old_mode = lkb->lkb_grmode;
+ 
+-	error = set_lock_args(mode, &ua->lksb, flags, 0, 0, DLM_FAKE_USER_AST,
+-			      ua, DLM_FAKE_USER_AST, &args);
++	error = set_lock_args(mode, &ua->lksb, flags, 0, timeout_cs,
++			      DLM_FAKE_USER_AST, ua, DLM_FAKE_USER_AST, &args);
+ 	if (error)
+ 		goto out_put;
+ 
 diff --git a/fs/dlm/lock.h b/fs/dlm/lock.h
-index 19403aa..6b5b71f 100644
+index 6b5b71f..99ab463 100644
 --- a/fs/dlm/lock.h
 +++ b/fs/dlm/lock.h
-@@ -1,7 +1,7 @@
- /******************************************************************************
- *******************************************************************************
- **
--**  Copyright (C) 2005 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2005-2007 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -26,6 +26,8 @@ int dlm_put_lkb(struct dlm_lkb *lkb);
- void dlm_scan_rsbs(struct dlm_ls *ls);
- int dlm_lock_recovery_try(struct dlm_ls *ls);
- void dlm_unlock_recovery(struct dlm_ls *ls);
-+void dlm_scan_timeout(struct dlm_ls *ls);
-+void dlm_adjust_timeouts(struct dlm_ls *ls);
+@@ -38,9 +38,11 @@ int dlm_recover_master_copy(struct dlm_ls *ls, struct dlm_rcom *rc);
+ int dlm_recover_process_copy(struct dlm_ls *ls, struct dlm_rcom *rc);
  
- int dlm_purge_locks(struct dlm_ls *ls);
- void dlm_purge_mstcpy_locks(struct dlm_rsb *r);
-diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
-index 414a108..339a204 100644
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -237,6 +237,7 @@ static int dlm_scand(void *data)
- 		list_for_each_entry(ls, &lslist, ls_list) {
- 			if (dlm_lock_recovery_try(ls)) {
- 				dlm_scan_rsbs(ls);
-+				dlm_scan_timeout(ls);
- 				dlm_unlock_recovery(ls);
- 			}
- 		}
-@@ -421,11 +422,16 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 		goto out;
- 	memcpy(ls->ls_name, name, namelen);
- 	ls->ls_namelen = namelen;
--	ls->ls_exflags = flags;
- 	ls->ls_lvblen = lvblen;
- 	ls->ls_count = 0;
- 	ls->ls_flags = 0;
+ int dlm_user_request(struct dlm_ls *ls, struct dlm_user_args *ua, int mode,
+-	uint32_t flags, void *name, unsigned int namelen, uint32_t parent_lkid);
++	uint32_t flags, void *name, unsigned int namelen,
++	unsigned long timeout_cs);
+ int dlm_user_convert(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+-	int mode, uint32_t flags, uint32_t lkid, char *lvb_in);
++	int mode, uint32_t flags, uint32_t lkid, char *lvb_in,
++	unsigned long timeout_cs);
+ int dlm_user_unlock(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+ 	uint32_t flags, uint32_t lkid, char *lvb_in);
+ int dlm_user_cancel(struct dlm_ls *ls,  struct dlm_user_args *ua_tmp,
+diff --git a/fs/dlm/user.c b/fs/dlm/user.c
+index c7612da..37aad3f 100644
+--- a/fs/dlm/user.c
++++ b/fs/dlm/user.c
+@@ -33,16 +33,17 @@ static const struct file_operations device_fops;
+ struct dlm_lock_params32 {
+ 	__u8 mode;
+ 	__u8 namelen;
+-	__u16 flags;
++	__u16 unused;
++	__u32 flags;
+ 	__u32 lkid;
+ 	__u32 parent;
+-
++	__u64 xid;
++	__u64 timeout;
+ 	__u32 castparam;
+ 	__u32 castaddr;
+ 	__u32 bastparam;
+ 	__u32 bastaddr;
+ 	__u32 lksb;
+-
+ 	char lvb[DLM_USER_LVB_LEN];
+ 	char name[0];
+ };
+@@ -68,6 +69,7 @@ struct dlm_lksb32 {
+ };
  
-+	/* ls_exflags are forced to match among nodes, and we don't
-+	   need to require all nodes to have TIMEWARN active */
-+	if (flags & DLM_LSFL_TIMEWARN)
-+		set_bit(LSFL_TIMEWARN, &ls->ls_flags);
-+	ls->ls_exflags = (flags & ~DLM_LSFL_TIMEWARN);
-+
- 	size = dlm_config.ci_rsbtbl_size;
- 	ls->ls_rsbtbl_size = size;
- 
-@@ -465,6 +471,8 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 	mutex_init(&ls->ls_waiters_mutex);
- 	INIT_LIST_HEAD(&ls->ls_orphans);
- 	mutex_init(&ls->ls_orphans_mutex);
-+	INIT_LIST_HEAD(&ls->ls_timeout);
-+	mutex_init(&ls->ls_timeout_mutex);
- 
- 	INIT_LIST_HEAD(&ls->ls_nodes);
- 	INIT_LIST_HEAD(&ls->ls_nodes_gone);
-diff --git a/fs/dlm/main.c b/fs/dlm/main.c
-index 162fbae..eca2907 100644
---- a/fs/dlm/main.c
-+++ b/fs/dlm/main.c
-@@ -2,7 +2,7 @@
- *******************************************************************************
- **
- **  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
--**  Copyright (C) 2004-2005 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -25,6 +25,8 @@ void dlm_unregister_debugfs(void);
- static inline int dlm_register_debugfs(void) { return 0; }
- static inline void dlm_unregister_debugfs(void) { }
- #endif
-+int dlm_netlink_init(void);
-+void dlm_netlink_exit(void);
- 
- static int __init init_dlm(void)
+ struct dlm_lock_result32 {
++	__u32 version[3];
+ 	__u32 length;
+ 	__u32 user_astaddr;
+ 	__u32 user_astparam;
+@@ -102,6 +104,8 @@ static void compat_input(struct dlm_write_request *kb,
+ 		kb->i.lock.flags = kb32->i.lock.flags;
+ 		kb->i.lock.lkid = kb32->i.lock.lkid;
+ 		kb->i.lock.parent = kb32->i.lock.parent;
++		kb->i.lock.xid = kb32->i.lock.xid;
++		kb->i.lock.timeout = kb32->i.lock.timeout;
+ 		kb->i.lock.castparam = (void *)(long)kb32->i.lock.castparam;
+ 		kb->i.lock.castaddr = (void *)(long)kb32->i.lock.castaddr;
+ 		kb->i.lock.bastparam = (void *)(long)kb32->i.lock.bastparam;
+@@ -115,6 +119,10 @@ static void compat_input(struct dlm_write_request *kb,
+ static void compat_output(struct dlm_lock_result *res,
+ 			  struct dlm_lock_result32 *res32)
  {
-@@ -50,10 +52,16 @@ static int __init init_dlm(void)
- 	if (error)
- 		goto out_debug;
- 
-+	error = dlm_netlink_init();
-+	if (error)
-+		goto out_user;
++	res32->version[0] = res->version[0];
++	res32->version[1] = res->version[1];
++	res32->version[2] = res->version[2];
 +
- 	printk("DLM (built %s %s) installed\n", __DATE__, __TIME__);
+ 	res32->user_astaddr = (__u32)(long)res->user_astaddr;
+ 	res32->user_astparam = (__u32)(long)res->user_astparam;
+ 	res32->user_lksb = (__u32)(long)res->user_lksb;
+@@ -252,16 +260,18 @@ static int device_user_lock(struct dlm_user_proc *proc,
+ 	ua->castaddr = params->castaddr;
+ 	ua->bastparam = params->bastparam;
+ 	ua->bastaddr = params->bastaddr;
++	ua->xid = params->xid;
  
- 	return 0;
+ 	if (params->flags & DLM_LKF_CONVERT)
+ 		error = dlm_user_convert(ls, ua,
+ 				         params->mode, params->flags,
+-				         params->lkid, params->lvb);
++				         params->lkid, params->lvb,
++					 (unsigned long) params->timeout);
+ 	else {
+ 		error = dlm_user_request(ls, ua,
+ 					 params->mode, params->flags,
+ 					 params->name, params->namelen,
+-					 params->parent);
++					 (unsigned long) params->timeout);
+ 		if (!error)
+ 			error = ua->lksb.sb_lkid;
+ 	}
+@@ -641,6 +651,9 @@ static int copy_result_to_user(struct dlm_user_args *ua, int compat, int type,
+ 	int struct_len;
  
-+ out_user:
-+	dlm_user_exit();
-  out_debug:
- 	dlm_unregister_debugfs();
-  out_config:
-@@ -68,6 +76,7 @@ static int __init init_dlm(void)
+ 	memset(&result, 0, sizeof(struct dlm_lock_result));
++	result.version[0] = DLM_DEVICE_VERSION_MAJOR;
++	result.version[1] = DLM_DEVICE_VERSION_MINOR;
++	result.version[2] = DLM_DEVICE_VERSION_PATCH;
+ 	memcpy(&result.lksb, &ua->lksb, sizeof(struct dlm_lksb));
+ 	result.user_lksb = ua->user_lksb;
  
- static void __exit exit_dlm(void)
- {
-+	dlm_netlink_exit();
- 	dlm_user_exit();
- 	dlm_config_exit();
- 	dlm_memory_exit();
-diff --git a/fs/dlm/member.c b/fs/dlm/member.c
-index 85e2897..f08faec 100644
---- a/fs/dlm/member.c
-+++ b/fs/dlm/member.c
-@@ -1,7 +1,7 @@
- /******************************************************************************
- *******************************************************************************
- **
--**  Copyright (C) 2005 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2005-2007 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -284,6 +284,9 @@ int dlm_ls_stop(struct dlm_ls *ls)
- 	dlm_recoverd_suspend(ls);
- 	ls->ls_recover_status = 0;
- 	dlm_recoverd_resume(ls);
-+
-+	if (!ls->ls_recover_begin)
-+		ls->ls_recover_begin = jiffies;
- 	return 0;
+@@ -699,6 +712,20 @@ static int copy_result_to_user(struct dlm_user_args *ua, int compat, int type,
+ 	return error;
  }
  
-diff --git a/fs/dlm/netlink.c b/fs/dlm/netlink.c
-new file mode 100644
-index 0000000..804b32c
---- /dev/null
-+++ b/fs/dlm/netlink.c
-@@ -0,0 +1,155 @@
-+/*
-+ * Copyright (C) 2007 Red Hat, Inc.  All rights reserved.
-+ *
-+ * This copyrighted material is made available to anyone wishing to use,
-+ * modify, copy, or redistribute it subject to the terms and conditions
-+ * of the GNU General Public License v.2.
-+ */
-+
-+#include <net/genetlink.h>
-+#include <linux/dlm.h>
-+#include <linux/dlm_netlink.h>
-+
-+#include "dlm_internal.h"
-+
-+static uint32_t dlm_nl_seqnum;
-+static uint32_t listener_nlpid;
-+
-+static struct genl_family family = {
-+	.id		= GENL_ID_GENERATE,
-+	.name		= DLM_GENL_NAME,
-+	.version	= DLM_GENL_VERSION,
-+};
-+
-+static int prepare_data(u8 cmd, struct sk_buff **skbp, size_t size)
++static int copy_version_to_user(char __user *buf, size_t count)
 +{
-+	struct sk_buff *skb;
-+	void *data;
++	struct dlm_device_version ver;
 +
-+	skb = genlmsg_new(size, GFP_KERNEL);
-+	if (!skb)
-+		return -ENOMEM;
++	memset(&ver, 0, sizeof(struct dlm_device_version));
++	ver.version[0] = DLM_DEVICE_VERSION_MAJOR;
++	ver.version[1] = DLM_DEVICE_VERSION_MINOR;
++	ver.version[2] = DLM_DEVICE_VERSION_PATCH;
 +
-+	/* add the message headers */
-+	data = genlmsg_put(skb, 0, dlm_nl_seqnum++, &family, 0, cmd);
-+	if (!data) {
-+		nlmsg_free(skb);
++	if (copy_to_user(buf, &ver, sizeof(struct dlm_device_version)))
++		return -EFAULT;
++	return sizeof(struct dlm_device_version);
++}
++
+ /* a read returns a single ast described in a struct dlm_lock_result */
+ 
+ static ssize_t device_read(struct file *file, char __user *buf, size_t count,
+@@ -710,6 +737,16 @@ static ssize_t device_read(struct file *file, char __user *buf, size_t count,
+ 	DECLARE_WAITQUEUE(wait, current);
+ 	int error, type=0, bmode=0, removed = 0;
+ 
++	if (count == sizeof(struct dlm_device_version)) {
++		error = copy_version_to_user(buf, count);
++		return error;
++	}
++
++	if (!proc) {
++		log_print("non-version read from control device %zu", count);
 +		return -EINVAL;
 +	}
 +
-+	*skbp = skb;
-+	return 0;
-+}
-+
-+static struct dlm_lock_data *mk_data(struct sk_buff *skb)
-+{
-+	struct nlattr *ret;
-+
-+	ret = nla_reserve(skb, DLM_TYPE_LOCK, sizeof(struct dlm_lock_data));
-+	if (!ret)
-+		return NULL;
-+	return nla_data(ret);
-+}
-+
-+static int send_data(struct sk_buff *skb)
-+{
-+	struct genlmsghdr *genlhdr = nlmsg_data((struct nlmsghdr *)skb->data);
-+	void *data = genlmsg_data(genlhdr);
-+	int rv;
-+
-+	rv = genlmsg_end(skb, data);
-+	if (rv < 0) {
-+		nlmsg_free(skb);
-+		return rv;
-+	}
-+
-+	return genlmsg_unicast(skb, listener_nlpid);
-+}
-+
-+static int user_cmd(struct sk_buff *skb, struct genl_info *info)
-+{
-+	listener_nlpid = info->snd_pid;
-+	printk("user_cmd nlpid %u\n", listener_nlpid);
-+	return 0;
-+}
-+
-+static struct genl_ops dlm_nl_ops = {
-+	.cmd		= DLM_CMD_HELLO,
-+	.doit		= user_cmd,
-+};
-+
-+int dlm_netlink_init(void)
-+{
-+	int rv;
-+
-+	rv = genl_register_family(&family);
-+	if (rv)
-+		return rv;
-+
-+	rv = genl_register_ops(&family, &dlm_nl_ops);
-+	if (rv < 0)
-+		goto err;
-+	return 0;
-+ err:
-+	genl_unregister_family(&family);
-+	return rv;
-+}
-+
-+void dlm_netlink_exit(void)
-+{
-+	genl_unregister_ops(&family, &dlm_nl_ops);
-+	genl_unregister_family(&family);
-+}
-+
-+static void fill_data(struct dlm_lock_data *data, struct dlm_lkb *lkb)
-+{
-+	struct dlm_rsb *r = lkb->lkb_resource;
-+	struct dlm_user_args *ua = (struct dlm_user_args *) lkb->lkb_astparam;
-+
-+	memset(data, 0, sizeof(struct dlm_lock_data));
-+
-+	data->version = DLM_LOCK_DATA_VERSION;
-+	data->nodeid = lkb->lkb_nodeid;
-+	data->ownpid = lkb->lkb_ownpid;
-+	data->id = lkb->lkb_id;
-+	data->remid = lkb->lkb_remid;
-+	data->status = lkb->lkb_status;
-+	data->grmode = lkb->lkb_grmode;
-+	data->rqmode = lkb->lkb_rqmode;
-+	data->timestamp = lkb->lkb_timestamp;
-+	if (ua)
-+		data->xid = ua->xid;
-+	if (r) {
-+		data->lockspace_id = r->res_ls->ls_global_id;
-+		data->resource_namelen = r->res_length;
-+		memcpy(data->resource_name, r->res_name, r->res_length);
-+	}
-+}
-+
-+void dlm_timeout_warn(struct dlm_lkb *lkb)
-+{
-+	struct dlm_lock_data *data;
-+	struct sk_buff *send_skb;
-+	size_t size;
-+	int rv;
-+
-+	log_debug(lkb->lkb_resource->res_ls, "timeout_warn %x", lkb->lkb_id);
-+
-+	size = nla_total_size(sizeof(struct dlm_lock_data)) +
-+	       nla_total_size(0); /* why this? */
-+
-+	rv = prepare_data(DLM_CMD_TIMEOUT, &send_skb, size);
-+	if (rv < 0)
-+		return;
-+
-+	data = mk_data(send_skb);
-+	if (!data) {
-+		nlmsg_free(send_skb);
-+		return;
-+	}
-+
-+	fill_data(data, lkb);
-+
-+	send_data(send_skb);
-+}
-+
-diff --git a/fs/dlm/recoverd.c b/fs/dlm/recoverd.c
-index 3cb636d..6657599 100644
---- a/fs/dlm/recoverd.c
-+++ b/fs/dlm/recoverd.c
+ #ifdef CONFIG_COMPAT
+ 	if (count < sizeof(struct dlm_lock_result32))
+ #else
+@@ -747,11 +784,6 @@ static ssize_t device_read(struct file *file, char __user *buf, size_t count,
+ 		}
+ 	}
+ 
+-	if (list_empty(&proc->asts)) {
+-		spin_unlock(&proc->asts_spin);
+-		return -EAGAIN;
+-	}
+-
+ 	/* there may be both completion and blocking asts to return for
+ 	   the lkb, don't remove lkb from asts list unless no asts remain */
+ 
+@@ -823,6 +855,7 @@ static const struct file_operations device_fops = {
+ static const struct file_operations ctl_device_fops = {
+ 	.open    = ctl_device_open,
+ 	.release = ctl_device_close,
++	.read    = device_read,
+ 	.write   = device_write,
+ 	.owner   = THIS_MODULE,
+ };
+diff --git a/include/linux/dlm_device.h b/include/linux/dlm_device.h
+index c2735ca..f7b9b57 100644
+--- a/include/linux/dlm_device.h
++++ b/include/linux/dlm_device.h
 @@ -2,7 +2,7 @@
  *******************************************************************************
  **
@@ -710,137 +352,52 @@ index 3cb636d..6657599 100644
  **
  **  This copyrighted material is made available to anyone wishing to use,
  **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -190,6 +190,8 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+@@ -18,21 +18,24 @@
+ #define DLM_USER_LVB_LEN	32
  
- 	dlm_clear_members_gone(ls);
+ /* Version of the device interface */
+-#define DLM_DEVICE_VERSION_MAJOR 5
+-#define DLM_DEVICE_VERSION_MINOR 1
++#define DLM_DEVICE_VERSION_MAJOR 6
++#define DLM_DEVICE_VERSION_MINOR 0
+ #define DLM_DEVICE_VERSION_PATCH 0
  
-+	dlm_adjust_timeouts(ls);
-+
- 	error = enable_locking(ls, rv->seq);
- 	if (error) {
- 		log_debug(ls, "enable_locking failed %d", error);
-diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index b0201ec..c7612da 100644
---- a/fs/dlm/user.c
-+++ b/fs/dlm/user.c
-@@ -348,7 +348,7 @@ static int device_create_lockspace(struct dlm_lspace_params *params)
- 		return -EPERM;
- 
- 	error = dlm_new_lockspace(params->name, strlen(params->name),
--				  &lockspace, 0, DLM_USER_LVB_LEN);
-+				  &lockspace, params->flags, DLM_USER_LVB_LEN);
- 	if (error)
- 		return error;
- 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index f317c27..afae306 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -49,6 +49,7 @@ header-y += consolemap.h
- header-y += const.h
- header-y += cycx_cfm.h
- header-y += dlm_device.h
-+header-y += dlm_netlink.h
- header-y += dm-ioctl.h
- header-y += dn.h
- header-y += dqblk_v1.h
-diff --git a/include/linux/dlm.h b/include/linux/dlm.h
-index 1b1dcb9..975f17d 100644
---- a/include/linux/dlm.h
-+++ b/include/linux/dlm.h
-@@ -2,7 +2,7 @@
- *******************************************************************************
- **
- **  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
--**  Copyright (C) 2004-2005 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -149,6 +149,7 @@
- #define DLM_LKF_ALTPR		0x00008000
- #define DLM_LKF_ALTCW		0x00010000
- #define DLM_LKF_FORCEUNLOCK	0x00020000
-+#define DLM_LKF_TIMEOUT		0x00040000
- 
- /*
-  * Some return codes that are not in errno.h
-@@ -199,11 +200,11 @@ struct dlm_lksb {
- 	char *	 sb_lvbptr;
+ /* struct passed to the lock write */
+ struct dlm_lock_params {
+ 	__u8 mode;
+ 	__u8 namelen;
+-	__u16 flags;
++	__u16 unused;
++	__u32 flags;
+ 	__u32 lkid;
+ 	__u32 parent;
+-        void __user *castparam;
++	__u64 xid;
++	__u64 timeout;
++	void __user *castparam;
+ 	void __user *castaddr;
+ 	void __user *bastparam;
+-        void __user *bastaddr;
++	void __user *bastaddr;
+ 	struct dlm_lksb __user *lksb;
+ 	char lvb[DLM_USER_LVB_LEN];
+ 	char name[0];
+@@ -62,9 +65,15 @@ struct dlm_write_request {
+ 	} i;
  };
  
-+#define DLM_LSFL_NODIR		0x00000001
-+#define DLM_LSFL_TIMEWARN	0x00000002
- 
- #ifdef __KERNEL__
- 
--#define DLM_LSFL_NODIR		0x00000001
--
- /*
-  * dlm_new_lockspace
-  *
-diff --git a/include/linux/dlm_netlink.h b/include/linux/dlm_netlink.h
-new file mode 100644
-index 0000000..1927633
---- /dev/null
-+++ b/include/linux/dlm_netlink.h
-@@ -0,0 +1,56 @@
-+/*
-+ * Copyright (C) 2007 Red Hat, Inc.  All rights reserved.
-+ *
-+ * This copyrighted material is made available to anyone wishing to use,
-+ * modify, copy, or redistribute it subject to the terms and conditions
-+ * of the GNU General Public License v.2.
-+ */
-+
-+#ifndef _DLM_NETLINK_H
-+#define _DLM_NETLINK_H
-+
-+enum {
-+	DLM_STATUS_WAITING = 1,
-+	DLM_STATUS_GRANTED = 2,
-+	DLM_STATUS_CONVERT = 3,
++struct dlm_device_version {
++	__u32 version[3];
 +};
 +
-+#define DLM_LOCK_DATA_VERSION 1
+ /* struct read from the "device" fd,
+    consists mainly of userspace pointers for the library to use */
 +
-+struct dlm_lock_data {
-+	uint16_t version;
-+	uint32_t lockspace_id;
-+	int nodeid;
-+	int ownpid;
-+	uint32_t id;
-+	uint32_t remid;
-+	uint64_t xid;
-+	int8_t status;
-+	int8_t grmode;
-+	int8_t rqmode;
-+	unsigned long timestamp;
-+	int resource_namelen;
-+	char resource_name[DLM_RESNAME_MAXLEN];
-+};
-+
-+enum {
-+	DLM_CMD_UNSPEC = 0,
-+	DLM_CMD_HELLO,		/* user->kernel */
-+	DLM_CMD_TIMEOUT,	/* kernel->user */
-+	__DLM_CMD_MAX,
-+};
-+
-+#define DLM_CMD_MAX (__DLM_CMD_MAX - 1)
-+
-+enum {
-+	DLM_TYPE_UNSPEC = 0,
-+	DLM_TYPE_LOCK,
-+	__DLM_TYPE_MAX,
-+};
-+
-+#define DLM_TYPE_MAX (__DLM_TYPE_MAX - 1)
-+
-+#define DLM_GENL_VERSION 0x1
-+#define DLM_GENL_NAME "DLM"
-+
-+#endif /* _DLM_NETLINK_H */
+ struct dlm_lock_result {
++	__u32 version[3];
+ 	__u32 length;
+ 	void __user * user_astaddr;
+ 	void __user * user_astparam;
 -- 
 1.5.1.2
 
