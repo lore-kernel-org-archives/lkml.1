@@ -1,95 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbXGIMvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbXGIM6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755584AbXGIMvs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXGIMvi
+	id S1754589AbXGIM6q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbXGIM6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:51:38 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55482 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751691AbXGIMvh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:51:37 -0400
-Date: Mon, 9 Jul 2007 14:52:08 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, jgarzik@pobox.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, saw@saw.sw.com.sg,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [2.6 patch] the overdue eepro100 removal
-Message-ID: <20070709125208.GZ3492@stusta.de>
-References: <20070701202139.GM10869@stusta.de> <46894BD5.9080609@tmr.com> <46897212.30104@intel.com> <468D15F4.6020106@tmr.com>
+	Mon, 9 Jul 2007 08:58:35 -0400
+Received: from il.qumranet.com ([82.166.9.18]:59884 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800AbXGIM6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:58:34 -0400
+Message-ID: <46923100.8000407@qumranet.com>
+Date: Mon, 09 Jul 2007 15:58:40 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <468D15F4.6020106@tmr.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Sasa Ostrouska <casaxa@gmail.com>,
+       linux-kernel@vger.kernel.org, Chandra Seetharaman <sekharan@us.ibm.com>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: KVM-AMD OOPS
+References: <dcf706c60707080915w7660a2exe629c5def78549da@mail.gmail.com> <4691BF62.2060207@goop.org> <4691E08F.4050908@gmail.com>
+In-Reply-To: <4691E08F.4050908@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 12:01:56PM -0400, Bill Davidsen wrote:
-> Please do not make unnecessary kernel changes which require changes in our 
-> systems.
-
-Welcome to the kernel 2.6 development model.
-
-> Kok, Auke wrote:
->> Bill Davidsen wrote:
->>> Adrian Bunk wrote:
->>>> This patch contains the overdue removal of the eepro100 driver.
->>>>
->>>> Signed-off-by: Adrian Bunk <bunk@stusta.de>
->>>>
->>> The hardware supported by this driver is still in use, thanks. It's 
->>> probably easier to leave the eepro100 driver in than find anyone who 
->>> wants to investigate why the other driver (e100? from memory) doesn't 
->>> work with some cards. As I recall this was suggested over a year ago and 
->>> it was decided to leave it in, all of the reasons for doing so still seem 
->>> valid. There really doesn't seem to be a benefit, it's not like people 
->>> are working night and day to support new cards for this chip.
+Jiri Slaby wrote:
+> Jeremy Fitzhardinge napsal(a):
+>   
+>> Sasa Ostrouska wrote:
+>>     
+>>> root@rcserver:~# modprobe kvm-amd
+>>> int3: 0000 [1] PREEMPT SMP
+>>> CPU 1
+>>> Modules linked in: kvm_amd snd_seq_dummy snd_seq_oss
+>>> snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss
+>>> nls_iso8859_1 ntfs nls_base usb_storage libusual capability commoncap
+>>> lp psmouse snd_hda_intel snd_hda_codec snd_pcm snd_timer ohci_hcd
+>>> ehci_hcd 8139too rtc_cmos snd soundcore snd_page_alloc usbcore k8temp
+>>> mii rtc_core rtc_lib i2c_nforce2 parport_pc parport
+>>> Pid: 2898, comm: modprobe Tainted: P       2.6.21.5 #1
+>>> RIP: 0010:[<ffffffff80572364>]  [<ffffffff80572364>]
+>>> register_cpu_notifier+0x1/0x31
+>>> RSP: 0000:ffff81006e34df40  EFLAGS: 00000246
+>>> RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00000000c0010117
+>>> RDX: 000000000000ffff RSI: ffff81006e219640 RDI: ffffffff80536510
+>>> RBP: ffffffff880d8840 R08: 0000000000000000 R09: 000000000006b5f4
+>>> R10: 0000000000000000 R11: 0000000000000000 R12: 00000000005296b0
+>>> R13: 00007fff51fe55c0 R14: 0000000000000000 R15: 0000000000000000
+>>> FS:  00002b4e58e18b00(0000) GS:ffff810002e794c0(0000)
+>>> knlGS:0000000000000000
+>>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+>>> CR2: 000000000050df64 CR3: 000000007a0f3000 CR4: 00000000000006e0
+>>> Process modprobe (pid: 2898, threadinfo ffff81006e34c000, task
+>>> ffff81007bc48400)
+>>> Stack:  ffffffff8039e024 ffff81006e34c000 ffffffff880d8840
+>>> 0000000000005e19
+>>> ffffffff8024537c 0000000000000000 00007fff51fe50c0 00000000004142d0
+>>> ffffffff8020967e 0000000000000206 00000000005230e0 000000000052f4c9
+>>> Call Trace:
+>>> [<ffffffff8039e024>] kvm_init_arch+0x90/0x145
+>>> [<ffffffff8024537c>] sys_init_module+0xad/0x168
+>>> [<ffffffff8020967e>] system_call+0x7e/0x83
 >>>
->>
->> please see the thread "Re: [PATCH] fix e100 rx path on ARM (was [PATCH] 
->> e100 rx: or s and el bits)" which is discussing a fix for this issue and 
->> currently being worked.
->>
->> eepro100 will *still* be removed once e100 is fixed to support those 
->> devices.
->>
-> Frankly I think there are more of us running old cards on PC hardware than 
-> people running ARM! And for a number of card for old buses like ISA, EISA, 
-> and VESA, the e100 has not worked. These are old PCs converted to routers 
-> and firewalls, and for security should not be left without upgrades.
-
-WTF are you talking about?
-
-Both drivers only support PCI cards.
-
->> Moreover, we now also have a fix for the e100 IPMI issues on some tyan 
->> boards (patch coming this week!). That hopefully solves all e100 issues 
->> that are still open.
+>>>
+>>> Code: cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc
+>>>       
+>> This is the init section poison pattern.  Looks like an init function
+>> was used after the code was freed.
+>>     
 >
-> If you think the e100 driver fixes your problems use it and be happy. But 
-> since you don't have to test system behavior with the new driver, and you 
-> won't be called at night or on weekends if it doesn't work, do the rest of 
-> the world a favor and stop taking out things we know to work! Leaving in 
-> the eepro100 causes no work for you, and even if e100 works perfectly it 
-> needs to be validated in any sane network. it still makes work.
+> This?
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=65edc68c345cbe21d0b0375c3452a3ed5e322868;hp=054cc8a2d808822dadf488a61729e3e550f114c4
+>
+> Could you revert it and test?
+>
+>   
 
-The goal is to get e100 better, and removing eepro100 helps with 
-reaching this goal.
+There's actually a patch (by me) after that to allow modules to call the 
+cpu hotplug functions if !CONFIG_HOTPLUG_CPU; but in this case kvm was 
+built in while kvm-amd.ko is a module, which confused that logic.
 
-Why didn't _you_ try the e100 driver when you validated your systems 
-after you upgraded them to kernel 2.6, and if you did and it didn't 
-work, where is your bug report?
-
-cu
-Adrian
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+error compiling committee.c: too many arguments to function
 
