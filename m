@@ -1,84 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbXGILJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbXGILRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbXGILJI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 07:09:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbXGILI5
+	id S1754272AbXGILRR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 07:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXGILRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 07:08:57 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:21256 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbXGILI4 (ORCPT
+	Mon, 9 Jul 2007 07:17:05 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:26937 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751835AbXGILRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 07:08:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ntV3OaXd4/h06xieEaMEi2wRrwIB6sYaA4PwoW5EGS2Kxdpe9RUW03498JVp9W26KzFYW6ewIZ+d1lWFODJZrblOZe6Y/2l9OhvirSVJUjovI9WC5OK3IYvVJdkdxm10jITGG137ZOV+iLhnT+zgnIXT7J1Z5HQ9ueM/anLvNog=
-Message-ID: <ca35ce500707090408w744674e8s43a06422ea80cad5@mail.gmail.com>
-Date: Mon, 9 Jul 2007 13:08:55 +0200
-From: mikie <mikie.pl@gmail.com>
-To: "Indan Zupancic" <indan@nul.nu>
-Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
-Cc: "Duncan Sands" <duncan.sands@math.u-psud.fr>, linux-kernel@vger.kernel.org
-In-Reply-To: <59741.81.207.0.53.1183977750.squirrel@secure.samage.net>
+	Mon, 9 Jul 2007 07:17:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=xeYK734h3MH6gv6OsooS+KIxaqaeFRNw+aKfXIZhVVQFzrwF0R/NJHxpyXqMYAWZYF3wGrDyGmGFJfJDBfh0hTdfm1e7FPgqORHRAsMqQKla3O2HJmMtxCcYOvzptogMTpvRxAUX4eBFy9f4CF2tYDppqlCFN2Nd41tXFCvHrwk=  ;
+X-YMail-OSG: VhcmCTQVM1lg0UFk5uuAy57J4ssB8wk57mmVjDh8nSY47QYQiq8nBnQs7dGbdgeN2dvUbamWPw--
+Message-ID: <46921928.8020900@yahoo.com.au>
+Date: Mon, 09 Jul 2007 21:16:56 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org, suresh.b.siddha@intel.com,
+       corey.d.gough@intel.com, Matt Mackall <mpm@selenic.com>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+References: <20070708034952.022985379@sgi.com>	 <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu>	 <20070708110224.9cd9df5b.akpm@linux-foundation.org>	 <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
+In-Reply-To: <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
-	 <200707061620.44348.duncan.sands@math.u-psud.fr>
-	 <58019.81.207.0.53.1183749400.squirrel@secure.samage.net>
-	 <ca35ce500707090149x78a424f6t9d687893c0d657f6@mail.gmail.com>
-	 <59741.81.207.0.53.1183977750.squirrel@secure.samage.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/7/9, Indan Zupancic <indan@nul.nu>:
-> On Mon, July 9, 2007 10:49, mikie wrote:
-> > 2007/7/6, Indan Zupancic <indan@nul.nu>:
-> >> On Fri, July 6, 2007 16:20, Duncan Sands wrote:
-> >> > On Friday 6 July 2007 14:54:18 mikie wrote:
-> >> >> Hi,
-> >> >>
-> >> >> I experience some problems with the speedtch.c module, especially in
-> >> >> regards to its firmware loader.
-> >> >> I am not quite sure if this module is going to load the firmware
-> >> >> itself or does it use some external software to do that ?
-> >> >
-> >> > It loads it itself, using some external software!
-> >>
-> >> For information, it generates a hotplug event and the kernel calls the
-> >> program written at /proc/sys/kernel/hotplug with certain information.
-> >> That used to be /sbin/hotplug, became later udev, but today in general
-> >> udev reads the uevents generated by the kernel.
-> >
-> > On my system the /proc/sys/kernel/hotplug points to /sbin/hotplug.
-> > I copied your script to /sbin/hotplug and also added simple logging,
-> > so I can see whenever the script is being started. It turns out that
-> > the script is not started at all by the kernel...
-> >
-> > I am afraid that the kernel generates uevents only, could this be true?
->
-> Not really, it would break backward compatibility, and if it were true,
-> they're remove the /proc/sys/kernel/hotplug setting too. As far as I know,
-> if it's set, that program will be executed, and if zero is written to it, only
-> uevents are generated.
->
-> Make sure that the script is executable (chmod +x)
+Pekka Enberg wrote:
+> Hi Nick,
+> 
+> On 7/9/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> 
+>> SLOB contains several significant O(1) and also O(n) memory savings that
+>> are so far impossible-by-design for SLUB. They are: slab external
+>> fragmentation is significantly reduced; kmalloc internal fragmentation is
+>> significantly reduced; order of magnitude smaller kmem_cache data type;
+>> order of magnitude less code...
+> 
+> 
+> I assume with "slab external fragmentation" you mean allocating a
+> whole page for a slab when there are not enough objects to fill the
+> whole thing thus wasting memory?
 
-Yes I have set it to be executable:
-root@srv:/sbin# ls -lah hotplug
--rwxr-xr-x    1 root     root          934 Jul  9 09:13 hotplug
-
-> and has "#!/bin/sh"
-> at the top, or else it won't work. If that's already the case, I've no idea.
-
-root@srv:/sbin# head hotplug
-#!/bin/sh
-set -e
+Yep. Without really analysing it, I guess SLOB's savings here are
+O(1) over SLUB and will relatively diminish as the machine size gets
+larger, however with the number of slabs even a small kernel creates,
+this is likely to be significant on small memory systems.
 
 
-Everything looks OK, but still it does not fire up the script...
+> We could try to combat that by
+> packing multiple variable-sized slabs within a single page. Also,
 
-Regards,
-MK
+Yeah, that could help.
+
+
+> adding some non-power-of-two kmalloc caches might help with internal
+> fragmentation.
+
+That too, although of course it will work against the external
+fragmentation problem. This is more of an O(n) problem and may not
+be responsible for as much waste as the first issue on small memory
+machines (I haven't done detailed profiling so I don't know).
+
+
+> In any case, SLUB needs some serious tuning for smaller machines
+> before we can get rid of SLOB.
+
+I would always be happy to see the default allocator become more
+space efficient... I think it would be most productive to get
+detailed profiles of exactly where the memory is being wasted on
+small mem= boots. Although I don't think matching SLOB would be
+an easy task at all.
+
+-- 
+SUSE Labs, Novell Inc.
