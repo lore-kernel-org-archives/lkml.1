@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbXGIQfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbXGIQf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757376AbXGIQfh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbXGIQY1
+	id S1760055AbXGIQf6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbXGIQY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42197 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42198 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757195AbXGIQYR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:24:17 -0400
+	id S1758293AbXGIQYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:24:18 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, David Teigland <teigland@redhat.com>,
+Cc: cluster-devel@redhat.com,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] set plock owner in GETLK info
-Date: Mon,  9 Jul 2007 17:02:43 +0100
-Message-Id: <11839970633982-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [GFS2] gfs2_lookupi() uninitialised var fix
+Date: Mon,  9 Jul 2007 17:02:42 +0100
+Message-Id: <11839970611456-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970611456-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970591207-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -54,32 +55,33 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183997056121-git-send-email-swhiteho@redhat.com>
  <11839970573954-git-send-email-swhiteho@redhat.com>
  <11839970591207-git-send-email-swhiteho@redhat.com>
- <11839970611456-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Teigland <teigland@redhat.com>
+From: akpm@linux-foundation.org <akpm@linux-foundation.org>
 
-Set the owner field in the plock info sent to userspace for GETLK.
-Without this, gfs_controld won't correctly see when the GETLK from a
-process matches one of the process's existing locks.
+fs/gfs2/inode.c: In function 'gfs2_lookupi':
+fs/gfs2/inode.c:392: warning: 'error' may be used uninitialized in this function
 
-Signed-off-by: David Teigland <teigland@redhat.com>
+Looks like a real bug to me.
+
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/locking/dlm/plock.c b/fs/gfs2/locking/dlm/plock.c
-index f82495e..1dc7680 100644
---- a/fs/gfs2/locking/dlm/plock.c
-+++ b/fs/gfs2/locking/dlm/plock.c
-@@ -242,7 +242,7 @@ int gdlm_plock_get(void *lockspace, struct lm_lockname *name,
- 	op->info.number		= name->ln_number;
- 	op->info.start		= fl->fl_start;
- 	op->info.end		= fl->fl_end;
--
-+	op->info.owner		= (__u64)(long) fl->fl_owner;
+diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
+index cacdb0d..366235d 100644
+--- a/fs/gfs2/inode.c
++++ b/fs/gfs2/inode.c
+@@ -389,7 +389,7 @@ struct inode *gfs2_lookupi(struct inode *dir, const struct qstr *name,
+ 	struct super_block *sb = dir->i_sb;
+ 	struct gfs2_inode *dip = GFS2_I(dir);
+ 	struct gfs2_holder d_gh;
+-	int error;
++	int error = 0;
+ 	struct inode *inode = NULL;
+ 	int unlock = 0;
  
- 	send_op(op);
- 	wait_event(recv_wq, (op->done != 0));
 -- 
 1.5.1.2
 
