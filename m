@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbXGIMpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbXGIMpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754308AbXGIMpI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbXGIMoz
+	id S1755372AbXGIMpf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbXGIMpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:44:55 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:42822 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751865AbXGIMoy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:44:54 -0400
-X-YMail-OSG: 7nS.5iAVM1laJUd9hYZkD0r7Cz52.fB4e9jaFqAuhtSfqPPSKkAMUxx2F4Nly1VkF_v3g.6LJw--
-Subject: Re: [BUG] IT8212 libata driver *still* hard-freezes system on boot
-	on 2.6.22 final.
-From: Rodney Gordon II <meff@spherevision.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <20070709131649.5fa63744@the-village.bc.nu>
-References: <1183944204.8932.8.camel@ghreen.sphere>
-	 <20070709104930.4e26f38f@the-village.bc.nu>
-	 <1183979782.4301.4.camel@ghreen.sphere>
-	 <20070709131649.5fa63744@the-village.bc.nu>
-Content-Type: text/plain
-Date: Mon, 09 Jul 2007 07:44:49 -0500
-Message-Id: <1183985089.4190.2.camel@ghreen.sphere>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jul 2007 08:45:21 -0400
+Received: from styx.suse.cz ([82.119.242.94]:53877 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753049AbXGIMpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:45:19 -0400
+Date: Mon, 9 Jul 2007 15:00:21 +0200
+From: Jan Kara <jack@suse.cz>
+To: Kirill Korotaev <dev@openvz.org>
+Cc: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: Re: jbd lost fix?
+Message-ID: <20070709130021.GA30433@duck.suse.cz>
+References: <468908A9.2010702@openvz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <468908A9.2010702@openvz.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-09 at 13:16 +0100, Alan Cox wrote:
-> > > It would be useful to know if a kernel built with no DMA support for the
-> > > IT8212 behaved as that might give us a clue about what is choking. If you
-> > > look in drivers/ata/pata_it821x.c:it821x_init_one you'll see a pair of
-> > > lines that say
-> > > 
-> > > 	mwdma = 0x1f,
-> > > 	udma_mask = 0x7f
-> > > 
-> > > 
-> > > remove, rebuild and report..
-> > 
-> > Alright.
-> > 
-> > Attachment [0] is a successful boot with those lines removed. (This a
-> > good thing or a bad thing? :)
+  Hello,
+
+On Mon 02-07-07 18:16:09, Kirill Korotaev wrote:
+> it looks like the following fix:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=43c3e6f5abdf6acac9b90c86bf03f995bf7d3d92
 > 
-> Thats an interesting question in itself. It does seem to indicate the
-> problem is DMA tuning or DMA related and not IRQ routing - which is good
-> as of itself.
+> was lost after resurrecting of the spliced checkpointing list in this patch:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=78ce89c92bc6eaf5933b5664bff64253a7103bd7;hp=cdaad343b561cdeb38b0578bb038
 > 
-> > Attachment [1] is a successful boot with the old ata subsystem using the
-> > IT8212.
-> 
-> For the next trick set mwdma_mask = 0x07 but leave UDMA off and see what
-> happens. 
+> Can you please confirm that?
+  Sorry for a bit late reply but I was on holiday for a week. Yes, it seems
+like that fix got lost. At least 2.6.22-rc5 still has a wrong test on line
+890 in commit.c. Thanks for notification, I'll resend it.
+  BTW: How have you found this out?
 
-Lock.
-
-> Then try with udma_mask = 0x02 which should force the 50MHz
-> clock on not the 66MHz clock just in case its clock related.
-
-Lock. :(
-
-> How much RAM do you have ?
-
-1536MB, using highmem 4GB. Please refer to my dmesg attachments in the
-last post for more RAM info :)
-
-> Alan
-
--r
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
