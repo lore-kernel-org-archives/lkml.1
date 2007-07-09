@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbXGICKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758853AbXGICdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbXGICKN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 22:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757483AbXGICKA
+	id S1758853AbXGICdA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 22:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757970AbXGICcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 22:10:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44198 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757305AbXGICKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 22:10:00 -0400
-Message-ID: <469198E4.6000200@garzik.org>
-Date: Sun, 08 Jul 2007 22:09:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Sun, 8 Jul 2007 22:32:52 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:11675 "EHLO
+	asav02.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757904AbXGICcw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 22:32:52 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApkZADg7kUZKhRO4R2dsb2JhbACBTIVdiAMBARsNBhEB
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] Fix use-after-free oops in Bluetooth HID.
+Date: Sun, 8 Jul 2007 22:32:52 -0400
+User-Agent: KMail/1.9.3
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcel Holtmann <marcel@holtmann.org>, Jiri Kosina <jkosina@suse.cz>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+References: <468A7D14.1050505@googlemail.com> <alpine.LFD.0.999.0707071135090.31544@woody.linux-foundation.org> <1183834720.3066.83.camel@shinybook.infradead.org>
+In-Reply-To: <1183834720.3066.83.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-To: Bruce Allen <ballen@gravity.phys.uwm.edu>
-CC: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
-       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Kai Makisara <Kai.Makisara@kolumbus.fi>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Dvorak <fermentol@gmail.com>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Klaus Fuerstberger <kfuerstberger@arcor.de>,
-       Bruce Allen <bruce.allen@aei.mpg.de>
-Subject: Re: SMART problems in 2.6.22
-References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <Pine.LNX.4.63.0707082003360.23123@trinity.phys.uwm.edu>
-In-Reply-To: <Pine.LNX.4.63.0707082003360.23123@trinity.phys.uwm.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200707082232.54034.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On the base point, libata has never enabled SMART on its own.  That's 
-always up to the BIOS, etc.
+On Saturday 07 July 2007 14:58, David Woodhouse wrote:
+> When cleaning up HIDP sessions, we currently close the ACL connection
+> before deregistering the input device. Closing the ACL connection
+> schedules a workqueue to remove the associated objects from sysfs, but
+> the input device still refers to them -- and if the workqueue happens to
+> run before the input device removal, the kernel will oops when trying to
+> look up PHYSDEVPATH for the removed input device.
+> 
+> Fix this by deregistering the input device before closing the
+> connections.
 
-It's possible that the recent addition of ACPI support will cause disks 
-to be in different modes than previously expected.  ACPI supplies ATA 
-taskfiles to be pushed to the disk, and who knows what's in there...
+I think it will work ok for 2.6.22 but I don't think this is a final
+solution: input_unregister_device might not free the device right away.
+If there is a process that hangs on to one of the input interfaces
+(evdev or mousedev) then freeing of the device structure may be delayed
+and we may still run into the case when session is wiped out before
+device is freed.
 
-	Jeff
-
-
-
+-- 
+Dmitry
