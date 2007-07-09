@@ -1,33 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbXGISmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbXGISm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbXGISmQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 14:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbXGISmE
+	id S1759488AbXGISm3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbXGISmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 14:42:04 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:52192 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751815AbXGISmD (ORCPT
+	Mon, 9 Jul 2007 14:42:19 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:12166 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758954AbXGISmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 14:42:03 -0400
-Date: Mon, 9 Jul 2007 20:42:01 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.22: section mismatch warnings
-Message-ID: <20070709184200.GA2496@janus>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Mon, 9 Jul 2007 14:42:18 -0400
+Date: Mon, 9 Jul 2007 20:42:17 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Oleg Verych <for.gmane@flower.upol.cz>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: drop it ?(Re: [PATCH] fixup binutils printing from scripts/ver_linux)
+In-Reply-To: <slrnf94aoa.l6.for.gmane@flower.upol.cz>
+Message-ID: <Pine.LNX.4.64.0707092041420.2887@fbirervta.pbzchgretzou.qr>
+References: <200707090147.58611.jesper.juhl@gmail.com>
+ <20070709020606.GA5761@martell.zuzino.mipt.ru> <46919FD1.2060203@googlemail.com>
+ <Pine.LNX.4.64.0707091241280.32335@fbirervta.pbzchgretzou.qr>
+ <slrnf94817.l6.for.gmane@flower.upol.cz> <slrnf94aoa.l6.for.gmane@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: arch/i386/kernel/built-in.o(.text+0xf5c1): Section mismatch: reference to .init.data:trampoline_end (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.text+0xf5c7): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.text+0xf5da): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.exit.text+0x1c): Section mismatch: reference to .init.text: (between 'cache_remove_dev' and 'ffh_cstate_exit')
-WARNING: arch/i386/kernel/built-in.o(.data+0xe80): Section mismatch: reference to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
-WARNING: kernel/built-in.o(.text+0x1add5): Section mismatch: reference to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
 
+On Jul 9 2007 12:20, Oleg Verych wrote:
+>
+>> Dumb, but better solution: drop that crap, called ver_linux.
+>> Know you have many distros, so be happy with any one, and forget about
+>> black old days of finding toolchain, that can actually build the kernel.
+>
+>#v+
+>echo 'If some fields are empty or look unusual you may have an old version.'
+>echo 'Compare to the current minimal requirements in Documentation/Changes.'
+>echo ' '
+>#v-
+>
+>The comment above is yet another cause to remind you to check `reportbug`
+>tool and how it organizes collecting of information for particular bug
+>report and package.
+
+We could just do $(rpm -qf $(which ld))  :^)
+
+
+	Jan
 -- 
-Frank
