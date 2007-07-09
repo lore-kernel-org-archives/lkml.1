@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXGIUW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbXGIUXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759429AbXGIUW2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 16:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbXGIUWU
+	id S1760324AbXGIUXQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 16:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXGIUXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 16:22:20 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:48343 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967AbXGIUWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 16:22:19 -0400
-Message-ID: <469298F5.9090301@fr.ibm.com>
-Date: Mon, 09 Jul 2007 22:22:13 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 9 Jul 2007 16:23:00 -0400
+Received: from waste.org ([66.93.16.53]:51082 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753967AbXGIUXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 16:23:00 -0400
+Date: Mon, 9 Jul 2007 15:22:17 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: maps2-move-the-page-walker-code-to-lib.patch
+Message-ID: <20070709202217.GS11115@waste.org>
+References: <1183873796.6005.269.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Pavel Emelianov <xemul@openvz.org>
-CC: Andrew Morton <akpm@osdl.org>, Kirill Korotaev <dev@openvz.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 2/16] Miscelaneous preparations for namespaces
-References: <468DF6F7.1010906@openvz.org> <468DF76A.7060106@openvz.org>
-In-Reply-To: <468DF76A.7060106@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1183873796.6005.269.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov wrote:
-> The most importaint change is moving exit_task_namespaces()
-> inside exit_notify() to makes it possible to notify the
-> exiting task's parent. However this should be done before
-> release_task() to address the issue pointed by Sukadev with
-> NFS kernel thread.
+On Sun, Jul 08, 2007 at 03:49:56PM +1000, Rusty Russell wrote:
+> Matt wrote:
+> > This lets it get shared outside of proc/ and linked in only when needed.
+> 
+> Erk, this really belongs in the mm dir.  You can use "lib-y +=
+> pagewalk.o" there, and it seems to work as well as doing it in lib.
 
-Have you actually checked that doing an unshare() with a NFS mount ?
- 
-> Other changes are small and do not deserve separate description.
+Are you sure? I tested that a few months ago and it didn't work for
+me. I seem to recall it wanted a chunk of makefile surgery.
 
-yes. if they were in a separate patch, you could push them to -mm.
-
-thanks,
-
-C.
+-- 
+Mathematics is the supreme nostalgia of our time.
