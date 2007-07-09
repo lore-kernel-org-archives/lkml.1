@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbXGIMt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbXGIMvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbXGIMt3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXGIMtX
+	id S1755584AbXGIMvs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXGIMvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:49:23 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:47264 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752063AbXGIMtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:49:22 -0400
-Message-ID: <46922EAD.5050802@rfo.atmel.com>
-Date: Mon, 09 Jul 2007 14:48:45 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 9 Jul 2007 08:51:38 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55482 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751691AbXGIMvh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:51:37 -0400
+Date: Mon, 9 Jul 2007 14:52:08 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, jgarzik@pobox.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, saw@saw.sw.com.sg,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [2.6 patch] the overdue eepro100 removal
+Message-ID: <20070709125208.GZ3492@stusta.de>
+References: <20070701202139.GM10869@stusta.de> <46894BD5.9080609@tmr.com> <46897212.30104@intel.com> <468D15F4.6020106@tmr.com>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <andrew@sanpeople.com>, Andreas Beier <mughat@gmail.com>,
-       Hamish Guthrie <hamish@prodigi.ch>, Marc Pignat <marc.pignat@hevs.ch>,
-       wux@landicorp.com, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-Subject: Re: [PATCH] mmc: at91_mci: fix hanging and rework to match flowcharts
-References: <4688EC94.1090901@rfo.atmel.com> <4688FE50.7050806@drzeus.cx>
-In-Reply-To: <4688FE50.7050806@drzeus.cx>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
-Content-Transfer-Encoding: 7bit
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: 
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <468D15F4.6020106@tmr.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman :
-> Nicolas Ferre wrote:
->> Fixes hanging using multi block operations (seen during CMD25).
->> Follows closely the datasheet flowcharts.
+On Thu, Jul 05, 2007 at 12:01:56PM -0400, Bill Davidsen wrote:
+> Please do not make unnecessary kernel changes which require changes in our 
+> systems.
+
+Welcome to the kernel 2.6 development model.
+
+> Kok, Auke wrote:
+>> Bill Davidsen wrote:
+>>> Adrian Bunk wrote:
+>>>> This patch contains the overdue removal of the eepro100 driver.
+>>>>
+>>>> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>>>>
+>>> The hardware supported by this driver is still in use, thanks. It's 
+>>> probably easier to leave the eepro100 driver in than find anyone who 
+>>> wants to investigate why the other driver (e100? from memory) doesn't 
+>>> work with some cards. As I recall this was suggested over a year ago and 
+>>> it was decided to leave it in, all of the reasons for doing so still seem 
+>>> valid. There really doesn't seem to be a benefit, it's not like people 
+>>> are working night and day to support new cards for this chip.
+>>>
 >>
->> This piece of code handles better big file writing. I had to take care
->> of the notbusy signal during write (at91_mci_handle_cmdrdy function) and
->> to rearrange the AT91_MCI_ENDRX and AT91_MCI_RXBUFF flag usage.
+>> please see the thread "Re: [PATCH] fix e100 rx path on ARM (was [PATCH] 
+>> e100 rx: or s and el bits)" which is discussing a fix for this issue and 
+>> currently being worked.
 >>
->> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
->> ---
-> 
-> Most of the patch looks ok. Do you want to wait for some more tests or should I
-> chuck this into the imminent merge window?
-
-*pong*
-
-I think it is ok to put it into the merge window.
-
->> @@ -817,7 +834,11 @@ static int __init at91_mci_probe(struct
->>     mmc->ops = &at91_mci_ops;
->>     mmc->f_min = 375000;
->> -    mmc->f_max = 25000000;
->> +    if (cpu_is_at91sam9263())
->> +        mmc->f_max = 50000000;
->> +    else
->> +        mmc->f_max = 25000000;
->> +
->>     mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
->>     mmc->caps = MMC_CAP_BYTEBLOCK | MMC_CAP_MULTIWRITE;
+>> eepro100 will *still* be removed once e100 is fixed to support those 
+>> devices.
 >>
-> 
-> This seems unrelated to the rest of the patch. Also, high-speed won't be enabled
-> unless you set the appropriate caps (which should be checked against timing
-> specifications, not just assigned and hope for the best).
+> Frankly I think there are more of us running old cards on PC hardware than 
+> people running ARM! And for a number of card for old buses like ISA, EISA, 
+> and VESA, the e100 has not worked. These are old PCs converted to routers 
+> and firewalls, and for security should not be left without upgrades.
 
-True. I remove this chunk off the patch.
+WTF are you talking about?
 
+Both drivers only support PCI cards.
 
->> @@ -830,11 +851,11 @@ static int __init at91_mci_probe(struct
->>     host->bus_mode = 0;
->>     host->board = pdev->dev.platform_data;
->>     if (host->board->wire4) {
->> -#ifdef SUPPORT_4WIRE
->> -        mmc->caps |= MMC_CAP_4_BIT_DATA;
->> -#else
->> -        printk("AT91 MMC: 4 wire bus mode not supported by this driver
->> - using 1 wire\n");
->> -#endif
->> +        if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
->> +            mmc->caps |= MMC_CAP_4_BIT_DATA;
->> +        else
->> +            printk("AT91 MMC: 4 wire bus mode not supported"
->> +                " - using 1 wire\n");
->>     }
->>
->>     /*
->>
-> 
-> This also looks unrelated.
+>> Moreover, we now also have a fix for the e100 IPMI issues on some tyan 
+>> boards (patch coming this week!). That hopefully solves all e100 issues 
+>> that are still open.
+>
+> If you think the e100 driver fixes your problems use it and be happy. But 
+> since you don't have to test system behavior with the new driver, and you 
+> won't be called at night or on weekends if it doesn't work, do the rest of 
+> the world a favor and stop taking out things we know to work! Leaving in 
+> the eepro100 causes no work for you, and even if e100 works perfectly it 
+> needs to be validated in any sane network. it still makes work.
 
-Well, It is related to capacities of newer IPs that allow readproof and 
-writeproof features that I enable here :
+The goal is to get e100 better, and removing eepro100 helps with 
+reaching this goal.
 
-+	if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-+		mr |= AT91_MCI_RDPROOF | AT91_MCI_WRPROOF;
+Why didn't _you_ try the e100 driver when you validated your systems 
+after you upgraded them to kernel 2.6, and if you did and it didn't 
+work, where is your bug report?
 
-This allows to have a smooth data transmission internally (prevent 
-underruns) and so have full 4 wires capacity. So I think this is good 
-for having a full featured driver on all chips.
+cu
+Adrian
 
-I resend a corrected patch now.
-
-Regards,
 -- 
-Nicolas Ferre
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
