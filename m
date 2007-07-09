@@ -1,33 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbXGIHI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbXGIHPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbXGIHI3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 03:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXGIHIW
+	id S1752762AbXGIHPS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 03:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXGIHPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 03:08:22 -0400
-Received: from il.qumranet.com ([82.166.9.18]:56206 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751176AbXGIHIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 03:08:21 -0400
-Message-ID: <4691DEE3.5050305@argo.co.il>
-Date: Mon, 09 Jul 2007 10:08:19 +0300
-From: Avi Kivity <avi@argo.co.il>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 9 Jul 2007 03:15:07 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:54769 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbXGIHPD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 03:15:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=bS33ODFHzzuY4oqsXfrIcGh8GdS36CRsSxZuSCbUGHlSySyJm2WWlrWiizHlFhrogfXCAjzHqKhVAnfr4dHmVDPqsGytlINDZUZX1cXXP2KJA0kYDITBtnojsCIDWxIKyBdhm6z9WZdhQp1KtpAJEX1/BIehaxWzPc7BHyt3MGg=
+Message-ID: <4691E08F.4050908@gmail.com>
+Date: Mon, 09 Jul 2007 09:15:27 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 CC: Sasa Ostrouska <casaxa@gmail.com>, linux-kernel@vger.kernel.org,
-       KVM <kvm-devel@lists.sourceforge.net>
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net
 Subject: Re: KVM-AMD OOPS
 References: <dcf706c60707080915w7660a2exe629c5def78549da@mail.gmail.com> <4691BF62.2060207@goop.org>
 In-Reply-To: <4691BF62.2060207@goop.org>
-X-Enigmail-Version: 0.95.2
+X-Enigmail-Version: 0.95.1
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Mon, 09 Jul 2007 10:08:19 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+Jeremy Fitzhardinge napsal(a):
 > Sasa Ostrouska wrote:
 >> root@rcserver:~# modprobe kvm-amd
 >> int3: 0000 [1] PREEMPT SMP
@@ -64,16 +69,15 @@ Jeremy Fitzhardinge wrote:
 >>
 >>
 >> Code: cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc
->
+> 
 > This is the init section poison pattern.  Looks like an init function
 > was used after the code was freed.
 
-Indeed, the function is register_cpu_notifier which is declared
-__cpuinit, which, without hotplug compiled in, is simply __init.
+This?
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=65edc68c345cbe21d0b0375c3452a3ed5e322868;hp=054cc8a2d808822dadf488a61729e3e550f114c4
 
-I'll prepare a patch for this.  Meanwhile, you can work around it by
-enabling CONFIG_HOTPLUG_CPU.
+Could you revert it and test?
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
