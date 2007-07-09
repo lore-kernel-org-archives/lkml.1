@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759975AbXGIQaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbXGIQab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759975AbXGIQaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbXGIQXt
+	id S1759679AbXGIQab (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbXGIQXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:23:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42022 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:23:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42028 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758044AbXGIQXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:23:47 -0400
+	id S1758101AbXGIQXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:23:49 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
 Cc: cluster-devel@redhat.com, David Teigland <teigland@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [DLM] timeout fixes
-Date: Mon,  9 Jul 2007 17:02:26 +0100
-Message-Id: <11839970302426-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [DLM] canceling deadlocked lock
+Date: Mon,  9 Jul 2007 17:02:27 +0100
+Message-Id: <11839970324005-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970282009-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970302426-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -38,179 +38,176 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <11839970241526-git-send-email-swhiteho@redhat.com>
  <1183997026104-git-send-email-swhiteho@redhat.com>
  <11839970282009-git-send-email-swhiteho@redhat.com>
+ <11839970302426-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Teigland <teigland@redhat.com>
 
-Various fixes related to the new timeout feature:
-- add_timeout() missed setting TIMEWARN flag on lkb's when the
-  TIMEOUT flag was already set
-- clear_proc_locks should remove a dead process's locks from the
-  timeout list
-- the end-of-life calculation for user locks needs to consider that
-  ETIMEDOUT is equivalent to -DLM_ECANCEL
-- make initial default timewarn_cs config value visible in configfs
-- change bit position of TIMEOUT_CANCEL flag so it's not copied to
-  a remote master node
-- set timestamp on remote lkb's so a lock dump will display the time
-  they've been waiting
+Add a function that can be used through libdlm by a system daemon to cancel
+another process's deadlocked lock.  A completion ast with EDEADLK is returned
+to the process waiting for the lock.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/dlm/config.c b/fs/dlm/config.c
-index 2909abf..1b59fa5 100644
---- a/fs/dlm/config.c
-+++ b/fs/dlm/config.c
-@@ -433,6 +433,7 @@ static struct config_group *make_cluster(struct config_group *g,
- 	cl->cl_toss_secs = dlm_config.ci_toss_secs;
- 	cl->cl_scan_secs = dlm_config.ci_scan_secs;
- 	cl->cl_log_debug = dlm_config.ci_log_debug;
-+	cl->cl_timewarn_cs = dlm_config.ci_timewarn_cs;
- 
- 	space_list = &sps->ss_group;
- 	comm_list = &cms->cs_group;
 diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
-index 03ba6c4..a7435a8 100644
+index a7435a8..a006fa5 100644
 --- a/fs/dlm/dlm_internal.h
 +++ b/fs/dlm/dlm_internal.h
-@@ -215,9 +215,9 @@ struct dlm_args {
- #define DLM_IFL_OVERLAP_CANCEL  0x00100000
+@@ -216,6 +216,7 @@ struct dlm_args {
  #define DLM_IFL_ENDOFLIFE	0x00200000
  #define DLM_IFL_WATCH_TIMEWARN	0x00400000
-+#define DLM_IFL_TIMEOUT_CANCEL	0x00800000
+ #define DLM_IFL_TIMEOUT_CANCEL	0x00800000
++#define DLM_IFL_DEADLOCK_CANCEL	0x01000000
  #define DLM_IFL_USER		0x00000001
  #define DLM_IFL_ORPHAN		0x00000002
--#define DLM_IFL_TIMEOUT_CANCEL	0x00000004
  
- struct dlm_lkb {
- 	struct dlm_rsb		*lkb_resource;	/* the rsb */
 diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index 2f8a5a7..df91578 100644
+index df91578..de943af 100644
 --- a/fs/dlm/lock.c
 +++ b/fs/dlm/lock.c
-@@ -1010,17 +1010,18 @@ static void add_timeout(struct dlm_lkb *lkb)
- {
- 	struct dlm_ls *ls = lkb->lkb_resource->res_ls;
- 
--	if (is_master_copy(lkb))
-+	if (is_master_copy(lkb)) {
-+		lkb->lkb_timestamp = jiffies;
- 		return;
--
--	if (lkb->lkb_exflags & DLM_LKF_TIMEOUT)
--		goto add_it;
-+	}
- 
- 	if (test_bit(LSFL_TIMEWARN, &ls->ls_flags) &&
- 	    !(lkb->lkb_exflags & DLM_LKF_NODLCKWT)) {
- 		lkb->lkb_flags |= DLM_IFL_WATCH_TIMEWARN;
- 		goto add_it;
+@@ -300,6 +300,11 @@ static void queue_cast(struct dlm_rsb *r, struct dlm_lkb *lkb, int rv)
+ 		rv = -ETIMEDOUT;
  	}
-+	if (lkb->lkb_exflags & DLM_LKF_TIMEOUT)
-+		goto add_it;
- 	return;
  
-  add_it:
-@@ -3510,8 +3511,7 @@ static void _receive_cancel_reply(struct dlm_lkb *lkb, struct dlm_message *ms)
- 	case -DLM_ECANCEL:
- 		receive_flags_reply(lkb, ms);
- 		revert_lock_pc(r, lkb);
--		if (ms->m_result)
--			queue_cast(r, lkb, -DLM_ECANCEL);
-+		queue_cast(r, lkb, -DLM_ECANCEL);
- 		break;
- 	case 0:
- 		break;
-@@ -4534,6 +4534,7 @@ void dlm_clear_proc_locks(struct dlm_ls *ls, struct dlm_user_proc *proc)
- 		lkb = del_proc_lock(ls, proc);
- 		if (!lkb)
- 			break;
-+		del_timeout(lkb);
- 		if (lkb->lkb_exflags & DLM_LKF_PERSISTENT)
- 			orphan_proc_lock(ls, lkb);
- 		else
-diff --git a/fs/dlm/netlink.c b/fs/dlm/netlink.c
-index 804b32c..863b87d 100644
---- a/fs/dlm/netlink.c
-+++ b/fs/dlm/netlink.c
-@@ -133,8 +133,6 @@ void dlm_timeout_warn(struct dlm_lkb *lkb)
- 	size_t size;
- 	int rv;
- 
--	log_debug(lkb->lkb_resource->res_ls, "timeout_warn %x", lkb->lkb_id);
--
- 	size = nla_total_size(sizeof(struct dlm_lock_data)) +
- 	       nla_total_size(0); /* why this? */
- 
-diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index 37aad3f..329da1b 100644
---- a/fs/dlm/user.c
-+++ b/fs/dlm/user.c
-@@ -138,6 +138,35 @@ static void compat_output(struct dlm_lock_result *res,
- }
- #endif
- 
-+/* Figure out if this lock is at the end of its life and no longer
-+   available for the application to use.  The lkb still exists until
-+   the final ast is read.  A lock becomes EOL in three situations:
-+     1. a noqueue request fails with EAGAIN
-+     2. an unlock completes with EUNLOCK
-+     3. a cancel of a waiting request completes with ECANCEL/EDEADLK
-+   An EOL lock needs to be removed from the process's list of locks.
-+   And we can't allow any new operation on an EOL lock.  This is
-+   not related to the lifetime of the lkb struct which is managed
-+   entirely by refcount. */
-+
-+static int lkb_is_endoflife(struct dlm_lkb *lkb, int sb_status, int type)
-+{
-+	switch (sb_status) {
-+	case -DLM_EUNLOCK:
-+		return 1;
-+	case -DLM_ECANCEL:
-+	case -ETIMEDOUT:
-+		if (lkb->lkb_grmode == DLM_LOCK_IV)
-+			return 1;
-+		break;
-+	case -EAGAIN:
-+		if (type == AST_COMP && lkb->lkb_grmode == DLM_LOCK_IV)
-+			return 1;
-+		break;
++	if (rv == -DLM_ECANCEL && (lkb->lkb_flags & DLM_IFL_DEADLOCK_CANCEL)) {
++		lkb->lkb_flags &= ~DLM_IFL_DEADLOCK_CANCEL;
++		rv = -EDEADLK;
 +	}
-+	return 0;
++
+ 	lkb->lkb_lksb->sb_status = rv;
+ 	lkb->lkb_lksb->sb_flags = lkb->lkb_sbflags;
+ 
+@@ -4450,6 +4455,54 @@ int dlm_user_cancel(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+ 	return error;
+ }
+ 
++int dlm_user_deadlock(struct dlm_ls *ls, uint32_t flags, uint32_t lkid)
++{
++	struct dlm_lkb *lkb;
++	struct dlm_args args;
++	struct dlm_user_args *ua;
++	struct dlm_rsb *r;
++	int error;
++
++	dlm_lock_recovery(ls);
++
++	error = find_lkb(ls, lkid, &lkb);
++	if (error)
++		goto out;
++
++	ua = (struct dlm_user_args *)lkb->lkb_astparam;
++
++	error = set_unlock_args(flags, ua, &args);
++	if (error)
++		goto out_put;
++
++	/* same as cancel_lock(), but set DEADLOCK_CANCEL after lock_rsb */
++
++	r = lkb->lkb_resource;
++	hold_rsb(r);
++	lock_rsb(r);
++
++	error = validate_unlock_args(lkb, &args);
++	if (error)
++		goto out_r;
++	lkb->lkb_flags |= DLM_IFL_DEADLOCK_CANCEL;
++
++	error = _cancel_lock(r, lkb);
++ out_r:
++	unlock_rsb(r);
++	put_rsb(r);
++
++	if (error == -DLM_ECANCEL)
++		error = 0;
++	/* from validate_unlock_args() */
++	if (error == -EBUSY)
++		error = 0;
++ out_put:
++	dlm_put_lkb(lkb);
++ out:
++	dlm_unlock_recovery(ls);
++	return error;
 +}
 +
- /* we could possibly check if the cancel of an orphan has resulted in the lkb
-    being removed and then remove that lkb from the orphans list and free it */
+ /* lkb's that are removed from the waiters list by revert are just left on the
+    orphans list with the granted orphan locks, to be freed by purge */
  
-@@ -184,25 +213,7 @@ void dlm_user_add_ast(struct dlm_lkb *lkb, int type)
- 		log_debug(ls, "ast overlap %x status %x %x",
- 			  lkb->lkb_id, ua->lksb.sb_status, lkb->lkb_flags);
+diff --git a/fs/dlm/lock.h b/fs/dlm/lock.h
+index 99ab463..1720313 100644
+--- a/fs/dlm/lock.h
++++ b/fs/dlm/lock.h
+@@ -49,6 +49,7 @@ int dlm_user_cancel(struct dlm_ls *ls,  struct dlm_user_args *ua_tmp,
+ 	uint32_t flags, uint32_t lkid);
+ int dlm_user_purge(struct dlm_ls *ls, struct dlm_user_proc *proc,
+ 	int nodeid, int pid);
++int dlm_user_deadlock(struct dlm_ls *ls, uint32_t flags, uint32_t lkid);
+ void dlm_clear_proc_locks(struct dlm_ls *ls, struct dlm_user_proc *proc);
  
--	/* Figure out if this lock is at the end of its life and no longer
--	   available for the application to use.  The lkb still exists until
--	   the final ast is read.  A lock becomes EOL in three situations:
--	     1. a noqueue request fails with EAGAIN
--	     2. an unlock completes with EUNLOCK
--	     3. a cancel of a waiting request completes with ECANCEL
--	   An EOL lock needs to be removed from the process's list of locks.
--	   And we can't allow any new operation on an EOL lock.  This is
--	   not related to the lifetime of the lkb struct which is managed
--	   entirely by refcount. */
--
--	if (type == AST_COMP &&
--	    lkb->lkb_grmode == DLM_LOCK_IV &&
--	    ua->lksb.sb_status == -EAGAIN)
--		eol = 1;
--	else if (ua->lksb.sb_status == -DLM_EUNLOCK ||
--	    (ua->lksb.sb_status == -DLM_ECANCEL &&
--	     lkb->lkb_grmode == DLM_LOCK_IV))
--		eol = 1;
-+	eol = lkb_is_endoflife(lkb, ua->lksb.sb_status, type);
- 	if (eol) {
- 		lkb->lkb_ast_type &= ~AST_BAST;
- 		lkb->lkb_flags |= DLM_IFL_ENDOFLIFE;
+ static inline int is_master(struct dlm_rsb *r)
+diff --git a/fs/dlm/user.c b/fs/dlm/user.c
+index 329da1b..6438941 100644
+--- a/fs/dlm/user.c
++++ b/fs/dlm/user.c
+@@ -156,6 +156,7 @@ static int lkb_is_endoflife(struct dlm_lkb *lkb, int sb_status, int type)
+ 		return 1;
+ 	case -DLM_ECANCEL:
+ 	case -ETIMEDOUT:
++	case -EDEADLK:
+ 		if (lkb->lkb_grmode == DLM_LOCK_IV)
+ 			return 1;
+ 		break;
+@@ -320,6 +321,22 @@ static int device_user_unlock(struct dlm_user_proc *proc,
+ 	return error;
+ }
+ 
++static int device_user_deadlock(struct dlm_user_proc *proc,
++				struct dlm_lock_params *params)
++{
++	struct dlm_ls *ls;
++	int error;
++
++	ls = dlm_find_lockspace_local(proc->lockspace);
++	if (!ls)
++		return -ENOENT;
++
++	error = dlm_user_deadlock(ls, params->flags, params->lkid);
++
++	dlm_put_lockspace(ls);
++	return error;
++}
++
+ static int create_misc_device(struct dlm_ls *ls, char *name)
+ {
+ 	int error, len;
+@@ -545,6 +562,14 @@ static ssize_t device_write(struct file *file, const char __user *buf,
+ 		error = device_user_unlock(proc, &kbuf->i.lock);
+ 		break;
+ 
++	case DLM_USER_DEADLOCK:
++		if (!proc) {
++			log_print("no locking on control device");
++			goto out_sig;
++		}
++		error = device_user_deadlock(proc, &kbuf->i.lock);
++		break;
++
+ 	case DLM_USER_CREATE_LOCKSPACE:
+ 		if (proc) {
+ 			log_print("create/remove only on control device");
+diff --git a/include/linux/dlm_device.h b/include/linux/dlm_device.h
+index f7b9b57..9642277 100644
+--- a/include/linux/dlm_device.h
++++ b/include/linux/dlm_device.h
+@@ -92,6 +92,7 @@ struct dlm_lock_result {
+ #define DLM_USER_CREATE_LOCKSPACE  4
+ #define DLM_USER_REMOVE_LOCKSPACE  5
+ #define DLM_USER_PURGE        6
++#define DLM_USER_DEADLOCK     7
+ 
+ /* Arbitrary length restriction */
+ #define MAX_LS_NAME_LEN 64
 -- 
 1.5.1.2
 
