@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760031AbXGIV55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXGIV5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760031AbXGIV55 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 17:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbXGIV5v
+	id S1759429AbXGIV5Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 17:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbXGIV5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 17:57:51 -0400
-Received: from waste.org ([66.93.16.53]:56689 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754478AbXGIV5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 17:57:49 -0400
-Date: Mon, 9 Jul 2007 16:57:24 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-Message-ID: <20070709215724.GV11115@waste.org>
-References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
+	Mon, 9 Jul 2007 17:57:00 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46506 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755826AbXGIV5A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 17:57:00 -0400
+Date: Mon, 9 Jul 2007 14:55:59 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality,
+ performance and maintenance
+In-Reply-To: <20070709214426.GC1026@Krystal>
+Message-ID: <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de>
+ <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
+ <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com>
+ <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070708110224.9cd9df5b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 08, 2007 at 11:02:24AM -0700, Andrew Morton wrote:
-> Guys, look at this the other way.  Suppose we only had slub, and someone
-> came along and said "here's a whole new allocator which saves 4.5k of
-> text", would we merge it on that basis?  Hell no, it's not worth it.  What
-> we might do is to get motivated to see if we can make slub less porky under
-> appropriate config settings.
+On Mon, 9 Jul 2007, Mathieu Desnoyers wrote:
 
-Well I think we would obviously throw out SLAB and SLUB if they
-weren't somewhat faster than SLOB. They're much more problematic and
-one of the big features that Christoph's pushing is a fix for a
-problem that SLOB simply doesn't have: huge numbers of SLAB/SLUB pages
-being held down by small numbers of objects. 
+> > >Okay the source for these numbers is in his paper for the OLS 2006: Volume 
+> > >1 page 208-209? I do not see the exact number that you referred to there.
+> > 
+> 
+> Hrm, the reference page number is wrong: it is in OLS 2006, Vol. 1 page
+> 216 (section 4.5.2 Scalability). I originally pulled out the page number
+> from my local paper copy. oops.
 
-> Let's not get sentimental about these things: in general, if there's any
-> reasonable way in which we can rid ourselves of any code at all, we should
-> do so, no?
+4.5.2 is on page 208 in my copy of the proceedings.
 
-I keep suggesting a Voyager Replacement Fund, but James isn't
-interested.
 
-But seriously, I don't think it should be at all surprising that the
-allocator that's most appropriate for machines with < 32MB of RAM is
-different than the one for machines with > 1TB of RAM.
+> > >He seems to be comparing spinlock acquire / release vs. cmpxchg. So I 
+> > >guess you got your material from somewhere else?
+> > >
+> 
+> I ran a test specifically for this paper where I got this result
+> comparing the local irq enable/disable to local cmpxchg.
 
-The maintenance overhead of SLOB is fairly minimal. The biggest
-outstanding SLOB problem is nommu's rather broken memory size
-reporting.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+The numbers are pretty important and suggest that we can obtain 
+a significant speed increase by avoid local irq disable enable in the slab 
+allocator fast paths. Do you some more numbers? Any other publication that 
+mentions these?
+
+
+> Yep, I volountarily used the variant without lock prefix because the
+> data is per cpu and I disable preemption.
+
+local_cmpxchg generates this?
+
+> Yes, preempt disabling or, eventually, the new thread migration
+> disabling I just proposed as an RFC on LKML. (that would make -rt people
+> happier)
+
+Right.
+
+> Sure, also note that the UP cmpxchg (see asm-$ARCH/local.h in 2.6.22) is
+> faster on architectures like powerpc and MIPS where it is possible to
+> remove some memory barriers.
+
+UP cmpxchg meaning local_cmpxchg?
+
+> See 2.6.22 Documentation/local_ops.txt for a thorough discussion. Don't
+> hesitate ping me if you have more questions.
+
+That is pretty thin and does not mention atomic_cmpxchg. You way want to 
+expand on your ideas a bit.
