@@ -1,128 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbXGIVm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXGIVoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759269AbXGIVm7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 17:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXGIVmu
+	id S1759429AbXGIVoh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 17:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbXGIVoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 17:42:50 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:59291 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754370AbXGIVmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 17:42:49 -0400
-Date: Mon, 9 Jul 2007 14:42:44 -0700
-From: sukadev@us.ibm.com
-To: Pavel Emelianov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 0/16] Pid namespaces
-Message-ID: <20070709214244.GA11185@us.ibm.com>
-References: <468DF6F7.1010906@openvz.org>
-Mime-Version: 1.0
+	Mon, 9 Jul 2007 17:44:30 -0400
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:45911 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755014AbXGIVo3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 17:44:29 -0400
+Date: Mon, 9 Jul 2007 17:44:26 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Martin Bligh <mbligh@mbligh.org>
+Cc: Christoph Lameter <clameter@sgi.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality, performance and maintenance
+Message-ID: <20070709214426.GC1026@Krystal>
+References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de> <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com> <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com> <4692A1D0.50308@mbligh.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <468DF6F7.1010906@openvz.org>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4692A1D0.50308@mbligh.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:11:19 up 2 days, 11:16,  4 users,  load average: 0.05, 0.19, 0.23
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov [xemul@openvz.org] wrote:
+Hi,
 
-| This is "submition for inclusion" of hierarchical, not kconfig
-| configurable, zero overheaded ;) pid namespaces.
-| 
-| The overall idea is the following:
-| 
-| The namespace are organized as a tree - once a task is cloned
-| with CLONE_NEWPIDS (yes, I've also switched to it :) the new
-| namespace becomes the parent's child and tasks living in the
-| parent namespace see the tasks from the new one. The numerical
-| ids are used on the kernel-user boundary, i.e. when we export
-| pid to user we show the id, that should be used to address the
-| task in question from the namespace we're exporting this id to.
-| 
-| The main difference from Suka's patches are the following:
-| 
-| 0. Suka's patches change the kernel/pid.c code too heavy.
-|    This set keeps the kernel code look like it was without
-|    the patches. However, this is a minor issue. The major is:
-| 
-| 1. Suka's approach is to remove the notion of the task's 
-|    numerical pid from the kernel at all.  The numbers are 
-|    used on the kernel-user boundary or within the kernel but
-|    with the namespace this nr belongs to. This results in 
-|    massive changes of struct's members fro int pid to struct
-|    pid *pid, task->pid becomes the virtual id and so on and
-|    so forth.
+* Martin Bligh (mbligh@mbligh.org) wrote:
+> Christoph Lameter wrote:
+> >On Mon, 9 Jul 2007, Martin Bligh wrote:
+> >
+> >>Those numbers came from Mathieu Desnoyers (LTTng) if you
+> >>want more details.
+> >
+> >Okay the source for these numbers is in his paper for the OLS 2006: Volume 
+> >1 page 208-209? I do not see the exact number that you referred to there.
+> 
 
-Your basic design is similar to what our patchset has been for
-a while, with a few changes.
+Hrm, the reference page number is wrong: it is in OLS 2006, Vol. 1 page
+216 (section 4.5.2 Scalability). I originally pulled out the page number
+from my local paper copy. oops.
 
-My patchset does not remove the task->pid.  It still uses it
-with the caveat that with multiple namespaces it is not unique.
-getpid() implementation does not changes for instance.
 
-Basically our patchset has init_pid_ns as the last element in the
-pid->numbers[] array while yours is having it as the first.  How
-big a difference it makes, I am not sure. 
+> Nope, he was a direct co-author on the paper, was
+> working here, and measured it.
+> 
+> >He seems to be comparing spinlock acquire / release vs. cmpxchg. So I 
+> >guess you got your material from somewhere else?
+> >
 
-|
-|    My approach is to keep the good old logic in the kernel. 
-|    The task->pid is a global and unique pid, find_pid() finds
-|    the pid by its global id and so on. The virtual ids appear
-|    on the user-kernel boundary only. Thus drivers and other 
-|    kernel code may still be unaware of pids unless they do not
-|    communicate with the userspace and get/put numerical pids.
+I ran a test specifically for this paper where I got this result
+comparing the local irq enable/disable to local cmpxchg.
 
-Even in my patchset, drivers or other kernel code have no need
-to know anything about namespaces.
+> >Also the cmpxchg used there is the lockless variant. cmpxchg 29 cycles w/o 
+> >lock prefix and 112 with lock prefix.
 
-Actually you seem to introduce a new function find_vpid() that
-is used in a driver. So a driver-writer needs to know whether
-to call find_pid() or find_vpid().
+Yep, I volountarily used the variant without lock prefix because the
+data is per cpu and I disable preemption.
 
-| 
-| And some more minor differences:
-| 
-| 2. Suka's patches have the limit of pid namespace nesting. 
-|    My patches do not.
+> >
+> >I see you reference another paper by Desnoyers: 
+> >http://tree.celinuxforum.org/CelfPubWiki/ELC2006Presentations?action=AttachFile&do=get&target=celf2006-desnoyers.pdf
+> >
+> >I do not see anything relevant there. Where did those numbers come from?
+> >
+> >The lockless cmpxchg is certainly an interesting idea. Certain for some 
+> >platforms I could disable preempt and then do a lockless cmpxchg.
+> 
 
-Yes - its a compile-time constant (MAX_NESTED_PID_NS) that I
-introduced just in the last version to simplify allocation.
-Ecspecially after you argued against arbitrary depth before :-)
+Yes, preempt disabling or, eventually, the new thread migration
+disabling I just proposed as an RFC on LKML. (that would make -rt people
+happier)
 
-The basic design of your new 'struct pid' data structure is very
-similar to what we have had for the last couple of rounds and we
-could just as easily remove MAX_NESTED_PID_NS.
+> Mathieu, can you give some more details? Obviously the exact numbers
+> will vary by archicture, machine size, etc, but it's a good point
+> for discussion.
+> 
 
-| 
-| 3. Suka assumes that pid namespace can live without proc mount
-|    and tries to make the code work with pid_ns->proc_mnt change
-|    from NULL to not-NULL from times to times.
-|    My code calls the kern_mount() at the namespace creation and
-|    thus the pid_namespace always works with proc.
+Sure, also note that the UP cmpxchg (see asm-$ARCH/local.h in 2.6.22) is
+faster on architectures like powerpc and MIPS where it is possible to
+remove some memory barriers.
 
-Yes, we have been debating about the better approach for this yet.
-We have been considering doing the kern_mount, as we do in
-init_pid_ns at present.
+See 2.6.22 Documentation/local_ops.txt for a thorough discussion. Don't
+hesitate ping me if you have more questions.
 
-| 
-| There are some small issues that I can describe if someone is
-| interested.
-| 
-| The tests like nptl perf, unixbench spawn, getpid and others
-| didn't reveal any performance degradation in init_namespace
-| with the RHEL5 kernel .config file. I admit, that different
-| .config-s may show that patches hurt the performance, but the
-| intention was *not* to make the kernel work worse with popular
-| distributions.
-| 
-| This set has some ways to move forward, but this is some kind
-| of a core, that do not change the init_pid_namespace behavior
-| (checked with LTP tests) and may require some hacking to do 
-| with the namespaces only.
-| 
-| Patches apply to 2.6.22-rc6-mm1.
+Regards,
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
