@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbXGIBM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbXGIBOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758662AbXGIBM3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 21:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbXGIBMU
+	id S1758727AbXGIBOe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 21:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXGIBO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 21:12:20 -0400
-Received: from smtp151.iad.emailsrvr.com ([207.97.245.151]:40994 "EHLO
-	smtp151.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755016AbXGIBMU (ORCPT
+	Sun, 8 Jul 2007 21:14:27 -0400
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:42013 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754580AbXGIBO0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 21:12:20 -0400
-Message-ID: <46918B1C.9030604@gentoo.org>
-Date: Sun, 08 Jul 2007 21:10:52 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
+	Sun, 8 Jul 2007 21:14:26 -0400
+Date: Sun, 8 Jul 2007 20:14:10 -0500 (CDT)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
+       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kai Makisara <Kai.Makisara@kolumbus.fi>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Jan Dvorak <fermentol@gmail.com>,
+       Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Bruce Allen <bruce.allen@aei.mpg.de>
+Subject: Re: SMART problems in 2.6.22
+In-Reply-To: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
+Message-ID: <Pine.LNX.4.63.0707082003360.23123@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       zwane@infradead.org, Andi Kleen <ak@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Antonino A. Daplas" <adaplas@pol.net>
-Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
- mode
-References: <4678191D.76E4.0078.0@novell.com>	<4686D85B.6090803@gentoo.org>	<20070630154230.4ad373fa.akpm@linux-foundation.org>	<4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org>
-In-Reply-To: <20070708111404.1486e73c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>> Well drat.  I didn't merge the patch because it conflicts with
->>> git-newsetup, and Peter believes that git-newsetup already contains an
->>> equivalent fix.  Testing 2.6.22-rc6-mm1 would confirm that.  Please.
->> 2.6.22-rc6-mm1 has the same problem (it is not fixed there).
->>
-> 
-> Well damn, we've let this slide for too long.
-> 
-> Guys, 2.6.22 is days away.  Do we think that the below is safe to merge
-> now?
-> 
-> Add Daniel, this does fix things for you, doesn't it?
+Here is another similar report:
 
-I don't have the issue, I'm just proxying for a bug reporter on the 
-Gentoo bugzilla. According to him, Jan's patch does solve the problem:
+http://article.gmane.org/gmane.linux.utilities.smartmontools/4704/match=diamondmax
 
-https://bugs.gentoo.org/show_bug.cgi?id=181067#c8
+Again, this indicates that SMART is enabled.  But it's not clear what the 
+kernel version here is.  The report indicates that the problem started 
+with an FC7 kernel upgrade
 
-Thanks,
-Daniel
+Bruce
 
+On Sun, 8 Jul 2007, Bruce Allen wrote:
+
+> Mark, David, Doug, Tejin, Alan, Jeff, LKML,
+>
+> I'm afraid that there may be some problem with SMART + libata in the 2.6.22 
+> kernel.  An hour ago I discovered that I missed a month of correspondence 
+> (some LKML, some private) about this problem which Alan, Tejun, Jeff, Mark 
+> and others copied to me -- it was automatically shoved into one of my 
+> mailboxes by my mail client.  Sorry about that.  So I am trying to catch up 
+> to see if there is some real problem or not.
+>
+> Here is a typical bug report that worries me:
+> http://article.gmane.org/gmane.linux.utilities.smartmontools/4712
+>
+> Here is another similar report:
+> http://thread.gmane.org/gmane.linux.utilities.smartmontools/4713
+>
+> And another report:
+> http://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg358354.html
+>
+> From some of the earlier threads that I missed (below) I have the impression 
+> that the problem may be a very simple one, namely that starting with 2.6.22 
+> one needs to run a command to enable SMART when a box is first booted -- the 
+> kernel no longer does this as part of the init/setup of the disks. But that 
+> is NOT consistent with the first two reports above, which show 'SMART 
+> ENABLED'.
+>
+> Here are some of the earlier threads that I completely missed:
+>
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0706.1/0849.html
+> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg164863.html
+>
+> Before I go off half-cocked, could anyone shed some light on this?  Is there 
+> a real problem here or just something dumb?
+>
+> Cheers,
+> 	Bruce
+>
