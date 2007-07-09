@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbXGIEVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbXGIE2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752687AbXGIEVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 00:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbXGIEVi
+	id S1753052AbXGIE2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 00:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbXGIE2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 00:21:38 -0400
-Received: from rwcrmhc14.comcast.net ([216.148.227.154]:58431 "EHLO
-	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750788AbXGIEVh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 00:21:37 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oliver Neukum <oliver@neukum.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
-In-Reply-To: <20070708120933.GA3866@ucw.cz> (Pavel Machek's message of "Sun\, 8
-	Jul 2007 12\:09\:33 +0000")
-References: <Pine.LNX.4.44L0.0707061039380.3737-100000@iolanthe.rowland.org>
-	<200707080108.17371.rjw@sisk.pl> <20070708120933.GA3866@ucw.cz>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Mon, 09 Jul 2007 00:21:32 -0400
-Message-ID: <87odimw6k3.fsf@jbms.ath.cx>
-MIME-Version: 1.0
-Content-Type: text/plain
+	Mon, 9 Jul 2007 00:28:33 -0400
+Received: from dovecot.org ([82.118.211.50]:44031 "EHLO dovecot.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750788AbXGIE2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 00:28:33 -0400
+Subject: inotify_rm_watch() EINVAL race condition for deleted files
+From: Timo Sirainen <tss@iki.fi>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IH7oFOq1rsKptONunzxk"
+Date: Mon, 09 Jul 2007 07:28:29 +0300
+Message-Id: <1183955309.3768.797.camel@hurina>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
 
-[snip]
+--=-IH7oFOq1rsKptONunzxk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I don't know how to do that mechanism... but if we knew where to trap
-> filesystem writes, we could simply freeze at that point, and at that
-> point only, no?
+1. Add IN_DELETE_SELF watch to a file
+2. unlink() the file
+3. Try to remove the watch -> EINVAL
 
-Any operation at all that has an external effect must not occur after
-the snapshot is made; otherwise, there will be random hard-to-find
-corruptions and other problems occurring as a result.  Thus, for
-example, any writes (either directly or indirectly through e.g. a
-filesystem) to non-volatile storage, any network traffic, any
-communication with hardware like a printer must be prevented after the
-snapshot.  It seems, though, that in general the kernel will have no way
-to know which operations are safe, and which are not safe.
+I undestand this happens because there's an IN_IGNORED event in the
+inotify queue, but couldn't inotify_rm_watch() be silent about it if the
+event hasn't been read()? Otherwise there's a race condition between the
+read() and inotify_rm_watch(), so I'll just always have to ignore EINVAL
+errors. I don't like ignoring errors.
 
-(This is why the whole "proper filesystem snapshot support is the
-solution" argument is bogus.)
+(2.6.21.3 + ext3 if it matters)
 
--- 
-Jeremy Maitin-Shepard
+
+--=-IH7oFOq1rsKptONunzxk
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGkbltyUhSUUBViskRAsH+AJ9GkTErxUBokUN8LqVxC9o8FNePDgCfU2im
+QJNFXTuMXkls/jkEbWmIOqg=
+=ymsA
+-----END PGP SIGNATURE-----
+
+--=-IH7oFOq1rsKptONunzxk--
+
