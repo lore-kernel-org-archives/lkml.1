@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbXGIJcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXGIJe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755452AbXGIJcw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 05:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbXGIJcq
+	id S1755492AbXGIJe0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 05:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXGIJeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 05:32:46 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:55754 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751501AbXGIJcp (ORCPT
+	Mon, 9 Jul 2007 05:34:20 -0400
+Received: from mail.linux-boards.com ([192.114.83.142]:54070 "EHLO
+	mail.linux-boards.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbXGIJeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 05:32:45 -0400
-To: rjw@sisk.pl
-CC: miklos@szeredi.hu, pavel@ucw.cz, oliver@neukum.org, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org, nigel@nigel.suspend2.net
-In-reply-to: <200707082307.15616.rjw@sisk.pl>
-Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-References: <200707050858.03638.oliver@neukum.org> <200707082008.57879.rjw@sisk.pl> <E1I7clo-0000JY-00@dorka.pomaz.szeredi.hu> <200707082307.15616.rjw@sisk.pl>
-Message-Id: <E1I7pXr-0001Qn-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 09 Jul 2007 11:28:39 +0200
+	Mon, 9 Jul 2007 05:34:19 -0400
+X-Greylist: delayed 2539 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jul 2007 05:34:18 EDT
+Message-ID: <4691F689.7000503@compulab.co.il>
+Date: Mon, 09 Jul 2007 11:49:13 +0300
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070506)
+MIME-Version: 1.0
+To: Rodolfo Giometti <giometti@linux.it>
+CC: linux-kernel@vger.kernel.org
+Subject: PXA2xx keyboard driver fix
+Content-Type: multipart/mixed;
+ boundary="------------010405080007010904040703"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Please have a look at the documentation update at the bottom of this patch:
-> 
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc7/patches/15-freezer-make-kernel-threads-nonfreezable-by-default.patch
-> 
-> It says what the freezer is for in the first place. :-)
+This is a multi-part message in MIME format.
+--------------010405080007010904040703
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Thanks, good description.
+The PXA2xx keyboard driver does not compile with 2.6.22
+The following patch fixes it
 
-> > Yes, we need to make sure, that nothing is scheduled during (and
-> > possibly after) taking the snapshot.  But AFAICS that could be
-> > achieved by unplugging all but one CPU.
-> 
-> Actually, we want things to get scheduled, because we need some of them to
-> save the image (to make things more difficult, we don't know what will be
-> needed to save the image in advance ;-)).
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 
-Well, kexecing a new kernel (as being pursued in one of the
-subthreads) to do the saving should take care of that.
 
-In that case the "we need suspend to be invisible to userspace" as a
-reason to use the freezer would also be moot, since if you don't
-schedule userspace after offlining the CPUs, it can't notice this.
 
-Miklos
+--------------010405080007010904040703
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch"
+
+ drivers/input/keyboard/pxa27x_keyboard.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/input/keyboard/pxa27x_keyboard.c b/drivers/input/keyboard/pxa27x_keyboard.c
+index f9e82c9..ebe5eac 100644
+--- a/drivers/input/keyboard/pxa27x_keyboard.c
++++ b/drivers/input/keyboard/pxa27x_keyboard.c
+@@ -140,7 +140,7 @@ static int pxakbd_resume(struct platform_device *pdev)
+ 		KPREC = pdata->reg_kprec;
+ 
+ 		/* Enable unit clock */
+-		pxa_set_cken(CKEN19_KEYPAD, 1);
++		pxa_set_cken(CKEN_KEYPAD, 1);
+ 	}
+ 
+ 	mutex_unlock(&input_dev->mutex);
+
+--------------010405080007010904040703--
