@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbXGIRvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbXGIRvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758488AbXGIRvS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 13:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXGIRvL
+	id S1755134AbXGIRvb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 13:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbXGIRvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 13:51:11 -0400
-Received: from mail.tmr.com ([64.65.253.246]:34945 "EHLO gaimboi.tmr.com"
+	Mon, 9 Jul 2007 13:51:14 -0400
+Received: from smtp1-g19.free.fr ([212.27.42.27]:42893 "EHLO smtp1-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbXGIRvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 13:51:10 -0400
-Message-ID: <46927679.9020005@tmr.com>
-Date: Mon, 09 Jul 2007 13:55:05 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1755343AbXGIRvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 13:51:13 -0400
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: mikie <mikie.pl@gmail.com>
+Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
+Date: Mon, 9 Jul 2007 19:51:18 +0200
+User-Agent: KMail/1.9.7
+Cc: "Indan Zupancic" <indan@nul.nu>, "Kay Sievers" <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org
+References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com> <200707091923.38577.duncan.sands@math.u-psud.fr> <ca35ce500707091041r1e660ca8h317e4936089d59aa@mail.gmail.com>
+In-Reply-To: <ca35ce500707091041r1e660ca8h317e4936089d59aa@mail.gmail.com>
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Liunx power consumption on laptops -- Enormous progress in the
-   last few months
-References: <468D4D82.8030009@linux.intel.com> <468E6F0C.1090601@redhat.com> <468E6F4C.8000601@linux.intel.com> <468E83CE.8090800@redhat.com>
-In-Reply-To: <468E83CE.8090800@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707091951.18537.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 07/06/2007 12:35 PM, Arjan van de Ven wrote:
->>> Where is the ondemand-fix.patch? I can't find any link to it.
->> just click on it in the graph ;_
->>
->> it's also http://www.linuxpowertop.org/patches/ondemand-fix.patch (which
->> is submitted already to the maintainers)
->>
+Hi, 
+
+> > Is it actually running in isochronous mode?  (It prints some messages
+> > about this).
 > 
-> Ah, OK, that one just went into the latest Fedora 7 kernel.
+> This is what I get:
+> root@srv:/# cat /sys/module/speedtch/parameters/enable_isoc
+> Y
 > 
-All this information makes it obvious that even though upgrades are 
-painful (given slow laptop disks, *really* painful), it looks as if 
-there are major benefits to be gained.
+> I think it means it confirms the isochronous mode is working.
+> Especially that I modified the source of the speedtch.c so that the
+> enable_isoc is on by default.
 
-Thanks for sharing the information.
+if you turn on isochronous mode, but there is some reason it can't be
+used you get the message: "isochronous transfer not supported - using bulk".
 
-As improved as USB drivers are, I assume that unloading the drivers is 
-still desirable if no USB hardware is in use.
+Ciao,
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Duncan.
