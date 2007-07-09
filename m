@@ -1,52 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbXGILG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753585AbXGILH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbXGILG0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 07:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXGILGT
+	id S1753585AbXGILH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 07:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbXGILHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 07:06:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:20314 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbXGILGT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 07:06:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZdZOiwjb8vgDCTsQEVg8IBND8L05sjXcobJtL88m49c4/ejWyVr0PuPtYDt/oeTXBlc7DxLromC9fALQk+UX7nyEk7bUjNM7i6iOfrEa6m+mI0UfqD9dSm2YM3CeFNFm2U+ZSJlSRPUiEU0iTea4Vod5JL+W/35sdtqhM61UaWU=
-Message-ID: <ca35ce500707090406n7b25f0bfp987a56ca79e24462@mail.gmail.com>
-Date: Mon, 9 Jul 2007 13:06:18 +0200
-From: mikie <mikie.pl@gmail.com>
-To: "Duncan Sands" <duncan.sands@math.u-psud.fr>
-Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
-Cc: "Indan Zupancic" <indan@nul.nu>, linux-kernel@vger.kernel.org
-In-Reply-To: <200707091250.37670.duncan.sands@math.u-psud.fr>
+	Mon, 9 Jul 2007 07:07:15 -0400
+Received: from lucidpixels.com ([75.144.35.66]:60780 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751236AbXGILHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 07:07:13 -0400
+Date: Mon, 9 Jul 2007 07:07:11 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Bill Davidsen <davidsen@tmr.com>
+cc: Michael Tokarev <mjt@tls.msk.ru>, Tejun Heo <htejun@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Some NCQ numbers...
+In-Reply-To: <468D3FD6.7060607@tmr.com>
+Message-ID: <Pine.LNX.4.64.0707090706020.10413@p34.internal.lan>
+References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com>
+ <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com>
+ <468B6BD7.9010108@msgid.tls.msk.ru> <Pine.LNX.4.64.0707040621170.32656@p34.internal.lan>
+ <Pine.LNX.4.64.0707040631370.32656@p34.internal.lan> <468D3FD6.7060607@tmr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
-	 <58019.81.207.0.53.1183749400.squirrel@secure.samage.net>
-	 <ca35ce500707090149x78a424f6t9d687893c0d657f6@mail.gmail.com>
-	 <200707091250.37670.duncan.sands@math.u-psud.fr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/7/9, Duncan Sands <duncan.sands@math.u-psud.fr>:
-> Hi,
->
-> > On my system the /proc/sys/kernel/hotplug points to /sbin/hotplug.
-> > I copied your script to /sbin/hotplug and also added simple logging,
-> > so I can see whenever the script is being started. It turns out that
-> > the script is not started at all by the kernel...
->
-> did you turn hotplug on in your kernel's .config?
 
-Yes:
-cat /usr/src/linux/.config |grep HOTPLUG
-CONFIG_HOTPLUG=y
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-# CONFIG_HOTPLUG_PCI is not set
 
-Regards,
-MK
+On Thu, 5 Jul 2007, Bill Davidsen wrote:
+
+> Justin Piszcz wrote:
+>> 
+>> 
+>> On Wed, 4 Jul 2007, Justin Piszcz wrote:
+>> 
+>>> On Wed, 4 Jul 2007, Michael Tokarev wrote:
+>>> 
+>>> > Tejun Heo wrote:
+>>> >> Hello,
+>>> >>
+>>> >> Michael Tokarev wrote:
+>>> >>> Well.  It looks like the results does not depend on the
+>>> >>> elevator.  Originally I tried with deadline, and just
+>>> >>> re-ran the test with noop (hence the long delay with
+>>> >>> the answer) - changing linux elevator changes almost
+>>> >>> nothing in the results - modulo some random "fluctuations".
+>>> >>
+>>> >> I see.  Thanks for testing.
+>>> >
+>>> > Here are actual results - the tests were still running when
+>>> > I replied yesterday.
+>>> >
+>>> > Again, this is Seagate ST3250620AS "desktop" drive, 7200RPM,
+>>> > 16Mb cache, 250Gb capacity.  The tests were performed with
+>>> > queue depth = 64 (on mptsas), drive write cache is turned
+>>> > off.
+>>> 
+>>> I found AS scheduler to be the premium and best for single-user 
+>>> performance.
+>>> 
+>>> You want speed? Use AS.
+>>> 
+>>> http://home.comcast.net/~jpiszcz/sched/cfq_vs_as_vs_deadline_vs_noop.html
+>>> 
+>>> 
+>> 
+>> Does not include noop-- tested the main three though, renamed :)
+>> 
+>> http://home.comcast.net/~jpiszcz/sched/cfq_vs_as_vs_deadline.html
+>> 
+>> And for the archives:
+>> 
+>> p34-cfq,15696M,77114.3,99,311683,55.3333,184947,38.6667,79842.7,99,524065,41.3333,634.033,0.333333,16:100000:16/64,1043.33,8.33333,4419.33,11.6667,2942,17.3333,1178,10.3333,4192.67,12.3333,2619.33,19 
+>> p34-as,15696M,76202.3,99,443103,85,189716,34.6667,79552,99,507271,39.6667,607.067,0,16:100000:16/64,1153,10,13434,36,2769.67,16.3333,1201.67,10.6667,3951.33,12,2665.67,19 
+>> p34-deadline,15696M,76933.3,98.6667,386852,72,183016,29.6667,79530.7,99,512082,39.6667,678.567,0,16:100000:16/64,1230.33,10.3333,12349,32.3333,2945,17.3333,1258,11,8183,22.3333,2867,20.3333 
+> I looked at these before, did you really run with a chunk size of just under 
+> 16GB, or does "15696M" have some inobvious meaning?
+>
+> -- 
+> Bill Davidsen <davidsen@tmr.com>
+>  "We have more to fear from the bungling of the incompetent than from
+> the machinations of the wicked."  - from Slashdot
+>
+
+It says to use double your RAM, your RAM is 7848, so that is why I use 
+15696M :)
+
+I did some tests recently, it appears JFS is 20-60MB/s faster for 
+sequential read/writes/re-writes but it does not have a defrag tool, 
+defragfs but its not included in Debian and people say not to use it on 
+Google/so I am not sure I want to go there.
+
+Justin.
