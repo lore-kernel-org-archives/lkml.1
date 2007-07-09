@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbXGIT6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbXGIT6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759954AbXGIT6c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 15:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbXGIT6Z
+	id S1760295AbXGIT6x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 15:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbXGIT6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 15:58:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:1661 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755445AbXGIT6Y (ORCPT
+	Mon, 9 Jul 2007 15:58:44 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:42273 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756198AbXGIT6n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 15:58:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=L9UGqaZMHQ9VhbiOBd0DVHI4XdIhtjleG3nzhNiIGqdQKvhV2bRq5pNOzYR5US+vD0DqW0sWiLGtTtwDkzuW8C8VG2HtCq+4NV903eBELkiIxxQ9imLY+x/mCpSarY7MWW627GnUSE/9P6WAXJr0c8Odsjim7M9eUbDKrWZuQ7s=
-Message-ID: <7f30c4c70707091258v12bed301ide0636950a01db86@mail.gmail.com>
-Date: Mon, 9 Jul 2007 14:58:23 -0500
-From: "hackmiester (Hunter Fuller)" <hackmiester@hackmiester.com>
-To: linux-kernel@vger.kernel.org
-Subject: PAM LDAP auth issue, but only on some apps...???
-Cc: inaki@ploximeth.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 9 Jul 2007 15:58:43 -0400
+Subject: Re: [PATCH 0/16] Pid namespaces
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>, Kirill Korotaev <dev@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>
+In-Reply-To: <4691CE99.7030902@openvz.org>
+References: <468DF6F7.1010906@openvz.org>
+	 <1183739214.10287.127.camel@localhost>  <4691CE99.7030902@openvz.org>
+Content-Type: text/plain
+Date: Mon, 09 Jul 2007 12:58:37 -0700
+Message-Id: <1184011118.10287.267.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 60f5e0bdab11d0d6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check this out.
+On Mon, 2007-07-09 at 09:58 +0400, Pavel Emelianov wrote:
+> Dave Hansen wrote:
+> > On Fri, 2007-07-06 at 12:01 +0400, Pavel Emelianov wrote:
+> >> This is "submition for inclusion" of hierarchical, not kconfig
+> >> configurable, zero overheaded ;) pid namespaces.
+> > 
+> > Pavel, I'm a bit disappointed that you went ahead and sent this.  I
+> > thought that, perhaps, you might have brought up how displeased you were
+> > with Suka's patches when we discussed them at OLS.  
+> > 
+> > Hold your horses there a bit.  This has "little" overhead for the common
+> > case, which is a single level of pid namespaces.  That means that it is
+> > quick to access the "global" pid which would be the one that the "host
+> > container" sees.  It also provides quick access to the pid which a
+> > containerized task gets when the task itself calls getpid().  This quick
+> > access is provided by storing the values directly in the task struct.
+> > 
+> > However, when there is more than one level in the container hierarchy,
+> > the optimization breaks down.  A process which exists in a three-level
+> > hierarchy has slow access to the middle level pid.  Your approach stores
+> > this information in a linked list, and surely *that* is going to have
+> 
+> No. This approach stores numerical values in array. I have
+> removed the lists at all.
 
-[hack@asuka pam.d]$ sudo -u hfuller echo "testing"
-Password:
-testing
+Ahh.  I was confused by the hlist in 'struct pid'.  You are very correct.
 
-So I can run commands as an LDAP user hfuller, using sudo.
+Suka actually coded up something very, very similar to what you have.  I
+just made him remove some of it so that the patches could be more easily
+reviewed.  I figured we could add the fully dynamic allocation later,
+which you have already done.  That part of your patches is remarkably
+similar.  
 
-But!
+-- Dave
 
-[hack@asuka pam.d]$ su hfuller
-Password:
-[hack@asuka pam.d]$
-
-If I try to su to the user, it doesn't work, and it doesn't even error out. And:
-
-Jul  9 10:46:39 asuka su(pam_unix)[13051]: session opened for user
-hfuller by (uid=0)
-Jul  9 10:46:39 asuka su(pam_unix)[13051]: session closed for user hfuller
-
-A session is opened for my user but then immediately closed. And this
-is the error ssh throws:
-
-Jul  9 11:59:18 asuka sshd2[13466]: Remote host disconnected:
-Authentication method disabled. (user 'hfuller', client address '1
-27.0.0.1:48784', requested service 'ssh-connection')
-Jul  9 11:59:18 asuka sshd2[13466]: User authentication failed:
-'Authentication method disabled. (user 'hfuller', client address
- '127.0.0.1:48784', requested service 'ssh-connection')'
-
-If I try to ssh to localhost using the login hfuller.
-
-If you know stuff about LDAP logins you might be thinking "His LDAP is
-broken when using PAM but not NSS."
-
-But here is this test program I was given, that uses PAM libraries...
-
-[hack@asuka pam.d]$ ~hack/check_user
-login: hfuller
-Password:
-PAM said: Success
-
-What?!
-
-Any ideas? This is one of the most confusing problems I've ever had.
-
--- 
--hackmiester
