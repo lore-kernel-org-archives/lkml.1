@@ -1,47 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbXGIGsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbXGIGtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756659AbXGIGsF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 02:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbXGIGrz
+	id S1756672AbXGIGtT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 02:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbXGIGtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 02:47:55 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:38992 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbXGIGry convert rfc822-to-8bit (ORCPT
+	Mon, 9 Jul 2007 02:49:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:31412 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbXGIGtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 02:47:54 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Mon, 9 Jul 2007 08:47:42 +0200
-User-Agent: KMail/1.9.7
-Cc: Alan Stern <stern@rowland.harvard.edu>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org> <1183929611.3388.303.camel@localhost.localdomain>
-In-Reply-To: <1183929611.3388.303.camel@localhost.localdomain>
+	Mon, 9 Jul 2007 02:49:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EnEe7g1CSTtfUMyHdbg5Y+hVAY3ezIVDckfW3ORWIIoJKcRjW16GM7eCGzL1Ui0gts7okjyYFRCwjshZLiJoWpxGi6uCoQCmoP1iRSwUt7uZV1ARV6zJTLCvZ6yxCnjbNiPAfTMUdHEqoDWCpXfAfgjmxlhRxpDf3tvhbavDpGk=
+Message-ID: <a44ae5cd0707082349i3edebef7m83d07f2b66c0afd4@mail.gmail.com>
+Date: Sun, 8 Jul 2007 23:49:07 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22 -- net/core/dev.c:1515: error: 'NETIF_F_IPV6_CSUM' undeclared (first use in this function)
+In-Reply-To: <a44ae5cd0707082223t50499b60m3183927750e0590e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707090847.43378.oliver@neukum.org>
+References: <a44ae5cd0707082223t50499b60m3183927750e0590e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > But I'm not sure it's a good idea in the long run.  Think of a printer 
-> > daemon, for example.  It shouldn't have to experience unexpected I/O 
-> > problems merely because someone has decided to put the system to sleep.
-> 
-> Why not ? Printer is offline when machine is asleep... trying to print
+Nevermind.  I could not reproduce this with a clean 2.6.22 tree and
+the same .config.
+My previous tree must have been munged in the patching.
 
-Not necessarily. The machine must survive going to sleep while you are
-printing. Any other error return than -ERESTARTSYS is not an option.
-We can't simply change the ABI.
-
-	Regards
-		Oliver
-
+Sorry for the distraction,
+        Miles
