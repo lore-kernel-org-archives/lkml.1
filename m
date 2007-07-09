@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbXGIQIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbXGIQJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbXGIQIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXGIQIM
+	id S1758142AbXGIQJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbXGIQJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:08:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59685 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754778AbXGIQIL (ORCPT
+	Mon, 9 Jul 2007 12:09:03 -0400
+Received: from main.carme.maven.pl ([193.239.45.138]:20528 "EHLO
+	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754917AbXGIQJB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:08:11 -0400
-Date: Mon, 9 Jul 2007 09:08:10 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Matt Mackall <mpm@selenic.com>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-In-Reply-To: <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com>
-References: <20070708034952.022985379@sgi.com>  <20070708035018.074510057@sgi.com>
- <20070708075119.GA16631@elte.hu>  <20070708110224.9cd9df5b.akpm@linux-foundation.org>
-  <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
+	Mon, 9 Jul 2007 12:09:01 -0400
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: clocksource tsc unstable
+Date: Mon, 9 Jul 2007 18:08:44 +0200
+User-Agent: PLD Linux KMail/1.9.7
+Cc: "Renato S. Yamane" <renatoyamane@mandic.com.br>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <46924CEB.7080108@mandic.com.br> <46925970.8080602@redhat.com>
+In-Reply-To: <46925970.8080602@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707091808.45250.arekm@maven.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jul 2007, Pekka Enberg wrote:
+On Monday 09 of July 2007, Arnaldo Carvalho de Melo wrote:
+> Renato S. Yamane wrote:
+> > On Kernel 2.6.21.6 I see this message in dmesg:
+> > Clocksource tsc unstable (delta = 732182695 ns)
+> >
+> > It's normal?
+>
+> AMD CPU? SMP? Details, please.
 
-> I assume with "slab external fragmentation" you mean allocating a
-> whole page for a slab when there are not enough objects to fill the
-> whole thing thus wasting memory? We could try to combat that by
-> packing multiple variable-sized slabs within a single page. Also,
-> adding some non-power-of-two kmalloc caches might help with internal
-> fragmentation.
+Here (after resume from ram btw):
+[   10.726665] Marking TSC unstable due to: possible TSC halt in C2.
+[   47.203328] Clocksource tsc unstable (delta = -198170415 ns)
 
-Ther are already non-power-of-two kmalloc caches for 96 and 192 bytes 
-sizes.
-> 
-> In any case, SLUB needs some serious tuning for smaller machines
-> before we can get rid of SLOB.
+2.6.22 #77 Mon Jul 9 09:14:25 CEST 2007 i686
 
-Switch off CONFIG_SLUB_DEBUG to get memory savings.
- 
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 13
+model name      : Intel(R) Pentium(R) M processor 2.00GHz
+
+
+It's thinkpad z60m.
+
+> - Arnaldo
+
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
