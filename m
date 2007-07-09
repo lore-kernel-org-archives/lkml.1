@@ -1,71 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764737AbXGKNJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764137AbXGKNOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764737AbXGKNJM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 09:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758594AbXGKNI5
+	id S1764137AbXGKNOJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 09:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761975AbXGKNNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 09:08:57 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2045 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757558AbXGKNI5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 09:08:57 -0400
-Date: Wed, 11 Jul 2007 21:08:49 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Crypto Update for 2.6.23
-Message-ID: <20070711130849.GA10494@gondor.apana.org.au>
+	Wed, 11 Jul 2007 09:13:55 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1592 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759096AbXGKNNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 09:13:54 -0400
+Date: Mon, 9 Jul 2007 13:29:05 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: sysrq-t dumps of s2ram/fuse deadlock (was Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+Message-ID: <20070709132905.GA5212@ucw.cz>
+References: <20070703042916.GA17240@srcf.ucam.org> <200707031456.36027.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200707031456.36027.rjw@sisk.pl>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi:
+Hi!
 
-iHere is the crypto update for 2.6.23:
+Can we get them? They are neccessary for debugging 'what in suspend
+calls fuse' problem. And yes, that problem is there even when you
+remove freezer.
 
-Please pull from
+Matthew, you seem to be the only one able to produce them...
+							Pavel
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-or
-
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-Summary:
-
-* Small fixes and clean-up's.
-
-
-Herbert Xu (2):
-      [CRYPTO] api: Wake up all waiters when larval completes
-      [CRYPTO] cipher: Remove obsolete fields from cipher_tfm
-
-Jan Engelhardt (1):
-      [CRYPTO] Kconfig: Use menuconfig objects
-
-Sebastian Siewior (2):
-      [CRYPTO] api: Handle unaligned keys in setkey
-      [CRYPTO] api: Allow ablkcipher with no queues
-
- crypto/Kconfig         |    6 +-----
- crypto/ablkcipher.c    |   31 +++++++++++++++++++++++++++++--
- crypto/algapi.c        |    4 ++--
- crypto/api.c           |    2 +-
- crypto/blkcipher.c     |   25 +++++++++++++++++++++++++
- crypto/cipher.c        |   33 ++++++++++++++++++++++++++++++---
- crypto/hash.c          |   38 +++++++++++++++++++++++++++++++++++++-
- include/linux/crypto.h |   20 --------------------
- 8 files changed, 125 insertions(+), 34 deletions(-)
-
-Thanks,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
