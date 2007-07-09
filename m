@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759190AbXGITe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbXGITns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759190AbXGITe6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 15:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbXGITev
+	id S1758236AbXGITns (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 15:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbXGITnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 15:34:51 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:39471 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbXGITev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 15:34:51 -0400
-To: torvalds@linux-foundation.org
-Subject: [git pull] jfs update
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Message-Id: <20070709193443.C9B6482BFA@kleikamp.austin.ibm.com>
-Date: Mon,  9 Jul 2007 14:34:43 -0500 (CDT)
-From: shaggy@linux.vnet.ibm.com (Dave Kleikamp)
+	Mon, 9 Jul 2007 15:43:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50240
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753191AbXGITnk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 15:43:40 -0400
+Date: Mon, 09 Jul 2007 12:43:59 -0700 (PDT)
+Message-Id: <20070709.124359.38710002.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       penberg@cs.helsinki.fi, akpm@linux-foundation.org
+Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality,
+ performance and maintenance
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0707090845230.13792@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com>
+	<20070707.213752.63129539.davem@davemloft.net>
+	<Pine.LNX.4.64.0707090845230.13792@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+From: Christoph Lameter <clameter@sgi.com>
+Date: Mon, 9 Jul 2007 08:45:42 -0700 (PDT)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
+> On Sat, 7 Jul 2007, David Miller wrote:
+> 
+> > From: Christoph Lameter <clameter@sgi.com>
+> > Date: Sat, 07 Jul 2007 20:49:52 -0700
+> > 
+> > > A cmpxchg is less costly than interrupt enabe/disable
+> > 
+> > This is cpu dependant, and in fact not true at all on Niagara
+> > and several of the cpus in the UltraSPARC family.
+> 
+> Hmmm... So have alternate aloc/free paths depending on the cpu?
 
-This will update the following files:
+As Andi seemed to imply I don't even think cmpxchg is faster than
+interrupt enable/disable on current generation AMD x86_64 chips, so
+are you targetting this optimization solely at Intel x86 Core Duo
+32-bit chips?  That's the only one I can see which will benefit from
+this.  Are you going to probe the cpu sub-type and patch SLUB?
 
- fs/jfs/endian24.h     |    2 
- fs/jfs/jfs_debug.c    |   28 --
- fs/jfs/jfs_debug.h    |    2 
- fs/jfs/jfs_dinode.h   |   42 +--
- fs/jfs/jfs_dmap.c     |  419 +++++++++++++++++++--------------------
- fs/jfs/jfs_dmap.h     |  118 +++++------
- fs/jfs/jfs_dtree.c    |  105 ++++-----
- fs/jfs/jfs_dtree.h    |    2 
- fs/jfs/jfs_extent.c   |  102 ++++-----
- fs/jfs/jfs_filsys.h   |   13 -
- fs/jfs/jfs_imap.c     |  296 +++++++++++++--------------
- fs/jfs/jfs_imap.h     |   98 ++++-----
- fs/jfs/jfs_incore.h   |    4 
- fs/jfs/jfs_logmgr.c   |   90 ++++----
- fs/jfs/jfs_logmgr.h   |   26 +-
- fs/jfs/jfs_metapage.c |    3 
- fs/jfs/jfs_mount.c    |    6 
- fs/jfs/jfs_txnmgr.c   |  302 ++++++++++++++--------------
- fs/jfs/jfs_txnmgr.h   |    2 
- fs/jfs/jfs_types.h    |   20 -
- fs/jfs/jfs_umount.c   |    2 
- fs/jfs/jfs_xtree.c    |  428 +++++++++++++++++++---------------------
- fs/jfs/jfs_xtree.h    |   48 ++--
- fs/jfs/namei.c        |   26 +-
- fs/jfs/resize.c       |   48 ++--
- fs/jfs/xattr.c        |    9 
- 26 files changed, 1096 insertions(+), 1145 deletions(-)
+I really don't think this optimization is wise as even if you
+could decide at build time, it's going to be a maintainence and
+debugging nightmare to have to field bug reports given two different
+locking schemes.
 
-through these ChangeSets:
-
-Commit: 288e4d838d1e999c0515f85a337cacb2be233071 
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com> Wed, 13 Jun 2007 10:17:50 -0500 
-
-    JFS: Update print_hex_dump() syntax
-    
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-Commit: 209e101bf408a50acc426e32c8252daefacde5b0 
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com> Wed, 06 Jun 2007 16:30:17 -0500 
-
-    JFS: use print_hex_dump() rather than private dump_mem() function
-    
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-Commit: f720e3ba558680cc7dd3995d005bdc8ee2ef46af 
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com> Wed, 06 Jun 2007 15:28:35 -0500 
-
-    JFS: Whitespace cleanup and remove some dead code
-    
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Please reconsider this change, thanks.
 
