@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756452AbXGIJqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbXGIJru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756452AbXGIJqf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 05:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbXGIJqM
+	id S1756042AbXGIJru (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 05:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbXGIJro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 05:46:12 -0400
-Received: from il.qumranet.com ([82.166.9.18]:46750 "EHLO il.qumranet.com"
+	Mon, 9 Jul 2007 05:47:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56269 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbXGIJqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 05:46:11 -0400
-Message-ID: <469203E9.7000109@qumranet.com>
-Date: Mon, 09 Jul 2007 12:46:17 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>
-CC: kvm-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] kvm-scheduler integration
-References: <11838994974161-git-send-email-avi@qumranet.com> <1183971001.4254.3.camel@sli10-conroe.sh.intel.com>
-In-Reply-To: <1183971001.4254.3.camel@sli10-conroe.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750759AbXGIJrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 05:47:43 -0400
+Subject: Re: [RFC/PATCH] Use mmu_gather for fork() instead of flush_tlb_mm()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-mm@kvack.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <4691FFDC.5020808@yahoo.com.au>
+References: <1183952874.3388.349.camel@localhost.localdomain>
+	 <1183962981.5961.3.camel@localhost.localdomain>
+	 <1183963544.5961.6.camel@localhost.localdomain>
+	 <4691E64F.5070506@yahoo.com.au>
+	 <1183972349.5961.25.camel@localhost.localdomain>
+	 <4691FFDC.5020808@yahoo.com.au>
+Content-Type: text/plain
+Date: Mon, 09 Jul 2007 19:47:38 +1000
+Message-Id: <1183974458.5961.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaohua Li wrote:
-> On Sun, 2007-07-08 at 20:58 +0800, Avi Kivity wrote:
->   
->> The only fly in the ointment is that it crashes quite soon.  Haven't
->> figured
->> out why yet, but comments on the general direction would be welcome.
->>     
-> Attached patch seems help in my test. prepare_task_switch is called with
-> irq disabled.
->
->
->   
+On Mon, 2007-07-09 at 19:29 +1000, Nick Piggin wrote:
+> They could just #define one to the other though, there are only a
+> small
+> number of them. Is there a downside to not making them distinct? i386
+> for example probably would just keep doing a tlb flush for fork and
+> not
+> want to worry about touching the tlb gather stuff.
 
-Thanks!!  Will integrate that.
+But the tlb gather stuff just does ... a flush_tlb_mm() on x86 :-)
 
+I really think it's the right API
 
->> -static void vmx_vcpu_load(struct kvm_vcpu *vcpu)
->> +static void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
->>  {
->>         u64 phys_addr = __pa(vcpu->vmcs);
->> -       int cpu;
->>         u64 tsc_this, delta;
->>
->> -       cpu = get_cpu();
->> -
->> +       WARN_ON(!preempt_count());
->>     
-> This and below change will break preempt disabled case. better remove
-> them.
->   
+Ben.
 
-
-Right.  Will take them out.
-
-
-
--- 
-error compiling committee.c: too many arguments to function
 
