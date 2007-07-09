@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbXGIKGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbXGIKHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbXGIKGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 06:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXGIKFx
+	id S1755939AbXGIKHF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 06:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXGIKG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 06:05:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39228 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315AbXGIKFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 06:05:52 -0400
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Oliver Neukum <oliver@neukum.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-In-Reply-To: <20070709100204.GN5401@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
-	 <1183929611.3388.303.camel@localhost.localdomain>
-	 <200707090847.43378.oliver@neukum.org>  <20070709100204.GN5401@elf.ucw.cz>
-Content-Type: text/plain
-Date: Mon, 09 Jul 2007 20:05:22 +1000
-Message-Id: <1183975522.5961.44.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jul 2007 06:06:56 -0400
+Received: from mail35.syd.optusnet.com.au ([211.29.133.51]:37508 "EHLO
+	mail35.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751315AbXGIKG4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 06:06:56 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>
+Subject: 2.6.22-ck1
+Date: Mon, 9 Jul 2007 20:06:49 +1000
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Message-Id: <200707092006.49316.kernel@kolivas.org>
+X-Length: 2336
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-09 at 12:02 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > But I'm not sure it's a good idea in the long run.  Think of a printer 
-> > > > daemon, for example.  It shouldn't have to experience unexpected I/O 
-> > > > problems merely because someone has decided to put the system to sleep.
-> > > 
-> > > Why not ? Printer is offline when machine is asleep... trying to print
-> 
-> ...filesystems are offline, too, when the machine is asleep. Yet,
-> unmounting everything on suspend would not result in useful suspend
-> support.
-> 
-> Yes, I believe we should be transparent.
+2.6.22-ck1 is the last ever -ck release.
 
-You just compared apple and oranges... Try printing and half way through
-the page, suspend your USB bus, and see how the printer reacts.
-
-Ben.
+So long, and thanks for all the fish
 
 
+This patchset is designed to improve system responsiveness and interactivity. 
+It is configurable to any workload but the default -ck patch is aimed at the 
+desktop and -cks is available with more emphasis on serverspace.
+
+
+Apply to 2.6.22
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.22/2.6.22-ck1/patch-2.6.22-ck1.bz2
+
+or server version
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/cks/patch-2.6.22-cks1.bz2
+
+web:
+http://kernel.kolivas.org
+
+wiki:
+http://ck.wikia.com
+
+all patches:
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/
+
+
+Full patch list:
+
+sched-staircase-deadline-cpu-scheduler.patch
+sched-range.patch
+sched-iso-5.5.patch
+track_mutexes-1.patch
+sched-idleprio-2.4.patch
+sched-limit_policy_changes.patch
+sched-ck-add-above-background-load-function.patch
+cfq-ioprio_inherit_rt_class.patch
+cfq-iso_idleprio_ionice.patch
+mm-swap_prefetch-41.patch 
+mm-convert_swappiness_to_mapped.patch
+mm-lots_watermark.diff
+mm-kswapd_inherit_prio-1.patch 
+mm-prio_dependant_scan-2.patch
+mm-background_scan-2.patch
+mm-filesize_dependant_lru_cache_add.patch
+mm-idleprio_prio.patch
+kconfig-expose_vmsplit_option.patch
+hz-default_1000.patch 
+hz-no_default_250.patch 
+hz-raise_max-2.patch
+ck-desktop-tune.patch
+ck-final-version.patch
+
+
+さようなら、いままで魚をありがとう
+
+-- 
+-ck
