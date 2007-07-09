@@ -1,48 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbXGIRvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbXGIRwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbXGIRvb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 13:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbXGIRvO
+	id S1759147AbXGIRwa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 13:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXGIRwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 13:51:14 -0400
-Received: from smtp1-g19.free.fr ([212.27.42.27]:42893 "EHLO smtp1-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755343AbXGIRvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 13:51:13 -0400
-From: Duncan Sands <duncan.sands@math.u-psud.fr>
-To: mikie <mikie.pl@gmail.com>
-Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
-Date: Mon, 9 Jul 2007 19:51:18 +0200
-User-Agent: KMail/1.9.7
-Cc: "Indan Zupancic" <indan@nul.nu>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org
-References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com> <200707091923.38577.duncan.sands@math.u-psud.fr> <ca35ce500707091041r1e660ca8h317e4936089d59aa@mail.gmail.com>
-In-Reply-To: <ca35ce500707091041r1e660ca8h317e4936089d59aa@mail.gmail.com>
+	Mon, 9 Jul 2007 13:52:20 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:55778 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754198AbXGIRwT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 13:52:19 -0400
+Date: Mon, 9 Jul 2007 19:52:51 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, jgarzik@pobox.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, saw@saw.sw.com.sg,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [2.6 patch] the overdue eepro100 removal
+Message-ID: <20070709175251.GG3492@stusta.de>
+References: <20070701202139.GM10869@stusta.de> <46894BD5.9080609@tmr.com> <46897212.30104@intel.com> <468D15F4.6020106@tmr.com> <20070709125208.GZ3492@stusta.de> <4692701B.3030506@tmr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200707091951.18537.duncan.sands@math.u-psud.fr>
+In-Reply-To: <4692701B.3030506@tmr.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On Mon, Jul 09, 2007 at 01:27:55PM -0400, Bill Davidsen wrote:
+> Adrian Bunk wrote:
+>> On Thu, Jul 05, 2007 at 12:01:56PM -0400, Bill Davidsen wrote:
+>>   
+>>> Please do not make unnecessary kernel changes which require changes in 
+>>> our systems.
+>>>     
+>
+>>> If you think the e100 driver fixes your problems use it and be happy. But 
+>>> since you don't have to test system behavior with the new driver, and you 
+>>> won't be called at night or on weekends if it doesn't work, do the rest 
+>>> of the world a favor and stop taking out things we know to work! Leaving 
+>>> in the eepro100 causes no work for you, and even if e100 works perfectly 
+>>> it needs to be validated in any sane network. it still makes work.
+>>>     
+>>
+>> The goal is to get e100 better, and removing eepro100 helps with reaching 
+>> this goal.
+>>
+>>   
+> That's *your* goal, it should not be a shock that users have a goal of 
+> using their systems without having to reconfigure them every time there's a 
+> kernel upgrade containing a security fix.
 
-> > Is it actually running in isochronous mode?  (It prints some messages
-> > about this).
-> 
-> This is what I get:
-> root@srv:/# cat /sys/module/speedtch/parameters/enable_isoc
-> Y
-> 
-> I think it means it confirms the isochronous mode is working.
-> Especially that I modified the source of the speedtch.c so that the
-> enable_isoc is on by default.
+For how many years do you know that there's a new and actively 
+maintained e100 driver for your hardware?
 
-if you turn on isochronous mode, but there is some reason it can't be
-used you get the message: "isochronous transfer not supported - using bulk".
+And if you don't follow a stable line like the 2.6.16 kernel or a 
+distribution kernel it's simply a part of the current development model 
+that some kernel parts change. If changing one driver results in a big 
+problem in your setup you should reconsider your setup. And every new 
+kernel except for -stable kernels will anyway require a revalidation, so 
+changing the network driver as part of this shouldn't be a big issue.
 
-Ciao,
+>> Why didn't _you_ try the e100 driver when you validated your systems after 
+>> you upgraded them to kernel 2.6, and if you did and it didn't work, where 
+>> is your bug report?
+>>   
+> Is that a joke, or subtle irony? Do you generally validate drivers you 
+> don't use just because your hardware might be able to support them? I don't 
+> validate various accelerated video drivers on systems running mostly text 
+> console, never check sound options on systems with an audio application, 
+> etc. After I tried the e100 driver on the first few systems and found 
+> issues (which may be resolved by now) I went back to eepro100 and used what 
+> worked. And used the driver for any new systems in other installs.
 
-Duncan.
+And exactly this is the reason why the eepro100 driver has to be 
+removed, and that this will result in a better hardware support for 
+everyone in the long term.
+
+> If there were any benefit to removing a working driver I would at least be 
+> able to see it as a resources issue, but as far as I can see you just seem 
+> to have a personal preference for the e100 driver and want to force others 
+> to use it because you are so much better able to decide what users need 
+> than the system administrators. That's one of the reasons people choose 
+> open source, because they have a choice, and can use what's best for them.
+
+I don't have a personal preference for the e100 driver (although it's 
+working fine in my computer), but I have a preference for the benefits 
+of having only one driver for a given hardware over having two drivers.
+
+People like you use the eepro100 driver instead of reporting the bugs in 
+the e100 driver you ran into.
+
+This is exactly the problem with two different drivers having different 
+hardware support, different features and different bugs we should avoid.
+
+One driver supporting all hardware, having all features and all bug 
+fixes is a huge benefit.
+
+In your prevous email you were whining "And for a number of card for old 
+buses like ISA, EISA, and VESA, the e100 has not worked." although 
+eepro100 didn't support such cards.
+
+Now you claim to speak for "the system administrators".
+
+Please bring some technical points, preferably bug reports for problems 
+with e100 that don't exist with eepro100.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
