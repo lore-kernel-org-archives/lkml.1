@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbXGILhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbXGILig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756813AbXGILhc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 07:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXGILhZ
+	id S1757290AbXGILig (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 07:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbXGILi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 07:37:25 -0400
-Received: from styx.suse.cz ([82.119.242.94]:34676 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751691AbXGILhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 07:37:24 -0400
-Date: Mon, 9 Jul 2007 13:41:36 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: Rik van Riel <riel@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jan Kratochvil <honza@jikos.cz>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Ernie Petrides <petrides@redhat.com>
-Subject: Re: [PATCH][RESEND] PIE randomization
-In-Reply-To: <20070707123004.GZ7012@devserv.devel.redhat.com>
-Message-ID: <Pine.LNX.4.64.0707091333230.11634@jikos.suse.cz>
-References: <Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz>
- <Pine.LNX.4.64.0705161851120.25986@twin.jikos.cz>
- <alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
- <20070522161642.b71ddacb.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231044540.22906@jikos.suse.cz> <20070704082554.GQ7012@devserv.devel.redhat.com>
- <Pine.LNX.4.64.0707041927090.11634@jikos.suse.cz> <468D5A3A.1010306@redhat.com>
- <468D5B28.8080308@redhat.com> <Pine.LNX.4.64.0707070205460.11634@jikos.suse.cz>
- <20070707123004.GZ7012@devserv.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Jul 2007 07:38:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54063 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752305AbXGILi2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 07:38:28 -0400
+Subject: Re: [patch -rss] Make RSS accounting display more user friendly
+From: Peter Zijlstra <peterz@infradead.org>
+To: balbir@linux.vnet.ibm.com
+Cc: Paul Menage <menage@google.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Emelianov <xemul@openvz.org>
+In-Reply-To: <6D63B142.2080404@linux.vnet.ibm.com>
+References: <20070620154655.13844.42876.sendpatchset@balbir-laptop>
+	 <6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com>
+	 <467B2F4F.2030101@openvz.org>
+	 <6599ad830706220839h2a556c76he11b78c2c4cdb86e@mail.gmail.com>
+	 <661de9470706222048g638a06dboc0b2e85975a9ba70@mail.gmail.com>
+	 <6599ad830706250019h117ff575h156cf112f5778e43@mail.gmail.com>
+	 <6D63B142.2080404@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 09 Jul 2007 13:38:18 +0200
+Message-Id: <1183981098.1913.22.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Jul 2007, Jakub Jelinek wrote:
+On Sun, 2028-02-27 at 02:39 -0500, Balbir Singh wrote:
 
-> I believe BAD_ADDR macro was changes from ((unsigned long)(x) >= 
-> TASK_SIZE) (which is the right test for invalid user addresses, stronger 
-> check than >= PAGE_MASK) to >= PAGE_MASK only because of the one check 
-> of the return value of load_elf_interp.  
+> I am not a CLUI expert, but rounding off bytes will something that
+> the administrators will probably complain about. Since we manage
+> the controller memory in pages, it might be the easiest unit to use.
+> The output is totally different matter.
+> 
+> Having said that, I am not opposed to your suggestion, I'll see if
+> I can find good CLUI guidelines.
 
-Yes, this is correct.
+Pages are generally considered a bad unit for user-space exposed
+parameters because a page can have a wide spectrum of sizes on some
+machines.
 
-> All other uses of BAD_ADDR macro are either on userland addresses (what 
-> do_mmap, elf_map, do_brk etc. return; where TASK_SIZE or more is 
-> certainly wrong) 
+The typical unit used in its stead is KiB. Although I could imagine MiB
+being more useful in this case :-)
 
-True. But these functions are supposed to perform all the necessary checks 
-and return ERR_PTR if anything fails, so everything is fine and nothing 
-gets broken.
+Perhaps a new proc parser that takes postfix [KMG] units would be
+handy..
 
-> or in one case still on unbiased ELF p_vaddr: if (BAD_ADDR(k) || 
-> elf_ppnt->p_filesz > elf_ppnt->p_memsz || in load_elf_binary (where >= 
-> TASK_SIZE check is ok too).
-> So perhaps doing this instead of changing BAD_ADDR to IS_ERR_VAL
-> might be better:
-> Signed-off-by: Jakub Jelinek <jakub@redhat.com>
-[ ... ]
-> -			if (!BAD_ADDR(elf_entry)) {
-> +			if (!IS_ERR((void *)elf_entry)) {
-
-I agree that this is better solution. Andrew, this Jakub's patch should 
-replace the pie-randomization-fix-bad_addr-macro.patch if possible. You 
-can add 
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-if that makes any difference.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
