@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbXGIQe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760556AbXGIQem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760781AbXGIQe0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbXGIQYS
+	id S1760556AbXGIQem (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758325AbXGIQYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42149 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42159 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758224AbXGIQYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:24:09 -0400
+	id S1758252AbXGIQYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:24:12 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] Fix bug in error path of inode
-Date: Mon,  9 Jul 2007 17:02:39 +0100
-Message-Id: <1183997056121-git-send-email-swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, Robert Peterson <rpeterso@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH] [GFS2] Can't mount GFS2 file system on AoE device
+Date: Mon,  9 Jul 2007 17:02:40 +0100
+Message-Id: <11839970573954-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970542719-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1183997056121-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -50,67 +51,42 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183997050365-git-send-email-swhiteho@redhat.com>
  <11839970521835-git-send-email-swhiteho@redhat.com>
  <11839970542719-git-send-email-swhiteho@redhat.com>
+ <1183997056121-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Robert Peterson <rpeterso@redhat.com>
 
-This fixes a bug in the ordering of operations in the error path of
-createi. Its not valid to do an iput() when holding the inode's glock
-since the iput() will (in this case) result in delete_inode() being
-called which needs to grab the lock itself. This was causing the
-recursive lock checking code to trigger.
+This patch fixes bug 243131: Can't mount GFS2 file system on AoE device.
+When using AoE devices with lock_nolock, there is no locking table, so
+gfs2 (and gfs1) uses the superblock s_id.  This turns out to be the device
+name in some cases.  In the case of AoE, the device contains a slash,
+(e.g. "etherd/e1.1p2") which is an invalid character when we try to
+register the table in sysfs.  This patch replaces the "/" with underscore.
+Rather than add a new variable to the stack, I'm just reusing a (char *)
+variable that's no longer used: table.
 
+This code has been tested on the failing system using a RHEL5 patch.
+The upstream code was tested by using gfs2_tool sb to interject a "/"
+into the table name of a clustered gfs2 file system.
+
+Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index 3ef0f05..87505f7 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -857,7 +857,7 @@ static int gfs2_security_init(struct gfs2_inode *dip, struct gfs2_inode *ip)
- struct inode *gfs2_createi(struct gfs2_holder *ghs, const struct qstr *name,
- 			   unsigned int mode, dev_t dev)
- {
--	struct inode *inode;
-+	struct inode *inode = NULL;
- 	struct gfs2_inode *dip = ghs->gh_gl->gl_object;
- 	struct inode *dir = &dip->i_inode;
- 	struct gfs2_sbd *sdp = GFS2_SB(&dip->i_inode);
-@@ -900,28 +900,28 @@ struct inode *gfs2_createi(struct gfs2_holder *ghs, const struct qstr *name,
+diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+index b467272..dae1d71 100644
+--- a/fs/gfs2/ops_fstype.c
++++ b/fs/gfs2/ops_fstype.c
+@@ -145,6 +145,9 @@ static int init_names(struct gfs2_sbd *sdp, int silent)
+ 	snprintf(sdp->sd_proto_name, GFS2_FSNAME_LEN, "%s", proto);
+ 	snprintf(sdp->sd_table_name, GFS2_FSNAME_LEN, "%s", table);
  
- 	error = gfs2_inode_refresh(GFS2_I(inode));
- 	if (error)
--		goto fail_iput;
-+		goto fail_gunlock2;
- 
- 	error = gfs2_acl_create(dip, GFS2_I(inode));
- 	if (error)
--		goto fail_iput;
-+		goto fail_gunlock2;
- 
- 	error = gfs2_security_init(dip, GFS2_I(inode));
- 	if (error)
--		goto fail_iput;
-+		goto fail_gunlock2;
- 
- 	error = link_dinode(dip, name, GFS2_I(inode));
- 	if (error)
--		goto fail_iput;
-+		goto fail_gunlock2;
- 
- 	if (!inode)
- 		return ERR_PTR(-ENOMEM);
- 	return inode;
- 
--fail_iput:
--	iput(inode);
- fail_gunlock2:
- 	gfs2_glock_dq_uninit(ghs + 1);
-+	if (inode)
-+		iput(inode);
- fail_gunlock:
- 	gfs2_glock_dq(ghs);
- fail:
++	while ((table = strchr(sdp->sd_table_name, '/')))
++		*table = '_';
++
+ out:
+ 	return error;
+ }
 -- 
 1.5.1.2
 
