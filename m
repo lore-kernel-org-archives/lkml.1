@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759528AbXGIQba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbXGIQbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759528AbXGIQba (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbXGIQXz
+	id S1760008AbXGIQbr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbXGIQX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:23:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42046 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:23:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42055 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755640AbXGIQXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:23:53 -0400
+	id S1758183AbXGIQXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:23:54 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Abhijith Das <adas@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] Quotas non-functional - fix another bug
-Date: Mon,  9 Jul 2007 17:02:30 +0100
-Message-Id: <11839970383020-git-send-email-swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH] [GFS2] Make the log reserved blocks depend on block size
+Date: Mon,  9 Jul 2007 17:02:31 +0100
+Message-Id: <11839970403929-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1183997036270-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970383020-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -42,83 +41,51 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <11839970324005-git-send-email-swhiteho@redhat.com>
  <1183997034982-git-send-email-swhiteho@redhat.com>
  <1183997036270-git-send-email-swhiteho@redhat.com>
+ <11839970383020-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Abhijith Das <adas@redhat.com>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-This patch fixes a bug where gfs2 was writing update quota usage
-information to the wrong location in the quota file.
+The number of blocks which we reserve in the log at the start of each
+transaction needs to depends upon the block size since the overhead is
+related to the number of "pointers" which can be fitted into a single
+block.
 
-Signed-off-by: Abhijith Das <adas@redhat.com>
+This relates to Red Hat bz #240435
+
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/ondisk.c b/fs/gfs2/ondisk.c
-index cd4cf05..a5b05ea 100644
---- a/fs/gfs2/ondisk.c
-+++ b/fs/gfs2/ondisk.c
-@@ -121,6 +121,16 @@ void gfs2_quota_in(struct gfs2_quota_host *qu, const void *buf)
- 	qu->qu_value = be64_to_cpu(str->qu_value);
- }
- 
-+void gfs2_quota_out(const struct gfs2_quota_host *qu, void *buf)
-+{
-+	struct gfs2_quota *str = buf;
-+
-+	str->qu_limit = cpu_to_be64(qu->qu_limit);
-+	str->qu_warn = cpu_to_be64(qu->qu_warn);
-+	str->qu_value = cpu_to_be64(qu->qu_value);
-+	memset(&str->qu_reserved, 0, sizeof(str->qu_reserved));
-+}
-+
- void gfs2_dinode_out(const struct gfs2_inode *ip, void *buf)
+diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
+index 291415d..586923d 100644
+--- a/fs/gfs2/log.c
++++ b/fs/gfs2/log.c
+@@ -262,7 +262,7 @@ static void ail2_empty(struct gfs2_sbd *sdp, unsigned int new_tail)
+  * @sdp: The GFS2 superblock
+  * @blks: The number of blocks to reserve
+  *
+- * Note that we never give out the last 6 blocks of the journal. Thats
++ * Note that we never give out the last few blocks of the journal. Thats
+  * due to the fact that there is are a small number of header blocks
+  * associated with each log flush. The exact number can't be known until
+  * flush time, so we ensure that we have just enough free blocks at all
+@@ -274,6 +274,7 @@ static void ail2_empty(struct gfs2_sbd *sdp, unsigned int new_tail)
+ int gfs2_log_reserve(struct gfs2_sbd *sdp, unsigned int blks)
  {
- 	const struct gfs2_dinode_host *di = &ip->i_di;
-diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
-index fcd3ee2..8a58815 100644
---- a/fs/gfs2/quota.c
-+++ b/fs/gfs2/quota.c
-@@ -573,12 +573,13 @@ static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
- 	struct inode *inode = &ip->i_inode;
- 	struct address_space *mapping = inode->i_mapping;
- 	unsigned long index = loc >> PAGE_CACHE_SHIFT;
--	unsigned offset = loc & (PAGE_CACHE_SHIFT - 1);
-+	unsigned offset = loc & (PAGE_CACHE_SIZE - 1);
- 	unsigned blocksize, iblock, pos;
- 	struct buffer_head *bh;
- 	struct page *page;
- 	void *kaddr;
--	__be64 *ptr;
-+	char *ptr;
-+	struct gfs2_quota_host qp;
- 	s64 value;
- 	int err = -EIO;
+ 	unsigned int try = 0;
++	unsigned reserved_blks = 6 * (4096 / sdp->sd_vfs->s_blocksize);
  
-@@ -620,8 +621,10 @@ static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
+ 	if (gfs2_assert_warn(sdp, blks) ||
+ 	    gfs2_assert_warn(sdp, blks <= sdp->sd_jdesc->jd_blocks))
+@@ -281,7 +282,7 @@ int gfs2_log_reserve(struct gfs2_sbd *sdp, unsigned int blks)
  
- 	kaddr = kmap_atomic(page, KM_USER0);
- 	ptr = kaddr + offset;
--	value = (s64)be64_to_cpu(*ptr) + change;
--	*ptr = cpu_to_be64(value);
-+	gfs2_quota_in(&qp, ptr);
-+	qp.qu_value += change;
-+	value = qp.qu_value;
-+	gfs2_quota_out(&qp, ptr);
- 	flush_dcache_page(page);
- 	kunmap_atomic(kaddr, KM_USER0);
- 	err = 0;
-diff --git a/include/linux/gfs2_ondisk.h b/include/linux/gfs2_ondisk.h
-index 9ecf929..01cc359 100644
---- a/include/linux/gfs2_ondisk.h
-+++ b/include/linux/gfs2_ondisk.h
-@@ -519,6 +519,7 @@ extern void gfs2_rindex_out(const struct gfs2_rindex_host *ri, void *buf);
- extern void gfs2_rgrp_in(struct gfs2_rgrp_host *rg, const void *buf);
- extern void gfs2_rgrp_out(const struct gfs2_rgrp_host *rg, void *buf);
- extern void gfs2_quota_in(struct gfs2_quota_host *qu, const void *buf);
-+extern void gfs2_quota_out(const struct gfs2_quota_host *qu, void *buf);
- struct gfs2_inode;
- extern void gfs2_dinode_out(const struct gfs2_inode *ip, void *buf);
- extern void gfs2_ea_header_in(struct gfs2_ea_header *ea, const void *buf);
+ 	mutex_lock(&sdp->sd_log_reserve_mutex);
+ 	gfs2_log_lock(sdp);
+-	while(sdp->sd_log_blks_free <= (blks + 6)) {
++	while(sdp->sd_log_blks_free <= (blks + reserved_blks)) {
+ 		gfs2_log_unlock(sdp);
+ 		gfs2_ail1_empty(sdp, 0);
+ 		gfs2_log_flush(sdp, NULL);
 -- 
 1.5.1.2
 
