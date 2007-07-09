@@ -1,114 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbXGIW61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761075AbXGIXIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760236AbXGIW61 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 18:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbXGIW6U
+	id S1761075AbXGIXIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 19:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbXGIXIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 18:58:20 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:46758 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754535AbXGIW6T (ORCPT
+	Mon, 9 Jul 2007 19:08:05 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:33673 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757172AbXGIXIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 18:58:19 -0400
-Date: Mon, 9 Jul 2007 18:58:17 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality, performance and maintenance
-Message-ID: <20070709225817.GA5111@Krystal>
-References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de> <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com> <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com> <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal> <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Jul 2007 19:08:04 -0400
+Message-ID: <4692BDEE.8020802@zytor.com>
+Date: Mon, 09 Jul 2007 15:59:58 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Daniel Drake <dsd@gentoo.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       zwane@infradead.org, Andi Kleen <ak@suse.de>,
+       "Antonino A. Daplas" <adaplas@pol.net>
+Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
+ mode
+References: <4678191D.76E4.0078.0@novell.com>	<4686D85B.6090803@gentoo.org>	<20070630154230.4ad373fa.akpm@linux-foundation.org>	<4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org> <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org>
+In-Reply-To: <4692BC61.9070500@gentoo.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:35:11 up 2 days, 12:40,  3 users,  load average: 0.14, 0.18, 0.18
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Mon, 9 Jul 2007, Mathieu Desnoyers wrote:
+Daniel Drake wrote:
+> H. Peter Anvin wrote:
+>> The patch should be fine for 2.6.22, but for -mm, the code this patches
+>> doesn't even exist with git-newsetup; nor is there a CONFIG_VIDEO_SELECT
+>> which could impede the production of the VESA version.
+>>
+>> What does your .config look like?
 > 
-> > > >He seems to be comparing spinlock acquire / release vs. cmpxchg. So I 
-> > > >guess you got your material from somewhere else?
-> > > >
-> > 
-> > I ran a test specifically for this paper where I got this result
-> > comparing the local irq enable/disable to local cmpxchg.
-> 
-> 
-> The numbers are pretty important and suggest that we can obtain 
-> a significant speed increase by avoid local irq disable enable in the slab 
-> allocator fast paths. Do you some more numbers? Any other publication that 
-> mentions these?
+> https://bugs.gentoo.org/attachment.cgi?id=124339&action=view
 > 
 
-The original publication in which I released the idea was my LTTng paper
-at OLS 2006. Outside this, I have not found other paper that talks about
-this idea.
+User error.
+Please replace user and press any key.
 
-The test code is basically just disabling interrupts, reading the TSC
-at the beginning and end and does 20000 loops of local_cmpxchg. I can
-send you the code if you want it.
+# CONFIG_FIRMWARE_EDID is not set
 
-> 
-> > Yep, I volountarily used the variant without lock prefix because the
-> > data is per cpu and I disable preemption.
-> 
-> local_cmpxchg generates this?
-> 
+The user has *explicitly* disabled acquisition of EDID from the
+firmware, so of course it doesn't probe for it.
 
-Yes.
-
-> > Yes, preempt disabling or, eventually, the new thread migration
-> > disabling I just proposed as an RFC on LKML. (that would make -rt people
-> > happier)
-> 
-> Right.
-> 
-> > Sure, also note that the UP cmpxchg (see asm-$ARCH/local.h in 2.6.22) is
-> > faster on architectures like powerpc and MIPS where it is possible to
-> > remove some memory barriers.
-> 
-> UP cmpxchg meaning local_cmpxchg?
-> 
-
-Yes.
-
-> > See 2.6.22 Documentation/local_ops.txt for a thorough discussion. Don't
-> > hesitate ping me if you have more questions.
-> 
-> That is pretty thin and does not mention atomic_cmpxchg. You way want to 
-> expand on your ideas a bit.
-
-Sure, the idea goes as follow: if you have a per cpu variable that needs
-to be concurrently modified in a coherent manner by any context (NMI,
-irq, bh, process) running on the given CPU, you only need to use an
-operation atomic wrt to the given CPU. You just have to make sure that
-only this CPU will modify the variable (therefore, you must disable
-preemption around modification) and you have to make sure that the
-read-side, which can come from any CPU, is accessing this variable
-atomically. Also, you have to be aware that the read-side might see an
-older version of the other cpu's value because there is no SMP write
-memory barrier involved. The value, however, will always be up to date
-if the variable is read from the "local" CPU.
-
-What applies to local_inc, given as example in the local_ops.txt
-document, applies integrally to local_cmpxchg. And I would say that
-local_cmpxchg is by far the cheapest locking mechanism I have found, and
-use today, for my kernel tracer. The idea emerged from my need to trace
-every execution context, including NMIs, while still providing good
-performances. local_cmpxchg was the perfect fit; that's why I deployed
-it in local.h in each and every architecture.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	-hpa
