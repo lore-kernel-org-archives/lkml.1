@@ -1,46 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbXGIMpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbXGIMrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372AbXGIMpf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbXGIMpV
+	id S1755190AbXGIMrf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXGIMr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:45:21 -0400
-Received: from styx.suse.cz ([82.119.242.94]:53877 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753049AbXGIMpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:45:19 -0400
-Date: Mon, 9 Jul 2007 15:00:21 +0200
-From: Jan Kara <jack@suse.cz>
-To: Kirill Korotaev <dev@openvz.org>
-Cc: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: jbd lost fix?
-Message-ID: <20070709130021.GA30433@duck.suse.cz>
-References: <468908A9.2010702@openvz.org>
+	Mon, 9 Jul 2007 08:47:27 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:14880 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbXGIMr0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:47:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XEESQOTrNPaMUJ+sSljMcjMDle16kxRIcjls1uERWAbqi/hpvv6A/rO8v9eoA4wxsuHpgIBR8wGZFInRMHyG97ftYmBeGG1uiaocZpbCkG/VDWr1TD1ZWbiVb2SwpjgsBwe2GtmDa6m+g1jQ7nVnCmkF1fmEHwff6gL66Bx3gFU=
+Message-ID: <84144f020707090547p5ccb1ec7i5197c8312c910551@mail.gmail.com>
+Date: Mon, 9 Jul 2007 15:47:25 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Christoph Lameter" <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org, suresh.b.siddha@intel.com,
+       corey.d.gough@intel.com, "Matt Mackall" <mpm@selenic.com>,
+       "Denis Vlasenko" <vda.linux@googlemail.com>,
+       "Erik Andersen" <andersen@codepoet.org>
+In-Reply-To: <46921928.8020900@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <468908A9.2010702@openvz.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070708034952.022985379@sgi.com>
+	 <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu>
+	 <20070708110224.9cd9df5b.akpm@linux-foundation.org>
+	 <4691A415.6040208@yahoo.com.au>
+	 <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
+	 <46921928.8020900@yahoo.com.au>
+X-Google-Sender-Auth: 9983043e4f986b8b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+Hi Nick,
 
-On Mon 02-07-07 18:16:09, Kirill Korotaev wrote:
-> it looks like the following fix:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=43c3e6f5abdf6acac9b90c86bf03f995bf7d3d92
-> 
-> was lost after resurrecting of the spliced checkpointing list in this patch:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=78ce89c92bc6eaf5933b5664bff64253a7103bd7;hp=cdaad343b561cdeb38b0578bb038
-> 
-> Can you please confirm that?
-  Sorry for a bit late reply but I was on holiday for a week. Yes, it seems
-like that fix got lost. At least 2.6.22-rc5 still has a wrong test on line
-890 in commit.c. Thanks for notification, I'll resend it.
-  BTW: How have you found this out?
+Pekka Enberg wrote:
+> > I assume with "slab external fragmentation" you mean allocating a
+> > whole page for a slab when there are not enough objects to fill the
+> > whole thing thus wasting memory?
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+On 7/9/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> Yep. Without really analysing it, I guess SLOB's savings here are
+> O(1) over SLUB and will relatively diminish as the machine size gets
+> larger, however with the number of slabs even a small kernel creates,
+> this is likely to be significant on small memory systems.
+
+Running the included script on my little Debian on UML with 32 MB of
+RAM shows anywhere from 20 KB up to 100 KB of wasted space on light
+load. What's interesting is that the wasted amount seems to stabilize
+around 70 KB and never goes below that.
+
+                                               Pekka
+
+#!/bin/bash
+
+total_wasted=0
+
+for i in $(find /sys/slab -type d -mindepth 1 -maxdepth 1 | sort)
+do
+  nr_objs=$(cat $i/objects)
+  slabs=$(cat $i/slabs)
+  objs_per_slab=$(cat $i/objs_per_slab)
+  let "max_objs=$objs_per_slab*$slabs"
+
+  object_size=$(cat $i/object_size)
+  let "wasted=($max_objs-$nr_objs)*$object_size"
+
+  if [ "$wasted" -ne "0" ]; then
+    echo "$i: max_objs=$max_objs, nr_objs=$nr_objs, $wasted bytes wasted"
+  fi
+  let "total_wasted=$total_wasted+$wasted"
+done
+
+echo "Total wasted: $total_wasted"
