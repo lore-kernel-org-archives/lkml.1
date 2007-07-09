@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbXGIO5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbXGIO5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbXGIO5e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 10:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbXGIO4y
+	id S1756915AbXGIO5t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 10:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXGIO50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 10:56:54 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55602 "EHLO
+	Mon, 9 Jul 2007 10:57:26 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:55606 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754470AbXGIO4w (ORCPT
+	with ESMTP id S1756445AbXGIO5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 10:56:52 -0400
-Date: Mon, 9 Jul 2007 16:57:24 +0200
+	Mon, 9 Jul 2007 10:57:24 -0400
+Date: Mon, 9 Jul 2007 16:57:56 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] the scheduled i2c-rpx removal
-Message-ID: <20070709145724.GC3492@stusta.de>
+To: Zhang Rui <rui.zhang@intel.com>, lenb@kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] the scheduled ACPI_PROCFS removal
+Message-ID: <20070709145755.GD3492@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,185 +23,349 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the scheduled removal of the i2c-rpx driver.
+This patch contains the scheduled removal of the ACPI procfs interface.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
  Documentation/feature-removal-schedule.txt |    8 -
- Documentation/i2c/summary                  |    1 
- drivers/i2c/algos/Kconfig                  |    4 
- drivers/i2c/busses/Kconfig                 |    5 -
- drivers/i2c/busses/Makefile                |    1 
- drivers/i2c/busses/i2c-rpx.c               |  101 ---------------------
- 6 files changed, 120 deletions(-)
+ drivers/acpi/Kconfig                       |   13 -
+ drivers/acpi/debug.c                       |  143 ---------------------
+ drivers/acpi/system.c                      |  129 ------------------
+ 4 files changed, 293 deletions(-)
 
---- linux-2.6.22-rc6-mm1/Documentation/feature-removal-schedule.txt.old	2007-07-09 01:26:13.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/Documentation/feature-removal-schedule.txt	2007-07-09 01:26:28.000000000 +0200
-@@ -285,14 +285,6 @@
+--- linux-2.6.22-rc6-mm1/Documentation/feature-removal-schedule.txt.old	2007-07-09 02:04:01.000000000 +0200
++++ linux-2.6.22-rc6-mm1/Documentation/feature-removal-schedule.txt	2007-07-09 02:04:32.000000000 +0200
+@@ -190,14 +190,6 @@
  
  ---------------------------
  
--What:	i2c-rpx driver
--When:	June 2007
--Why:	Broken. It depends on i2c-algo-8xx which has never been in the
--	mainline kernel.
--Who:	Jean Delvare <khali@linux-fr.org>
+-What:	ACPI procfs interface
+-When:	July 2007
+-Why:	After ACPI sysfs conversion, ACPI attributes will be duplicated
+-	in sysfs and the ACPI procfs interface should be removed.
+-Who:	Zhang Rui <rui.zhang@intel.com>
 -
 ----------------------------
 -
- What:	legacy RTC drivers (under drivers/i2c/chips)
- When:	November 2007
- Why:	Obsolete. We have a RTC subsystem with better drivers.
---- linux-2.6.22-rc6-mm1/drivers/i2c/busses/Kconfig.old	2007-07-09 01:26:42.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/drivers/i2c/busses/Kconfig	2007-07-09 01:26:53.000000000 +0200
-@@ -391,11 +391,6 @@
- 	  This support is also available as a module.  If so, the module 
- 	  will be called i2c-prosavage.
+ What:	/proc/acpi/button
+ When:	August 2007
+ Why:	/proc/acpi/button has been replaced by events to the input layer
+--- linux-2.6.22-rc6-mm1/drivers/acpi/Kconfig.old	2007-07-09 02:04:39.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/acpi/Kconfig	2007-07-09 02:04:57.000000000 +0200
+@@ -75,19 +75,6 @@
+ 	  Create /proc/acpi/sleep
+ 	  Deprecated by /sys/power/state
  
--config I2C_RPXLITE
--	tristate "Embedded Planet RPX Lite/Classic support"
--	depends on RPXLITE || RPXCLASSIC
--	select I2C_ALGO8XX
+-config ACPI_PROCFS
+-	bool "Procfs interface (deprecated)"
+-	default y
+-	---help---
+-	  The Procfs interface for ACPI is made optional for backward compatibility.
+-	  As the same functions are duplicated in the sysfs interface
+-	  and this proc interface will be removed some time later,
+-	  it's marked as deprecated.
+-	  ( /proc/acpi/debug_layer && debug_level are deprecated by
+-	    /sys/module/acpi/parameters/debug_layer && debug_level.
+-	    /proc/acpi/info is deprecated by
+-	    /sys/module/acpi/parameters/acpica_version )
 -
- config I2C_S3C2410
- 	tristate "S3C2410 I2C Driver"
- 	depends on ARCH_S3C2410
---- linux-2.6.22-rc6-mm1/drivers/i2c/algos/Kconfig.old	2007-07-09 01:27:02.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/drivers/i2c/algos/Kconfig	2007-07-09 01:27:06.000000000 +0200
-@@ -34,10 +34,6 @@
- 	  This support is also available as a module.  If so, the module 
- 	  will be called i2c-algo-pca.
+ config ACPI_AC
+ 	tristate "AC Adapter"
+ 	depends on X86
+--- linux-2.6.22-rc6-mm1/drivers/acpi/debug.c.old	2007-07-09 02:05:04.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/acpi/debug.c	2007-07-09 02:05:41.000000000 +0200
+@@ -130,146 +130,3 @@
+ module_param_call(debug_layer, param_set_uint, param_get_debug_layer, &acpi_dbg_layer, 0644);
+ module_param_call(debug_level, param_set_uint, param_get_debug_level, &acpi_dbg_level, 0644);
  
--config I2C_ALGO8XX
--	tristate "MPC8xx CPM I2C interface"
--	depends on 8xx
+-/* --------------------------------------------------------------------------
+-                              FS Interface (/proc)
+-   -------------------------------------------------------------------------- */
+-#ifdef CONFIG_ACPI_PROCFS
+-#define ACPI_SYSTEM_FILE_DEBUG_LAYER	"debug_layer"
+-#define ACPI_SYSTEM_FILE_DEBUG_LEVEL		"debug_level"
 -
- config I2C_ALGO_SGI
- 	tristate "I2C SGI interfaces"
- 	depends on SGI_IP22 || SGI_IP32 || X86_VISWS
---- linux-2.6.22-rc6-mm1/drivers/i2c/busses/Makefile.old	2007-07-09 01:27:18.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/drivers/i2c/busses/Makefile	2007-07-09 01:27:24.000000000 +0200
-@@ -35,7 +35,6 @@
- obj-$(CONFIG_I2C_PNX)		+= i2c-pnx.o
- obj-$(CONFIG_I2C_PROSAVAGE)	+= i2c-prosavage.o
- obj-$(CONFIG_I2C_PXA)		+= i2c-pxa.o
--obj-$(CONFIG_I2C_RPXLITE)	+= i2c-rpx.o
- obj-$(CONFIG_I2C_S3C2410)	+= i2c-s3c2410.o
- obj-$(CONFIG_I2C_SAVAGE4)	+= i2c-savage4.o
- obj-$(CONFIG_I2C_SIBYTE)	+= i2c-sibyte.o
---- linux-2.6.22-rc6-mm1/Documentation/i2c/summary.old	2007-07-09 01:27:48.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/Documentation/i2c/summary	2007-07-09 01:27:56.000000000 +0200
-@@ -81,6 +81,5 @@
- i2c-philips-par: Philips style parallel port adapter (uses i2c-algo-bit)
- i2c-adap-ibm_ocp: IBM 4xx processor I2C device (uses i2c-algo-ibm_ocp) (NOT BUILT BY DEFAULT)
- i2c-pport:       Primitive parallel port adapter (uses i2c-algo-bit)
--i2c-rpx:         RPX board Motorola 8xx I2C device (uses i2c-algo-8xx) (NOT BUILT BY DEFAULT)
- i2c-velleman:    Velleman K8000 parallel port adapter (uses i2c-algo-bit)
- 
---- linux-2.6.22-rc6-mm1/drivers/i2c/busses/i2c-rpx.c	2007-04-26 05:08:32.000000000 +0200
-+++ /dev/null	2006-09-19 00:45:31.000000000 +0200
-@@ -1,101 +0,0 @@
--/*
-- * Embedded Planet RPX Lite MPC8xx CPM I2C interface.
-- * Copyright (c) 1999 Dan Malek (dmalek@jlc.net).
-- *
-- * moved into proper i2c interface;
-- * Brad Parker (brad@heeltoe.com)
-- *
-- * RPX lite specific parts of the i2c interface
-- * Update:  There actually isn't anything RPXLite-specific about this module.
-- * This should work for most any 8xx board.  The console messages have been 
-- * changed to eliminate RPXLite references.
-- */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/stddef.h>
--#include <linux/i2c.h>
--#include <linux/i2c-algo-8xx.h>
--#include <asm/mpc8xx.h>
--#include <asm/commproc.h>
--
--
--static void
--rpx_iic_init(struct i2c_algo_8xx_data *data)
+-static int
+-acpi_system_read_debug(char *page,
+-		       char **start, off_t off, int count, int *eof, void *data)
 -{
--	volatile cpm8xx_t *cp;
--	volatile immap_t *immap;
+-	char *p = page;
+-	int size = 0;
+-	unsigned int i;
 -
--	cp = cpmp;	/* Get pointer to Communication Processor */
--	immap = (immap_t *)IMAP_ADDR;	/* and to internal registers */
+-	if (off != 0)
+-		goto end;
 -
--	data->iip = (iic_t *)&cp->cp_dparam[PROFF_IIC];
+-	p += sprintf(p, "%-25s\tHex        SET\n", "Description");
 -
--	/* Check for and use a microcode relocation patch.
--	*/
--	if ((data->reloc = data->iip->iic_rpbase))
--		data->iip = (iic_t *)&cp->cp_dpmem[data->iip->iic_rpbase];
--		
--	data->i2c = (i2c8xx_t *)&(immap->im_i2c);
--	data->cp = cp;
--
--	/* Initialize Port B IIC pins.
--	*/
--	cp->cp_pbpar |= 0x00000030;
--	cp->cp_pbdir |= 0x00000030;
--	cp->cp_pbodr |= 0x00000030;
--
--	/* Allocate space for two transmit and two receive buffer
--	 * descriptors in the DP ram.
--	 */
--	data->dp_addr = cpm_dpalloc(sizeof(cbd_t) * 4, 8);
--		
--	/* ptr to i2c area */
--	data->i2c = (i2c8xx_t *)&(((immap_t *)IMAP_ADDR)->im_i2c);
--}
--
--static int rpx_install_isr(int irq, void (*func)(void *), void *data)
--{
--	/* install interrupt handler */
--	cpm_install_handler(irq, func, data);
--
--	return 0;
--}
--
--static struct i2c_algo_8xx_data rpx_data = {
--	.setisr = rpx_install_isr
--};
--
--static struct i2c_adapter rpx_ops = {
--	.owner		= THIS_MODULE,
--	.name		= "m8xx",
--	.id		= I2C_HW_MPC8XX_EPON,
--	.algo_data	= &rpx_data,
--};
--
--int __init i2c_rpx_init(void)
--{
--	printk(KERN_INFO "i2c-rpx: i2c MPC8xx driver\n");
--
--	/* reset hardware to sane state */
--	rpx_iic_init(&rpx_data);
--
--	if (i2c_8xx_add_bus(&rpx_ops) < 0) {
--		printk(KERN_ERR "i2c-rpx: Unable to register with I2C\n");
--		return -ENODEV;
+-	switch ((unsigned long)data) {
+-	case 0:
+-		for (i = 0; i < ARRAY_SIZE(acpi_debug_layers); i++) {
+-			p += sprintf(p, "%-25s\t0x%08lX [%c]\n",
+-				     acpi_debug_layers[i].name,
+-				     acpi_debug_layers[i].value,
+-				     (acpi_dbg_layer & acpi_debug_layers[i].
+-				      value) ? '*' : ' ');
+-		}
+-		p += sprintf(p, "%-25s\t0x%08X [%c]\n", "ACPI_ALL_DRIVERS",
+-			     ACPI_ALL_DRIVERS,
+-			     (acpi_dbg_layer & ACPI_ALL_DRIVERS) ==
+-			     ACPI_ALL_DRIVERS ? '*' : (acpi_dbg_layer &
+-						       ACPI_ALL_DRIVERS) ==
+-			     0 ? ' ' : '-');
+-		p += sprintf(p,
+-			     "--\ndebug_layer = 0x%08X (* = enabled, - = partial)\n",
+-			     acpi_dbg_layer);
+-		break;
+-	case 1:
+-		for (i = 0; i < ARRAY_SIZE(acpi_debug_levels); i++) {
+-			p += sprintf(p, "%-25s\t0x%08lX [%c]\n",
+-				     acpi_debug_levels[i].name,
+-				     acpi_debug_levels[i].value,
+-				     (acpi_dbg_level & acpi_debug_levels[i].
+-				      value) ? '*' : ' ');
+-		}
+-		p += sprintf(p, "--\ndebug_level = 0x%08X (* = enabled)\n",
+-			     acpi_dbg_level);
+-		break;
+-	default:
+-		p += sprintf(p, "Invalid debug option\n");
+-		break;
 -	}
 -
+-      end:
+-	size = (p - page);
+-	if (size <= off + count)
+-		*eof = 1;
+-	*start = page + off;
+-	size -= off;
+-	if (size > count)
+-		size = count;
+-	if (size < 0)
+-		size = 0;
+-
+-	return size;
+-}
+-
+-static int
+-acpi_system_write_debug(struct file *file,
+-			const char __user * buffer,
+-			unsigned long count, void *data)
+-{
+-	char debug_string[12] = { '\0' };
+-
+-
+-	if (count > sizeof(debug_string) - 1)
+-		return -EINVAL;
+-
+-	if (copy_from_user(debug_string, buffer, count))
+-		return -EFAULT;
+-
+-	debug_string[count] = '\0';
+-
+-	switch ((unsigned long)data) {
+-	case 0:
+-		acpi_dbg_layer = simple_strtoul(debug_string, NULL, 0);
+-		break;
+-	case 1:
+-		acpi_dbg_level = simple_strtoul(debug_string, NULL, 0);
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	return count;
+-}
+-
+-static int __init acpi_debug_init(void)
+-{
+-	struct proc_dir_entry *entry;
+-	int error = 0;
+-	char *name;
+-
+-
+-	if (acpi_disabled)
+-		return 0;
+-
+-	/* 'debug_layer' [R/W] */
+-	name = ACPI_SYSTEM_FILE_DEBUG_LAYER;
+-	entry =
+-	    create_proc_read_entry(name, S_IFREG | S_IRUGO | S_IWUSR,
+-				   acpi_root_dir, acpi_system_read_debug,
+-				   (void *)0);
+-	if (entry)
+-		entry->write_proc = acpi_system_write_debug;
+-	else
+-		goto Error;
+-
+-	/* 'debug_level' [R/W] */
+-	name = ACPI_SYSTEM_FILE_DEBUG_LEVEL;
+-	entry =
+-	    create_proc_read_entry(name, S_IFREG | S_IRUGO | S_IWUSR,
+-				   acpi_root_dir, acpi_system_read_debug,
+-				   (void *)1);
+-	if (entry)
+-		entry->write_proc = acpi_system_write_debug;
+-	else
+-		goto Error;
+-
+-      Done:
+-	return error;
+-
+-      Error:
+-	remove_proc_entry(ACPI_SYSTEM_FILE_DEBUG_LEVEL, acpi_root_dir);
+-	remove_proc_entry(ACPI_SYSTEM_FILE_DEBUG_LAYER, acpi_root_dir);
+-	error = -ENODEV;
+-	goto Done;
+-}
+-
+-subsys_initcall(acpi_debug_init);
+-#endif
+--- linux-2.6.22-rc6-mm1/drivers/acpi/system.c.old	2007-07-09 02:05:48.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/acpi/system.c	2007-07-09 02:06:30.000000000 +0200
+@@ -167,131 +167,6 @@
+ 	return 0;
+ }
+ 
+-/* --------------------------------------------------------------------------
+-                              FS Interface (/proc)
+-   -------------------------------------------------------------------------- */
+-#ifdef CONFIG_ACPI_PROCFS
+-#define ACPI_SYSTEM_FILE_INFO		"info"
+-#define ACPI_SYSTEM_FILE_EVENT		"event"
+-#define ACPI_SYSTEM_FILE_DSDT		"dsdt"
+-#define ACPI_SYSTEM_FILE_FADT		"fadt"
+-
+-static int acpi_system_read_info(struct seq_file *seq, void *offset)
+-{
+-
+-	seq_printf(seq, "version:                 %x\n", ACPI_CA_VERSION);
 -	return 0;
 -}
 -
--void __exit i2c_rpx_exit(void)
+-static int acpi_system_info_open_fs(struct inode *inode, struct file *file)
 -{
--	i2c_8xx_del_bus(&rpx_ops);
+-	return single_open(file, acpi_system_read_info, PDE(inode)->data);
 -}
 -
--MODULE_AUTHOR("Dan Malek <dmalek@jlc.net>");
--MODULE_DESCRIPTION("I2C-Bus adapter routines for MPC8xx boards");
+-static const struct file_operations acpi_system_info_ops = {
+-	.open = acpi_system_info_open_fs,
+-	.read = seq_read,
+-	.llseek = seq_lseek,
+-	.release = single_release,
+-};
 -
--module_init(i2c_rpx_init);
--module_exit(i2c_rpx_exit);
+-static ssize_t acpi_system_read_dsdt(struct file *, char __user *, size_t,
+-				     loff_t *);
+-
+-static const struct file_operations acpi_system_dsdt_ops = {
+-	.read = acpi_system_read_dsdt,
+-};
+-
+-static ssize_t
+-acpi_system_read_dsdt(struct file *file,
+-		      char __user * buffer, size_t count, loff_t * ppos)
+-{
+-	acpi_status status = AE_OK;
+-	struct acpi_table_header *dsdt = NULL;
+-	ssize_t res;
+-
+-	status = acpi_get_table(ACPI_SIG_DSDT, 1, &dsdt);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
+-
+-	res = simple_read_from_buffer(buffer, count, ppos, dsdt, dsdt->length);
+-
+-	return res;
+-}
+-
+-static ssize_t acpi_system_read_fadt(struct file *, char __user *, size_t,
+-				     loff_t *);
+-
+-static const struct file_operations acpi_system_fadt_ops = {
+-	.read = acpi_system_read_fadt,
+-};
+-
+-static ssize_t
+-acpi_system_read_fadt(struct file *file,
+-		      char __user * buffer, size_t count, loff_t * ppos)
+-{
+-	acpi_status status = AE_OK;
+-	struct acpi_table_header *fadt = NULL;
+-	ssize_t res;
+-
+-	status = acpi_get_table(ACPI_SIG_FADT, 1, &fadt);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
+-
+-	res = simple_read_from_buffer(buffer, count, ppos, fadt, fadt->length);
+-
+-	return res;
+-}
+-
+-static int acpi_system_procfs_init(void)
+-{
+-	struct proc_dir_entry *entry;
+-	int error = 0;
+-	char *name;
+-
+-	/* 'info' [R] */
+-	name = ACPI_SYSTEM_FILE_INFO;
+-	entry = create_proc_entry(name, S_IRUGO, acpi_root_dir);
+-	if (!entry)
+-		goto Error;
+-	else {
+-		entry->proc_fops = &acpi_system_info_ops;
+-	}
+-
+-	/* 'dsdt' [R] */
+-	name = ACPI_SYSTEM_FILE_DSDT;
+-	entry = create_proc_entry(name, S_IRUSR, acpi_root_dir);
+-	if (entry)
+-		entry->proc_fops = &acpi_system_dsdt_ops;
+-	else
+-		goto Error;
+-
+-	/* 'fadt' [R] */
+-	name = ACPI_SYSTEM_FILE_FADT;
+-	entry = create_proc_entry(name, S_IRUSR, acpi_root_dir);
+-	if (entry)
+-		entry->proc_fops = &acpi_system_fadt_ops;
+-	else
+-		goto Error;
+-
+-      Done:
+-	return error;
+-
+-      Error:
+-	remove_proc_entry(ACPI_SYSTEM_FILE_FADT, acpi_root_dir);
+-	remove_proc_entry(ACPI_SYSTEM_FILE_DSDT, acpi_root_dir);
+-	remove_proc_entry(ACPI_SYSTEM_FILE_INFO, acpi_root_dir);
+-
+-	error = -EFAULT;
+-	goto Done;
+-}
+-#else
+-static int acpi_system_procfs_init(void)
+-{
+-	return 0;
+-}
+-#endif
+-
+ static int __init acpi_system_init(void)
+ {
+ 	int result = 0;
+@@ -299,10 +174,6 @@
+ 	if (acpi_disabled)
+ 		return 0;
+ 
+-	result = acpi_system_procfs_init();
+-	if (result)
+-		return result;
+-
+ 	result = acpi_system_sysfs_init();
+ 
+ 	return result;
 
