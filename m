@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbXGISMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757739AbXGISPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759248AbXGISMo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 14:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbXGISMh
+	id S1757739AbXGISPp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbXGISPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 14:12:37 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58062 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753600AbXGISMh (ORCPT
+	Mon, 9 Jul 2007 14:15:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38591 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753600AbXGISPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 14:12:37 -0400
-Date: Mon, 9 Jul 2007 11:11:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Martin Bligh <mbligh@google.com>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality,
- performance and maintenance
-In-Reply-To: <46925B5D.8000507@google.com>
-Message-ID: <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com>
-References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de>
- <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
- <46925B5D.8000507@google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Jul 2007 14:15:37 -0400
+Date: Mon, 9 Jul 2007 11:14:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Two trivial whitespace fixes in lockdep/spinlock code
+Message-Id: <20070709111451.d6c09e72.akpm@linux-foundation.org>
+In-Reply-To: <1184003146.2453.29.camel@dhcp193.mvista.com>
+References: <Pine.LNX.4.64.0707040213340.11634@jikos.suse.cz>
+	<20070703171606.fb027c2b.akpm@linux-foundation.org>
+	<1184003146.2453.29.camel@dhcp193.mvista.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jul 2007, Martin Bligh wrote:
+On Mon, 09 Jul 2007 10:45:46 -0700
+Daniel Walker <dwalker@mvista.com> wrote:
 
-> Those numbers came from Mathieu Desnoyers (LTTng) if you
-> want more details.
+> > Too trivial, sorry: we could generate 8 million patches like this.
+> 
+> Would you rather have one big patch that fixes a lot of this type of
+> stuff, or not have these types of patches at all ?
 
-Okay the source for these numbers is in his paper for the OLS 2006: Volume 
-1 page 208-209? I do not see the exact number that you referred to there.
+I guess one-patch-per-subsystem-maintainer would be best.
 
-He seems to be comparing spinlock acquire / release vs. cmpxchg. So I 
-guess you got your material from somewhere else?
-
-Also the cmpxchg used there is the lockless variant. cmpxchg 29 cycles w/o 
-lock prefix and 112 with lock prefix.
-
-I see you reference another paper by Desnoyers: 
-http://tree.celinuxforum.org/CelfPubWiki/ELC2006Presentations?action=AttachFile&do=get&target=celf2006-desnoyers.pdf
-
-I do not see anything relevant there. Where did those numbers come from?
-
-The lockless cmpxchg is certainly an interesting idea. Certain for some 
-platforms I could disable preempt and then do a lockless cmpxchg.
+Sent To: that maintainer, Cc:'d to me, ideally.  Some will resist.
