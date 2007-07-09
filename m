@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbXGIJWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbXGIJYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbXGIJWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 05:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbXGIJWI
+	id S1755135AbXGIJYR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 05:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbXGIJYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 05:22:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38236 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbXGIJWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 05:22:06 -0400
-Date: Mon, 9 Jul 2007 11:21:54 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: Determine version of kernel that produced vmcore
-Message-ID: <20070709092154.GA19705@suse.de>
-Mail-Followup-To: Dan Aloni <da-x@monatomic.org>,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20070706132814.GA7079@suse.de> <20070706145804.GA31409@localdomain>
+	Mon, 9 Jul 2007 05:24:08 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:41216 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbXGIJYH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 05:24:07 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Date: Mon, 9 Jul 2007 11:23:56 +0200
+User-Agent: KMail/1.9.7
+Cc: Alan Stern <stern@rowland.harvard.edu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org> <200707090847.43378.oliver@neukum.org> <1183972420.5961.26.camel@localhost.localdomain>
+In-Reply-To: <1183972420.5961.26.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070706145804.GA31409@localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200707091123.57400.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-* Dan Aloni <da-x@monatomic.org> [2007-07-06 16:58]:
+Am Montag, 9. Juli 2007 schrieb Benjamin Herrenschmidt:
+> On Mon, 2007-07-09 at 08:47 +0200, Oliver Neukum wrote:
+> > Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
+> > > > But I'm not sure it's a good idea in the long run.  Think of a printer 
+> > > > daemon, for example.  It shouldn't have to experience unexpected I/O 
+> > > > problems merely because someone has decided to put the system to sleep.
+> > > 
+> > > Why not ? Printer is offline when machine is asleep... trying to print
+> > 
+> > Not necessarily. The machine must survive going to sleep while you are
+> > printing. Any other error return than -ERESTARTSYS is not an option.
+> > We can't simply change the ABI.
 > 
-> Redhat has a makedumpinfo util which they intend to use as slim
-> kernel-version-independent utility on kdump rootfs in order to
-> save /proc/vmcore in a compact manner.
+> Ugh ? Why returning an error from the printer driver to the userland
+> print server/daemon would prevent the machine from "surviving" ? I would
+> be happy with -EIO personally :-)
 
-I think you mean makedumpfile, don't you?
+Surviving is a bit strongly worded.
 
-> A patch that I am working on will make it possible to integrate
-> the output of 'makedumpinfo -g' into vmlinux as the final build
-> stage of the kernel. This information will be presented itself
-> as /proc/kcore.info for the first kernel throughout its entire
-> execution.
+Suspension is to be transparent. Apart from a jump in the system clock
+user space must not notice, thus returning errors due to suspension is
+not an option.
 
-That sounds good. But I doubt that kernel developers like the idea of
-needing another utility in the build process ...
+	Regards
+		Oliver
 
-> Then inside initramfs of the first kernel, a small 
-> util will modify the vmlinux file of the kdump kernel before it
-> gets loaded so that another special file appearing as 
-> /proc/vmcore.info under the kdump kernel will present the same
-> info. 
-
-Where do you get the info from? If you're in the kdump initrd,
-then the kdump kernel is already loaded. Do you want to attach the
-info from the crashed kernel to the initrd of the kdump kernel?
-
-
-
-Thanks,
-   Bernhard
