@@ -1,60 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbXGIXlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760723AbXGIXrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760698AbXGIXlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 19:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbXGIXlE
+	id S1760723AbXGIXrc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 19:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbXGIXrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 19:41:04 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:56871 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758873AbXGIXlD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 19:41:03 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 9 Jul 2007 19:38:47 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Make profiling uniformly non-menu and non-EXPERIMENTAL.
-In-Reply-To: <4692C031.1090503@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0707091938210.19500@localhost.localdomain>
-References: <Pine.LNX.4.64.0707090357580.21984@localhost.localdomain>
- <4692C031.1090503@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Mon, 9 Jul 2007 19:47:25 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:46121 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757830AbXGIXrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 19:47:25 -0400
+Date: Tue, 10 Jul 2007 01:47:14 +0200 (MEST)
+Message-Id: <200707092347.l69NlElB023451@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linuxppc-dev@ozlabs.org
+Subject: [2.6.22] powerpc: section mismatch for macmodes.c:mac_find_mode()
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Stefan Richter wrote:
+A vanilla 2.6.22 built for ppc32 and configured with CONFIG_FB_MACMODES=y, CONFIG_HOTPLUG=n,
+and CONFIG_MODULES=y, triggers the following warning from modpost:
 
-> Robert P. J. Day wrote:
-> > 2) given how long profiling has been around, it's just as pointless to
-> > keep categorizing it as EXPERIMENTAL, so drop all EXPERIMENTAL labels
-> > and dependencies.
->
-> Only because something has been around for a while, even for years,
-> it doesn't automatically loose "experimental" status.  It does when
-> it has been extensively and successfully debugged, verified and
-> tested, and no reservations regarding run-time stability or
-> userspace interface stability remain.  Is this true for these
-> profiling options?
+WARNING: drivers/built-in.o(__ksymtab+0x3b0): Section mismatch: reference to .init.text:mac_find_mode (between '__ksymtab_mac_find_mode' and '__ksymtab_mac_map_monitor_sense')
 
-i have no idea.  that's why i listed the patch as "RFC".  i was hoping
-to get some feedback.
+There's an EXPORT_SYMBOL(mac_find_mode), but mac_find_mode() is __devinit
+and thus __init in this kernel.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+/Mikael
