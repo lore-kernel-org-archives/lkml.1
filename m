@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbXGILt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbXGILzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757431AbXGILt1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 07:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXGILtT
+	id S1755245AbXGILzY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 07:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbXGILzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 07:49:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39528 "EHLO ogre.sisk.pl"
+	Mon, 9 Jul 2007 07:55:12 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:38755 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbXGILtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 07:49:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-Date: Mon, 9 Jul 2007 13:56:44 +0200
-User-Agent: KMail/1.9.5
-Cc: Oliver Neukum <oliver@neukum.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org> <200707090852.03429.oliver@neukum.org> <1183972449.5961.28.camel@localhost.localdomain>
-In-Reply-To: <1183972449.5961.28.camel@localhost.localdomain>
+	id S1751757AbXGILzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 07:55:10 -0400
+Message-ID: <4692221B.7050608@dgreaves.com>
+Date: Mon, 09 Jul 2007 12:55:07 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Bruce Allen <ballen@gravity.phys.uwm.edu>
+Cc: Mark Lord <liml@rtr.ca>, Douglas Gilbert <dougg@torque.net>,
+       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Bruce Allen <bruce.allen@aei.mpg.de>
+Subject: Re: SMART problems in 2.6.22
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
+In-Reply-To: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707091356.45486.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 9 July 2007 11:14, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-07-09 at 08:52 +0200, Oliver Neukum wrote:
-> > Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > > Another issue that's been a problem forever with suspend is the
-> > > synchronous request_firmware interface. Lots of drivers do that in
-> > > resume() which will generally not work.
-> > 
-> > Unfortunately yes they do. We now have the notifier chains, which
-> > can be used. Firmware, especially if it is large, must be requested
-> > while the system is still fully functional and paging will work.
-> > 
-> > Asynchronocity will not help much because the devices must work
-> > after resumingand delaying that will not help with respect to needing
-> > devices to get at the firmware.
+Hi Bruce
+>> From some of the earlier threads that I missed (below) I have the 
+> impression that the problem may be a very simple one, namely that 
+> starting with 2.6.22 one needs to run a command to enable SMART when a 
+> box is first booted -- the kernel no longer does this as part of the 
+> init/setup of the disks. But that is NOT consistent with the first two 
+> reports above, which show 'SMART ENABLED'.
 > 
-> True, pre-loading is the best approach.
+> Here are some of the earlier threads that I completely missed:
+> 
+> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg164863.html
+This is mine and although it's a 'real' problem, it is something that's easy to 
+hack around by having the suspend script turn on smart after it is resumed. (Of 
+course I can't use resume until a skge wol bug is fixed so I won't see/test this 
+unless asked too.)
 
-Agreed.
+The smart init scripts run '-s on' when the system boots anyway for my system - 
+this problem only occurs for me during suspend/resume. Maybe smartd should 
+detect that as Alan says.
 
-Greetings,
-Rafael
+Please let me know if there's anything else you need.
+
+David
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
