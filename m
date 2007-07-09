@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbXGIQbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbXGIQcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760008AbXGIQbr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbXGIQX4
+	id S1760252AbXGIQcI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbXGIQX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:23:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42055 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:23:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42075 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758183AbXGIQXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:23:54 -0400
+	id S1758183AbXGIQX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:23:57 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] Make the log reserved blocks depend on block size
-Date: Mon,  9 Jul 2007 17:02:31 +0100
-Message-Id: <11839970403929-git-send-email-swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, Patrick Caulfield <pcaulfie@redhat.com>,
+       David Teigland <teigland@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH] [DLM] fix socket shutdown
+Date: Mon,  9 Jul 2007 17:02:32 +0100
+Message-Id: <11839970421091-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970383020-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970403929-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -42,50 +44,55 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183997034982-git-send-email-swhiteho@redhat.com>
  <1183997036270-git-send-email-swhiteho@redhat.com>
  <11839970383020-git-send-email-swhiteho@redhat.com>
+ <11839970403929-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Patrick Caulfield <pcaulfie@redhat.com>
 
-The number of blocks which we reserve in the log at the start of each
-transaction needs to depends upon the block size since the overhead is
-related to the number of "pointers" which can be fitted into a single
-block.
+This patch clears the user_data of active sockets as part of cleanup.
+This prevents any late-arriving data from trying to add jobs to the work
+queue while we are tidying up.
 
-This relates to Red Hat bz #240435
-
+Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
+Signed-Off-By: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
-index 291415d..586923d 100644
---- a/fs/gfs2/log.c
-+++ b/fs/gfs2/log.c
-@@ -262,7 +262,7 @@ static void ail2_empty(struct gfs2_sbd *sdp, unsigned int new_tail)
-  * @sdp: The GFS2 superblock
-  * @blks: The number of blocks to reserve
-  *
-- * Note that we never give out the last 6 blocks of the journal. Thats
-+ * Note that we never give out the last few blocks of the journal. Thats
-  * due to the fact that there is are a small number of header blocks
-  * associated with each log flush. The exact number can't be known until
-  * flush time, so we ensure that we have just enough free blocks at all
-@@ -274,6 +274,7 @@ static void ail2_empty(struct gfs2_sbd *sdp, unsigned int new_tail)
- int gfs2_log_reserve(struct gfs2_sbd *sdp, unsigned int blks)
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 27970a5..fc0bff7 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -260,7 +260,7 @@ static int nodeid_to_addr(int nodeid, struct sockaddr *retaddr)
+ static void lowcomms_data_ready(struct sock *sk, int count_unused)
  {
- 	unsigned int try = 0;
-+	unsigned reserved_blks = 6 * (4096 / sdp->sd_vfs->s_blocksize);
+ 	struct connection *con = sock2con(sk);
+-	if (!test_and_set_bit(CF_READ_PENDING, &con->flags))
++	if (con && !test_and_set_bit(CF_READ_PENDING, &con->flags))
+ 		queue_work(recv_workqueue, &con->rwork);
+ }
  
- 	if (gfs2_assert_warn(sdp, blks) ||
- 	    gfs2_assert_warn(sdp, blks <= sdp->sd_jdesc->jd_blocks))
-@@ -281,7 +282,7 @@ int gfs2_log_reserve(struct gfs2_sbd *sdp, unsigned int blks)
+@@ -268,7 +268,7 @@ static void lowcomms_write_space(struct sock *sk)
+ {
+ 	struct connection *con = sock2con(sk);
  
- 	mutex_lock(&sdp->sd_log_reserve_mutex);
- 	gfs2_log_lock(sdp);
--	while(sdp->sd_log_blks_free <= (blks + 6)) {
-+	while(sdp->sd_log_blks_free <= (blks + reserved_blks)) {
- 		gfs2_log_unlock(sdp);
- 		gfs2_ail1_empty(sdp, 0);
- 		gfs2_log_flush(sdp, NULL);
+-	if (!test_and_set_bit(CF_WRITE_PENDING, &con->flags))
++	if (con && !test_and_set_bit(CF_WRITE_PENDING, &con->flags))
+ 		queue_work(send_workqueue, &con->swork);
+ }
+ 
+@@ -1400,8 +1400,11 @@ void dlm_lowcomms_stop(void)
+ 	down(&connections_lock);
+ 	for (i = 0; i <= max_nodeid; i++) {
+ 		con = __nodeid2con(i, 0);
+-		if (con)
++		if (con) {
+ 			con->flags |= 0xFF;
++			if (con->sock)
++				con->sock->sk->sk_user_data = NULL;
++		}
+ 	}
+ 	up(&connections_lock);
+ 
 -- 
 1.5.1.2
 
