@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbXGISnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbXGISq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbXGISnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 14:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbXGISnI
+	id S1758318AbXGISq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbXGISqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 14:43:08 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50393 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751815AbXGISnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 14:43:05 -0400
-Message-ID: <469281B5.7020308@garzik.org>
-Date: Mon, 09 Jul 2007 14:43:01 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Mon, 9 Jul 2007 14:46:22 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:1410 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754056AbXGISqV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 14:46:21 -0400
+Date: Mon, 9 Jul 2007 20:46:20 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Adrian Bunk <bunk@stusta.de>, Zhang Rui <rui.zhang@intel.com>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] the scheduled ACPI_PROCFS removal
+In-Reply-To: <20070709174544.2a6b7067@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0707092044520.2887@fbirervta.pbzchgretzou.qr>
+References: <20070709145755.GD3492@stusta.de> <20070709174544.2a6b7067@the-village.bc.nu>
 MIME-Version: 1.0
-To: Bruce Allen <ballen@gravity.phys.uwm.edu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Dvorak <fermentol@gmail.com>,
-       Klaus Fuerstberger <kfuerstberger@arcor.de>,
-       David Greaves <david@dgreaves.com>, Mark Lord <liml@rtr.ca>,
-       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Bruce Allen <bruce.allen@aei.mpg.de>
-Subject: Re: SMART problems in 2.6.22
-References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <4692221B.7050608@dgreaves.com> <Pine.LNX.4.63.0707091236530.7386@trinity.phys.uwm.edu>
-In-Reply-To: <Pine.LNX.4.63.0707091236530.7386@trinity.phys.uwm.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bruce Allen wrote:
-> http://article.gmane.org/gmane.linux.utilities.smartmontools/4712 
-> reported by Jan Dvorak?
+
+On Jul 9 2007 17:45, Alan Cox wrote:
+>
+>> This patch contains the scheduled removal of the ACPI procfs interface.
+>
+>What part of "we do not gratuitously break user space interfaces" is so
+>hard for people to understand.
+
+Generally I am with you on that, but if everyone keeps on using /proc --
+and I do[*] -- we will never get rid of it.
 
 
-Relevant lspci and dmesg output would be useful...  that gives enhanced 
-error diagnostics.
+[*] Does someone have an alternative for /proc/acpi/battery/BAT1/{state,info}?
 
-	Jeff
-
-
+Thanks,
+	Jan
+-- 
