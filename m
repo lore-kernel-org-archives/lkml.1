@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXGILeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbXGILhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbXGILeS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 07:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbXGILeK
+	id S1756813AbXGILhc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 07:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXGILhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 07:34:10 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:41080 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbXGILeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 07:34:09 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 9 Jul 2007 07:32:03 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: technically, profile/oprofile Kconfig stuff is set up incorrectly
-Message-ID: <Pine.LNX.4.64.0707090727300.17061@localhost.localdomain>
+	Mon, 9 Jul 2007 07:37:25 -0400
+Received: from styx.suse.cz ([82.119.242.94]:34676 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751691AbXGILhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 07:37:24 -0400
+Date: Mon, 9 Jul 2007 13:41:36 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Rik van Riel <riel@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jan Kratochvil <honza@jikos.cz>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Ernie Petrides <petrides@redhat.com>
+Subject: Re: [PATCH][RESEND] PIE randomization
+In-Reply-To: <20070707123004.GZ7012@devserv.devel.redhat.com>
+Message-ID: <Pine.LNX.4.64.0707091333230.11634@jikos.suse.cz>
+References: <Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz>
+ <Pine.LNX.4.64.0705161851120.25986@twin.jikos.cz>
+ <alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
+ <20070522161642.b71ddacb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231044540.22906@jikos.suse.cz> <20070704082554.GQ7012@devserv.devel.redhat.com>
+ <Pine.LNX.4.64.0707041927090.11634@jikos.suse.cz> <468D5A3A.1010306@redhat.com>
+ <468D5B28.8080308@redhat.com> <Pine.LNX.4.64.0707070205460.11634@jikos.suse.cz>
+ <20070707123004.GZ7012@devserv.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 7 Jul 2007, Jakub Jelinek wrote:
 
-  as a short follow up to my previous patches, it might be worth
-pointing out that profiling in general is defined improperly WRT
-Kconfig, since *general* profiling is defined inside the more specific
-Kconfig files for *oprofiling*:
+> I believe BAD_ADDR macro was changes from ((unsigned long)(x) >= 
+> TASK_SIZE) (which is the right test for invalid user addresses, stronger 
+> check than >= PAGE_MASK) to >= PAGE_MASK only because of the one check 
+> of the return value of load_elf_interp.  
 
-  $ ls arch/*/oprofile/Kconfig
+Yes, this is correct.
 
-  that makes no sense, as it leads to incorrect Kconfig files like
-arch/blackfin/oprofile/Kconfig:
+> All other uses of BAD_ADDR macro are either on userland addresses (what 
+> do_mmap, elf_map, do_brk etc. return; where TASK_SIZE or more is 
+> certainly wrong) 
 
-=============================
-menu "Profiling support"
-depends on EXPERIMENTAL
+True. But these functions are supposed to perform all the necessary checks 
+and return ERR_PTR if anything fails, so everything is fine and nothing 
+gets broken.
 
-config PROFILING
-        bool "Profiling support (EXPERIMENTAL)"
-        help
-          Say Y here to enable the extended profiling support mechanisms used
-          by profilers such as OProfile.
+> or in one case still on unbiased ELF p_vaddr: if (BAD_ADDR(k) || 
+> elf_ppnt->p_filesz > elf_ppnt->p_memsz || in load_elf_binary (where >= 
+> TASK_SIZE check is ok too).
+> So perhaps doing this instead of changing BAD_ADDR to IS_ERR_VAL
+> might be better:
+> Signed-off-by: Jakub Jelinek <jakub@redhat.com>
+[ ... ]
+> -			if (!BAD_ADDR(elf_entry)) {
+> +			if (!IS_ERR((void *)elf_entry)) {
 
-config OPROFILE
-        tristate "OProfile system profiling (EXPERIMENTAL)"
-        depends on PROFILING
-        help
-          OProfile is a profiling system capable of profiling the
-          whole system, include the kernel, kernel modules, libraries,
-          and applications.
+I agree that this is better solution. Andrew, this Jakub's patch should 
+replace the pie-randomization-fix-bad_addr-macro.patch if possible. You 
+can add 
 
-          If unsure, say N.
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-config HARDWARE_PM
-        tristate "Hardware Performance Monitor Profiling"
-        depends on PROFILING
-        help
-          take use of hardware performance monitor to profiling the kernel
-          and application.
+if that makes any difference.
 
-          If unsure, say N.
-
-endmenu
-==========================
-
-where non-oprofile content (HARDWARE_PM) is now defined within the
-oprofile subdirectory.
-
-  the whole selection of profiling really should be moved up a level,
-with oprofile content as a subdirectory, or something similar.
-
-rday
+Thanks,
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Jiri Kosina
+SUSE Labs
