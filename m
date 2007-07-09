@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbXGIR7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759772AbXGISA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759689AbXGIR7r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 13:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXGIR7k
+	id S1759772AbXGISA6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXGISAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 13:59:40 -0400
-Received: from styx.suse.cz ([82.119.242.94]:41816 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754469AbXGIR7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 13:59:40 -0400
-Date: Mon, 9 Jul 2007 20:14:43 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kirill Korotaev <dev@openvz.org>, devel@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Lost JBD fix
-Message-ID: <20070709181443.GF30433@duck.suse.cz>
+	Mon, 9 Jul 2007 14:00:51 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:35482 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754504AbXGISAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 14:00:49 -0400
+Message-ID: <469277C8.3040107@dgreaves.com>
+Date: Mon, 09 Jul 2007 19:00:40 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="rwEMma7ioTxnRzrJ"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bruce Allen <ballen@gravity.phys.uwm.edu>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>, Mark Lord <liml@rtr.ca>,
+       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Bruce Allen <bruce.allen@aei.mpg.de>
+Subject: Re: SMART problems in 2.6.22
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <4692221B.7050608@dgreaves.com> <Pine.LNX.4.63.0707091236530.7386@trinity.phys.uwm.edu>
+In-Reply-To: <Pine.LNX.4.63.0707091236530.7386@trinity.phys.uwm.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bruce Allen wrote:
+> Hi David,
+> 
+>>> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg164863.html
+> 
+>> This is mine and although it's a 'real' problem, it is something 
+>> that's easy to hack around by having the suspend script turn on smart 
+>> after it is resumed. (Of course I can't use resume until a skge wol 
+>> bug is fixed so I won't see/test this unless asked too.)
+>>
+>> The smart init scripts run '-s on' when the system boots anyway for my 
+>> system - this problem only occurs for me during suspend/resume. Maybe 
+>> smartd should detect that as Alan says.
+> 
+> OK, that should be easy to do.  So let's forget about the 'SMART 
+> disabled' issue.  This is easy to fix in multiple ways and is not a LKML 
+> issue.
+Sure.
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-  Hi Andrew,
+> David: can you reproduce the more serious problem 
+> http://article.gmane.org/gmane.linux.utilities.smartmontools/4712 
+> reported by Jan Dvorak?
+Sorry, I haven't seen that problem.
 
-  it seems we've accidentally lost one JBD fix (probably it was my mistake
-when rediffing some checkpointing changes) as Kirill has noted. A transaction
-can currently be released when there are still some buffers on one of its
-checkpointing lists. Attached patch should fix it (it still seems to apply
-fine). Please apply it. Thanks.
-
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
-
---rwEMma7ioTxnRzrJ
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="jbd-2.6.16-rc1-2-commit_remove_trans_fix.diff"
-
-We have to check that also the second checkpoint list is non-empty before
-dropping the transaction.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.16-rc1/fs/jbd/commit.c linux-2.6.16-rc1-1-checkpoint-fix/fs/jbd/commit.c
---- linux-2.6.16-rc1/fs/jbd/commit.c	2006-01-15 00:20:12.000000000 +0100
-+++ linux-2.6.16-rc1-1-checkpoint-fix/fs/jbd/commit.c	2006-01-17 23:35:19.000000000 +0100
-@@ -829,7 +829,8 @@ restart_loop:
- 	journal->j_committing_transaction = NULL;
- 	spin_unlock(&journal->j_state_lock);
- 
--	if (commit_transaction->t_checkpoint_list == NULL) {
-+	if (commit_transaction->t_checkpoint_list == NULL &&
-+	    commit_transaction->t_checkpoint_io_list == NULL) {
- 		__journal_drop_transaction(journal, commit_transaction);
- 	} else {
- 		if (journal->j_checkpoint_transactions == NULL) {
-
---rwEMma7ioTxnRzrJ--
+David
