@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbXGIKfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXGIKmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbXGIKfz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 06:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXGIKfp
+	id S1755234AbXGIKmH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 06:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbXGIKlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 06:35:45 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:36030 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755792AbXGIKfp (ORCPT
+	Mon, 9 Jul 2007 06:41:55 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:7312 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbXGIKlz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 06:35:45 -0400
-Date: Mon, 9 Jul 2007 11:27:55 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] include/asm-mips/processor.h: "extern inline" ->
-	"static inline"
-Message-ID: <20070709102754.GB24487@linux-mips.org>
-References: <20070707010330.GY3492@stusta.de>
+	Mon, 9 Jul 2007 06:41:55 -0400
+Date: Mon, 9 Jul 2007 12:41:54 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravenborg.org
+Subject: Re: [PATCH] fixup binutils printing from scripts/ver_linux
+In-Reply-To: <46919FD1.2060203@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0707091241280.32335@fbirervta.pbzchgretzou.qr>
+References: <200707090147.58611.jesper.juhl@gmail.com>
+ <20070709020606.GA5761@martell.zuzino.mipt.ru> <46919FD1.2060203@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070707010330.GY3492@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 03:03:30AM +0200, Adrian Bunk wrote:
 
-> "extern inline" will have different semantics with gcc 4.3,
-> and "static inline" is correct here.
+On Jul 9 2007 04:39, Gabriel C wrote:
+>>
+>> NAK. It starts reporting here empty binutils field.
+>> FWIW,
+>>
+>>  $ ld -v
+>>  GNU ld version 2.16.1
+>>
+>
+> Well the format changed so now we have :
+>
+> $ ld -v
+> GNU ld (Linux/GNU Binutils) 2.17.50.0.16.20070511
 
-The idea was to have a linker error in case gcc should deciede for some
-reason not to inline this function which as I understand will continue
-to be the behaviour of gcc 4.3?
+Adding to the collection:
+12:39 ichi:~ > ld -v
+GNU ld version 2.17.50.0.5 20060927 (SUSE Linux)
 
-  Ralf
+
+	Jan
+-- 
