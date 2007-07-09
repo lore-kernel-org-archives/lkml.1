@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbXGIKCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbXGIKC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754266AbXGIKCA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 06:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbXGIKBw
+	id S1752494AbXGIKC1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 06:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbXGIKCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 06:01:52 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56174 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751315AbXGIKBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 06:01:51 -0400
-Date: Mon, 9 Jul 2007 11:06:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <ak@suse.de>
-Cc: Adrian Bunk <bunk@stusta.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Please revert 21564fd2a3deb48200b595332f9ed4c9f311f2a7
-Message-ID: <20070709110605.4efaea8b@the-village.bc.nu>
-In-Reply-To: <200707091139.25240.ak@suse.de>
-References: <20070617214231.GA3588@stusta.de>
-	<200707090102.21784.ak@suse.de>
-	<20070708231726.GW3492@stusta.de>
-	<200707091139.25240.ak@suse.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jul 2007 06:02:15 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45911 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755379AbXGIKCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 06:02:13 -0400
+Date: Mon, 9 Jul 2007 12:02:04 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
+Message-ID: <20070709100204.GN5401@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org> <1183929611.3388.303.camel@localhost.localdomain> <200707090847.43378.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200707090847.43378.oliver@neukum.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jul 2007 11:39:25 +0200
-Andi Kleen <ak@suse.de> wrote:
+Hi!
 
-> 
-> > > It will be solved differently longer term, but short term the fix
-> > > was still needed. There are limits on what can be done late 
-> > > in the release cycle so simple patches win.
+> > > But I'm not sure it's a good idea in the long run.  Think of a printer 
+> > > daemon, for example.  It shouldn't have to experience unexpected I/O 
+> > > problems merely because someone has decided to put the system to sleep.
 > > 
-> > Your patch got into Linus' tree in the middle of the merge window...
-> 
-> Even in the middle of the merge window it might be too late
-> to do some large scale restructuring (as would have been needed
-> for this particular issue) 
+> > Why not ? Printer is offline when machine is asleep... trying to print
 
-You should have reverted the change and held it over for 2.6.23-rc1 then
-as other developers do with problem code.
+...filesystems are offline, too, when the machine is asleep. Yet,
+unmounting everything on suspend would not result in useful suspend
+support.
 
-Alan
-
+Yes, I believe we should be transparent.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
