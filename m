@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761212AbXGIQjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761214AbXGIQjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761212AbXGIQjW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758542AbXGIQYn
+	id S1761214AbXGIQjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758552AbXGIQYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42339 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42356 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758505AbXGIQYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:24:36 -0400
+	id S1754917AbXGIQYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:24:39 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Robert Peterson <rpeterso@redhat.com>,
+Cc: cluster-devel@redhat.com, "S. Wendy Cheng" <wcheng@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] Addendum to the journaled file/unmount patch
-Date: Mon,  9 Jul 2007 17:02:52 +0100
-Message-Id: <11839970813260-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [GFS2] Fix gfs2_block_truncate_page err return
+Date: Mon,  9 Jul 2007 17:02:53 +0100
+Message-Id: <11839970832750-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970793713-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970813260-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -64,34 +64,31 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <11839970752058-git-send-email-swhiteho@redhat.com>
  <11839970773694-git-send-email-swhiteho@redhat.com>
  <11839970793713-git-send-email-swhiteho@redhat.com>
+ <11839970813260-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robert Peterson <rpeterso@redhat.com>
+From: S. Wendy Cheng <wcheng@redhat.com>
 
-This patch is an addendum to the previous journaled file/unmount patch.
-It fixes a problem discovered during testing.
+Code segment inside gfs2_block_truncate_page() doesn't set the return
+code correctly. This causes NFSD erroneously returns EIO back to client
+with setattr procedure call (truncate error).
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
+Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/lops.c b/fs/gfs2/lops.c
-index dd810ad..aff70f0 100644
---- a/fs/gfs2/lops.c
-+++ b/fs/gfs2/lops.c
-@@ -472,8 +472,10 @@ static void databuf_lo_add(struct gfs2_sbd *sdp, struct gfs2_log_element *le)
- 		return;
+diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
+index d16044c..cd805a6 100644
+--- a/fs/gfs2/bmap.c
++++ b/fs/gfs2/bmap.c
+@@ -927,6 +927,7 @@ static int gfs2_block_truncate_page(struct address_space *mapping)
+ 		/* Uhhuh. Read error. Complain and punt. */
+ 		if (!buffer_uptodate(bh))
+ 			goto unlock;
++		err = 0;
  	}
- 	tr->tr_touched = 1;
--	tr->tr_num_buf++;
--	list_add(&bd->bd_list_tr, &tr->tr_list_buf);
-+	if (gfs2_is_jdata(ip)) {
-+		tr->tr_num_buf++;
-+		list_add(&bd->bd_list_tr, &tr->tr_list_buf);
-+	}
- 	gfs2_log_unlock(sdp);
- 	if (!list_empty(&le->le_list))
- 		return;
+ 
+ 	if (sdp->sd_args.ar_data == GFS2_DATA_ORDERED || gfs2_is_jdata(ip))
 -- 
 1.5.1.2
 
