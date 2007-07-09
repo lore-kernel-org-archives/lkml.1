@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbXGIRZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbXGIR0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbXGIRZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 13:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbXGIRZj
+	id S1758897AbXGIR0V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 13:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXGIR0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 13:25:39 -0400
-Received: from mail.tmr.com ([64.65.253.246]:34917 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754479AbXGIRZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 13:25:38 -0400
-Message-ID: <4692701B.3030506@tmr.com>
-Date: Mon, 09 Jul 2007 13:27:55 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Mon, 9 Jul 2007 13:26:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38339 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754983AbXGIR0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 13:26:10 -0400
+Date: Mon, 9 Jul 2007 10:26:08 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+In-Reply-To: <20070709095116.c2ea700f.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com>
+ <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
+ <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
+ <20070709095116.c2ea700f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, jgarzik@pobox.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, saw@saw.sw.com.sg,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [2.6 patch] the overdue eepro100 removal
-References: <20070701202139.GM10869@stusta.de> <46894BD5.9080609@tmr.com> <46897212.30104@intel.com> <468D15F4.6020106@tmr.com> <20070709125208.GZ3492@stusta.de>
-In-Reply-To: <20070709125208.GZ3492@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Thu, Jul 05, 2007 at 12:01:56PM -0400, Bill Davidsen wrote:
->   
->> Please do not make unnecessary kernel changes which require changes in our 
->> systems.
->>     
+On Mon, 9 Jul 2007, Andrew Morton wrote:
 
->> If you think the e100 driver fixes your problems use it and be happy. But 
->> since you don't have to test system behavior with the new driver, and you 
->> won't be called at night or on weekends if it doesn't work, do the rest of 
->> the world a favor and stop taking out things we know to work! Leaving in 
->> the eepro100 causes no work for you, and even if e100 works perfectly it 
->> needs to be validated in any sane network. it still makes work.
->>     
->
-> The goal is to get e100 better, and removing eepro100 helps with 
-> reaching this goal.
->
->   
-That's *your* goal, it should not be a shock that users have a goal of 
-using their systems without having to reconfigure them every time 
-there's a kernel upgrade containing a security fix.
-> Why didn't _you_ try the e100 driver when you validated your systems 
-> after you upgraded them to kernel 2.6, and if you did and it didn't 
-> work, where is your bug report?
->   
-Is that a joke, or subtle irony? Do you generally validate drivers you 
-don't use just because your hardware might be able to support them? I 
-don't validate various accelerated video drivers on systems running 
-mostly text console, never check sound options on systems with an audio 
-application, etc. After I tried the e100 driver on the first few systems 
-and found issues (which may be resolved by now) I went back to eepro100 
-and used what worked. And used the driver for any new systems in other 
-installs.
+> On Mon, 9 Jul 2007 09:06:46 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> 
+> > But yes the power of 
+> > two caches are a necessary design feature of SLAB/SLUB that allows O(1) 
+> > operations of kmalloc slabs which in turns causes memory wastage because 
+> > of rounding of the alloc to the next power of two.
+> 
+> I've frequently wondered why we don't just create more caches for kmalloc:
+> make it denser than each-power-of-2-plus-a-few-others-in-between.
+> 
+> I assume the tradeoff here is better packing versus having a ridiculous
+> number of caches.  Is there any other cost?
+> Because even having 1024 caches wouldn't consume a terrible amount of
+> memory and I bet it would result in aggregate savings.
 
-If there were any benefit to removing a working driver I would at least 
-be able to see it as a resources issue, but as far as I can see you just 
-seem to have a personal preference for the e100 driver and want to force 
-others to use it because you are so much better able to decide what 
-users need than the system administrators. That's one of the reasons 
-people choose open source, because they have a choice, and can use 
-what's best for them.
+I have tried any number of approaches without too much success. Even one 
+slab cache for every 8 bytes. This creates additional admin overhead 
+through more control structure (that is pretty minimal but nevertheless 
+exists)
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+The main issue is that kmallocs of different size must use different 
+pages. If one allocates one 64 byte item and one 256 byte item and both 64 
+byte and 256 byte are empty then SLAB/SLUB will have to allocate 2 pages. 
+SLUB can fit them into one. This is basically only relevant early after 
+boot. The advantage goes away as the system starts to work and as more 
+objects are allocated in the slabs but the power-of-two slab will always
+have to extend its size in page size chunks which leads to some overhead 
+that SLOB can avoid by placing entities of multiple size in one slab. 
+The tradeoff in SLOB is that is cannot be an O(1) allocator because it 
+has to manage these variable sized objects by traversing the lists.
+
+I think the advantage that SLOB generates here is pretty minimal and is 
+easily offset by the problems of maintaining SLOB.
+ 
+> Of course, a scheme which creates kmalloc caches on-demand would be better,
+> but that would kill our compile-time cache selection, I suspect.
+
+SLUB creates kmalloc caches on-demand for DMA caches already. But then we 
+are not allowing compile time cache selection for DMA caches.
 
