@@ -1,97 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbXGIFXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbXGIF31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbXGIFXg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 01:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbXGIFX1
+	id S1752063AbXGIF31 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 01:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbXGIF3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 01:23:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:62640 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbXGIFX0 (ORCPT
+	Mon, 9 Jul 2007 01:29:20 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:40054 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbXGIF3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 01:23:26 -0400
+	Mon, 9 Jul 2007 01:29:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Wcff2L1Y5xtkP3eoBfUsW25wduBbwsNTQAP9xVyQzAeF8uuwxkZ2bWxMiUU3YMiJvarXbNzGO6fJ7Tkw7dRv9Y9ThhnWNAklSjoYf6pOdvFCURROcB1XNF9fMU/YPTFKTYossWeESGmomR/iwmmn44d23fESch3/U+ZABFG+ZSM=
-Message-ID: <a44ae5cd0707082223t50499b60m3183927750e0590e@mail.gmail.com>
-Date: Sun, 8 Jul 2007 22:23:25 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: 2.6.22 -- net/core/dev.c:1515: error: 'NETIF_F_IPV6_CSUM' undeclared (first use in this function)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OOqGzYUwN0Z3YLfyNLJDEgrss4HWoz0jnGHWguOYUr34QHtDTS/K6olHjtgPWltbHdFAsAxBLXUlxs3JvzPA2msjOE+UTlvLlL3f2fgVp09houab5gAPDvfu9NfqkehIiv+idneWCII15mPfjap5BaXoa6PK+qeaECy072LKR/0=
+Message-ID: <41840b750707082229k7672ef8bma050289d3cde93ee@mail.gmail.com>
+Date: Mon, 9 Jul 2007 01:29:18 -0400
+From: "Shem Multinymous" <multinymous@gmail.com>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Subject: Re: [Hdaps-devel] [PATCH] hdaps - switch to using input-polldev
+Cc: hdaps-devel@lists.sourceforge.net, rlove@rlove.org,
+       "Linux Kernel ML" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, "Michael Riepe" <michael@mr511.de>,
+       "Henrique de Moraes Holschuh" <hmh@debian.org>
+In-Reply-To: <200707090053.03228.dtor@insightbb.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <200705252354.43730.dtor@insightbb.com>
+	 <200707082324.11315.dtor@insightbb.com>
+	 <41840b750707082131n66382908o94790ac608bbf775@mail.gmail.com>
+	 <200707090053.03228.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC      net/core/dev.o
-net/core/dev.c: In function 'dev_queue_xmit':
-net/core/dev.c:1515: error: 'NETIF_F_IPV6_CSUM' undeclared (first use
-in this function)
-net/core/dev.c:1515: error: (Each undeclared identifier is reported only once
-net/core/dev.c:1515: error: for each function it appears in.)
-make[2]: *** [net/core/dev.o] Error 1
-make[1]: *** [net/core] Error 2
+On 7/9/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+> > > input-polldev uses a separate workqueue, not keventd, and so should not
+> > > suffer from other workqueue users loading keventd. But if entire box
+> > > is under stress then workqueue vs timer context does not matter much -
+> > > your daemon which is in userspace may not get to run in a timely manner
+> > > anyway.
+> >
+> > The daemon itself typically runs with a higher priority (and sleeps a
+> > lot so it gets further dumped). More importantly, the daemon depends
+> > not only on the latest measurement, but also on recent measurements
+> > have been obtained from the hardware in a regular fashion and with
+> > reasonably accurate timestamps. And *this* depends solely on the hdaps
+> > driver.
+> >
+>
+> Every input event carries a timestamp so even if there are irregularities
+> in taking the samples you should be able to account for it.
 
-CONFIG_NET=y
+The issue is how good are the input event timestamps. The way it works
+is that the EC samples the analog sensor at some fixed rate and makes
+them available over the LPC bus. If the hdaps driver consumes these
+samples at the same rate then the timestamps will be accurate up to a
+small phase difference, which is mostly inconsequential. But if the
+hdaps driver gets scheduled irregularly, its timestamps will be offset
+by varying amounts, which will completely throw off computation (e.g.,
+think of estimating the angular velocity).
 
-#
-# Networking options
-#
-CONFIG_PACKET=y
-# CONFIG_PACKET_MMAP is not set
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-# CONFIG_XFRM_USER is not set
-# CONFIG_XFRM_SUB_POLICY is not set
-# CONFIG_XFRM_MIGRATE is not set
-# CONFIG_NET_KEY is not set
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_PNP=y
-CONFIG_IP_PNP_DHCP=y
-# CONFIG_IP_PNP_BOOTP is not set
-# CONFIG_IP_PNP_RARP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_IP_MROUTE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-CONFIG_INET_TUNNEL=m
-CONFIG_INET_XFRM_MODE_TRANSPORT=m
-CONFIG_INET_XFRM_MODE_TUNNEL=m
-# CONFIG_INET_XFRM_MODE_BEET is not set
-CONFIG_INET_DIAG=m
-CONFIG_INET_TCP_DIAG=m
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IP_VS is not set
-CONFIG_IPV6=m
-# CONFIG_IPV6_PRIVACY is not set
-# CONFIG_IPV6_ROUTER_PREF is not set
-# CONFIG_IPV6_OPTIMISTIC_DAD is not set
-# CONFIG_INET6_AH is not set
-# CONFIG_INET6_ESP is not set
-# CONFIG_INET6_IPCOMP is not set
-# CONFIG_IPV6_MIP6 is not set
-# CONFIG_INET6_XFRM_TUNNEL is not set
-# CONFIG_INET6_TUNNEL is not set
-CONFIG_INET6_XFRM_MODE_TRANSPORT=m
-CONFIG_INET6_XFRM_MODE_TUNNEL=m
-# CONFIG_INET6_XFRM_MODE_BEET is not set
-# CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
-CONFIG_IPV6_SIT=m
-# CONFIG_IPV6_TUNNEL is not set
-# CONFIG_IPV6_MULTIPLE_TABLES is not set
-# CONFIG_NETWORK_SECMARK is not set
-CONFIG_NETFILTER=y
-# CONFIG_NETFILTER_DEBUG is not set
+
+> > > However I am open to bumping up priority of ipolldevd a little.
+> >
+> > Will this result in scheduling tha'ts as reliable as rearming timers
+> > from softirq? I saw claims to the contrary, but it it's true then I
+> > withdraw the first objection.
+>
+> Probably not. But I still think that if system is so busy that it can't
+> get aroung to schedule one of workqueues it will not be able to part
+> the driver fast enough anyway.
+
+A delay of 20ms in invoking the userspace daemon is negligible, but a
+timing variance of 20ms in the driver's measurements is devastating.
+
+
+> > > I am curious why you can't use the current device, since the calibration
+> > > done in hdaps does not alter the scale but merely moves '0' point around.
+> > > And fuzz should only remove small jitters, not rapidly changing data
+> > > that you shoudl get when your box is falling.
+> >
+> > Recent versions of the hdapsd daemons do much more than a simple
+> > threshold check: they gather some 2nd-order and decaying averages
+> > statistics to catch subtle abnormal movement (e.g., sliding off a
+> > surface) that's indicative of potential shock. As pointed out in IBM's
+> > HDAPS whitepaper, by the time the box is actually in free fall, it's
+> > too late to start parking the heads. Now, that kind of movement is not
+> > very far from the noise floor, so hdapsd needs all the accuracy it can
+> > get -- hence fuzzing is very disruptive. Calibration is currently
+> > harmless, but I can certainly imagine more advanced hdapsd that uses
+> > heuristics based, e.g., on the absolute orientation of the laptop, so
+> > let's not ruin this data.
+>
+> If hdaps is the main consumer for the data it may be a good idea to
+> just remove the fuzz setting from input device. I don't have the hardware,
+> how bad is it without fuzz?
+
+People are using the existing input device as a joystick input for
+things like Neverball. Current fuzz is 4 and the observed std dev is
+roughly 2, so eliminating fuzz will certainly affect the values. The
+implications are app-specific, but I guess some apps do care about
+such noise, otherwise we wouldn't have fuzz built into the input
+infrastructure.
+
+
+> > You could one input device open, or the other, or both. How would you
+> > set up input-polldev to handle this?
+>
+> Have 2nd input device's ->open() method call input_open_device() for
+> the first one.
+
+Won't that create an overhead by the redundant, unused notifications?
+
+  Shem
