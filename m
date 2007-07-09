@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbXGIQAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXGIQAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbXGIQAI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbXGIP7y
+	id S1758061AbXGIQAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXGIQAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 11:59:54 -0400
-Received: from mailgw12.fraunhofer.de ([153.96.1.24]:39296 "EHLO
-	mailgw12.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757357AbXGIP7v (ORCPT
+	Mon, 9 Jul 2007 12:00:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48387 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754595AbXGIQAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 11:59:51 -0400
-Date: Mon, 09 Jul 2007 17:57:38 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: linux-kernel@vger.kernel.org
-Subject: Re: cdparanoia not setting count and/or reply_len properly
-Message-ID: <46925af2.ynOFHQKDLEPR7bga%Joerg.Schilling@fokus.fraunhofer.de>
-User-Agent: nail 11.22 3/20/05
+	Mon, 9 Jul 2007 12:00:31 -0400
+Date: Mon, 9 Jul 2007 09:00:30 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+In-Reply-To: <20070708075119.GA16631@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707090859100.13970@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com>
+ <20070708075119.GA16631@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 09 Jul 2007 15:59:49.0293 (UTC) FILETIME=[2DA77DD0:01C7C242]
-X-Fraunhofer-Email-Policy: accepted
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 8 Jul 2007, Ingo Molnar wrote:
 
->It is probably about time that cdparanoia was updated ...
+> actually, one real advantage of the SLOB is that it is a minimal, really 
+> simple allocator. Its text and data size is so small as well.
+> 
+> here's the size comparison:
+> 
+>    text    data     bss     dec     hex filename
+>   10788     837      16   11641    2d79 mm/slab.o
+>    6205    4207     124   10536    2928 mm/slub.o
+>    1640      44       4    1688     698 mm/slob.o
+> 
+> slab/slub have roughly the same footprint, but slob is 10% of that size. 
+> Would be a waste to throw this away.
 
->Doug Gilbert
-
-Cdparanoia was not updated since 2001. The here important low level code is 
-still the same as with cdda2wav from 1997.
-
-For this reason, I did create a portable libparanoia from the assets of the 
-cdparanoia code and also fixed several bugs in the paranoia code.
-We then added this code to a recent cdda2wav in April 2002.
-
-People need to learn that cdparanoia is dead and no longer maintained by Monty.
-Monty is working on other software now. A recent maintained version is here:
-
-ftp://ftp.berlios.de/pub/cdrecord/alpha/
-
-http://cdrecord.berlios.de/new/private/cdrecord.html
-
-Jörg
-
--- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
+The last of my tests showed that SLOB is at about 50% of the size of 
+SLUB. You need to compile SLUB in embedded mode with !CONFIG_SLUB_DEBUG to 
+get a reduce code size.
