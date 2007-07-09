@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759772AbXGISA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbXGISBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759772AbXGISA6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 14:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXGISAv
+	id S1759966AbXGISBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757825AbXGISAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 14:00:51 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:35482 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754504AbXGISAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 14:00:49 -0400
-Message-ID: <469277C8.3040107@dgreaves.com>
-Date: Mon, 09 Jul 2007 19:00:40 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
-MIME-Version: 1.0
-To: Bruce Allen <ballen@gravity.phys.uwm.edu>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Dvorak <fermentol@gmail.com>,
-       Klaus Fuerstberger <kfuerstberger@arcor.de>, Mark Lord <liml@rtr.ca>,
-       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Bruce Allen <bruce.allen@aei.mpg.de>
-Subject: Re: SMART problems in 2.6.22
-References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <4692221B.7050608@dgreaves.com> <Pine.LNX.4.63.0707091236530.7386@trinity.phys.uwm.edu>
-In-Reply-To: <Pine.LNX.4.63.0707091236530.7386@trinity.phys.uwm.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 9 Jul 2007 14:00:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45455 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757513AbXGISAx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 14:00:53 -0400
+Date: Mon, 9 Jul 2007 11:00:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+Message-Id: <20070709110013.82d2273c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com>
+	<20070708035018.074510057@sgi.com>
+	<20070708075119.GA16631@elte.hu>
+	<20070708110224.9cd9df5b.akpm@linux-foundation.org>
+	<4691A415.6040208@yahoo.com.au>
+	<Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
+	<20070709095116.c2ea700f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bruce Allen wrote:
-> Hi David,
-> 
->>> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg164863.html
-> 
->> This is mine and although it's a 'real' problem, it is something 
->> that's easy to hack around by having the suspend script turn on smart 
->> after it is resumed. (Of course I can't use resume until a skge wol 
->> bug is fixed so I won't see/test this unless asked too.)
->>
->> The smart init scripts run '-s on' when the system boots anyway for my 
->> system - this problem only occurs for me during suspend/resume. Maybe 
->> smartd should detect that as Alan says.
-> 
-> OK, that should be easy to do.  So let's forget about the 'SMART 
-> disabled' issue.  This is easy to fix in multiple ways and is not a LKML 
-> issue.
-Sure.
+On Mon, 9 Jul 2007 10:26:08 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
+> > I assume the tradeoff here is better packing versus having a ridiculous
+> > number of caches.  Is there any other cost?
+> > Because even having 1024 caches wouldn't consume a terrible amount of
+> > memory and I bet it would result in aggregate savings.
+> 
+> I have tried any number of approaches without too much success. Even one 
+> slab cache for every 8 bytes. This creates additional admin overhead 
+> through more control structure (that is pretty minimal but nevertheless 
+> exists)
+> 
+> The main issue is that kmallocs of different size must use different 
+> pages. If one allocates one 64 byte item and one 256 byte item and both 64 
+> byte and 256 byte are empty then SLAB/SLUB will have to allocate 2 pages. 
+> SLUB can fit them into one. This is basically only relevant early after 
+> boot. The advantage goes away as the system starts to work and as more 
+> objects are allocated in the slabs but the power-of-two slab will always
+> have to extend its size in page size chunks which leads to some overhead 
+> that SLOB can avoid by placing entities of multiple size in one slab. 
+> The tradeoff in SLOB is that is cannot be an O(1) allocator because it 
+> has to manage these variable sized objects by traversing the lists.
+> 
+> I think the advantage that SLOB generates here is pretty minimal and is 
+> easily offset by the problems of maintaining SLOB.
 
-> David: can you reproduce the more serious problem 
-> http://article.gmane.org/gmane.linux.utilities.smartmontools/4712 
-> reported by Jan Dvorak?
-Sorry, I haven't seen that problem.
+Sure.  But I wasn't proposing this as a way to make slub cover slob's advantage.
+I was wondering what effect it would have on a more typical medium to large sized
+system.
 
-David
+Not much, really: if any particular subsystem is using a "lot" of slab memory then
+it should create its own cache rather than using kmalloc anyway, so forget it ;)
