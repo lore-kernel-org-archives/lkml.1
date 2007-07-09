@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbXGIRMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbXGIRMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757659AbXGIRMV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 13:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbXGIRKn
+	id S1758530AbXGIRMl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 13:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbXGIRKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 13:10:43 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:13344 "EHLO
+	Mon, 9 Jul 2007 13:10:44 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:13346 "EHLO
 	oblu.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754560AbXGIRKi (ORCPT
+	by vger.kernel.org with ESMTP id S1754493AbXGIRKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 13:10:38 -0400
-Date: Mon, 09 Jul 2007 11:10:46 -0600
+	Mon, 9 Jul 2007 13:10:37 -0400
+Date: Mon, 09 Jul 2007 11:10:45 -0600
 From: dougthompson@xmission.com
 To: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH 6/8] drivers edac fix edac_device init apis 
-Message-ID: <46926c16.fq6K0CBJ0v+WWT8M%dougthompson@xmission.com>
+Subject: [PATCH 5/8] drivers edac fix edac_mc init apis 
+Message-ID: <46926c15.OwqeCv/VC9uaXHv3%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,7 +25,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From:   Doug Thompson <dougthompson@xmission.com>
 
 Refactoring of sysfs code necessitated the refactoring of
-the edac_device_alloc() and edac_device_add_device() apis, of moving
+the edac_mc_alloc() and edac_mc_add_mc() apis, of moving
 the index value to the alloc() function. This patch
 alters the in tree drivers to utilize this new api signature.
 
@@ -36,73 +36,345 @@ necessary sysfs entries with the proper index number
 CC:             Alan Cox alan@lxorguk.ukuu.org.uk
 Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
 ---
- edac_core.h   |    6 +++---
- edac_device.c |    8 ++++----
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ amd76x_edac.c     |    4 ++--
+ e752x_edac.c      |    4 ++--
+ e7xxx_edac.c      |    4 ++--
+ edac_core.h       |   27 ++++++++++++++-------------
+ edac_mc.c         |    9 +++++----
+ i3000_edac.c      |    4 ++--
+ i5000_edac.c      |    6 ++----
+ i82443bxgx_edac.c |    4 ++--
+ i82860_edac.c     |    4 ++--
+ i82875p_edac.c    |    4 ++--
+ pasemi_edac.c     |    5 +++--
+ r82600_edac.c     |    4 ++--
+ 12 files changed, 40 insertions(+), 39 deletions(-)
 
+
+Index: linux-2.6.22-rc6-mm1/drivers/edac/amd76x_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/amd76x_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/amd76x_edac.c
+@@ -238,7 +238,7 @@ static int amd76x_probe1(struct pci_dev 
+ 	debugf0("%s()\n", __func__);
+ 	pci_read_config_dword(pdev, AMD76X_ECC_MODE_STATUS, &ems);
+ 	ems_mode = (ems >> 10) & 0x3;
+-	mci = edac_mc_alloc(0, AMD76X_NR_CSROWS, AMD76X_NR_CHANS);
++	mci = edac_mc_alloc(0, AMD76X_NR_CSROWS, AMD76X_NR_CHANS, 0);
+ 
+ 	if (mci == NULL) {
+ 		return -ENOMEM;
+@@ -263,7 +263,7 @@ static int amd76x_probe1(struct pci_dev 
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/e752x_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/e752x_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/e752x_edac.c
+@@ -977,7 +977,7 @@ static int e752x_probe1(struct pci_dev *
+ 	/* Dual channel = 1, Single channel = 0 */
+ 	drc_chan = dual_channel_active(ddrcsr);
+ 
+-	mci = edac_mc_alloc(sizeof(*pvt), E752X_NR_CSROWS, drc_chan + 1);
++	mci = edac_mc_alloc(sizeof(*pvt), E752X_NR_CSROWS, drc_chan + 1, 0);
+ 
+ 	if (mci == NULL) {
+ 		return -ENOMEM;
+@@ -1035,7 +1035,7 @@ static int e752x_probe1(struct pci_dev *
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/e7xxx_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/e7xxx_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/e7xxx_edac.c
+@@ -427,7 +427,7 @@ static int e7xxx_probe1(struct pci_dev *
+ 	pci_read_config_dword(pdev, E7XXX_DRC, &drc);
+ 
+ 	drc_chan = dual_channel_active(drc, dev_idx);
+-	mci = edac_mc_alloc(sizeof(*pvt), E7XXX_NR_CSROWS, drc_chan + 1);
++	mci = edac_mc_alloc(sizeof(*pvt), E7XXX_NR_CSROWS, drc_chan + 1, 0);
+ 
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -478,7 +478,7 @@ static int e7xxx_probe1(struct pci_dev *
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail1;
+ 	}
 Index: linux-2.6.22-rc6-mm1/drivers/edac/edac_core.h
 ===================================================================
 --- linux-2.6.22-rc6-mm1.orig/drivers/edac/edac_core.h
 +++ linux-2.6.22-rc6-mm1/drivers/edac/edac_core.h
-@@ -634,7 +634,8 @@ extern struct edac_device_ctl_info *edac
- 		char *edac_block_name, unsigned nr_blocks,
- 		unsigned offset_value,
- 		struct edac_dev_sysfs_block_attribute *block_attributes,
--		unsigned nr_attribs);
-+		unsigned nr_attribs,
-+		int device_index);
+@@ -765,8 +765,11 @@ static inline void pci_write_bits32(stru
  
- /* The offset value can be:
-  *	-1 indicating no offset value
-@@ -806,8 +807,7 @@ extern void edac_mc_handle_fbd_ce(struct
+ #endif				/* CONFIG_PCI */
+ 
++extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
++					  unsigned nr_chans, int edac_index);
++extern int edac_mc_add_mc(struct mem_ctl_info *mci);
++extern void edac_mc_free(struct mem_ctl_info *mci);
+ extern struct mem_ctl_info *edac_mc_find(int idx);
+-extern int edac_mc_add_mc(struct mem_ctl_info *mci, int mc_idx);
+ extern struct mem_ctl_info *edac_mc_del_mc(struct device *dev);
+ extern int edac_mc_find_csrow_by_page(struct mem_ctl_info *mci,
+ 				      unsigned long page);
+@@ -803,33 +806,31 @@ extern void edac_mc_handle_fbd_ce(struct
  /*
   * edac_device APIs
   */
--extern int edac_device_add_device(struct edac_device_ctl_info *edac_dev,
--				int dev_idx);
-+extern int edac_device_add_device(struct edac_device_ctl_info *edac_dev)
+-extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+-					  unsigned nr_chans);
+-extern void edac_mc_free(struct mem_ctl_info *mci);
+ extern int edac_device_add_device(struct edac_device_ctl_info *edac_dev,
+-				  int edac_idx);
++				int dev_idx);
  extern struct edac_device_ctl_info *edac_device_del_device(struct device *dev);
  extern void edac_device_handle_ue(struct edac_device_ctl_info *edac_dev,
- 				int inst_nr, int block_nr, const char *msg);
-Index: linux-2.6.22-rc6-mm1/drivers/edac/edac_device.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/drivers/edac/edac_device.c
-+++ linux-2.6.22-rc6-mm1/drivers/edac/edac_device.c
-@@ -67,7 +67,8 @@ struct edac_device_ctl_info *edac_device
- 	char *edac_device_name, unsigned nr_instances,
- 	char *edac_block_name, unsigned nr_blocks,
- 	unsigned offset_value,		/* zero, 1, or other based offset */
--	struct edac_dev_sysfs_block_attribute *attrib_spec, unsigned nr_attrib)
-+	struct edac_dev_sysfs_block_attribute *attrib_spec, unsigned nr_attrib,
-+	int device_index)
- {
- 	struct edac_device_ctl_info *dev_ctl;
- 	struct edac_device_instance *dev_inst, *inst;
-@@ -145,6 +146,7 @@ struct edac_device_ctl_info *edac_device
- 	pvt = sz_private ? (((char *)dev_ctl) + ((unsigned long)pvt)) : NULL;
+-				  int inst_nr, int block_nr, const char *msg);
++				int inst_nr, int block_nr, const char *msg);
+ extern void edac_device_handle_ce(struct edac_device_ctl_info *edac_dev,
+-				  int inst_nr, int block_nr, const char *msg);
++				int inst_nr, int block_nr, const char *msg);
  
- 	/* Begin storing the information into the control info structure */
-+	dev_ctl->dev_idx = device_index;
- 	dev_ctl->nr_instances = nr_instances;
- 	dev_ctl->instances = dev_inst;
- 	dev_ctl->pvt_info = pvt;
-@@ -438,18 +440,16 @@ void edac_device_reset_delay_period(stru
-  * edac_device global list and create sysfs entries associated with
-  * edac_device structure.
-  * @edac_device: pointer to the edac_device structure to be added to the list
-- * @edac_idx: A unique numeric identifier to be assigned to the
-  * 'edac_device' structure.
-  *
-  * Return:
-  *	0	Success
-  *	!0	Failure
+ /*
+  * edac_pci APIs
   */
--int edac_device_add_device(struct edac_device_ctl_info *edac_dev, int edac_idx)
-+int edac_device_add_device(struct edac_device_ctl_info *edac_dev)
+-extern struct edac_pci_ctl_info *edac_pci_alloc_ctl_info(unsigned int sz_pvt, const char
+-							 *edac_pci_name);
++extern struct edac_pci_ctl_info *edac_pci_alloc_ctl_info(unsigned int sz_pvt,
++				const char *edac_pci_name);
+ 
+ extern void edac_pci_free_ctl_info(struct edac_pci_ctl_info *pci);
+ 
+-extern void
+-edac_pci_reset_delay_period(struct edac_pci_ctl_info *pci, unsigned long value);
++extern void edac_pci_reset_delay_period(struct edac_pci_ctl_info *pci,
++				unsigned long value);
+ 
+ extern int edac_pci_add_device(struct edac_pci_ctl_info *pci, int edac_idx);
+ extern struct edac_pci_ctl_info *edac_pci_del_device(struct device *dev);
+ 
+-extern struct edac_pci_ctl_info *edac_pci_create_generic_ctl(struct device *dev, const char
+-							     *mod_name);
++extern struct edac_pci_ctl_info *edac_pci_create_generic_ctl(
++				struct device *dev,
++				const char *mod_name);
+ 
+ extern void edac_pci_release_generic_ctl(struct edac_pci_ctl_info *pci);
+ extern int edac_pci_create_sysfs(struct edac_pci_ctl_info *pci);
+Index: linux-2.6.22-rc6-mm1/drivers/edac/edac_mc.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/edac_mc.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/edac_mc.c
+@@ -129,7 +129,7 @@ void *edac_align_ptr(void *ptr, unsigned
+  *	struct mem_ctl_info pointer
+  */
+ struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+-				unsigned nr_chans)
++				unsigned nr_chans, int edac_index)
+ {
+ 	struct mem_ctl_info *mci;
+ 	struct csrow_info *csi, *csrow;
+@@ -159,7 +159,8 @@ struct mem_ctl_info *edac_mc_alloc(unsig
+ 	chi = (struct channel_info *)(((char *)mci) + ((unsigned long)chi));
+ 	pvt = sz_pvt ? (((char *)mci) + ((unsigned long)pvt)) : NULL;
+ 
+-	memset(mci, 0, size);	/* clear all fields */
++	/* setup index and various internal pointers */
++	mci->mc_idx = edac_index;
+ 	mci->csrows = csi;
+ 	mci->pvt_info = pvt;
+ 	mci->nr_csrows = nr_csrows;
+@@ -405,10 +406,10 @@ EXPORT_SYMBOL(edac_mc_find);
+  */
+ 
+ /* FIXME - should a warning be printed if no error detection? correction? */
+-int edac_mc_add_mc(struct mem_ctl_info *mci, int mc_idx)
++int edac_mc_add_mc(struct mem_ctl_info *mci)
  {
  	debugf0("%s()\n", __func__);
- 
--	edac_dev->dev_idx = edac_idx;
+-	mci->mc_idx = mc_idx;
++
  #ifdef CONFIG_EDAC_DEBUG
  	if (edac_debug_level >= 3)
- 		edac_device_dump_device(edac_dev);
+ 		edac_mc_dump_mci(mci);
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i3000_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i3000_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i3000_edac.c
+@@ -309,7 +309,7 @@ static int i3000_probe1(struct pci_dev *
+ 	 */
+ 	interleaved = i3000_is_interleaved(c0dra, c1dra, c0drb, c1drb);
+ 	nr_channels = interleaved ? 2 : 1;
+-	mci = edac_mc_alloc(0, I3000_RANKS / nr_channels, nr_channels);
++	mci = edac_mc_alloc(0, I3000_RANKS / nr_channels, nr_channels, 0);
+ 	if (!mci)
+ 		return -ENOMEM;
+ 
+@@ -370,7 +370,7 @@ static int i3000_probe1(struct pci_dev *
+ 			 I3000_ERRSTS_BITS);
+ 
+ 	rc = -ENODEV;
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("MC: %s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i5000_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i5000_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i5000_edac.c
+@@ -338,8 +338,6 @@ struct i5000_pvt {
+ 	struct pci_dev *branch_0;	/* 21.0 */
+ 	struct pci_dev *branch_1;	/* 22.0 */
+ 
+-	int node_id;		/* ID of this node */
+-
+ 	u16 tolm;		/* top of low memory */
+ 	u64 ambase;		/* AMB BAR */
+ 
+@@ -1319,7 +1317,7 @@ static int i5000_probe1(struct pci_dev *
+ 		__func__, num_channels, num_dimms_per_channel, num_csrows);
+ 
+ 	/* allocate a new MC control structure */
+-	mci = edac_mc_alloc(sizeof(*pvt), num_csrows, num_channels);
++	mci = edac_mc_alloc(sizeof(*pvt), num_csrows, num_channels, 0);
+ 
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -1366,7 +1364,7 @@ static int i5000_probe1(struct pci_dev *
+ 	}
+ 
+ 	/* add this new MC control structure to EDAC's list of MCs */
+-	if (edac_mc_add_mc(mci, pvt->node_id)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf0("MC: " __FILE__
+ 			": %s(): failed edac_mc_add_mc()\n", __func__);
+ 		/* FIXME: perhaps some code should go here that disables error
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i82443bxgx_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i82443bxgx_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i82443bxgx_edac.c
+@@ -239,7 +239,7 @@ static int i82443bxgx_edacmc_probe1(stru
+ 	if (pci_read_config_dword(pdev, I82443BXGX_NBXCFG, &nbxcfg))
+ 		return -EIO;
+ 
+-	mci = edac_mc_alloc(0, I82443BXGX_NR_CSROWS, I82443BXGX_NR_CHANS);
++	mci = edac_mc_alloc(0, I82443BXGX_NR_CSROWS, I82443BXGX_NR_CHANS, 0);
+ 
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -314,7 +314,7 @@ static int i82443bxgx_edacmc_probe1(stru
+ 	mci->edac_check = i82443bxgx_edacmc_check;
+ 	mci->ctl_page_to_phys = NULL;
+ 
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i82860_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i82860_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i82860_edac.c
+@@ -186,7 +186,7 @@ static int i82860_probe1(struct pci_dev 
+ 	   the channel and the GRA registers map to physical devices so we are
+ 	   going to make 1 channel for group.
+ 	 */
+-	mci = edac_mc_alloc(0, 16, 1);
++	mci = edac_mc_alloc(0, 16, 1, 0);
+ 
+ 	if (!mci)
+ 		return -ENOMEM;
+@@ -209,7 +209,7 @@ static int i82860_probe1(struct pci_dev 
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i82875p_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i82875p_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i82875p_edac.c
+@@ -400,7 +400,7 @@ static int i82875p_probe1(struct pci_dev
+ 	drc = readl(ovrfl_window + I82875P_DRC);
+ 	nr_chans = dual_channel_active(drc) + 1;
+ 	mci = edac_mc_alloc(sizeof(*pvt), I82875P_NR_CSROWS(nr_chans),
+-			nr_chans);
++			nr_chans, 0);
+ 
+ 	if (!mci) {
+ 		rc = -ENOMEM;
+@@ -428,7 +428,7 @@ static int i82875p_probe1(struct pci_dev
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail1;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/pasemi_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/pasemi_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/pasemi_edac.c
+@@ -204,7 +204,8 @@ static int __devinit pasemi_edac_probe(s
+ 		MCDEBUG_ERRCTL1_RFL_LOG_EN;
+ 	pci_write_config_dword(pdev, MCDEBUG_ERRCTL1, errctl1);
+ 
+-	mci = edac_mc_alloc(0, PASEMI_EDAC_NR_CSROWS, PASEMI_EDAC_NR_CHANS);
++	mci = edac_mc_alloc(0, PASEMI_EDAC_NR_CSROWS, PASEMI_EDAC_NR_CHANS,
++				system_mmc_id++);
+ 
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -244,7 +245,7 @@ static int __devinit pasemi_edac_probe(s
+ 	 */
+ 	pasemi_edac_get_error_info(mci);
+ 
+-	if (edac_mc_add_mc(mci, system_mmc_id++)) {
++	if (edac_mc_add_mc(mci)) {
+ 		goto fail;
+ 	}
+ 
+Index: linux-2.6.22-rc6-mm1/drivers/edac/r82600_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/r82600_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/r82600_edac.c
+@@ -278,7 +278,7 @@ static int r82600_probe1(struct pci_dev 
+ 	debugf2("%s(): sdram refresh rate = %#0x\n", __func__,
+ 		sdram_refresh_rate);
+ 	debugf2("%s(): DRAMC register = %#0x\n", __func__, dramcr);
+-	mci = edac_mc_alloc(0, R82600_NR_CSROWS, R82600_NR_CHANS);
++	mci = edac_mc_alloc(0, R82600_NR_CSROWS, R82600_NR_CHANS, 0);
+ 
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -316,7 +316,7 @@ static int r82600_probe1(struct pci_dev 
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
