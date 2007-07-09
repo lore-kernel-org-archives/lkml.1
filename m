@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbXGIOZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbXGIOZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778AbXGIOZT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 10:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbXGIOZH
+	id S1755872AbXGIOZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 10:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbXGIOZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 10:25:07 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:40371 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753748AbXGIOZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 10:25:05 -0400
-Message-ID: <46924586.3000808@sw.ru>
-Date: Mon, 09 Jul 2007 18:26:14 +0400
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	Mon, 9 Jul 2007 10:25:46 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:35419 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbXGIOZq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 10:25:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mZrmsv8iysX1Mnt0+DaTwll6WLb8T+yQZge4u+5Gf88ULhcEFP4NrstYaterBjZtQrshDLyu+6hMye0febOVYuiG5gbjAt+natnsgxbFpNWnmsw7GmvEsx3hQdcwy2dg5z9W9KHRE41XdRiu0wYUZlqadbJ01oS+V6zqNibmLkg=
+Message-ID: <6bffcb0e0707090725p27c871daq451745d91cae33f2@mail.gmail.com>
+Date: Mon, 9 Jul 2007 16:25:44 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+In-Reply-To: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Kirill Korotaev <dev@openvz.org>, devel@openvz.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: jbd lost fix?
-References: <468908A9.2010702@openvz.org> <20070709130021.GA30433@duck.suse.cz>
-In-Reply-To: <20070709130021.GA30433@duck.suse.cz>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
->   Hello,
-> 
-> On Mon 02-07-07 18:16:09, Kirill Korotaev wrote:
-> 
->>it looks like the following fix:
->>http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=43c3e6f5abdf6acac9b90c86bf03f995bf7d3d92
->>
->>was lost after resurrecting of the spliced checkpointing list in this patch:
->>http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=78ce89c92bc6eaf5933b5664bff64253a7103bd7;hp=cdaad343b561cdeb38b0578bb038
->>
->>Can you please confirm that?
-> 
->   Sorry for a bit late reply but I was on holiday for a week. Yes, it seems
-> like that fix got lost. At least 2.6.22-rc5 still has a wrong test on line
-> 890 in commit.c. Thanks for notification, I'll resend it.
->   BTW: How have you found this out?
+Hi all,
 
-One of OpenVZ users had an oops at journal_clean_one_cp_list+0x32/0x70
-http://bugzilla.openvz.org/show_bug.cgi?id=605
+I'm looking for a volunteer who is willing to maintain the list of
+known regressions in 2.6.22
+http://kernelnewbies.org/known_regressions_2622
 
-which led us to the lost fix.
-Since the patch existed before I didn't dare to resend it from OVZ name :)
+Anyone interested?
 
-Thanks,
-Kirill
+Regards,
+Michal
 
-
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
