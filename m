@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbXGIQkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761397AbXGIQkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbXGIQkZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758322AbXGIQYs
+	id S1761397AbXGIQkp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758570AbXGIQYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42391 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42402 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758508AbXGIQYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758271AbXGIQYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 9 Jul 2007 12:24:45 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Wendy Cheng <wcheng@redhat.com>,
+Cc: cluster-devel@redhat.com, Bob Peterson <rpeterso@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] inode size inconsistency
-Date: Mon,  9 Jul 2007 17:02:55 +0100
-Message-Id: <11839970871671-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [GFS2] remounting w/o acl option leaves acls enabled
+Date: Mon,  9 Jul 2007 17:02:56 +0100
+Message-Id: <1183997089710-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970852076-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970871671-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -67,42 +67,56 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <11839970813260-git-send-email-swhiteho@redhat.com>
  <11839970832750-git-send-email-swhiteho@redhat.com>
  <11839970852076-git-send-email-swhiteho@redhat.com>
+ <11839970871671-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wendy Cheng <wcheng@redhat.com>
+From: Bob Peterson <rpeterso@redhat.com>
 
-This should have been part of the NFS patch #1 but somehow I missed it
-when packaging the patches. It is not a critical issue as the others (I
-hope). RHEL 5.1 31.el5 kernel runs fine without this change.
+This patch is for bugzilla bug #245663.  This crosswrites a fix from
+gfs1 (bz #210369) so that the mount options are reset properly upon
+remount.  This was tested on system trin-10.
 
-Our truncate code is chopped into two parts, one for vfs inode changes
-(in vmtruncate()) and one of gfs inode (in gfs2_truncatei()). These two
-operatons are, unfortunately, not atomic. So it could happens that
-vmtruncate() succeeds (inode->i_size is changed) but gfs2_truncatei
-fails (say kernel temporarily out of memory). This would leave gfs inode
-i_di.di_size out of sync with vfs inode i_size. It will later confuse
-gfs2_commit_write() if a write is issued. Last time I checked, it will
-cause file corruption.
-
-Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
+Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-index 84051b9..911c115 100644
---- a/fs/gfs2/ops_inode.c
-+++ b/fs/gfs2/ops_inode.c
-@@ -903,8 +903,8 @@ static int setattr_size(struct inode *inode, struct iattr *attr)
+diff --git a/fs/gfs2/mount.c b/fs/gfs2/mount.c
+index 4864659..6f006a8 100644
+--- a/fs/gfs2/mount.c
++++ b/fs/gfs2/mount.c
+@@ -82,20 +82,19 @@ int gfs2_mount_args(struct gfs2_sbd *sdp, char *data_arg, int remount)
+ 	char *options, *o, *v;
+ 	int error = 0;
+ 
+-	if (!remount) {
+-		/*  If someone preloaded options, use those instead  */
+-		spin_lock(&gfs2_sys_margs_lock);
+-		if (gfs2_sys_margs) {
+-			data = gfs2_sys_margs;
+-			gfs2_sys_margs = NULL;
+-		}
+-		spin_unlock(&gfs2_sys_margs_lock);
+-
+-		/*  Set some defaults  */
+-		args->ar_num_glockd = GFS2_GLOCKD_DEFAULT;
+-		args->ar_quota = GFS2_QUOTA_DEFAULT;
+-		args->ar_data = GFS2_DATA_DEFAULT;
++	/*  If someone preloaded options, use those instead  */
++	spin_lock(&gfs2_sys_margs_lock);
++	if (!remount && gfs2_sys_margs) {
++		data = gfs2_sys_margs;
++		gfs2_sys_margs = NULL;
  	}
++	spin_unlock(&gfs2_sys_margs_lock);
++
++	/*  Set some defaults  */
++	memset(args, 0, sizeof(struct gfs2_args));
++	args->ar_num_glockd = GFS2_GLOCKD_DEFAULT;
++	args->ar_quota = GFS2_QUOTA_DEFAULT;
++	args->ar_data = GFS2_DATA_DEFAULT;
  
- 	error = gfs2_truncatei(ip, attr->ia_size);
--	if (error)
--		return error;
-+	if (error && (inode->i_size != ip->i_di.di_size))
-+		i_size_write(inode, ip->i_di.di_size);
- 
- 	return error;
- }
+ 	/* Split the options into tokens with the "," character and
+ 	   process them */
 -- 
 1.5.1.2
 
