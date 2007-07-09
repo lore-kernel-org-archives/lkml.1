@@ -1,128 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbXGIIZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbXGII0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752973AbXGIIZI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 04:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbXGIIY4
+	id S1754146AbXGII0R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 04:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbXGII0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 04:24:56 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:37830 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbXGIIY4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 04:24:56 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 9 Jul 2007 04:22:46 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Roman Zippel <zippel@linux-m68k.org>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] KCONFIG: Make "Instrumentation support" non-EXPERIMENTAL.
-Message-ID: <Pine.LNX.4.64.0707090419350.23692@localhost.localdomain>
+	Mon, 9 Jul 2007 04:26:05 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4778 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751316AbXGII0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 04:26:04 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: ericvh@gmail.com, rminnich@lanl.gov, lucho@ionkov.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] fs: 9p/conv.c error path fix
+Date: Mon, 9 Jul 2007 10:24:26 +0200
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Disposition: inline
+Message-Id: <200707091024.26763.m.kozlowski@tuxland.pl>
+Cc: v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-It makes more sense to make instrumentation support experimental on a
-case-by-case basis.
+	When buf_check_overflow() returns != 0 we will hit kfree(ERR_PTR(err))
+and it will not be happy about it.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
----
+ fs/9p/conv.c |    1 +
+ 1 file changed, 1 insertion(+)
 
- arch/i386/Kconfig    |    1 -
- arch/ia64/Kconfig    |    1 -
- arch/powerpc/Kconfig |    1 -
- arch/sparc/Kconfig   |    1 -
- arch/sparc64/Kconfig |    1 -
- arch/x86_64/Kconfig  |    1 -
- 6 files changed, 6 deletions(-)
-
-diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-index b1b2b30..02412aa 100644
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -1213,7 +1213,6 @@ source "drivers/Kconfig"
- source "fs/Kconfig"
-
- menu "Instrumentation Support"
--	depends on EXPERIMENTAL
-
- source "arch/i386/oprofile/Kconfig"
-
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index de1bff6..4b32cca 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -575,7 +575,6 @@ config IRQ_PER_CPU
- source "arch/ia64/hp/sim/Kconfig"
-
- menu "Instrumentation Support"
--        depends on EXPERIMENTAL
-
- source "arch/ia64/oprofile/Kconfig"
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 5eaeafd..07a5e21 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -889,7 +889,6 @@ source "arch/powerpc/sysdev/qe_lib/Kconfig"
- source "lib/Kconfig"
-
- menu "Instrumentation Support"
--	depends on EXPERIMENTAL
-
- source "arch/powerpc/oprofile/Kconfig"
-
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index fbcc00c..e6dff84 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -309,7 +309,6 @@ endmenu
- source "fs/Kconfig"
-
- menu "Instrumentation Support"
--	depends on EXPERIMENTAL
-
- source "arch/sparc/oprofile/Kconfig"
-
-diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
-index 89a1b46..964cd19 100644
---- a/arch/sparc64/Kconfig
-+++ b/arch/sparc64/Kconfig
-@@ -434,7 +434,6 @@ source "drivers/fc4/Kconfig"
- source "fs/Kconfig"
-
- menu "Instrumentation Support"
--        depends on EXPERIMENTAL
-
- source "arch/sparc64/oprofile/Kconfig"
-
-diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-index 5ce9443..0a598fc 100644
---- a/arch/x86_64/Kconfig
-+++ b/arch/x86_64/Kconfig
-@@ -765,7 +765,6 @@ source "drivers/firmware/Kconfig"
- source fs/Kconfig
-
- menu "Instrumentation Support"
--        depends on EXPERIMENTAL
-
- source "arch/x86_64/oprofile/Kconfig"
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+diff -U 4 -pr linux-2.6.22-rc6-mm1-a/fs/9p/conv.c linux-2.6.22-rc6-mm1-b/fs/9p/conv.c
+--- linux-2.6.22-rc6-mm1-a/fs/9p/conv.c	2007-06-25 01:21:48.000000000 +0200
++++ linux-2.6.22-rc6-mm1-b/fs/9p/conv.c	2007-07-09 09:59:37.000000000 +0200
+@@ -741,8 +741,9 @@ struct v9fs_fcall *v9fs_create_twrite(u3
+ 	err = v9fs_put_user_data(bufp, data, count, &fc->params.twrite.data);
+ 	if (err) {
+ 		kfree(fc);
+ 		fc = ERR_PTR(err);
++		goto error;
+ 	}
+ 
+ 	if (buf_check_overflow(bufp)) {
+ 		kfree(fc);
