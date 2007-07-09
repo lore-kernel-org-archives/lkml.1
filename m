@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758925AbXGICj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758853AbXGICr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758925AbXGICj0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jul 2007 22:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbXGICjS
+	id S1758853AbXGICr3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jul 2007 22:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758097AbXGICrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jul 2007 22:39:18 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:45856 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758060AbXGICjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jul 2007 22:39:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=KhGj4bZPPaIC0RdsLMNbwPjpLlDVu+3ag94pVSSUbVEFwFtf3lIjwJ4MS7r/Di9Wmu9eKNHlZjlx41q3z4YC0Wl7vom8/AbFUR8IN/4DXPw9N5VwYy/MZrBsKDk1Kf5aRqPzhMF5B74yOZzoV90WG4E7wOJqxhRxLZcTcAFOyP8=
-Message-ID: <46919FD1.2060203@googlemail.com>
-Date: Mon, 09 Jul 2007 04:39:13 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Sun, 8 Jul 2007 22:47:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:39356 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757781AbXGICrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jul 2007 22:47:19 -0400
+Message-ID: <4691A196.7080305@goop.org>
+Date: Sun, 08 Jul 2007 19:46:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       sam@ravenborg.org
-Subject: Re: [PATCH] fixup binutils printing from scripts/ver_linux
-References: <200707090147.58611.jesper.juhl@gmail.com> <20070709020606.GA5761@martell.zuzino.mipt.ru>
-In-Reply-To: <20070709020606.GA5761@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Please revert 21564fd2a3deb48200b595332f9ed4c9f311f2a7
+References: <20070617214231.GA3588@stusta.de> <46760D87.2000502@goop.org> <20070708224444.GU3492@stusta.de>
+In-Reply-To: <20070708224444.GU3492@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Mon, Jul 09, 2007 at 01:47:58AM +0200, Jesper Juhl wrote:
->   
->> I just found that scripts/ver_linux does not print the binutils version 
->> properly on my Slackware 12.0 system.
+Adrian Bunk wrote:
+>>> Reverting is safe since it simply re-establishes the 2.6.21 status quo.
+>>>       
+>> Well, not really.  It breaks any non-GPL module when CONFIG_PARAVIRT is
+>> enabled, even though the same module would work fine otherwise.  That's
+>> a pretty large regression.
+>> ...
 >>     
 >
->   
->> --- a/scripts/ver_linux
->> +++ b/scripts/ver_linux
->> @@ -21,9 +21,8 @@ gcc --version 2>&1| grep gcc | awk \
->>  make --version 2>&1 | awk -F, '{print $1}' | awk \
->>        '/GNU Make/{print "Gnu make              ",$NF}'
->>  
->> -ld -v | awk -F\) '{print $1}' | awk \
->> -'/BFD/{print "binutils              ",$NF} \
->> -/^GNU/{print "binutils              ",$4}'
->> +echo "binutils               $(ld -v | awk -F \) \
->> +{'print $2'} | tr -d ' ')"
->>     
->
-> NAK. It starts reporting here empty binutils field.
-> FWIW,
->
-> 	$ ld -v
-> 	GNU ld version 2.16.1
->
->
+> The 2.6.21 status quo can by definition not be a regression compared
+> to 2.6.21.
 >   
 
-Well the format changed so now we have :
+2.6.21's behaviour was a bug.  CONFIG_PARAVIRT is not supposed to cause 
+any behavioural changes.
 
-$ ld -v
-GNU ld (Linux/GNU Binutils) 2.17.50.0.16.20070511
-
-Maybe something like this may work :
-
-echo "binutils $(ld -v | tr -d [:alpha:] | sed 's/.*)/\//;s/\///g' | tr 
--d ' ')"
-
-
-Regards,
-
-Gabriel C
-
-
-
-
+    J
