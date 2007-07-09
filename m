@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbXGISm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbXGISnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759488AbXGISm3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 14:42:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbXGISmT
+	id S1759388AbXGISnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbXGISnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 14:42:19 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:12166 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758954AbXGISmS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 14:42:18 -0400
-Date: Mon, 9 Jul 2007 20:42:17 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Oleg Verych <for.gmane@flower.upol.cz>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: drop it ?(Re: [PATCH] fixup binutils printing from scripts/ver_linux)
-In-Reply-To: <slrnf94aoa.l6.for.gmane@flower.upol.cz>
-Message-ID: <Pine.LNX.4.64.0707092041420.2887@fbirervta.pbzchgretzou.qr>
-References: <200707090147.58611.jesper.juhl@gmail.com>
- <20070709020606.GA5761@martell.zuzino.mipt.ru> <46919FD1.2060203@googlemail.com>
- <Pine.LNX.4.64.0707091241280.32335@fbirervta.pbzchgretzou.qr>
- <slrnf94817.l6.for.gmane@flower.upol.cz> <slrnf94aoa.l6.for.gmane@flower.upol.cz>
+	Mon, 9 Jul 2007 14:43:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50393 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751815AbXGISnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 14:43:05 -0400
+Message-ID: <469281B5.7020308@garzik.org>
+Date: Mon, 09 Jul 2007 14:43:01 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bruce Allen <ballen@gravity.phys.uwm.edu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       David Greaves <david@dgreaves.com>, Mark Lord <liml@rtr.ca>,
+       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Bruce Allen <bruce.allen@aei.mpg.de>
+Subject: Re: SMART problems in 2.6.22
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <4692221B.7050608@dgreaves.com> <Pine.LNX.4.63.0707091236530.7386@trinity.phys.uwm.edu>
+In-Reply-To: <Pine.LNX.4.63.0707091236530.7386@trinity.phys.uwm.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Jul 9 2007 12:20, Oleg Verych wrote:
->
->> Dumb, but better solution: drop that crap, called ver_linux.
->> Know you have many distros, so be happy with any one, and forget about
->> black old days of finding toolchain, that can actually build the kernel.
->
->#v+
->echo 'If some fields are empty or look unusual you may have an old version.'
->echo 'Compare to the current minimal requirements in Documentation/Changes.'
->echo ' '
->#v-
->
->The comment above is yet another cause to remind you to check `reportbug`
->tool and how it organizes collecting of information for particular bug
->report and package.
-
-We could just do $(rpm -qf $(which ld))  :^)
+Bruce Allen wrote:
+> http://article.gmane.org/gmane.linux.utilities.smartmontools/4712 
+> reported by Jan Dvorak?
 
 
-	Jan
--- 
+Relevant lspci and dmesg output would be useful...  that gives enhanced 
+error diagnostics.
+
+	Jeff
+
+
