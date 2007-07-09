@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbXGIO0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbXGIO2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbXGIO0a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 10:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXGIO0V
+	id S1755952AbXGIO2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 10:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXGIO2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 10:26:21 -0400
-Received: from alnrmhc11.comcast.net ([206.18.177.51]:56077 "EHLO
-	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbXGIO0V (ORCPT
+	Mon, 9 Jul 2007 10:28:05 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:17920 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbXGIO2C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 10:26:21 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Hibernation Redesign
-References: <200707081737.21932.a1426z@gawab.com> <87k5taw5vc.fsf@jbms.ath.cx>
-	<20070709134522.GA3216@elf.ucw.cz> <200707091602.27312.oliver@neukum.org>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Mon, 09 Jul 2007 10:26:14 -0400
-In-Reply-To: <200707091602.27312.oliver@neukum.org> (Oliver Neukum's message
-	of "Mon\, 9 Jul 2007 16\:02\:26 +0200")
-Message-ID: <87bqelwt4p.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
+	Mon, 9 Jul 2007 10:28:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=XT3hGMGFihthIu+zZNtoT97/mDDGKUqg/DAzoSfL2VmBn3crZ/ng3x3I6/VE2QnJvDYg86ZDqGaodNY0QTS3gv/Poi/vZCjhAPZ98qRrNlxy5LLOv3oP1zFGoP8z1C6ixQ1ifAYCaBYRTwmLY5OKVmNbZozW1OeEY1SzDy5V4Es=
+Message-ID: <5a4c581d0707090727q15eff62ax1fdb1271754cc2d2@mail.gmail.com>
+Date: Mon, 9 Jul 2007 16:27:59 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: clocksource change of behavior in 2.6.22 compared to 2.6.20 causes massive system clock slowdown
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum <oliver@neukum.org> writes:
+My oldish AMD K7-800's clock began falling behind after
+ rebooting from 2.6.20 (and 109 days uptime with a spotless
+ clock) into 2.6.22; time lost is about four minutes each hour.
 
-[snip]
+Turns out that 2.6.22 marks my TSC as unstable and starts
+ using PIT instead. Rebooting 2.6.22 with clocksource=tsc
+ gets the original stable system time back.
 
-> Hm, once the new kernel is booted, this decision is irrevocable, isn't it?
-> Is there any way to deal with errors by handing control back?
+Not sure whether this is supposed to be the default way of
+ fixing the issue on older machines, though; if anyone sees
+ a problem with this, I'm up for providing more information.
 
-Returning to the old kernel can be done by telling drivers to set the
-hardware to the appropriate state, then copying the backed up memory
-back to the beginning of physical memory, and finally jumping to the old
-kernel.  It would be much like what is done to resume from hibernation.
+[root@donkey ~]# cd /sys/devices/system/clocksource/clocksource0/
+[root@donkey clocksource0]# cat available_clocksource
+pit jiffies tsc
+[root@donkey clocksource0]# cat current_clocksource
+tsc
+[root@donkey clocksource0]# uname -a
+Linux donkey 2.6.22 #1 PREEMPT Mon Jul 9 13:26:38 CEST 2007 i686
+athlon i386 GNU/Linux
+[root@donkey clocksource0]# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 6
+model           : 4
+model name      : AMD Athlon(tm) Processor
+stepping        : 2
+cpu MHz         : 800.068
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+cmov pat pse36 mmx fxsr syscall mmxext 3dnowext 3dnow
+bogomips        : 1603.17
+clflush size    : 32
 
--- 
-Jeremy Maitin-Shepard
+
+thanks, ciao,
+
+--alessandro
+
+ "Did you get married but forgot to get divorced ?"
+
+     (Danny and Dusty, 'The Good Old Days')
