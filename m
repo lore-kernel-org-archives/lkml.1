@@ -1,50 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbXGIGqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbXGIGqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbXGIGqf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 02:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbXGIGq2
+	id S1756819AbXGIGqy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 02:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbXGIGqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 02:46:28 -0400
-Received: from il.qumranet.com ([82.166.9.18]:35794 "EHLO il.qumranet.com"
+	Mon, 9 Jul 2007 02:46:45 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36171 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbXGIGq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 02:46:28 -0400
-Message-ID: <4691D9C1.4050309@qumranet.com>
-Date: Mon, 09 Jul 2007 09:46:25 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, KVM <kvm-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 17/20] SMP: Implement on_cpu()
-References: <11838956891287-git-send-email-avi@qumranet.com>	<11838956893094-git-send-email-avi@qumranet.com> <p73lkdqzpdm.fsf@bingen.suse.de>
-In-Reply-To: <p73lkdqzpdm.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751270AbXGIGqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 02:46:44 -0400
+Subject: [RFC/PATCH] Use mmu_gather for /proc stuff instead of
+	flush_tlb_mm()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-mm@kvack.org
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1183962981.5961.3.camel@localhost.localdomain>
+References: <1183952874.3388.349.camel@localhost.localdomain>
+	 <1183962981.5961.3.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 09 Jul 2007 16:46:39 +1000
+Message-Id: <1183963599.5961.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Mon, 09 Jul 2007 09:46:26 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc list restored]
+Use mmu_gather for fs/proc/task_mmu.c
 
-Andi Kleen wrote:
->> This defines on_cpu() which is similar to smp_call_function_single()
->> except that it works if cpu happens to be the current cpu.  Can also be
->> seen as a complement to on_each_cpu() (which also doesn't treat the
->> current cpu specially).
->>     
->
-> I think it would be better to fix smp_call_function_single to just
-> handle this case transparently. There aren't that many callers yet because it is
-> fairly new.
->   
+This removes the use of flush_tlb_mm() from that proc file, using
+an mmu_gather instead.
 
-Well, smp_call_function_single() is arch specific whereas on_cpu() is
-generic code.  Perhaps rename smp_call_function_single() to
-__smp_call_function_single() and on_cpu() to smp_call_function_single()?
+No signed-off yet, not to be merged at this point.
 
-I dislike the loss of symmetry though.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Index: linux-work/fs/proc/task_mmu.c
+===================================================================
+--- linux-work.orig/fs/proc/task_mmu.c	2007-07-09 16:27:09.000000000 +1000
++++ linux-work/fs/proc/task_mmu.c	2007-07-09 16:27:47.000000000 +1000
+@@ -9,7 +9,7 @@
+ 
+ #include <asm/elf.h>
+ #include <asm/uaccess.h>
+-#include <asm/tlbflush.h>
++#include <asm/tlb.h>
+ #include "internal.h"
+ 
+ char *task_mem(struct mm_struct *mm, char *buffer)
+@@ -124,11 +124,13 @@ struct mem_size_stats
+ 	unsigned long referenced;
+ };
+ 
++typedef void (*pmd_action_t)(struct mmu_gather *tlb, struct vm_area_struct *,
++			     pmd_t *, unsigned long, unsigned long, void *);
+ struct pmd_walker {
++	struct mmu_gather *tlb;
+ 	struct vm_area_struct *vma;
+ 	void *private;
+-	void (*action)(struct vm_area_struct *, pmd_t *, unsigned long,
+-		       unsigned long, void *);
++	pmd_action_t action;
+ };
+ 
+ static int show_map_internal(struct seq_file *m, void *v, struct mem_size_stats *mss)
+@@ -218,7 +220,8 @@ static int show_map(struct seq_file *m, 
+ 	return show_map_internal(m, v, NULL);
+ }
+ 
+-static void smaps_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
++static void smaps_pte_range(struct mmu_gather *tlb,
++			    struct vm_area_struct *vma, pmd_t *pmd,
+ 			    unsigned long addr, unsigned long end,
+ 			    void *private)
+ {
+@@ -258,7 +261,8 @@ static void smaps_pte_range(struct vm_ar
+ 	cond_resched();
+ }
+ 
+-static void clear_refs_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
++static void clear_refs_pte_range(struct mmu_gather *tlb,
++				 struct vm_area_struct *vma, pmd_t *pmd,
+ 				 unsigned long addr, unsigned long end,
+ 				 void *private)
+ {
+@@ -279,6 +283,8 @@ static void clear_refs_pte_range(struct 
+ 		/* Clear accessed and referenced bits. */
+ 		ptep_test_and_clear_young(vma, addr, pte);
+ 		ClearPageReferenced(page);
++		if (tlb)
++			tlb_remove_tlb_entry(tlb, pte, addr);
+ 	}
+ 	pte_unmap_unlock(pte - 1, ptl);
+ 	cond_resched();
+@@ -295,7 +301,8 @@ static inline void walk_pmd_range(struct
+ 		next = pmd_addr_end(addr, end);
+ 		if (pmd_none_or_clear_bad(pmd))
+ 			continue;
+-		walker->action(walker->vma, pmd, addr, next, walker->private);
++		walker->action(walker->tlb, walker->vma, pmd, addr, next,
++			       walker->private);
+ 	}
+ }
+ 
+@@ -323,11 +330,9 @@ static inline void walk_pud_range(struct
+  * Recursively walk the page table for the memory area in a VMA, calling
+  * a callback for every bottom-level (PTE) page table.
+  */
+-static inline void walk_page_range(struct vm_area_struct *vma,
+-				   void (*action)(struct vm_area_struct *,
+-						  pmd_t *, unsigned long,
+-						  unsigned long, void *),
+-				   void *private)
++static inline void walk_page_range(struct mmu_gather *tlb,
++				   struct vm_area_struct *vma,
++				   pmd_action_t	action, void *private)
+ {
+ 	unsigned long addr = vma->vm_start;
+ 	unsigned long end = vma->vm_end;
+@@ -335,6 +340,7 @@ static inline void walk_page_range(struc
+ 		.vma		= vma,
+ 		.private	= private,
+ 		.action		= action,
++		.tlb		= tlb,
+ 	};
+ 	pgd_t *pgd;
+ 	unsigned long next;
+@@ -355,19 +361,25 @@ static int show_smap(struct seq_file *m,
+ 
+ 	memset(&mss, 0, sizeof mss);
+ 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
+-		walk_page_range(vma, smaps_pte_range, &mss);
++		walk_page_range(NULL, vma, smaps_pte_range, &mss);
+ 	return show_map_internal(m, v, &mss);
+ }
+ 
+ void clear_refs_smap(struct mm_struct *mm)
+ {
+ 	struct vm_area_struct *vma;
++	struct mmu_gather *tlb;
++	unsigned long end_addr = 0;
+ 
+ 	down_read(&mm->mmap_sem);
++	tlb = tlb_gather_mmu(mm, 0);
+ 	for (vma = mm->mmap; vma; vma = vma->vm_next)
+-		if (vma->vm_mm && !is_vm_hugetlb_page(vma))
+-			walk_page_range(vma, clear_refs_pte_range, NULL);
+-	flush_tlb_mm(mm);
++		if (vma->vm_mm && !is_vm_hugetlb_page(vma)) {
++			end_addr = max(vma->vm_end, end_addr);
++			walk_page_range(tlb, vma, clear_refs_pte_range, NULL);
++		}
++	if (tlb)
++		tlb_finish_mmu(tlb, 0, end_addr);
+ 	up_read(&mm->mmap_sem);
+ }
+ 
+
 
