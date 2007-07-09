@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbXGIJPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbXGIJPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754977AbXGIJPT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 05:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbXGIJPH
+	id S1754368AbXGIJPm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 05:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXGIJPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 05:15:07 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58887 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315AbXGIJPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 05:15:04 -0400
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM pathway
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-In-Reply-To: <200707090852.03429.oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org>
-	 <1183929708.3388.306.camel@localhost.localdomain>
-	 <200707090852.03429.oliver@neukum.org>
-Content-Type: text/plain
-Date: Mon, 09 Jul 2007 19:14:09 +1000
-Message-Id: <1183972449.5961.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jul 2007 05:15:33 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:53449 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbXGIJPc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 05:15:32 -0400
+Date: Mon, 9 Jul 2007 11:16:43 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070709091643.GF11451@enneenne.com>
+References: <20070627174537.GM13886@enneenne.com> <1182966588.1170.28.camel@pmac.infradead.org> <20070627224623.GO13886@enneenne.com> <1183018133.1170.46.camel@pmac.infradead.org> <20070628081538.GP13886@enneenne.com> <1183019474.1170.66.camel@pmac.infradead.org> <20070628084003.GQ13886@enneenne.com> <1183031060.1170.145.camel@pmac.infradead.org> <20070628161450.GD13886@enneenne.com> <E1I7Shw-0003Em-4O@flower>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1I7Shw-0003Em-4O@flower>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-09 at 08:52 +0200, Oliver Neukum wrote:
-> Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > Another issue that's been a problem forever with suspend is the
-> > synchronous request_firmware interface. Lots of drivers do that in
-> > resume() which will generally not work.
+On Sun, Jul 08, 2007 at 11:05:32AM +0200, Oleg Verych wrote:
+> * Rodolfo Giometti (Thu, 28 Jun 2007 18:14:50 +0200)
+> * Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
 > 
-> Unfortunately yes they do. We now have the notifier chains, which
-> can be used. Firmware, especially if it is large, must be requested
-> while the system is still fully functional and paging will work.
+> > +.PHONY : all depend dep
+> > +
+> > +all : .depend $(TARGETS)
+> > +
+> > +.depend depend dep :
+> > +	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
+> []
+> > +# -- Clean section ------------------------------------------------------------
+> > +
+> > +.PHONY : clean
+> > +
+> > +clean :
+> > +	rm -f *.o *~ core .depend
 > 
-> Asynchronocity will not help much because the devices must work
-> after resumingand delaying that will not help with respect to needing
-> devices to get at the firmware.
+> Please see how currently .PHONY targets are used correctly, e.g. in
+> linux/Makefile.
 
-True, pre-loading is the best approach.
+I don't understand why you wish I use linux PHONY targets management
+in a documentation Makefile... I suppose you are talking about
+linux/Documentation/pps/Makefile which is just an example about people
+may compile some testing/debugging programs. :-o
 
-Ben.
+Ciao,
 
+Rodolfo
 
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
