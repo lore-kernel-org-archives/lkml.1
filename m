@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761119AbXGIQil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbXGIQi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761119AbXGIQil (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757527AbXGIQYk
+	id S1761240AbXGIQi6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758013AbXGIQYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42307 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42319 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758374AbXGIQYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:24:33 -0400
+	id S1757961AbXGIQYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:24:34 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Robert Peterson <rpeterso@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] assertion failure after writing to journaled file, umount
-Date: Mon,  9 Jul 2007 17:02:50 +0100
-Message-Id: <11839970773694-git-send-email-swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH] [GFS2] Simplify multiple glock aquisition
+Date: Mon,  9 Jul 2007 17:02:51 +0100
+Message-Id: <11839970793713-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970752058-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970773694-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -62,477 +61,119 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <11839970711372-git-send-email-swhiteho@redhat.com>
  <1183997073435-git-send-email-swhiteho@redhat.com>
  <11839970752058-git-send-email-swhiteho@redhat.com>
+ <11839970773694-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robert Peterson <rpeterso@redhat.com>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-This patch passes all my nasty tests that were causing the code to
-fail under one circumstance or another.  Here is a complete summary
-of all changes from today's git tree, in order of appearance:
+There is a bug in the code which acquires multiple glocks where if the
+initial out-of-order attempt fails part way though we can land up trying
+to acquire the wrong number of glocks. This is part of the fix for red
+hat bz #239737. The other part of the bz doesn't apply to upstream
+kernels since it was fixed by:
 
-1. There are now separate variables for metadata buffer accounting.
-2. Variable sd_log_num_hdrs is no longer needed, since the header
-   accounting is taken care of by the reserve/refund sequence.
-3. Fixed a tiny grammatical problem in a comment.
-4. Added a new function "calc_reserved" to calculate the reserved
-   log space.  This isn't entirely necessary, but it has two benefits:
-   First, it simplifies the gfs2_log_refund function greatly.
-   Second, it allows for easier debugging because I could sprinkle the
-   code with calls to this function to make sure the accounting is
-   proper (by adding asserts and printks) at strategic point of the code.
-5. In log_pull_tail there apparently was a kludge to fix up the
-   accounting based on a "pull" parameter.  The buffer accounting is
-   now done properly, so the kludge was removed.
-6. File sync operations were making a call to gfs2_log_flush that
-   writes another journal header.  Since that header was unplanned
-   for (reserved) by the reserve/refund sequence, the free space had
-   to be decremented so that when log_pull_tail gets called, the free
-   space is be adjusted properly.  (Did I hear you call that a kludge?
-   well, maybe, but a lot more justifiable than the one I removed).
-7. In the gfs2_log_shutdown code, it optionally syncs the log by
-   specifying the PULL parameter to log_write_header.  I'm not sure
-   this is necessary anymore.  It just seems to me there could be
-   cases where shutdown is called while there are outstanding log
-   buffers.
-8. In the (data)buf_lo_before_commit functions, I changed some offset
-   values from being calculated on the fly to being constants.	That
-   simplified some code and we might as well let the compiler do the
-   calculation once rather than redoing those cycles at run time.
-9. This version has my rewritten databuf_lo_add function.
-   This version is much more like its predecessor, buf_lo_add, which
-   makes it easier to understand.  Again, this might not be necessary,
-   but it seems as if this one works as well as the previous one,
-   maybe even better, so I decided to leave it in.
-10. In databuf_lo_before_commit, a previous data corruption problem
-   was caused by going off the end of the buffer.  The proper solution
-   is to have the proper limit in place, rather than stopping earlier.
-   (Thus my previous attempt to fix it is wrong).
-   If you don't wrap the buffer, you're stopping too early and that
-   causes more log buffer accounting problems.
-11. In lops.h there are two new (previously mentioned) constants for
-   figuring out the data offset for the journal buffers.
-12. There are also two new functions, buf_limit and databuf_limit to
-   calculate how many entries will fit in the buffer.
-13. In function gfs2_meta_wipe, it needs to distinguish between pinned
-   metadata buffers and journaled data buffers for proper journal buffer
-   accounting.	It can't use the JDATA gfs2_inode flag because it's
-   sometimes passed the "real" inode and sometimes the "metadata
-   inode" and the inode flags will be random bits in a metadata
-   gfs2_inode.	It needs to base its decision on which was passed in.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=d3717bdf8f08a0e1039158c8bab2c24d20f492b6
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
+Since the out-of-order code doesn't appear to add anything to the
+performance of GFS2, this patch just removed it rather than trying to
+fix it. It should be much easier to see whats going on here now. In
+addition, we don't allocate any memory unless we are using a lot of
+glocks (which is a relatively uncommon case).
+
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index c7c6ec0..170ba93 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -354,7 +354,9 @@ struct gfs2_trans {
- 
- 	unsigned int tr_num_buf;
- 	unsigned int tr_num_buf_new;
-+	unsigned int tr_num_databuf_new;
- 	unsigned int tr_num_buf_rm;
-+	unsigned int tr_num_databuf_rm;
- 	struct list_head tr_list_buf;
- 
- 	unsigned int tr_num_revoke;
-@@ -599,6 +601,7 @@ struct gfs2_sbd {
- 
- 	unsigned int sd_log_blks_reserved;
- 	unsigned int sd_log_commited_buf;
-+	unsigned int sd_log_commited_databuf;
- 	unsigned int sd_log_commited_revoke;
- 
- 	unsigned int sd_log_num_gl;
-@@ -607,7 +610,6 @@ struct gfs2_sbd {
- 	unsigned int sd_log_num_rg;
- 	unsigned int sd_log_num_databuf;
- 	unsigned int sd_log_num_jdata;
--	unsigned int sd_log_num_hdrs;
- 
- 	struct list_head sd_log_le_gl;
- 	struct list_head sd_log_le_buf;
-diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
-index fbdc0dc..8fcfb78 100644
---- a/fs/gfs2/log.c
-+++ b/fs/gfs2/log.c
-@@ -276,7 +276,7 @@ static void ail2_empty(struct gfs2_sbd *sdp, unsigned int new_tail)
-  * @blks: The number of blocks to reserve
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index 384cae6..3f0974e 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -1327,10 +1327,6 @@ static int nq_m_sync(unsigned int num_gh, struct gfs2_holder *ghs,
+  * @num_gh: the number of structures
+  * @ghs: an array of struct gfs2_holder structures
   *
-  * Note that we never give out the last few blocks of the journal. Thats
-- * due to the fact that there is are a small number of header blocks
-+ * due to the fact that there is a small number of header blocks
-  * associated with each log flush. The exact number can't be known until
-  * flush time, so we ensure that we have just enough free blocks at all
-  * times to avoid running out during a log flush.
-@@ -371,6 +371,58 @@ static inline unsigned int log_distance(struct gfs2_sbd *sdp, unsigned int newer
- 	return dist;
- }
+- * Figure out how big an impact this function has.  Either:
+- * 1) Replace this code with code that calls gfs2_glock_prefetch()
+- * 2) Forget async stuff and just call nq_m_sync()
+- * 3) Leave it like it is
+  *
+  * Returns: 0 on success (all glocks acquired),
+  *          errno on failure (no glocks acquired)
+@@ -1338,62 +1334,28 @@ static int nq_m_sync(unsigned int num_gh, struct gfs2_holder *ghs,
  
-+/**
-+ * calc_reserved - Calculate the number of blocks to reserve when
-+ *                 refunding a transaction's unused buffers.
-+ * @sdp: The GFS2 superblock
-+ *
-+ * This is complex.  We need to reserve room for all our currently used
-+ * metadata buffers (e.g. normal file I/O rewriting file time stamps) and 
-+ * all our journaled data buffers for journaled files (e.g. files in the 
-+ * meta_fs like rindex, or files for which chattr +j was done.)
-+ * If we don't reserve enough space, gfs2_log_refund and gfs2_log_flush
-+ * will count it as free space (sd_log_blks_free) and corruption will follow.
-+ *
-+ * We can have metadata bufs and jdata bufs in the same journal.  So each
-+ * type gets its own log header, for which we need to reserve a block.
-+ * In fact, each type has the potential for needing more than one header 
-+ * in cases where we have more buffers than will fit on a journal page.
-+ * Metadata journal entries take up half the space of journaled buffer entries.
-+ * Thus, metadata entries have buf_limit (502) and journaled buffers have
-+ * databuf_limit (251) before they cause a wrap around.
-+ *
-+ * Also, we need to reserve blocks for revoke journal entries and one for an
-+ * overall header for the lot.
-+ *
-+ * Returns: the number of blocks reserved
-+ */
-+static unsigned int calc_reserved(struct gfs2_sbd *sdp)
-+{
-+	unsigned int reserved = 0;
-+	unsigned int mbuf_limit, metabufhdrs_needed;
-+	unsigned int dbuf_limit, databufhdrs_needed;
-+	unsigned int revokes = 0;
-+
-+	mbuf_limit = buf_limit(sdp);
-+	metabufhdrs_needed = (sdp->sd_log_commited_buf +
-+			      (mbuf_limit - 1)) / mbuf_limit;
-+	dbuf_limit = databuf_limit(sdp);
-+	databufhdrs_needed = (sdp->sd_log_commited_databuf +
-+			      (dbuf_limit - 1)) / dbuf_limit;
-+
-+	if (sdp->sd_log_commited_revoke)
-+		revokes = gfs2_struct2blk(sdp, sdp->sd_log_commited_revoke,
-+					  sizeof(u64));
-+
-+	reserved = sdp->sd_log_commited_buf + metabufhdrs_needed +
-+		sdp->sd_log_commited_databuf + databufhdrs_needed +
-+		revokes;
-+	/* One for the overall header */
-+	if (reserved)
-+		reserved++;
-+	return reserved;
-+}
-+
- static unsigned int current_tail(struct gfs2_sbd *sdp)
+ int gfs2_glock_nq_m(unsigned int num_gh, struct gfs2_holder *ghs)
  {
- 	struct gfs2_ail *ai;
-@@ -461,14 +513,14 @@ struct buffer_head *gfs2_log_fake_buf(struct gfs2_sbd *sdp,
- 	return bh;
- }
+-	int *e;
+-	unsigned int x;
+-	int borked = 0, serious = 0;
++	struct gfs2_holder *tmp[4];
++	struct gfs2_holder **pph = tmp;
+ 	int error = 0;
  
--static void log_pull_tail(struct gfs2_sbd *sdp, unsigned int new_tail, int pull)
-+static void log_pull_tail(struct gfs2_sbd *sdp, unsigned int new_tail)
- {
- 	unsigned int dist = log_distance(sdp, new_tail, sdp->sd_log_tail);
- 
- 	ail2_empty(sdp, new_tail);
- 
- 	gfs2_log_lock(sdp);
--	sdp->sd_log_blks_free += dist - (pull ? 1 : 0);
-+	sdp->sd_log_blks_free += dist;
- 	gfs2_assert_withdraw(sdp, sdp->sd_log_blks_free <= sdp->sd_jdesc->jd_blocks);
- 	gfs2_log_unlock(sdp);
- 
-@@ -518,7 +570,7 @@ static void log_write_header(struct gfs2_sbd *sdp, u32 flags, int pull)
- 	brelse(bh);
- 
- 	if (sdp->sd_log_tail != tail)
--		log_pull_tail(sdp, tail, pull);
-+		log_pull_tail(sdp, tail);
- 	else
- 		gfs2_assert_withdraw(sdp, !pull);
- 
-@@ -579,7 +631,10 @@ void gfs2_log_flush(struct gfs2_sbd *sdp, struct gfs2_glock *gl)
- 	INIT_LIST_HEAD(&ai->ai_ail1_list);
- 	INIT_LIST_HEAD(&ai->ai_ail2_list);
- 
--	gfs2_assert_withdraw(sdp, sdp->sd_log_num_buf + sdp->sd_log_num_jdata == sdp->sd_log_commited_buf);
-+	gfs2_assert_withdraw(sdp,
-+			     sdp->sd_log_num_buf + sdp->sd_log_num_jdata ==
-+			     sdp->sd_log_commited_buf +
-+			     sdp->sd_log_commited_databuf);
- 	gfs2_assert_withdraw(sdp,
- 			sdp->sd_log_num_revoke == sdp->sd_log_commited_revoke);
- 
-@@ -590,16 +645,19 @@ void gfs2_log_flush(struct gfs2_sbd *sdp, struct gfs2_glock *gl)
- 	lops_before_commit(sdp);
- 	if (!list_empty(&sdp->sd_log_flush_list))
- 		log_flush_commit(sdp);
--	else if (sdp->sd_log_tail != current_tail(sdp) && !sdp->sd_log_idle)
-+	else if (sdp->sd_log_tail != current_tail(sdp) && !sdp->sd_log_idle){
-+		gfs2_log_lock(sdp);
-+		sdp->sd_log_blks_free--; /* Adjust for unreserved buffer */
-+		gfs2_log_unlock(sdp);
- 		log_write_header(sdp, 0, PULL);
-+	}
- 	lops_after_commit(sdp, ai);
- 
- 	gfs2_log_lock(sdp);
- 	sdp->sd_log_head = sdp->sd_log_flush_head;
--	sdp->sd_log_blks_free -= sdp->sd_log_num_hdrs;
- 	sdp->sd_log_blks_reserved = 0;
- 	sdp->sd_log_commited_buf = 0;
--	sdp->sd_log_num_hdrs = 0;
-+	sdp->sd_log_commited_databuf = 0;
- 	sdp->sd_log_commited_revoke = 0;
- 
- 	if (!list_empty(&ai->ai_ail1_list)) {
-@@ -616,32 +674,26 @@ void gfs2_log_flush(struct gfs2_sbd *sdp, struct gfs2_glock *gl)
- 
- static void log_refund(struct gfs2_sbd *sdp, struct gfs2_trans *tr)
- {
--	unsigned int reserved = 0;
-+	unsigned int reserved;
- 	unsigned int old;
- 
- 	gfs2_log_lock(sdp);
- 
- 	sdp->sd_log_commited_buf += tr->tr_num_buf_new - tr->tr_num_buf_rm;
--	gfs2_assert_withdraw(sdp, ((int)sdp->sd_log_commited_buf) >= 0);
-+	sdp->sd_log_commited_databuf += tr->tr_num_databuf_new -
-+		tr->tr_num_databuf_rm;
-+	gfs2_assert_withdraw(sdp, (((int)sdp->sd_log_commited_buf) >= 0) ||
-+			     (((int)sdp->sd_log_commited_databuf) >= 0));
- 	sdp->sd_log_commited_revoke += tr->tr_num_revoke - tr->tr_num_revoke_rm;
- 	gfs2_assert_withdraw(sdp, ((int)sdp->sd_log_commited_revoke) >= 0);
+-	if (!num_gh)
++	switch(num_gh) {
++	case 0:
+ 		return 0;
 -
--	if (sdp->sd_log_commited_buf)
--		reserved += sdp->sd_log_commited_buf;
--	if (sdp->sd_log_commited_revoke)
--		reserved += gfs2_struct2blk(sdp, sdp->sd_log_commited_revoke,
--					    sizeof(u64));
--	if (reserved)
--		reserved++;
+-	if (num_gh == 1) {
++	case 1:
+ 		ghs->gh_flags &= ~(LM_FLAG_TRY | GL_ASYNC);
+ 		return gfs2_glock_nq(ghs);
+-	}
 -
-+	reserved = calc_reserved(sdp);
- 	old = sdp->sd_log_blks_free;
- 	sdp->sd_log_blks_free += tr->tr_reserved -
- 				 (reserved - sdp->sd_log_blks_reserved);
- 
- 	gfs2_assert_withdraw(sdp, sdp->sd_log_blks_free >= old);
--	gfs2_assert_withdraw(sdp,
--			     sdp->sd_log_blks_free <= sdp->sd_jdesc->jd_blocks +
--			     sdp->sd_log_num_hdrs);
-+	gfs2_assert_withdraw(sdp, sdp->sd_log_blks_free <=
-+			     sdp->sd_jdesc->jd_blocks);
- 
- 	sdp->sd_log_blks_reserved = reserved;
- 
-@@ -687,13 +739,13 @@ void gfs2_log_shutdown(struct gfs2_sbd *sdp)
- 	gfs2_assert_withdraw(sdp, !sdp->sd_log_num_revoke);
- 	gfs2_assert_withdraw(sdp, !sdp->sd_log_num_rg);
- 	gfs2_assert_withdraw(sdp, !sdp->sd_log_num_databuf);
--	gfs2_assert_withdraw(sdp, !sdp->sd_log_num_hdrs);
- 	gfs2_assert_withdraw(sdp, list_empty(&sdp->sd_ail1_list));
- 
- 	sdp->sd_log_flush_head = sdp->sd_log_head;
- 	sdp->sd_log_flush_wrapped = 0;
- 
--	log_write_header(sdp, GFS2_LOG_HEAD_UNMOUNT, 0);
-+	log_write_header(sdp, GFS2_LOG_HEAD_UNMOUNT,
-+			 (sdp->sd_log_tail == current_tail(sdp)) ? 0 : PULL);
- 
- 	gfs2_assert_warn(sdp, sdp->sd_log_blks_free == sdp->sd_jdesc->jd_blocks);
- 	gfs2_assert_warn(sdp, sdp->sd_log_head == sdp->sd_log_tail);
-diff --git a/fs/gfs2/lops.c b/fs/gfs2/lops.c
-index df6bcee..dd810ad 100644
---- a/fs/gfs2/lops.c
-+++ b/fs/gfs2/lops.c
-@@ -17,6 +17,7 @@
- 
- #include "gfs2.h"
- #include "incore.h"
-+#include "inode.h"
- #include "glock.h"
- #include "log.h"
- #include "lops.h"
-@@ -117,15 +118,13 @@ static void buf_lo_before_commit(struct gfs2_sbd *sdp)
- 	struct gfs2_log_descriptor *ld;
- 	struct gfs2_bufdata *bd1 = NULL, *bd2;
- 	unsigned int total = sdp->sd_log_num_buf;
--	unsigned int offset = sizeof(struct gfs2_log_descriptor);
-+	unsigned int offset = BUF_OFFSET;
- 	unsigned int limit;
- 	unsigned int num;
- 	unsigned n;
- 	__be64 *ptr;
- 
--	offset += sizeof(__be64) - 1;
--	offset &= ~(sizeof(__be64) - 1);
--	limit = (sdp->sd_sb.sb_bsize - offset)/sizeof(__be64);
-+	limit = buf_limit(sdp);
- 	/* for 4k blocks, limit = 503 */
- 
- 	bd1 = bd2 = list_prepare_entry(bd1, &sdp->sd_log_le_buf, bd_le.le_list);
-@@ -134,7 +133,6 @@ static void buf_lo_before_commit(struct gfs2_sbd *sdp)
- 		if (total > limit)
- 			num = limit;
- 		bh = gfs2_log_get_buf(sdp);
--		sdp->sd_log_num_hdrs++;
- 		ld = (struct gfs2_log_descriptor *)bh->b_data;
- 		ptr = (__be64 *)(bh->b_data + offset);
- 		ld->ld_header.mh_magic = cpu_to_be32(GFS2_MAGIC);
-@@ -469,27 +467,26 @@ static void databuf_lo_add(struct gfs2_sbd *sdp, struct gfs2_log_element *le)
- 	struct gfs2_inode *ip = GFS2_I(mapping->host);
- 
- 	gfs2_log_lock(sdp);
--	tr->tr_touched = 1;
--	if (list_empty(&bd->bd_list_tr) &&
--	    (ip->i_di.di_flags & GFS2_DIF_JDATA)) {
--		tr->tr_num_buf++;
--		list_add(&bd->bd_list_tr, &tr->tr_list_buf);
--		gfs2_log_unlock(sdp);
--		if (!list_empty(&le->le_list))
--			return;
--		gfs2_pin(sdp, bd->bd_bh);
--		tr->tr_num_buf_new++;
--	} else {
-+	if (!list_empty(&bd->bd_list_tr)) {
- 		gfs2_log_unlock(sdp);
-+		return;
+-	e = kcalloc(num_gh, sizeof(struct gfs2_holder *), GFP_KERNEL);
+-	if (!e)
+-		return -ENOMEM;
+-
+-	for (x = 0; x < num_gh; x++) {
+-		ghs[x].gh_flags |= LM_FLAG_TRY | GL_ASYNC;
+-		error = gfs2_glock_nq(&ghs[x]);
+-		if (error) {
+-			borked = 1;
+-			serious = error;
+-			num_gh = x;
++	default:
++		if (num_gh <= 4)
+ 			break;
+-		}
++		pph = kmalloc(num_gh * sizeof(struct gfs2_holder *), GFP_NOFS);
++		if (!pph)
++			return -ENOMEM;
  	}
-+	tr->tr_touched = 1;
-+	tr->tr_num_buf++;
-+	list_add(&bd->bd_list_tr, &tr->tr_list_buf);
-+	gfs2_log_unlock(sdp);
-+	if (!list_empty(&le->le_list))
-+		return;
-+
- 	gfs2_trans_add_gl(bd->bd_gl);
--	gfs2_log_lock(sdp);
--	if (list_empty(&le->le_list)) {
--		if (ip->i_di.di_flags & GFS2_DIF_JDATA)
--			sdp->sd_log_num_jdata++;
--		sdp->sd_log_num_databuf++;
--		list_add(&le->le_list, &sdp->sd_log_le_databuf);
-+	if (gfs2_is_jdata(ip)) {
-+		sdp->sd_log_num_jdata++;
-+		gfs2_pin(sdp, bd->bd_bh);
-+		tr->tr_num_databuf_new++;
- 	}
-+	sdp->sd_log_num_databuf++;
-+	gfs2_log_lock(sdp);
-+	list_add(&le->le_list, &sdp->sd_log_le_databuf);
- 	gfs2_log_unlock(sdp);
+ 
+-	for (x = 0; x < num_gh; x++) {
+-		error = e[x] = glock_wait_internal(&ghs[x]);
+-		if (error) {
+-			borked = 1;
+-			if (error != GLR_TRYFAILED && error != GLR_CANCELED)
+-				serious = error;
+-		}
+-	}
+-
+-	if (!borked) {
+-		kfree(e);
+-		return 0;
+-	}
+-
+-	for (x = 0; x < num_gh; x++)
+-		if (!e[x])
+-			gfs2_glock_dq(&ghs[x]);
+-
+-	if (serious)
+-		error = serious;
+-	else {
+-		for (x = 0; x < num_gh; x++)
+-			gfs2_holder_reinit(ghs[x].gh_state, ghs[x].gh_flags,
+-					  &ghs[x]);
+-		error = nq_m_sync(num_gh, ghs, (struct gfs2_holder **)e);
+-	}
++	error = nq_m_sync(num_gh, ghs, pph);
+ 
+-	kfree(e);
++	if (pph != tmp)
++		kfree(pph);
+ 
+ 	return error;
  }
- 
-@@ -522,7 +519,6 @@ static void databuf_lo_before_commit(struct gfs2_sbd *sdp)
- 	LIST_HEAD(started);
- 	struct gfs2_bufdata *bd1 = NULL, *bd2, *bdt;
- 	struct buffer_head *bh = NULL,*bh1 = NULL;
--	unsigned int offset = sizeof(struct gfs2_log_descriptor);
- 	struct gfs2_log_descriptor *ld;
- 	unsigned int limit;
- 	unsigned int total_dbuf = sdp->sd_log_num_databuf;
-@@ -530,9 +526,7 @@ static void databuf_lo_before_commit(struct gfs2_sbd *sdp)
- 	unsigned int num, n;
- 	__be64 *ptr = NULL;
- 
--	offset += 2*sizeof(__be64) - 1;
--	offset &= ~(2*sizeof(__be64) - 1);
--	limit = (sdp->sd_sb.sb_bsize - offset)/sizeof(__be64);
-+	limit = databuf_limit(sdp);
- 
- 	/*
- 	 * Start writing ordered buffers, write journaled buffers
-@@ -583,10 +577,10 @@ static void databuf_lo_before_commit(struct gfs2_sbd *sdp)
- 				gfs2_log_unlock(sdp);
- 				if (!bh) {
- 					bh = gfs2_log_get_buf(sdp);
--					sdp->sd_log_num_hdrs++;
- 					ld = (struct gfs2_log_descriptor *)
- 					     bh->b_data;
--					ptr = (__be64 *)(bh->b_data + offset);
-+					ptr = (__be64 *)(bh->b_data +
-+							 DATABUF_OFFSET);
- 					ld->ld_header.mh_magic =
- 						cpu_to_be32(GFS2_MAGIC);
- 					ld->ld_header.mh_type =
-@@ -607,8 +601,7 @@ static void databuf_lo_before_commit(struct gfs2_sbd *sdp)
- 				if (unlikely(magic != 0))
- 					set_buffer_escaped(bh1);
- 				gfs2_log_lock(sdp);
--				n += 2;
--				if (n >= num)
-+				if (++n >= num)
- 					break;
- 			} else if (!bh1) {
- 				total_dbuf--;
-diff --git a/fs/gfs2/lops.h b/fs/gfs2/lops.h
-index 965bc65..41a00df 100644
---- a/fs/gfs2/lops.h
-+++ b/fs/gfs2/lops.h
-@@ -13,6 +13,13 @@
- #include <linux/list.h>
- #include "incore.h"
- 
-+#define BUF_OFFSET \
-+	((sizeof(struct gfs2_log_descriptor) + sizeof(__be64) - 1) & \
-+	 ~(sizeof(__be64) - 1))
-+#define DATABUF_OFFSET \
-+	((sizeof(struct gfs2_log_descriptor) + (2 * sizeof(__be64) - 1)) & \
-+	 ~(2 * sizeof(__be64) - 1))
-+
- extern const struct gfs2_log_operations gfs2_glock_lops;
- extern const struct gfs2_log_operations gfs2_buf_lops;
- extern const struct gfs2_log_operations gfs2_revoke_lops;
-@@ -21,6 +28,22 @@ extern const struct gfs2_log_operations gfs2_databuf_lops;
- 
- extern const struct gfs2_log_operations *gfs2_log_ops[];
- 
-+static inline unsigned int buf_limit(struct gfs2_sbd *sdp)
-+{
-+	unsigned int limit;
-+
-+	limit = (sdp->sd_sb.sb_bsize - BUF_OFFSET) / sizeof(__be64);
-+	return limit;
-+}
-+
-+static inline unsigned int databuf_limit(struct gfs2_sbd *sdp)
-+{
-+	unsigned int limit;
-+
-+	limit = (sdp->sd_sb.sb_bsize - DATABUF_OFFSET) / (2 * sizeof(__be64));
-+	return limit;
-+}
-+
- static inline void lops_init_le(struct gfs2_log_element *le,
- 				const struct gfs2_log_operations *lops)
- {
-diff --git a/fs/gfs2/meta_io.c b/fs/gfs2/meta_io.c
-index e62d4f6..8da343b 100644
---- a/fs/gfs2/meta_io.c
-+++ b/fs/gfs2/meta_io.c
-@@ -387,12 +387,18 @@ void gfs2_meta_wipe(struct gfs2_inode *ip, u64 bstart, u32 blen)
- 
- 			if (test_clear_buffer_pinned(bh)) {
- 				struct gfs2_trans *tr = current->journal_info;
-+				struct gfs2_inode *bh_ip =
-+					GFS2_I(bh->b_page->mapping->host);
-+
- 				gfs2_log_lock(sdp);
- 				list_del_init(&bd->bd_le.le_list);
- 				gfs2_assert_warn(sdp, sdp->sd_log_num_buf);
- 				sdp->sd_log_num_buf--;
- 				gfs2_log_unlock(sdp);
--				tr->tr_num_buf_rm++;
-+				if (bh_ip->i_inode.i_private != NULL)
-+					tr->tr_num_databuf_rm++;
-+				else
-+					tr->tr_num_buf_rm++;
- 				brelse(bh);
- 			}
- 			if (bd) {
 -- 
 1.5.1.2
 
