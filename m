@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbXGIQls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbXGIQmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761572AbXGIQls (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 12:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758585AbXGIQYz
+	id S1761542AbXGIQmM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 12:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758605AbXGIQY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 12:24:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42438 "EHLO mx1.redhat.com"
+	Mon, 9 Jul 2007 12:24:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42455 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758579AbXGIQYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 12:24:52 -0400
+	id S1756324AbXGIQYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 12:24:53 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
 Cc: cluster-devel@redhat.com, Wendy Cheng <wcheng@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH] [GFS2] Obtaining no_formal_ino from directory entry
-Date: Mon,  9 Jul 2007 17:02:59 +0100
-Message-Id: <11839970941232-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH] [GFS2] Remove i_mode passing from NFS File Handle
+Date: Mon,  9 Jul 2007 17:03:00 +0100
+Message-Id: <11839970963525-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11839970921764-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11839970941232-git-send-email-swhiteho@redhat.com>
 References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183996989263-git-send-email-swhiteho@redhat.com>
  <11839969911617-git-send-email-swhiteho@redhat.com>
@@ -71,142 +71,243 @@ References: <11839969822277-git-send-email-swhiteho@redhat.com>
  <1183997089710-git-send-email-swhiteho@redhat.com>
  <11839970914023-git-send-email-swhiteho@redhat.com>
  <11839970921764-git-send-email-swhiteho@redhat.com>
+ <11839970941232-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Wendy Cheng <wcheng@redhat.com>
 
-GFS2 lookup code doesn't ask for inode shared glock. This implies during
-in-memory inode creation for existing file, GFS2 will not disk-read in
-the inode contents. This leaves no_formal_ino un-initialized during
-lookup time. The un-initialized no_formal_ino is subsequently encoded
-into file handle. Clients will get ESTALE error whenever it tries to
-access these files.
+GFS2 has been passing i_mode within NFS File Handle. Other than the
+wrong assumption that there is always room for this extra 16 bit value,
+the current gfs2_get_dentry doesn't really need the i_mode to work
+correctly. Note that GFS2 NFS code does go thru the same lookup code
+path as direct file access route (where the mode is obtained from name
+lookup) but gfs2_get_dentry() is coded for different purpose. It is not
+used during lookup time. It is part of the file access procedure call.
+When the call is invoked, if on-disk inode is not in-memory, it has to
+be read-in. This makes i_mode passing a useless overhead.
 
 Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/dir.c b/fs/gfs2/dir.c
-index f793e31..2beb2f4 100644
---- a/fs/gfs2/dir.c
-+++ b/fs/gfs2/dir.c
-@@ -1498,9 +1498,10 @@ struct inode *gfs2_dir_search(struct inode *dir, const struct qstr *name)
- 	if (dent) {
- 		if (IS_ERR(dent))
- 			return ERR_PTR(PTR_ERR(dent));
--		inode = gfs2_inode_lookup(dir->i_sb,
--					  be64_to_cpu(dent->de_inum.no_addr),
--					  be16_to_cpu(dent->de_type));
-+		inode = gfs2_inode_lookup(dir->i_sb, 
-+				be16_to_cpu(dent->de_type),
-+				be64_to_cpu(dent->de_inum.no_addr),
-+				be64_to_cpu(dent->de_inum.no_formal_ino));
- 		brelse(bh);
- 		return inode;
- 	}
 diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index 792d64f..26aaf54 100644
+index 26aaf54..34f7bcd 100644
 --- a/fs/gfs2/inode.c
 +++ b/fs/gfs2/inode.c
-@@ -86,7 +86,10 @@ static struct inode *gfs2_iget(struct super_block *sb, u64 no_addr)
-  * Returns: A VFS inode, or an error
-  */
+@@ -78,6 +78,36 @@ static struct inode *gfs2_iget(struct super_block *sb, u64 no_addr)
+ }
  
--struct inode *gfs2_inode_lookup(struct super_block *sb, u64 no_addr, unsigned int type)
-+struct inode *gfs2_inode_lookup(struct super_block *sb, 
-+				unsigned int type,
-+				u64 no_addr,
-+				u64 no_formal_ino)
- {
- 	struct inode *inode = gfs2_iget(sb, no_addr);
- 	struct gfs2_inode *ip = GFS2_I(inode);
-@@ -100,6 +103,7 @@ struct inode *gfs2_inode_lookup(struct super_block *sb, u64 no_addr, unsigned in
+ /**
++ * GFS2 lookup code fills in vfs inode contents based on info obtained
++ * from directory entry inside gfs2_inode_lookup(). This has caused issues
++ * with NFS code path since its get_dentry routine doesn't have the relevant
++ * directory entry when gfs2_inode_lookup() is invoked. Part of the code
++ * segment inside gfs2_inode_lookup code needs to get moved around.
++ *
++ * Clean up I_LOCK and I_NEW as well.
++ **/
++
++void gfs2_set_iop(struct inode *inode)
++{
++	umode_t mode = inode->i_mode;
++
++	if (S_ISREG(mode)) {
++		inode->i_op = &gfs2_file_iops;
++		inode->i_fop = &gfs2_file_fops;
++		inode->i_mapping->a_ops = &gfs2_file_aops;
++	} else if (S_ISDIR(mode)) {
++		inode->i_op = &gfs2_dir_iops;
++		inode->i_fop = &gfs2_dir_fops;
++	} else if (S_ISLNK(mode)) {
++		inode->i_op = &gfs2_symlink_iops;
++	} else {
++		inode->i_op = &gfs2_dev_iops;
++	}
++
++	unlock_new_inode(inode);
++}
++
++/**
+  * gfs2_inode_lookup - Lookup an inode
+  * @sb: The super block
+  * @no_addr: The inode number
+@@ -101,7 +131,6 @@ struct inode *gfs2_inode_lookup(struct super_block *sb,
+ 
+ 	if (inode->i_state & I_NEW) {
  		struct gfs2_sbd *sdp = GFS2_SB(inode);
- 		umode_t mode;
+-		umode_t mode;
  		inode->i_private = ip;
-+		ip->i_no_formal_ino = no_formal_ino;
+ 		ip->i_no_formal_ino = no_formal_ino;
  
- 		error = gfs2_glock_get(sdp, no_addr, &gfs2_inode_glops, CREATE, &ip->i_gl);
- 		if (unlikely(error))
-@@ -915,7 +919,9 @@ struct inode *gfs2_createi(struct gfs2_holder *ghs, const struct qstr *name,
- 	if (error)
- 		goto fail_gunlock2;
+@@ -122,6 +151,11 @@ struct inode *gfs2_inode_lookup(struct super_block *sb,
  
--	inode = gfs2_inode_lookup(dir->i_sb, inum.no_addr, IF2DT(mode));
-+	inode = gfs2_inode_lookup(dir->i_sb, IF2DT(mode),
-+					inum.no_addr,
-+					inum.no_formal_ino);
- 	if (IS_ERR(inode))
- 		goto fail_gunlock2;
+ 		gfs2_glock_put(io_gl);
  
++		if ((type == DT_UNKNOWN) && (no_formal_ino == 0))
++			goto gfs2_nfsbypass;
++
++		inode->i_mode = DT2IF(type);
++
+ 		/*
+ 		 * We must read the inode in order to work out its type in
+ 		 * this case. Note that this doesn't happen often as we normally
+@@ -129,33 +163,19 @@ struct inode *gfs2_inode_lookup(struct super_block *sb,
+ 		 * unlinked inode recovery (where it is safe to do this glock,
+ 		 * which is not true in the general case).
+ 		 */
+-		inode->i_mode = mode = DT2IF(type);
+ 		if (type == DT_UNKNOWN) {
+ 			struct gfs2_holder gh;
+ 			error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
+ 			if (unlikely(error))
+ 				goto fail_glock;
+ 			/* Inode is now uptodate */
+-			mode = inode->i_mode;
+ 			gfs2_glock_dq_uninit(&gh);
+ 		}
+ 
+-		if (S_ISREG(mode)) {
+-			inode->i_op = &gfs2_file_iops;
+-			inode->i_fop = &gfs2_file_fops;
+-			inode->i_mapping->a_ops = &gfs2_file_aops;
+-		} else if (S_ISDIR(mode)) {
+-			inode->i_op = &gfs2_dir_iops;
+-			inode->i_fop = &gfs2_dir_fops;
+-		} else if (S_ISLNK(mode)) {
+-			inode->i_op = &gfs2_symlink_iops;
+-		} else {
+-			inode->i_op = &gfs2_dev_iops;
+-		}
+-
+-		unlock_new_inode(inode);
++		gfs2_set_iop(inode);
+ 	}
+ 
++gfs2_nfsbypass:
+ 	return inode;
+ fail_glock:
+ 	gfs2_glock_dq(&ip->i_iopen_gh);
 diff --git a/fs/gfs2/inode.h b/fs/gfs2/inode.h
-index 35375fc..3268a2f 100644
+index 3268a2f..4517ac8 100644
 --- a/fs/gfs2/inode.h
 +++ b/fs/gfs2/inode.h
-@@ -47,7 +47,8 @@ static inline void gfs2_inum_out(const struct gfs2_inode *ip,
+@@ -47,6 +47,7 @@ static inline void gfs2_inum_out(const struct gfs2_inode *ip,
  
  
  void gfs2_inode_attr_in(struct gfs2_inode *ip);
--struct inode *gfs2_inode_lookup(struct super_block *sb, u64 no_addr, unsigned type);
-+struct inode *gfs2_inode_lookup(struct super_block *sb, unsigned type, 
-+				u64 no_addr, u64 no_formal_ino);
++void gfs2_set_iop(struct inode *inode);
+ struct inode *gfs2_inode_lookup(struct super_block *sb, unsigned type, 
+ 				u64 no_addr, u64 no_formal_ino);
  struct inode *gfs2_ilookup(struct super_block *sb, u64 no_addr);
- 
- int gfs2_inode_refresh(struct gfs2_inode *ip);
 diff --git a/fs/gfs2/ops_export.c b/fs/gfs2/ops_export.c
-index d07230e..0fe1447 100644
+index 0fe1447..e317db2 100644
 --- a/fs/gfs2/ops_export.c
 +++ b/fs/gfs2/ops_export.c
-@@ -245,7 +245,9 @@ static struct dentry *gfs2_get_dentry(struct super_block *sb, void *inum_obj)
+@@ -27,12 +27,7 @@
+ #include "util.h"
+ 
+ #define GFS2_SMALL_FH_SIZE 4
+-#define GFS2_LARGE_FH_SIZE 10
+-
+-struct gfs2_fh_obj {
+-	struct gfs2_inum_host this;
+-	u32 imode;
+-};
++#define GFS2_LARGE_FH_SIZE 8
+ 
+ static struct dentry *gfs2_decode_fh(struct super_block *sb,
+ 				     __u32 *p,
+@@ -43,11 +38,8 @@ static struct dentry *gfs2_decode_fh(struct super_block *sb,
+ 				     void *context)
+ {
+ 	__be32 *fh = (__force __be32 *)p;
+-	struct gfs2_fh_obj fh_obj;
+-	struct gfs2_inum_host *this, parent;
++	struct gfs2_inum_host inum, parent;
+ 
+-	this 		= &fh_obj.this;
+-	fh_obj.imode 	= DT_UNKNOWN;
+ 	memset(&parent, 0, sizeof(struct gfs2_inum));
+ 
+ 	switch (fh_len) {
+@@ -56,18 +48,17 @@ static struct dentry *gfs2_decode_fh(struct super_block *sb,
+ 		parent.no_formal_ino |= be32_to_cpu(fh[5]);
+ 		parent.no_addr = ((u64)be32_to_cpu(fh[6])) << 32;
+ 		parent.no_addr |= be32_to_cpu(fh[7]);
+-		fh_obj.imode = be32_to_cpu(fh[8]);
+ 	case GFS2_SMALL_FH_SIZE:
+-		this->no_formal_ino = ((u64)be32_to_cpu(fh[0])) << 32;
+-		this->no_formal_ino |= be32_to_cpu(fh[1]);
+-		this->no_addr = ((u64)be32_to_cpu(fh[2])) << 32;
+-		this->no_addr |= be32_to_cpu(fh[3]);
++		inum.no_formal_ino = ((u64)be32_to_cpu(fh[0])) << 32;
++		inum.no_formal_ino |= be32_to_cpu(fh[1]);
++		inum.no_addr = ((u64)be32_to_cpu(fh[2])) << 32;
++		inum.no_addr |= be32_to_cpu(fh[3]);
+ 		break;
+ 	default:
+ 		return NULL;
+ 	}
+ 
+-	return gfs2_export_ops.find_exported_dentry(sb, &fh_obj, &parent,
++	return gfs2_export_ops.find_exported_dentry(sb, &inum, &parent,
+ 						    acceptable, context);
+ }
+ 
+@@ -102,9 +93,6 @@ static int gfs2_encode_fh(struct dentry *dentry, __u32 *p, int *len,
+ 	fh[5] = cpu_to_be32(ip->i_no_formal_ino & 0xFFFFFFFF);
+ 	fh[6] = cpu_to_be32(ip->i_no_addr >> 32);
+ 	fh[7] = cpu_to_be32(ip->i_no_addr & 0xFFFFFFFF);
+-
+-	fh[8]  = cpu_to_be32(inode->i_mode);
+-	fh[9]  = 0;	/* pad to double word */
+ 	*len = GFS2_LARGE_FH_SIZE;
+ 
+ 	iput(inode);
+@@ -201,8 +189,7 @@ static struct dentry *gfs2_get_parent(struct dentry *child)
+ static struct dentry *gfs2_get_dentry(struct super_block *sb, void *inum_obj)
+ {
+ 	struct gfs2_sbd *sdp = sb->s_fs_info;
+-	struct gfs2_fh_obj *fh_obj = (struct gfs2_fh_obj *)inum_obj;
+-	struct gfs2_inum_host *inum = &fh_obj->this;
++	struct gfs2_inum_host *inum = inum_obj;
+ 	struct gfs2_holder i_gh, ri_gh, rgd_gh;
+ 	struct gfs2_rgrpd *rgd;
+ 	struct inode *inode;
+@@ -245,9 +232,9 @@ static struct dentry *gfs2_get_dentry(struct super_block *sb, void *inum_obj)
  	gfs2_glock_dq_uninit(&rgd_gh);
  	gfs2_glock_dq_uninit(&ri_gh);
  
--	inode = gfs2_inode_lookup(sb, inum->no_addr, fh_obj->imode);
-+	inode = gfs2_inode_lookup(sb, fh_obj->imode,
-+					inum->no_addr,
-+					inum->no_formal_ino);
+-	inode = gfs2_inode_lookup(sb, fh_obj->imode,
++	inode = gfs2_inode_lookup(sb, DT_UNKNOWN,
+ 					inum->no_addr,
+-					inum->no_formal_ino);
++					0);
  	if (!inode)
  		goto fail;
  	if (IS_ERR(inode)) {
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index dae1d71..cf5aa50 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -236,7 +236,7 @@ fail:
- static inline struct inode *gfs2_lookup_root(struct super_block *sb,
- 					     u64 no_addr)
- {
--	return gfs2_inode_lookup(sb, no_addr, DT_DIR);
-+	return gfs2_inode_lookup(sb, DT_DIR, no_addr, 0);
- }
- 
- static int init_sb(struct gfs2_sbd *sdp, int silent, int undo)
+@@ -260,6 +247,11 @@ static struct dentry *gfs2_get_dentry(struct super_block *sb, void *inum_obj)
+ 		iput(inode);
+ 		goto fail;
+ 	}
++
++	/* Pick up the works we bypass in gfs2_inode_lookup */
++	if (inode->i_state & I_NEW) 
++		gfs2_set_iop(inode);
++
+ 	if (GFS2_I(inode)->i_no_formal_ino != inum->no_formal_ino) {
+ 		iput(inode);
+ 		goto fail;
 diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index 36c523d..7fb7448 100644
+index 7fb7448..e4e0406 100644
 --- a/fs/gfs2/rgrp.c
 +++ b/fs/gfs2/rgrp.c
-@@ -860,18 +860,19 @@ static struct inode *try_rgrp_unlink(struct gfs2_rgrpd *rgd, u64 *last_unlinked)
- {
- 	struct inode *inode;
- 	u32 goal = 0;
--	u64 ino;
-+	u64 no_addr;
- 
- 	for(;;) {
- 		goal = rgblk_search(rgd, goal, GFS2_BLKST_UNLINKED,
- 				    GFS2_BLKST_UNLINKED);
- 		if (goal == 0)
- 			return 0;
--		ino = goal + rgd->rd_data0;
--		if (ino <= *last_unlinked)
-+		no_addr = goal + rgd->rd_data0;
-+		if (no_addr <= *last_unlinked)
+@@ -872,7 +872,7 @@ static struct inode *try_rgrp_unlink(struct gfs2_rgrpd *rgd, u64 *last_unlinked)
  			continue;
--		*last_unlinked = ino;
--		inode = gfs2_inode_lookup(rgd->rd_sbd->sd_vfs, ino, DT_UNKNOWN);
-+		*last_unlinked = no_addr;
-+		inode = gfs2_inode_lookup(rgd->rd_sbd->sd_vfs, DT_UNKNOWN,
-+					no_addr, 0);
+ 		*last_unlinked = no_addr;
+ 		inode = gfs2_inode_lookup(rgd->rd_sbd->sd_vfs, DT_UNKNOWN,
+-					no_addr, 0);
++					no_addr, -1);
  		if (!IS_ERR(inode))
  			return inode;
  	}
