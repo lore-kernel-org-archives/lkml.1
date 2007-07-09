@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbXGISaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbXGIScr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbXGISaf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 14:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbXGISaZ
+	id S1757400AbXGIScr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 14:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXGIScj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 14:30:25 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:42863 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754024AbXGISaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 14:30:24 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Luca <kronos.it@gmail.com>
-Subject: Re: [PATCH] Enable legacy support for serial ports when SERIAL_8250_PNP is disabled
-Date: Mon, 9 Jul 2007 12:30:01 -0600
-User-Agent: KMail/1.9.6
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070707233300.GA3267@dreamland.darkstar.lan> <200707090946.33101.bjorn.helgaas@hp.com> <68676e00707091030xe7a299je9f4e053ef2a2e98@mail.gmail.com>
-In-Reply-To: <68676e00707091030xe7a299je9f4e053ef2a2e98@mail.gmail.com>
+	Mon, 9 Jul 2007 14:32:39 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55828 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752419AbXGISci (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 14:32:38 -0400
+Date: Mon, 9 Jul 2007 20:33:09 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Rob Landley <rob@landley.net>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, gh@us.ibm.com,
+       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
+       joe@perches.com, auke-jan.h.kok@intel.com, hansendc@us.ibm.com,
+       davem@davemloft.net, Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       linux-doc@vger.kernel.org
+Subject: Re: Documentation of kernel messages (Summary)
+Message-ID: <20070709183309.GH3492@stusta.de>
+References: <1181747217.29512.9.camel@localhost.localdomain> <4691C480.5010600@linux-foundation.jp> <4691C95F.7080502@zytor.com> <200707091248.24994.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200707091230.01556.bjorn.helgaas@hp.com>
+In-Reply-To: <200707091248.24994.rob@landley.net>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 July 2007 11:30:59 am Luca wrote:
-> On 7/9/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Saturday 07 July 2007 05:33:00 pm Luca Tettamanti wrote:
-> > > your patch:
-> > >
-> > > commit 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26
-> > > Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> > > Date:   Tue May 8 00:36:07 2007 -0700
-> > >
-> > >     x86, serial: convert legacy COM ports to platform devices
-> > >
-> > > disables probing using legacy code in favour of ACPI/PNP to avoid double
-> > > discovery.
-> > >
-> > > However if SERIAL_8250_PNP is not enabled the user is left without
-> > > serial ports (been there, done that - my kernel config suddenly wasn't
-> > > working anymore). So:
-> >
-> > Yes, that's true.  Kconfig should automatically turn on SERIAL_8250_PNP
-> > if PNP and SERIAL_8250 are selected, but it does give you a choice if
-> > you have EMBEDDED set.  So I guess you must have this:
-> >
-> >   CONFIG_EMBEDDED=y
-> >   CONFIG_PNP=y
-> >   CONFIG_SERIAL_8250=y
-> >   CONFIG_SERIAL_8250_PNP=n
-> >
-> > Why do you want PNP support, but not 8250_PNP support?
+On Mon, Jul 09, 2007 at 12:48:24PM -0400, Rob Landley wrote:
+>...
+> [regarding translated documentation]
 > 
-> That's a good question :-) IIRC the serial PNP code used to mess up
-> the mode of the port on my laptop, making it useless for debugging the
-> boot. Bug was fixed long ago, but I didn't re-enabled that option.
+> For my part, I can't _tell_ when a given translation is out of date because I 
+> can't read it, and I certainly can't update it.  So I agree with Eric and I'm 
+> linking to sites hosting kernel documentation in other languages rather than 
+> hosting them myself.  I've got a good link to a Japanese site, need to ping 
+> the contributors of the chinese documentation and see if they have a site for 
+> it...
+>...
 
-It wouldn't surprise me if serial PNP can be tripped up by the
-incomplete Linux PNP code or by buggy firmware.  If you find any
-issues like that, I'll fix them.
+Include the last git commit on this file in the translated document?
 
-> > If you turn off
-> > PNP completely, you will have "pnp_platform_devices == 0", and the
-> > existing code will do what you need.
-> 
-> Well for me it's a non-issue, I'm able to "work-around" it in many
-> ways. My point is that a configuration that used to work and is still
-> valid suddenly doesn't work anymore.
+This would also make it easier for a translator to update a document 
+because a diff on the original document since the last translation would 
+be trivial.
 
-You're right about that, and it is a legitimate issue.  But given the
-fact that (PNP && !SERIAL_8250_PNP) should be relatively unusual, my
-opinion is that it's not worth extra ifdefs in legacy_serial.c.
+> Rob
 
-If you have to use any workarounds like "legacy_serial.force", I think
-that's a bug, and I'll fix it.
+cu
+Adrian
 
-Bjorn
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
