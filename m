@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbXGIHCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbXGIHI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbXGIHCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 03:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbXGIHCA
+	id S1754221AbXGIHI3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 03:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXGIHIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 03:02:00 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:36363 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbXGIHB7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 03:01:59 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: "Kunai, Takashi" <kunai@linux-foundation.jp>
-Subject: Re: Documentation of kernel messages (Summary)
-Date: Mon, 9 Jul 2007 09:01:46 +0200
-User-Agent: KMail/1.9.7
-Cc: holzheu@linux.vnet.ibm.com, Rob Landley <rob@landley.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lf_kernel_messages@linux-foundation.org, mtk-manpages@gmx.net,
-       jack@suse.cz, randy.dunlap@oracle.com, gregkh@suse.de, pavel@ucw.cz,
-       tim.bird@am.sony.com, gh@us.ibm.com, arjan@infradead.org,
-       sam@ravnborg.org, jengelh@computergmbh.de, hpa@zytor.com,
-       joe@perches.com, auke-jan.h.kok@intel.com, hansendc@us.ibm.com,
-       davem@davemloft.net, Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-References: <1181747217.29512.9.camel@localhost.localdomain> <1182957079.6643.13.camel@localhost.localdomain> <4691C480.5010600@linux-foundation.jp>
-In-Reply-To: <4691C480.5010600@linux-foundation.jp>
+	Mon, 9 Jul 2007 03:08:22 -0400
+Received: from il.qumranet.com ([82.166.9.18]:56206 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751176AbXGIHIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 03:08:21 -0400
+Message-ID: <4691DEE3.5050305@argo.co.il>
+Date: Mon, 09 Jul 2007 10:08:19 +0300
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Sasa Ostrouska <casaxa@gmail.com>, linux-kernel@vger.kernel.org,
+       KVM <kvm-devel@lists.sourceforge.net>
+Subject: Re: KVM-AMD OOPS
+References: <dcf706c60707080915w7660a2exe629c5def78549da@mail.gmail.com> <4691BF62.2060207@goop.org>
+In-Reply-To: <4691BF62.2060207@goop.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707090901.47900.oliver@neukum.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Mon, 09 Jul 2007 10:08:19 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 9. Juli 2007 schrieb Kunai, Takashi:
-> (b)printk hashes and (c)Format strings. (a) seems difficult to get
-> supports from kernel developers and (c) lacks uniqueness of each
-> message. Though (b) also lacks uniqueness, adding component id and/or
+Jeremy Fitzhardinge wrote:
+> Sasa Ostrouska wrote:
+>> root@rcserver:~# modprobe kvm-amd
+>> int3: 0000 [1] PREEMPT SMP
+>> CPU 1
+>> Modules linked in: kvm_amd snd_seq_dummy snd_seq_oss
+>> snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss
+>> nls_iso8859_1 ntfs nls_base usb_storage libusual capability commoncap
+>> lp psmouse snd_hda_intel snd_hda_codec snd_pcm snd_timer ohci_hcd
+>> ehci_hcd 8139too rtc_cmos snd soundcore snd_page_alloc usbcore k8temp
+>> mii rtc_core rtc_lib i2c_nforce2 parport_pc parport
+>> Pid: 2898, comm: modprobe Tainted: P       2.6.21.5 #1
+>> RIP: 0010:[<ffffffff80572364>]  [<ffffffff80572364>]
+>> register_cpu_notifier+0x1/0x31
+>> RSP: 0000:ffff81006e34df40  EFLAGS: 00000246
+>> RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00000000c0010117
+>> RDX: 000000000000ffff RSI: ffff81006e219640 RDI: ffffffff80536510
+>> RBP: ffffffff880d8840 R08: 0000000000000000 R09: 000000000006b5f4
+>> R10: 0000000000000000 R11: 0000000000000000 R12: 00000000005296b0
+>> R13: 00007fff51fe55c0 R14: 0000000000000000 R15: 0000000000000000
+>> FS:  00002b4e58e18b00(0000) GS:ffff810002e794c0(0000)
+>> knlGS:0000000000000000
+>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+>> CR2: 000000000050df64 CR3: 000000007a0f3000 CR4: 00000000000006e0
+>> Process modprobe (pid: 2898, threadinfo ffff81006e34c000, task
+>> ffff81007bc48400)
+>> Stack:  ffffffff8039e024 ffff81006e34c000 ffffffff880d8840
+>> 0000000000005e19
+>> ffffffff8024537c 0000000000000000 00007fff51fe50c0 00000000004142d0
+>> ffffffff8020967e 0000000000000206 00000000005230e0 000000000052f4c9
+>> Call Trace:
+>> [<ffffffff8039e024>] kvm_init_arch+0x90/0x145
+>> [<ffffffff8024537c>] sys_init_module+0xad/0x168
+>> [<ffffffff8020967e>] system_call+0x7e/0x83
+>>
+>>
+>> Code: cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc cc
+>
+> This is the init section poison pattern.  Looks like an init function
+> was used after the code was freed.
 
-We have generators for hash functions that guarantee unique results
-for a set of inputs. They are even GPLed. As you are operating against
-a known target, that should work.
+Indeed, the function is register_cpu_notifier which is declared
+__cpuinit, which, without hotplug compiled in, is simply __init.
 
-	Regards
-		Oliver
+I'll prepare a patch for this.  Meanwhile, you can work around it by
+enabling CONFIG_HOTPLUG_CPU.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
