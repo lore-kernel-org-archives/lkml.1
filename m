@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbXGIOCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbXGIOH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbXGIOCm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 10:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbXGIOCf
+	id S1754674AbXGIOH3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 10:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbXGIOHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 10:02:35 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:39591 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752635AbXGIOCf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 10:02:35 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Hibernation Redesign
-Date: Mon, 9 Jul 2007 16:02:26 +0200
-User-Agent: KMail/1.9.7
-Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Al Boldi <a1426z@gawab.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <200707081737.21932.a1426z@gawab.com> <87k5taw5vc.fsf@jbms.ath.cx> <20070709134522.GA3216@elf.ucw.cz>
-In-Reply-To: <20070709134522.GA3216@elf.ucw.cz>
+	Mon, 9 Jul 2007 10:07:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:37930 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752519AbXGIOHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 10:07:19 -0400
+Message-ID: <469240EA.8000301@goop.org>
+Date: Mon, 09 Jul 2007 07:06:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707091602.27312.oliver@neukum.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andi Kleen <ak@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Please revert 21564fd2a3deb48200b595332f9ed4c9f311f2a7
+References: <20070617214231.GA3588@stusta.de>	<46760D87.2000502@goop.org>	<20070708224444.GU3492@stusta.de>	<200707090102.21784.ak@suse.de> <20070709103223.5bfe24d4@the-village.bc.nu>
+In-Reply-To: <20070709103223.5bfe24d4@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 9. Juli 2007 schrieb Pavel Machek:
-> Hi!
-> 
-> > >> This approach eliminates the need for the freezer, as it would make
-> > >> hibernate look a lot a bit like suspend to ram from the perspective of
-> > >> the "old" kernel (the kernel being hibernated), as the hibernate
-> > >> operation itself would be completely atomic from the perspective of the
-> > >> "old" kernel.  That is not to say, of course, that any code paths would
-> > >> actually be shared, or that the drivers would do the same things
-> > >> (because they probably would not).
-> > 
-> > > Well it basically is suspend to RAM with the additional step that a
-> > > new kernel gets booted and writes out the data from RAM to disk then
-> > > shuts down.
-> > 
-> > There is the key difference, though, that the drivers should do rather
-> > different things.  In particular, rather than place the hardware in a
-> > low-power mode, it should place it in some state such that the new
-> > kernel being loaded can handle it.
-> 
-> Actually, when current kernel restores the snapshot... driver
-> requirements seem to be pretty similar. So that should not be a big
-> problem.
+Alan Cox wrote:
+> There were a considerable number of sensible logical objections. You just
+> didn't agree with them. You've now effectively made .22 unsupportable
+> since we don't know if someone has binary virtualiser crap loaded.
 
-Hm, once the new kernel is booted, this decision is irrevocable, isn't it?
-Is there any way to deal with errors by handing control back?
 
-	Regards
-		Oliver
+The pv_ops infrastructure doesn't support modular pv_ops 
+implementations, and if it did, there's certainly no intention of 
+supporting non-GPL implementations.
 
+At the same time that all the other altinstruction patching happens, it 
+converts any indirect calls via paravirt_ops into direct calls to the 
+target function, bypassing struct paravirt_ops altogether.  After that 
+the structure is pretty much only used for patching modules.  Any 
+attempt at writing a modular pv_ops implementation would fail as a result.
+
+    J
