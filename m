@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760402AbXGIUZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbXGIU2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760402AbXGIUZu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 16:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbXGIUZm
+	id S1759881AbXGIU2O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 16:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbXGIU17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 16:25:42 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:7149 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754210AbXGIUZm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 16:25:42 -0400
-Message-ID: <469299C5.1060402@fr.ibm.com>
-Date: Mon, 09 Jul 2007 22:25:41 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 9 Jul 2007 16:27:59 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42447 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753967AbXGIU16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 16:27:58 -0400
+Date: Mon, 9 Jul 2007 22:32:19 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] HID updates for 2.6.23 merge window
+Message-ID: <Pine.LNX.4.64.0707092210160.11634@jikos.suse.cz>
 MIME-Version: 1.0
-To: Pavel Emelianov <xemul@openvz.org>
-CC: Andrew Morton <akpm@osdl.org>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 4/16] Change data structures for pid namespaces
-References: <468DF6F7.1010906@openvz.org> <468DF7AC.10302@openvz.org>
-In-Reply-To: <468DF7AC.10302@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov wrote:
-> struct pid_namespace will have the kmem_cache to allocate
-> the pids from, the parent, as they are hierarchical, and
-> the level of nesting value.
-> 
-> struct pid will have a variable length array of pid_number-s
-> one for each namespace this pid lives in. The level value
-> shows the level of the namespace this pid lives in and thus -
-> the number of elements in the numbers array.
-> 
-> Signed-off-by: Pavel Emelianov <xemul@openvz.org>
-> 
-> ---
-> 
->  include/linux/init_task.h     |    6 ++++++
->  include/linux/pid.h           |    9 +++++++++
->  include/linux/pid_namespace.h |    3 +++
->  kernel/pid.c                  |    3 ++-
->  4 files changed, 20 insertions(+), 1 deletion(-)
-> 
-> diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/pid.h linux-2.6.22-rc4-mm2-2/include/linux/pid.h
-> --- linux-2.6.22-rc4-mm2.orig/include/linux/pid.h	2007-06-14 12:14:29.000000000 +0400
-> +++ linux-2.6.22-rc4-mm2-2/include/linux/pid.h	2007-07-04 19:00:38.000000000 +0400
-> @@ -40,6 +40,13 @@ enum pid_type
->   * processes.
->   */
-> 
-> +struct pid_number {
-> +	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
-> +	int nr;
-> +	struct pid_namespace *ns;
-> +	struct hlist_node pid_chain;
-> +};
-> +
->  struct pid
->  {
->  	atomic_t count;
-> @@ -40,6 +40,8 @@ enum pid_type
->  	/* lists of tasks that use this pid */
->  	struct hlist_head tasks[PIDTYPE_MAX];
->  	struct rcu_head rcu;
-> +	int level;
-> +	struct pid_number numbers[1];
->  };
-> 
->  extern struct pid init_struct_pid;
-> diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/pid_namespace.h linux-2.6.22-rc4-mm2-2/include/linux/pid_namespace.h
-> --- linux-2.6.22-rc4-mm2.orig/include/linux/pid_namespace.h	2007-06-14 12:14:29.000000000 +0400
-> +++ linux-2.6.22-rc4-mm2-2/include/linux/pid_namespace.h	2007-07-04 19:00:39.000000000 +0400
-> @@ -16,7 +15,10 @@ struct pidmap {
->  	struct kref kref;
->  	struct pidmap pidmap[PIDMAP_ENTRIES];
->  	int last_pid;
-> +	int level;
->  	struct task_struct *child_reaper;
-> +	struct kmem_cache *pid_cachep;
+Linus,
 
-so, that looks like a good idea to have the cache in the pidmap. could you 
-push that independently to see how it all fits together ?
+could you please pull from 'for-linus' branch of
 
-thanks,
+        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
 
-C.
+or
+        master.kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git for-linus
+
+to receive 2.6.23 merge window update for HID layer. All the patches have 
+been sitting in -mm for some time.
+
+ drivers/hid/Kconfig             |   10 ++-
+ drivers/hid/hid-core.c          |   93 ++++++++++----------
+ drivers/hid/hid-debug.c         |   15 +++
+ drivers/hid/hid-input.c         |  125 ++++++++++++++++++++++-----
+ drivers/hid/usbhid/hid-core.c   |  111 ++++++-----------------
+ drivers/hid/usbhid/hid-lgff.c   |   10 +-
+ drivers/hid/usbhid/hid-pidff.c  |    1 +
+ drivers/hid/usbhid/hid-quirks.c |  185 ++++++++++++++++++++++++++++++++++++---
+ drivers/hid/usbhid/hid-tmff.c   |    2 +-
+ drivers/hid/usbhid/hid-zpff.c   |    8 +--
+ drivers/hid/usbhid/hiddev.c     |    2 +-
+ drivers/hid/usbhid/usbkbd.c     |    6 +-
+ include/linux/hid.h             |   56 ++++++++----
+ 13 files changed, 425 insertions(+), 199 deletions(-)
+
+Alan Stern (1):
+      USB HID: avoid flush_scheduled_work()
+
+Diogo Kastrup (1):
+      HID: fix autocentering of PID devices
+
+Hans de Goede (1):
+      HID: fix mismatch between hid-input HUT find/search mapping and the HUT
+
+Jan Engelhardt (1):
+      HID: Use menuconfig objects
+
+Jiri Kosina (8):
+      HID: make debugging output runtime-configurable
+      HID: input mapping for Chicony KU-0418 tactical pad
+      HID: force hid-input for Microsoft SideWinder GameVoice device
+      HID: support for Petalynx Maxter remote control
+      HID: Add NOGET quirk for all NCR devices
+      HID: separate quirks for report descriptor fixup
+      HID: Logitech keyboard 0xc311 needs reset leds quirk
+      HID: handle cases of volume knobs generating relative values
+
+Julien Eyries (1):
+      HID: support for Gameron dual psx adaptor
+
+Ryo Dairiki (1):
+      HID: support for logitech cordless desktop LX500 special mapping
+
