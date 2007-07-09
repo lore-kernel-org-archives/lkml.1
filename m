@@ -1,68 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbXGIM0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbXGIM1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752927AbXGIM0r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 08:26:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbXGIM0Z
+	id S1754245AbXGIM1W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 08:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXGIM1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 08:26:25 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:18702 "EHLO kernel.dk"
+	Mon, 9 Jul 2007 08:27:11 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:18720 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752621AbXGIM0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 08:26:23 -0400
-Date: Mon, 9 Jul 2007 14:26:31 +0200
+	id S1752638AbXGIM1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 08:27:10 -0400
+Date: Mon, 9 Jul 2007 14:27:18 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Michael Tokarev <mjt@tls.msk.ru>, Tejun Heo <htejun@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Some NCQ numbers...
-Message-ID: <20070709122631.GR5267@kernel.dk>
-References: <468392CE.6010206@msgid.tls.msk.ru> <468A06A0.1020802@gmail.com> <468AB1A7.9010201@msgid.tls.msk.ru> <468AF5BB.10005@gmail.com> <468B6BD7.9010108@msgid.tls.msk.ru> <Pine.LNX.4.64.0707040621170.32656@p34.internal.lan>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] unexport bio_{,un}map_user
+Message-ID: <20070709122718.GX5267@kernel.dk>
+References: <20070701202150.GN10869@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707040621170.32656@p34.internal.lan>
+In-Reply-To: <20070701202150.GN10869@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 04 2007, Justin Piszcz wrote:
->  On Wed, 4 Jul 2007, Michael Tokarev wrote:
+On Sun, Jul 01 2007, Adrian Bunk wrote:
+> bio_{,un}map_user no longer have any modular users.
 > 
-> > Tejun Heo wrote:
-> >> Hello,
-> >>
-> >> Michael Tokarev wrote:
-> >>> Well.  It looks like the results does not depend on the
-> >>> elevator.  Originally I tried with deadline, and just
-> >>> re-ran the test with noop (hence the long delay with
-> >>> the answer) - changing linux elevator changes almost
-> >>> nothing in the results - modulo some random "fluctuations".
-> >>
-> >> I see.  Thanks for testing.
-> >
-> > Here are actual results - the tests were still running when
-> > I replied yesterday.
-> >
-> > Again, this is Seagate ST3250620AS "desktop" drive, 7200RPM,
-> > 16Mb cache, 250Gb capacity.  The tests were performed with
-> > queue depth = 64 (on mptsas), drive write cache is turned
-> > off.
-> 
->  I found AS scheduler to be the premium and best for single-user performance.
-> 
->  You want speed? Use AS.
-> 
->  http://home.comcast.net/~jpiszcz/sched/cfq_vs_as_vs_deadline_vs_noop.html
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Hmm, I find your data very weak for such a conclusion. Value of the test
-itself withstanding, AS seems to be a lot faster for sequential output
-for some reason, yet slower for everything else. Which is odd, deadline
-should always be running at the same speed for writeout as AS. The only
-real difference should be sequential and random reads.
-
-So allow me to call your results questionable. It also looks like bonnie
-(some version) output, I never found bonnie to provide good and
-repeatable numbers. tiotest is much better, or (of course) fio.
+Thanks, applied.
 
 -- 
 Jens Axboe
