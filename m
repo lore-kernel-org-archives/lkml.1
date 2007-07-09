@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbXGIKVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbXGIKaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbXGIKVJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 06:21:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbXGIKU5
+	id S1755149AbXGIKaO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 06:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbXGIKaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 06:20:57 -0400
-Received: from il.qumranet.com ([82.166.9.18]:36230 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751578AbXGIKU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 06:20:57 -0400
-Message-ID: <46920C0F.8000506@qumranet.com>
-Date: Mon, 09 Jul 2007 13:21:03 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 9 Jul 2007 06:30:04 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:18266 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbXGIKaB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 06:30:01 -0400
+Date: Mon, 9 Jul 2007 12:30:00 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+In-Reply-To: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707091224160.32335@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>
-CC: kvm-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] kvm-scheduler integration
-References: <11838994974161-git-send-email-avi@qumranet.com> <1183971001.4254.3.camel@sli10-conroe.sh.intel.com> <469203E9.7000109@qumranet.com>
-In-Reply-To: <469203E9.7000109@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Shaohua Li wrote:
->> On Sun, 2007-07-08 at 20:58 +0800, Avi Kivity wrote:
->>  
->>> The only fly in the ointment is that it crashes quite soon.  Haven't
->>> figured
->>> out why yet, but comments on the general direction would be welcome.
->>>     
->> Attached patch seems help in my test. prepare_task_switch is called with
->> irq disabled.
->>
->>
->>   
+Hi,
+
+On Jul 8 2007 16:52, Linus Torvalds wrote:
 >
-> Thanks!!  Will integrate that.
+>So this is also a heads-up that I'm considering skipping the ChangeLog 
+>files in the future - the full release ones are so big as to not be very 
+>easily readable (the full ChangeLog from 2.6.21 is ove ra hundred thousand 
+>lines, and weighs in at 3.8MB for example), and you really can get much 
+>better per-subsystem logs from git.
 >
+>Anybody? Should I make just the shortlogs available instead (I don't save 
+>those, but I post those for the later -rc's - usually the -rc1 and -rc2's 
+>are too big for the mailing list, but they are still a lot smaller and 
+>more readable than the *full* logs are)?
+>
+>Or do people really want the full logs, and don't use git?
+>
+>Let me know how you feel. And test the actual release out too, of course!
+
+The rc-to-rc shortlog is usually helpful. That way, I can see whether a
+particular fix that I am interested in/involved with has already been
+merged - or not and its needs some reminder. And the 2.6.x -> 2.6.y-rc1
+shortlog for seeing whether patches, should I have decided to send
+anything, actually went in. All other logs can be omitted from the mail
+announcements. I still prefer to have all logs, as usual, both short
+and long, via http (perhaps compressed for your pleasure), because
+cloning a git is not always possible (think of public terminals) or
+feasible (cloning does take a while, and longer on slower links).
 
 
-I've committed and pushed this into a new 'sched' branch on kvm.git.  
-I'll continually rebase this against 'master'.
-
-
+	Jan
 -- 
-error compiling committee.c: too many arguments to function
-
