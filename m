@@ -1,117 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbXGIF31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbXGIFeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbXGIF31 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 01:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbXGIF3U
+	id S1752719AbXGIFeH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 01:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbXGIFd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 01:29:20 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:40054 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbXGIF3T (ORCPT
+	Mon, 9 Jul 2007 01:33:56 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:23220 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750989AbXGIFdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 01:29:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OOqGzYUwN0Z3YLfyNLJDEgrss4HWoz0jnGHWguOYUr34QHtDTS/K6olHjtgPWltbHdFAsAxBLXUlxs3JvzPA2msjOE+UTlvLlL3f2fgVp09houab5gAPDvfu9NfqkehIiv+idneWCII15mPfjap5BaXoa6PK+qeaECy072LKR/0=
-Message-ID: <41840b750707082229k7672ef8bma050289d3cde93ee@mail.gmail.com>
-Date: Mon, 9 Jul 2007 01:29:18 -0400
-From: "Shem Multinymous" <multinymous@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: [Hdaps-devel] [PATCH] hdaps - switch to using input-polldev
-Cc: hdaps-devel@lists.sourceforge.net, rlove@rlove.org,
-       "Linux Kernel ML" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Michael Riepe" <michael@mr511.de>,
-       "Henrique de Moraes Holschuh" <hmh@debian.org>
-In-Reply-To: <200707090053.03228.dtor@insightbb.com>
+	Mon, 9 Jul 2007 01:33:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=mu+8IA6H1O6R5URSdesl/QIpkkqYXn8trgeroc4CixZ7X1drG+0UG1/pXtATzM6TzKhFsdsRipDXcMAe18hijLL58XFzcHHI6p2bOS1hMymTqgKaJ3Hhpnsnd6Ov9Yl8FQXTXBuGJRzWmXu+fbokjYNk8VF8/J7xe4mEaSBCVOY=  ;
+X-YMail-OSG: mgzHIv0VM1k_GG7VmrnE2TJ51hUAXhqO8faxQcI_k7Kb3KdCfqASpM_R4IMUMAZpV2U_Dpo_RQ--
+Message-ID: <4691C8BE.2050807@yahoo.com.au>
+Date: Mon, 09 Jul 2007 15:33:50 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+CC: Jeremy Maitin-Shepard <jbms@cmu.edu>, Al Boldi <a1426z@gawab.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Hibernation Redesign
+References: <200707081737.21932.a1426z@gawab.com> <87tzsew712.fsf@jbms.ath.cx>	<4691B9A5.6060203@yahoo.com.au> <87k5taw5vc.fsf@jbms.ath.cx>	<4691BD6F.8000809@yahoo.com.au> <87fy3yw50p.fsf@jbms.ath.cx> <4691C08A.90707@yahoo.com.au>
+In-Reply-To: <4691C08A.90707@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705252354.43730.dtor@insightbb.com>
-	 <200707082324.11315.dtor@insightbb.com>
-	 <41840b750707082131n66382908o94790ac608bbf775@mail.gmail.com>
-	 <200707090053.03228.dtor@insightbb.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/9/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> > > input-polldev uses a separate workqueue, not keventd, and so should not
-> > > suffer from other workqueue users loading keventd. But if entire box
-> > > is under stress then workqueue vs timer context does not matter much -
-> > > your daemon which is in userspace may not get to run in a timely manner
-> > > anyway.
-> >
-> > The daemon itself typically runs with a higher priority (and sleeps a
-> > lot so it gets further dumped). More importantly, the daemon depends
-> > not only on the latest measurement, but also on recent measurements
-> > have been obtained from the hardware in a regular fashion and with
-> > reasonably accurate timestamps. And *this* depends solely on the hdaps
-> > driver.
-> >
->
-> Every input event carries a timestamp so even if there are irregularities
-> in taking the samples you should be able to account for it.
+Nick Piggin wrote:
+> Jeremy Maitin-Shepard wrote:
+> 
+>> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> 
+> 
+>>> Yes, I have a rough idea about how page reclaim works. But I just
+>>> mean it would not be trivial to load the new kernel into physically
+>>> discontiguous memory. Possible of course, but I don't think kexec or
+>>> the setup code could quite cope ATM.
+>>
+>>
+>>
+>> It would indeed be a pain for the new kernel to be loaded and have to
+>> use discontiguous memory.  The trick is, though, that this is not
+>> necessary.  Immediately before jumping to the new kernel, the first X
+>> bytes (where X is the amount of memory the new kernel will get,
+>> typically 16MB or 64MB) of physical memory are backed up into the
+>> arbitrary discontiguous pages that are made available.  This will not
+>> take very long, because copying even 64MB of memory is extremely fast.
+>> Then the new kernel is free to use the first X bytes of contiguous
+>> physical memory.  Problem solved.
+> 
+> 
+> Ah, that sounds like it would be the right way to go. Good thinking.
 
-The issue is how good are the input event timestamps. The way it works
-is that the EC samples the analog sensor at some fixed rate and makes
-them available over the LPC bus. If the hdaps driver consumes these
-samples at the same rate then the timestamps will be accurate up to a
-small phase difference, which is mostly inconsequential. But if the
-hdaps driver gets scheduled irregularly, its timestamps will be offset
-by varying amounts, which will completely throw off computation (e.g.,
-think of estimating the angular velocity).
+Hmm, considering it is not a crash situation, it might even be
+better again to simply reuse the exising kernel text and kernel
+page table and memory map information if possible. That would
+probably only require a meg or two to reinit drivers, load a
+suspend-to-disk-init, and do the IO.
 
+OTOH it would likely be more complex than just freeing up a bit
+of memory and relocating it.
 
-> > > However I am open to bumping up priority of ipolldevd a little.
-> >
-> > Will this result in scheduling tha'ts as reliable as rearming timers
-> > from softirq? I saw claims to the contrary, but it it's true then I
-> > withdraw the first objection.
->
-> Probably not. But I still think that if system is so busy that it can't
-> get aroung to schedule one of workqueues it will not be able to part
-> the driver fast enough anyway.
-
-A delay of 20ms in invoking the userspace daemon is negligible, but a
-timing variance of 20ms in the driver's measurements is devastating.
-
-
-> > > I am curious why you can't use the current device, since the calibration
-> > > done in hdaps does not alter the scale but merely moves '0' point around.
-> > > And fuzz should only remove small jitters, not rapidly changing data
-> > > that you shoudl get when your box is falling.
-> >
-> > Recent versions of the hdapsd daemons do much more than a simple
-> > threshold check: they gather some 2nd-order and decaying averages
-> > statistics to catch subtle abnormal movement (e.g., sliding off a
-> > surface) that's indicative of potential shock. As pointed out in IBM's
-> > HDAPS whitepaper, by the time the box is actually in free fall, it's
-> > too late to start parking the heads. Now, that kind of movement is not
-> > very far from the noise floor, so hdapsd needs all the accuracy it can
-> > get -- hence fuzzing is very disruptive. Calibration is currently
-> > harmless, but I can certainly imagine more advanced hdapsd that uses
-> > heuristics based, e.g., on the absolute orientation of the laptop, so
-> > let's not ruin this data.
->
-> If hdaps is the main consumer for the data it may be a good idea to
-> just remove the fuzz setting from input device. I don't have the hardware,
-> how bad is it without fuzz?
-
-People are using the existing input device as a joystick input for
-things like Neverball. Current fuzz is 4 and the observed std dev is
-roughly 2, so eliminating fuzz will certainly affect the values. The
-implications are app-specific, but I guess some apps do care about
-such noise, otherwise we wouldn't have fuzz built into the input
-infrastructure.
-
-
-> > You could one input device open, or the other, or both. How would you
-> > set up input-polldev to handle this?
->
-> Have 2nd input device's ->open() method call input_open_device() for
-> the first one.
-
-Won't that create an overhead by the redundant, unused notifications?
-
-  Shem
+-- 
+SUSE Labs, Novell Inc.
