@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbXGIXKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761163AbXGIXJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760920AbXGIXKX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 19:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761280AbXGIXJy
+	id S1761163AbXGIXJq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 19:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbXGIXJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 19:09:54 -0400
-Received: from waste.org ([66.93.16.53]:37961 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760343AbXGIXJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 19:09:52 -0400
-Date: Mon, 9 Jul 2007 18:09:19 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-Message-ID: <20070709230918.GX11115@waste.org>
-References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org> <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com> <20070709095116.c2ea700f.akpm@linux-foundation.org>
+	Mon, 9 Jul 2007 19:09:38 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51111 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757304AbXGIXJi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 19:09:38 -0400
+Date: Mon, 9 Jul 2007 16:08:37 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality,
+ performance and maintenance
+In-Reply-To: <20070709225817.GA5111@Krystal>
+Message-ID: <Pine.LNX.4.64.0707091605380.20282@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de>
+ <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
+ <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com>
+ <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal>
+ <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
+ <20070709225817.GA5111@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070709095116.c2ea700f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 09:51:16AM -0700, Andrew Morton wrote:
-> On Mon, 9 Jul 2007 09:06:46 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+On Mon, 9 Jul 2007, Mathieu Desnoyers wrote:
+
+> > > Yep, I volountarily used the variant without lock prefix because the
+> > > data is per cpu and I disable preemption.
+> > 
+> > local_cmpxchg generates this?
+> > 
 > 
-> > But yes the power of 
-> > two caches are a necessary design feature of SLAB/SLUB that allows O(1) 
-> > operations of kmalloc slabs which in turns causes memory wastage because 
-> > of rounding of the alloc to the next power of two.
-> 
-> I've frequently wondered why we don't just create more caches for kmalloc:
-> make it denser than each-power-of-2-plus-a-few-others-in-between.
-> 
-> I assume the tradeoff here is better packing versus having a ridiculous
-> number of caches.  Is there any other cost?
+> Yes.
 
-It magnifies the fragmentation problem.
+Does not work here. If I use
 
-SLAB (and SLUB) makes the optimistic assumption that objects of the
-same type/size have similar lifetimes. But for some objects, it's not
-uncommon to do many temporary allocations but have some objects with
-indefinite lifespans. dcache is a very frequently encountered example,
-but there's no reason we couldn't see it with sockets and many other
-object types. 
+static void __always_inline *slab_alloc(struct kmem_cache *s,
+                gfp_t gfpflags, int node, void *addr)
+{
+        void **object;
+        struct kmem_cache_cpu *c;
 
-Every new arena introduces further opportunity for this sort of
-fragmentation. If we had, say, separate pools for 48 byte and 64 byte
-objects, an unfortunate usage pattern for 48-byte kmallocs could DoS
-requests for 64 byte objects that would work just fine if they both
-came out of the same pool. If we have 10 pools with long-lived
-objects, we're much worse off than if we had 1 or 2.
+        preempt_disable();
+        c = get_cpu_slab(s, smp_processor_id());
+redo:
+        object = c->freelist;
+        if (unlikely(!object || !node_match(c, node)))
+                return __slab_alloc(s, gfpflags, node, addr, c);
 
--- 
-Mathematics is the supreme nostalgia of our time.
+        if (cmpxchg_local(&c->freelist, object, object[c->offset]) != object)
+                goto redo;
+
+        preempt_enable();
+        if (unlikely((gfpflags & __GFP_ZERO)))
+                memset(object, 0, c->objsize);
+
+        return object;
+}
+
+Then the code will include a lock prefix:
+
+    3270:       48 8b 1a                mov    (%rdx),%rbx
+    3273:       48 85 db                test   %rbx,%rbx
+    3276:       74 23                   je     329b <kmem_cache_alloc+0x4b>
+    3278:       8b 42 14                mov    0x14(%rdx),%eax
+    327b:       4c 8b 0c c3             mov    (%rbx,%rax,8),%r9
+    327f:       48 89 d8                mov    %rbx,%rax
+    3282:       f0 4c 0f b1 0a          lock cmpxchg %r9,(%rdx)
+    3287:       48 39 c3                cmp    %rax,%rbx
+    328a:       75 e4                   jne    3270 <kmem_cache_alloc+0x20>
+    328c:       66 85 f6                test   %si,%si
+    328f:       78 19                   js     32aa <kmem_cache_alloc+0x5a>
+    3291:       48 89 d8                mov    %rbx,%rax
+    3294:       48 83 c4 08             add    $0x8,%rsp
+    3298:       5b                      pop    %rbx
+    3299:       c9                      leaveq
+    329a:       c3                      retq
+
+
+> What applies to local_inc, given as example in the local_ops.txt
+> document, applies integrally to local_cmpxchg. And I would say that
+> local_cmpxchg is by far the cheapest locking mechanism I have found, and
+> use today, for my kernel tracer. The idea emerged from my need to trace
+> every execution context, including NMIs, while still providing good
+> performances. local_cmpxchg was the perfect fit; that's why I deployed
+> it in local.h in each and every architecture.
+
+Great idea. The SLUB allocator may be able to use your idea to improve 
+both the alloc and free path.
+
