@@ -1,121 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757929AbXGIROY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbXGIRSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757929AbXGIROY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 13:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXGIROJ
+	id S1757423AbXGIRSp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 13:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbXGIRSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 13:14:09 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54422 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754213AbXGIROH (ORCPT
+	Mon, 9 Jul 2007 13:18:36 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:41405 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbXGIRSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 13:14:07 -0400
-Date: Mon, 9 Jul 2007 10:14:06 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC] fsblock
-In-Reply-To: <20070624014528.GA17609@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0707091002170.15696@schroedinger.engr.sgi.com>
-References: <20070624014528.GA17609@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Jul 2007 13:18:34 -0400
+To: Rob Landley <rob@landley.net>
+cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
+       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
+       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
+Reply-To: Gerrit Huizenga <gh@us.ibm.com>
+From: Gerrit Huizenga <gh@us.ibm.com>
+Subject: Re: Documentation of kernel messages (Summary) 
+In-reply-to: Your message of Mon, 09 Jul 2007 12:48:24 EDT.
+             <200707091248.24994.rob@landley.net> 
+Date: Mon, 09 Jul 2007 10:18:57 -0700
+Message-Id: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jun 2007, Nick Piggin wrote:
 
-> Firstly, what is the buffer layer?  The buffer layer isn't really a
-> buffer layer as in the buffer cache of unix: the block device cache
-> is unified with the pagecache (in terms of the pagecache, a blkdev
-> file is just like any other, but with a 1:1 mapping between offset
-> and block).
-
-I thought that the buffer layer is essentially a method to index to sub 
-section of a page?
-
-> Why rewrite the buffer layer?  Lots of people have had a desire to
-> completely rip out the buffer layer, but we can't do that[*] because
-> it does actually serve a useful purpose. Why the bad rap? Because
-> the code is old and crufty, and buffer_head is an awful name. It must 
-> be among the oldest code in the core fs/vm, and the main reason is
-> because of the inertia of so many and such complex filesystems.
-
-Hmmm.... I did not notice that yet but then I have not done much work 
-there.
-
-> - data structure size. struct fsblock is 20 bytes on 32-bit, and 40 on
->   64-bit (could easily be 32 if we can have int bitops). Compare this
->   to around 50 and 100ish for struct buffer_head. With a 4K page and 1K
->   blocks, IO requires 10% RAM overhead in buffer heads alone. With
->   fsblocks you're down to around 3%.
-
-I thought we were going to simply use the page struct instead of having
-buffer heads? Would that not reduce the overhead to zero?
-
-> - Structure packing. A page gets a number of buffer heads that are
->   allocated in a linked list. fsblocks are allocated contiguously, so
->   cacheline footprint is smaller in the above situation.
-
-Good idea.
-
-> - A real "nobh" mode. nobh was created I think mainly to avoid problems
->   with buffer_head memory consumption, especially on lowmem machines. It
->   is basically a hack (sorry), which requires special code in filesystems,
->   and duplication of quite a bit of tricky buffer layer code (and bugs).
->   It also doesn't work so well for buffers with non-trivial private data
->   (like most journalling ones). fsblock implements this with basically a
->   few lines of code, and it shold work in situations like ext3.
-
-Hmmm.... That means simply page struct are not working...
- 
-> - Large block support. I can mount and run an 8K block size minix3 fs on
->   my 4K page system and it didn't require anything special in the fs. We
->   can go up to about 32MB blocks now, and gigabyte+ blocks would only
->   require  one more bit in the fsblock flags. fsblock_superpage blocks
->   are > PAGE_CACHE_SIZE, midpage ==, and subpage <.
+On Mon, 09 Jul 2007 12:48:24 EDT, Rob Landley wrote:
+> In regard to translating kernel messages:
 > 
->   Core pagecache code is pretty creaky with respect to this. I think it is
->   mostly race free, but it requires stupid unlocking and relocking hacks
->   because the vm usually passes single locked pages to the fs layers, and we
->   need to lock all pages of a block in offset ascending order. This could be
->   avoided by doing locking on only the first page of a block for locking in
->   the fsblock layer, but that's a bit scary too. Probably better would be to
->   move towards offset,length rather than page based fs APIs where everything
->   can be batched up nicely and this sort of non-trivial locking can be more
->   optimal.
+> On Monday 09 July 2007 01:36:31 H. Peter Anvin wrote:
+> > Kunai, Takashi wrote:
+> > > (1) Your kernel development proposal will be greatly supported by
+> > > Japanese vendor community. At the same time, it needs support from the
+> > > kernel communities, as well.
+> >
+> > There is a very strong reason for the kernel community to NOT support
+> > this: it makes it much harder to deal with bug reports.
 > 
->   Large blocks also have a performance black spot where an 8K sized and
->   aligned write(2) would require an RMW in the filesystem. Again because of
->   the page based nature of the fs API, and this too would be fixed if
->   the APIs were better.
+> Agreed.
 
-The simple solution would be to use a compound page and make the head page
-represent the status of all the pages in the vm. Logic for that is already 
-in place.
+[...]
 
->   Large block memory access via filesystem uses vmap, but it will go back
->   to kmap if the access doesn't cross a page. Filesystems really should do
->   this because vmap is slow as anything. I've implemented a vmap cache
->   which basically wouldn't work on 32-bit systems (because of limited vmap
->   space) for performance testing (and yes it sometimes tries to unmap in
->   interrupt context, I know, I'm using loop). We could possibly do a self
->   limiting cache, but I'd rather build some helpers to hide the raw multi
->   page access for things like bitmap scanning and bit setting etc. and
->   avoid too much vmaps.
+> 
+> As for the documentation translations themselves, I note that Eric Raymond 
+> dissuaded me from actually hosting translations of kernel documentation on 
+> http://kernel.org/doc due to his experience with translations of his own 
+> writings.  If he hosts the translations on his website, they never get 
+> updated again.  But if he makes the contributor host them on their own 
+> website, then they sometimes get updated.
+> 
+> For my part, I can't _tell_ when a given translation is out of date because I 
+> can't read it, and I certainly can't update it.  So I agree with Eric and I'm 
+> linking to sites hosting kernel documentation in other languages rather than 
+> hosting them myself.  I've got a good link to a Japanese site, need to ping 
+> the contributors of the chinese documentation and see if they have a site for 
+> it...
 
-Argh. No. Too much overhead.
- 
-> So. Comments? Is this something we want? If yes, then how would we
-> transition from buffer.c to fsblock.c?
+Yeah, but it seems like having a translations directory in the kernel
+avoids that problem - anyone can update, it is a single source, no digging
+for sites that aren't tied to the kernel, available in the distros
+directly, etc.
 
-I think many of the ideas are great but the handling of large pages is 
-rather strange. I would suggest to use compound pages to represent larger 
-pages and rely on Mel Gorman's antifrag/compaction work to get you the 
-contiguous memory locations instead of using vmap. This may significantly 
-simplify your patchset and avoid changes to the filesytesm API. Its still 
-pretty invasive though and I am not sure that there is enough benefit from 
-this one.
+I'm not sure that the web site hosting argument is a good one.  Arch
+maintainers and Language Maintainers have some similarities.  Also, being
+able to clearly mark which version of a document was last translated
+would help a bit with the fact that most of us aren't proficient in all
+of the world's languages.  But, knowing who the translation maintainer is,
+and when the translation was last updated allows both the original doc
+maintainer and the translation document maintainer to see when a document
+likely needs to be updated.  And that is probably good enough.
+
+gerrit
