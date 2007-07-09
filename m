@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbXGIN3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbXGIN3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbXGIN3c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 09:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756985AbXGIN3U
+	id S1757331AbXGIN3r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 09:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757013AbXGIN3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 09:29:20 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:65298 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756835AbXGIN3T (ORCPT
+	Mon, 9 Jul 2007 09:29:21 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:60797 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756946AbXGIN3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 9 Jul 2007 09:29:19 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH 07/13] IB/ehca: Report RDMA atomic attributes in query_qp()
-User-Agent: KMail/1.8.2
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200707091502.22407.fenkes@de.ibm.com>
-In-Reply-To: <200707091502.22407.fenkes@de.ibm.com>
+Date: Mon, 9 Jul 2007 14:21:22 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: James.Bottomley@HansenPartnership.com, ak@suse.de,
+       linux-mips@linux-mips.org, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] cpu_callout_map cleanups
+Message-ID: <20070709132122.GA10931@linux-mips.org>
+References: <20070707010327.GX3492@stusta.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 1748
-Date: Mon, 9 Jul 2007 15:28:18 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707091528.19168.fenkes@de.ibm.com>
+In-Reply-To: <20070707010327.GX3492@stusta.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+On Sat, Jul 07, 2007 at 03:03:27AM +0200, Adrian Bunk wrote:
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_qp.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+> - mips: removed extern for non-existing variable from header
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index cbb8b5b..989f75e 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -1491,6 +1491,9 @@ int ehca_query_qp(struct ib_qp *qp,
- 	qp_attr->alt_port_num = qpcb->alt_phys_port;
- 	qp_attr->alt_timeout = qpcb->timeout_al;
- 
-+	qp_attr->max_dest_rd_atomic = qpcb->rdma_nr_atomic_resp_res;
-+	qp_attr->max_rd_atomic = qpcb->rdma_atomic_outst_dest_qp;
-+
- 	/* primary av */
- 	qp_attr->ah_attr.sl = qpcb->service_level;
- 
--- 
-1.5.2
+There also is
 
+include/linux/smp.h:#define num_booting_cpus()                  1
 
+but num_booting_cpus() is only ever being used in i386-specific code.
+
+I'm going to merge the MIPS bits of your patch.
+
+  Ralf
