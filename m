@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbXGIRgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbXGIRhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbXGIRgH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 13:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbXGIRf4
+	id S1758380AbXGIRhm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 13:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbXGIRhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 13:35:56 -0400
-Received: from trinity.phys.uwm.edu ([129.89.57.159]:39838 "EHLO
-	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754368AbXGIRfz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 13:35:55 -0400
-Date: Mon, 9 Jul 2007 12:35:04 -0500 (CDT)
-From: Bruce Allen <ballen@gravity.phys.uwm.edu>
-X-X-Sender: ballen@trinity.phys.uwm.edu
-To: Jeff Garzik <jeff@garzik.org>
-cc: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
-       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Kai Makisara <Kai.Makisara@kolumbus.fi>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Dvorak <fermentol@gmail.com>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Klaus Fuerstberger <kfuerstberger@arcor.de>,
-       Bruce Allen <bruce.allen@aei.mpg.de>
-Subject: Re: SMART problems in 2.6.22
-In-Reply-To: <469198E4.6000200@garzik.org>
-Message-ID: <Pine.LNX.4.63.0707091232480.7386@trinity.phys.uwm.edu>
-References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
- <Pine.LNX.4.63.0707082003360.23123@trinity.phys.uwm.edu> <469198E4.6000200@garzik.org>
+	Mon, 9 Jul 2007 13:37:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:13482 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752852AbXGIRhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 13:37:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,517,1175497200"; 
+   d="scan'208";a="248262943"
+Message-ID: <46927259.4060403@intel.com>
+Date: Mon, 09 Jul 2007 10:37:29 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Adrian Bunk <bunk@stusta.de>, jgarzik@pobox.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, saw@saw.sw.com.sg,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [2.6 patch] the overdue eepro100 removal
+References: <20070701202139.GM10869@stusta.de> <46894BD5.9080609@tmr.com> <46897212.30104@intel.com> <468D15F4.6020106@tmr.com> <20070709125208.GZ3492@stusta.de> <4692701B.3030506@tmr.com>
+In-Reply-To: <4692701B.3030506@tmr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Jul 2007 17:37:29.0689 (UTC) FILETIME=[D2B8F490:01C7C24F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jul 2007, Jeff Garzik wrote:
+Bill Davidsen wrote:
+> Adrian Bunk wrote:
+>> On Thu, Jul 05, 2007 at 12:01:56PM -0400, Bill Davidsen wrote:
+>>   
+>>> Please do not make unnecessary kernel changes which require changes in our 
+>>> systems.
+> 
+>>> If you think the e100 driver fixes your problems use it and be happy. But 
+>>> since you don't have to test system behavior with the new driver, and you 
+>>> won't be called at night or on weekends if it doesn't work, do the rest of 
+>>> the world a favor and stop taking out things we know to work! Leaving in 
+>>> the eepro100 causes no work for you, and even if e100 works perfectly it 
+>>> needs to be validated in any sane network. it still makes work.
+>>>     
+>> The goal is to get e100 better, and removing eepro100 helps with 
+>> reaching this goal.
+>>   
+> That's *your* goal, it should not be a shock that users have a goal of 
+> using their systems without having to reconfigure them every time 
+> there's a kernel upgrade containing a security fix.
 
-Jeff, thanks for the quick feedback.
+unfortunately it is impossible for anyone to patch *every* old version of an OS 
+there is. Not only do we not want to do this (too much work, little return), but 
+most of the times it is exponentially more difficult to fix a security bug in an 
+older OS version than a new one.
 
-> On the base point, libata has never enabled SMART on its own.  That's 
-> always up to the BIOS, etc.
+>> Why didn't _you_ try the e100 driver when you validated your systems 
+>> after you upgraded them to kernel 2.6, and if you did and it didn't 
+>> work, where is your bug report?
+>>   
+> Is that a joke, or subtle irony? Do you generally validate drivers you 
+> don't use just because your hardware might be able to support them? I 
+> don't validate various accelerated video drivers on systems running 
+> mostly text console, never check sound options on systems with an audio 
+> application, etc. After I tried the e100 driver on the first few systems 
+> and found issues (which may be resolved by now) I went back to eepro100 
+> and used what worked. And used the driver for any new systems in other 
+> installs.
+> 
+> If there were any benefit to removing a working driver I would at least 
+> be able to see it as a resources issue, but as far as I can see you just 
+> seem to have a personal preference for the e100 driver and want to force 
+> others to use it because you are so much better able to decide what 
+> users need than the system administrators. That's one of the reasons 
+> people choose open source, because they have a choice, and can use 
+> what's best for them.
 
-OK, clear.
+as discussed before we really want to avoid having (1) an unmaintained 
+bitrotting driver for X and (2) one that should work because people are being 
+paid to take care of it.
 
-> It's possible that the recent addition of ACPI support will cause disks 
-> to be in different modes than previously expected.  ACPI supplies ATA 
-> taskfiles to be pushed to the disk, and who knows what's in there...
+The community has always encouraged us to work with us fixing the last issues in 
+e100 to make it work for everyone. After all, we have all the documentation and 
+facilities here to do almost all of the work.
 
-Is there a simple way I can have affected users test this?  Is there a 
-kernel boot flag or sysctl setting or something else they can use to 
-disable the ACPI stuff so see if the problem then goes away?
+I asked Adrian to postpone removing the eepro100 driver since we know that e100 
+is still not working on some platforms. However, if e100 is not working on your 
+specific platform, then I would certainly like to know about your problem, and 
+whether it still exists. This is orthogonal to your argument: Your complaint 
+stands (and eepro100 will not be removed until we address the ARM platform 
+issues), but I ask you kindly to work with us and test the current e100 driver 
+and report any issues to us.
 
 Cheers,
- 	Bruce
+
+Auke
