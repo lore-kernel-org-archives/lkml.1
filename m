@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764119AbXGJWF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764329AbXGJWGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764119AbXGJWF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 18:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761324AbXGJWFs
+	id S1764329AbXGJWGl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 18:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761324AbXGJWGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 18:05:48 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:55055 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755826AbXGJWFr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 18:05:47 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: avoiding rejects
-Date: Wed, 11 Jul 2007 00:03:48 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20070710124422.a52b0458.akpm@linux-foundation.org> <Pine.LNX.4.64.0707102306030.10340@anakin>
-In-Reply-To: <Pine.LNX.4.64.0707102306030.10340@anakin>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 10 Jul 2007 18:06:32 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54483 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760903AbXGJWGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 18:06:30 -0400
+In-Reply-To: <4693FCE7.2060308@zytor.com>
+References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org> <4693EF48.1080209@zytor.com> <763AC431-73A6-4A5F-9453-A66A86D7DEEB@kernel.crashing.org> <4693FCE7.2060308@zytor.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3598C6DD-D62C-4DB5-99D7-5B4420A0EAB2@kernel.crashing.org>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707110003.49287.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19wRMI3Es2yyNsOvz41WzFPGLwxrovpfUhKv97
- hpIhmC3h8lr36eXHl3AaWE6WUqwzykIIExWgDeUeBBJ8RYtQ8Q
- KpN5JtOn5USvoDek8pkqw==
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
+Date: Wed, 11 Jul 2007 00:06:11 +0200
+To: "H. Peter Anvin" <hpa@zytor.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 July 2007, Geert Uytterhoeven wrote:
-> 
-> > Most of these lists are unordered anyway, so inserting the new item at a
-> > randomly-chosen position is a better approach than just appending it.
-> 
-> Really?
-> 
-> #includes should be sorted alphabetically
-> Lots of other stuff should be sorted numerically/alphabetically
-> 
+>> Looks good, except you don't want -fno-unit-at-a-time if
+>> -fno-toplevel-reorder works.  And of course it would be
+>> good to get rid of -fno-strict-aliasing, but let's not
+>> go there today ;-P
+>
+> OK, how does this look:
+>
+> CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
+>                    $(cflags-$(ARCH)) \
+>                    -Wall -Wstrict-prototypes \
+>                    -march=i386 -mregparm=3 \
+>                    -include $(srctree)/$(src)/code16gcc.h \
+>                    -fno-strict-aliasing -fomit-frame-pointer \
+>                    $(call cc-option, -ffreestanding) \
+>                    $(call cc-option, -fno-toplevel-reorder,\
+>                         $(call cc-option, -fno-unit-at-a-time)) \
+>                    $(call cc-option, -fno-stack-protector) \
+>                    $(call cc-option, -mpreferred-stack-boundary=2)
 
-I would also argue that adding in an ordered way is better than
-at random positions, that is if the list is ordered to start with.
-As long as everyone follows the same order, you will get (desired)
-conflicts in case two people try to add the same line, and when
-the added lines are different, it's as good as random ordering
-to avoid undesired merge conflicts.
+That looks fine.
 
-	Arnd <><
+> I think dropping -fno-strict-aliasing for this code is probably bad...
+> it's pretty low-level stuff which does a lot of bitlevel manipulation.
+
+"Which breaks C aliasing rules all over the place".  Well,
+probably not all that often, actually.  But, as I said --
+let's not go there now, keep the flag in there, removing
+it will take a lot of work.
+
+
+Segher
+
