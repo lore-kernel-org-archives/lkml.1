@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764329AbXGJWGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbXGJWJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764329AbXGJWGl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 18:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761324AbXGJWGc
+	id S932070AbXGJWJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 18:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761521AbXGJWJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 18:06:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54483 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760903AbXGJWGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 18:06:30 -0400
-In-Reply-To: <4693FCE7.2060308@zytor.com>
-References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org> <4693EF48.1080209@zytor.com> <763AC431-73A6-4A5F-9453-A66A86D7DEEB@kernel.crashing.org> <4693FCE7.2060308@zytor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3598C6DD-D62C-4DB5-99D7-5B4420A0EAB2@kernel.crashing.org>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Content-Transfer-Encoding: 7bit
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
-Date: Wed, 11 Jul 2007 00:06:11 +0200
-To: "H. Peter Anvin" <hpa@zytor.com>
-X-Mailer: Apple Mail (2.752.2)
+	Tue, 10 Jul 2007 18:09:10 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53326 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760615AbXGJWJJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 18:09:09 -0400
+Date: Tue, 10 Jul 2007 15:09:06 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+In-Reply-To: <469330AD.5070107@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0707101503110.5490@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com>
+ <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
+ <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
+ <20070709095116.c2ea700f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
+ <4692E44E.6000606@yahoo.com.au> <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com>
+ <4692E8B5.3030404@yahoo.com.au> <Pine.LNX.4.64.0707091905480.3108@schroedinger.engr.sgi.com>
+ <469330AD.5070107@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Looks good, except you don't want -fno-unit-at-a-time if
->> -fno-toplevel-reorder works.  And of course it would be
->> good to get rid of -fno-strict-aliasing, but let's not
->> go there today ;-P
->
-> OK, how does this look:
->
-> CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
->                    $(cflags-$(ARCH)) \
->                    -Wall -Wstrict-prototypes \
->                    -march=i386 -mregparm=3 \
->                    -include $(srctree)/$(src)/code16gcc.h \
->                    -fno-strict-aliasing -fomit-frame-pointer \
->                    $(call cc-option, -ffreestanding) \
->                    $(call cc-option, -fno-toplevel-reorder,\
->                         $(call cc-option, -fno-unit-at-a-time)) \
->                    $(call cc-option, -fno-stack-protector) \
->                    $(call cc-option, -mpreferred-stack-boundary=2)
+On Tue, 10 Jul 2007, Nick Piggin wrote:
 
-That looks fine.
+> But last time this discussion came up, IIRC you ended up handwaving
+> about all the ways in which SLOB was broken but didn't actually come
+> up with any real problems. Matt seemed willing to add those counters
+> or whatever it was if/when doing so solved a real problem. And remember
+> that SLOB doesn't have to have feature parity with SLUB, so long as it
+> implements the slab API such that the kernel *works*.
 
-> I think dropping -fno-strict-aliasing for this code is probably bad...
-> it's pretty low-level stuff which does a lot of bitlevel manipulation.
-
-"Which breaks C aliasing rules all over the place".  Well,
-probably not all that often, actually.  But, as I said --
-let's not go there now, keep the flag in there, removing
-it will take a lot of work.
-
-
-Segher
+No it does not have to have feature parity. And yes we identified areas in 
+which SLOB may cause problems due to not implementing things (f.e. 
+suspend resume). The counters are still missing and thus core development 
+cannot rely on those being there.
 
