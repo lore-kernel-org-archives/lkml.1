@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763483AbXGJUbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762982AbXGJUcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763483AbXGJUbo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 16:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbXGJUbh
+	id S1762982AbXGJUcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756788AbXGJUcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 16:31:37 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57705 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757305AbXGJUbg (ORCPT
+	Tue, 10 Jul 2007 16:32:45 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:49757 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756015AbXGJUcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 16:31:36 -0400
+	Tue, 10 Jul 2007 16:32:45 -0400
 Subject: Re: [PATCH 0/16] Pid namespaces
 From: Badari Pulavarty <pbadari@gmail.com>
 To: Pavel Emelianov <xemul@openvz.org>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Kirill Korotaev <dev@openvz.org>,
+Cc: Cedric Le Goater <clg@fr.ibm.com>, Kirill Korotaev <dev@openvz.org>,
+       Linux Containers <containers@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-In-Reply-To: <46938440.7000301@openvz.org>
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <46936DC8.3050602@openvz.org>
 References: <468DF6F7.1010906@openvz.org>
 	 <1184003180.21234.39.camel@dyn9047017100.beaverton.ibm.com>
-	 <46938440.7000301@openvz.org>
+	 <46929540.2090405@fr.ibm.com>  <46936DC8.3050602@openvz.org>
 Content-Type: text/plain
-Date: Tue, 10 Jul 2007 13:33:14 -0700
-Message-Id: <1184099594.8390.0.camel@dyn9047017100.beaverton.ibm.com>
+Date: Tue, 10 Jul 2007 13:34:16 -0700
+Message-Id: <1184099657.8390.2.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-10 at 17:06 +0400, Pavel Emelianov wrote:
-> > Not able to boot my ppc64 machine with the patchset :(
+On Tue, 2007-07-10 at 15:30 +0400, Pavel Emelianov wrote:
+> Cedric Le Goater wrote:
+> > Badari Pulavarty wrote:
+> >> On Fri, 2007-07-06 at 12:01 +0400, Pavel Emelianov wrote:
+> >>> This is "submition for inclusion" of hierarchical, not kconfig
+> >>> configurable, zero overheaded ;) pid namespaces.
+> >> Not able to boot my ppc64 machine with the patchset :(
 > > 
-> > Thanks,
-> > Badari
+> > I can't boot either on a x86_64 but I don't even have logs to send :(
 > 
-> That's the hunk lost during the split:
-> 
-> --- ./fs/proc/root.c.procfix	2007-07-10 13:52:08.000000000 +0400
-> +++ ./fs/proc/root.c	2007-07-10 15:23:20.000000000 +0400
-> @@ -111,7 +111,7 @@ void __init proc_root_init(void)
->  	err = register_filesystem(&proc_fs_type);
->  	if (err)
->  		return;
-> -	proc_mnt = kern_mount(&proc_fs_type);
-> +	proc_mnt = kern_mount_data(&proc_fs_type, &init_pid_ns);
->  	err = PTR_ERR(proc_mnt);
->  	if (IS_ERR(proc_mnt)) {
->  		unregister_filesystem(&proc_fs_type);
-> 
-> 
-> With this machine should boot fine.
+> Neither can I. And I cannot boot clean 2.6.22-rc6-mm1 either :(
+> Does someone already know what the reason is?
 
-Yes. My ppc64 box booted fine with this patch.
+2.6.22-rc6-mm1 boots fine on my x86-64 machine.
+
+your patches with the fix (in fs/proc/root.c), I am able to
+boot my x86-64 machine also.
 
 Thanks,
 Badari
