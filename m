@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbXGJB43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761849AbXGJB46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761614AbXGJB43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 21:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbXGJB4V
+	id S1761849AbXGJB46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 21:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbXGJB4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 21:56:21 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58357 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754346AbXGJB4V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 21:56:21 -0400
-Date: Mon, 9 Jul 2007 18:56:19 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-In-Reply-To: <4692E44E.6000606@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com>
-References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com>
- <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
- <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
- <20070709095116.c2ea700f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
- <4692E44E.6000606@yahoo.com.au>
+	Mon, 9 Jul 2007 21:56:51 -0400
+Received: from ozlabs.org ([203.10.76.45]:57197 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756010AbXGJB4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 21:56:50 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18066.59225.533802.387340@cargo.ozlabs.ibm.com>
+Date: Tue, 10 Jul 2007 11:56:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: nigel@suspend2.net
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] Re: hibernation/snapshot design [was Re: [PATCH] Remove
+	process freezer from suspend to RAM pathway]
+In-Reply-To: <200707101133.01566.nigel@nigel.suspend2.net>
+References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
+	<20070708221315.GF5401@elf.ucw.cz>
+	<200707090101.28832.rjw@sisk.pl>
+	<200707101133.01566.nigel@nigel.suspend2.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Nick Piggin wrote:
+Nigel Cunningham writes:
 
-> I don't see any problems with maintaining SLOB. It is simple enough
-> that I was able to write a userspace test harness for it and hack
-> away at it after reading the code the first time for half an hour or
-> so. It is nothing even slightly comparable to the problems of SLAB,
-> for example. And you don't have to maintain it at all anyway!
+> (Finally catching up on emails since Saturday!)
 
-I have to maintain it because I have to keep the slab APIs consistent 
-(recently I added GFP_ZERO support and had to provide shims for slab 
-defreag). It is not in a good state as described in the patch and has a 
-history of not being maintained properly. Everyone that modifies the 
-behavior of the slab allocator has to do something to avoid breaking SLOB. 
-Its certainly fun to hack on but is that a criterion for keeping it in the 
-tree?
+Yes, I know what you mean; I was occupied with other work stuff on
+Friday and not well on Saturday, and by that stage there was a backlog
+of about 500 emails for me to wade through... :/
 
-> I like removing code as much as the next person, but I don't
-> understand why you are so intent on removing SLOB and willing to
-> dismiss its advantages so quickly.
+> The freezer is also essential for doing a full image of memory - you
+> have to be able to guarantee that some of the image won't change in
+> order to be able to write it out before the atomic copy. Of course the
+> freezer alone isn't enough, but it solves 95% of the issue.
 
-Quickly? We have considered this for months now.
+Sure.  As I pointed out in another email, it's unrealistic to expect
+the freezer to be able to stop everything in a state where any
+arbitrary mutex is free.  But as long as you don't need to do anything
+that depends on getting a mutex while the system is frozen, there
+should be no problem.
+
+Paul.
