@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbXGJJbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764448AbXGJJcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932119AbXGJJbs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 05:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763715AbXGJJ26
+	id S1764448AbXGJJcB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 05:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764225AbXGJJ27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 05:28:58 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:41858 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764138AbXGJJ2s (ORCPT
+	Tue, 10 Jul 2007 05:28:59 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:20400 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762264AbXGJJ2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 05:28:48 -0400
-Message-Id: <20070710093120.145831345@de.ibm.com>
+	Tue, 10 Jul 2007 05:28:47 -0400
+Message-Id: <20070710093118.952355099@de.ibm.com>
 References: <20070710092935.896013926@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 10 Jul 2007 11:29:46 +0200
+Date: Tue, 10 Jul 2007 11:29:45 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 11/16] dasd: Avoid compile warnings on !CONFIG_DASD_PROFILE
-Content-Disposition: inline; filename=011-dasd-profile.diff
+Subject: [patch 10/16] Remove volatile from atomic_t
+Content-Disposition: inline; filename=010-atomic.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-drivers/s390/block/dasd_proc.c:33:
- warning: 'dasd_get_user_string' defined but not used 
-drivers/s390/block/dasd_proc.c:172:
- warning: 'dasd_statistics_array' defined but not used 
+Follow i386/x86_64 and remove 'volatile' from atomic_t.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/block/dasd_proc.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ include/asm-s390/atomic.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: quilt-2.6/drivers/s390/block/dasd_proc.c
+Index: quilt-2.6/include/asm-s390/atomic.h
 ===================================================================
---- quilt-2.6.orig/drivers/s390/block/dasd_proc.c
-+++ quilt-2.6/drivers/s390/block/dasd_proc.c
-@@ -28,6 +28,7 @@ static struct proc_dir_entry *dasd_proc_
- static struct proc_dir_entry *dasd_devices_entry = NULL;
- static struct proc_dir_entry *dasd_statistics_entry = NULL;
+--- quilt-2.6.orig/include/asm-s390/atomic.h
++++ quilt-2.6/include/asm-s390/atomic.h
+@@ -24,7 +24,7 @@
+  */
  
-+#ifdef CONFIG_DASD_PROFILE
- static char *
- dasd_get_user_string(const char __user *user_buf, size_t user_len)
- {
-@@ -47,6 +48,7 @@ dasd_get_user_string(const char __user *
- 		buffer[user_len] = 0;
- 	return buffer;
- }
-+#endif /* CONFIG_DASD_PROFILE */
+ typedef struct {
+-	volatile int counter;
++	int counter;
+ } __attribute__ ((aligned (4))) atomic_t;
+ #define ATOMIC_INIT(i)  { (i) }
  
- static int
- dasd_devices_show(struct seq_file *m, void *v)
-@@ -167,6 +169,7 @@ dasd_calc_metrics(char *page, char **sta
- 	return len;
- }
+@@ -141,7 +141,7 @@ static __inline__ int atomic_add_unless(
  
-+#ifdef CONFIG_DASD_PROFILE
- static char *
- dasd_statistics_array(char *str, unsigned int *array, int shift)
- {
-@@ -180,6 +183,7 @@ dasd_statistics_array(char *str, unsigne
- 	str += sprintf(str,"\n");
- 	return str;
- }
-+#endif /* CONFIG_DASD_PROFILE */
+ #ifdef __s390x__
+ typedef struct {
+-	volatile long long counter;
++	long long counter;
+ } __attribute__ ((aligned (8))) atomic64_t;
+ #define ATOMIC64_INIT(i)  { (i) }
  
- static int
- dasd_statistics_read(char *page, char **start, off_t off,
 
 -- 
 blue skies,
