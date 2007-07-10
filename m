@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764688AbXGJShp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764710AbXGJSiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764688AbXGJShp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761626AbXGJSh3
+	id S1764710AbXGJSiV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbXGJSiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:37:29 -0400
-Received: from mga03.intel.com ([143.182.124.21]:23615 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764350AbXGJSh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:37:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,523,1175497200"; 
-   d="scan'208";a="248759509"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PCI probing changes
-Date: Tue, 10 Jul 2007 11:34:03 -0700
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	Tue, 10 Jul 2007 14:38:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60417 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752826AbXGJSiD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 14:38:03 -0400
+Date: Tue, 10 Jul 2007 11:38:02 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality,
+ performance and maintenance
+In-Reply-To: <20070710082709.GC16148@Krystal>
+Message-ID: <Pine.LNX.4.64.0707101136290.11906@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de>
+ <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
+ <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com>
+ <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal>
+ <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
+ <20070709225817.GA5111@Krystal> <Pine.LNX.4.64.0707091715450.2062@schroedinger.engr.sgi.com>
+ <20070710082709.GC16148@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707101134.05725.jesse.barnes@intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, July 10, 2007 1:31:52 Andrew Morton wrote:
-> pci-disable-decode-of-io-memory-during-bar-sizing.patch
+On Tue, 10 Jul 2007, Mathieu Desnoyers wrote:
 
-This is a core PCI change, should probably go through Greg and/or 
-linux-pci instead?  Or just send it to Linus directly, iirc everyone 
-was ok with the change for 2.6.23.
+> cmpxchg_local is not available on all archs, but local_cmpxchg is. It
+> expects a local_t type which is nothing else than a long. When the local
+> atomic operation is not more efficient or not implemented on a given
+> architecture, asm-generic/local.h falls back on atomic_long_t. If you
+> want, you could work on the local_t type, which you could cast from a
+> long to a pointer when you need so, since their size are, AFAIK, always
+> the same (and some VM code even assume this is always the case).
 
-Also, you can add a
-Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-to it.
+It would be cleaner to have cmpxchg_local on all arches. The type 
+conversion is hacky. If this is really working then we should also use the 
+mechanism for other things like the vm statistics.
 
-Thanks,
-Jesse
+> The measurements I get (in cycles):
+> 
+>              enable interrupts (STI)   disable interrupts (CLI)   local CMPXCHG
+> IA32 (P4)    112                        82                         26
+> x86_64 AMD64 125                       102                         19
+
+
+Looks good and seems to indicate that we can at least double the speed of 
+slab allocation.
