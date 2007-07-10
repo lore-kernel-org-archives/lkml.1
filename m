@@ -1,101 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbXGJPjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbXGJPlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbXGJPjs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 11:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbXGJPjk
+	id S1758783AbXGJPlQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 11:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbXGJPlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 11:39:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40395 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754472AbXGJPjj (ORCPT
+	Tue, 10 Jul 2007 11:41:01 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:59894 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754714AbXGJPlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 11:39:39 -0400
-Date: Tue, 10 Jul 2007 08:39:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Stefano Rivoir <s.rivoir@gts.it>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-In-Reply-To: <4693327E.6000006@gts.it>
-Message-ID: <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
- <4693327E.6000006@gts.it>
+	Tue, 10 Jul 2007 11:41:00 -0400
+Message-ID: <4693A87F.2070102@linux.vnet.ibm.com>
+Date: Tue, 10 Jul 2007 21:10:47 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [patch -rss] Make RSS accounting display more user friendly
+References: <20070620154655.13844.42876.sendpatchset@balbir-laptop> <6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com> <467B2F4F.2030101@openvz.org> <6599ad830706220839h2a556c76he11b78c2c4cdb86e@mail.gmail.com> <661de9470706222048g638a06dboc0b2e85975a9ba70@mail.gmail.com> <6599ad830706250019h117ff575h156cf112f5778e43@mail.gmail.com> <6D63B142.2080404@linux.vnet.ibm.com> <1183981098.1913.22.camel@twins> <46930EAF.6030104@linux.vnet.ibm.com> <20070710082904.b0faaddd.rdunlap@xenotime.net>
+In-Reply-To: <20070710082904.b0faaddd.rdunlap@xenotime.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 10 Jul 2007, Stefano Rivoir wrote:
+Randy Dunlap wrote:
+>> Hmm.. yes.. a library routine would be nice!
 > 
-> 2.6.22 hangs at boot on my box. Here attached a original dmesg from 2.6.21,
-> and a copy of it where it stops on 2.6.22 (I can't attach the original 2.6.22
-> dmesg because it's not logged to disk yet); it actually stops right after
-> 'init' launches.
+> you mean something like lib/cmdline.c::memparse() ?
+> 
 
-Ok, without any oops or hang in any really obvious place, that doesn't 
-really tell anybody anything specific enough to even start trying to debug 
-this, so you'd need to do one of two things:
+Excellent, one of the reasons to love Linux (there's already
+code) :-)
 
- - poke a lot at the machine to try to get more specific information. In 
-   particular, get things like SysRQ-T output. That, in turn, probably 
-   would mean trying to get a serial console hooked up or something.
-
-   The next thing that you got on 2.6.21 after the point it hangs was 
-   apparently 
-
-	..
-	input: PC Speaker as /class/input/input1
-	ieee1394: Initialized config rom entry `ip1394'
-	ACPI: PCI Interrupt Link [APC4] enabled at IRQ 19
-	ACPI: PCI Interrupt 0000:04:05.0[A] -> Link [APC4] -> GSI 19 (level, low) -> IRQ 19
-	usbcore: registered new interface driver hiddev
-	..
-
-   so you could _try_ to disable the PC speaker or firewire, and see 
-   what's up. Did you switch from the old firewire drivers to the new one, 
-   for example? Or if you didn't, try it.
-
-   IOW, we'd need a lot more debug information.
-
-The second alternative will take some time, but is really a lot easier:
-
- - Get a kernel git tree, and do a "git bisect".
-
-   There's almost 7000 commits in between 2.6.21 and 22, but that still 
-   means that in about fourteen recompiles/reboots, "git bisect" should 
-   tell us where your problem starts, which will hopefully make it obvious 
-   what the problem is (or at least pinpoint it a *lot*).
-
-Doing a git bisect isn't really that hard, but fourteen compiles/reboots 
-will take some time (well, the compiles will, the reboots aren't that 
-bad). But even if you're not a git user, it really is very simple:
-
- - get started with 'git': on most distros it's now as simple as doing 
-   something like
-
-	yum install git
-
-   and while you might not get the latest version (Debian stable is at 
-   some ancient 1.4.4.4 version that isn't as nice as the 1.5.x series), 
-   for something like this you won't care that deeply.
-
- - get the kernel git tree (this will take a while to download about 
-   180MB)
-
-	git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
-
- - start the "git bisect" with
-
-	git bisect good v2.6.21
-	git bisect bad v2.6.22
-
-   and it will pick a kernel version about half-way between the two 
-   points, and you can now start testing. For each kernel you try, if it 
-   boots fine, do "git bisect good", otherwise boot into a working kernel, 
-   and then do "git bisect bad". Git will then pick the next "halfway" 
-   kernel for that case.
-
-Thanks,
-
-		Linus
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
