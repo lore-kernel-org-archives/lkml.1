@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbXGJQF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbXGJQGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758491AbXGJQF2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 12:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbXGJQFV
+	id S1759396AbXGJQGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 12:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbXGJQFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 12:05:21 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:27926 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752633AbXGJQFU (ORCPT
+	Tue, 10 Jul 2007 12:05:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45021 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753093AbXGJQFy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 12:05:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type;
-        b=WDdiXjDx/o+ewMOm7OmghZ6Qet1VomS7ctnksC40nVpd2ror4GD3wDRrAEDrNKtaPlb571CK9WpdhdwyKk0xZCuWP+Uthlq8lrqU/veP9iPJSWX9fVpQnuA4VNTrLzMkVE1kPv4g5p9U8j6T2Q6JlOYNutJCp8MEAyT7LNFwDfs=
-Message-ID: <4693AE32.7030403@gmail.com>
-Date: Tue, 10 Jul 2007 18:05:06 +0200
-From: Adel Gadllah <adel.gadllah@gmail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix sparse problems with ARRAY_SIZE
-Content-Type: multipart/mixed;
- boundary="------------070208070406060503000407"
+	Tue, 10 Jul 2007 12:05:54 -0400
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070709131924.GM11451@enneenne.com>
+References: <20070628161450.GD13886@enneenne.com>
+	 <1183117082.1170.308.camel@pmac.infradead.org>
+	 <20070629150813.GM13886@enneenne.com>
+	 <1183132548.1170.360.camel@pmac.infradead.org>
+	 <20070629163422.GP13886@enneenne.com>
+	 <1183135253.17622.5.camel@shinybook.infradead.org>
+	 <20070630171340.GT13886@enneenne.com>
+	 <1183291392.2828.17.camel@shinybook.infradead.org>
+	 <20070703094831.GA13413@enneenne.com>
+	 <1183468191.29081.17.camel@shinybook.infradead.org>
+	 <20070709131924.GM11451@enneenne.com>
+Content-Type: text/plain
+Date: Tue, 10 Jul 2007 17:05:47 +0100
+Message-Id: <1184083547.32628.4.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070208070406060503000407
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, 2007-07-09 at 15:19 +0200, Rodolfo Giometti wrote:
+> 
+> > Also read Documentation/volatile-considered-harmful.txt and ponder
+> > deeply your use of 'volatile' on certain members of struct pps_s.
+> 
+> I read such document but I'm still convinced that the attribute
+> volatile is needed for {assert,clear}_sequence and {assert,clear}_tu
+> since inside pps_event() they are updated without any locks at all
+> thanks to the dummy_info variable which is used for unallocated PPS
+> sources.
 
-ARRAY_SIZE seems to create sparse warnings when used on global 
-variables. The attached patch fixes this by using a ARRAY_SIZE macro 
-that does not use __must_be_array(arr) for sparse.
-See: http://marc.info/?t=118103449100007&r=1&w=2
+I'm sure the version with 'volatile' will also be broken then. Sounds
+like the right answer is to fix the locking.
 
-P.S: please CC me
+-- 
+dwmw2
 
---------------070208070406060503000407
-Content-Type: text/x-patch;
- name="array_size_sparse_fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="array_size_sparse_fix.patch"
-
-Signed-off-by: Adel Gadllah <adel.gadllah@gmail.com>
-
-diff -upNr linux-2.6.orig/include/linux/kernel.h linux-2.6/include/linux/kernel.h
---- linux-2.6.orig/include/linux/kernel.h	2007-07-10 17:53:39.000000000 +0200
-+++ linux-2.6/include/linux/kernel.h	2007-07-10 18:01:30.000000000 +0200
-@@ -35,7 +35,11 @@ extern const char linux_proc_banner[];
- #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
- #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
- 
-+#ifdef __CHECKER_
-+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((x)[0]))
-+#else
- #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
-+#endif
- 
- #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
- #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-
---------------070208070406060503000407--
