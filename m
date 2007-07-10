@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761672AbXGJRq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbXGJRtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761672AbXGJRq2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 13:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbXGJRqV
+	id S1761767AbXGJRtj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 13:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756943AbXGJRt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 13:46:21 -0400
-Received: from [212.12.190.203] ([212.12.190.203]:34438 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757449AbXGJRqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 13:46:20 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: Hibernation Redesign
-Date: Tue, 10 Jul 2007 20:45:17 +0300
-User-Agent: KMail/1.5
-Cc: Pavel Machek <pavel@ucw.cz>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <200707081737.21932.a1426z@gawab.com> <87hcoduh4k.fsf@jbms.ath.cx> <46939E5E.6010305@goop.org>
-In-Reply-To: <46939E5E.6010305@goop.org>
+	Tue, 10 Jul 2007 13:49:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:40240 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756013AbXGJRt2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 13:49:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=q8j2oQepj928YybC3EaEzr+rbScDkevuu1/0ZzHi7kBg8LopEwSZRW5fTJ3VYk/sFCwvjwB9uMAWdiAH1apgJTlxZbCTiGgGrXf6L7vP8HfUbFOx/dXO0/u5XdiI0Ok10XwJUo9oRx0uvGS6Cp+IuKoO2BQBIk1X34lg4frx8sU=
+Date: Tue, 10 Jul 2007 21:49:23 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: ext2 reservations (Re: -mm merge plans for 2.6.23)
+Message-ID: <20070710174923.GA5751@martell.zuzino.mipt.ru>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707102045.17101.a1426z@gawab.com>
+In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Jeremy Maitin-Shepard wrote:
-> > I don't know a whole lot about xen, but it seems that one issue with
-> > this approach is that it requires you run your system under a hypervisor
-> > at all times, which may introduce some overhead.
->
-> No, I don't think that's what Al is proposing.  The kernel-internal
-> interfaces we've put in place to make Xen work could be reused to do
-> some of the things you're talking about.  In particular, a kernel
-> running under Xen has to be able to deal with non-contiguous physical
-> pages, and reusing the same pagetable hooks would allow a kexeced kernel
-> to run happily out of any random assortment of pages you manage to
-> allocate for it.
+> ext2-reservations.patch
+> 
+>  Still needs decent testing.
 
-Exactly, there may well be overlap between Xen and the kexec hibernate 
-approach, for which code structures should definitely be leveraged.
+Was this oops silently fixed?
+http://lkml.org/lkml/2007/3/2/138
+2.6.21-rc2-mm1: EIP is at ext2_discard_reservation+0x1c/0x52
 
-And, I wasn't suggesting to use Xen as an HV, which wouldn't really solve 
-anything, but was trying to point out that there is no need to maintain two 
-separate kernels, much like Xen, which inlines two modes into the kernel:  
-host and guest.
+I still have that ext2 partition backed up.
 
-So kexec really seems the way to go, which mimics the way APM used to do it, 
-which is known to work flawlessly with minimal OS involvement.
-
-
-Thanks!
-
---
-Al
