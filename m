@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbXGJFx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbXGJF4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757370AbXGJFx1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 01:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbXGJFxS
+	id S1759622AbXGJF4n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 01:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbXGJF4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 01:53:18 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55064 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751475AbXGJFxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 01:53:17 -0400
-Message-ID: <46931ECB.2060601@qumranet.com>
-Date: Tue, 10 Jul 2007 08:53:15 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Tue, 10 Jul 2007 01:56:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:41043 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbXGJF4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 01:56:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lDcQeDrQnH38vwb4MaM4MPYgW3QG2744J7DBM2x53/hHfsiQUdgGdw9piT92dOtOxE8njOT050Y6efGv3HciC/ymXcMavnQe/xpmCdTvc0WBpnPQbFqonOFcdMIqC/F1Z8hrDFtMGWFB8fHQSw64cwYhCSGsEinAhemDKxKju9M=
+Message-ID: <41840b750707092256i280b6f00oac7b25004bf27bea@mail.gmail.com>
+Date: Tue, 10 Jul 2007 01:56:34 -0400
+From: "Shem Multinymous" <multinymous@gmail.com>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Subject: Re: [Hdaps-devel] [PATCH] hdaps - switch to using input-polldev
+Cc: hdaps-devel@lists.sourceforge.net, rlove@rlove.org,
+       "Linux Kernel ML" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, "Michael Riepe" <michael@mr511.de>,
+       "Henrique de Moraes Holschuh" <hmh@debian.org>
+In-Reply-To: <200707092358.08529.dtor@insightbb.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH][RFC] kvm-scheduler integration
-References: <11838994974161-git-send-email-avi@qumranet.com>	 <20070708133539.GA12597@elte.hu> <4690E973.7000606@qumranet.com>	 <20070708134850.GB22911@elte.hu>	 <1183937563.6005.365.camel@localhost.localdomain>	 <4691D82F.3030401@qumranet.com> <1184029745.6005.402.camel@localhost.localdomain>
-In-Reply-To: <1184029745.6005.402.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 10 Jul 2007 08:53:15 +0300 (IDT)
+Content-Disposition: inline
+References: <200705252354.43730.dtor@insightbb.com>
+	 <200707090144.45557.dtor@insightbb.com>
+	 <41840b750707082306n6509ee6ds3a0ccd16b6387353@mail.gmail.com>
+	 <200707092358.08529.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Mon, 2007-07-09 at 09:39 +0300, Avi Kivity wrote:
->   
->> Rusty Russell wrote:
->>     
->>> I think a "struct preempt_ops *" and a "void *preempt_ops_data" inside
->>> every task struct is a better idea.  Call the config option
->>> PREEMPT_SCHED_HOOKS and now there's nothing kvm-specific about it...
->>>   
->>>       
->> I considered that, but your proposal does not allow a single task to
->> have multiple preemption hooks installed (hookers?!).  Since in general
->> there's no reason to suppose that users would be mutually exclusive, we
->> need to have a struct hlist of these things.  All in all this seemed to
->> indicate that the second user should have the honor of figuring out that
->> stuff.
->>     
+On 7/9/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+> > Sounds good, then. It's a bit of a hack, but the benefits are well
+> > worth it (if we can resolve the scheduling issue).
 >
-> No; this is a "I'm doing something magic and need to know before someone
-> else takes the CPU".  Almost by definition, you cannot have two of them
-> at the same time.  Let someone else try that if and when...
->   
+> You know, I slept on it and I think I want to move the polldev into
+> opposite direction - to accomodte devices that need "relaxed" polling
+> and are ok with polling being a bit irregular and maybe even rounded
+> to next jiffy or something to better accomodate tickless kernels.
 
-Why can't you have two of them?  Say I'm writing a module to utilize
-branch recording to be able to debug a process in reverse (of course
-that doesn't really need sched hooks; let's pretend it does).  Why can't
-I debug a process that uses kvm?
+How about letting drivers and/or clients explicitly express their
+scheduling needs, e.g., in terms of a desired polling rate and a
+desired bound on scheduling irregularity? Given these requirements,
+input-polldev will try to satisfy all requests (i.e., the harshest
+one) made by the driver and current clients, on a "best effort" basis,
+using minimal resources. (There should also be a way for a driver to
+say "don't bother to poll more often than X or with regularity better
+than Y even if a client asks for it -- the hardware isn't that fast
+anyway".)
 
-More importantly, now the two subsystems have to know about each other
-so they don't step on each other's toes.
+This way the same infrastructure could smoothly handle devices and
+apps with vastly different polling needs.
 
-> But having different hooks for different tasks makes a great deal of
-> sense.  This hook makes a great deal of sense.
->   
+That doesn't help much with the workqueue vs. timers issue, of course,
+unless input-polldev implements *both*.
 
-If we make the hooks non-kvm-specific, I'd just add an hlist there.
-
-> But KVM-specific code in the scheduler is just wrong, and I think we all
-> know that.
->   
-
-Even if I eradicate all mention of kvm from the patch, it's still kvm
-specific.  kvm at least is sensitive to the exact point where we switch
-in (it wants interrupts enabled) and it expects certain parameters to
-the callbacks.  If $new_abuser needs other conditions or parameters,
-which is quite likely IMO as it will most likely have to do with
-hardware, then we will need to update the hooks anyway.
-
-Removing 'kvm' from the patch is easy; but I don't like to pretend to
-generality where there ain't.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+  Shem
