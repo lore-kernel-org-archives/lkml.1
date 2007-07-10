@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbXGJMpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758324AbXGJMpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbXGJMpb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 08:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbXGJMo3
+	id S1758324AbXGJMpr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 08:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbXGJMoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 08:44:29 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56640 "EHLO
+	Tue, 10 Jul 2007 08:44:30 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56641 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754288AbXGJMoG (ORCPT
+	with ESMTP id S1754692AbXGJMoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 08:44:06 -0400
-Date: Tue, 10 Jul 2007 14:44:38 +0200
+	Tue, 10 Jul 2007 08:44:08 -0400
+Date: Tue, 10 Jul 2007 14:44:40 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: jgarzik@pobox.com
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fore200e_param_bs_queue() must be __devinit
-Message-ID: <20070710124438.GT3492@stusta.de>
+Subject: [2.6 patch] atm/lanai.c:sram_test_word() must be __devinit
+Message-ID: <20070710124440.GU3492@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -29,7 +29,7 @@ This patch fixes the following section mismatch:
 
 ...
   MODPOST vmlinux
-WARNING: drivers/built-in.o(.text+0x6203bb): Section mismatch: reference to .init.text:fore200e_param_bs_queue (between 'fore200e_initialize' and 'fore200e_monitor_putc')
+WARNING: drivers/built-in.o(.text+0x62e4f7): Section mismatch: reference to .init.text:sram_test_word (between 'sram_test_pass' and 'sram_test_and_clear')
 ...
 
 <--  snip  -->
@@ -37,15 +37,17 @@ WARNING: drivers/built-in.o(.text+0x6203bb): Section mismatch: reference to .ini
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.22-rc6-mm1/drivers/atm/fore200e.c.old	2007-07-10 04:11:43.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/drivers/atm/fore200e.c	2007-07-10 04:12:48.000000000 +0200
-@@ -2435,7 +2435,7 @@
+--- linux-2.6.22-rc6-mm1/drivers/atm/lanai.c.old	2007-07-10 04:14:40.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/atm/lanai.c	2007-07-10 04:15:20.000000000 +0200
+@@ -553,8 +553,8 @@
+ 	writel(val, sram_addr(lanai, offset));
  }
  
- 
--static void __init
-+static void __devinit
- fore200e_param_bs_queue(struct fore200e* fore200e,
- 			enum buffer_scheme scheme, enum buffer_magn magn,
- 			int queue_length, int pool_size, int supply_blksize)
+-static int __init sram_test_word(
+-	const struct lanai_dev *lanai, int offset, u32 pattern)
++static int __devinit sram_test_word(const struct lanai_dev *lanai,
++				    int offset, u32 pattern)
+ {
+ 	u32 readback;
+ 	sram_write(lanai, pattern, offset);
 
