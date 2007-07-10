@@ -1,92 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbXGJU6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762713AbXGJU7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758571AbXGJU6r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 16:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757716AbXGJU6h
+	id S1762713AbXGJU7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757607AbXGJU7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 16:58:37 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:25696 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757145AbXGJU6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 16:58:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=AgpCh48eV9DQKmbML2bAdhLRMWkY3MCeNNYaBUw2tXIYgpjVjdWq4j+XSTwyyJe+RRW2SqCFZUoMQXQ08jya/Pu9RzPJD9yunSJxLK1CwdY2aj9+ebbLSLxHm5y39S3poRkHHdXlxn+BukSGO1SdpkVeFVHU5v/vqH932OIuHWs=
-Message-ID: <4693F242.2030004@gmail.com>
-Date: Tue, 10 Jul 2007 15:55:30 -0500
-From: William Tambe <tambewilliam@gmail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 10 Jul 2007 16:59:06 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:45974 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757145AbXGJU7E convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 16:59:04 -0400
+Date: Tue, 10 Jul 2007 16:59:01 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       "Alexandre =?iso-8859-1?Q?Gu=E9don?=" 
+	<totalworlddomination@gmail.com>
+Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality, performance and maintenance
+Message-ID: <20070710205901.GA19805@Krystal>
+References: <p73y7hrywel.fsf@bingen.suse.de> <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com> <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com> <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal> <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com> <20070709225817.GA5111@Krystal> <Pine.LNX.4.64.0707091715450.2062@schroedinger.engr.sgi.com> <20070710082709.GC16148@Krystal>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Stas Sergeev <stsp@aknet.ru>,
-       "Rohland, Hans-Christoph" <hans-christoph.rohland@sap.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Concerning a post that you made about expandable anonymous shared
- mappings
-References: <468562F6.4010604@gmail.com> <Pine.LNX.4.64.0707021619020.32337@blonde.wat.veritas.com> <46893F97.7080200@aknet.ru> <Pine.LNX.4.64.0707031606370.16965@blonde.wat.veritas.com> <4692E5DF.7080304@gmail.com> <Pine.LNX.4.64.0707102056140.4107@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0707102056140.4107@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20070710082709.GC16148@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:52:08 up 3 days, 10:57,  4 users,  load average: 0.90, 0.35, 0.30
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Another architecture tested
+
+Comparison: irq enable/disable vs local CMPXCHG
+             enable interrupts (STI)   disable interrupts (CLI)    local CMPXCHG
+Tested-by: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+IA32 (P4)               112                        82                       26
+x86_64 AMD64            125                       102                       19
+Tested-by: Alexandre Guédon <totalworlddomination@gmail.com>
+x86_64 Intel Core2 Quad  21                        19                        7
 
 
-Hugh Dickins wrote:
-> On Mon, 9 Jul 2007, William Tambe wrote:
->> Hugh Dickins wrote:
->>> I've come right around to your original view, Stas, and William's:
->>> if that mmap creates such an object, then the expanding mremap really
->>> ought to be useful, and allow the underlying object to be expanded.
->>> The shared anonymous object is already anomalous: expanding it on
->>> fault makes it more consistent with its own nature, not less.
->>> ...
->>> Here's a patch against 2.6.22-rc7: would you, Stas, put your
->>> Signed-off-by into this, and accept authorship - although I'm
->>> sending this back to you, it's very much your idea, and only
->>> trivially modified from your three-year-old patch by me.  If
->>> you're agreeable, I can then forward it or its shmem_zero_fault
->>> equivalent to Andrew when we see which way 2.6.23 is going.
->> ... 
->> Will this patch be added to stable versions of the linux kernel?
->> Please let me know.
-> 
-> I confess that the lukewarm response from Stas cooled my enthusiasm,
-> and left me feeling that perhaps I'm an idiot to be adding such a
-> feature so many years too late; and my old caution about the way
-> a child could use up memory not freed on child's exit, unknown to
-> parent, returned to haunt me.  That could be documented for new
-> usages, but I just don't know what usages are already out there,
-> and fear I'd be introducing an exploit.
-> 
-> It most certainly will not be added to a stable version of the
-> linux kernel, if by that you mean 2.6.22.N or 2.6.21.N etc.
-> Though it can be viewed as a bugfix, the patch as it stands
-> seems in danger of introducing its own bug, and it's just too
-> much of a feature to be suitable for a -stable release.
-> 
-> But more probably you meant, will it be in 2.6.23 or 2.6.24?
-> Sorry to be such a vacillatiing wimp, but I don't know.
-> How well are you managing with the shm_open approach?
-> 
-> Hugh
-> 
-
-I understand your concern. But since I am working on a dynamic memory 
-management code that I wish to use with other projects that I have, I 
-didn't find appropriate to use shm_open.
-
-In fact there is a name associated with the shared memory requested with 
-shm_open, so that it can be mmap(ed) in another process. And I do not 
-wish to have it accessible by any other process, unless I choose to do so.
-
-shm_open is great, but it doesn't quite fit my needs.
-And I think remap(ing) ANONYMOUS memory kind of make a lot of things easier.
-
-Can that feature be added at least to release candidates series so that 
-everybody can try it and see how well it does?
-
-Sincerely,
-William Tambe
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
