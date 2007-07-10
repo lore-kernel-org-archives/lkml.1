@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764162AbXGJJmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764675AbXGJJmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764162AbXGJJmB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 05:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760637AbXGJJlx
+	id S1764675AbXGJJmX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 05:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764203AbXGJJmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 05:41:53 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:44556 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758586AbXGJJlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 05:41:52 -0400
-Message-ID: <4693543C.2020509@openvz.org>
-Date: Tue, 10 Jul 2007 13:41:16 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Tue, 10 Jul 2007 05:42:04 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:23374 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764122AbXGJJmB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 05:42:01 -0400
+Date: Tue, 10 Jul 2007 11:42:00 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [patch] make timespec_equal() take const arguments
+In-Reply-To: <20070710023754.77c42078.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707101141250.11053@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0707091846090.2887@fbirervta.pbzchgretzou.qr>
+ <20070710023754.77c42078.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: sukadev@us.ibm.com
-CC: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 0/16] Pid namespaces
-References: <468DF6F7.1010906@openvz.org> <20070710002929.GA11549@us.ibm.com>
-In-Reply-To: <20070710002929.GA11549@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sukadev@us.ibm.com wrote:
-> Pavel Emelianov [xemul@openvz.org] wrote:
-> | This is "submition for inclusion" of hierarchical, not kconfig
-> | configurable, zero overheaded ;) pid namespaces.
-> | 
-> | The overall idea is the following:
-> | 
-> | The namespace are organized as a tree - once a task is cloned
-> | with CLONE_NEWPIDS (yes, I've also switched to it :) the new
-> 
-> Can you really clone() a pid namespace all by itself ?
-> copy_namespaces() has the following:
-> 
-> 
->         if (!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER)))
->                 return 0;
-> 
-> doesn't it mean you cannot create a pid namespace using clone() unless
-> one of the above flags are also specified ?
-> 
-> unshare_nsproxy_namespaces() has the following correct check:
-> 
->         if (!(unshare_flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
->                                CLONE_NEWUSER | CLONE_NEWPIDS)))
->                 return 0;
 
-I have already pointed this out. I attached the previous version of
-this patch where I cloned the namespaces via unshare :( However the
-copy_pid_ns code looks correct. I will resend it altogether.
+Make arguments of timespec_equal() const struct timespec.
 
-My bad. I have to stop working at times I want to sleep...
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
+---
+ include/linux/time.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.22/include/linux/time.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/time.h
++++ linux-2.6.22/include/linux/time.h
+@@ -36,7 +36,8 @@ struct timezone {
+ #define NSEC_PER_SEC	1000000000L
+ #define FSEC_PER_SEC	1000000000000000L
  
-> BTW, why not use CLONE_NEWPID and drop the 'S' ? We don't have 'S' with
-> other namespaces.
-
-CLONE_NEWPID? Hm... I see no difference. OK I'll switch to it.
-
-> Suka
-> 
-
+-static inline int timespec_equal(struct timespec *a, struct timespec *b)
++static inline int timespec_equal(const struct timespec *a,
++                                 const struct timespec *b)
+ {
+ 	return (a->tv_sec == b->tv_sec) && (a->tv_nsec == b->tv_nsec);
+ }
