@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763564AbXGJSGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763752AbXGJSGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763564AbXGJSGK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759068AbXGJSF4
+	id S1763752AbXGJSGr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbXGJSGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:05:56 -0400
-Received: from mga03.intel.com ([143.182.124.21]:4788 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759099AbXGJSFz convert rfc822-to-8bit (ORCPT
+	Tue, 10 Jul 2007 14:06:38 -0400
+Received: from mail-1.epublica.de ([213.238.59.6]:60318 "EHLO
+	mail-1.epublica.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759292AbXGJSGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:05:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,523,1175497200"; 
-   d="scan'208";a="248745665"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 10 Jul 2007 14:06:37 -0400
+X-Greylist: delayed 1937 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jul 2007 14:06:37 EDT
+Message-ID: <4693C318.8040105@hanno.de>
+Date: Tue, 10 Jul 2007 19:34:16 +0200
+From: Hanno Zulla <abos@hanno.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: -mm merge plans for 2.6.23 - ioat/dma engine
-Date: Tue, 10 Jul 2007 11:05:45 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02A5736C@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <4693B47B.7050406@intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: -mm merge plans for 2.6.23 - ioat/dma engine
-Thread-Index: AcfDD9UbHBJ5aB9jSQGQmNPFyhiUSgACyjsg
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-X-OriginalArrivalTime: 10 Jul 2007 18:05:46.0986 (UTC) FILETIME=[F0CDACA0:01C7C31C]
+To: linux-kernel@vger.kernel.org
+Subject: Nova-T, cx88-dvb & "cx88_wakeup: 2 buffers handled (should be 1)"
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote: 
->Andrew Morton wrote:
->> git-ioat-vs-git-md-accel.patch
->> ioat-warning-fix.patch
->> fix-i-oat-for-kexec.patch
->> 
->>  I don't seem to be able to get rid of these.  Chris Leech 
->appears to have
->>  vanished.
->
->Chris is a moving target. Thankfully we have Shannon Nelson 
->taking over Chris' 
->duties. Shannon, can you take a look at these and see what 
->needs to happen to it 
->? Most likely these just need to be pushed to the right person.
+Hi,
 
-Auke: Thanks for the introduction :-).
+[ please cc me with replies. ]
 
-Andrew: All three of these patches are reasonable and can be pushed on
-up.  You can add my sign-off to all three:
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+I have asked this upstream at linux-dvb [1] and to the Ubuntu kernel's
+bugtracker [2], but no help so far. Googling around, one can find other
+reports about this, but no solution, either.
 
->
->Cheers,
->
->Auke
->
->
->PS: I think we should add an I/OAT / DMA engine section in the 
->MAINTAINERS...
->
 
-I'll be posting a MAINTAINERS patch Real Soon Now with my name on
-IOAT/DMA.
+Using a Nova-T dvb card, I get the following in /var/log/messages...
 
-sln
-======================================================================
-Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
-Shannon.Nelson@intel.com                I don't speak for Intel
-(503) 712-7659                    Parents can't afford to be squeamish.
+22:09:54 kernel: cx88_wakeup: 2 buffers handled (should be 1)
+22:09:57 kernel: cx88_wakeup: 2 buffers handled (should be 1)
+22:10:06 kernel: cx88_wakeup: 2 buffers handled (should be 1)
+22:10:09 kernel: cx88_wakeup: 2 buffers handled (should be 1)
+22:10:12 kernel: cx88_wakeup: 2 buffers handled (should be 1)
+22:10:15 kernel: cx88_wakeup: 2 buffers handled (should be 1)
+
+...every few seconds while watching TV with xine or other dvb-apps. The
+event results in a visible interruption of the video stream.
+
+
+Looking on the net for solutions, I tried these:
+
+- changing pci latency in the bios settings
+
+- putting the card into a different pci slot
+
+- using "pci=routeirq" or "pci=noacpi" kernel boot parameters
+
+NONE of these solved the problem.
+
+Please see [2] for more info.
+
+
+The problem appears with three different recent Linux distribution
+kernels: Ubuntu 2.6.22-7-generic, Ubuntu 2.6.20-15-generic, Suse
+2.6.18.2-34-default.
+
+The problem is not hardware-specific, it appears with an Intel CPU and
+Intel chipset as well as with an AMD CPU and a VIA chipset.
+
+The problem appears to be shared irq resources [3]. However, my
+mainboard doesn't allow to choose specific irqs for pci slots and
+anyway, shared irqs shouldn't break this dvb card, in the first place.
+
+
+What else can I try?
+
+
+Thanks for any help,
+
+Hanno
+
+
+[1]
+http://www.linuxtv.org/pipermail/linux-dvb/2007-May/018232.html
+http://www.linuxtv.org/pipermail/linux-dvb/2007-July/018881.html
+
+[2]
+https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.20/+bug/119115
+
+[3]
+http://launchpadlibrarian.net/8036103/lspci-vvnn.log
+http://launchpadlibrarian.net/8283449/lspci-vv.log
