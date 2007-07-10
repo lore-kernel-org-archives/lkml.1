@@ -1,27 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760550AbXGJRmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761003AbXGJRot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760550AbXGJRmd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 13:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbXGJRmU
+	id S1761003AbXGJRot (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 13:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbXGJRol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 13:42:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60835 "EHLO mail.dvmed.net"
+	Tue, 10 Jul 2007 13:44:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60915 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754437AbXGJRmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 13:42:19 -0400
-Message-ID: <4693C4F8.40903@garzik.org>
-Date: Tue, 10 Jul 2007 13:42:16 -0400
+	id S1753148AbXGJRok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 13:44:40 -0400
+Message-ID: <4693C580.2000506@garzik.org>
+Date: Tue, 10 Jul 2007 13:44:32 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Tejun Heo <htejun@gmail.com>
-Subject: ata and netdev (was Re: -mm merge plans for 2.6.23)
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+CC: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       Amit Arora <aarora@in.ibm.com>, Andi Kleen <ak@suse.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Arnd Bergmann <arnd@arndb.de>, "Luck, Tony" <tony.luck@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Mark Fasheh <mark.fasheh@oracle.com>, linux-arch@vger.kernel.org
+Subject: Re: fallocate-implementation-on-i86-x86_64-and-powerpc.patch
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	<20070710115251.GG2343@thunk.org> <20070710101558.cea7aab1.akpm@linux-foundation.org>
+In-Reply-To: <20070710101558.cea7aab1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
 X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
@@ -29,170 +34,18 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-(just to provide my indicator of status)
-
 Andrew Morton wrote:
-> libata-config_pm=n-compile-fix.patch
-
-that's for a branch that you don't get via libata-dev#ALL, #mv-ahci-pata.
-
-
-> pata_acpi-restore-driver.patch
-
-see Alan's comments.  I've been ignoring pata_acpi for a while, because 
-IMO it always needed work.
+> So I dropped everything.  Let's start again from scratch.  I'd suggest that
+> for now we go with just an i386/x86_64 implementation, let the arch
+> maintainers wire things up when that has settled down.
 
 
-> libata-core-convert-to-use-cancel_rearming_delayed_work.patch
-
-will merge
-
-
-> libata-implement-ata_wait_after_reset.patch
-
-I'm pretty much this is obsolete.  Tejun?
-
-
-> sata_promise-sata-hotplug-support.patch
-
-will merge
-
-
-> libata-add-irq_flags-to-struct-pata_platform_info-fix.patch
-
-are other pata_platform people happy with this?  I don't know embedded 
-well enough to know if adding this struct member will break things.
-
-
-> ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61.patch
-> sata_nv-allow-changing-queue-depth.patch
-
-should be combined, really.  will merge eventually.  basic concept OK, 
-but need to review in depth.
-
-> pata_hpt3x3-major-reworking-and-testing.patch
-> iomap-sort-out-the-broken-address-reporting-caused-by-the-iomap-layer.patch
-> ata-use-iomap_name.patch
-
-generally OK
-
-
-> libata-check-for-an-support.patch
-> scsi-expose-an-to-user-space.patch
-> libata-expose-an-to-user-space.patch
-> scsi-save-disk-in-scsi_device.patch
-> libata-send-event-when-an-received.patch
-> 
->  Am sitting on these due to confusion regarding the status of the ata-ahci
->  patches.
-
-I will apply what I can, but it seems there are lifetime problems
-
-
-> ata-ahci-alpm-store-interrupt-value.patch
-> ata-ahci-alpm-expose-power-management-policy-option-to-users.patch
-> ata-ahci-alpm-enable-link-power-management-for-ata-drivers.patch
-> ata-ahci-alpm-enable-aggressive-link-power-management-for-ahci-controllers.patch
-> 
->  These appear to need some work.
-
-seemed mostly OK to me.  what comments did I miss?
-
-
-> libata-add-human-readable-error-value-decoding.patch
-
-still pondering; in my mbox queue
-
-> libata-fix-hopefully-all-the-remaining-problems-with.patch
-> testing-patch-for-ali-pata-fixes-hopefully-for-the-problems-with-atapi-dma.patch
-> pata_ali-more-work.patch
-
-No idea.  I would poke Alan.  Probably drop.
-
-
-> 8139too-force-media-setting-fix.patch
-> blackfin-on-chip-ethernet-mac-controller-driver.patch
-> atari_pamsnetc-old-declaration-ritchie-style-fix.patch
-> sundance-phy-address-form-0-only-for-device-id-0x0200.patch
-
-Needs a bug fix, so that the newly modified loop doesn't scan the final 
-phy id, then loop back around to scan the first again.
-
-
-> 3x59x-fix-pci-resource-management.patch
-> update-smc91x-driver-with-arm-versatile-board-info.patch
-> drivers-net-ns83820c-add-paramter-to-disable-auto.patch
-> 
->  netdev patches which are stuck in limbo land.
-
-?  I don't think I've seen these.
-
-
-> bonding-bond_mainc-make-2-functions-static.patch
-
-FWIW bonding stuff should go to me, since it lives mostly in drivers/net
-
-
-> x86-initial-fixmap-support.patch
-
-Andi material?
-
-
-> mm-revert-kernel_ds-buffered-write-optimisation.patch
-> revert-81b0c8713385ce1b1b9058e916edcf9561ad76d6.patch
-> revert-6527c2bdf1f833cc18e8f42bd97973d583e4aa83.patch
-> mm-clean-up-buffered-write-code.patch
-> mm-debug-write-deadlocks.patch
-> mm-trim-more-holes.patch
-> mm-buffered-write-cleanup.patch
-> mm-write-iovec-cleanup.patch
-> mm-fix-pagecache-write-deadlocks.patch
-> mm-buffered-write-iterator.patch
-> fs-fix-data-loss-on-error.patch
-> mm-restore-kernel_ds-optimisations.patch
->  pagefault-in-write deadlock fixes.  Will hold for 2.6.24.
-
-Any of the above worth 2.6.23?  Just wondering if they were useful 
-cleanups / minor fixes prior to new aops patches?
-
-
-> more-scheduled-oss-driver-removal.patch
-
-ACK
-
-
-> oss-trident-massive-whitespace-removal.patch
-> oss-trident-fix-locking-around-write_voice_regs.patch
-> oss-trident-replace-deprecated-pci_find_device-with-pci_get_device.patch
-> remove-options-depending-on-oss_obsolete.patch
-> 
->  Merge
-
-what about just removing the OSS drivers in question?  :)
-
-
-> intel-iommu-dmar-detection-and-parsing-logic.patch
-> intel-iommu-pci-generic-helper-function.patch
-> intel-iommu-clflush_cache_range-now-takes-size-param.patch
-> intel-iommu-iova-allocation-and-management-routines.patch
-> intel-iommu-intel-iommu-driver.patch
-> intel-iommu-avoid-memory-allocation-failures-in-dma-map-api-calls.patch
-> intel-iommu-intel-iommu-cmdline-option-forcedac.patch
-> intel-iommu-dmar-fault-handling-support.patch
-> intel-iommu-iommu-gfx-workaround.patch
-> intel-iommu-iommu-floppy-workaround.patch
-> 
->  Don't know.  I don't think there were any great objections, but I don't
->  think much benefit has been demonstrated?
-
-Just the general march of progress on new hardware :)
-
-I would like to see this support merged in /some/ form.  We've been 
-telling Intel for years they were sillyheads for not bothering with an 
-IOMMU.  Now that they have, we should give them a cookie and support 
-good technology.
+It's my observation that that plan usually works the best.  Arch 
+maintainers come along and wire up batches of syscalls when they have a 
+chance to glance at the ABI, and catch up with x86[-64].
 
 	Jeff
+
+
 
 
