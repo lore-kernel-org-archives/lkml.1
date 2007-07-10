@@ -1,37 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764899AbXGJSrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763977AbXGJSsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764899AbXGJSrw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbXGJSro
+	id S1763977AbXGJSsw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbXGJSsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:47:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:32980 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756008AbXGJSrn (ORCPT
+	Tue, 10 Jul 2007 14:48:41 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:54248 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754737AbXGJSsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:47:43 -0400
-Date: Tue, 10 Jul 2007 11:47:42 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       kenchen@google.com, jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       y-goto@jp.fujitsu.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans -- anti-fragmentation
-In-Reply-To: <20070710135554.GC9426@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0707101147160.11906@schroedinger.engr.sgi.com>
-References: <20070710102043.GA20303@skynet.ie> <20070710130356.GG8779@wotan.suse.de>
- <20070710135554.GC9426@skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jul 2007 14:48:39 -0400
+To: davem@davemloft.net
+CC: akpm@linux-foundation.org, miklos@szeredi.hu, netdev@vger.kernel.org,
+       ebiederm@xmission.com, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20070710.105520.30182869.davem@davemloft.net> (message from
+	David Miller on Tue, 10 Jul 2007 10:55:20 -0700 (PDT))
+Subject: Re: [PATCH re-resend] fix race in AF_UNIX garbage collector
+References: <E1I8CMY-00053l-00@dorka.pomaz.szeredi.hu>
+	<20070710030443.f2deaab6.akpm@linux-foundation.org> <20070710.105520.30182869.davem@davemloft.net>
+Message-Id: <E1I8KkV-0006Hq-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 10 Jul 2007 20:47:47 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Mel Gorman wrote:
+> > On Tue, 10 Jul 2007 11:50:30 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > 
+> > > Can you please add this to -mm.  Sometimes that has wonderful effect
+> > > on the willingness of people to look at a patch.
+> > 
+> > sure ;)
+> 
+> Andrew please don't, it's in my "to review" pile.
 
-> > > >  These are slub changes which are dependent on Mel's stuff, and I have a note
-> > > >  here that there were reports of page allocation failures with these.  What's
-> > > >  up with that?
+Yeah, and I can guess, where it is sitting in that pile ;)
 
-As far as I know these were resolved by some of Mel's changes.
+Dave, if you are busy, just say so.  But if you don't reply anything,
+I'm bound to think the patch is being ignored.
+
+I apologize for being annoying.  Just let's get over this bloody bug ;)
+
+Thanks,
+Miklos
