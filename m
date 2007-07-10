@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763820AbXGJUsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761169AbXGJUsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763820AbXGJUsW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 16:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbXGJUsO
+	id S1761169AbXGJUsf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763073AbXGJUsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 16:48:14 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:50388 "EHLO
+	Tue, 10 Jul 2007 16:48:20 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:50391 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756788AbXGJUsM (ORCPT
+	with ESMTP id S1762879AbXGJUsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 16:48:12 -0400
-Message-ID: <4693EFBF.4070605@zytor.com>
-Date: Tue, 10 Jul 2007 13:44:47 -0700
+	Tue, 10 Jul 2007 16:48:19 -0400
+Message-ID: <4693F08B.5060904@zytor.com>
+Date: Tue, 10 Jul 2007 13:48:11 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, andi@firstfloor.org,
-       akpm@linux-foundation.org
-Subject: Re: [x86 setup 16/33] String-handling functions for the new x86 setup
- code.
-References: <11840359321823-git-send-email-hpa@zytor.com> <11840360383913-git-send-email-hpa@zytor.com> <11840361432207-git-send-email-hpa@zytor.com> <11840362483663-git-send-email-hpa@zytor.com> <11840363531039-git-send-email-hpa@zytor.com> <11840364593068-git-send-email-hpa@zytor.com> <1184036564610-git-send-email-hpa@zytor.com> <11840366692770-git-send-email-hpa@zytor.com> <11840367741994-git-send-email-hpa@zytor.com> <11840368791603-git-send-email-hpa@zytor.com> <11840369841576-git-send-email-hpa@zytor.com> <11840370903975-git-send-email-hpa@zytor.com> <11840371953778-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <11840374052662-git-send-email-hpa@zytor.com> <1184037510289-git-send-email-hpa@zytor.com> <11840376162370-git-send-email-hpa@zytor.com> <Pine.LNX.4.64.0707102022400.11053@fbirervta.pbzchgretzou.qr> <4693D183.9060604@zytor.com> <298A54C9-B331-4AB9-98B3-5C815B04381E@kernel.crashing.org>
-In-Reply-To: <298A54C9-B331-4AB9-98B3-5C815B04381E@kernel.crashing.org>
+To: Al Boldi <a1426z@gawab.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: x86 setup code rewrite in C
+References: <200707102032.29124.a1426z@gawab.com>
+In-Reply-To: <200707102032.29124.a1426z@gawab.com>
 X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Segher Boessenkool wrote:
->> Nope.  The builtins not only vary between gcc versions, but they also
->> have a nasty tendency to generate calls to library functions, sometimes
->> libgcc functions.  Hence -ffreestanding.
+Al Boldi wrote:
+> H. Peter Anvin wrote:
+>> This patch set replaces the x86 setup code, which is currently all in
+>> assembly, with a version written in C, using the ".code16gcc" feature
+>> of binutils (which has been present since at least 2001.)
+>>
+>> The new code is vastly easier to read, and, I hope, debug.  It should
+>> be noted that I found a fair number of minor bugs while going through
+>> this code, and have attempted to correct them.
 > 
-> -ffreestanding will still generate calls to libgcc functions.
-> -ffreestanding doesn't disable _all_ of the C library, either.
-> 
+> I have an i810 which supends-to-ram just fine, but when booted over pxe it 
+> just hangs.  Will these patches fix this, and if so, is there an easy 
+> tar-ball against 2.6.22?
 
-No, it doesn't, but it does inhibit builtin functions, and so provides a
-bit more ABI stability.
+There is absolutely no way to know, other than testing it.  There isn't
+any real reason to suspect the setup code in your case, but it's worth a
+shot, I guess.
+
+There is a git tree on git.kernel.org you can pull, which is current
+against 2.6.22.
 
 	-hpa
