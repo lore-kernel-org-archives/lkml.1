@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761460AbXGJH1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762335AbXGJH2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761460AbXGJH1F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 03:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXGJH0y
+	id S1762335AbXGJH2t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 03:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXGJH2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 03:26:54 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:36302 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751971AbXGJH0x (ORCPT
+	Tue, 10 Jul 2007 03:28:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57216 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751971AbXGJH2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 03:26:53 -0400
-To: balbir@linux.vnet.ibm.com
-Cc: svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, ebiederm@xmission.com, containers@lists.osdl.org,
-       menage@google.com
-Subject: Re: [-mm PATCH 4/8] Memory controller memory accounting (v2)
-In-Reply-To: Your message of "Thu, 05 Jul 2007 22:21:35 -0700"
-	<20070706052135.11677.28030.sendpatchset@balbir-laptop>
-References: <20070706052135.11677.28030.sendpatchset@balbir-laptop>
-X-Mailer: Cue version 0.8 (070404-1613/takashi)
+	Tue, 10 Jul 2007 03:28:42 -0400
+Date: Tue, 10 Jul 2007 00:28:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Graham Murray <gmurray@webwayone.co.uk>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Specialix SX cards not detected in kernels >=2.6.20
+Message-Id: <20070710002807.e6f4bb19.akpm@linux-foundation.org>
+In-Reply-To: <7wlkdp8yoe.fsf@gmdev.webwayone.co.uk>
+References: <7wlkdp8yoe.fsf@gmdev.webwayone.co.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20070710072651.C061D1BF77E@siro.lan>
-Date: Tue, 10 Jul 2007 16:26:51 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+On Mon, 09 Jul 2007 15:00:17 +0100 Graham Murray <gmurray@webwayone.co.uk> wrote:
 
-> diff -puN mm/memory.c~mem-control-accounting mm/memory.c
-> --- linux-2.6.22-rc6/mm/memory.c~mem-control-accounting	2007-07-05 13:45:18.000000000 -0700
-> +++ linux-2.6.22-rc6-balbir/mm/memory.c	2007-07-05 13:45:18.000000000 -0700
+> There were multiple changes to the char/sx.c driver in kernel 2.6.20.
 
-> @@ -1731,6 +1736,9 @@ gotten:
->  		cow_user_page(new_page, old_page, address, vma);
->  	}
->  
-> +	if (mem_container_charge(new_page, mm))
-> +		goto oom;
-> +
->  	/*
->  	 * Re-check the pte - we dropped the lock
->  	 */
+Let's cc Jiri.
 
-it seems that the page will be leaked on error.
+> In
+> kernels 2.6.19 and earlier, the SX multiport serial card works OK, but
+> in 2.6.20 and later the driver does not seemt to detect the presence of
+> the card. 
+> 
+> I have enabled sx_debug=-1 and added some printk statements to try and
+> detect why the card is not detected. These show that sx_init is entered
+> and within that function the call to pci_register_driver returns 0. I do
+> not see any other routines in the driver being entered either at startup
+> (when the module is loaded, which indicates that the system recognises
+> the PCI ID) or when running 'modprobe sx'. In particular, sx_pci_probe()
+> is never entered.
+> 
+> lspci -vv for the card
+> 
+>  10:01.0 Communication controller: Specialix Research Ltd. PCI_9050
+> 	Subsystem: Specialix Research Ltd. Unknown device 0300
+> 	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+> 	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+> 	Interrupt: pin A routed to IRQ 11
+> 	Region 0: Memory at df2ffc00 (32-bit, non-prefetchable) [size=128]
+> 	Region 1: I/O ports at 9c80 [size=128]
+> 	Region 2: Memory at df200000 (32-bit, non-prefetchable) [size=512K]
+> 	Region 3: Memory at df280000 (32-bit, non-prefetchable) [size=256K]
+> 
+> I have enabled CONFIG_PCI_DEBUG and see the following:-
+> 
+> PCI: Probing PCI hardware (bus 00)
+> ...
+> PCI: Scanning bus 0000:10
+> PCI: Found 0000:10:01.0 [11cb/2000] 000780 00
+> PCI: Calling quirk c0362041 for 0000:10:01.0
+> ...
+> PCI: Calling quirk c027a199 for 0000:10:01.0
+> PCI: Calling quirk c033cb9e for 0000:10:01.0
+> 
+> 
+> Where should I look for and how should I obtain further debug to
+> determine where the problem lies?
+> 
 
-> @@ -2188,6 +2196,11 @@ static int do_swap_page(struct mm_struct
->  	}
->  
->  	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-> +	if (mem_container_charge(page, mm)) {
-> +		ret = VM_FAULT_OOM;
-> +		goto out;
-> +	}
-> +
->  	mark_page_accessed(page);
->  	lock_page(page);
->  
-
-ditto.
-
-> @@ -2264,6 +2278,9 @@ static int do_anonymous_page(struct mm_s
->  		if (!page)
->  			goto oom;
->  
-> +		if (mem_container_charge(page, mm))
-> +			goto oom;
-> +
->  		entry = mk_pte(page, vma->vm_page_prot);
->  		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
->  
-
-ditto.
-
-can you check the rest of the patch by yourself?  thanks.
-
-YAMAMOTO Takashi
+A git-bisect should find this fairly quickly.
