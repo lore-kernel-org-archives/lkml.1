@@ -1,37 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbXGJANu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761216AbXGJASy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761102AbXGJANu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 20:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759362AbXGJANn
+	id S1761216AbXGJASy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 20:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760282AbXGJASr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 20:13:43 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56182 "EHLO
+	Mon, 9 Jul 2007 20:18:47 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56193 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758939AbXGJANm (ORCPT
+	with ESMTP id S1759477AbXGJASr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 20:13:42 -0400
-Date: Tue, 10 Jul 2007 02:14:14 +0200
+	Mon, 9 Jul 2007 20:18:47 -0400
+Date: Tue, 10 Jul 2007 02:19:18 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Frank van Maarseveen <frankvm@frankvm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.22: section mismatch warnings
-Message-ID: <20070710001414.GO3492@stusta.de>
-References: <20070709184200.GA2496@janus>
+To: Mikael Pettersson <mikpe@it.uu.se>, adaplas@gmail.com
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
+Subject: [2.6 patch] drivers/video/macmodes.c:mac_find_mode() mustn't be
+	__devinit
+Message-ID: <20070710001918.GP3492@stusta.de>
+References: <200707092347.l69NlElB023451@harpo.it.uu.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070709184200.GA2496@janus>
+In-Reply-To: <200707092347.l69NlElB023451@harpo.it.uu.se>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 08:42:01PM +0200, Frank van Maarseveen wrote:
->...
-> WARNING: kernel/built-in.o(.text+0x1add5): Section mismatch: reference to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
+On Tue, Jul 10, 2007 at 01:47:14AM +0200, Mikael Pettersson wrote:
+> A vanilla 2.6.22 built for ppc32 and configured with CONFIG_FB_MACMODES=y, CONFIG_HOTPLUG=n,
+> and CONFIG_MODULES=y, triggers the following warning from modpost:
+> 
+> WARNING: drivers/built-in.o(__ksymtab+0x3b0): Section mismatch: reference to .init.text:mac_find_mode (between '__ksymtab_mac_find_mode' and '__ksymtab_mac_map_monitor_sense')
+> 
+> There's an EXPORT_SYMBOL(mac_find_mode), but mac_find_mode() is __devinit
+> and thus __init in this kernel.
 
-Below is the fix in -mm for this (and other issues).
+So let's fix it.  ;-)
 
-> Frank
+> /Mikael
 
 cu
 Adrian
@@ -40,69 +47,50 @@ Adrian
 <--  snip  -->
 
 
-From: "Jan Beulich" <jbeulich@novell.com>
+If it's EXPORT_SYMBOL'ed it can't be __devinit.
 
-.. which modpost started warning about.
+Reported by Mikael Pettersson.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
 ---
 
- kernel/kthread.c |    2 +-
- mm/page_alloc.c  |   16 ++++++++--------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+@stable:
+Fixes a real bug on ppc.
 
-diff -puN kernel/kthread.c~mm-fix-improper-init-type-section-references kernel/kthread.c
---- a/kernel/kthread.c~mm-fix-improper-init-type-section-references
-+++ a/kernel/kthread.c
-@@ -215,7 +215,7 @@ int kthread_stop(struct task_struct *k)
- EXPORT_SYMBOL(kthread_stop);
+ drivers/video/macmodes.c |    5 ++---
+ drivers/video/macmodes.h |    8 ++++----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
+
+--- linux-2.6.22-rc6-mm1/drivers/video/macmodes.h.old	2007-07-10 01:55:14.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/video/macmodes.h	2007-07-10 01:55:29.000000000 +0200
+@@ -55,10 +55,10 @@
+ extern int mac_var_to_vmode(const struct fb_var_screeninfo *var, int *vmode,
+ 			    int *cmode);
+ extern int mac_map_monitor_sense(int sense);
+-extern int __devinit mac_find_mode(struct fb_var_screeninfo *var,
+-				   struct fb_info *info,
+-				   const char *mode_option,
+-				   unsigned int default_bpp);
++extern int mac_find_mode(struct fb_var_screeninfo *var,
++			 struct fb_info *info,
++			 const char *mode_option,
++			 unsigned int default_bpp);
  
  
--static __init void kthreadd_setup(void)
-+static noinline __init_refok void kthreadd_setup(void)
+     /*
+--- linux-2.6.22-rc6-mm1/drivers/video/macmodes.c.old	2007-07-10 01:54:36.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/video/macmodes.c	2007-07-10 01:55:04.000000000 +0200
+@@ -369,9 +369,8 @@
+  *
+  */
+ 
+-int __devinit mac_find_mode(struct fb_var_screeninfo *var,
+-			    struct fb_info *info, const char *mode_option,
+-			    unsigned int default_bpp)
++int mac_find_mode(struct fb_var_screeninfo *var, struct fb_info *info,
++		  const char *mode_option, unsigned int default_bpp)
  {
- 	struct task_struct *tsk = current;
- 
-diff -puN mm/page_alloc.c~mm-fix-improper-init-type-section-references mm/page_alloc.c
---- a/mm/page_alloc.c~mm-fix-improper-init-type-section-references
-+++ a/mm/page_alloc.c
-@@ -126,13 +126,13 @@ static unsigned long __meminitdata dma_r
-     #endif
-   #endif
- 
--  struct node_active_region __meminitdata early_node_map[MAX_ACTIVE_REGIONS];
--  int __meminitdata nr_nodemap_entries;
--  unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
--  unsigned long __meminitdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
-+  static struct node_active_region __meminitdata early_node_map[MAX_ACTIVE_REGIONS];
-+  static int __meminitdata nr_nodemap_entries;
-+  static unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
-+  static unsigned long __meminitdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
- #ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
--  unsigned long __initdata node_boundary_start_pfn[MAX_NUMNODES];
--  unsigned long __initdata node_boundary_end_pfn[MAX_NUMNODES];
-+  static unsigned long __meminitdata node_boundary_start_pfn[MAX_NUMNODES];
-+  static unsigned long __meminitdata node_boundary_end_pfn[MAX_NUMNODES];
- #endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
- #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
- 
-@@ -2598,7 +2598,7 @@ void __init push_node_boundaries(unsigne
- }
- 
- /* If necessary, push the node boundary out for reserve hotadd */
--static void __init account_node_boundary(unsigned int nid,
-+static void __meminit account_node_boundary(unsigned int nid,
- 		unsigned long *start_pfn, unsigned long *end_pfn)
- {
- 	printk(KERN_DEBUG "Entering account_node_boundary(%u, %lu, %lu)\n",
-@@ -2618,7 +2618,7 @@ static void __init account_node_boundary
- void __init push_node_boundaries(unsigned int nid,
- 		unsigned long start_pfn, unsigned long end_pfn) {}
- 
--static void __init account_node_boundary(unsigned int nid,
-+static void __meminit account_node_boundary(unsigned int nid,
- 		unsigned long *start_pfn, unsigned long *end_pfn) {}
- #endif
- 
-_
+     const struct fb_videomode *db = NULL;
+     unsigned int dbsize = 0;
+
