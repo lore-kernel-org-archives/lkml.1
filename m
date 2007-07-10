@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763094AbXGJWDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbXGJWFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763094AbXGJWDU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 18:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbXGJWDM
+	id S1763695AbXGJWFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 18:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761324AbXGJWEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 18:03:12 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:60389 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756659AbXGJWDL (ORCPT
+	Tue, 10 Jul 2007 18:04:51 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:21109 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761131AbXGJWEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 18:03:11 -0400
-Date: Tue, 10 Jul 2007 18:03:10 -0400
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-Message-ID: <20070710220310.GI31193@csclub.uwaterloo.ca>
-References: <1183117082.1170.308.camel@pmac.infradead.org> <20070629150813.GM13886@enneenne.com> <1183132548.1170.360.camel@pmac.infradead.org> <20070629163422.GP13886@enneenne.com> <1183135253.17622.5.camel@shinybook.infradead.org> <20070630171340.GT13886@enneenne.com> <20070701171325.29d8b184.sfr@canb.auug.org.au> <20070701192441.GW13886@enneenne.com> <20070710160151.GB31195@csclub.uwaterloo.ca> <20070710163625.GH32503@enneenne.com>
+	Tue, 10 Jul 2007 18:04:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=hnUGxNi5TY/t5DcRGJmpBgWFkKqLfDxxtN650aQ0Mu6KlZsp/mUjtkO1v1giCKMdPocQjovCk/VjN4bgKidhvkQB4EhDecAcQXF6+RSpIkfPxL+rKpJG3R0EAQms88CT6KfKSbQmblgVbLOZB4zs9G7qN3TlMNiFGgiD0cpmugk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Marcin Juszkiewicz <openembedded@hrw.one.pl>
+Subject: Re: [PATCH] PCMCIA: Add another MemoryCard to ide-cd/pata_pcmcia
+Date: Wed, 11 Jul 2007 00:16:43 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+References: <200707101137.25955.openembedded@hrw.one.pl>
+In-Reply-To: <200707101137.25955.openembedded@hrw.one.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070710163625.GH32503@enneenne.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Message-Id: <200707110016.43152.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 06:36:25PM +0200, Rodolfo Giometti wrote:
-> Sorry I wrote wrong. I meant __u32.
+
+[ please always cc: linux-ide@ on ATA patches ]
+
+^
+s/ide-cd/ide-cs/ ;-)
+
+On Tuesday 10 July 2007, Marcin Juszkiewicz wrote:
+> From: Marcin Juszkiewicz <openembedded@hrw.one.pl>
 > 
-> I can use __u64 for seconds but doing this there could be problems for
-> 32 bits platforms? =:-o
+> One card submitted by user.
+> 
+> Signed-off-by: Marcin Juszkiewicz <openembedded@hrw.one.pl>
 
-32bit platforms can still work with 64bit values, they may just not be
-quite as efficient about it.
+This patch doesn't apply because of whitespace damage
+(all spaces were converted to tabs).
 
-After all we support files with more than 2^32 bytes in them, so the
-file access structures must have more than 32bit values in them.
+I fixed it manually and applied.
 
---
-Len Sorensen
+Thanks,
+Bart
