@@ -1,117 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757018AbXGJPLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbXGJPUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757018AbXGJPLu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 11:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXGJPLn
+	id S1756761AbXGJPUo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 11:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXGJPUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 11:11:43 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:10478 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753915AbXGJPLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 11:11:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=H88raJP0+oV+WtTfHspcxDt04lD9PQIuqLkJ046Yi75i0H2neTYJjW7mIMZ8Sbu+caq6fVWTJ/BOhGDGRxxQTpJB1hnhftzxkfuifBR7rxojW1Pnjbxwk6zdZZixyJSDSucZwZO3Tjpbv8PcGFanEh5faYEsZ3HDmpEiHFFL4bE=
-Message-ID: <4693A1A5.9070900@gmail.com>
-Date: Wed, 11 Jul 2007 00:11:33 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Sysfs and suicidal attributes
-References: <Pine.LNX.4.44L0.0707101015500.2595-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707101015500.2595-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 10 Jul 2007 11:20:35 -0400
+Received: from xenotime.net ([66.160.160.81]:44249 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754245AbXGJPUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 11:20:34 -0400
+Date: Tue, 10 Jul 2007 08:24:10 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: matthew@wil.cx, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH][Doc] Document pci_iomap()
+Message-Id: <20070710082410.352042e1.rdunlap@xenotime.net>
+In-Reply-To: <200707101111.29194.eike-kernel@sf-tec.de>
+References: <200707081754.03824.eike-kernel@sf-tec.de>
+	<200707081809.20312.eike-kernel@sf-tec.de>
+	<20070709085841.179a8c33.rdunlap@xenotime.net>
+	<200707101111.29194.eike-kernel@sf-tec.de>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 10 Jul 2007 11:11:28 +0200 Rolf Eike Beer wrote:
 
-Alan Stern wrote:
-> Instead we should broadcast a notification to all threads which might
-> try to add a device, telling them not to do it until the suspend is
-> over.  After that notification is sent and current additions have
-> completed, the driver core can simply fail further calls to
-> device_add().
+> This useful interface is hardly mentioned anywhere in the in-tree
+> documentation.
 > 
->> IMHO, what's needed is a giant rwlock protecting the whole device
->> addition/removal while suspend is in progress (addition/removal during
->> resume should be safe as long as we put the new devices on the already
->> processed list).  The lock can probably replace dpm_sem and dpm_list_sem.
+> Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
 
-Sans notification, the plan proposed in the first paragraph and rwlock
-with down_read_trylock() for addition/removal is pretty similar.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Addition during resume is _not_ safe.  The new device can easily get
-> added to the already-processed list in the wrong position, so that the
-> next time the system is suspended the PM core tries to suspend the new
-> device's parent before suspending the new device.
-
-When a bus device is being woken up and rescanning the bus, all
-prerequisites for the bus should have been resumed already.  As long as
-the newly added device is placed after the bus device itself, things
-should be safe.  Well, that's the theory at least.
-
->> It's probably necessary to use trylock from addition/removal to avoid
->> deadlock.  Drivers which support hotplugging need to rescan/revalidate
->> the bus during resume anyway so failing addition/removal during suspend
->> shouldn't be a problem.
+> ---
+> commit bdf4a23b9b1ff4be79a6f9b863f7203dba2dc808
+> tree a53c4a6c90e13d55fbf2a0b40cd9676bd9a5d0e5
+> parent 33738cbb6555861de1dce626c913fad06ce658cc
+> author Rolf Eike Beer <eike-kernel@sf-tec.de> Tue, 10 Jul 2007 11:08:51 +0200
+> committer Rolf Eike Beer <eike-kernel@sf-tec.de> Tue, 10 Jul 2007 11:08:51 +0200
 > 
-> I had envisioned using SRCU to synchronize existing device additions
-> with the beginning of a suspend.  down_read_trylock should work just as
-> well (aside from cacheline bouncing).
-
-How high performance device addition/removal should be?  Wouldn't rwlock
-be enough?
-
-> Device removal isn't as much of a problem as addition.  We could allow
-> it with no difficulty.  Failing it isn't really an option because
-> device_del() returns void.  And anyway, my idea was to have the PM core
-> acquire all the device semaphores at the start of the suspend -- this
-> would automatically block any attempted removal until the semaphore was
-> released.
-
-Hmmm... locking all device mutexes sounds scary to me but I tend to be a
-chicken and lockdep is great, so it might just work.  :-)
-
->> Regardless of the suspend problem, I like the above idea.  Actually, I
->> was thinking about doing exactly that for suicidal nodes when I first
->> found out the problem.  All that's needed is an owner field which allows
->> the owning thread to reenter (what was the name for this type of mutex?
->>  BSD folks like it).  It's probably better to put some restrictions to
->> allow only the specific case tho.
+>  Documentation/DocBook/deviceiobook.tmpl |    3 ++-
+>  include/asm-i386/io.h                   |    3 +++
+>  lib/iomap.c                             |   15 ++++++++++++++-
+>  3 files changed, 19 insertions(+), 2 deletions(-)
 > 
-> What with all the sysfs changes, I wouldn't know where to begin
-> looking.  The idea occurred to me mainly because I was considering
-> blocking all access to sysfs during a suspend -- the problem being that
-> a suspend is itself triggered by a write to a sysfs attribute!  
-> Somehow that write would have to wait for all _other_ existing accesses
-> to complete and block new ones.
+> diff --git a/Documentation/DocBook/deviceiobook.tmpl b/Documentation/DocBook/deviceiobook.tmpl
+> index 90ed23d..c917de6 100644
+> --- a/Documentation/DocBook/deviceiobook.tmpl
+> +++ b/Documentation/DocBook/deviceiobook.tmpl
+> @@ -316,7 +316,8 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_lock, flags)
+>  
+>    <chapter id="pubfunctions">
+>       <title>Public Functions Provided</title>
+> -!Einclude/asm-i386/io.h
+> +!Iinclude/asm-i386/io.h
+> +!Elib/iomap.c
+>    </chapter>
+>  
+>  </book>
+> diff --git a/include/asm-i386/io.h b/include/asm-i386/io.h
+> index e797586..c48ef18 100644
+> --- a/include/asm-i386/io.h
+> +++ b/include/asm-i386/io.h
+> @@ -112,6 +112,9 @@ extern void __iomem * __ioremap(unsigned long offset, unsigned long size, unsign
+>   * writew/writel functions and the other mmio helpers. The returned
+>   * address is not guaranteed to be usable directly as a virtual
+>   * address. 
+> + *
+> + * If the area you are trying to map is a PCI BAR you should have a
+> + * look at pci_iomap().
+>   */
+>  
+>  static inline void __iomem * ioremap(unsigned long offset, unsigned long size)
+> diff --git a/lib/iomap.c b/lib/iomap.c
+> index a57d262..864f2ec 100644
+> --- a/lib/iomap.c
+> +++ b/lib/iomap.c
+> @@ -240,7 +240,20 @@ void ioport_unmap(void __iomem *addr)
+>  EXPORT_SYMBOL(ioport_map);
+>  EXPORT_SYMBOL(ioport_unmap);
+>  
+> -/* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+> +/**
+> + * pci_iomap - create a virtual mapping cookie for a PCI BAR
+> + * @dev: PCI device that owns the BAR
+> + * @bar: BAR number
+> + * @maxlen: length of the memory to map
+> + *
+> + * Using this function you will get a __iomem address to your device BAR.
+> + * You can access it using ioread*() and iowrite*(). These functions hide
+> + * the details if this is a MMIO or PIO address space and will just do what
+> + * you expect from them in the correct way.
+> + *
+> + * @maxlen specifies the maximum length to map. If you want to get access to
+> + * the complete BAR without checking for its length first, pass %0 here.
+> + * */
+>  void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+>  {
+>  	unsigned long start = pci_resource_start(dev, bar);
+> -
 
-Why is that necessary?  What happens if there's some long-running
-read/write operation using bin attr?
-
->> I like it because it shifts complexity from the drivers into driver
->> core.  IOW, the driver model is kinder to drivers that way - the driver
->> writer doesn't have to care whether something is suicidal or not - and I
->> think that's the way we should be headed although we're not good at it yet.
-> 
-> It doesn't shift all the complexity.  The method still has to tell the 
-> sysfs core that it's going to unregister its attribute and that the 
-> unregistration has finished.  But this is simpler than the callback 
-> method we use now.
-
-Right, it's nothing major.  I just dislike such limitation is visible
-from individual drivers and "echo 1 > /sys/whatever/kill-yourself"
-returns before the suicide is actually complete.
-
-Thanks.
-
--- 
-tejun
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
