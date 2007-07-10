@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbXGJQzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762710AbXGJQzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762173AbXGJQzG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 12:55:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbXGJQym
+	id S1762710AbXGJQzg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 12:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbXGJQzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 12:54:42 -0400
-Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:45450 "HELO
-	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756833AbXGJQyk (ORCPT
+	Tue, 10 Jul 2007 12:55:24 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:65032 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478AbXGJQzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 12:54:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=aDXZ4pMMwM4eYlgiiA2SbGMJiYAMourTpw8/I3MKF6TYcJsrRtZMBhnJohc0U481Kc6tp/sWWLCOnUuuJ9lkFlQAstc2jIqy3iR6sto57yyg/+GIXLfiTfFPjV72ZfXHh+8TQGD6WEQ7kcFZHmhEEbaO4oe2LauTDMAiwpVoqdk=  ;
-X-YMail-OSG: VIXocfoVM1maYN1Vn1biMSRnc0SRJIyVJCkuO.Q_VEFOOyB6JZHp6xJZYJ0PKzQoAYqq41YO7Q--
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [2.6 patch] spi.c:scan_boardinfo() mustn't be __init_or_module
-Date: Tue, 10 Jul 2007 09:54:36 -0700
+	Tue, 10 Jul 2007 12:55:22 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [patch 4/4] Cell: Draw SPE helper penguin logos
+Date: Tue, 10 Jul 2007 18:54:23 +0200
 User-Agent: KMail/1.9.6
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070710124442.GV3492@stusta.de>
-In-Reply-To: <20070710124442.GV3492@stusta.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       James Simmons <jsimmons@infradead.org>
+References: <20070710122702.765654000@pademelon.sonytel.be> <20070710123540.877411000@pademelon.sonytel.be>
+In-Reply-To: <20070710123540.877411000@pademelon.sonytel.be>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707100954.37027.david-b@pacbell.net>
+Message-Id: <200707101854.24352.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+Pzz6quAdfI1tCNyUAi6hFWACGN+dkntopY0J
+ plZ9C5pNG+qWBtcO7kcjboPd6M987V5CDwCxCqf0Wk26Z9+c0e
+ 8/LT/brzADwVDe5fHCVvQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 July 2007, Adrian Bunk wrote:
-> This patch fixes the following section mismatch:
+On Tuesday 10 July 2007, Geert Uytterhoeven wrote:
+> Let spu_management_ops.enumerate_spus() return the number of found SPEs
+> and use that information to draw some little helper penguin logos.
 > 
-> <--  snip  -->
-> 
-> ...
->   MODPOST vmlinux
-> WARNING: drivers/built-in.o(.text+0x889735): Section mismatch: reference to .init.text:scan_boardinfo (between 'spi_register_master' and '__unregister')
-> ...
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Acked-By: James Simmons <jsimmons@infradead.org>
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
-
-> 
-> ---
-> --- linux-2.6.22-rc6-mm1/drivers/spi/spi.c.old	2007-07-10 04:17:26.000000000 +0200
-> +++ linux-2.6.22-rc6-mm1/drivers/spi/spi.c	2007-07-10 04:18:01.000000000 +0200
-> @@ -302,8 +302,7 @@
->   * creates board info from kernel command lines
->   */
->  
-> -static void __init_or_module
-> -scan_boardinfo(struct spi_master *master)
-> +static void scan_boardinfo(struct spi_master *master)
->  {
->  	struct boardinfo	*bi;
->  	struct device		*dev = master->cdev.dev;
-> 
-
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
