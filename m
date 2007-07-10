@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760967AbXGJTH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761852AbXGJTI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760967AbXGJTH5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756274AbXGJTHu
+	id S1761852AbXGJTI4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 15:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbXGJTIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 15:07:50 -0400
-Received: from thunk.org ([69.25.196.29]:46469 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752146AbXGJTHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 15:07:49 -0400
-Date: Tue, 10 Jul 2007 15:07:35 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Amit Arora <aarora@in.ibm.com>,
-       Andi Kleen <ak@suse.de>, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Arnd Bergmann <arnd@arndb.de>, "Luck, Tony" <tony.luck@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: fallocate-implementation-on-i86-x86_64-and-powerpc.patch (was: re: -mm merge plans for 2.6.23)
-Message-ID: <20070710190735.GF27033@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Amit Arora <aarora@in.ibm.com>,
-	Andi Kleen <ak@suse.de>, Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Arnd Bergmann <arnd@arndb.de>, "Luck, Tony" <tony.luck@intel.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Mark Fasheh <mark.fasheh@oracle.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070710115251.GG2343@thunk.org> <20070710101558.cea7aab1.akpm@linux-foundation.org>
+	Tue, 10 Jul 2007 15:08:46 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:16039 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752852AbXGJTIp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 15:08:45 -0400
+Message-ID: <4693D9B6.4090408@ru.mvista.com>
+Date: Tue, 10 Jul 2007 23:10:46 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710101558.cea7aab1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
+References: <20070221011922.GA1777@freefall.freebsd.org> <200702210342.20775.bzolnier@gmail.com> <466EEFD6.9030001@ru.mvista.com> <200706160123.55636.bzolnier@gmail.com>
+In-Reply-To: <200706160123.55636.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 10:15:58AM -0700, Andrew Morton wrote:
-> So I dropped everything.  Let's start again from scratch.  I'd suggest that
-> for now we go with just an i386/x86_64 implementation, let the arch
-> maintainers wire things up when that has settled down.
+Hello.
 
-Ok, so no objections if we push the i386/x86_64 implementation (only),
-plus the ext4 support to Linus?
+Bartlomiej Zolnierkiewicz wrote:
 
-						- Ted
+>>>>On Feb 20, 2007, at 5:44 PM, Bartlomiej Zolnierkiewicz wrote:
 
+>>>>>On Wednesday 21 February 2007 02:19, Suleiman Souhlal wrote:
 
+>>>>>>It can be changed via /proc/ide/hd?/settings.
+
+>>>>>Why do we need to change IDE DMA timeout dynamically?
+
+>>>>I've used it to test error recovery (for example).
+
+>>>Seems quite useable for developers but I would prefer not to
+>>>expose it in production kernels for end users.
+
+>>    It seems that I have counter example of a customer asking if this timeout 
+>>can be done configurable. :-)
+
+> May I ask what was the rationale for this request?
+
+    Their system seems to become unschedulable for this period of time (DMA 
+timeouts happen from time to time) -- at least the keepalive daemon stopped 
+replying during this period...
+
+> I have no strong feelings about adding this /proc/ide/ setting but I worry
+> that it could be (mis)used just to (unreliably) work-around problems...
+
+>>    BTW, why the timeout is so damn long? 2*WAIT_CMD is 20 secs, and if DMA is 
+>>not complete or interrupt pending, it may wait 10 more secs...
+
+> I really don't remember... :)
+
+> Maybe Mark or Alan could help with figuring this out.
+
+    They also have probably forgotten. :-)
+
+> Thanks,
+> Bart
+
+MBR, Sergei
