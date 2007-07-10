@@ -1,196 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764142AbXGJS0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764256AbXGJS0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764142AbXGJS0W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbXGJS0F
+	id S1764256AbXGJS0f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbXGJS00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:26:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36840 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757554AbXGJS0B (ORCPT
+	Tue, 10 Jul 2007 14:26:26 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:39654 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764171AbXGJS0Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:26:01 -0400
-Date: Tue, 10 Jul 2007 11:24:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Deepak Saxena <dsaxena@plexity.net>, Dan Faerch <dan@hacker.dk>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: ata and netdev (was Re: -mm merge plans for 2.6.23)
-Message-Id: <20070710112458.e9dbb55e.akpm@linux-foundation.org>
-In-Reply-To: <4693C4F8.40903@garzik.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<4693C4F8.40903@garzik.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jul 2007 14:26:25 -0400
+Date: Tue, 10 Jul 2007 21:26:08 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Neil Horman <nhorman@redhat.com>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Bernhard Walle <bwalle@suse.de>
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070710182608.GA2145@localdomain>
+References: <20070706132814.GA7079@suse.de> <20070706145804.GA31409@localdomain> <20070709092154.GA19705@suse.de> <20070709114131.GA18750@localdomain> <20070710150037.GB10216@in.ibm.com> <20070710171740.GA11130@hmsendeavour.rdu.redhat.com> <20070710173541.GA21743@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070710173541.GA21743@localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 13:42:16 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
-
+On Tue, Jul 10, 2007 at 08:35:41PM +0300, Dan Aloni wrote:
+> On Tue, Jul 10, 2007 at 01:17:40PM -0400, Neil Horman wrote:
+> > On Tue, Jul 10, 2007 at 08:30:37PM +0530, Vivek Goyal wrote:
+> > > I am still thinking that why can't we change initrd building process
+> > > (Be it mkinitrd or mkdumprd depending on distriution). Whole idea is
+> > > that while building an initrd/initramfs for the first kernel, one will
+> > > ask user for kdump kernel (if user wishes to load kdump kenrel through
+> > > initrd) and then it will generate kdump kenrel's initrd and pack into
+> > > first kernel's initrd.
+> > > 
+> > > So steps would look something like this.
+> > > 
+> > > - mkinitrd takes second kernel's vmlinux as argument
+> > > - mkinitrd runs "makedumpfile -g" on debug version of first kernel's vmlinux.
+> > > - mkinitrd generates the initramfs for kdump kernel and packs output
+> > >   of "makedumpfile -g" into that.
+> > > - mkinitrd packs statically linked kexec, kdump kernel vmlinux/bzImage,
+> > >   and kdump kernel initramfs into first kernel's initramfs.
+> > > 
+> > Agreed, this is exactly what happens right now.
 > 
-> (just to provide my indicator of status)
+> Isn't there some sort of a circular dependency going on here? As I 
+> understand it the vmlinux binary already contains the initramfs as 
+> built-in data (at least that's what I use here for initramfs). It 
+> makes more sense if you guys are creating an _initrd_ image (that's 
+> what mkinitrd originally did AFAIK) and supply it to the boot-loader.
 
-Thanks.
+I see you are using an _external_ initramfs image. Sorry, I forgot 
+that option existed...
 
-> > libata-add-irq_flags-to-struct-pata_platform_info-fix.patch
-> 
-> are other pata_platform people happy with this?  I don't know embedded 
-> well enough to know if adding this struct member will break things.
-
-This is just a silly remove-unneeded-cast-of-void* cleanup.  I wrote this
-as a fixup against
-libata-add-irq_flags-to-struct-pata_platform_info.patch with the intention
-of folding it into that base patch, but you went and merged the submitter's
-original patch so this trivial fixup got stranded in -mm.  Feel free to give
-it the piss-off-too-trivial treatment.
-
-> > ata-ahci-alpm-store-interrupt-value.patch
-> > ata-ahci-alpm-expose-power-management-policy-option-to-users.patch
-> > ata-ahci-alpm-enable-link-power-management-for-ata-drivers.patch
-> > ata-ahci-alpm-enable-aggressive-link-power-management-for-ahci-controllers.patch
-> > 
-> >  These appear to need some work.
-> 
-> seemed mostly OK to me.  what comments did I miss?
-
-Oh, I thought these were the patches which affected scsi and which James
-had issues with.  I guess I got confused.
-
-> 
-> > libata-add-human-readable-error-value-decoding.patch
-> 
-> still pondering; in my mbox queue
-> 
-> > libata-fix-hopefully-all-the-remaining-problems-with.patch
-> > testing-patch-for-ali-pata-fixes-hopefully-for-the-problems-with-atapi-dma.patch
-> > pata_ali-more-work.patch
-> 
-> No idea.  I would poke Alan.  Probably drop.
-> 
-
-Alan: poke.
-
-> 
-> > 8139too-force-media-setting-fix.patch
-> > blackfin-on-chip-ethernet-mac-controller-driver.patch
-> > atari_pamsnetc-old-declaration-ritchie-style-fix.patch
-> > sundance-phy-address-form-0-only-for-device-id-0x0200.patch
-> 
-> Needs a bug fix, so that the newly modified loop doesn't scan the final 
-> phy id, then loop back around to scan the first again.
-> 
-> 
-> > 3x59x-fix-pci-resource-management.patch
-> > update-smc91x-driver-with-arm-versatile-board-info.patch
-> > drivers-net-ns83820c-add-paramter-to-disable-auto.patch
-> > 
-> >  netdev patches which are stuck in limbo land.
-> 
-> ?  I don't think I've seen these.
-> 
-
-3x59x-fix-pci-resource-management.patch: you wrote it ;) I have a comment
-here:
-
-- I don't remember the story with cardbus either.  Presumably once upon a
-  time the cardbus layer was claiming IO regions on behalf of cardbus
-  devices (?)
-
-Need to think about that.
-
-update-smc91x-driver-with-arm-versatile-board-info.patch:
-
-See comment from rmk in changelog:
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/update-smc91x-driver-with-arm-versatile-board-info.patch
-
-Deepak, can we move this along a bit please?
-
-drivers-net-ns83820c-add-paramter-to-disable-auto.patch:
-
-See comments in changelog: ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/drivers-net-ns83820c-add-paramter-to-disable-auto.patch
-
-Dan, Ben: is there any prospect of progress here?
-
-> 
-> > bonding-bond_mainc-make-2-functions-static.patch
-> 
-> FWIW bonding stuff should go to me, since it lives mostly in drivers/net
-> 
-
-Ah, noted.
-
-> > x86-initial-fixmap-support.patch
-> 
-> Andi material?
-> 
-
-Spose so.  But it's buried in the middle of a series of four patches.
-
-> 
-> > mm-revert-kernel_ds-buffered-write-optimisation.patch
-> > revert-81b0c8713385ce1b1b9058e916edcf9561ad76d6.patch
-> > revert-6527c2bdf1f833cc18e8f42bd97973d583e4aa83.patch
-> > mm-clean-up-buffered-write-code.patch
-> > mm-debug-write-deadlocks.patch
-> > mm-trim-more-holes.patch
-> > mm-buffered-write-cleanup.patch
-> > mm-write-iovec-cleanup.patch
-> > mm-fix-pagecache-write-deadlocks.patch
-> > mm-buffered-write-iterator.patch
-> > fs-fix-data-loss-on-error.patch
-> > mm-restore-kernel_ds-optimisations.patch
-> >  pagefault-in-write deadlock fixes.  Will hold for 2.6.24.
-> 
-> Any of the above worth 2.6.23?  Just wondering if they were useful 
-> cleanups / minor fixes prior to new aops patches?
-> 
-
-The first few patches will a) fix up our writev performance regression and
-b) reintroduce the writev() deadlock which the writev()-regresion-adding
-patch fixed.
-
-So it's all a bit ugly.
-
-> 
-> > oss-trident-massive-whitespace-removal.patch
-> > oss-trident-fix-locking-around-write_voice_regs.patch
-> > oss-trident-replace-deprecated-pci_find_device-with-pci_get_device.patch
-> > remove-options-depending-on-oss_obsolete.patch
-> > 
-> >  Merge
-> 
-> what about just removing the OSS drivers in question?  :)
-> 
-
-Hey, I only work here.
-
-> 
-> > intel-iommu-dmar-detection-and-parsing-logic.patch
-> > intel-iommu-pci-generic-helper-function.patch
-> > intel-iommu-clflush_cache_range-now-takes-size-param.patch
-> > intel-iommu-iova-allocation-and-management-routines.patch
-> > intel-iommu-intel-iommu-driver.patch
-> > intel-iommu-avoid-memory-allocation-failures-in-dma-map-api-calls.patch
-> > intel-iommu-intel-iommu-cmdline-option-forcedac.patch
-> > intel-iommu-dmar-fault-handling-support.patch
-> > intel-iommu-iommu-gfx-workaround.patch
-> > intel-iommu-iommu-floppy-workaround.patch
-> > 
-> >  Don't know.  I don't think there were any great objections, but I don't
-> >  think much benefit has been demonstrated?
-> 
-> Just the general march of progress on new hardware :)
-> 
-> I would like to see this support merged in /some/ form.  We've been 
-> telling Intel for years they were sillyheads for not bothering with an 
-> IOMMU.  Now that they have, we should give them a cookie and support 
-> good technology.
-
-OK, thanks.
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
