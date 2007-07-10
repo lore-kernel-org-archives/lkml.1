@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761990AbXGJCLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbXGJCXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761990AbXGJCLR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 22:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbXGJCLG
+	id S1761585AbXGJCXa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 22:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbXGJCXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 22:11:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59115 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755496AbXGJCLF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 22:11:05 -0400
-Date: Mon, 9 Jul 2007 19:11:03 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-In-Reply-To: <4692E8B5.3030404@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0707091905480.3108@schroedinger.engr.sgi.com>
-References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com>
- <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
- <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
- <20070709095116.c2ea700f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
- <4692E44E.6000606@yahoo.com.au> <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com>
- <4692E8B5.3030404@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Jul 2007 22:23:21 -0400
+Received: from mx1.suse.de ([195.135.220.2]:38028 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756268AbXGJCXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 22:23:20 -0400
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 10 Jul 2007 12:23:04 +1000
+Message-Id: <1070710022304.12950@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: "J. Bruce Fields" <bfields@citi.umich.edu>
+Cc: J "." Bruce Fields <bfields@citi.umich.edu>
+Cc: Neil Brown <neilb@suse.de>
+Subject: [PATCH 002 of 20] knfsd: nfsd4: build rpcsec_gss whenever nfsd4 is built
+References: <20070710121949.12548.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Nick Piggin wrote:
 
-> It is reasonable to expect some help from maintainers, but I notice you
-> didn't even CC the SLOB maintainer in the patch to remove SLOB! So maybe
-> if you tried working a bit closer with him you could get better results?
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-The maintainers last patch to SLOB was the initial submission of the 
-allocator. Then he acked subsequent patches. Most of the modifications to 
-SLOB are my work. Attempts to talk to the maintainer result in inventive 
-explanations why SLOB does not have to conform to kernel standards. There 
-is no reasonable expectation that this will change.
+Select rpcsec_gss support whenever asked for NFSv4 support.  The rfc
+actually requires gss, and gss is also the main reason to migrate to v4.
+We already do this on the client side.
+
+Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./fs/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff .prev/fs/Kconfig ./fs/Kconfig
+--- .prev/fs/Kconfig	2007-07-10 11:19:59.000000000 +1000
++++ ./fs/Kconfig	2007-07-10 11:26:04.000000000 +1000
+@@ -1725,6 +1725,7 @@ config NFSD_V3_ACL
+ config NFSD_V4
+ 	bool "Provide NFSv4 server support (EXPERIMENTAL)"
+ 	depends on NFSD_V3 && EXPERIMENTAL
++	select RPCSEC_GSS_KRB5
+ 	help
+ 	  If you would like to include the NFSv4 server as well as the NFSv2
+ 	  and NFSv3 servers, say Y here.  This feature is experimental, and
