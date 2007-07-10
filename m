@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763789AbXGJWMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbXGJW0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763789AbXGJWMs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 18:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760827AbXGJWMk
+	id S1758906AbXGJW0a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 18:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbXGJW0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 18:12:40 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53586 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760604AbXGJWMj (ORCPT
+	Tue, 10 Jul 2007 18:26:20 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57355 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752069AbXGJW0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 18:12:39 -0400
-Date: Tue, 10 Jul 2007 15:12:38 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-In-Reply-To: <20070710120224.GP11115@waste.org>
-Message-ID: <Pine.LNX.4.64.0707101510410.5490@schroedinger.engr.sgi.com>
-References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com>
- <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
- <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
- <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI> <469342DC.8070007@yahoo.com.au>
- <84144f020707100231p5013e1aer767562c26fc52eeb@mail.gmail.com>
- <20070710120224.GP11115@waste.org>
+	Tue, 10 Jul 2007 18:26:19 -0400
+Date: Wed, 11 Jul 2007 00:26:52 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Valdis.Kletnieks@vt.edu
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+Message-ID: <20070710222652.GE3492@stusta.de>
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <25865.1184096391@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1284435424-1184105558=:5490"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <25865.1184096391@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, Jul 10, 2007 at 03:39:51PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Sun, 08 Jul 2007 16:52:52 PDT, Linus Torvalds said:
+> 
+> > The full changelog since 2.6.21 also got uploaded, but quite frankly, I 
+> > wonder if anybody uses those things? I've been uploading them for non-git 
+> > users, but I have a suspicion that any people who want that kind of 
+> > detail have long since learnt to use git, or are following the commit 
+> > mailing lists or equivalent. 
+> 
+> What the Rest Of The World could probably use is if some kind soul were to go
+> through and build a .21->.22 document that lists all the *userspace visible*
+> changes (new drivers, new filesystems/features, new/changed stuff in /sys and
+> /proc, new ioctls, new and changed Kconfig, etc).
+>...
 
----1700579579-1284435424-1184105558=:5490
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Already available:
+  http://kernelnewbies.org/Linux_2_6_22
 
-On Tue, 10 Jul 2007, Matt Mackall wrote:
+Credits for it go to Diego Calleja.
 
-> following as the best MemFree numbers after several boots each:
->=20
-> SLAB: 54796
-> SLOB: 55044
-> SLUB: 53944
-> SLUB: 54788 (debug turned off)
+It's a Wiki, so if you miss anything there you can add it yourself.
 
-That was without "slub_debug" as a parameter or with !CONFIG_SLUB_DEBUG?
+It might make sense if Linus would give a link to the corresponding 
+changelog there in future release announcements.
 
-Data size and code size will decrease if you compile with=20
-!CONFIG_SLUB_DEBUG. slub_debug on the command line governs if debug=20
-information is used.
+cu
+Adrian
 
-> These numbers bounce around a lot more from boot to boot than I
-> remember, so take these numbers with a grain of salt.
->=20
-> Disabling the debug code in the build gives this, by the way:
->=20
-> mm/slub.c: In function =FF=FFinit_kmem_cache_node=FF=FF:
-> mm/slub.c:1873: error: =FF=FFstruct kmem_cache_node=FF=FF has no member n=
-amed
-> =FF=FFfull=FF=FF
+-- 
 
-A fix for that is in Andrew's tree.
----1700579579-1284435424-1184105558=:5490--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
