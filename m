@@ -1,158 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbXGJFCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbXGJFJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756506AbXGJFCX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 01:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbXGJFCO
+	id S1757656AbXGJFJz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 01:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXGJFJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 01:02:14 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:30422 "EHLO
-	asav05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbXGJFCN (ORCPT
+	Tue, 10 Jul 2007 01:09:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:22832 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbXGJFJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 01:02:13 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlwPAPCukkZKhRO4R2dsb2JhbACPKQEBGw0GEQE
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Input updates for post-2.6.22
-Date: Tue, 10 Jul 2007 01:02:06 -0400
-User-Agent: KMail/1.9.3
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Tue, 10 Jul 2007 01:09:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=P+ZohsP/y+vod9NIdA29NWYoaE2ibBIbpru6ZSXZFWyRI37RrvqL91H+acLUHZaZjnZ5XR2EPFkZqVWcpjdx064Tp7+iOXGYsm6zyqVs68NGitfmswTTWNuYowxXcO8gb8gLLAO1lni+xhddzzt1/pHA86h/fG+2hcPxFRMq1LM=
+Message-ID: <46931495.4050605@gmail.com>
+Date: Tue, 10 Jul 2007 14:09:41 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Sysfs and suicidal attributes
+References: <Pine.LNX.4.44L0.0707081015430.5323-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707081015430.5323-100000@netrider.rowland.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707100102.06803.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Let's see if I manage to create pull request that can be cut-n-pasted...]
+Hello, Alan.
 
+Alan Stern wrote:
+> You remember the problem we faced with "suicidal" sysfs attributes and 
+> the device_schedule_callback() routine that fixes it?
 
-Linus,
+Sure.
 
-Please pull from:
+> Well, it turns out that this approach may confict with suspend/resume
+> processing.  In brief, it's not a good idea to unregister devices while
+> a suspend is in progress, but on the other hand it's not a good idea to
+> block keventd waiting until the suspend is over.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+Is it because keventd isn't frozen during suspend?  I'm afraid we might
+be trying to solve the problem at the wrong layer.  Device
+addition/removal should be _locked out_ during suspend/resume.
+Depending on executing thread being frozen is more subtle and fragile
+and freezing might go away altogether.
 
-or
+IMHO, what's needed is a giant rwlock protecting the whole device
+addition/removal while suspend is in progress (addition/removal during
+resume should be safe as long as we put the new devices on the already
+processed list).  The lock can probably replace dpm_sem and dpm_list_sem.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+It's probably necessary to use trylock from addition/removal to avoid
+deadlock.  Drivers which support hotplugging need to rescan/revalidate
+the bus during resume anyway so failing addition/removal during suspend
+shouldn't be a problem.
 
-to receive updates for input subsystem.
+> I haven't paid much attention to your sysfs updates.  Is it still true
+> that calls to show/store methods are mutually exclusive with attribute
+> unregistration?  Assuming the answer is Yes, would it be possible to
+> bypass that mutual exclusion in certain explicit cases?  Here's what I
+> have in mind:
+> 
+> 	The user writes to an attribute file.
+> 
+> 	The sysfs core calls the attribute's store method.
+> 
+> 	The method tells the sysfs core to pretend that the call
+> 	temporarily doesn't exist, or has completed, or something
+> 	like that.
+> 
+> 	The method safely unregisters the attribute file, with no
+> 	mutual exclusion problems and no deadlock.  Of course, the
+> 	unregistration will still block until all _other_ method
+> 	calls for this attribute are complete.
+> 
+> 	The method tells the sysfs core to stop pretending and
+> 	go back to its normal state.
+> 
+> 	The method returns, and the sysfs core takes whatever actions
+> 	are needed to fully release the attribute file.
+> 
+> The idea is that there could be a way to allow unregistration while a 
+> method is still running, if the method specifically requests it.  If we 
+> could do this then device_schedule_callback() would be unnecessary.
 
-Changelog:
----------
+Regardless of the suspend problem, I like the above idea.  Actually, I
+was thinking about doing exactly that for suicidal nodes when I first
+found out the problem.  All that's needed is an owner field which allows
+the owning thread to reenter (what was the name for this type of mutex?
+ BSD folks like it).  It's probably better to put some restrictions to
+allow only the specific case tho.
 
-Adrian Bunk (1):
-      Input: xpad - make xpad_play_effect() static
+I like it because it shifts complexity from the drivers into driver
+core.  IOW, the driver model is kinder to drivers that way - the driver
+writer doesn't have to care whether something is suicidal or not - and I
+think that's the way we should be headed although we're not good at it yet.
 
-Andi Drebes (1):
-      Input: grip-mp - use ARRAY_SIZE
-
-Andrew Morton (2):
-      Input: serio_raw - shut up errorneous warning
-      Input: tsdev - fix broken usec-to-millisecs conversion
-
-Aristeu Rozanski (1):
-      Input: psmouse - add support for Cortron PS/2 Trackballs
-
-Dmitry Torokhov (12):
-      Input: aiptek - do not try to export associated event device
-      Input: aiptek - remove vendor and product attributes from sysfs
-      Input: aiptek - use attribute group
-      Input: aiptek - do not check for NULL in attribute methods
-      Input: aiptek - use maps in attributes
-      Input: aiptek - kill aiptek_convert_from_2s_complement()
-      Input: aiptek - use array to list all buttons
-      Input: wistron - convert to use input-polldev
-      Input: wistron - add support for querying/changing keymap
-      Input: convert from class devices to standard devices
-      Input: xpad - fix report for dpad and inverted Y and RY axes on xbox 360
-      Input: ppc-beep - switch to using input_dev->dev.parent
-
-Eric Piel (2):
-      Input: wriston - reduce polling frequency
-      Input: wistron - add LED support
-
-Hans de Goede (1):
-      Input: atkbd - change mapping for e032 from KEY_WWW to KEY_HOMEPAGE
-
-Hans-Christian Egtvedt (1):
-      Input: add gpio-mouse driver
-
-Jan Kratochvil (4):
-      USB: Add USB_DEVICE_INTERFACE_PROTOCOL macro
-      Input: xpad - add support for Xbox 360 gamepad
-      Input: xpad - add Xbox360 gamepad rumble support
-      Input: xpad - fix check for succesful usb_buffer_alloc
-
-Mark Vytlacil (1):
-      Input: aiptek - fix relative mode parsing
-
-Mike Rapoport (1):
-      Input: pxa27x_keyboard - fix compile error
-
-Ondrej Zary (1):
-      Input: usbtouchscreen - add support for IRTOUCHSYSTEMS touchscreens
-
-Ping Cheng (1):
-      Input: wacom - add support for the new Bamboo tablets
-
-Rene van Paassen (10):
-      Input: aiptek - correct documentation on reports
-      Input: aiptek - correct the proximity and validity checks
-      Input: aiptek - fixed mouse button defines
-      Input: aiptek - use set_bit instead of bitwise or
-      Input: aiptek - put sensible warnings in probe
-      Input: aiptek - use only absolute misc reports
-      Input: aiptek - correct the tool switching code
-      Input: aiptek - tolerate newlines in sysfs files
-      Input: aiptek - rework the function key code
-      Input: aiptek - update driver version
-
-Robert P. J. Day (1):
-      Input: update MAINTAINERS to explicitly mention touchscreens
-
-Diffstat:
---------
-
- MAINTAINERS                                |    2 +-
- drivers/char/keyboard.c                    |    4 +-
- drivers/input/evdev.c                      |   84 ++--
- drivers/input/input.c                      |  136 ++--
- drivers/input/joydev.c                     |   84 ++--
- drivers/input/joystick/Kconfig             |    7 +
- drivers/input/joystick/grip_mp.c           |    4 +-
- drivers/input/joystick/xpad.c              |  281 +++++++--
- drivers/input/keyboard/atkbd.c             |    4 +-
- drivers/input/keyboard/pxa27x_keyboard.c   |    2 +-
- drivers/input/misc/Kconfig                 |    6 +-
- drivers/input/misc/wistron_btns.c          |  359 +++++++---
- drivers/input/mouse/Kconfig                |   16 +
- drivers/input/mouse/Makefile               |    1 +
- drivers/input/mouse/gpio_mouse.c           |  196 ++++++
- drivers/input/mouse/psmouse-base.c         |   29 +
- drivers/input/mouse/psmouse.h              |    1 +
- drivers/input/mousedev.c                   |  242 ++++---
- drivers/input/serio/serio_raw.c            |    2 +-
- drivers/input/tablet/aiptek.c              |  991 ++++++++++------------------
- drivers/input/tablet/wacom.h               |    8 +-
- drivers/input/tablet/wacom_sys.c           |    6 +
- drivers/input/tablet/wacom_wac.c           |   47 ++-
- drivers/input/tablet/wacom_wac.h           |    1 +
- drivers/input/touchscreen/Kconfig          |    6 +
- drivers/input/touchscreen/usbtouchscreen.c |   33 +
- drivers/input/tsdev.c                      |   90 ++--
- include/linux/gpio_mouse.h                 |   61 ++
- include/linux/input.h                      |   20 +-
- include/linux/usb.h                        |   16 +
- sound/ppc/beep.c                           |   10 +-
- 31 files changed, 1618 insertions(+), 1131 deletions(-)
- create mode 100644 drivers/input/mouse/gpio_mouse.c
- create mode 100644 include/linux/gpio_mouse.h
-
+Thanks.
 
 -- 
-Dmitry
+tejun
