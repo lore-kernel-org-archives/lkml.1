@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763830AbXGJUqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbXGJUra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763830AbXGJUqt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 16:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760736AbXGJUqj
+	id S1763606AbXGJUra (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbXGJUrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 16:46:39 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41541 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762599AbXGJUqi (ORCPT
+	Tue, 10 Jul 2007 16:47:20 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:50379 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757554AbXGJUrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 16:46:38 -0400
-Date: Tue, 10 Jul 2007 13:46:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, Martin Bligh <mbligh@mbligh.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] x86_64 - Use non locked version for local_cmpxchg()
-In-Reply-To: <20070710051616.GB16148@Krystal>
-Message-ID: <Pine.LNX.4.64.0707101345550.3055@schroedinger.engr.sgi.com>
-References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de>
- <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
- <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com>
- <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal>
- <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
- <20070709225817.GA5111@Krystal> <Pine.LNX.4.64.0707091605380.20282@schroedinger.engr.sgi.com>
- <20070710051616.GB16148@Krystal>
+	Tue, 10 Jul 2007 16:47:19 -0400
+Message-ID: <4693EF8E.9070403@zytor.com>
+Date: Tue, 10 Jul 2007 13:43:58 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
+References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <4693AA56.9040109@zytor.com> <551EA412-3D35-4BCD-ACAE-B6A7BE3CBF9B@kernel.crashing.org>
+In-Reply-To: <551EA412-3D35-4BCD-ACAE-B6A7BE3CBF9B@kernel.crashing.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Mathieu Desnoyers wrote:
+Segher Boessenkool wrote:
+> 
+>> I'm a bit surprised about the claim w.r.t. -fno-unit-at-a-time (although
+>> I guess that is the default and one would thus typically not see this.)
+> 
+> -fno-unit-at-a-time is the default on three year old compilers,
+> yes.  Newer compilers have unit-at-a-time enabled by default.
+> 
 
-> You are completely right: on x86_64, a bit got lost in the move to
-> cmpxchg.h, here is the fix. It applies on 2.6.22-rc6-mm1.
+As I said, never mind.  "Unit at a time" does something totally
+different from what I somehow had gotten into my head it did.
 
-A trival fix. Make sure that it gets merged soon.
-
-Acked-by: Christoph Lameter <clameter@sgi.com>
+	-hpa
