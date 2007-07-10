@@ -1,114 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbXGJT74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758742AbXGJUDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758098AbXGJT74 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXGJT7s
+	id S1758742AbXGJUDi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbXGJUD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 15:59:48 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:50726 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754545AbXGJT7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 15:59:47 -0400
-Subject: [PATCH] 2.6.22-rc6-mm1:  hugetlbfs handle empty options string
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy.dunlap@oracle.com, wli@holomorphy.org,
-       Eric Whitney <eric.whitney@hp.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 10 Jul 2007 15:59:00 -0400
-Message-Id: <1184097540.5727.36.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jul 2007 16:03:29 -0400
+Received: from smtp-5.smtp.ucla.edu ([169.232.47.137]:44949 "EHLO
+	smtp-5.smtp.ucla.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbXGJUD2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 16:03:28 -0400
+X-Greylist: delayed 3167 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jul 2007 16:03:27 EDT
+Date: Tue, 10 Jul 2007 12:09:56 -0700 (PDT)
+From: Chris Stromsoe <cbs@cts.ucla.edu>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+cc: Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@stusta.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] the scheduled sk98lin removal
+In-Reply-To: <20070710094954.788aa357@freepuppy.rosehill.hemminger.net>
+Message-ID: <Pine.LNX.4.64.0707101156320.20119@potato.cts.ucla.edu>
+References: <20070709145916.GE3492@stusta.de> <4693B773.2080205@garzik.org>
+ <20070710094954.788aa357@freepuppy.rosehill.hemminger.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Probable-Spam: no
+X-Spam-Report: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] 2.6.22-rc6-mm1 - hugetlbfs handle empty options string
+On Tue, 10 Jul 2007, Stephen Hemminger wrote:
 
-I was seeing a null pointer deref in fs/super.c:vfs_kern_mount().
-Some file system get_sb() handler was returning NULL mnt_sb with
-a non-negative return value.  I also noticed a "hugetlbfs: Bad
-mount option:" message in the log.
+> On Tue, 10 Jul 2007 12:44:35 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
+>
+>> Adrian Bunk wrote:
+>>> This patch contains the scheduled removal of the sk98lin driver.
+>>>
+>>> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>>
+>> Stephen -- ACK?
+>
+> Yes.  Existing driver is dead, if there are any ancient boards that don't
+> work with skge, I haven't heard any complaints in at least a year.
+> As a fallback users, can always go with vendor driver.
 
-Turns out that hugetlbfs_parse_options() was not checking for an
-empty option string after call to strsep().  On failure,
-hugetlbfs_parse_options() returns 1.  hugetlbfs_fill_super() just
-passed this return code back up the call stack where
-vfs_kern_mount() missed the error and proceeded with a NULL mnt_sb.
+I have a several SK-9872s that do not work reliably with skge but work 
+fine with sklin.  The SK-9872 is a dual port card.  Doing the following 
+causes a hard lock:
 
-Apparently introduced by patch:
-	hugetlbfs-use-lib-parser-fix-docs.patch
+modprobe bonding miimon=100 mode=active-backup
+modprobe skge
+ifup bond0
+ifdown bond0
 
-The problem was exposed by this line in my fstab:
+This happens with every version of skge I've tested, including whatever is 
+in 2.6.22.  /etc/network/interfaces contains:
 
-none        /huge       hugetlbfs   defaults    0 0
+iface bond0 inet static
+         network 192.168.1.0
+         address 192.168.1.1
+         broadcast 192.168.1.255
+         netmask 255.255.255.0
 
-It can also be demonstrated by invoking mount of hugetlbfs
-directly with no options or a bogus option.
-
-This patch:
-
-1) adds the check for empty option to hugetlbfs_parse_options(),
-2) enhances the error message to bracket any unrecognized
-   option with quotes ,
-3) modifies hugetlbfs_parse_options() to return -EINVAL on any
-   unrecognized option,
-4) adds a BUG_ON() to vfs_kern_mount() to catch any get_sb()
-   handler that returns a NULL mnt->mnt_sb with a return value
-   >= 0.
-
-Signed-off-by:  Lee Schermerhorn  <lee.schermerhorn@hp.com>
-
- fs/hugetlbfs/inode.c |    8 +++++---
- fs/super.c           |    1 +
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-Index: Linux/fs/hugetlbfs/inode.c
-===================================================================
---- Linux.orig/fs/hugetlbfs/inode.c	2007-07-10 14:49:31.000000000 -0400
-+++ Linux/fs/hugetlbfs/inode.c	2007-07-10 15:10:28.000000000 -0400
-@@ -625,6 +625,8 @@ hugetlbfs_parse_options(char *options, s
- 
- 	while ((p = strsep(&options, ",")) != NULL) {
- 		int token;
-+		if (!*p)
-+			continue;
- 
- 		token = match_token(p, tokens, args);
- 		switch (token) {
-@@ -669,8 +671,9 @@ hugetlbfs_parse_options(char *options, s
- 			break;
- 
- 		default:
--			printk(KERN_ERR "hugetlbfs: Bad mount option: %s\n", p);
-- 			return 1;
-+			printk(KERN_ERR "hugetlbfs: Bad mount option: \"%s\"\n",
-+				 p);
-+			return -EINVAL;
- 			break;
- 		}
- 	}
-@@ -697,7 +700,6 @@ hugetlbfs_fill_super(struct super_block 
- 	config.gid = current->fsgid;
- 	config.mode = 0755;
- 	ret = hugetlbfs_parse_options(data, &config);
--
- 	if (ret)
- 		return ret;
- 
-Index: Linux/fs/super.c
-===================================================================
---- Linux.orig/fs/super.c	2007-07-10 14:49:32.000000000 -0400
-+++ Linux/fs/super.c	2007-07-10 15:00:46.000000000 -0400
-@@ -880,6 +880,7 @@ vfs_kern_mount(struct file_system_type *
- 	error = type->get_sb(type, flags, name, data, mnt);
- 	if (error < 0)
- 		goto out_free_secdata;
-+	BUG_ON(!mnt->mnt_sb);
- 
-  	error = security_sb_kern_mount(mnt->mnt_sb, secdata);
-  	if (error)
+         up ifenslave bond0 eth0 eth1
+         down ifenslave -d bond0 eth0 eth1
 
 
+lspci -vv -s 02:01
+02:01.0 Ethernet controller: SysKonnect SK-9872 Gigabit Ethernet Server Adapter (SK-NET GE-ZX dual link) (rev 11)
+         Subsystem: SysKonnect SK-9844 Gigabit Ethernet Server Adapter (SK-NET GE-SX dual link)
+         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+         Latency: 64 (5750ns min, 7750ns max), Cache Line Size: 32 bytes
+         Interrupt: pin A routed to IRQ 22
+         Region 0: Memory at febfc000 (32-bit, non-prefetchable) [size=16K]
+         Region 1: I/O ports at e800 [size=256]
+         Expansion ROM at febc0000 [disabled] [size=128K]
+         Capabilities: <access denied>
+
+
+
+
+-Chris
