@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761852AbXGJTI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbXGJTNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761852AbXGJTI4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbXGJTIq
+	id S1758246AbXGJTNT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 15:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbXGJTNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 15:08:46 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:16039 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752852AbXGJTIp (ORCPT
+	Tue, 10 Jul 2007 15:13:09 -0400
+Received: from ms-smtp-01.texas.rr.com ([24.93.47.40]:48243 "EHLO
+	ms-smtp-01.texas.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbXGJTNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 15:08:45 -0400
-Message-ID: <4693D9B6.4090408@ru.mvista.com>
-Date: Tue, 10 Jul 2007 23:10:46 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 10 Jul 2007 15:13:08 -0400
+From: Dave McCracken <dave.mccracken@oracle.com>
+Organization: Oracle Corp
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] include private data mappings in RLIMIT_DATA limit
+Date: Tue, 10 Jul 2007 14:12:19 -0500
+User-Agent: KMail/1.9.7
+Cc: herbert.van.den.bergh@oracle.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <4692D616.4010004@oracle.com> <200707101219.29743.dave.mccracken@oracle.com> <Pine.LNX.4.64.0707101857310.20758@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0707101857310.20758@blonde.wat.veritas.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
-References: <20070221011922.GA1777@freefall.freebsd.org> <200702210342.20775.bzolnier@gmail.com> <466EEFD6.9030001@ru.mvista.com> <200706160123.55636.bzolnier@gmail.com>
-In-Reply-To: <200706160123.55636.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707101412.19785.dave.mccracken@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Tuesday 10 July 2007, Hugh Dickins wrote:
+> On Tue, 10 Jul 2007, Dave McCracken wrote:
+> > Given that RLIMIT_DATA is pretty much meaningless in current kernels, I
+> > would put forward the argument that this change is extremely unlikely to
+> > break anything because no one is currently setting it to anything other
+> > than unlimited.  Adding this feature would give administrators another
+> > tool, a way to control the private data size of a process without
+> > restricting its ability to attach to large shared mappings.
+>
+> That may be a good argument (though "extremely unlikely to break"s
+> have a nasty habit of biting).  I'd still say that the contribution
+> to Committed_AS is more appropriate and more useful here.
 
-Bartlomiej Zolnierkiewicz wrote:
+You may be right... I suppose everything will bite someone somewhere with a 
+sufficiently large user base.
 
->>>>On Feb 20, 2007, at 5:44 PM, Bartlomiej Zolnierkiewicz wrote:
+As for whether Committed_AS is more appropriate, I'll have to defer to Herbert 
+on this one.  He stated that RLIMIT_DATA no longer does what it was intended 
+to do, and offered a fix for it, and I agreed with him.  I do believe his 
+patch does a reasonable approximation of the original intent of RLIMIT_DATA, 
+but I didn't delve into the actual intended use of it once it's fixed.
 
->>>>>On Wednesday 21 February 2007 02:19, Suleiman Souhlal wrote:
+> > > That change to /proc/PID/status VmData:
+> > > -	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
+> > > +	data = mm->total_vm - mm->shared_vm - mm->stack_vm - mm->exec_vm;
+> > > looks plausible, but isn't exec_vm already counted as shared_vm,
+> > > so now being doubly subtracted?  Besides which, we wouldn't want
+> > > to change those numbers again without consulting Albert.
+> >
+> > As I recall, this was added after Herbert discovered that exec_vm is not
+> > counted as shared_vm.  It's actually mapped as private/readonly.
+>
+> Mapped private readonly yes, but vm_stat_account() says
+> 	if (file) {
+> 		mm->shared_vm += pages;
+> 		if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
+> 			mm->exec_vm += pages;
 
->>>>>>It can be changed via /proc/ide/hd?/settings.
+In that code shared_vm includes everything that's mmap()ed, including private 
+mappings.  But if you look at Herbert's patch he has the following change:
 
->>>>>Why do we need to change IDE DMA timeout dynamically?
+        if (file) {
+-               mm->shared_vm += pages;
++               if (flags & VM_SHARED)
++                       mm->shared_vm += pages;
+                if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
+                        mm->exec_vm += pages;
 
->>>>I've used it to test error recovery (for example).
+This means that shared_vm now is truly only memory that's mapped VM_SHARED and 
+does not include VM_EXEC memory.  That necessitates the separate subtraction 
+of exec_vm in the data calculations.
 
->>>Seems quite useable for developers but I would prefer not to
->>>expose it in production kernels for end users.
-
->>    It seems that I have counter example of a customer asking if this timeout 
->>can be done configurable. :-)
-
-> May I ask what was the rationale for this request?
-
-    Their system seems to become unschedulable for this period of time (DMA 
-timeouts happen from time to time) -- at least the keepalive daemon stopped 
-replying during this period...
-
-> I have no strong feelings about adding this /proc/ide/ setting but I worry
-> that it could be (mis)used just to (unreliably) work-around problems...
-
->>    BTW, why the timeout is so damn long? 2*WAIT_CMD is 20 secs, and if DMA is 
->>not complete or interrupt pending, it may wait 10 more secs...
-
-> I really don't remember... :)
-
-> Maybe Mark or Alan could help with figuring this out.
-
-    They also have probably forgotten. :-)
-
-> Thanks,
-> Bart
-
-MBR, Sergei
+Dave McCracken
