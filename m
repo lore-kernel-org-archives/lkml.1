@@ -1,94 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbXGJQ42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbXGJQ7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762862AbXGJQ42 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 12:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbXGJQ4U
+	id S1762708AbXGJQ7J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 12:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXGJQ65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 12:56:20 -0400
-Received: from mga01.intel.com ([192.55.52.88]:15872 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754812AbXGJQ4T convert rfc822-to-8bit (ORCPT
+	Tue, 10 Jul 2007 12:58:57 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:52031 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbXGJQ6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 12:56:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,523,1175497200"; 
-   d="scan'208";a="266619135"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 10 Jul 2007 12:58:55 -0400
+Date: Tue, 10 Jul 2007 17:58:12 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Dave McCracken <dave.mccracken@oracle.com>
+cc: herbert.van.den.bergh@oracle.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] include private data mappings in RLIMIT_DATA limit
+In-Reply-To: <200707091954.10502.dave.mccracken@oracle.com>
+Message-ID: <Pine.LNX.4.64.0707101727510.4717@blonde.wat.veritas.com>
+References: <4692D616.4010004@oracle.com> <200707091954.10502.dave.mccracken@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: OOPS at dmar_table_init (2.6.22-rc6-mm1 kernel)
-Date: Tue, 10 Jul 2007 09:56:10 -0700
-Message-ID: <8A3E977AB3C24845947ADAAE0526E39502804C7B@orsmsx419.amr.corp.intel.com>
-In-Reply-To: <20070710094930.1d4be2f4.rdunlap@xenotime.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: OOPS at dmar_table_init (2.6.22-rc6-mm1 kernel)
-Thread-Index: AcfDEcy1h64p5kPaSsKnTjgfWnrNKwAATnDw
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: "Randy Dunlap" <rdunlap@xenotime.net>, "Pavel Emelianov" <xemul@sw.ru>
-Cc: "Raj, Ashok" <ashok.raj@intel.com>, "Li, Shaohua" <shaohua.li@intel.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>
-X-OriginalArrivalTime: 10 Jul 2007 16:56:16.0936 (UTC) FILETIME=[3B428A80:01C7C313]
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1657808215-1184086692=:4717"
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAZGF2ZS5tY2NyYWNrZW5Ab3JhY2xlLmNvbQBoZXJiZXJ0LnZhbi5kZW4uYmVyZ2hAb3JhY2xlLmNvbQBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry for the top post) 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This bug is fixed and the fix should appear in the next MM release.
-See this link for the patch
-http://marc.info/?l=linux-kernel&m=118313130109808&w=2 
+--8323584-1657808215-1184086692=:4717
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
--Anil
------Original Message-----
-From: Randy Dunlap [mailto:rdunlap@xenotime.net] 
-Sent: Tuesday, July 10, 2007 9:50 AM
-To: Pavel Emelianov
-Cc: Raj, Ashok; Li, Shaohua; Keshavamurthy, Anil S; Linux Kernel Mailing
-List; Andrew Morton
-Subject: Re: OOPS at dmar_table_init (2.6.22-rc6-mm1 kernel)
+On Mon, 9 Jul 2007, Dave McCracken wrote:
+> On Monday 09 July 2007, Herbert van den Bergh wrote:
+> > With this patch, not only memory in the data segment of a process, but
+> > also private data mappings, both file-based and anonymous, are counted
+> > toward the RLIMIT_DATA resource limit. =C2=A0Executable mappings, such =
+as
+> > text segments of shared objects, are not counted toward the private dat=
+a
+> > limit. =C2=A0The result is that malloc() will fail once the combined si=
+ze of
+> > the data segment and private data mappings reaches this limit.
+> >
+> > This brings the Linux behavior in line with what is documented in the
+> > POSIX man page for setrlimit(3p).
 
-On Tue, 10 Jul 2007 17:57:25 +0400 Pavel Emelianov wrote:
+Which says malloc() can fail from it, but conspicuously not that mmap()
+can fail from it: unlike the RLIMIT_AS case.  Would we be better off?
 
-> Hi.
-> 
-> While working with Andrew's kernel I faced an OOPS on x86_64 
-> machine. Unfortunately kernel logs are not appearing in serial 
-> console by the time oops happens, but I have some info on the
-> screen:
-> 
-> OOPs is at dmar_table_init() here:
-> ffffffff80532873 <dmar_table_init>:
-> ffffffff80532873:       41 55                   push   %r13
-> ffffffff80532875:       41 54                   push   %r12
-> ffffffff80532877:       55                      push   %rbp
-> ffffffff80532878:       53                      push   %rbx
-> ffffffff80532879:       51                      push   %rcx
-> ffffffff8053287a:       4c 8b 2d 07 21 01 00    mov
-73991(%rip),%r13        # ffffffff80544988 <dmar_tbl>
-> ffffffff80532881:       41 0f b6 45 24          movzbl 0x24(%r13),%eax
-<<<<<<<<<<< OOPS, %r13 = NULL
-> ffffffff80532886:       84 c0                   test   %al,%al
-> ffffffff80532888:       75 11                   jne
-ffffffff8053289b <dmar_table_init+0x28>
-> ffffffff8053288a:       48 c7 c7 b0 3d 45 80    mov
-$0xffffffff80453db0,%rdi
-> ffffffff80532891:       e8 c2 4a cf ff          callq
-ffffffff80227358 <printk>
-> ffffffff80532896:       e9 f2 01 00 00          jmpq
-ffffffff80532a8d <dmar_table_init+0x21a>
-> 
-> Looks like dmar_tbl is NULL. 
-> BUG is 100% reproducible. Is there any other info that can be useful?
+>=20
+> I believe this patch is a simple and obvious fix to a hole introduced whe=
+n=20
+> libc malloc() began using mmap() instead of brk().
 
-You could test the patch from
-http://lkml.org/lkml/2007/6/29/174 (see "Get diff 1").
+But didn't libc start doing that many years ago?  Wouldn't that have
+been the time for such a patch rather than now: when it can only break
+apps that are currently working?
 
+> We took away the ability=20
+> to control how much data space processes could soak up.  This patch retur=
+ns=20
+> that control to the user.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code
-***
+I remember thinking that the idea of data ulimit had become obsolete
+(just preserved for compatibility) back when mmap() got invented and
+used for dynamic libraries.  I think that's when they brought in
+RLIMIT_AS, something which could make sense in the mmap() world.
+
+This patch does give it more meaning.  But if we are prepared to
+take the risk of breaking things in this way (I think not but don't
+mind being corrected), it would be more accurate to take writability
+into account, and use that quantity (sadly not stored in mm_struct,
+would have to be added) which we do security_vm_enough_memory() upon,
+which totals up into /proc/meminfo's Committed_AS.
+
+That change to /proc/PID/status VmData:=20
+-=09data =3D mm->total_vm - mm->shared_vm - mm->stack_vm;
++=09data =3D mm->total_vm - mm->shared_vm - mm->stack_vm - mm->exec_vm;
+looks plausible, but isn't exec_vm already counted as shared_vm,
+so now being doubly subtracted?  Besides which, we wouldn't want
+to change those numbers again without consulting Albert.
+
+Hugh
+--8323584-1657808215-1184086692=:4717--
