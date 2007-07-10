@@ -1,16 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751452AbXGJEA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbXGJEST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751452AbXGJEA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 00:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbXGJEAs
+	id S1752080AbXGJEST (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 00:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbXGJESG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 00:00:48 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:45484 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbXGJEAr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 00:00:47 -0400
-Date: Mon, 9 Jul 2007 21:00:45 -0700
+	Tue, 10 Jul 2007 00:18:06 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:45387 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750815AbXGJESD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 00:18:03 -0400
+Date: Mon, 9 Jul 2007 21:18:00 -0700
 From: sukadev@us.ibm.com
 To: Pavel Emelianov <xemul@openvz.org>
 Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
@@ -18,73 +17,104 @@ Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
        Linux Containers <containers@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 7/16] Helpers to find the task by its numerical ids
-Message-ID: <20070710040045.GA15214@us.ibm.com>
-References: <468DF6F7.1010906@openvz.org> <468DF826.5030309@openvz.org>
+Subject: Re: [PATCH 8/16] Masquerade the siginfo when sending a pid to a foreign namespace
+Message-ID: <20070710041800.GB15214@us.ibm.com>
+References: <468DF6F7.1010906@openvz.org> <468DF849.9080404@openvz.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <468DF826.5030309@openvz.org>
+In-Reply-To: <468DF849.9080404@openvz.org>
 User-Agent: Mutt/1.4.2.2i
 X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Pavel Emelianov [xemul@openvz.org] wrote:
-| When searching the task by numerical id on may need to find
-| it using global pid (as it is done now in kernel) or by its
-| virtual id, e.g. when sending a signal to a task from one
-| namespace the sender will specify the task's virtual id.
+| When user send signal from (say) init namespace to any task in a sub
+| namespace the siginfo struct must not carry the sender's pid value, as
+| this value may refer to some task in the destination namespace and thus
+| may confuse the application.
+
+Also, do you prevent signals to the child reaper of a container from within
+its container ? If so, can you show me where you handle it ? I can't
+seem to find it.
+
+And I guess you do allow signals to the child-reaper of a container from
+its parent container.
+
+| 
+| The consensus was to pretend in this case as if it is the kernel who
+| sends the signal.
+| 
+| The pid_ns_accessible() call is introduced to check this pid-to-ns
+| accessibility.
 | 
 | Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 | 
 | ---
 | 
-|  fs/proc/base.c        |    2 +-
-|  include/linux/pid.h   |   13 +++++++++++--
-|  include/linux/sched.h |   31 +++++++++++++++++++++++++++++--
-|  kernel/pid.c          |   32 +++++++++++++++++---------------
-|  4 files changed, 58 insertions(+), 20 deletions(-)
+|  include/linux/pid.h |   10 ++++++++++
+|  kernel/signal.c     |   34 ++++++++++++++++++++++++++++------
+|  2 files changed, 38 insertions(+), 6 deletions(-)
 | 
-| --- ./fs/proc/base.c.ve6	2007-07-06 10:58:56.000000000 +0400
-| +++ ./fs/proc/base.c	2007-07-06 11:03:41.000000000 +0400
-| @@ -2230,7 +2230,7 @@ static struct task_struct *next_tgid(uns
-|  	rcu_read_lock();
-|  retry:
-|  	task = NULL;
-| -	pid = find_ge_pid(tgid);
-| +	pid = find_ge_pid(tgid, &init_pid_ns);
-|  	if (pid) {
-|  		tgid = pid->nr + 1;
-|  		task = pid_task(pid, PIDTYPE_PID);
-| --- ./include/linux/pid.h.ve6	2007-07-06 11:03:27.000000000 +0400
-| +++ ./include/linux/pid.h	2007-07-06 11:03:27.000000000 +0400
-| @@ -98,14 +98,23 @@ extern struct pid_namespace init_pid_ns;
-|  /*
-|   * look up a PID in the hash table. Must be called with the tasklist_lock
-|   * or rcu_read_lock() held.
-| + *
-| + * find_pid_ns() finds the pid in the namespace specified
-| + * find_pid() find the pid by its global id, i.e. in the init namespace
-| + * find_vpid() finr the pid by its virtual id, i.e. in the current namespace
-| + *
-| + * see also find_task_by_pid() set in include/linux/sched.h
-|   */
-| -extern struct pid *FASTCALL(find_pid(int nr));
-| +extern struct pid *FASTCALL(find_pid_ns(int nr, struct pid_namespace *ns));
+| diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/pid.h linux-2.6.22-rc4-mm2-2/include/linux/pid.h
+| --- linux-2.6.22-rc4-mm2.orig/include/linux/pid.h	2007-06-14 12:14:29.000000000 +0400
+| +++ linux-2.6.22-rc4-mm2-2/include/linux/pid.h	2007-07-04 19:00:38.000000000 +0400
+| @@ -83,6 +89,16 @@ extern void FASTCALL(detach_pid(struct t
+|  	return nr;
+|  }
+| 
+| +/*
+| + * checks whether the pid actually lives in the namespace ns, i.e. it was
+| + * created in this namespace or it was moved there.
+| + */
 | +
-| +#define find_vpid(pid)	find_pid_ns(pid, current->nsproxy->pid_ns)
-| +#define find_pid(pid)	find_pid_ns(pid, &init_pid_ns)
+| +static inline int pid_ns_accessible(struct pid_namespace *ns, struct pid *pid)
+| +{
+| +	return pid->numbers[pid->level].ns == ns;
+| +}
+| +
+|  #define do_each_pid_task(pid, type, task)				\
+|  	do {								\
+|  		struct hlist_node *pos___;				\
+| diff -upr linux-2.6.22-rc4-mm2.orig/kernel/signal.c linux-2.6.22-rc4-mm2-2/kernel/signal.c
+| --- linux-2.6.22-rc4-mm2.orig/kernel/signal.c	2007-07-04 19:00:38.000000000 +0400
+| +++ linux-2.6.22-rc4-mm2-2/kernel/signal.c	2007-07-04 19:00:38.000000000 +0400
+| @@ -1124,13 +1124,31 @@ EXPORT_SYMBOL_GPL(kill_pid_info_as_uid);
+|   * is probably wrong.  Should make it like BSD or SYSV.
+|   */
+| 
+| -static int kill_something_info(int sig, struct siginfo *info, int pid)
+| +static inline void masquerade_siginfo(struct pid_namespace *src_ns,
+| +		struct pid *tgt_pid, struct siginfo *info)
+| +{
+| +	if (tgt_pid != NULL && !pid_ns_accessible(src_ns, tgt_pid)) {
+| +		/*
+| +		 * current namespace is not seen from the taks we
+| +		 * want to send the signal to, so pretend as if it
+| +		 * is the kernel who does this to avoid pid messing
+| +		 * by the target
+| +		 */
+| +
+| +		info->si_pid = 0;
+| +		info->si_code = SI_KERNEL;
+| +	}
+| +}
+| +
+| +static int kill_something_info(int sig, struct siginfo *info, int pid_nr)
+|  {
+|  	int ret;
+| +	struct pid *pid;
+| +
+|  	rcu_read_lock();
+| -	if (!pid) {
+| +	if (!pid_nr) {
+|  		ret = kill_pgrp_info(sig, info, task_pgrp(current));
+| -	} else if (pid == -1) {
+| +	} else if (pid_nr == -1) {
+|  		int retval = 0, count = 0;
+|  		struct task_struct * p;
 
-Adding a second interface maybe more confusing to drivers and non-pid
-users.
-
-But more importantly, modifying find_pid() to refer to only init_pid_ns
-would require auditing existing find_pid() callers and switching them to
-find_vpid().
-
-For instance if capset() is called from a child pid namespace, the 'pid'
-would refer to the pid or pgid from child pid ns. But cap_set_pg() calls
-find_pid() which gets the number from init_pid_ns.
-
-Is there a similar issue with sunos_killpg() ?
+So what happens if we run "kill -s <sig> -1" from within a container ?
+Do you terminate all processes in the system or just the process in
+the container ?
