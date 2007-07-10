@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbXGJU0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763019AbXGJU27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763291AbXGJU0t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 16:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbXGJU0i
+	id S1763019AbXGJU27 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758024AbXGJU2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 16:26:38 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:52117 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756028AbXGJU0h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 16:26:37 -0400
-Date: Tue, 10 Jul 2007 21:25:50 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Bob Tracy <rct@gherkin.frus.com>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
-Subject: Re: 2.6.22-rc6 bad page error
-In-Reply-To: <20070709185324.387ACDBA1@gherkin.frus.com>
-Message-ID: <Pine.LNX.4.64.0707102120550.7594@blonde.wat.veritas.com>
-References: <20070709185324.387ACDBA1@gherkin.frus.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWFscGhhQHZnZXIua2VybmVsLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGlua0BqdXJhc3NpYy5wYXJrLm1zdS5ydQBtaWNoYWwuay5rLnBpb3Ryb3dza2lAZ21haWwuY29tAHJjdEBnaGVya2luLmZydXMuY29tAA==
-X-Brightmail-Tracker: AAAAAA==
+	Tue, 10 Jul 2007 16:28:52 -0400
+Received: from www.osadl.org ([213.239.205.134]:38278 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753047AbXGJU2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 16:28:51 -0400
+Subject: Re: Efficient use of low-precision kernel timers
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.name>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707101452570.2556-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0707101452570.2556-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Tue, 10 Jul 2007 22:28:49 +0200
+Message-Id: <1184099329.12353.20.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jul 2007, Bob Tracy wrote:
-> > 
-> > --- 2.6.22-rc7/arch/alpha/kernel/pci_iommu.c	2007-06-05 06:19:19.000000000 +0100
-> > +++ linux/arch/alpha/kernel/pci_iommu.c	2007-07-07 15:00:04.000000000 +0100
+Alan,
+
+On Tue, 2007-07-10 at 14:59 -0400, Alan Stern wrote:
+> Thomas:
 > 
-> That seems to have done the trick.  Normally, I get the "bad page"
-> errors on the second NX session, but I'm on the third session of the
-> day (thus far), and everything seems to be ok as far as I can tell.
+> Here's a question for you or anyone else who can help.
+> 
+> I've got a low-precision kernel timer, with a delay measured in seconds
+> (and rounded off to a second boundary).  Under some circumstances the
+> timer might be cancelled and restarted many times in quick succession
+> (a few thousand times perhaps).  Alternatively the timer could simply
+> be allowed to expire and then restarted, with the callback routine
+> doing a rather small amount of work.
+> 
+> Which is the most efficient?  Or to put it another way, how many times 
+> can I cancel and restart a low-precision timer before it uses up as 
+> much CPU time as allowing the timer to expire once?
 
-Thanks a lot for the feedback, that tells us we've made the right
-guesses, and my __GFP_COMP patch should be a good bandaid for you;
-but for the right patch, let's wait to hear from Ivan.
+Hard to tell.
 
-Hugh
+> Is there a reasonable way to answer this?  I can't think of any good 
+> tests.  Or is the difference in overhead so small as to be meaningless?
+
+The insertion / deletion needs to take the timer->base->lock, but this
+is cheap as long as the insert / cancel happens on the same CPU.
+
+The other overhead which might be "visible" is when the timer needs to
+be re-cascaded in the wheel. See the table below:
+
+         100 250 1000 HZ
+[1] 256   10    4   1 ms
+[2]  64 2560 1024 256 ms
+[3]  64  164   66  16  s
+[4]  64  175   70  17  m
+[5]  64  186   75  19  h
+
+In the 250Hz case the timer < 1024ms is never re-cascaded. A timer <66s
+is re-cascaded at max. once.
+
+So I guess your frequent cancel/restart scheme is just fine. It does not
+re-trigger any kind of hardware event and the insertion/deletion is
+O(1).
+
+The network code relies on this cheap mechanism on high loaded server
+machines.
+
+Hope that helps,
+
+	tglx
+
+
