@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759551AbXGJHy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762275AbXGJHzC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759551AbXGJHy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 03:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbXGJHyU
+	id S1762275AbXGJHzC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 03:55:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbXGJHyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 03:54:20 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:36365 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755873AbXGJHyT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 03:54:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=L6AgmO0hCbSTkAxJbSUuT3HJNHzHSyk/Ni2VgkI1Can9Cq5QGiXtjui3JiS1o/vdDNFpAdHpN7iDBv7MxkORPW91G9zIsGunEk47/heC0i7dAAnr+ifkf2zzCBB9IA22j0zwikh/2u8LOp+PSzaWt6dQr+4JE/wZvp8yhM5tZ5A=
-Message-ID: <ca35ce500707100054q5f8cbf88s195b8ba488da6c93@mail.gmail.com>
-Date: Tue, 10 Jul 2007 09:54:16 +0200
-From: mikie <mikie.pl@gmail.com>
-To: "Duncan Sands" <duncan.sands@math.u-psud.fr>
-Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
-Cc: "Indan Zupancic" <indan@nul.nu>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200707091923.38577.duncan.sands@math.u-psud.fr>
+	Tue, 10 Jul 2007 03:54:53 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:20643 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756184AbXGJHyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 03:54:52 -0400
+Date: Tue, 10 Jul 2007 09:55:06 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [patch 0/6] PS3 Storage Drivers for 2.6.23, take 4
+Message-ID: <20070710075506.GS13902@kernel.dk>
+References: <20070704132212.726923000@pademelon.sonytel.be> <Pine.LNX.4.62.0707100944470.22782@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
-	 <33435.81.207.0.53.1183993390.squirrel@secure.samage.net>
-	 <ca35ce500707091000h780c98bdleb3872849f451c2a@mail.gmail.com>
-	 <200707091923.38577.duncan.sands@math.u-psud.fr>
+In-Reply-To: <Pine.LNX.4.62.0707100944470.22782@pademelon.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/7/9, Duncan Sands <duncan.sands@math.u-psud.fr>:
-> > One more thing - when the modem finally runs in isochronous mode, yet
-> > I cannot get high transfer rates. I can't get nothing more than
-> > 3Mbits/s. When I used kernel 2.4 with bulk mode I had only 2.5 Mbit/s.
-> > So there is a little progress, but still not too much. Is it possible
-> > that weak and old hardware (Celeron 633 on a VIA chipset motherboard)
-> > is causing this ?
->
-> Is it actually running in isochronous mode?  (It prints some messages
-> about this).  You may need new firmware (I've attached some recent
-> firmware that was made available by Thomson UK without any licence
-> conditions).
+On Tue, Jul 10 2007, Geert Uytterhoeven wrote:
+> On Wed, 4 Jul 2007, Geert Uytterhoeven wrote:
+> > This is the fourth submission of the new PS3 storage drivers:
+> >   [1] ps3: Preallocate bootmem memory for the PS3 FLASH ROM storage driver
+> >   [2] ps3: Storage Driver Core
+> >   [3] ps3: Storage device registration routines.
+> >   [4] ps3: Disk Storage Driver
+> >   [5] ps3: BD/DVD/CD-ROM Storage Driver
+> >   [6] ps3: FLASH ROM Storage Driver
+> > 
+> > They are based on:
+> >   - the current Linux kernel source tree,
+> >   - plus the PS3 patches already submitted by Geoff Levand on linuxppc-dev,
+> >   - plus the shost_priv() patch in scsi-misc (commit
+> >     bcd92c9fbcc679ee95003083056f0441a1f474fa).
+> > 
+> > All issues raised during the previous review rounds should be fixed.
+> > There were no more comments after the third submission.
+> > 
+> > Paul already integrated Geoff Levand's PS3 patches and the first 3 patches
+> > in this series in the for-2.6.23 branch in powerpc.git.
+> > 
+> > Maintainers of block/SCSI/misc, can you please ack the last 3 patches so Paul
+> > can take them, too?
+> 
+> Ping block/SCSI/misc maintainers?
 
-Unfortunatelly this firmware does not work with my modem. I get this
-thing in the debug log:
-Jul 10 09:26:27 srv kernel: speedtch 1-2:1.0: speedtch_upload_firmware entered
-Jul 10 09:26:27 srv kernel: speedtch 1-2:1.0:
-speedtch_upload_firmware: BLOCK1 uploaded (935 bytes)
-Jul 10 09:26:29 srv kernel: usb 1-2: speedtch timed out on ep5in len=0/512
-
-And it hangs at this point for a couple of minutes, so I have to
-manually remove the speedtch module. As far as I can see my modem is
-revision 2.00 (kernel searches for firmware speedtch-1.bin.2.00).
-
-I also tried a couple of other firmwares available on the net, and
-also the one from Windows XP install (which works and achieves speeds
-of up to 720kbyte/sec downlink). Some of the firmwares did not work
-either, and some worked the same way - it means not more than 3mbit/s
-(around 400kbyte/s) could be achieved.
+I have no objections to the block bits, however I feel uneasy merging
+the full patchset unless patch #1 has been acked by the platform person.
 
 -- 
-Regards,
-MK
+Jens Axboe
+
