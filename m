@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761352AbXGJG2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760585AbXGJGg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761352AbXGJG2R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 02:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXGJG2E
+	id S1760585AbXGJGg3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 02:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXGJGgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 02:28:04 -0400
-Received: from waste.org ([66.93.16.53]:53648 "EHLO waste.org"
+	Tue, 10 Jul 2007 02:36:21 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52414 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751674AbXGJG2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 02:28:03 -0400
-Date: Tue, 10 Jul 2007 01:27:36 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: maps2-add-proc-pid-pagemap-interface.patch
-Message-ID: <20070710062736.GF11115@waste.org>
-References: <1183894381.6005.324.camel@localhost.localdomain> <20070709223101.GW11115@waste.org> <1184041730.6005.480.camel@localhost.localdomain>
-MIME-Version: 1.0
+	id S1751108AbXGJGgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 02:36:20 -0400
+Date: Tue, 10 Jul 2007 12:06:24 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070710063624.GB5471@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070706132814.GA7079@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184041730.6005.480.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070706132814.GA7079@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 02:28:50PM +1000, Rusty Russell wrote:
-> On Mon, 2007-07-09 at 17:31 -0500, Matt Mackall wrote:
-> > > And how about "cpu_to_le16(1) == 1" instead of "ntohl(1) != 1"?
-> > 
-> > Why?
+On Fri, Jul 06, 2007 at 03:28:14PM +0200, Bernhard Walle wrote:
+> Hello,
 > 
-> Using a networking macro to detect endianness is old school: we have the
-> nice explicit macros these days...
+> does anybody know a _reliable_ way to determine the version the kernel
+> that produced a vmcore file? This means not scanning for a specific
+> string or something like that which can fail on random memory.
 > 
-> > > > +	while (pm.count > 0 && vma) {
-> > > > +		if (!ptrace_may_attach(task)) {
-> > > > +			ret = -EIO;
-> > > > +			goto out_mm;
-> > > > +		}
-> > > 
-> > > You already checked ptrace_may_attach() earlier in this function; do you
-> > > need to do that again?
-> > 
-> > I think so. Consider exec(). This whole area is full of interesting
-> > traps and it pays to be paranoid.
+> Would it make sense to add a ELF PT_NOTE section in the vmcore?
 > 
-> I don't think normal ptraces get cut on exec, so I'm not sure why this
-> should be different.
 
-They absolutely do, if UID changes. Consider ptracing a shell
-launching a setuid binary. For something more closely analogous,
-consider opening /proc/pid/mem on the same shell...
+To me it makes sense to append an ELF NOTE to vmcore which can uniquely
+associate that vmcore with a particular vmlinux file (Some string
+equivalent to the output of uname -a).
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Interesting thing is that to find version of vmlinux, you will still be
+doing <string | grep "some pattern">. Probably then we should append an
+ELF note to vmlinux file also?
+
+Thanks
+Vivek
