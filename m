@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763425AbXGJVHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763628AbXGJVIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763425AbXGJVHd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 17:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759791AbXGJVHP
+	id S1763628AbXGJVIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 17:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760020AbXGJVIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 17:07:15 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:11756 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755045AbXGJVHO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 17:07:14 -0400
-Date: Tue, 10 Jul 2007 14:09:32 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Randy.dunlap@oracle.com,
-       wli@holomorphy.org, Eric Whitney <eric.whitney@hp.com>
-Subject: Re: [PATCH] 2.6.22-rc6-mm1:  hugetlbfs handle empty options string
-Message-Id: <20070710140932.85fd9935.randy.dunlap@oracle.com>
-In-Reply-To: <1184097540.5727.36.camel@localhost>
-References: <1184097540.5727.36.camel@localhost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jul 2007 17:08:06 -0400
+Received: from [212.12.190.151] ([212.12.190.151]:34482 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759791AbXGJVIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 17:08:05 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: x86 setup code rewrite in C
+Date: Wed, 11 Jul 2007 00:07:09 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200707102032.29124.a1426z@gawab.com> <4693F08B.5060904@zytor.com>
+In-Reply-To: <4693F08B.5060904@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200707110007.09728.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 15:59:00 -0400 Lee Schermerhorn wrote:
+H. Peter Anvin wrote:
+> Al Boldi wrote:
+> > H. Peter Anvin wrote:
+> >> This patch set replaces the x86 setup code, which is currently all in
+> >> assembly, with a version written in C, using the ".code16gcc" feature
+> >> of binutils (which has been present since at least 2001.)
+> >>
+> >> The new code is vastly easier to read, and, I hope, debug.  It should
+> >> be noted that I found a fair number of minor bugs while going through
+> >> this code, and have attempted to correct them.
+> >
+> > I have an i810 which supends-to-ram just fine, but when booted over pxe
+> > it just hangs.  Will these patches fix this, and if so, is there an easy
+> > tar-ball against 2.6.22?
+>
+> There is absolutely no way to know, other than testing it.  There isn't
+> any real reason to suspect the setup code in your case, but it's worth a
+> shot, I guess.
 
-> [PATCH] 2.6.22-rc6-mm1 - hugetlbfs handle empty options string
-> 
-> I was seeing a null pointer deref in fs/super.c:vfs_kern_mount().
-> Some file system get_sb() handler was returning NULL mnt_sb with
-> a non-negative return value.  I also noticed a "hugetlbfs: Bad
-> mount option:" message in the log.
-> 
-> Turns out that hugetlbfs_parse_options() was not checking for an
-> empty option string after call to strsep().  On failure,
-> hugetlbfs_parse_options() returns 1.  hugetlbfs_fill_super() just
-> passed this return code back up the call stack where
-> vfs_kern_mount() missed the error and proceeded with a NULL mnt_sb.
-> 
-> Apparently introduced by patch:
-> 	hugetlbfs-use-lib-parser-fix-docs.patch
-> 
-> The problem was exposed by this line in my fstab:
-> 
-> none        /huge       hugetlbfs   defaults    0 0
-> 
-> It can also be demonstrated by invoking mount of hugetlbfs
-> directly with no options or a bogus option.
-> 
-> This patch:
-> 
-> 1) adds the check for empty option to hugetlbfs_parse_options(),
-> 2) enhances the error message to bracket any unrecognized
->    option with quotes ,
-> 3) modifies hugetlbfs_parse_options() to return -EINVAL on any
->    unrecognized option,
-> 4) adds a BUG_ON() to vfs_kern_mount() to catch any get_sb()
->    handler that returns a NULL mnt->mnt_sb with a return value
->    >= 0.
-> 
-> Signed-off-by:  Lee Schermerhorn  <lee.schermerhorn@hp.com>
-> 
->  fs/hugetlbfs/inode.c |    8 +++++---
->  fs/super.c           |    1 +
->  2 files changed, 6 insertions(+), 3 deletions(-)
+Well it's a bit far fetched to suspect the setup code, but I have another 
+i440 that suspends-to-ram when booted over pxe without any problems.  And, 
+booting the i810 through dos-lilo also hangs STR, so that's why assumed it 
+may be a setup code thing.
 
-Argh.  Thanks.
+> There is a git tree on git.kernel.org you can pull, which is current
+> against 2.6.22.
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+How can I pull a tar-ball from that without using a git client?
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+Thanks!
+
+--
+Al
+
