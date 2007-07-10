@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764792AbXGJXkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764462AbXGJXky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764792AbXGJXkj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 19:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763695AbXGJXkV
+	id S1764462AbXGJXky (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 19:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764746AbXGJXki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 19:40:21 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:41273 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763310AbXGJXkT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 19:40:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FOPGi0jKjaGaPTCBvtQlq8j3ubZAwBlAVOq7qnOHjl2myCTI5dBn5kaXm6WJO7fpBLRtXOk8e08pi9s1U7R6jKUXIZIpM4KiCSmcnhR0n3S6uHqJoKxsomgw1mZJSGJRf3P8W8ZPZNCWeVBbT2YHvYMBAotYzjx0o0csMNqWiT4=  ;
-X-YMail-OSG: NTVk5.wVM1lSMpCNQ7eUjRk4x6.kOOuct8UXgEf8KLKhFLwkxntQwqpTeuhL1I1.Xmi79cQ2UA--
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.22] gpio calls don't need i/o barriers
-Date: Tue, 10 Jul 2007 16:18:10 -0700
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 10 Jul 2007 19:40:38 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40732 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764677AbXGJXkh (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 19:40:37 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: ric@emc.com
+Cc: Tejun Heo <htejun@gmail.com>, david@lang.hm,
+       Stefan Bader <Stefan.Bader@de.ibm.com>, Phillip Susi <psusi@cfl.rr.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>
+Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+In-Reply-To: Your message of "Tue, 10 Jul 2007 14:39:41 EDT."
+             <4693D26D.2060004@emc.com>
+From: Valdis.Kletnieks@vt.edu
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528094358.GM25091@agk.fab.redhat.com> <5201e28f0705290225v14fdac44hb0382a4137a84d01@mail.gmail.com> <20070529220500.GA6513@agk.fab.redhat.com> <5201e28f0705300212g3be16464u5ee1a4c80db27a11@mail.gmail.com> <465DAC72.1010201@cfl.rr.com> <5201e28f0705310414u1a9aebc4je135748274543946@mail.gmail.com> <465F9197.7060002@gmail.com> <Pine.LNX.4.64.0705312144400.6705@asgard.lang.hm> <465FC7B1.3060309@gmail.com>
+            <4693D26D.2060004@emc.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1184110800_3928P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707101618.10361.david-b@pacbell.net>
+Date: Tue, 10 Jul 2007 19:40:00 -0400
+Message-ID: <4758.1184110800@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clarify that drivers using the GPIO operations don't need to issue
-io barrier instructions themselves.  Previously this wasn't clear,
-and at least one platform assumed otherwise (and would thus break
-various otherwise-portable drivers which don't issue barriers).
+--==_Exmh_1184110800_3928P
+Content-Type: text/plain; charset=us-ascii
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- Documentation/gpio.txt |    3 +++
- 1 file changed, 3 insertions(+)
+On Tue, 10 Jul 2007 14:39:41 EDT, Ric Wheeler said:
 
---- g26.orig/Documentation/gpio.txt	2007-06-24 13:23:21.000000000 -0700
-+++ g26/Documentation/gpio.txt	2007-06-24 13:32:01.000000000 -0700
-@@ -75,6 +75,9 @@ using the include file:
- If you stick to this convention then it'll be easier for other developers to
- see what your code is doing, and help maintain it.
- 
-+Note that these operations include I/O barriers on platforms which need to
-+use them; drivers don't need to add them explicitly.
-+
- 
- Identifying GPIOs
- -----------------
+> All of the high end arrays have non-volatile cache (read, on power loss, it is a 
+> promise that it will get all of your data out to permanent storage). You don't 
+> need to ask this kind of array to drain the cache. In fact, it might just ignore 
+> you if you send it that kind of request ;-)
+
+OK, I'll bite - how does the kernel know whether the other end of that
+fiberchannel cable is attached to a DMX-3 or to some no-name product that
+may not have the same assurances?  Is there a "I'm a high-end array" bit
+in the sense data that I'm unaware of?
+
+
+--==_Exmh_1184110800_3928P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGlBjQcC3lWbTT17ARAtJEAJ95DJJCwua1aoiSFNbABZZW6QetWgCdHr4P
+qLscDCXsML8C1ETMv0Rt91s=
+=jSB6
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1184110800_3928P--
