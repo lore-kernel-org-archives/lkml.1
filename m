@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763597AbXGJJA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbXGJJBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763597AbXGJJA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 05:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758242AbXGJI5o
+	id S1763649AbXGJJBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 05:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763214AbXGJI6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 04:57:44 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:56127 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762436AbXGJI5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 04:57:41 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Matt Mackall <mpm@selenic.com>, Keiichi Kii <k-keiichi@bx.jp.nec.com>,
-       Satyam Sharma <ssatyam@cse.iitk.ac.in>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Date: Tue, 10 Jul 2007 14:49:56 +0530
-Message-Id: <20070710091956.23907.61655.sendpatchset@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
-References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
-Subject: [PATCH v2 -mm 7/9] netconsole: Use netif_running() in write_msg()
+	Tue, 10 Jul 2007 04:58:31 -0400
+Received: from bill.weihenstephan.org ([82.135.35.21]:40915 "EHLO
+	bill.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759568AbXGJI63 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 04:58:29 -0400
+From: Juergen Beisert <juergen127@kreuzholzen.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] [2.6.22] USB devices misc: Trivial patch to build the IOWARRIOR when it is selected in Kconfig
+Date: Tue, 10 Jul 2007 10:58:25 +0200
+User-Agent: KMail/1.9.4
+Organization: Privat
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707101058.25833.juergen127@kreuzholzen.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+From: Juergen Beisert <juergen@kreuzholzen.de>
 
-[7/9] netconsole: Use netif_running() in write_msg()
+Trivial patch to build the IOWARRIOR when it is selected in Kconfig.
 
-Avoid unnecessarily disabling interrupts and calling netpoll_send_udp()
-if the corresponding local interface is not up.
+Signed-off-by: Juergen Beisert <juergen@kreuzholzen.de>
 
-Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+Index: drivers/usb/Makefile
+===================================================================
+--- drivers/usb/Makefile
++++ drivers/usb/Makefile
+@@ -48,6 +48,7 @@ obj-$(CONFIG_USB_SISUSBVGA)	+= misc/
+ obj-$(CONFIG_USB_TEST)		+= misc/
+ obj-$(CONFIG_USB_TRANCEVIBRATOR)+= misc/
+ obj-$(CONFIG_USB_USS720)	+= misc/
++obj-$(CONFIG_USB_IOWARRIOR)	+= misc/
 
----
-
- drivers/net/netconsole.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
----
-
-diff -ruNp a/drivers/net/netconsole.c b/drivers/net/netconsole.c
---- a/drivers/net/netconsole.c	2007-07-10 07:26:47.000000000 +0530
-+++ b/drivers/net/netconsole.c	2007-07-10 07:45:51.000000000 +0530
-@@ -113,16 +113,16 @@ static void write_msg(struct console *co
- 	unsigned long flags;
- 	struct netconsole_target *nt = &default_target;
- 
--	local_irq_save(flags);
--
--	for (left = len; left;) {
--		frag = min(left, MAX_PRINT_CHUNK);
--		netpoll_send_udp(&nt->np, msg, frag);
--		msg += frag;
--		left -= frag;
-+	if (netif_running(nt->np.dev)) {
-+		local_irq_save(flags);
-+		for (left = len; left;) {
-+			frag = min(left, MAX_PRINT_CHUNK);
-+			netpoll_send_udp(&nt->np, msg, frag);
-+			msg += frag;
-+			left -= frag;
-+		}
-+		local_irq_restore(flags);
- 	}
--
--	local_irq_restore(flags);
- }
- 
- static struct console netconsole = {
+ obj-$(CONFIG_USB_ATM)		+= atm/
+ obj-$(CONFIG_USB_SPEEDTOUCH)	+= atm/
