@@ -1,120 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762279AbXGJCgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761844AbXGJC7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762279AbXGJCgl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 22:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756600AbXGJCgb
+	id S1761844AbXGJC7R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 22:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758193AbXGJC7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 22:36:31 -0400
-Received: from old-tantale.fifi.org ([64.81.30.200]:39666 "EHLO
-	old-tantale.fifi.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758227AbXGJCga (ORCPT
+	Mon, 9 Jul 2007 22:59:08 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:51769 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755643AbXGJC7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 22:36:30 -0400
-X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jul 2007 22:36:30 EDT
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       mpt_linux_developer@lsi.com
-Subject: mptsas drops then re-adds hard drive
-From: Philippe Troin <phil@fifi.org>
-Date: 09 Jul 2007 19:30:17 -0700
-Message-ID: <87hcodourq.fsf@old-tantale.fifi.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Jul 2007 22:59:07 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       andi@firstfloor.org, akpm@linux-foundation.org
+Subject: x86 setup code rewrite in C
+Date: Mon,  9 Jul 2007 19:51:39 -0700
+Message-Id: <11840359321823-git-send-email-hpa@zytor.com>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-System info:
-Linux 2.6.20-1.2320.fc5 SMP x86_64
+This patch set replaces the x86 setup code, which is currently all in
+assembly, with a version written in C, using the ".code16gcc" feature
+of binutils (which has been present since at least 2001.)
 
-lspci:
-00:06.0 PCI bridge: Advanced Micro Devices [AMD] AMD-8111 PCI (rev 07)
-00:07.0 ISA bridge: Advanced Micro Devices [AMD] AMD-8111 LPC (rev 05)
-00:07.1 IDE interface: Advanced Micro Devices [AMD] AMD-8111 IDE (rev 03)
-00:07.2 SMBus: Advanced Micro Devices [AMD] AMD-8111 SMBus 2.0 (rev 02)
-00:07.3 Bridge: Advanced Micro Devices [AMD] AMD-8111 ACPI (rev 05)
-00:07.5 Multimedia audio controller: Advanced Micro Devices [AMD] AMD-8111 AC97 Audio (rev 03)
-00:0a.0 PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
-00:0a.1 PIC: Advanced Micro Devices [AMD] AMD-8131 PCI-X IOAPIC (rev 01)
-00:0b.0 PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
-00:0b.1 PIC: Advanced Micro Devices [AMD] AMD-8131 PCI-X IOAPIC (rev 01)
-00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
-00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
-00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
-00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
-00:19.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
-00:19.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
-00:19.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
-00:19.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
-01:00.0 USB Controller: Advanced Micro Devices [AMD] AMD-8111 USB (rev 0b)
-01:00.1 USB Controller: Advanced Micro Devices [AMD] AMD-8111 USB (rev 0b)
-01:0a.0 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
-01:0a.1 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
-01:0a.2 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
-01:0a.3 USB Controller: ALi Corporation USB 2.0 Controller (rev 01)
-01:0a.4 FireWire (IEEE 1394): ALi Corporation M5253 P1394 OHCI 1.1 Controller
-01:0c.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
-02:07.0 SCSI storage controller: LSI Logic / Symbios Logic SAS1068 PCI-X Fusion-MPT SAS (rev 01)
-02:09.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5703X Gigabit Ethernet (rev 02)
-03:06.0 SCSI storage controller: Adaptec AIC-7892A U160/m (rev 02)
-04:00.0 Host bridge: Advanced Micro Devices [AMD] AMD-8151 System Controller (rev 13)
-04:01.0 PCI bridge: Advanced Micro Devices [AMD] AMD-8151 AGP Bridge (rev 13)
-05:00.0 VGA compatible controller: ATI Technologies Inc RV280 [Radeon 9200] (rev 01)
-05:00.1 Display controller: ATI Technologies Inc RV280 [Radeon 9200] (Secondary) (rev 01)
+The new code is vastly easier to read, and, I hope, debug.  It should
+be noted that I found a fair number of minor bugs while going through
+this code, and have attempted to correct them.
 
-% cat /proc/scsi/mptsas/1
-ioc0: LSISAS1068, FwRev=01120000h, Ports=1, MaxQ=511
+In the process of doing so, it introduces several cleanups, in
+particular:
 
+- Obsoletes the hd_info field in the boot_params structure; they are
+  only ever used for ST-506 (pre-IDE) drives and are pretty much
+  guaranteed to be wrong on current BIOSes;
+- Unifies the CPU feature bits between i386 and x86-64.  In the
+  future, it should be possible to use arch/i386/boot/cpucheck.c to do
+  the post-invocation CPU check currently done in
+  arch/x86_64/kernel/trampoline.S, although this patch set doesn't
+  introduce that change.
+- boot_params is now a proper structure.
 
-I have four SATA drives attached to the SAS1068X-R controller, all
-four are Seagate ST3750640AS (750 GB Barracuda 7200.10) with firmware
-revision 3.AAE.
+This code has been tested in -mm since early in the 2.6.22 cycle.
 
-I was doing load-testing for a RAID array and running badblocks in a
-loop over all four drives in parallel.  One drive was dropped after
-about 24h.  By dropped I mean the device node /dev/sdb became
-"unresponsive" and the drive was re-added with another device node
-(sdj).
-
-This is the kernel message:
-
-mptbase: ioc0: LogInfo(0x31110d00): Originator={PL}, Code={Reset}, SubCode(0x0d00)
-mptbase: ioc0: LogInfo(0x31110d00): Originator={PL}, Code={Reset}, SubCode(0x0d00)
-mptbase: ioc0: LogInfo(0x31170000): Originator={PL}, Code={IO Device Missing Delay Retry}, SubCode(0x0000)
-mptbase: ioc0: LogInfo(0x31130000): Originator={PL}, Code={IO Not Yet Executed}, SubCode(0x0000)
-sd 1:0:0:0: SCSI error: return code = 0x00010000
-end_request: I/O error, dev sdb, sector 330342400
-sd 1:0:0:0: SCSI error: return code = 0x00010000
-end_request: I/O error, dev sdb, sector 330342400
-Buffer I/O error on device sdb, logical block 41292800
-Buffer I/O error on device sdb, logical block 41292801
-Buffer I/O error on device sdb, logical block 41292802
-Buffer I/O error on device sdb, logical block 41292803
-Buffer I/O error on device sdb, logical block 41292804
-Buffer I/O error on device sdb, logical block 41292805
-Buffer I/O error on device sdb, logical block 41292806
-Buffer I/O error on device sdb, logical block 41292807
-Buffer I/O error on device sdb, logical block 41292808
-Buffer I/O error on device sdb, logical block 41292809
-sd 1:0:0:0: SCSI error: return code = 0x00010000
-end_request: I/O error, dev sdb, sector 330342400
-
-lots more of these, until finally:
-
-mptbase: ioc0: LogInfo(0x31111000): Originator={PL}, Code={Reset}, SubCode(0x1000)
-mptbase: ioc0: LogInfo(0x31111000): Originator={PL}, Code={Reset}, SubCode(0x1000)
-mptsas: ioc0: attaching sata device, channel 0, id 13, phy 0
-scsi 1:0:4:0: Direct-Access     ATA      ST3750640AS      E    PQ: 0 ANSI: 5
-SCSI device sdj: 1465149168 512-byte hdwr sectors (750156 MB)
-sdj: Write Protect is off
-SCSI device sdj: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-SCSI device sdj: 1465149168 512-byte hdwr sectors (750156 MB)
-sdj: Write Protect is off
-SCSI device sdj: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sdj: unknown partition table
-sd 1:0:4:0: Attached scsi disk sdj
-sd 1:0:4:0: Attached scsi generic sg1 type 0
-
-Is it a bad drive, a bad controller, or both?  Or a driver bug?
-
-Thanks for any hints.
-Phil.
+ arch/i386/boot/bootsect.S                     |   98 -
+ arch/i386/boot/edd.S                          |  231 --
+ arch/i386/boot/setup.S                        | 1075 -------------
+ arch/i386/boot/video.S                        | 2043 --------------------------
+ arch/i386/kernel/verify_cpu.S                 |   94 -
+ arch/x86_64/boot/bootsect.S                   |   98 -
+ arch/x86_64/boot/install.sh                   |    2
+ arch/x86_64/boot/mtools.conf.in               |   17
+ arch/x86_64/boot/setup.S                      |  826 ----------
+ arch/x86_64/boot/tools/build.c                |  185 --
+ b/Documentation/i386/zero-page.txt            |    1
+ b/MAINTAINERS                                 |    4
+ b/arch/i386/Kconfig.cpu                       |    6
+ b/arch/i386/boot/Makefile                     |   46
+ b/arch/i386/boot/a20.c                        |  161 ++
+ b/arch/i386/boot/apm.c                        |   97 +
+ b/arch/i386/boot/bitops.h                     |   45
+ b/arch/i386/boot/boot.h                       |  290 +++
+ b/arch/i386/boot/cmdline.c                    |   97 +
+ b/arch/i386/boot/code16gcc.h                  |    9
+ b/arch/i386/boot/compressed/Makefile          |    7
+ b/arch/i386/boot/compressed/head.S            |    6
+ b/arch/i386/boot/copy.S                       |  101 +
+ b/arch/i386/boot/cpu.c                        |   69
+ b/arch/i386/boot/cpucheck.c                   |  267 +++
+ b/arch/i386/boot/edd.c                        |  196 ++
+ b/arch/i386/boot/header.S                     |  283 +++
+ b/arch/i386/boot/main.c                       |  161 ++
+ b/arch/i386/boot/mca.c                        |   43
+ b/arch/i386/boot/memory.c                     |   99 +
+ b/arch/i386/boot/pm.c                         |  170 ++
+ b/arch/i386/boot/pmjump.S                     |   54
+ b/arch/i386/boot/printf.c                     |  331 ++++
+ b/arch/i386/boot/setup.ld                     |   54
+ b/arch/i386/boot/string.c                     |   34
+ b/arch/i386/boot/tools/build.c                |  160 --
+ b/arch/i386/boot/tty.c                        |  112 +
+ b/arch/i386/boot/version.c                    |   23
+ b/arch/i386/boot/vesa.h                       |   79 +
+ b/arch/i386/boot/video-bios.c                 |  125 +
+ b/arch/i386/boot/video-vesa.c                 |  284 +++
+ b/arch/i386/boot/video-vga.c                  |  260 +++
+ b/arch/i386/boot/video.c                      |  456 +++++
+ b/arch/i386/boot/video.h                      |  145 +
+ b/arch/i386/boot/voyager.c                    |   46
+ b/arch/i386/kernel/cpu/Makefile               |    2
+ b/arch/i386/kernel/cpu/addon_cpuid_features.c |   50
+ b/arch/i386/kernel/cpu/common.c               |    2
+ b/arch/i386/kernel/cpu/proc.c                 |   21
+ b/arch/i386/kernel/e820.c                     |    2
+ b/arch/i386/kernel/setup.c                    |   12
+ b/arch/x86_64/Kconfig                         |    4
+ b/arch/x86_64/boot/Makefile                   |  136 -
+ b/arch/x86_64/boot/compressed/Makefile        |    9
+ b/arch/x86_64/boot/compressed/head.S          |    6
+ b/arch/x86_64/kernel/Makefile                 |    2
+ b/arch/x86_64/kernel/setup.c                  |   21
+ b/arch/x86_64/kernel/verify_cpu.S             |   22
+ b/drivers/ide/legacy/hd.c                     |   73
+ b/include/asm-i386/boot.h                     |    6
+ b/include/asm-i386/bootparam.h                |   85 +
+ b/include/asm-i386/cpufeature.h               |   26
+ b/include/asm-i386/e820.h                     |   14
+ b/include/asm-i386/processor.h                |    1
+ b/include/asm-i386/required-features.h        |   39
+ b/include/asm-i386/setup.h                    |   10
+ b/include/asm-x86_64/alternative.h            |   68
+ b/include/asm-x86_64/boot.h                   |   16
+ b/include/asm-x86_64/bootparam.h              |    1
+ b/include/asm-x86_64/cpufeature.h             |  115 -
+ b/include/asm-x86_64/e820.h                   |    6
+ b/include/asm-x86_64/processor.h              |    3
+ b/include/asm-x86_64/required-features.h      |   46
+ b/include/asm-x86_64/segment.h                |    8
+ b/include/linux/edd.h                         |    4
+ b/include/linux/screen_info.h                 |    9
+ 76 files changed, 4601 insertions(+), 5208 deletions(-)
