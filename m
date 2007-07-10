@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763899AbXGJVoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764225AbXGJVpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763899AbXGJVoW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 17:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760550AbXGJVoO
+	id S1764225AbXGJVpt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 17:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbXGJVpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 17:44:14 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:50430 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760110AbXGJVoN (ORCPT
+	Tue, 10 Jul 2007 17:45:42 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:61244 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760550AbXGJVpl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 17:44:13 -0400
-Message-ID: <4693FCE7.2060308@zytor.com>
-Date: Tue, 10 Jul 2007 14:40:55 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 10 Jul 2007 17:45:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=LuauYUNT9+UWqZ3890F6S+JOhAB1lHb3eoB2YNTQ4HBeiebuN4zxWkZeWf0+bcgUimG/2gFKWmbyiHqHTj9rRmWm083ZnJ8g+ChdtVz30Y2e8F++lMnWxk2mIl/2iRBqe8VAEpIa5u3p6Km3kr2WPj//6jBoRAYLM+uT/dJLEuM=
+Message-ID: <6defe8840707101445g638ce955x666d3dac737c1836@mail.gmail.com>
+Date: Tue, 10 Jul 2007 17:45:40 -0400
+From: "Denver Gingerich" <denver@ossguy.com>
+To: linux-kernel@vger.kernel.org, "Andries Brouwer" <aeb@cwi.nl>
+Subject: [PATCH] fix compiler warnings in acorn.c
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
-References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org> <4693EF48.1080209@zytor.com> <763AC431-73A6-4A5F-9453-A66A86D7DEEB@kernel.crashing.org>
-In-Reply-To: <763AC431-73A6-4A5F-9453-A66A86D7DEEB@kernel.crashing.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: a24a7147eedaa203
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Segher Boessenkool wrote:
-> 
->> For now, I have:
->>
->> CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
->>                    $(cflags-$(ARCH)) \
->>                    -Wall -Wstrict-prototypes \
->>                    -march=i386 -mregparm=3 \
->>                    -include $(srctree)/$(src)/code16gcc.h \
->>                    -fno-strict-aliasing -fomit-frame-pointer \
->>                    $(call cc-option, -ffreestanding) \
->>                    $(call cc-option, -fno-unit-at-a-time) \
->>                    $(call cc-option, -fno-toplevel-reorder) \
->>                    $(call cc-option, -fno-stack-protector) \
->>                    $(call cc-option, -mpreferred-stack-boundary=2)
->>
->> ... since that will require less violence to eventually hack in the
->> proper -m16 option if/when it becomes available.
-> 
-> Looks good, except you don't want -fno-unit-at-a-time if
-> -fno-toplevel-reorder works.  And of course it would be
-> good to get rid of -fno-strict-aliasing, but let's not
-> go there today ;-P
-> 
+Correct the following compiler warnings:
+warning: 'adfs_partition' defined but not used
+warning: 'riscix_partition' defined but not used
+warning: 'linux_partition' defined but not used
 
-OK, how does this look:
+Signed-off-by: Denver Gingerich <denver@ossguy.com>
 
-CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
-                   $(cflags-$(ARCH)) \
-                   -Wall -Wstrict-prototypes \
-                   -march=i386 -mregparm=3 \
-                   -include $(srctree)/$(src)/code16gcc.h \
-                   -fno-strict-aliasing -fomit-frame-pointer \
-                   $(call cc-option, -ffreestanding) \
-                   $(call cc-option, -fno-toplevel-reorder,\
-                        $(call cc-option, -fno-unit-at-a-time)) \
-                   $(call cc-option, -fno-stack-protector) \
-                   $(call cc-option, -mpreferred-stack-boundary=2)
+---
 
-I think dropping -fno-strict-aliasing for this code is probably bad...
-it's pretty low-level stuff which does a lot of bitlevel manipulation.
+--- linux-2.6.22/fs/partitions/acorn.c.000	2007-05-09 18:56:41.000000000 -0400
++++ linux-2.6.22/fs/partitions/acorn.c	2007-05-09 20:44:04.000000000 -0400
+@@ -25,6 +25,8 @@
+ #define PARTITION_RISCIX_SCSI	2
+ #define PARTITION_LINUX		9
 
-	-hpa
++#if defined(CONFIG_ACORN_PARTITION_CUMANA) || \
++	defined(CONFIG_ACORN_PARTITION_ADFS)
+ static struct adfs_discrecord *
+ adfs_partition(struct parsed_partitions *state, char *name, char *data,
+ 	       unsigned long first_sector, int slot)
+@@ -48,6 +50,7 @@ adfs_partition(struct parsed_partitions
+ 	put_partition(state, slot, first_sector, nr_sects);
+ 	return dr;
+ }
++#endif
 
+ #ifdef CONFIG_ACORN_PARTITION_RISCIX
+
+@@ -65,6 +68,8 @@ struct riscix_record {
+ 	struct riscix_part part[8];
+ };
+
++#if defined(CONFIG_ACORN_PARTITION_CUMANA) || \
++	defined(CONFIG_ACORN_PARTITION_ADFS)
+ static int
+ riscix_partition(struct parsed_partitions *state, struct block_device *bdev,
+ 		unsigned long first_sect, int slot, unsigned long nr_sects)
+@@ -105,6 +110,7 @@ riscix_partition(struct parsed_partition
+ 	return slot;
+ }
+ #endif
++#endif
+
+ #define LINUX_NATIVE_MAGIC 0xdeafa1de
+ #define LINUX_SWAP_MAGIC   0xdeafab1e
+@@ -115,6 +121,8 @@ struct linux_part {
+ 	__le32 nr_sects;
+ };
+
++#if defined(CONFIG_ACORN_PARTITION_CUMANA) || \
++	defined(CONFIG_ACORN_PARTITION_ADFS)
+ static int
+ linux_partition(struct parsed_partitions *state, struct block_device *bdev,
+ 		unsigned long first_sect, int slot, unsigned long nr_sects)
+@@ -146,6 +154,7 @@ linux_partition(struct parsed_partitions
+ 	put_dev_sector(sect);
+ 	return slot;
+ }
++#endif
+
+ #ifdef CONFIG_ACORN_PARTITION_CUMANA
+ int
