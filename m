@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbXGJWJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763789AbXGJWMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932070AbXGJWJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 18:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761521AbXGJWJK
+	id S1763789AbXGJWMs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 18:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760827AbXGJWMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 18:09:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53326 "EHLO
+	Tue, 10 Jul 2007 18:12:40 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53586 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760615AbXGJWJJ (ORCPT
+	with ESMTP id S1760604AbXGJWMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 18:09:09 -0400
-Date: Tue, 10 Jul 2007 15:09:06 -0700 (PDT)
+	Tue, 10 Jul 2007 18:12:39 -0400
+Date: Tue, 10 Jul 2007 15:12:38 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+To: Matt Mackall <mpm@selenic.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
        Denis Vlasenko <vda.linux@googlemail.com>,
        Erik Andersen <andersen@codepoet.org>
 Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-In-Reply-To: <469330AD.5070107@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0707101503110.5490@schroedinger.engr.sgi.com>
+In-Reply-To: <20070710120224.GP11115@waste.org>
+Message-ID: <Pine.LNX.4.64.0707101510410.5490@schroedinger.engr.sgi.com>
 References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com>
  <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
- <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
- <20070709095116.c2ea700f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
- <4692E44E.6000606@yahoo.com.au> <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com>
- <4692E8B5.3030404@yahoo.com.au> <Pine.LNX.4.64.0707091905480.3108@schroedinger.engr.sgi.com>
- <469330AD.5070107@yahoo.com.au>
+ <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
+ <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI> <469342DC.8070007@yahoo.com.au>
+ <84144f020707100231p5013e1aer767562c26fc52eeb@mail.gmail.com>
+ <20070710120224.GP11115@waste.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1284435424-1184105558=:5490"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Nick Piggin wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> But last time this discussion came up, IIRC you ended up handwaving
-> about all the ways in which SLOB was broken but didn't actually come
-> up with any real problems. Matt seemed willing to add those counters
-> or whatever it was if/when doing so solved a real problem. And remember
-> that SLOB doesn't have to have feature parity with SLUB, so long as it
-> implements the slab API such that the kernel *works*.
+---1700579579-1284435424-1184105558=:5490
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-No it does not have to have feature parity. And yes we identified areas in 
-which SLOB may cause problems due to not implementing things (f.e. 
-suspend resume). The counters are still missing and thus core development 
-cannot rely on those being there.
+On Tue, 10 Jul 2007, Matt Mackall wrote:
 
+> following as the best MemFree numbers after several boots each:
+>=20
+> SLAB: 54796
+> SLOB: 55044
+> SLUB: 53944
+> SLUB: 54788 (debug turned off)
+
+That was without "slub_debug" as a parameter or with !CONFIG_SLUB_DEBUG?
+
+Data size and code size will decrease if you compile with=20
+!CONFIG_SLUB_DEBUG. slub_debug on the command line governs if debug=20
+information is used.
+
+> These numbers bounce around a lot more from boot to boot than I
+> remember, so take these numbers with a grain of salt.
+>=20
+> Disabling the debug code in the build gives this, by the way:
+>=20
+> mm/slub.c: In function =FF=FFinit_kmem_cache_node=FF=FF:
+> mm/slub.c:1873: error: =FF=FFstruct kmem_cache_node=FF=FF has no member n=
+amed
+> =FF=FFfull=FF=FF
+
+A fix for that is in Andrew's tree.
+---1700579579-1284435424-1184105558=:5490--
