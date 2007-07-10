@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764710AbXGJSiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764688AbXGJSjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764710AbXGJSiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbXGJSiG
+	id S1764688AbXGJSjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbXGJSjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:38:06 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60417 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752826AbXGJSiD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:38:03 -0400
-Date: Tue, 10 Jul 2007 11:38:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch 00/10] [RFC] SLUB patches for more functionality,
- performance and maintenance
-In-Reply-To: <20070710082709.GC16148@Krystal>
-Message-ID: <Pine.LNX.4.64.0707101136290.11906@schroedinger.engr.sgi.com>
-References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de>
- <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
- <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com>
- <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal>
- <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
- <20070709225817.GA5111@Krystal> <Pine.LNX.4.64.0707091715450.2062@schroedinger.engr.sgi.com>
- <20070710082709.GC16148@Krystal>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jul 2007 14:39:09 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:34586 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbXGJSjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 14:39:08 -0400
+Date: Wed, 11 Jul 2007 00:09:12 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: -mm merge plans for 2.6.23 -- sys_fallocate
+Message-ID: <20070710183912.GB15345@amitarora.in.ibm.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070710090737.GA16519@osiris.boeblingen.de.ibm.com> <20070710022213.81e7b432.akpm@linux-foundation.org> <20070710154503.GC27033@thunk.org> <20070710180531.GB8908@osiris.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070710180531.GB8908@osiris.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Mathieu Desnoyers wrote:
-
-> cmpxchg_local is not available on all archs, but local_cmpxchg is. It
-> expects a local_t type which is nothing else than a long. When the local
-> atomic operation is not more efficient or not implemented on a given
-> architecture, asm-generic/local.h falls back on atomic_long_t. If you
-> want, you could work on the local_t type, which you could cast from a
-> long to a pointer when you need so, since their size are, AFAIK, always
-> the same (and some VM code even assume this is always the case).
-
-It would be cleaner to have cmpxchg_local on all arches. The type 
-conversion is hacky. If this is really working then we should also use the 
-mechanism for other things like the vm statistics.
-
-> The measurements I get (in cycles):
+On Tue, Jul 10, 2007 at 08:05:31PM +0200, Heiko Carstens wrote:
+> > Alternatively I can push them directly to Linus along with other ext4
+> > patches.  We can drop the s390 patch if Martin or Heiko wants to wire
+> > it up themselves.
 > 
->              enable interrupts (STI)   disable interrupts (CLI)   local CMPXCHG
-> IA32 (P4)    112                        82                         26
-> x86_64 AMD64 125                       102                         19
+> Yes, please drop the s390 patch. In general it seems to be better if only
+> one architecture gets a syscall wired up initially and let other arches
+> follow later.
+> 
+> Just wondering if the x86_64 compat syscall gets ever fixed? I think
+> I mentioned already three or four times to Amit that it is broken.
+> Or is it that nobody cares? Dunno..
 
+Last time it was brought up was when TAKE5 of the patchset was posted
+and I had planned to fix this in the TAKE6 - which didn't happen since
+there was no final descision on the mode flags.
+Anyhow, the x86_64 compat syscall has already been fixed in the ext4
+patch queue.
+I will repost all the patches rebased on 2.6.22 (as they are in the
+ext4 patch queue), since these have already been dropped from -mm.
+ 
+> In addition there used to be a somewhat inofficial rule that new syscalls
+> have to come with a test program, so people can easily test if they wired
+> up the syscall correctly.
 
-Looks good and seems to indicate that we can at least double the speed of 
-slab allocation.
+Ok. Will work on a small testcase and post it soon.
+
+--
+Regards,
+Amit Arora
