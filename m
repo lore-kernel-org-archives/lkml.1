@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763653AbXGJJW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763438AbXGJJYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763653AbXGJJW4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 05:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763725AbXGJJWg
+	id S1763438AbXGJJYN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 05:24:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbXGJJX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 05:22:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39829 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763692AbXGJJWf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 05:22:35 -0400
-Date: Tue, 10 Jul 2007 02:22:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Amit Arora <aarora@in.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: -mm merge plans for 2.6.23 -- sys_fallocate
-Message-Id: <20070710022213.81e7b432.akpm@linux-foundation.org>
-In-Reply-To: <20070710090737.GA16519@osiris.boeblingen.de.ibm.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<20070710090737.GA16519@osiris.boeblingen.de.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jul 2007 05:23:59 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:42317 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756268AbXGJJX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 05:23:58 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: akpm@linux-foundation.org
+Subject: Re: [patch] hide cond_syscall behind __KERNEL__ for x86_64
+Date: Tue, 10 Jul 2007 05:24:08 -0400
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, ak@suse.de
+References: <200706180203.55443.vapier@gentoo.org>
+In-Reply-To: <200706180203.55443.vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707100524.08771.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 11:07:37 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+This brings x86_64 into line with all other architectures by only defining
+cond_syscall() when __KERNEL__ is defined.
 
-> > fallocate-implementation-on-i86-x86_64-and-powerpc.patch
-> 
-> Still broken: arch/x86_64/ia32/ia32entry.S wants compat_sys_fallocate instead
-> of sys_fallocate. Also compat_sys_fallocate probably should be moved to
-> fs/compat.c.
-> 
-> > fallocate-on-s390.patch
-> 
-> We reserved a different syscall number than the one that is used right now
-> in the patch. Please drop this patch... Martin or I will wire up the syscall
-> as soon as the x86 variant is merged. Everything else just causes trouble and
-> confusion.
-
-OK, I dropped all the fallocate patches.
-
-That means that a few other syscalls (or at least, revoke) get renumbered.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/include/asm-x86_64/unistd.h b/include/asm-x86_64/unistd.h
+index ae1ed05..f5d627c 100644
+--- a/include/asm-x86_64/unistd.h
++++ b/include/asm-x86_64/unistd.h
+@@ -674,6 +674,7 @@ asmlinkage long sys_rt_sigaction(int sig,
+ #endif	/* __KERNEL__ */
+ #endif	/* __NO_STUBS */
+ 
++#ifdef __KERNEL__
+ /*
+  * "Conditional" syscalls
+  *
+@@ -681,5 +682,6 @@ asmlinkage long sys_rt_sigaction(int sig,
+  * but it doesn't work on all toolchains, so we just do it by hand
+  */
+ #define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
++#endif	/* __KERNEL__ */
+ 
+ #endif /* _ASM_X86_64_UNISTD_H_ */
