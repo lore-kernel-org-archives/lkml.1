@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbXGJNZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbXGJNbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbXGJNZO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 09:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbXGJNZE
+	id S1755289AbXGJNbx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 09:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbXGJNbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 09:25:04 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:39465 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbXGJNZD (ORCPT
+	Tue, 10 Jul 2007 09:31:46 -0400
+Received: from host.infinivid.com ([64.119.179.76]:47805 "EHLO
+	host.infinivid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbXGJNbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 09:25:03 -0400
-Date: Tue, 10 Jul 2007 14:24:59 +0100
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
-       kenchen@google.com, jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com, clameter@sgi.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans -- anti-fragmentation
-Message-ID: <20070710132459.GB9426@skynet.ie>
-References: <20070710102043.GA20303@skynet.ie> <1184065445.5281.16.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1184065445.5281.16.camel@lappy>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Tue, 10 Jul 2007 09:31:46 -0400
+Subject: Re: Driver question: multiple instances of same char device
+From: Jon Dufresne <jon.dufresne@infinitevideocorporation.com>
+To: Vitaliy Ivanov <vitalivanov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <35fbaa3e0707100613r4397bc50h16afe15b89e0bbcb@mail.gmail.com>
+References: <1184072796.31808.30.camel@microwave.infinitevideocorporation.com>
+	 <35fbaa3e0707100613r4397bc50h16afe15b89e0bbcb@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 10 Jul 2007 09:31:38 -0400
+Message-Id: <1184074303.31808.33.camel@microwave.infinitevideocorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (10/07/07 13:04), Peter Zijlstra didst pronounce:
-> On Tue, 2007-07-10 at 11:20 +0100, Mel Gorman wrote:
-> 
-> <snip>
-> 
-> > > lumpy-reclaim-v4.patch
-> > 
-> > This patch is really what lumpy reclaim is. I believe Peter has looked
-> > at this and was happy enough at the time although he is cc'd here again
-> > in case this has changed. This is mainly useful with either grouping
-> > pages by mobility or the ZONE_MOVABLE stuff. However, at the time the
-> > patch was proposed, there was a feeling that it might help jumbo frame
-> > allocation on e1000's and maybe if fsblock optimistically uses
-> > contiguous pages it would have an application. I would like to see it go
-> > through to see does it help e1000 at least.
-> 
-> I'm not seeing how this will help e1000 (and other jumbo drivers). They
-> typically allocate using GFP_ATOMIC, so in order to satisfy those you'd
-> need to either have a higher order watermark or do atomic defrag of the
-> free space.
-> 
+Thanks,
 
-It does help somewhat indirectly and in an unsatisfactory manner. When the
-higher watermarks are breached, the atomic allocation will still succeeed
-but kswapd will be poked to reclaim at a given order. This is similar to
-the problems SLUB hits when it uses high-orders frequently.
+I have been using this book as a source, and it is a great one at that.
+I thought I read the char device chapter enough times to get what I
+needed out of it but apparently not. I just reread it and realized that
+my answer was there.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+
+Thanks again,
+Jon
+
+On Tue, 2007-07-10 at 16:13 +0300, Vitaliy Ivanov wrote:
+> On 7/10/07, Jon Dufresne <jon.dufresne@infinitevideocorporation.com> wrote:
+> > I am relatively new to linux device development. And want to understand
+> > Linux conventions.
+> >
+> > Suppose I have a PCI card that is represented in the system by a
+> > character device.
+> >
+> > If I have two of those PCI cards in the system when the driver module
+> > loads, is it convention to have two different major numbers, or have one
+> > major number and two different minor numbers?
+> >
+> > Thanks,
+> > Jon
+> 
+> You can start your kernel hacking way from ldd. It can be found at:
+> http://lwn.net/Kernel/LDD3/
+> 
+> There are a few other books by R. Love or Greg KH that you can read.
+> 
+> Such questions are fully covered there.
+> 
+> Best,
+> Vitaliy
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
