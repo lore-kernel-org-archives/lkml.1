@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXGJA0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXGJA3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761341AbXGJA0v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 20:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760164AbXGJA0p
+	id S1761341AbXGJA3p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 20:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759931AbXGJA3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 20:26:45 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:51310 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbXGJA0o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 20:26:44 -0400
-Message-ID: <4692D230.3050403@oracle.com>
-Date: Mon, 09 Jul 2007 17:26:24 -0700
-From: Herbert van den Bergh <Herbert.van.den.Bergh@oracle.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070418)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-CC: akpm@linux-foundation.org, Dave McCracken <dave.mccracken@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: [PATCH] do not limit locked memory when RLIMIT_MEMLOCK is RLIM_INFINITY
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 9 Jul 2007 20:29:38 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:58429 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759697AbXGJA3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 20:29:37 -0400
+Date: Mon, 9 Jul 2007 17:29:29 -0700
+From: sukadev@us.ibm.com
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 0/16] Pid namespaces
+Message-ID: <20070710002929.GA11549@us.ibm.com>
+References: <468DF6F7.1010906@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <468DF6F7.1010906@openvz.org>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Emelianov [xemul@openvz.org] wrote:
+| This is "submition for inclusion" of hierarchical, not kconfig
+| configurable, zero overheaded ;) pid namespaces.
+| 
+| The overall idea is the following:
+| 
+| The namespace are organized as a tree - once a task is cloned
+| with CLONE_NEWPIDS (yes, I've also switched to it :) the new
 
-This patch fixes a bug in mm/mlock.c on 32-bit architectures that prevents
-a user from locking more than 4GB of shared memory, or allocating more
-than 4GB of shared memory in hugepages, when rlim[RLIMIT_MEMLOCK] is
-set to RLIM_INFINITY.
+Can you really clone() a pid namespace all by itself ?
+copy_namespaces() has the following:
 
-Signed-off-by: Herbert van den Bergh <herbert.van.den.bergh@oracle.com>
-Acked-by: Chris Mason <chris.mason@oracle.com>
 
---- linux-2.6.22/mm/mlock.c.orig    2007-07-09 10:19:31.000000000 -0700
-+++ linux-2.6.22/mm/mlock.c    2007-07-09 10:19:19.000000000 -0700
-@@ -244,9 +244,12 @@ int user_shm_lock(size_t size, struct us
- 
-     locked = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
-     lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
-+    if (lock_limit == RLIM_INFINITY)
-+        allowed = 1;
-     lock_limit >>= PAGE_SHIFT;
-     spin_lock(&shmlock_user_lock);
--    if (locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
-+    if (!allowed &&
-+        locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
-         goto out;
-     get_uid(user);
-     user->locked_shm += locked;
+        if (!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER)))
+                return 0;
 
+doesn't it mean you cannot create a pid namespace using clone() unless
+one of the above flags are also specified ?
+
+unshare_nsproxy_namespaces() has the following correct check:
+
+        if (!(unshare_flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
+                               CLONE_NEWUSER | CLONE_NEWPIDS)))
+                return 0;
+
+BTW, why not use CLONE_NEWPID and drop the 'S' ? We don't have 'S' with
+other namespaces.
+
+Suka
