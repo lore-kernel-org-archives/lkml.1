@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762147AbXGJRcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbXGJRgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762147AbXGJRcz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 13:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbXGJRcj
+	id S1762750AbXGJRgL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 13:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757755AbXGJRf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 13:32:39 -0400
-Received: from [212.12.190.11] ([212.12.190.11]:34420 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760165AbXGJRci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 13:32:38 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: x86 setup code rewrite in C
-Date: Tue, 10 Jul 2007 20:32:29 +0300
-User-Agent: KMail/1.5
+	Tue, 10 Jul 2007 13:35:58 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:36712 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756271AbXGJRf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 13:35:58 -0400
+Date: Tue, 10 Jul 2007 20:35:41 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Neil Horman <nhorman@redhat.com>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Bernhard Walle <bwalle@suse.de>
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070710173541.GA21743@localdomain>
+References: <20070706132814.GA7079@suse.de> <20070706145804.GA31409@localdomain> <20070709092154.GA19705@suse.de> <20070709114131.GA18750@localdomain> <20070710150037.GB10216@in.ibm.com> <20070710171740.GA11130@hmsendeavour.rdu.redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707102032.29124.a1426z@gawab.com>
+In-Reply-To: <20070710171740.GA11130@hmsendeavour.rdu.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> This patch set replaces the x86 setup code, which is currently all in
-> assembly, with a version written in C, using the ".code16gcc" feature
-> of binutils (which has been present since at least 2001.)
->
-> The new code is vastly easier to read, and, I hope, debug.  It should
-> be noted that I found a fair number of minor bugs while going through
-> this code, and have attempted to correct them.
+On Tue, Jul 10, 2007 at 01:17:40PM -0400, Neil Horman wrote:
+> On Tue, Jul 10, 2007 at 08:30:37PM +0530, Vivek Goyal wrote:
+> > I am still thinking that why can't we change initrd building process
+> > (Be it mkinitrd or mkdumprd depending on distriution). Whole idea is
+> > that while building an initrd/initramfs for the first kernel, one will
+> > ask user for kdump kernel (if user wishes to load kdump kenrel through
+> > initrd) and then it will generate kdump kenrel's initrd and pack into
+> > first kernel's initrd.
+> > 
+> > So steps would look something like this.
+> > 
+> > - mkinitrd takes second kernel's vmlinux as argument
+> > - mkinitrd runs "makedumpfile -g" on debug version of first kernel's vmlinux.
+> > - mkinitrd generates the initramfs for kdump kernel and packs output
+> >   of "makedumpfile -g" into that.
+> > - mkinitrd packs statically linked kexec, kdump kernel vmlinux/bzImage,
+> >   and kdump kernel initramfs into first kernel's initramfs.
+> > 
+> Agreed, this is exactly what happens right now.
 
-I have an i810 which supends-to-ram just fine, but when booted over pxe it 
-just hangs.  Will these patches fix this, and if so, is there an easy 
-tar-ball against 2.6.22?
+Isn't there some sort of a circular dependency going on here? As I 
+understand it the vmlinux binary already contains the initramfs as 
+built-in data (at least that's what I use here for initramfs). It 
+makes more sense if you guys are creating an _initrd_ image (that's 
+what mkinitrd originally did AFAIK) and supply it to the boot-loader.
 
-
-Thanks!
-
---
-Al
-
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
