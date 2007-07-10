@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbXGJMiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbXGJMoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbXGJMiU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 08:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXGJMiE
+	id S1755662AbXGJMoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 08:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbXGJMoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 08:38:04 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1034 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755262AbXGJMiB (ORCPT
+	Tue, 10 Jul 2007 08:44:01 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56634 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750872AbXGJMoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 08:38:01 -0400
-Message-ID: <46937DA2.4040302@shadowen.org>
-Date: Tue, 10 Jul 2007 13:37:54 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 10 Jul 2007 08:44:00 -0400
+Date: Tue, 10 Jul 2007 14:44:33 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: adaplas@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] rivafb_setup() must be __devinit
+Message-ID: <20070710124433.GQ3492@stusta.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: clam
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+This patch fixes the following section mismatch:
 
-[...]
-> lumpy-reclaim-v4.patch
-> have-kswapd-keep-a-minimum-order-free-other-than-order-0.patch
-> only-check-absolute-watermarks-for-alloc_high-and-alloc_harder-allocations.patch
-> 
->  Lumpy reclaim.  In a similar situation to Mel's patches.  Stuck due to
->  general lack or interest and effort.
+<--  snip  -->
 
-The lumpy reclaim patches originally came out of work to support Mel's
-anti-fragmentation work.  As such I think they have become somewhat
-attached to those patches.  Whilst lumpy is most effective where
-placement controls are in place as offered by Mel's work, we see benefit
-from reduction in the "blunderbuss" effect when we reclaim at higher
-orders.  While placement control is pretty much required for the very
-highest orders such as huge page size, lower order allocations are
-benefited in terms of lower collateral damage.
+...
+  MODPOST vmlinux
+WARNING: drivers/built-in.o(.text+0x57106): Section mismatch: reference to .init.text:rivafb_setup (between 'rivafb_init' and 'nv3Busy')
+...
 
-There are now a few areas other than huge page allocations which can
-benefit.  Stacks are still order 1.  Jumbo frames want higher order
-contiguous pages for there incoming hardware buffers.  SLUB is showing
-performance benefits from moving to a higher allocation order.  All of
-these should benefit from more aggressive targeted reclaim, indeed I
-have been surprised just how often my test workloads trigger lumpy at
-order 1 to get new stacks.
+<--  snip  -->
 
-Truly representative work loads are hard to generate for some of these.
- Though we have heard some encouraging noises from those who can
-reproduce these problems.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-[...]
+---
+--- linux-2.6.22-rc6-mm1/drivers/video/riva/fbdev.c.old	2007-07-10 03:54:58.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/video/riva/fbdev.c	2007-07-10 03:55:17.000000000 +0200
+@@ -2146,7 +2146,7 @@
+  * ------------------------------------------------------------------------- */
+ 
+ #ifndef MODULE
+-static int __init rivafb_setup(char *options)
++static int __devinit rivafb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
 
--apw
