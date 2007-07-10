@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbXGJGWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761501AbXGJGXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760864AbXGJGWh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 02:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXGJGW2
+	id S1761501AbXGJGXO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 02:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbXGJGW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 02:22:28 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:52383 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751554AbXGJGW1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 02:22:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DFIbjMNGhw6c9PYVJEUwrQbqsyJCTPWoVxssOB+TKfFtqoh3+OxhdJBtyAqcTc+cftxDZsXJxPSMEjPUhKH8hAh4bAZc/aFIPgCmtjVwJ9+JV1yUfzG2IBQmIbW1ieh18h5um3nL7BcbvSRnyhpToaD7V4pSGN90Gvr9m7kvxmE=
-Message-ID: <86802c440707092322k6906cdefgae821dbf8e21ef60@mail.gmail.com>
-Date: Mon, 9 Jul 2007 23:22:26 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH 1/4] try parent numa_node at first before using default
-Cc: "Christoph Lameter" <clameter@sgi.com>, akpm@linux-foundation.org,
-       ak@suse.de, rientjes@google.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070710044911.GB10748@kroah.com>
+	Tue, 10 Jul 2007 02:22:58 -0400
+Received: from waste.org ([66.93.16.53]:56003 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751674AbXGJGW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 02:22:57 -0400
+Date: Tue, 10 Jul 2007 01:22:15 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+Message-ID: <20070710062215.GE11115@waste.org>
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org> <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com> <4692E3BF.9010305@yahoo.com.au> <Pine.LNX.4.64.0707091849590.2860@schroedinger.engr.sgi.com> <4692E7D4.6060909@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200707031835.l63IZo9K008197@imap1.linux-foundation.org>
-	 <200707031731.02456.yinghai.lu@sun.com>
-	 <20070710004416.GA6905@kroah.com>
-	 <Pine.LNX.4.64.0707091751410.2269@schroedinger.engr.sgi.com>
-	 <20070710044911.GB10748@kroah.com>
+In-Reply-To: <4692E7D4.6060909@yahoo.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/9/07, Greg KH <greg@kroah.com> wrote:
-> On Mon, Jul 09, 2007 at 05:52:34PM -0700, Christoph Lameter wrote:
-> > It means that the node for the device is the same as the parent device.
-> > F.e. if the parent device is a bus that is connected to node 4 then all
-> > the devices hooked up to the bus are allocated on that node.
->
-> Yes, but is someone setting the parent device node information properly?
+On Tue, Jul 10, 2007 at 11:58:44AM +1000, Nick Piggin wrote:
+> Christoph Lameter wrote:
+> >On Tue, 10 Jul 2007, Nick Piggin wrote:
+> >
+> >
+> >>>O(n) memory savings? What is that?
+> >>
+> >>Allocate n things and your memory waste is proportional to n (well that's
+> >>O(n) waste, so I guess by savings I mean that SLOB's memory saving 
+> >>compared
+> >>to SLUB are proportional to n).
+> >
+> >
+> >n is the size of the object?
+> 
+> n things -- n number of things (n calls to kmem_cache_alloc()).
+> 
+> Just a fancy way of saying roughly that memory waste will increase as
+> the size of the system increases. But that aspect of it I think is
+> not really a problem for non-tiny systems anyway because the waste
+> tends not to be too bad (and possibly the number of active allocations
+> does not increase O(n) with the size of RAM either).
 
-> And this really needs some more changelog information please.  Why is
-> this needed from how things are done today?
+If active allocations doesn't increase O(n) with the size of RAM,
+what's all that RAM for?
 
-please check if you are happy with the changlog
+If your memory isn't getting used for large VMAs or large amounts of
+page cache, that means it's getting used by task structs,
+radix_tree_nodes, sockets, dentries, inodes, etc.
 
-----------------------------------------------------begin---------------------
-For pci_device, pcibios_scan_root and pci_scan_root will call pci_device_add.
-pci_device_add will call device_initialize and set_dev_node(&dev->dev,
-pcibus_to_node(bus)).
-other device such as netdev, and usb_device, set_dev_node is never be
-used. So that field numa_node always is -1.
-
-So for netdev, it will need to use dev->parent to get pci_device to
-use it's numa_node. esp in netdev_alloc_skb()
-not sure how other device such as infiniband do that.
-
-Actually before patch
-[PATCH 1/2] x86_64: get mp_bus_to_node as early
-there is a bug about squence of bus->sysdata and using pcibus_to_node.
-the numa_node of pci_dev->dev is never set correctly...always 0.
-
-So some device have to use pcibus_to_node(to_pci_dev(dev)->bus) directly
-such as dma_alloc_pages in arch/x86_64/kernel/pci-dma.c.
-or hwif_to_node in include/linux/ide.h
-
-with this patch, we could use device->numa_node direclty for all device.
--------------------------------------------------end-----------
-
-
-
-YH
+-- 
+Mathematics is the supreme nostalgia of our time.
