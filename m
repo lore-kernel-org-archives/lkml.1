@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbXGJTAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbXGJTBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761540AbXGJTAL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbXGJS76
+	id S1762185AbXGJTBG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 15:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbXGJTAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:59:58 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33899 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755135AbXGJS75 (ORCPT
+	Tue, 10 Jul 2007 15:00:55 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57130 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754942AbXGJTAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:59:57 -0400
-Date: Tue, 10 Jul 2007 14:59:54 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Oliver Neukum <oliver@neukum.name>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Efficient use of low-precision kernel timers
-Message-ID: <Pine.LNX.4.44L0.0707101452570.2556-100000@iolanthe.rowland.org>
+	Tue, 10 Jul 2007 15:00:54 -0400
+Date: Tue, 10 Jul 2007 21:01:23 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] slub.c:early_kmem_cache_node_alloc() shouldn't be
+	__init
+Message-ID: <20070710190123.GB3492@stusta.de>
+References: <20070710124445.GX3492@stusta.de> <Pine.LNX.4.64.0707101132110.11882@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707101132110.11882@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas:
+On Tue, Jul 10, 2007 at 11:33:15AM -0700, Christoph Lameter wrote:
+> On Tue, 10 Jul 2007, Adrian Bunk wrote:
+> 
+> > This patch fixes the following section mismatch:
+> 
+> Nack.
+> 
+> Can you remove the warning? early_kmem_cache_node_alloc is only used 
+> during bootstrap. But it is called from a function that is also used 
+> later.
 
-Here's a question for you or anyone else who can help.
+The alternative is "noinline __init_refok" - the noinline is required 
+because modern gcc versions already make it non-__init by inlining it 
+into init_kmem_cache_nodes() without.
 
-I've got a low-precision kernel timer, with a delay measured in seconds
-(and rounded off to a second boundary).  Under some circumstances the
-timer might be cancelled and restarted many times in quick succession
-(a few thousand times perhaps).  Alternatively the timer could simply
-be allowed to expire and then restarted, with the callback routine
-doing a rather small amount of work.
+But I'm not convinced it's really worth manually forcing noinline only 
+for moving a few bytes to __init in the CONFIG_NUMA=y case - in the  
+long term this will only bit rot.
 
-Which is the most efficient?  Or to put it another way, how many times 
-can I cancel and restart a low-precision timer before it uses up as 
-much CPU time as allowing the timer to expire once?
+cu
+Adrian
 
-Is there a reasonable way to answer this?  I can't think of any good 
-tests.  Or is the difference in overhead so small as to be meaningless?
+-- 
 
-Alan Stern
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
