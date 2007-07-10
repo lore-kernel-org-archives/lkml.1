@@ -1,124 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762529AbXGJHDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbXGJHEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762529AbXGJHDv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 03:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbXGJHDo
+	id S1758014AbXGJHEU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 03:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbXGJHEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 03:03:44 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:16300 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbXGJHDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 03:03:44 -0400
-Message-ID: <46932F1B.4070307@openvz.org>
-Date: Tue, 10 Jul 2007 11:02:51 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Tue, 10 Jul 2007 03:04:07 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:47633 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752517AbXGJHEG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 03:04:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=jLWHiXwCj6rsfyIlaK8VMXxoaLLjk8Xe8Ptek1/ftszRtavaPItSxvrQl8r4oHrcN0KRH0m/sid1qn13AFedQ3D62W/orXaFAYIkH9MrAJuNB7dbE3iEVQ1HXBuXHl2M4YX/RLyPz33q+GfKmg6w+VlbJgf2b5luuWx64zEjwVg=  ;
+X-YMail-OSG: ESs72ZsVM1lYPsDRLZsSEou9jMJYxcSiud6qkQFPrK3_5FvN
+Message-ID: <46932F5C.20709@yahoo.com.au>
+Date: Tue, 10 Jul 2007 17:03:56 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: sukadev@us.ibm.com
-CC: Pavel Emelianov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 0/16] Pid namespaces
-References: <468DF6F7.1010906@openvz.org> <20070710042619.GC15214@us.ibm.com>
-In-Reply-To: <20070710042619.GC15214@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matt Mackall <mpm@selenic.com>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org> <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com> <4692E3BF.9010305@yahoo.com.au> <Pine.LNX.4.64.0707091849590.2860@schroedinger.engr.sgi.com> <4692E7D4.6060909@yahoo.com.au> <20070710062215.GE11115@waste.org>
+In-Reply-To: <20070710062215.GE11115@waste.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sukadev@us.ibm.com wrote:
-> I am not able to find a specific patch that this might be in,
-> but what happens when the child-reaper of a container exits ?
+Matt Mackall wrote:
+> On Tue, Jul 10, 2007 at 11:58:44AM +1000, Nick Piggin wrote:
 
-The init namespace's init becomes this init's namespace's init :)
-In other words:
-        if (unlikely(tsk == child_reaper(tsk))) {
-                if (tsk->nsproxy->pid_ns != &init_pid_ns)
-                        tsk->nsproxy->pid_ns->child_reaper = init_pid_ns.child_reaper;
-                else
-                        panic("Attempted to kill init!");
-        }
-
-
-> Do you terminate all processes in the container ? I thought
-> that was discussed earlier and the consensus was to terminate
-> all processes in that container and its subordinate containers.
+>>Just a fancy way of saying roughly that memory waste will increase as
+>>the size of the system increases. But that aspect of it I think is
+>>not really a problem for non-tiny systems anyway because the waste
+>>tends not to be too bad (and possibly the number of active allocations
+>>does not increase O(n) with the size of RAM either).
 > 
-> Is that not the case now ?
-
-That's the case, but this code works without this change. We can do
-it later.
-
-> Suka
 > 
-> Pavel Emelianov [xemul@openvz.org] wrote:
-> | This is "submition for inclusion" of hierarchical, not kconfig
-> | configurable, zero overheaded ;) pid namespaces.
-> | 
-> | The overall idea is the following:
-> | 
-> | The namespace are organized as a tree - once a task is cloned
-> | with CLONE_NEWPIDS (yes, I've also switched to it :) the new
-> | namespace becomes the parent's child and tasks living in the
-> | parent namespace see the tasks from the new one. The numerical
-> | ids are used on the kernel-user boundary, i.e. when we export
-> | pid to user we show the id, that should be used to address the
-> | task in question from the namespace we're exporting this id to.
-> | 
-> | The main difference from Suka's patches are the following:
-> | 
-> | 0. Suka's patches change the kernel/pid.c code too heavy.
-> |    This set keeps the kernel code look like it was without
-> |    the patches. However, this is a minor issue. The major is:
-> | 
-> | 1. Suka's approach is to remove the notion of the task's 
-> |    numerical pid from the kernel at all. The numbers are 
-> |    used on the kernel-user boundary or within the kernel but
-> |    with the namespace this nr belongs to. This results in 
-> |    massive changes of struct's members fro int pid to struct
-> |    pid *pid, task->pid becomes the virtual id and so on and
-> |    so forth.
-> |    My approach is to keep the good old logic in the kernel. 
-> |    The task->pid is a global and unique pid, find_pid() finds
-> |    the pid by its global id and so on. The virtual ids appear
-> |    on the user-kernel boundary only. Thus drivers and other 
-> |    kernel code may still be unaware of pids unless they do not
-> |    communicate with the userspace and get/put numerical pids.
-> | 
-> | And some more minor differences:
-> | 
-> | 2. Suka's patches have the limit of pid namespace nesting. 
-> |    My patches do not.
-> | 
-> | 3. Suka assumes that pid namespace can live without proc mount
-> |    and tries to make the code work with pid_ns->proc_mnt change
-> |    from NULL to not-NULL from times to times.
-> |    My code calls the kern_mount() at the namespace creation and
-> |    thus the pid_namespace always works with proc.
-> | 
-> | There are some small issues that I can describe if someone is
-> | interested.
-> | 
-> | The tests like nptl perf, unixbench spawn, getpid and others
-> | didn't reveal any performance degradation in init_namespace
-> | with the RHEL5 kernel .config file. I admit, that different
-> | .config-s may show that patches hurt the performance, but the
-> | intention was *not* to make the kernel work worse with popular
-> | distributions.
-> | 
-> | This set has some ways to move forward, but this is some kind
-> | of a core, that do not change the init_pid_namespace behavior
-> | (checked with LTP tests) and may require some hacking to do 
-> | with the namespaces only.
-> | 
-> | Patches apply to 2.6.22-rc6-mm1.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> If active allocations doesn't increase O(n) with the size of RAM,
+> what's all that RAM for?
 > 
+> If your memory isn't getting used for large VMAs or large amounts of
+> page cache, that means it's getting used by task structs,
+> radix_tree_nodes, sockets, dentries, inodes, etc.
 
+Yeah you could be right. Actually you most likey _are_ right for many
+workloads.
+
+-- 
+SUSE Labs, Novell Inc.
