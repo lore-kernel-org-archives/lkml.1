@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbXGJXbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762700AbXGJXcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759005AbXGJXbv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 19:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761803AbXGJXah
+	id S1762700AbXGJXcP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 19:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbXGJXal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 19:30:37 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37635 "EHLO
+	Tue, 10 Jul 2007 19:30:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56269 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759876AbXGJXab (ORCPT
+	by vger.kernel.org with ESMTP id S1761324AbXGJXad (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 19:30:31 -0400
-Date: Tue, 10 Jul 2007 16:30:22 -0700
+	Tue, 10 Jul 2007 19:30:33 -0400
+Date: Tue, 10 Jul 2007 16:30:25 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: cmm@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-ext4@vger.kernel.org
-Subject: Re: [EXT4 set 2][PATCH 3/5] cleanups: set_jbd2_64bit_feature for
- >16TB ext4 fs
-Message-Id: <20070710163022.333ece67.akpm@linux-foundation.org>
-In-Reply-To: <1183275392.4010.122.camel@localhost.localdomain>
-References: <1183275392.4010.122.camel@localhost.localdomain>
+Subject: Re: [EXT4 set 2][PATCH 5/5] cleanups: Export jbd2-debug via debugfs
+Message-Id: <20070710163025.9db582f8.akpm@linux-foundation.org>
+In-Reply-To: <1183275408.4010.124.camel@localhost.localdomain>
+References: <1183275408.4010.124.camel@localhost.localdomain>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,46 +26,120 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 01 Jul 2007 03:36:32 -0400
+On Sun, 01 Jul 2007 03:36:48 -0400
 Mingming Cao <cmm@us.ibm.com> wrote:
 
-> Set the journals JBD2_FEATURE_INCOMPAT_64BIT on devices with more
-> than 32bit block sizes during mount time.  This ensure proper record
-> lenth when writing to the journal.
-
-This patch isn't in Ted's kernel.org directory and hasn't been in -mm. 
-Where did it come from?  Is something amiss with ext4 patch management?
-
-> Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
-> Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
-> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-> Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
-> ---
->  fs/ext4/super.c |   11 +++++++++++
->  1 file changed, 11 insertions(+)
+> > On Jun 07, 2007  23:45 -0500, Jose R. Santos wrote:
+> > > The jbd2-debug file used to be located in /proc/sys/fs/jbd2-debug, but
+> > > create_proc_entry() does not do lookups on file names with more that one
+> > > directory deep.  This causes the entry creation to fail and hence, no proc
+> > > file is created.  This patch moves the file to /proc/jbd2-degug.
+> > > 
+> > > The file could be move to /proc/fs/jbd2/jbd2-debug, but it would require
+> > > some minor alterations to the jbd-stats patch.
+> > 
+> > I don't think we really want to be adding top-level files in /proc.
+> > What about using the "debugfs" filesystem (not to be confused with
+> > the e2fsprogs 'debugfs' command)?
 > 
-> Index: linux-2.6.22-rc4/fs/ext4/super.c
+> How about this then?  Moved the file to use debugfs as well as having
+> the nice effect of removing more lines than what it adds.
+> 
+> Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+
+Please clean up the changelog.
+
+The changelog should include information about the location and the content
+of these debugfs files.  it should provide any instructions which users
+will need to be able to create and use those files.
+
+Alternatively (and preferably) do this via an update to
+Documentation/filesystems/ext4.txt.
+
+>  fs/jbd2/journal.c    |   62    20 +    42 -    0 !
+>  include/linux/jbd2.h |    2    1 +     1 -     0 !
+>  2 files changed, 21 insertions(+), 43 deletions(-)
+
+Again, this patch isn't in Ted's kernel.org directory and hasn't been in -mm.
+
+Apart from the lack of testing and review which this causes, it means I
+can't just do `pushpatch name-of-this-patch' and look at it in tkdiff.  So
+I squint at the diff, but that's harder when the diff wasn't prepared with
+`diff -p'.  Oh well.
+
+
+> Index: linux-2.6.22-rc4/fs/jbd2/journal.c
 > ===================================================================
-> --- linux-2.6.22-rc4.orig/fs/ext4/super.c	2007-06-11 16:15:54.000000000 -0700
-> +++ linux-2.6.22-rc4/fs/ext4/super.c	2007-06-11 16:16:10.000000000 -0700
-> @@ -1804,6 +1804,13 @@
-
-Please prepare patches using `diff -p'
-
->  		goto failed_mount3;
->  	}
+> --- linux-2.6.22-rc4.orig/fs/jbd2/journal.c	2007-06-11 16:16:18.000000000 -0700
+> +++ linux-2.6.22-rc4/fs/jbd2/journal.c	2007-06-11 16:36:10.000000000 -0700
+> @@ -35,6 +35,7 @@
+>  #include <linux/kthread.h>
+>  #include <linux/poison.h>
+>  #include <linux/proc_fs.h>
+> +#include <linux/debugfs.h>
 >  
-> +	if (ext4_blocks_count(es) > 0xffffffffULL &&
-> +	    !jbd2_journal_set_features(EXT4_SB(sb)->s_journal, 0, 0,
-> +				       JBD2_FEATURE_INCOMPAT_64BIT)) {
-> +		printk(KERN_ERR "ext4: Failed to set 64-bit journal feature\n");
-> +		goto failed_mount4;
-> +	}
+>  #include <asm/uaccess.h>
+>  #include <asm/page.h>
+> @@ -1954,60 +1955,37 @@
+>   * /proc tunables
+>   */
+>  #if defined(CONFIG_JBD2_DEBUG)
+> -int jbd2_journal_enable_debug;
+> +u16 jbd2_journal_enable_debug;
+>  EXPORT_SYMBOL(jbd2_journal_enable_debug);
+>  #endif
+>  
+> -#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_PROC_FS)
+> +#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_DEBUG_FS)
 
-It is not appropriate for the text "ext4" to appear in a JBD2 message.
+Has this been compile-tested with CONFIG_DEBUGFS=n?
 
->  	/* We have now updated the journal if required, so we can
->  	 * validate the data journaling mode. */
->  	switch (test_opt(sb, DATA_FLAGS)) {
+>  
+> -#define create_jbd_proc_entry() do {} while (0)
+> -#define jbd2_remove_jbd_proc_entry() do {} while (0)
+> +#define jbd2_create_debugfs_entry() do {} while (0)
+> +#define jbd2_remove_debugfs_entry() do {} while (0)
+
+I suggest that these be converted to (preferable) inline functions while
+you're there.
+
+>  #endif
+>  
+> @@ -2067,7 +2045,7 @@
+>  	ret = journal_init_caches();
+>  	if (ret != 0)
+>  		jbd2_journal_destroy_caches();
+> -	create_jbd_proc_entry();
+> +	jbd2_create_debugfs_entry();
+>  	return ret;
+>  }
+>  
+> @@ -2078,7 +2056,7 @@
+>  	if (n)
+>  		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
+>  #endif
+> -	jbd2_remove_jbd_proc_entry();
+> +	jbd2_remove_debugfs_entry();
+>  	jbd2_journal_destroy_caches();
+>  }
+>  
+> Index: linux-2.6.22-rc4/include/linux/jbd2.h
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/include/linux/jbd2.h	2007-06-11 16:16:18.000000000 -0700
+> +++ linux-2.6.22-rc4/include/linux/jbd2.h	2007-06-11 16:35:25.000000000 -0700
+> @@ -57,7 +57,7 @@
+>   * CONFIG_JBD2_DEBUG is on.
+>   */
+>  #define JBD_EXPENSIVE_CHECKING
+
+JBD2?
+
+> -extern int jbd2_journal_enable_debug;
+> +extern u16 jbd2_journal_enable_debug;
+
+Why was this made 16-bit?  To save 2 bytes?  Could have saved 3 if we're
+going to do that.
 
 
+Shoudln't all this debug info be a per-superblock thing rather than
+kernel-wide?
