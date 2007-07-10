@@ -1,148 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbXGJUS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbXGJUTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761246AbXGJUS2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 16:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbXGJUSS
+	id S1761475AbXGJUTx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbXGJUTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 16:18:18 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:55235 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbXGJUSQ (ORCPT
+	Tue, 10 Jul 2007 16:19:46 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:45082 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757233AbXGJUTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 16:18:16 -0400
-Date: Wed, 11 Jul 2007 01:48:20 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Cc: xfs@oss.sgi.com
-Subject: [PATCH 1/7] manpage for fallocate
-Message-ID: <20070710201820.GA8797@amitarora.in.ibm.com>
-References: <20070710201200.GA10255@amitarora.in.ibm.com>
-Mime-Version: 1.0
+	Tue, 10 Jul 2007 16:19:46 -0400
+Date: Tue, 10 Jul 2007 23:19:23 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: avoiding rejects
+Message-ID: <20070710201923.GA22675@localdomain>
+References: <20070710124422.a52b0458.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070710201200.GA10255@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070710124422.a52b0458.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following is the modified version of the manpage originally submitted by
-David Chinner. Please use `nroff -man fallocate.2 | less` to view.
+On Tue, Jul 10, 2007 at 12:44:22PM -0700, Andrew Morton wrote:
+> 
+> There are many situations where patching the kernel involves adding a new
+> item to a list, such as:
+> 
+> - adding a makefile line
+> - adding a new #include
+> - adding a new Kconfig entry
+> - adding a new PCI ID
+> - adding a record to feature-removal.txt
+> - adding a new sysctl table entry
+> - etc
+> 
+> Of course, everyone just sticks the new entry at the end of the existing
+> entries.  This strategy carefully maximises the opportunity for patch
+> rejects and leads to unhappiness.
+> 
+> Most of these lists are unordered anyway, so inserting the new item at a
+> randomly-chosen position is a better approach than just appending it.
 
+AFAIK some Kconfig entries do have some importance to order (take 
+kernel/Kconfig.hz for example, though it's not a good one, not long 
+enough).
 
-.TH fallocate 2
-.SH NAME
-fallocate \- allocate or remove file space
-.SH SYNOPSIS
-.nf
-.B #include <sys/syscall.h>
-.PP
-.BI "int syscall(int, int fd, int mode, loff_t offset, loff_t len);
-.Op
-.SH DESCRIPTION
-The
-.BR fallocate
-syscall allows a user to directly manipulate the allocated disk space
-for the file referred to by
-.I fd
-for the byte range starting at
-.IR offset
-and continuing for
-.IR len
-bytes.
-The
-.I mode
-parameter determines the operation to be performed on the given range.
-Currently there are four modes:
-.TP
-.B FALLOC_ALLOCATE
-allocates and initialises to zero the disk space within the given range.
-After a successful call, subsequent writes are guaranteed not to fail because
-of lack of disk space.  If the size of the file is less than
-.IR offset + len ,
-then the file is increased to this size; otherwise the file size is left
-unchanged.
-.B FALLOC_ALLOCATE
-closely resembles
-.B posix_fallocate(3)
-and is intended as a method of optimally implementing this function.
-.B FALLOC_ALLOCATE
-may allocate a larger range that was specified.
-.TP
-.B FALLOC_RESV_SPACE
-provides the same functionality as
-.B FALLOC_ALLOCATE
-except it does not ever change the file size. This allows allocation
-of zero blocks beyond the end of file and is useful for optimising
-append workloads.
-.TP
-.B FALLOC_DEALLOCATE
-removes any preallocated space within the given range. The file size
-may change if deallocation is towards the end of the file.
-.TP
-.B FALLOC_UNRESV_SPACE
-removes the underlying disk space within the given range. The disk space
-shall be removed regardless of it's contents so both allocated space
-from
-.B FALLOC_ALLOCATE
-and
-.B FALLOC_RESV_SPACE
-as well as from
-.B write(3)
-will be removed.
-.B FALLOC_UNRESV_SPACE
-shall never remove disk blocks outside the range specified.
-.B FALLOC_UNRESV_SPACE
-shall never change the file size. If changing the file size
-is required when deallocating blocks from an offset to end
-of file (or beyond end of file) is required,
-.B ftuncate64(3)
-or
-.B FALLOC_DEALLOCATE
-should be used.
+I think that random insertions can hurt on the readability side. So, here's
+a list of more ways to discuss:
 
-.SH "RETURN VALUE"
-.BR fallocate()
-returns zero on success, or an error number on failure.
-Note that
-.IR errno
-is not set.
-.SH "ERRORS"
-.TP
-.B EBADF
-.I fd
-is not a valid file descriptor, or is not opened for writing.
-.TP
-.B EFBIG
-.I offset+len
-exceeds the maximum file size.
-.TP
-.B EINVAL
-.I offset
-or
-.I len
-was less than 0.
-.TP
-.B ENODEV
-.I fd
-does not refer to a regular file or a directory.
-.TP
-.B ENOSPC
-There is not enough space left on the device containing the file
-referred to by
-.IR fd.
-.TP
-.B ESPIPE
-.I fd
-refers to a pipe of file descriptor.
-.B ENOSYS
-The filesystem underlying the file descriptor does not support this
-operation.
-.SH AVAILABILITY
-The
-.BR fallocate ()
-system call is available since 2.6.XX
-.SH "SEE ALSO"
-.BR syscall (2),
-.BR posix_fadvise (3)
-.BR ftruncate (3)
+1. How about adding a context-aware logic to the merging process? (i.e, 
+project-specific "plugins") That is, beside the regular 3-line context, 
+the merging logic can be a aware of particular file formats, whether it's a 
+Kconfig tree-like structure or list of lines all starting with a prefix of 
+'#include'. 
+
+2. Alternatively, these special one-liner diff hunks can be generated with
+smaller context space (2, 1, or even no lines). This means instead of 
+adding context-awareness to the merger process, add context-awareness
+to the diff generator. The other 'more complex' code modifications hunks 
+must remain with a context of 3 lines.
+
+3. Another option is to come up with file formats that have '3 space 
+lines' dilimeters between items (it wouldn't make sense for #include, but 
+for PCI IDs it might be worth it).
+
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
