@@ -1,107 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbXGKD4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbXGKEEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbXGKD4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 23:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXGKD4P
+	id S1752594AbXGKEEb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 00:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXGKEEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 23:56:15 -0400
-Received: from alpha.lp.pl ([194.1.144.4]:37311 "EHLO alpha.polcom.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752877AbXGKD4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 23:56:15 -0400
-Date: Wed, 11 Jul 2007 05:59:05 +0200 (CEST)
-From: Grzegorz Kulewski <kangur@polcom.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matthew Hawkins <darthmdh@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-In-Reply-To: <20070710181419.6d1b2f7e.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.63.0707110518280.9258@alpha.polcom.net>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
- <200707102015.44004.kernel@kolivas.org> <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>
- <20070710181419.6d1b2f7e.akpm@linux-foundation.org>
+	Wed, 11 Jul 2007 00:04:20 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:45282 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751359AbXGKEET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 00:04:19 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Wed, 11 Jul 2007 03:47:09 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Duane Griffin <duaneg@dghda.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, Keiichi Kii <k-keiichi@bx.jp.nec.com>,
+       Netdev <netdev@vger.kernel.org>, Joel Becker <joel.becker@oracle.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v2 -mm 8/9] netconsole: Support multiple logging targets
+In-Reply-To: <e9e943910707100323o35cb0316i5d3f21584ad8e4ae@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0707110340370.2445@cselinux1.cse.iitk.ac.in>
+References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
+  <20070710092001.23907.39876.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <e9e943910707100323o35cb0316i5d3f21584ad8e4ae@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Andrew Morton wrote:
-> On Wed, 11 Jul 2007 11:02:56 +1000 "Matthew Hawkins" <darthmdh@gmail.com> wrote:
->
->> We all know swap prefetch has been tested out the wazoo since Moses was a
->> little boy, is compile-time and runtime selectable, and gives an important
->> and quantifiable performance increase to desktop systems.
->
-> Always interested.  Please provide us more details on your usage and
-> testing of that code.  Amount of memory, workload, observed results,
-> etc?
+Hi,
 
-I am using swap prefetch in -ck kernels since it was introduced.
+On Tue, 10 Jul 2007, Duane Griffin wrote:
+> On 10/07/07, Satyam Sharma <ssatyam@cse.iitk.ac.in> wrote:
+> > +       /* Avoid taking lock and disabling interrupts unnecessarily */
+> > +       if (unlikely(list_empty(&target_list)))
+> > +               return;
+> 
+> Is the unlikely a good idea here? Not having any targets may be
+> unusual but it isn't ridiculous. It might even be a sensible default
+> for distros.
 
-My machine: Athlon XP 2000MHz, 1GB DDR 266, fast SATA disk, different 
-swap configurations but usually heaps of swap (2GB and/or 8GB).
+Hmm, I put it in there because I expected that the user must have had
+at least one target configured (added to target_list) if he's got the
+module loaded/built-in (and netconsole registered), which is when this
+function would be triggered anyway.
 
-My workload: desktop usage, KDE, software development, Firefox (HUGE 
-memory hog), Eclipse and all that stuff (HUGE memory hog), sometimes other 
-applications, sometimes some game such as Americas Army (that one will eat 
-all your memory in any configuration), Konsole with heaps of tabs, usually 
-some heavy compilations in the background.
+> My (very limited) understanding of unlikely is that it
+> could impose a very large penalty in that case and would make a very
+> marginal difference at best in the common case.
 
-Observed result (of not broken swap prefetch versions): after closing some 
-memory hog (for example stopping playing game and starting to write some 
-code or reloading Firefox after it leaked enough memory to nearly bring 
-the system down) the disk will work for some time and after that 
-everything works as expected, no heavy swap-in when switching between 
-applications and so on, nearly no lags in desktop usage.
+I wouldn't call it a large penalty, but yeah, probably the unlikely()
+there isn't all that important either.
 
-This is nearly unnoticable. Unless I have to run pure mainline. In that 
-case I can notice that swap prefetch is off very quickly because after 
-closing such memory hog and returning to some other application the system 
-is slow for long time. Worse: after it starts to work reasonably and I try 
-to switch to some other application or even try to use some dialog window 
-or module of current application I have to wait, sometimes > 10s for it to 
-swap back in (even if 70% of my RAM is free at that time, after memory hog 
-is gone). It is painfull.
-
-I observed similar results on my laptop (Athlon 64, 512MB RAM, slow ATA 
-disk, similar workload but reduced because hardware is weak).
-
-For me swap prefetch makes huge difference. The system lags a lot less in 
-such circumstances.
-
-Personaly I think swap prefetch is a hack. Maybe not very dirty and ugly 
-but still a hack. But since:
-
-* nobody proposed anything that can replace it and can be considered a 
-no-hack,
-* swap prefetch is rather well tested and shouldn't cause regressions (no 
-known regressions as far as I know, the patch does not look very 
-invasive, was reviewed several times, ...),
-* Con said he won't make further -ck relases and won't port these patches 
-to newer kernels,
-* there are at least several people who see the difference,
-* if somebody really hates it (s)he can turn it off
-
-I think it could get merged, at least temporarily, before somebody can 
-suggest some better or extended solution.
-
-Personaly I would be very happy to see it in so people like me don't have 
-to patch it in or (worse) port it (possibly causing bugs and filling 
-additional bug reports and asking additional questions on these lists).
-
-I even wonder if adding the opposite of swap prefetch too wouldn't be even 
-better for many workloads. Something like: "when system and swap-disk is 
-idle try to copy some pages to swap so when system needs memory swap-out 
-could be much cheaper". I suspect patch like that can reduce startup times 
-(and other operations) of great memory hogs because disk (the slowest 
-device) will only have to read the application and won't have to swap-out 
-half of the RAM at the same time.
-
-I am happy to provide further info if needed.
-
-
-Thanks,
-
-Grzegorz Kulewski
-
+Satyam
