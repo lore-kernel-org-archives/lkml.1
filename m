@@ -1,89 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbXGJQ7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763052AbXGJRAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762708AbXGJQ7J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 12:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXGJQ65
+	id S1763052AbXGJRAI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 13:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758945AbXGJQ75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 12:58:57 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:52031 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753148AbXGJQ6z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 12:58:55 -0400
-Date: Tue, 10 Jul 2007 17:58:12 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Dave McCracken <dave.mccracken@oracle.com>
-cc: herbert.van.den.bergh@oracle.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] include private data mappings in RLIMIT_DATA limit
-In-Reply-To: <200707091954.10502.dave.mccracken@oracle.com>
-Message-ID: <Pine.LNX.4.64.0707101727510.4717@blonde.wat.veritas.com>
-References: <4692D616.4010004@oracle.com> <200707091954.10502.dave.mccracken@oracle.com>
+	Tue, 10 Jul 2007 12:59:57 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60398 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755974AbXGJQ74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 12:59:56 -0400
+Message-ID: <4693BB07.9060707@garzik.org>
+Date: Tue, 10 Jul 2007 12:59:51 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1657808215-1184086692=:4717"
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAZGF2ZS5tY2NyYWNrZW5Ab3JhY2xlLmNvbQBoZXJiZXJ0LnZhbi5kZW4uYmVyZ2hAb3JhY2xlLmNvbQBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
-X-Brightmail-Tracker: AAAAAA==
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 1/2] eHEA: Capability flag for DLPAR support
+References: <200707050926.26087.ossthema@de.ibm.com>
+In-Reply-To: <200707050926.26087.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Jan-Bernd Themann wrote:
+> This patch introduces a capability flag that is used by the DLPAR userspace
+> tool to check which DLPAR features are supported by the eHEA driver.
+> 
+> Missing goto has been included.
+> 
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
---8323584-1657808215-1184086692=:4717
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+applied
 
-On Mon, 9 Jul 2007, Dave McCracken wrote:
-> On Monday 09 July 2007, Herbert van den Bergh wrote:
-> > With this patch, not only memory in the data segment of a process, but
-> > also private data mappings, both file-based and anonymous, are counted
-> > toward the RLIMIT_DATA resource limit. =C2=A0Executable mappings, such =
-as
-> > text segments of shared objects, are not counted toward the private dat=
-a
-> > limit. =C2=A0The result is that malloc() will fail once the combined si=
-ze of
-> > the data segment and private data mappings reaches this limit.
-> >
-> > This brings the Linux behavior in line with what is documented in the
-> > POSIX man page for setrlimit(3p).
 
-Which says malloc() can fail from it, but conspicuously not that mmap()
-can fail from it: unlike the RLIMIT_AS case.  Would we be better off?
-
->=20
-> I believe this patch is a simple and obvious fix to a hole introduced whe=
-n=20
-> libc malloc() began using mmap() instead of brk().
-
-But didn't libc start doing that many years ago?  Wouldn't that have
-been the time for such a patch rather than now: when it can only break
-apps that are currently working?
-
-> We took away the ability=20
-> to control how much data space processes could soak up.  This patch retur=
-ns=20
-> that control to the user.
-
-I remember thinking that the idea of data ulimit had become obsolete
-(just preserved for compatibility) back when mmap() got invented and
-used for dynamic libraries.  I think that's when they brought in
-RLIMIT_AS, something which could make sense in the mmap() world.
-
-This patch does give it more meaning.  But if we are prepared to
-take the risk of breaking things in this way (I think not but don't
-mind being corrected), it would be more accurate to take writability
-into account, and use that quantity (sadly not stored in mm_struct,
-would have to be added) which we do security_vm_enough_memory() upon,
-which totals up into /proc/meminfo's Committed_AS.
-
-That change to /proc/PID/status VmData:=20
--=09data =3D mm->total_vm - mm->shared_vm - mm->stack_vm;
-+=09data =3D mm->total_vm - mm->shared_vm - mm->stack_vm - mm->exec_vm;
-looks plausible, but isn't exec_vm already counted as shared_vm,
-so now being doubly subtracted?  Besides which, we wouldn't want
-to change those numbers again without consulting Albert.
-
-Hugh
---8323584-1657808215-1184086692=:4717--
