@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763784AbXGJMDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXGJMH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763784AbXGJMDe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 08:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763186AbXGJMDW
+	id S1757561AbXGJMH6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 08:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbXGJMHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 08:03:22 -0400
-Received: from waste.org ([66.93.16.53]:41957 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761782AbXGJMDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 08:03:14 -0400
-Date: Tue, 10 Jul 2007 07:02:24 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-Message-ID: <20070710120224.GP11115@waste.org>
-References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org> <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com> <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI> <469342DC.8070007@yahoo.com.au> <84144f020707100231p5013e1aer767562c26fc52eeb@mail.gmail.com>
+	Tue, 10 Jul 2007 08:07:51 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:53386 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752471AbXGJMHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 08:07:50 -0400
+Message-ID: <46937691.5030409@fr.ibm.com>
+Date: Tue, 10 Jul 2007 14:07:45 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <84144f020707100231p5013e1aer767562c26fc52eeb@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Pavel Emelianov <xemul@openvz.org>
+CC: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>,
+       Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 4/16] Change data structures for pid namespaces
+References: <468DF6F7.1010906@openvz.org> <468DF7AC.10302@openvz.org> <469299C5.1060402@fr.ibm.com> <20070710043250.GD15214@us.ibm.com> <46932F69.8020101@openvz.org>
+In-Reply-To: <46932F69.8020101@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 12:31:40PM +0300, Pekka Enberg wrote:
-> Hi Nick,
+>> | > +
+>> | >  struct pid
+>> | >  {
+>> | >  	atomic_t count;
+>> | > @@ -40,6 +40,8 @@ enum pid_type
+>> | >  	/* lists of tasks that use this pid */
+>> | >  	struct hlist_head tasks[PIDTYPE_MAX];
+>> | >  	struct rcu_head rcu;
+>> | > +	int level;
+>> | > +	struct pid_number numbers[1];
+>> | >  };
+>> | > 
+>> | >  extern struct pid init_struct_pid;
+>> | > diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/pid_namespace.h linux-2.6.22-rc4-mm2-2/include/linux/pid_namespace.h
+>> | > --- linux-2.6.22-rc4-mm2.orig/include/linux/pid_namespace.h	2007-06-14 12:14:29.000000000 +0400
+>> | > +++ linux-2.6.22-rc4-mm2-2/include/linux/pid_namespace.h	2007-07-04 19:00:39.000000000 +0400
+>> | > @@ -16,7 +15,10 @@ struct pidmap {
+>> | >  	struct kref kref;
+>> | >  	struct pidmap pidmap[PIDMAP_ENTRIES];
+>> | >  	int last_pid;
+>> | > +	int level;
+>> | >  	struct task_struct *child_reaper;
+>> | > +	struct kmem_cache *pid_cachep;
+>> | 
+>> | so, that looks like a good idea to have the cache in the pidmap. could you 
+>> | push that independently to see how it all fits together ?
+>>
+>> Yes. I like this idea too.
 > 
-> Pekka J Enberg wrote:
-> >> That's 92 KB advantage for SLUB with debugging enabled and 240 KB when
-> >> debugging is disabled.
-> 
-> On 7/10/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> >Interesting. What kernel version are you using?
-> 
-> Linus' git head from yesterday so the results are likely to be
-> sensitive to workload and mine doesn't represent real embedded use.
+> OK. I will collect the patches you Acked and send them to Andrew independently.
 
-Using 2.6.22-rc6-mm1 with a 64MB lguest and busybox, I'm seeing the
-following as the best MemFree numbers after several boots each:
+good thanks, 
 
-SLAB: 54796
-SLOB: 55044
-SLUB: 53944
-SLUB: 54788 (debug turned off)
+however that part on the *pid_cachep will require some rework on your patchset.
 
-These numbers bounce around a lot more from boot to boot than I
-remember, so take these numbers with a grain of salt.
-
-Disabling the debug code in the build gives this, by the way:
-
-mm/slub.c: In function ‘init_kmem_cache_node’:
-mm/slub.c:1873: error: ‘struct kmem_cache_node’ has no member named
-‘full’
-
--- 
-Mathematics is the supreme nostalgia of our time.
+C.
