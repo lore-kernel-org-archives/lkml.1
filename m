@@ -1,44 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbXGJFPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760879AbXGJFQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760494AbXGJFPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 01:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXGJFPX
+	id S1760879AbXGJFQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 01:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXGJFQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 01:15:23 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:15689 "EHLO
-	asav00.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbXGJFPX (ORCPT
+	Tue, 10 Jul 2007 01:16:19 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:48180 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751175AbXGJFQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 01:15:23 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArgeAP+ykkZKhRO4R2dsb2JhbACHJogDAQEbDQYRAQ
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Subject: Re: PXA2xx keyboard driver fix
-Date: Tue, 10 Jul 2007 01:15:21 -0400
-User-Agent: KMail/1.9.3
-Cc: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org
-References: <4691F689.7000503@compulab.co.il> <20070709132739.GN11451@enneenne.com>
-In-Reply-To: <20070709132739.GN11451@enneenne.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 10 Jul 2007 01:16:18 -0400
+Date: Tue, 10 Jul 2007 01:16:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org
+Cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] x86_64 - Use non locked version for local_cmpxchg()
+Message-ID: <20070710051616.GB16148@Krystal>
+References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de> <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com> <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com> <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal> <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com> <20070709225817.GA5111@Krystal> <Pine.LNX.4.64.0707091605380.20282@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707100115.21715.dtor@insightbb.com>
+In-Reply-To: <Pine.LNX.4.64.0707091605380.20282@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 01:04:27 up 2 days, 19:09,  3 users,  load average: 0.10, 0.17, 0.17
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 July 2007 09:27, Rodolfo Giometti wrote:
-> On Mon, Jul 09, 2007 at 11:49:13AM +0300, Mike Rapoport wrote:
-> > The PXA2xx keyboard driver does not compile with 2.6.22
-> > The following patch fixes it
-> > 
-> > Signed-off-by: Mike Rapoport <mike@compulab.co.il>
-> > 
-> > 
+You are completely right: on x86_64, a bit got lost in the move to
+cmpxchg.h, here is the fix. It applies on 2.6.22-rc6-mm1.
 
-Applied, thank you.
+x86_64 - Use non locked version for local_cmpxchg()
+
+local_cmpxchg() should not use any LOCK prefix. This change probably got lost in
+the move to cmpxchg.h.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/asm-x86_64/cmpxchg.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6-lttng/include/asm-x86_64/cmpxchg.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86_64/cmpxchg.h	2007-07-10 01:10:10.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86_64/cmpxchg.h	2007-07-10 01:11:03.000000000 -0400
+@@ -128,7 +128,7 @@
+ 	((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
+ 					(unsigned long)(n),sizeof(*(ptr))))
+ #define cmpxchg_local(ptr,o,n)\
+-	((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
++	((__typeof__(*(ptr)))__cmpxchg_local((ptr),(unsigned long)(o),\
+ 					(unsigned long)(n),sizeof(*(ptr))))
+ 
+ #endif
+
+
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Mon, 9 Jul 2007, Mathieu Desnoyers wrote:
+> 
+> > > > Yep, I volountarily used the variant without lock prefix because the
+> > > > data is per cpu and I disable preemption.
+> > > 
+> > > local_cmpxchg generates this?
+> > > 
+> > 
+> > Yes.
+> 
+> Does not work here. If I use
+> 
+> static void __always_inline *slab_alloc(struct kmem_cache *s,
+>                 gfp_t gfpflags, int node, void *addr)
+> {
+>         void **object;
+>         struct kmem_cache_cpu *c;
+> 
+>         preempt_disable();
+>         c = get_cpu_slab(s, smp_processor_id());
+> redo:
+>         object = c->freelist;
+>         if (unlikely(!object || !node_match(c, node)))
+>                 return __slab_alloc(s, gfpflags, node, addr, c);
+> 
+>         if (cmpxchg_local(&c->freelist, object, object[c->offset]) != object)
+>                 goto redo;
+> 
+>         preempt_enable();
+>         if (unlikely((gfpflags & __GFP_ZERO)))
+>                 memset(object, 0, c->objsize);
+> 
+>         return object;
+> }
+> 
+> Then the code will include a lock prefix:
+> 
+>     3270:       48 8b 1a                mov    (%rdx),%rbx
+>     3273:       48 85 db                test   %rbx,%rbx
+
+
+
+
+>     3276:       74 23                   je     329b <kmem_cache_alloc+0x4b>
+>     3278:       8b 42 14                mov    0x14(%rdx),%eax
+>     327b:       4c 8b 0c c3             mov    (%rbx,%rax,8),%r9
+>     327f:       48 89 d8                mov    %rbx,%rax
+>     3282:       f0 4c 0f b1 0a          lock cmpxchg %r9,(%rdx)
+>     3287:       48 39 c3                cmp    %rax,%rbx
+>     328a:       75 e4                   jne    3270 <kmem_cache_alloc+0x20>
+>     328c:       66 85 f6                test   %si,%si
+>     328f:       78 19                   js     32aa <kmem_cache_alloc+0x5a>
+>     3291:       48 89 d8                mov    %rbx,%rax
+>     3294:       48 83 c4 08             add    $0x8,%rsp
+>     3298:       5b                      pop    %rbx
+>     3299:       c9                      leaveq
+>     329a:       c3                      retq
+> 
+> 
+> > What applies to local_inc, given as example in the local_ops.txt
+> > document, applies integrally to local_cmpxchg. And I would say that
+> > local_cmpxchg is by far the cheapest locking mechanism I have found, and
+> > use today, for my kernel tracer. The idea emerged from my need to trace
+> > every execution context, including NMIs, while still providing good
+> > performances. local_cmpxchg was the perfect fit; that's why I deployed
+> > it in local.h in each and every architecture.
+> 
+> Great idea. The SLUB allocator may be able to use your idea to improve 
+> both the alloc and free path.
+> 
 
 -- 
-Dmitry
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
