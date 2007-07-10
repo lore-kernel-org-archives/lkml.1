@@ -1,103 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761065AbXGJMDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763784AbXGJMDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761065AbXGJMDN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 08:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXGJMDA
+	id S1763784AbXGJMDe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 08:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763186AbXGJMDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 08:03:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36685 "EHLO mx1.redhat.com"
+	Tue, 10 Jul 2007 08:03:22 -0400
+Received: from waste.org ([66.93.16.53]:41957 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752420AbXGJMC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 08:02:59 -0400
-Date: Tue, 10 Jul 2007 08:02:43 -0400
-From: Neil Horman <nhorman@redhat.com>
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Cc: Bernhard Walle <bwalle@suse.de>, Neil Horman <nhorman@redhat.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: Determine version of kernel that produced vmcore
-Message-ID: <20070710120243.GA10121@hmsendeavour.rdu.redhat.com>
-References: <20070706132814.GA7079@suse.de> <20070710121315oomichi@mail.jp.nec.com>
+	id S1761782AbXGJMDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 08:03:14 -0400
+Date: Tue, 10 Jul 2007 07:02:24 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+Message-ID: <20070710120224.GP11115@waste.org>
+References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org> <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com> <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI> <469342DC.8070007@yahoo.com.au> <84144f020707100231p5013e1aer767562c26fc52eeb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070710121315oomichi@mail.jp.nec.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <84144f020707100231p5013e1aer767562c26fc52eeb@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 12:13:15PM +0900, Ken'ichi Ohmichi wrote:
+On Tue, Jul 10, 2007 at 12:31:40PM +0300, Pekka Enberg wrote:
+> Hi Nick,
 > 
-> Hi,
+> Pekka J Enberg wrote:
+> >> That's 92 KB advantage for SLUB with debugging enabled and 240 KB when
+> >> debugging is disabled.
 > 
-> On Fri, 6 Jul 2007 17:58:04 +0300, Dan Aloni <da-x@monatomic.org> wrote:
-> > On Fri, Jul 06, 2007 at 03:28:14PM +0200, Bernhard Walle wrote:
-> > > Hello,
-> > > 
-> > > does anybody know a _reliable_ way to determine the version the kernel
-> > > that produced a vmcore file? This means not scanning for a specific
-> > > string or something like that which can fail on random memory.
-> > > 
-> > > Would it make sense to add a ELF PT_NOTE section in the vmcore?
-> > > 
-> > > Thanks for input!
+> On 7/10/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> >Interesting. What kernel version are you using?
 > 
-> (CONFIGFILE means makedumpfile's config file.)
-> 
-> makedumpfile checks kernel version by reading system_utsname.release
-> from /proc/vmcore, as you know. If the release and OSRELEASE in CONFIGFILE
-> don't match, makedumpfile fails.
-> 
-> Besides Dan's plan, I'm planning the change of CONFIGFILE for distributors.
-> In the kernel building process, distributors need to make CONFIGFILE
-> on an older kernel (ex. RHEL5 kernel is built on RHEL4), and OSRELEASE
-> may be an older kernel. So OSRELEASE should be modified to the building
-> kernel version by hand, but it is not smart.
-> 
-> To solve this problem, I'm proposing 2 plans.
-> Could you give me your opinion ?
-> 
-> Plan 1:
->   A new option [--osrelease="string"] is added.
->   The OSRELEASE of CONFIGFILE is overwritten by "string".
->   In the kernel building process, distributors should specify "string"
->   as the building kernel version.
-> 
-> Plan2:
->   Remove the OSRELEASE from CONFIGFILE.
->   Instead of checking the OSRELEASE, makedumpfile only checks whether the
->   area of /proc/vmcore specified by the symbol "system_utsname" in CONFIGFILE
->   is the string "2.6.". If CONFIGFILE and /proc/vmcore don't match, the
->   "system_utsname" must not point to the correct area in most cases.
->   Old makedumpfile needs OSRELEASE, and it cannot work by new CONFIGFILE.
->   But I think there are not any problems because old makedumpfile will not
->   read new CONFIGFILE. Now, CONFIGFILE is used only by RHEL5's kdump initramfs,
->   the CONFIGFILE is generated during 1st-kernel running. Even if CONFIGFILE
->   will be updated, makedumpfile can read the CONFIGFILE because makedumpfile
->   should be updated with CONFIGFILE.
-> 
-> 
-> I'd like to change the name of CONFIGFILE to mkdfinfo.
-> 
-Why not, instead of either plan above, just redefine OSRELEASE to be the version
-of the kernel the config file was built against?  i.e. when you build a config
-file, you need to specify a kernel to extract symbol information from, why not
-grab the utsname from that kernel and use that to set OSRELEASE?  When you're
-building a config file the running kernel on the system isn't really relevent
-anyway.
+> Linus' git head from yesterday so the results are likely to be
+> sensitive to workload and mine doesn't represent real embedded use.
 
-Thanks & Regards
-Neil
+Using 2.6.22-rc6-mm1 with a 64MB lguest and busybox, I'm seeing the
+following as the best MemFree numbers after several boots each:
 
-> 
-> Thanks
-> Ken'ichi Ohmichi
+SLAB: 54796
+SLOB: 55044
+SLUB: 53944
+SLUB: 54788 (debug turned off)
+
+These numbers bounce around a lot more from boot to boot than I
+remember, so take these numbers with a grain of salt.
+
+Disabling the debug code in the build gives this, by the way:
+
+mm/slub.c: In function ‘init_kmem_cache_node’:
+mm/slub.c:1873: error: ‘struct kmem_cache_node’ has no member named
+‘full’
 
 -- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+Mathematics is the supreme nostalgia of our time.
