@@ -1,79 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbXGJHRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762672AbXGJHTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761935AbXGJHRE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 03:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbXGJHQz
+	id S1762672AbXGJHTR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 03:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbXGJHTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 03:16:55 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:58427 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751769AbXGJHQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 03:16:54 -0400
-Message-id: <13055248471022532464@wsc.cz>
-In-reply-to: <7wlkdp8yoe.fsf@gmdev.webwayone.co.uk>
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Graham Murray <gmurray@webwayone.co.uk>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: Specialix SX cards not detected in kernels >=2.6.20
-Date: Tue, 10 Jul 2007 09:17:06 +0200 (CEST)
+	Tue, 10 Jul 2007 03:19:11 -0400
+Received: from il.qumranet.com ([82.166.9.18]:40749 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752003AbXGJHTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 03:19:10 -0400
+Message-ID: <469332F3.1000808@qumranet.com>
+Date: Tue, 10 Jul 2007 10:19:15 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH][RFC] kvm-scheduler integration
+References: <11838994974161-git-send-email-avi@qumranet.com>	 <20070708133539.GA12597@elte.hu> <4690E973.7000606@qumranet.com>	 <20070708134850.GB22911@elte.hu>	 <1183937563.6005.365.camel@localhost.localdomain>	 <4691D82F.3030401@qumranet.com>	 <1184029745.6005.402.camel@localhost.localdomain>	 <46931ECB.2060601@qumranet.com> <1184050055.6005.523.camel@localhost.localdomain>
+In-Reply-To: <1184050055.6005.523.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Graham Murray wrote:
-> There were multiple changes to the char/sx.c driver in kernel 2.6.20. In
-> kernels 2.6.19 and earlier, the SX multiport serial card works OK, but
-> in 2.6.20 and later the driver does not seemt to detect the presence of
-> the card. 
-> 
-> I have enabled sx_debug=-1 and added some printk statements to try and
-> detect why the card is not detected. These show that sx_init is entered
-> and within that function the call to pci_register_driver returns 0. I do
-> not see any other routines in the driver being entered either at startup
-> (when the module is loaded, which indicates that the system recognises
-> the PCI ID) or when running 'modprobe sx'. In particular, sx_pci_probe()
-> is never entered.
-> 
-> lspci -vv for the card
-> 
->  10:01.0 Communication controller: Specialix Research Ltd. PCI_9050
-> 	Subsystem: Specialix Research Ltd. Unknown device 0300
-[...]
-> Where should I look for and how should I obtain further debug to
-> determine where the problem lies?
+Rusty Russell wrote:
+> On Tue, 2007-07-10 at 08:53 +0300, Avi Kivity wrote:
+>   
+>> Rusty Russell wrote:
+>>     
+>>> No; this is a "I'm doing something magic and need to know before someone
+>>> else takes the CPU".  Almost by definition, you cannot have two of them
+>>> at the same time.  Let someone else try that if and when...
+>>>       
+>> Why can't you have two of them?  Say I'm writing a module to utilize
+>> branch recording to be able to debug a process in reverse (of course
+>> that doesn't really need sched hooks; let's pretend it does).  Why can't
+>> I debug a process that uses kvm?
+>>
+>> More importantly, now the two subsystems have to know about each other
+>> so they don't step on each other's toes.
+>>     
+>
+> Exactly, if we have two at the same time, they need to know about each
+> other.  Providing infrastructure which lets them avoid thinking about it
+> is the wrong direction.
+>   
 
-In switched ids. Could you try the patch below?
+With a kvm-specific hook, they can't stop on each other (there can only 
+be one).
+With a list, they don't stomp on each other.
+With a struct preempt_ops but no list, as you propose, they can and will 
+stomp on each other.
 
---
+>   
+>>> But KVM-specific code in the scheduler is just wrong, and I think we all
+>>> know that.
+>>>       
+>> Even if I eradicate all mention of kvm from the patch, it's still kvm
+>> specific.  kvm at least is sensitive to the exact point where we switch
+>> in (it wants interrupts enabled) and it expects certain parameters to
+>> the callbacks.  If $new_abuser needs other conditions or parameters,
+>> which is quite likely IMO as it will most likely have to do with
+>> hardware, then we will need to update the hooks anyway.
+>>     
+>
+> If it's not general, then this whole approach is wrong: put it in
+> arch/*/kernel/process.c:__switch_to and finish_arch_switch.  
 
-sx, switch subven and subid values
+I imagine other kvm ports will also need this.  It's not arch specific, 
+just kvm specific (but that's not really fair: other archs might want 
+the switch in another place, or they might not need it after all).
 
-This is because card is not found.
+I guess I can put it in arch specific code, but that means both i386 and 
+x86_64.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Once we have another user we can try to generalize it.
 
----
-commit fdf11b85b74221d25a3abf38a9ebf947959d0fe1
-tree 289b5f58dc2774019ed3f3bedef99344be76d7bc
-parent 10d4605a5a9d86c467b78f602ef43067da5d9dfe
-author Jiri Slaby <jirislaby@gmail.com> Tue, 10 Jul 2007 09:13:22 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Tue, 10 Jul 2007 09:13:22 +0200
+> The
+> congruent case which comes to mind is lazy FPU handling.
+>   
 
- drivers/char/sx.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+That one has preempt_ops in hardware: cr0.ts and #NM.
 
-diff --git a/drivers/char/sx.c b/drivers/char/sx.c
-index 1da92a6..85a2328 100644
---- a/drivers/char/sx.c
-+++ b/drivers/char/sx.c
-@@ -2721,9 +2721,9 @@ static void __devexit sx_pci_remove(struct pci_dev *pdev)
-    its because the standard requires it. So check for SUBVENDOR_ID. */
- static struct pci_device_id sx_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_SPECIALIX, PCI_DEVICE_ID_SPECIALIX_SX_XIO_IO8,
--		.subvendor = 0x0200,.subdevice = PCI_ANY_ID },
-+		.subvendor = PCI_ANY_ID, .subdevice = 0x0200 },
- 	{ PCI_VENDOR_ID_SPECIALIX, PCI_DEVICE_ID_SPECIALIX_SX_XIO_IO8,
--		.subvendor = 0x0300,.subdevice = PCI_ANY_ID },
-+		.subvendor = PCI_ANY_ID, .subdevice = 0x0300 },
- 	{ 0 }
- };
- 
+> Which brings us to the question: why do you want interrupts enabled?
+>   
+
+The sched in hook (vcpu_load) sometimes needs to issue an IPI in order 
+to flush the VT registers from another cpu into memory.
+
+-- 
+error compiling committee.c: too many arguments to function
+
