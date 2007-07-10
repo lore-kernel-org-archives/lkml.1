@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762694AbXGJDNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762420AbXGJDNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762694AbXGJDNf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 23:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760045AbXGJDNZ
+	id S1762420AbXGJDNT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 23:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbXGJDNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 23:13:25 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:32945 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762630AbXGJDNY (ORCPT
+	Mon, 9 Jul 2007 23:13:10 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:41478 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758821AbXGJDNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 23:13:24 -0400
-To: Bernhard Walle <bwalle@suse.de>
-Cc: Neil Horman <nhorman@redhat.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Determine version of kernel that produced vmcore
-In-reply-to: <20070706132814.GA7079@suse.de>
-Message-Id: <20070710121315oomichi@mail.jp.nec.com>
-References: <20070706132814.GA7079@suse.de>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:5W0000
-From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Date: Tue, 10 Jul 2007 12:13:15 +0900
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jul 2007 23:13:08 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       andi@firstfloor.org, akpm@linux-foundation.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Subject: [x86 setup 08/33] Define zero-page offset 0x1e4 as a scratch field, and use it
+Date: Mon,  9 Jul 2007 19:51:47 -0700
+Message-Id: <11840367741994-git-send-email-hpa@zytor.com>
+X-Mailer: git-send-email 1.5.2.2
+In-Reply-To: <11840366692770-git-send-email-hpa@zytor.com>
+References: <11840359321823-git-send-email-hpa@zytor.com>
+ <11840360383913-git-send-email-hpa@zytor.com>
+ <11840361432207-git-send-email-hpa@zytor.com>
+ <11840362483663-git-send-email-hpa@zytor.com>
+ <11840363531039-git-send-email-hpa@zytor.com>
+ <11840364593068-git-send-email-hpa@zytor.com>
+ <1184036564610-git-send-email-hpa@zytor.com>
+ <11840366692770-git-send-email-hpa@zytor.com>
+Message-Id: <a8e9d4bffc9fa216d32c930606475fd8d1df9405.1184032749.git.hpa@zytor.com>
+In-Reply-To: <2034f71d414def30de582fb59573295cadbdabb4.1184032748.git.hpa@zytor.com>
+References: <2034f71d414def30de582fb59573295cadbdabb4.1184032748.git.hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: H. Peter Anvin <hpa@zytor.com>
 
-Hi,
+The relocatable kernel code needs a scratch field for the decompressor
+to determine its own location.  It was using a location inside
+struct screen_info; reserve a free location and document it as scratch
+instead.
 
-On Fri, 6 Jul 2007 17:58:04 +0300, Dan Aloni <da-x@monatomic.org> wrote:
-> On Fri, Jul 06, 2007 at 03:28:14PM +0200, Bernhard Walle wrote:
-> > Hello,
-> > 
-> > does anybody know a _reliable_ way to determine the version the kernel
-> > that produced a vmcore file? This means not scanning for a specific
-> > string or something like that which can fail on random memory.
-> > 
-> > Would it make sense to add a ELF PT_NOTE section in the vmcore?
-> > 
-> > Thanks for input!
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ Documentation/i386/zero-page.txt   |    1 +
+ arch/i386/boot/compressed/head.S   |    6 +++---
+ arch/x86_64/boot/compressed/head.S |    6 +++---
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-(CONFIGFILE means makedumpfile's config file.)
+diff --git a/Documentation/i386/zero-page.txt b/Documentation/i386/zero-page.txt
+index c04a421..75b3680 100644
+--- a/Documentation/i386/zero-page.txt
++++ b/Documentation/i386/zero-page.txt
+@@ -37,6 +37,7 @@ Offset	Type		Description
+ 0x1d0	unsigned long	EFI memory descriptor map pointer
+ 0x1d4	unsigned long	EFI memory descriptor map size
+ 0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
++0x1e4	unsigned long	Scratch field for the kernel setup code
+ 0x1e8	char		number of entries in E820MAP (below)
+ 0x1e9	unsigned char	number of entries in EDDBUF (below)
+ 0x1ea	unsigned char	number of entries in EDD_MBR_SIG_BUFFER (below)
+diff --git a/arch/i386/boot/compressed/head.S b/arch/i386/boot/compressed/head.S
+index 3517a32..f35ea22 100644
+--- a/arch/i386/boot/compressed/head.S
++++ b/arch/i386/boot/compressed/head.S
+@@ -45,10 +45,10 @@ startup_32:
+  * at and where we were actually loaded at.  This can only be done
+  * with a short local call on x86.  Nothing  else will tell us what
+  * address we are running at.  The reserved chunk of the real-mode
+- * data at 0x34-0x3f are used as the stack for this calculation.
+- * Only 4 bytes are needed.
++ * data at 0x1e4 (defined as a scratch field) are used as the stack
++ * for this calculation. Only 4 bytes are needed.
+  */
+-	leal 0x40(%esi), %esp
++	leal (0x1e4+4)(%esi), %esp
+ 	call 1f
+ 1:	popl %ebp
+ 	subl $1b, %ebp
+diff --git a/arch/x86_64/boot/compressed/head.S b/arch/x86_64/boot/compressed/head.S
+index f9d5692..1312bfa 100644
+--- a/arch/x86_64/boot/compressed/head.S
++++ b/arch/x86_64/boot/compressed/head.S
+@@ -46,10 +46,10 @@ startup_32:
+  * at and where we were actually loaded at.  This can only be done
+  * with a short local call on x86.  Nothing  else will tell us what
+  * address we are running at.  The reserved chunk of the real-mode
+- * data at 0x34-0x3f are used as the stack for this calculation.
+- * Only 4 bytes are needed.
++ * data at 0x1e4 (defined as a scratch field) are used as the stack
++ * for this calculation. Only 4 bytes are needed.
+  */
+-	leal	0x40(%esi), %esp
++	leal	(0x1e4+4)(%esi), %esp
+ 	call	1f
+ 1:	popl	%ebp
+ 	subl	$1b, %ebp
+-- 
+1.5.2.2
 
-makedumpfile checks kernel version by reading system_utsname.release
-from /proc/vmcore, as you know. If the release and OSRELEASE in CONFIGFILE
-don't match, makedumpfile fails.
-
-Besides Dan's plan, I'm planning the change of CONFIGFILE for distributors.
-In the kernel building process, distributors need to make CONFIGFILE
-on an older kernel (ex. RHEL5 kernel is built on RHEL4), and OSRELEASE
-may be an older kernel. So OSRELEASE should be modified to the building
-kernel version by hand, but it is not smart.
-
-To solve this problem, I'm proposing 2 plans.
-Could you give me your opinion ?
-
-Plan 1:
-  A new option [--osrelease="string"] is added.
-  The OSRELEASE of CONFIGFILE is overwritten by "string".
-  In the kernel building process, distributors should specify "string"
-  as the building kernel version.
-
-Plan2:
-  Remove the OSRELEASE from CONFIGFILE.
-  Instead of checking the OSRELEASE, makedumpfile only checks whether the
-  area of /proc/vmcore specified by the symbol "system_utsname" in CONFIGFILE
-  is the string "2.6.". If CONFIGFILE and /proc/vmcore don't match, the
-  "system_utsname" must not point to the correct area in most cases.
-  Old makedumpfile needs OSRELEASE, and it cannot work by new CONFIGFILE.
-  But I think there are not any problems because old makedumpfile will not
-  read new CONFIGFILE. Now, CONFIGFILE is used only by RHEL5's kdump initramfs,
-  the CONFIGFILE is generated during 1st-kernel running. Even if CONFIGFILE
-  will be updated, makedumpfile can read the CONFIGFILE because makedumpfile
-  should be updated with CONFIGFILE.
-
-
-I'd like to change the name of CONFIGFILE to mkdfinfo.
-
-
-Thanks
-Ken'ichi Ohmichi
