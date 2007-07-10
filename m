@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbXGJSFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763564AbXGJSGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762721AbXGJSFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759099AbXGJSFh
+	id S1763564AbXGJSGK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759068AbXGJSF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:05:37 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:61181 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756721AbXGJSFg (ORCPT
+	Tue, 10 Jul 2007 14:05:56 -0400
+Received: from mga03.intel.com ([143.182.124.21]:4788 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759099AbXGJSFz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:05:36 -0400
-Date: Tue, 10 Jul 2007 20:05:31 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Amit Arora <aarora@in.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: -mm merge plans for 2.6.23 -- sys_fallocate
-Message-ID: <20070710180531.GB8908@osiris.ibm.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070710090737.GA16519@osiris.boeblingen.de.ibm.com> <20070710022213.81e7b432.akpm@linux-foundation.org> <20070710154503.GC27033@thunk.org>
+	Tue, 10 Jul 2007 14:05:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,523,1175497200"; 
+   d="scan'208";a="248745665"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710154503.GC27033@thunk.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: -mm merge plans for 2.6.23 - ioat/dma engine
+Date: Tue, 10 Jul 2007 11:05:45 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02A5736C@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <4693B47B.7050406@intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: -mm merge plans for 2.6.23 - ioat/dma engine
+Thread-Index: AcfDD9UbHBJ5aB9jSQGQmNPFyhiUSgACyjsg
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>,
+       "Leech, Christopher" <christopher.leech@intel.com>
+X-OriginalArrivalTime: 10 Jul 2007 18:05:46.0986 (UTC) FILETIME=[F0CDACA0:01C7C31C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Alternatively I can push them directly to Linus along with other ext4
-> patches.  We can drop the s390 patch if Martin or Heiko wants to wire
-> it up themselves.
+Kok, Auke wrote: 
+>Andrew Morton wrote:
+>> git-ioat-vs-git-md-accel.patch
+>> ioat-warning-fix.patch
+>> fix-i-oat-for-kexec.patch
+>> 
+>>  I don't seem to be able to get rid of these.  Chris Leech 
+>appears to have
+>>  vanished.
+>
+>Chris is a moving target. Thankfully we have Shannon Nelson 
+>taking over Chris' 
+>duties. Shannon, can you take a look at these and see what 
+>needs to happen to it 
+>? Most likely these just need to be pushed to the right person.
 
-Yes, please drop the s390 patch. In general it seems to be better if only
-one architecture gets a syscall wired up initially and let other arches
-follow later.
+Auke: Thanks for the introduction :-).
 
-Just wondering if the x86_64 compat syscall gets ever fixed? I think
-I mentioned already three or four times to Amit that it is broken.
-Or is it that nobody cares? Dunno..
+Andrew: All three of these patches are reasonable and can be pushed on
+up.  You can add my sign-off to all three:
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 
-In addition there used to be a somewhat inofficial rule that new syscalls
-have to come with a test program, so people can easily test if they wired
-up the syscall correctly.
+>
+>Cheers,
+>
+>Auke
+>
+>
+>PS: I think we should add an I/OAT / DMA engine section in the 
+>MAINTAINERS...
+>
+
+I'll be posting a MAINTAINERS patch Real Soon Now with my name on
+IOAT/DMA.
+
+sln
+======================================================================
+Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
+Shannon.Nelson@intel.com                I don't speak for Intel
+(503) 712-7659                    Parents can't afford to be squeamish.
