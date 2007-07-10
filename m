@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762526AbXGJTyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762769AbXGJT5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762526AbXGJTyh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759168AbXGJTy0
+	id S1762769AbXGJT5c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 15:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758892AbXGJT5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 15:54:26 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:16340 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755670AbXGJTyZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 15:54:25 -0400
-Message-ID: <4693E46A.4020900@ru.mvista.com>
-Date: Tue, 10 Jul 2007 23:56:26 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: ata and netdev (was Re: -mm merge plans for 2.6.23)
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <4693C4F8.40903@garzik.org>
-In-Reply-To: <4693C4F8.40903@garzik.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 10 Jul 2007 15:57:23 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36938 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755632AbXGJT5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 15:57:22 -0400
+In-Reply-To: <200707101721.58937.ak@suse.de>
+References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
 Content-Transfer-Encoding: 7bit
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
+Date: Tue, 10 Jul 2007 21:57:11 +0200
+To: Andi Kleen <ak@suse.de>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+>>> gcc for i386 can be used with the assembly prefix ".code16gcc" to
+>>> generate
+>>> 16-bit (real-mode) code.  This header file provides the assembly
+>>> prefix.
+>>
+>> This only works correctly with newer GCCs if you pass the
+>> -fno-toplevel-reorder option (and it only works on older
+>> GCC versions by accident).
+>
+> And on older ones (gcc-3.3-hammer / 3.4 / 4.0 ) -fno-unit-at-a-time
 
-Jeff Garzik wrote:
+...which inhibits even more optimisations.  Still not too
+important, but the code size difference probably is
+noticeable.
 
->> 3x59x-fix-pci-resource-management.patch
+> Still it seems quite fragile to me agreed.
 
-    Now that the fix for CONFIG_PCI=n has been merged, what's left is to test 
-this on EISA (at least Andrew wanted it :-).
+Well at least with -fno-toplevel-reorder it is guaranteed
+to work (not the same thing as "is working", heh, but fairly
+close).
 
->>  netdev patches which are stuck in limbo land.
+It seems to me GCC should grow an option to insert .code16gcc
+by itself (-m16 perhaps?)  Or GAS could get a flag to include
+a file as a prelude before the main thing.  Neither will help
+Linux right now of course.
 
-> ?  I don't think I've seen these.
 
-    You should have, I was sending it to you.
+Segher
 
-WBR, Sergei
