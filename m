@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbXGJNCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbXGJNDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbXGJNCk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 09:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbXGJNCc
+	id S1756383AbXGJNDk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 09:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbXGJNDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 09:02:32 -0400
-Received: from mail.trixing.net ([87.230.125.58]:57414 "EHLO mail.trixing.net"
+	Tue, 10 Jul 2007 09:03:33 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:44367 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbXGJNCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 09:02:31 -0400
-Message-ID: <46938363.2000007@l4x.org>
-Date: Tue, 10 Jul 2007 15:02:27 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	id S1750929AbXGJNDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 09:03:32 -0400
+Message-ID: <46938391.5030306@openvz.org>
+Date: Tue, 10 Jul 2007 17:03:13 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200707092059.l69Kx1kb026264@hera.kernel.org>
-In-Reply-To: <200707092059.l69Kx1kb026264@hera.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@free.fr>
+CC: Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Kirill Korotaev <dev@openvz.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/16] Pid namespaces
+References: <468DF6F7.1010906@openvz.org>	<1184003180.21234.39.camel@dyn9047017100.beaverton.ibm.com>	<46929540.2090405@fr.ibm.com> <46936DC8.3050602@openvz.org> <469375F4.1010608@free.fr>
+In-Reply-To: <469375F4.1010608@free.fr>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.195
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: sched: rename idle_type/SCHED_IDLE
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d15bcfdbe1818478891d714343f037cfe60875f0
-> Commit:     d15bcfdbe1818478891d714343f037cfe60875f0
-> Parent:     7dcca30a32aadb0520417521b0c44f42d09fe05c
-> Author:     Ingo Molnar <mingo@elte.hu>
-> AuthorDate: Mon Jul 9 18:51:57 2007 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Mon Jul 9 18:51:57 2007 +0200
+Daniel Lezcano wrote:
+> Pavel Emelianov wrote:
+>> Cedric Le Goater wrote:
+>>> Badari Pulavarty wrote:
+>>>> On Fri, 2007-07-06 at 12:01 +0400, Pavel Emelianov wrote:
+>>>>> This is "submition for inclusion" of hierarchical, not kconfig
+>>>>> configurable, zero overheaded ;) pid namespaces.
+>>>> Not able to boot my ppc64 machine with the patchset :(
+>>> I can't boot either on a x86_64 but I don't even have logs to send :(
 > 
->     sched: rename idle_type/SCHED_IDLE
->     
->     enum idle_type (used by the load-balancer) clashes with the
->     SCHED_IDLE name that we want to introduce. 'CPU_IDLE' instead
->     of 'SCHED_IDLE' is more descriptive as well.
+> Did you tryed to append at the kernel command  line the parameter:
+> 
+>     earlyprintk=serial,ttyS0,keep
 
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -639,12 +639,11 @@ static inline int sched_info_on(void)
->  #endif
->  }
->  
-> -enum idle_type
-> -{
-> -	SCHED_IDLE,
-> -	NOT_IDLE,
-> -	NEWLY_IDLE,
-> -	MAX_IDLE_TYPES
-> +enum cpu_idle_type {
-> +	CPU_IDLE,
-> +	CPU_NOT_IDLE,
-> +	CPU_NEWLY_IDLE,
-> +	CPU_MAX_IDLE_TYPES
->  };
->  
->  /*
+I have already faced the problem, thanks :)
 
-This broke s390:
+The bad-guy is CONFIG_DMAR. I'll talk to intel developers about this :)
 
-  GEN     /tmp/tmp.qnrRZ13800/out/s390/Makefile
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-s390
-  CC      arch/s390/kernel/asm-offsets.s
-In file included from
-/tmp/tmp.qnrRZ13800/kernel/arch/s390/kernel/asm-offsets.c:7:
-/tmp/tmp.qnrRZ13800/kernel/include/linux/sched.h:641: error: syntax
-error before numeric constant
-make[2]: *** [arch/s390/kernel/asm-offsets.s] Error 1
-make[1]: *** [prepare0] Error 2
-make: *** [_all] Error 2
-  CLEAN   .tmp_versions
+And a couple of patches to fix proc (I'll send them in a moment). i386 works 
+without is and all the others crash. Kirill explained me why. It looks like 
+a big problem for i386. He told, that during the boot first 32MiBs of memory
+are mapped and thus all NULL pointer dereferences succeed. Is it good?
 
+Thanks,
+Pavel
 
-Jan
+>>
+>> Neither can I. And I cannot boot clean 2.6.22-rc6-mm1 either :(
+>> Does someone already know what the reason is?
+>>
+>>> C.
+>>>
+>>
+>> _______________________________________________
+>> Containers mailing list
+>> Containers@lists.linux-foundation.org
+>> https://lists.linux-foundation.org/mailman/listinfo/containers
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
