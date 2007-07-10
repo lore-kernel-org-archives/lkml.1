@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbXGJPZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbXGJP1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758116AbXGJPZc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 11:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbXGJPZZ
+	id S1758590AbXGJP1Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 11:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbXGJP1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 11:25:25 -0400
-Received: from xenotime.net ([66.160.160.81]:45756 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754245AbXGJPZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 11:25:24 -0400
-Date: Tue, 10 Jul 2007 08:29:04 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: balbir@linux.vnet.ibm.com
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul Menage <menage@google.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [patch -rss] Make RSS accounting display more user friendly
-Message-Id: <20070710082904.b0faaddd.rdunlap@xenotime.net>
-In-Reply-To: <46930EAF.6030104@linux.vnet.ibm.com>
-References: <20070620154655.13844.42876.sendpatchset@balbir-laptop>
-	<6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com>
-	<467B2F4F.2030101@openvz.org>
-	<6599ad830706220839h2a556c76he11b78c2c4cdb86e@mail.gmail.com>
-	<661de9470706222048g638a06dboc0b2e85975a9ba70@mail.gmail.com>
-	<6599ad830706250019h117ff575h156cf112f5778e43@mail.gmail.com>
-	<6D63B142.2080404@linux.vnet.ibm.com>
-	<1183981098.1913.22.camel@twins>
-	<46930EAF.6030104@linux.vnet.ibm.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jul 2007 11:27:18 -0400
+Received: from mx1.suse.de ([195.135.220.2]:59096 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753915AbXGJP1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 11:27:17 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
+Date: Tue, 10 Jul 2007 17:21:58 +0200
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org>
+In-Reply-To: <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707101721.58937.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 09 Jul 2007 21:44:31 -0700 Balbir Singh wrote:
+On Tuesday 10 July 2007 16:16:29 Segher Boessenkool wrote:
+> > gcc for i386 can be used with the assembly prefix ".code16gcc" to  
+> > generate
+> > 16-bit (real-mode) code.  This header file provides the assembly  
+> > prefix.
+> 
+> This only works correctly with newer GCCs if you pass the
+> -fno-toplevel-reorder option (and it only works on older
+> GCC versions by accident).
 
-> Peter Zijlstra wrote:
-> > On Sun, 2028-02-27 at 02:39 -0500, Balbir Singh wrote:
-> > 
-> >> I am not a CLUI expert, but rounding off bytes will something that
-> >> the administrators will probably complain about. Since we manage
-> >> the controller memory in pages, it might be the easiest unit to use.
-> >> The output is totally different matter.
-> >>
-> >> Having said that, I am not opposed to your suggestion, I'll see if
-> >> I can find good CLUI guidelines.
-> > 
-> > Pages are generally considered a bad unit for user-space exposed
-> > parameters because a page can have a wide spectrum of sizes on some
-> > machines.
-> > 
-> 
-> Exactly!
-> 
-> > The typical unit used in its stead is KiB. Although I could imagine MiB
-> > being more useful in this case :-)
-> > 
-> 
-> I think a routine that can handle either KiB or MiB would probably be the best
-> 
-> > Perhaps a new proc parser that takes postfix [KMG] units would be
-> > handy..
-> > 
-> 
-> Hmm.. yes.. a library routine would be nice!
+And on older ones (gcc-3.3-hammer / 3.4 / 4.0 ) -fno-unit-at-a-time
 
-you mean something like lib/cmdline.c::memparse() ?
+Still it seems quite fragile to me agreed.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-Andi
