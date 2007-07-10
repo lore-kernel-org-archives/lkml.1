@@ -1,59 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759772AbXGJTcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbXGJTeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759772AbXGJTcZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbXGJTcR
+	id S1760521AbXGJTeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 15:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbXGJTeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 15:32:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42547 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752044AbXGJTcQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 15:32:16 -0400
-Date: Tue, 10 Jul 2007 12:31:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, Amit Arora <aarora@in.ibm.com>,
-       Andi Kleen <ak@suse.de>, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Arnd Bergmann <arnd@arndb.de>, "Luck, Tony" <tony.luck@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: fallocate-implementation-on-i86-x86_64-and-powerpc.patch (was:
- re: -mm merge plans for 2.6.23)
-Message-Id: <20070710123108.e0f6e9b6.akpm@linux-foundation.org>
-In-Reply-To: <20070710190735.GF27033@thunk.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<20070710115251.GG2343@thunk.org>
-	<20070710101558.cea7aab1.akpm@linux-foundation.org>
-	<20070710190735.GF27033@thunk.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 10 Jul 2007 15:34:14 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:41398 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754942AbXGJTeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 15:34:14 -0400
+Subject: [PATCH] mtd: Add sync/unblank function to mtdoops
+From: Richard Purdie <rpurdie@openedhand.com>
+To: David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Jarkko Lavinen <jarkko.lavinen@nokia.com>
+Content-Type: text/plain
+Date: Tue, 10 Jul 2007 20:33:54 +0100
+Message-Id: <1184096034.6435.82.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 15:07:35 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+mtdoops wasn't ensuring data was flushed to flash in crash situations
+after recent changes in mainline kernels as tracking the
+oops_in_progress variable was no longer enough. We can use the "unblank"
+console call as a sync call to tell us to write out the buffer though.
 
-> On Tue, Jul 10, 2007 at 10:15:58AM -0700, Andrew Morton wrote:
-> > So I dropped everything.  Let's start again from scratch.  I'd suggest that
-> > for now we go with just an i386/x86_64 implementation, let the arch
-> > maintainers wire things up when that has settled down.
-> 
-> Ok, so no objections if we push the i386/x86_64 implementation (only),
-> plus the ext4 support to Linus?
-> 
+Therefore add a sync function to mtdoops and call this when console
+unblank events occur.
 
-Sounds like a plan.
+Signed-off-by: Richard Purdie <rpurdie@openedhand.com>
 
-I haven't seriously looked at ext4 code in many months.  When I did I found
-the changes to be quite incomprehensible, very, very poorly commented and
-with quite a lot of odd-looking things about which I asked but got, iirc,
-no useful reply.
+Index: linux/drivers/mtd/mtdoops.c
+===================================================================
+--- linux.orig/drivers/mtd/mtdoops.c	2007-07-10 20:01:34.000000000 +0100
++++ linux/drivers/mtd/mtdoops.c	2007-07-10 20:23:09.000000000 +0100
+@@ -271,40 +271,50 @@ static void mtdoops_notify_remove(struct
+ 	flush_scheduled_work();
+ }
+ 
+-
+-static void
+-mtdoops_console_write(struct console *co, const char *s, unsigned int count)
++static void mtdoops_console_sync(void)
+ {
+-	struct mtdoops_context *cxt = co->data;
++	struct mtdoops_context *cxt = &oops_cxt;
+ 	struct mtd_info *mtd = cxt->mtd;
+-	int i, ret;
++	size_t retlen;
++	int ret;
+ 
+ 	if (!cxt->ready || !mtd)
+ 		return;
+ 
+-	if (!oops_in_progress && cxt->writecount != 0) {
+-		size_t retlen;
+-		if (cxt->writecount < OOPS_PAGE_SIZE)
+-			memset(cxt->oops_buf + cxt->writecount, 0xff,
++	if (cxt->writecount == 0)
++		return;
++
++	if (cxt->writecount < OOPS_PAGE_SIZE)
++		memset(cxt->oops_buf + cxt->writecount, 0xff,
+ 					OOPS_PAGE_SIZE - cxt->writecount);
+ 
+-		ret = mtd->write(mtd, cxt->nextpage * OOPS_PAGE_SIZE,
++	ret = mtd->write(mtd, cxt->nextpage * OOPS_PAGE_SIZE,
+ 					OOPS_PAGE_SIZE, &retlen, cxt->oops_buf);
+-		cxt->ready = 0;
+-		cxt->writecount = 0;
++	cxt->ready = 0;
++	cxt->writecount = 0;
+ 
+-		if ((retlen != OOPS_PAGE_SIZE) || (ret < 0))
+-			printk(KERN_ERR "mtdoops: Write failure at %d (%d of %d"
+-				" written), err %d.\n",
+-				cxt->nextpage * OOPS_PAGE_SIZE, retlen,
+-				OOPS_PAGE_SIZE, ret);
++	if ((retlen != OOPS_PAGE_SIZE) || (ret < 0))
++		printk(KERN_ERR "mtdoops: Write failure at %d (%d of %d written), err %d.\n",
++			cxt->nextpage * OOPS_PAGE_SIZE, retlen,	OOPS_PAGE_SIZE, ret);
+ 
+-		ret = mtdoops_inc_counter(cxt);
+-		if (ret == 1)
+-			schedule_work(&cxt->work);
++	ret = mtdoops_inc_counter(cxt);
++	if (ret == 1)
++		schedule_work(&cxt->work);
++}
++
++static void
++mtdoops_console_write(struct console *co, const char *s, unsigned int count)
++{
++	struct mtdoops_context *cxt = co->data;
++	struct mtd_info *mtd = cxt->mtd;
++	int i;
++
++	if (!oops_in_progress) {
++		mtdoops_console_sync();
++		return;
+ 	}
+ 
+-	if (!oops_in_progress)
++	if (!cxt->ready || !mtd)
+ 		return;
+ 
+ 	if (cxt->writecount == 0) {
+@@ -344,6 +354,7 @@ static struct console mtdoops_console = 
+ 	.name		= "ttyMTD",
+ 	.write		= mtdoops_console_write,
+ 	.setup		= mtdoops_console_setup,
++	.unblank	= mtdoops_console_sync,
+ 	.flags		= CON_PRINTBUFFER,
+ 	.index		= -1,
+ 	.data		= &oops_cxt,
 
-Hopefully it got better.
-
-Which patches are you proposing merging into 2.6.23?
