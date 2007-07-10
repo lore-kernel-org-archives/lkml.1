@@ -1,71 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbXGJOd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbXGJOlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbXGJOd2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 10:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXGJOdV
+	id S1756507AbXGJOlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 10:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXGJOlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 10:33:21 -0400
-Received: from ms-smtp-02.texas.rr.com ([24.93.47.41]:64596 "EHLO
-	ms-smtp-02.texas.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753882AbXGJOdU convert rfc822-to-8bit (ORCPT
+	Tue, 10 Jul 2007 10:41:01 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47152 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754198AbXGJOlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 10:33:20 -0400
-From: Dave McCracken <dave.mccracken@oracle.com>
-To: Mel Gorman <mel@skynet.ie>
-Subject: Re: -mm merge plans -- anti-fragmentation
-Date: Tue, 10 Jul 2007 09:29:45 -0500
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
-       kenchen@google.com, jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       y-goto@jp.fujitsu.com, clameter@sgi.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <20070710102043.GA20303@skynet.ie>
-In-Reply-To: <20070710102043.GA20303@skynet.ie>
-Organization: Oracle Corp
+	Tue, 10 Jul 2007 10:41:00 -0400
+Date: Tue, 10 Jul 2007 10:41:00 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <htejun@gmail.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Sysfs and suicidal attributes
+In-Reply-To: <46931495.4050605@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0707101015500.2595-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707100929.46153.dave.mccracken@oracle.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 July 2007, Mel Gorman wrote:
-> >  Mel's page allocator work.  Might merge this, but I'm still not hearing
-> >  sufficiently convincing noises from a sufficient number of people over
-> > this.
->
-> This is a long on-going story. It bounces between people who say it's not a
-> complete solution and everything should have the 100% ability to defragment
-> and the people on the other side that say it goes a long way to solving
-> their problem. I've cc'd some of the parties that have expressed any
-> interest in the last year.
+On Tue, 10 Jul 2007, Tejun Heo wrote:
 
-I find myself wondering what "sufficiently convincing noises" are.  I think we 
-can all agree that in the current kernel order>0 allocations are a disaster.  
-They simply aren't useable once the system fragments.  I think we can also 
-all agree that 100% defragmentation is impossible without rewriting the 
-kernel to avoid the hard-coded virtual->physical relationship we have now.
+> > Well, it turns out that this approach may confict with suspend/resume
+> > processing.  In brief, it's not a good idea to unregister devices while
+> > a suspend is in progress, but on the other hand it's not a good idea to
+> > block keventd waiting until the suspend is over.
+> 
+> Is it because keventd isn't frozen during suspend?  I'm afraid we might
+> be trying to solve the problem at the wrong layer.  Device
+> addition/removal should be _locked out_ during suspend/resume.
+> Depending on executing thread being frozen is more subtle and fragile
+> and freezing might go away altogether.
 
-With that said, the only remaining question I see is whether we need order>0 
-allocations.  If we do, then Mel's patches are clearly the right thing to do.  
-They have received a lot of testing (if just by virtue of being in -mm for so 
-long), and have shown to greatly increase the availability of order>0 pages.
+There has been a very intense thread recently on LKML and linux-pm 
+discussing this and several other aspects of the freezer.
 
-The sheer list of patches lined up behind this set is strong evidence that 
-there are useful features which depend on a working order>0.  When you add in 
-the existing code that has to struggle with allocation failures or resort to 
-special pools (ie hugetlbfs), I see a clear vote for the need for this patch.
+You have to be very cautious about locking out device addition/removal.  
+Quite often the thread calling the driver core owns the parent device's 
+semaphore, which is needed for suspending the parent.  If that thread 
+were blocked, the suspend would deadlock.
 
-Some object because order>0 will still be able to fail.  I point out that 
-order==0 can also fail, though we go to great lengths to prevent it.  Mel's 
-patches raise the success rate of order>0 to within a few percent of 
-order==0.  All this means is callers will need to decide how to handle the 
-infrequent failure.  This should be true no matter what the order.
+Instead we should broadcast a notification to all threads which might
+try to add a device, telling them not to do it until the suspend is
+over.  After that notification is sent and current additions have
+completed, the driver core can simply fail further calls to
+device_add().
 
-I strongly vote for merging these patches.  Let's get them in mainline where 
-they can do some good.
+> IMHO, what's needed is a giant rwlock protecting the whole device
+> addition/removal while suspend is in progress (addition/removal during
+> resume should be safe as long as we put the new devices on the already
+> processed list).  The lock can probably replace dpm_sem and dpm_list_sem.
 
-Dave McCracken
+Addition during resume is _not_ safe.  The new device can easily get
+added to the already-processed list in the wrong position, so that the
+next time the system is suspended the PM core tries to suspend the new
+device's parent before suspending the new device.
+
+> It's probably necessary to use trylock from addition/removal to avoid
+> deadlock.  Drivers which support hotplugging need to rescan/revalidate
+> the bus during resume anyway so failing addition/removal during suspend
+> shouldn't be a problem.
+
+I had envisioned using SRCU to synchronize existing device additions
+with the beginning of a suspend.  down_read_trylock should work just as
+well (aside from cacheline bouncing).
+
+Device removal isn't as much of a problem as addition.  We could allow
+it with no difficulty.  Failing it isn't really an option because
+device_del() returns void.  And anyway, my idea was to have the PM core
+acquire all the device semaphores at the start of the suspend -- this
+would automatically block any attempted removal until the semaphore was
+released.
+
+> > I haven't paid much attention to your sysfs updates.  Is it still true
+> > that calls to show/store methods are mutually exclusive with attribute
+> > unregistration?  Assuming the answer is Yes, would it be possible to
+> > bypass that mutual exclusion in certain explicit cases?  Here's what I
+> > have in mind:
+> > 
+> > 	The user writes to an attribute file.
+> > 
+> > 	The sysfs core calls the attribute's store method.
+> > 
+> > 	The method tells the sysfs core to pretend that the call
+> > 	temporarily doesn't exist, or has completed, or something
+> > 	like that.
+> > 
+> > 	The method safely unregisters the attribute file, with no
+> > 	mutual exclusion problems and no deadlock.  Of course, the
+> > 	unregistration will still block until all _other_ method
+> > 	calls for this attribute are complete.
+> > 
+> > 	The method tells the sysfs core to stop pretending and
+> > 	go back to its normal state.
+> > 
+> > 	The method returns, and the sysfs core takes whatever actions
+> > 	are needed to fully release the attribute file.
+> > 
+> > The idea is that there could be a way to allow unregistration while a 
+> > method is still running, if the method specifically requests it.  If we 
+> > could do this then device_schedule_callback() would be unnecessary.
+> 
+> Regardless of the suspend problem, I like the above idea.  Actually, I
+> was thinking about doing exactly that for suicidal nodes when I first
+> found out the problem.  All that's needed is an owner field which allows
+> the owning thread to reenter (what was the name for this type of mutex?
+>  BSD folks like it).  It's probably better to put some restrictions to
+> allow only the specific case tho.
+
+What with all the sysfs changes, I wouldn't know where to begin
+looking.  The idea occurred to me mainly because I was considering
+blocking all access to sysfs during a suspend -- the problem being that
+a suspend is itself triggered by a write to a sysfs attribute!  
+Somehow that write would have to wait for all _other_ existing accesses
+to complete and block new ones.
+
+> I like it because it shifts complexity from the drivers into driver
+> core.  IOW, the driver model is kinder to drivers that way - the driver
+> writer doesn't have to care whether something is suicidal or not - and I
+> think that's the way we should be headed although we're not good at it yet.
+
+It doesn't shift all the complexity.  The method still has to tell the 
+sysfs core that it's going to unregister its attribute and that the 
+unregistration has finished.  But this is simpler than the callback 
+method we use now.
+
+Alan Stern
+
