@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760856AbXGJWvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761267AbXGJWyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760856AbXGJWvM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 18:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756366AbXGJWu6
+	id S1761267AbXGJWyw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 18:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXGJWyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 18:50:58 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56229 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755768AbXGJWu5 (ORCPT
+	Tue, 10 Jul 2007 18:54:44 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:34493 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbXGJWyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 18:50:57 -0400
-Date: Tue, 10 Jul 2007 15:50:56 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-In-Reply-To: <20070710224046.GV11115@waste.org>
-Message-ID: <Pine.LNX.4.64.0707101549520.5919@schroedinger.engr.sgi.com>
-References: <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
- <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
- <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI> <469342DC.8070007@yahoo.com.au>
- <84144f020707100231p5013e1aer767562c26fc52eeb@mail.gmail.com>
- <20070710120224.GP11115@waste.org> <Pine.LNX.4.64.0707101510410.5490@schroedinger.engr.sgi.com>
- <20070710224046.GV11115@waste.org>
+	Tue, 10 Jul 2007 18:54:44 -0400
+Date: Tue, 10 Jul 2007 15:54:06 -0700
+From: Greg KH <greg@kroah.com>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: stable@kernel.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] lost keyboard and lost terminal under kde3.5.5(debian
+	version) with 2.6.22
+Message-ID: <20070710225406.GB3845@kroah.com>
+References: <6101e8c40707101534s23fb360fmfd658d1573aaf809@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6101e8c40707101534s23fb360fmfd658d1573aaf809@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Matt Mackall wrote:
+On Wed, Jul 11, 2007 at 12:34:32AM +0200, Oliver Pinter wrote:
+>  Hi all!
+> 
+>  After 5hour running over the 2.6.22 i lost the keyborad under kde,
+>  then I restarted the gdm, this can first SysRQ-W and switch to
+>  terminal, thats ok, but 1 hour later again lost the "X" and again
+>  probe the SysRQ+W, I get back the keyboard but the console crashed (as
+>  if framebuffer error) after use he ctrl+alt+f1, however I use not
+>  framebuffer. im syslog I see nothing, only one mtrr warning but I see
+>  yet from 2.6.22-rc2or3.
 
-> Without the parameter, as the other way doesn't compile in -mm1.
+So, 2.6.22-rc2 works just fine for you?
 
-here is the patch that went into mm after mm1 was released.
+Can you use 'git bisect' to try to track down the problem?
 
----
- mm/slub.c |    4 ++++
- 1 file changed, 4 insertions(+)
+thanks,
 
-Index: linux-2.6.22-rc6-mm1/mm/slub.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/mm/slub.c	2007-07-06 13:28:57.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/mm/slub.c	2007-07-06 13:29:01.000000000 -0700
-@@ -1868,7 +1868,9 @@ static void init_kmem_cache_node(struct 
- 	atomic_long_set(&n->nr_slabs, 0);
- 	spin_lock_init(&n->list_lock);
- 	INIT_LIST_HEAD(&n->partial);
-+#ifdef CONFIG_SLUB_DEBUG
- 	INIT_LIST_HEAD(&n->full);
-+#endif
- }
- 
- #ifdef CONFIG_NUMA
-@@ -1898,8 +1900,10 @@ static struct kmem_cache_node * __init e
- 	page->freelist = get_freepointer(kmalloc_caches, n);
- 	page->inuse++;
- 	kmalloc_caches->node[node] = n;
-+#ifdef CONFIG_SLUB_DEBUG
- 	init_object(kmalloc_caches, n, 1);
- 	init_tracking(kmalloc_caches, n);
-+#endif
- 	init_kmem_cache_node(n);
- 	atomic_long_inc(&n->nr_slabs);
- 	add_partial(n, page);
+greg k-h
