@@ -1,40 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764172AbXGJJYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbXGJJ2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764172AbXGJJYm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 05:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764025AbXGJJYZ
+	id S1763416AbXGJJ2T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 05:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758320AbXGJJ2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 05:24:25 -0400
-Received: from waste.org ([66.93.16.53]:46737 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763959AbXGJJYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 05:24:23 -0400
-Date: Tue, 10 Jul 2007 04:23:39 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2 -mm 3/9] netconsole: Simplify boot/module option setup logic
-Message-ID: <20070710092339.GL11115@waste.org>
-References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in> <20070710091936.23907.68970.sendpatchset@cselinux1.cse.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710091936.23907.68970.sendpatchset@cselinux1.cse.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 10 Jul 2007 05:28:10 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:20368 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756268AbXGJJ2J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 05:28:09 -0400
+Message-Id: <20070710092935.896013926@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 10 Jul 2007 11:29:35 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: [patch 00/16] First s390 patchset for 2.6.22+
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 02:49:36PM +0530, Satyam Sharma wrote:
-> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> 
-> [3/9] netconsole: Simplify boot/module option setup logic
-
-Acked-by: Matt Mackall <mpm@selenic.com>
+Small patches for s390 all over the place, nothing exciting.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
