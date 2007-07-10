@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbXGJTbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759772AbXGJTcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbXGJTbi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbXGJTb3
+	id S1759772AbXGJTcZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 15:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbXGJTcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 15:31:29 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57563 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751687AbXGJTb2 (ORCPT
+	Tue, 10 Jul 2007 15:32:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42547 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752044AbXGJTcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 15:31:28 -0400
-Date: Tue, 10 Jul 2007 15:31:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Sysfs and suicidal attributes
-In-Reply-To: <4693CB1B.8070301@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0707101459580.2556-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jul 2007 15:32:16 -0400
+Date: Tue, 10 Jul 2007 12:31:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org, Amit Arora <aarora@in.ibm.com>,
+       Andi Kleen <ak@suse.de>, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Arnd Bergmann <arnd@arndb.de>, "Luck, Tony" <tony.luck@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: Re: fallocate-implementation-on-i86-x86_64-and-powerpc.patch (was:
+ re: -mm merge plans for 2.6.23)
+Message-Id: <20070710123108.e0f6e9b6.akpm@linux-foundation.org>
+In-Reply-To: <20070710190735.GF27033@thunk.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<20070710115251.GG2343@thunk.org>
+	<20070710101558.cea7aab1.akpm@linux-foundation.org>
+	<20070710190735.GF27033@thunk.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007, Tejun Heo wrote:
+On Tue, 10 Jul 2007 15:07:35 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-> >> How high performance device addition/removal should be?  Wouldn't rwlock
-> >> be enough?
-> > 
-> > rwlock is a type of spinlock, right?  Hence it can't sleep and can't be
-> > used for device addition/removal.  Also rwlocks aren't fair and are
-> > subject to livelock.
+> On Tue, Jul 10, 2007 at 10:15:58AM -0700, Andrew Morton wrote:
+> > So I dropped everything.  Let's start again from scratch.  I'd suggest that
+> > for now we go with just an i386/x86_64 implementation, let the arch
+> > maintainers wire things up when that has settled down.
 > 
-> rwsem of course.  Sorry about the confusion.  Fairness doesn't matter
-> here.  The synchronization is suspend vs. addition with priority on
-> suspend (suspend does down_write, removal does down_read_trylock).
-
-Right.  I think device addition/removal is infrequent enough that 
-either SRCU or and rwsem could be used, without any significant 
-slowdown.
-
-> I'm still not a big fan of locking (or downing) all device semaphores
-> when the same effect can be achieved with a rwsem.  One thing I like
-> about rwsem approach is that it can never cause a deadlock because one
-> side uses trylock exclusively.
-
-But an rwsem _doesn't_ obtain the same effect.  The major difference is
-that holding all the device semaphores blocks binding of drivers, which
-we need to prevent during suspend.  A minor difference is that it won't
-prevent adding a new device, since you don't need to hold any existing
-semaphores before calling device_add().
-
-> If you lock all the device sems, failing addition becomes more difficult
-> (can be done but then you need something like the rwsem anyway).
-
-That was the idea: First acquire the rwsem write lock so that all
-existing calls to device_add will have finished and new ones will fail,
-and then acquire all the semaphores.
-
-The purpose of holding all the semaphores is not to prevent device
-addition.  More like the other way around: In order to be sure of
-holding _all_ the semaphores, we have to prevent new devices from being
-added.
-
-> Without special handling of dev->sem, when a driver screws up (try to
-> add a child device from ->suspend), it will deadlock while suspend is in
-> progress, which isn't pretty.
-
-No it won't.  If it calls device_add from within its suspend method,
-the down_read_trylock will fail and the call will return immediately.  
-With a WARN_ON to let people know which driver tried to do device_add
-at an illegal time.
-
-> Please also note that currently dev->sem does not protect against adding
-> children.  It says it does in the comment on the definition of the field
-> but it's never acquired during device_add().
-
-That's why we need the rwsem.
-
-> Yeah, I'm all for centralizing things.  I just didn't see what could be
-> simplified in LLDs by freezing sysfs access.  Can you point me to any
-> example node which can benefit from such thing?
-
-For USB devices, writes to the /sys/.../bConfigurationValue node will
-call usb_set_configuration(), which registers child devices.  We don't
-want these calls to fail because a suspend is underway, since suspends 
-are supposed to be transparent to userspace.  So they need to block 
-until the suspend is over.
-
-Access (either read or write) to any sysfs node which actually touches 
-the device hardware will fail while the device is suspended.  Again, 
-for transparency such accesses should block.
-
-> > Using a freezable workqueue for the callbacks would also localize the 
-> > suspend handling.
+> Ok, so no objections if we push the i386/x86_64 implementation (only),
+> plus the ext4 support to Linus?
 > 
-> But the freezable workqueue thing isn't really necessary if any of the
-> discussed solutions is implemented, right?
 
-It isn't necessary if the callbacks aren't needed (i.e., if we give
-methods a way to unregister their attribute directly).  But if we do
-keep the callbacks, then for safety's sake their workqueue should be
-freezable.
+Sounds like a plan.
 
-Alan Stern
+I haven't seriously looked at ext4 code in many months.  When I did I found
+the changes to be quite incomprehensible, very, very poorly commented and
+with quite a lot of odd-looking things about which I asked but got, iirc,
+no useful reply.
 
+Hopefully it got better.
+
+Which patches are you proposing merging into 2.6.23?
