@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762061AbXGJQrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761779AbXGJQu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762061AbXGJQrU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 12:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbXGJQrL
+	id S1761779AbXGJQu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 12:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbXGJQuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 12:47:11 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:56878 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754977AbXGJQrJ (ORCPT
+	Tue, 10 Jul 2007 12:50:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42207 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754381AbXGJQuO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 12:47:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aBT0iiXKVcTXPEPKG+SUIxfD3XfD6Xx0BgTih1FlPDfS20VNQIvdZxtn4wHN6sRb4aDErw6pvo46LOfrBoEDfkUDn/6ivWJJoHIRKhvgeGqxX2jgiBuBKJ1Zlu2papKzsMxT+AFe3q3dNL71w4CcNF/CnbsE84JMHq+yp150SHQ=
-Message-ID: <48f7fe350707100947g1453a790n3e425935994003a9@mail.gmail.com>
-Date: Tue, 10 Jul 2007 12:47:08 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: ACPI: EC: Handler for query 0x80 is not found!
-In-Reply-To: <48f7fe350707100653w6f01c645u388fbb4691b74c6b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 10 Jul 2007 12:50:14 -0400
+Date: Tue, 10 Jul 2007 09:49:54 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Adrian Bunk <bunk@stusta.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] the scheduled sk98lin removal
+Message-ID: <20070710094954.788aa357@freepuppy.rosehill.hemminger.net>
+In-Reply-To: <4693B773.2080205@garzik.org>
+References: <20070709145916.GE3492@stusta.de>
+	<4693B773.2080205@garzik.org>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48f7fe350707100653w6f01c645u388fbb4691b74c6b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed that this message goes away if I reboot my computer... So a
-fresh boot it errors, on reboot it does not error.
+On Tue, 10 Jul 2007 12:44:35 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-On 7/10/07, Ryan Hope <rmh3093@gmail.com> wrote:
-> Ever since 2.6.22-rc6-mm1 I have been seeing these messages in dmesg:
->
-> ACPI: EC: Handler for query 0x80 is not found!
-> ACPI: EC: Handler for query 0x81 is not found!
->
-> This did not happen in 2.6.22-rc4-mm1. Does anyone have any clue what
-> this is about?
->
+> Adrian Bunk wrote:
+> > This patch contains the scheduled removal of the sk98lin driver.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> Stephen -- ACK?
+
+Yes.  Existing driver is dead, if there are any ancient boards that don't
+work with skge, I haven't heard any complaints in at least a year.
+As a fallback users, can always go with vendor driver.
