@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbXGJQHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbXGJQI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758822AbXGJQHJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 12:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXGJQG7
+	id S1760319AbXGJQI0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 12:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXGJQIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 12:06:59 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:59681 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753093AbXGJQG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 12:06:58 -0400
-Date: Tue, 10 Jul 2007 12:06:53 -0400
-To: NeilBrown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 009 of 20] knfsd: nfsd: use ip-address-based domain in
-	secinfo case
-Message-ID: <20070710160653.GF17368@fieldses.org>
-References: <20070710121949.12548.patches@notabene> <1070710022517.13262@suse.de>
+	Tue, 10 Jul 2007 12:08:19 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41677 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754535AbXGJQIT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 12:08:19 -0400
+Date: Tue, 10 Jul 2007 17:07:35 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Charles Shannon Hendrix <shannon@widomaker.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: BUG: kernel crash report, odd...
+In-Reply-To: <20070709220848.GA6782@widomaker.com>
+Message-ID: <Pine.LNX.4.64.0707101650390.4603@blonde.wat.veritas.com>
+References: <20070709220848.GA6782@widomaker.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1070710022517.13262@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAAmluYm94AHNoYW5ub25Ad2lkb21ha2VyLmNvbQBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Could you fold the below into this patch?  Without this the server can
-oops on attempts to access a filesystem not exported to the request's
-source address!  Thanks to Olga Kornievskaia for the testing that found
-this.
+On Mon, 9 Jul 2007, Charles Shannon Hendrix wrote:
+> 
+> A system I was using a few minutes ago dumped this to the syslog:
+> 
+> Jul  9 17:50:38 daydream kernel: [76022.613000] BUG: unable to handle
+> kernel NULL pointer dereference at virtual address 00000010
+> Jul  9 17:50:38 daydream kernel: [76022.613000]  printing eip:
+> Jul  9 17:50:38 daydream kernel: [76022.613000] c01ace66
+> Jul  9 17:50:38 daydream kernel: [76022.613000] *pde = 00000000
+> Jul  9 17:50:38 daydream kernel: [76022.613000] Oops: 0000 [#1]
+> 
+> There was no other information either before or after.
 
---b.
+Something simple you can do, which I didn't see mentioned yet:
+look up the entries before and after c01ace66 in that 2.6.20
+kernel's System.map, then post the output of
+objdump -d --start-address=0xbefore --stop-address=0xafter vmlinux
+so people here can see the function name and the oopsing instruction
+in its context.  May not help at all, but well worth trying.
 
-diff --git a/fs/nfsd/export.c b/fs/nfsd/export.c
-index 333e5cf..582b494 100644
---- a/fs/nfsd/export.c
-+++ b/fs/nfsd/export.c
-@@ -1261,7 +1261,7 @@ gss:
- 						&rqstp->rq_chandle);
- 	if (PTR_ERR(gssexp) == -ENOENT)
- 		return exp;
--	if (exp)
-+	if (exp && !IS_ERR(exp))
- 		exp_put(exp);
- 	return gssexp;
- }
-@@ -1291,7 +1291,7 @@ gss:
- 						&rqstp->rq_chandle);
- 	if (PTR_ERR(gssexp) == -ENOENT)
- 		return exp;
--	if (exp)
-+	if (exp && !IS_ERR(exp))
- 		exp_put(exp);
- 	return gssexp;
- }
+Hugh
