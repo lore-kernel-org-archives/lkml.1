@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763534AbXGKACY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763475AbXGKACo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763534AbXGKACY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 20:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763652AbXGKABK
+	id S1763475AbXGKACo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 20:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763841AbXGKABO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 20:01:10 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38434 "EHLO
+	Tue, 10 Jul 2007 20:01:14 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38437 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763303AbXGKABA (ORCPT
+	with ESMTP id S1763309AbXGKABA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Jul 2007 20:01:00 -0400
-Date: Tue, 10 Jul 2007 16:52:58 -0700
+Date: Tue, 10 Jul 2007 16:53:09 -0700
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 4/5] net: show numa_node for net_device  in /sys
+Subject: [PATCH 5/5] dma: use dev_to_node to get node for device in
+ dma_alloc_pages
 In-reply-to: <200707101641.17672.yinghai.lu@sun.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        Greg KH <greg@kroah.com>, rientjes@google.com,
@@ -23,7 +24,7 @@ To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        netdev@vger.kernel.org
 Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200707101652.59346.yinghai.lu@sun.com>
+Message-id: <200707101653.09797.yinghai.lu@sun.com>
 MIME-version: 1.0
 Content-type: text/plain; charset=iso-8859-1
 Content-transfer-encoding: 7BIT
@@ -33,36 +34,26 @@ User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 4/5] net: show numa_node for net_device  in /sys
+[PATCH 5/5] dma: use dev_to_node to get node for device in dma_alloc_pages
 
 Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 5c19b06..45b87a5 100644
---- a/net/core/net-sysfs.c
-+++ b/net/core/net-sysfs.c
-@@ -230,6 +230,14 @@ static ssize_t store_weight(struct device *dev, struct device_attribute *attr,
- 	return netdev_store(dev, attr, buf, len, change_weight);
- }
- 
-+#ifdef CONFIG_NUMA
-+static ssize_t
-+numa_node_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+        return sprintf (buf, "%d\n", dev->numa_node);
-+}
-+#endif
+diff --git a/arch/x86_64/kernel/pci-dma.c b/arch/x86_64/kernel/pci-dma.c
+index 9f80aad..6dbf1c9 100644
+--- a/arch/x86_64/kernel/pci-dma.c
++++ b/arch/x86_64/kernel/pci-dma.c
+@@ -52,11 +52,9 @@ dma_alloc_pages(struct device *dev, gfp_t gfp, unsigned order)
+ {
+ 	struct page *page;
+ 	int node;
+-#ifdef CONFIG_PCI
+-	if (dev->bus == &pci_bus_type)
+-		node = pcibus_to_node(to_pci_dev(dev)->bus);
+-	else
+-#endif
 +
- static struct device_attribute net_class_attributes[] = {
- 	__ATTR(addr_len, S_IRUGO, show_addr_len, NULL),
- 	__ATTR(iflink, S_IRUGO, show_iflink, NULL),
-@@ -247,6 +255,9 @@ static struct device_attribute net_class_attributes[] = {
- 	__ATTR(tx_queue_len, S_IRUGO | S_IWUSR, show_tx_queue_len,
- 	       store_tx_queue_len),
- 	__ATTR(weight, S_IRUGO | S_IWUSR, show_weight, store_weight),
-+#ifdef CONFIG_NUMA
-+        __ATTR_RO(numa_node),
-+#endif
- 	{}
- };
++	node = dev_to_node(dev);
++	if (node == -1)
+ 		node = numa_node_id();
  
+ 	if (node < first_node(node_online_map))
