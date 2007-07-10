@@ -1,181 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763311AbXGJRBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbXGJRQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763311AbXGJRBk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 13:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbXGJRBb
+	id S1759158AbXGJRQN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 13:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbXGJRQC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 13:01:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60444 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754437AbXGJRB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 13:01:29 -0400
-Message-ID: <4693BB66.1040102@garzik.org>
-Date: Tue, 10 Jul 2007 13:01:26 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-CC: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Tue, 10 Jul 2007 13:16:02 -0400
+Received: from ms-smtp-03.texas.rr.com ([24.93.47.42]:45549 "EHLO
+	ms-smtp-03.texas.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbXGJRQB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 13:16:01 -0400
+From: Dave McCracken <dave.mccracken@oracle.com>
+Organization: Oracle Corp
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: -mm merge plans -- anti-fragmentation
+Date: Tue, 10 Jul 2007 12:11:45 -0500
+User-Agent: KMail/1.9.7
+Cc: Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       kenchen@google.com, jschopp@austin.ibm.com, apw@shadowen.org,
+       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
+       y-goto@jp.fujitsu.com, clameter@sgi.com, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHY fixed driver: rework release path and update phy_id
- notation
-References: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-In-Reply-To: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+References: <20070710102043.GA20303@skynet.ie> <200707100929.46153.dave.mccracken@oracle.com> <20070710152355.GI8779@wotan.suse.de>
+In-Reply-To: <20070710152355.GI8779@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707101211.46003.dave.mccracken@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vitaly Bordug wrote:
-> device_bind_driver() error code returning has been fixed. 
-> release() function has been written, so that to free resources
-> in correct way; the release path is now clean.
-> 
-> Before the rework, it used to cause
->  Device 'fixed@100:1' does not have a release() function, it is broken
->  and must be fixed.
->  BUG: at drivers/base/core.c:104 device_release()
->  
->  Call Trace:  
->   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
->   [<ffffffff802ec3ab>] kobject_release+0x0/0x9
->   [<ffffffff802ecf3f>] kref_put+0x74/0x81
->   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
->   [<ffffffff80564d31>] fixed_init+0x1f/0x35
->   [<ffffffff802071a4>] init+0x147/0x2fb
->   [<ffffffff80223b6e>] schedule_tail+0x36/0x92
->   [<ffffffff8020a678>] child_rip+0xa/0x12
->   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
->   [<ffffffff8020705d>] init+0x0/0x2fb
->   [<ffffffff8020a66e>] child_rip+0x0/0x12  
-> 
-> 
-> Also changed the notation of the fixed phy definition on
-> mdio bus to the form of <speed>+<duplex> to make it able to be used by
-> gianfar and ucc_geth that define phy_id strictly as "%d:%d"
-> 
-> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> 
-> ---
-> 
->  drivers/net/phy/Kconfig |    4 ++
->  drivers/net/phy/fixed.c |   93 +++++++++++++++++++++++++++--------------------
->  2 files changed, 57 insertions(+), 40 deletions(-)
-> 
-> diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
-> index 09b6f25..a938c48 100644
-> --- a/drivers/net/phy/Kconfig
-> +++ b/drivers/net/phy/Kconfig
-> @@ -71,4 +71,8 @@ config FIXED_MII_100_FDX
->  	bool "Emulation for 100M Fdx fixed PHY behavior"
->  	depends on FIXED_PHY
->  
-> +config FIXED_MII_1000_FDX
-> +	bool "Emulation for 1000M Fdx fixed PHY behavior"
-> +	depends on FIXED_PHY
-> +
->  endif # PHYLIB
-> diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
-> index 68c99b4..34b9111 100644
-> --- a/drivers/net/phy/fixed.c
-> +++ b/drivers/net/phy/fixed.c
-> @@ -187,12 +187,29 @@ static struct phy_driver fixed_mdio_driver = {
->  	.driver 	= { .owner = THIS_MODULE,},
->  };
->  
-> +static void fixed_mdio_release (struct device * dev)
-> +{
-> +	struct phy_device *phydev = container_of(dev, struct phy_device, dev);
-> +	struct mii_bus *bus = phydev->bus;
-> +	struct fixed_info *fixed = bus->priv;
-> +
-> +	kfree(phydev);
-> +	kfree(bus->dev);
-> +	kfree(bus);
-> +	kfree(fixed->regs);
-> +	kfree(fixed);
-> +}
-> +
->  /*-----------------------------------------------------------------------------
->   *  This func is used to create all the necessary stuff, bind
->   * the fixed phy driver and register all it on the mdio_bus_type.
-> - * speed is either 10 or 100, duplex is boolean.
-> + * speed is either 10 or 100 or 1000, duplex is boolean.
->   * number is used to create multiple fixed PHYs, so that several devices can
->   * utilize them simultaneously.
-> + *
-> + * The device on mdio bus will look like <bus_id>:<phy_id>,
-> + * bus_id = number 
-> + * phy_id = speed+duplex.
->   *-----------------------------------------------------------------------------*/
->  static int fixed_mdio_register_device(int number, int speed, int duplex)
->  {
-> @@ -221,6 +238,12 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
->  	}
->  
->  	fixed->regs = kzalloc(MII_REGS_NUM*sizeof(int), GFP_KERNEL);
-> +	if (NULL == fixed->regs) {
-> +		kfree(dev);
-> +		kfree(new_bus);
-> +		kfree(fixed);
-> +		return -ENOMEM;
-> +	}
->  	fixed->regs_num = MII_REGS_NUM;
->  	fixed->phy_status.speed = speed;
->  	fixed->phy_status.duplex = duplex;
-> @@ -249,57 +272,43 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
->  	fixed->phydev = phydev;
->  
->  	if(NULL == phydev) {
-> -		err = -ENOMEM;
-> -		goto device_create_fail;
-> +		kfree(dev);
-> +		kfree(new_bus);
-> +		kfree(fixed->regs);
-> +		kfree(fixed);
-> +		return -ENOMEM;
->  	}
->  
->  	phydev->irq = PHY_IGNORE_INTERRUPT;
->  	phydev->dev.bus = &mdio_bus_type;
->  
-> -	if(number)
-> -		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> -				"fixed_%d@%d:%d", number, speed, duplex);
-> -	else
-> -		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> -				"fixed@%d:%d", speed, duplex);
-> +	snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> +				"%d:%d", number, speed + duplex);
-> +
->  	phydev->bus = new_bus;
->  
-> +	phydev->dev.driver = &fixed_mdio_driver.driver;
-> + 	phydev->dev.release = fixed_mdio_release;
-> + 
-> + 	err = phydev->dev.driver->probe(&phydev->dev);
-> + 	if(err < 0) {
-> + 		printk(KERN_ERR "Phy %s: problems with fixed driver\n",
-> +				phydev->dev.bus_id);
-> + 		kfree(phydev);
-> + 		kfree(dev);
-> + 		kfree(new_bus);
-> + 		kfree(fixed->regs);
-> + 		kfree(fixed);
-> + 		return err;
-> + 	}
-> + 
->  	err = device_register(&phydev->dev);
->  	if(err) {
->  		printk(KERN_ERR "Phy %s failed to register\n",
->  				phydev->dev.bus_id);
-> -		goto bus_register_fail;
-> -	}
+On Tuesday 10 July 2007, Nick Piggin wrote:
+> On Tue, Jul 10, 2007 at 09:29:45AM -0500, Dave McCracken wrote:
+> > I find myself wondering what "sufficiently convincing noises" are.  I
+> > think we can all agree that in the current kernel order>0 allocations are
+> > a disaster.
+>
+> Are they? For what the kernel currently uses them for, I don't think
+> the lower order ones are so bad. Now and again we used to get reports
+> of atomic order 3 allocation failures with e1000 for example, but a
+> lot of those were before kswapd would properly asynchronously start
+> reclaim for atomic and higher order allocations. The odd failure
+> sometimes catches my eye, but nothing I would call a disaster.
 
-use the standard 'goto' style found in the kernel, rather than repeating 
-all these kfree's.
+Ok, maybe disaster is too strong a word.  But any kind of order>0 allocation 
+still has to be approached with fear and caution, with a well tested fallback 
+in the case of the inevitable failures.  How many driver writers would have 
+benefited from using order>0 pages, but turned aside to other less optimal 
+solutions due to their unreliability?  We don't know, and probably never 
+will.  Those people have moved on and won't revisit that design decision.
 
+> > The sheer list of patches lined up behind this set is strong evidence
+> > that there are useful features which depend on a working order>0.  When
+> > you add in the existing code that has to struggle with allocation
+> > failures or resort to special pools (ie hugetlbfs), I see a clear vote
+> > for the need for this patch.
+>
+> Really the only patches so far that I think have convincing reasons are
+> memory unplug and hugepage, and both of those can get a long way by using
+> a reserve zone (note it isn't entirely reserved, but still available for
+> things like pagecache). Beyond that, is there a big demand, and do we
+> want to make this fundamental change in direction in the kernel to
+> satisfy that demand?
 
+Yes, these projects have workarounds, because they have to.  But the 
+workarounds are painful and often require that the user specify in advance 
+what memory they intend to use for this purpose, something users often have 
+to learn by trial and error.  Mel's patches would eliminate this barrier to 
+use of the features.
+
+I don't see Mel's patches as "a fundamental change in direction".  I think 
+you're overstating the case.  I see it as fixing a deficiency in the design 
+of the page allocator, and a long overdue fix.
+
+> > Some object because order>0 will still be able to fail.  I point out that
+> > order==0 can also fail, though we go to great lengths to prevent it.
+> >  Mel's patches raise the success rate of order>0 to within a few percent
+> > of order==0.  All this means is callers will need to decide how to handle
+> > the infrequent failure.  This should be true no matter what the order.
+>
+> So small ones like order-1 and 2 seem reasonably good right now AFAIKS.
+> If you perhaps want to say start using order-4  pages for slab or
+> some other kernel memory allocations, then you can run into the situation
+> where memory gets fragmented such that you have one sixteenth of your
+> memory actualy used but you can't allocate from any of your slabs because
+> there are no order-4 pages left. I guess this is a big difference between
+> order-low failures and order-high.
+
+In summary, I think I can rephrase your arguments against the patches as 
+order>0 allocation pretty much works now for small orders, and people are 
+living with it".  Is that fairly accurate?  My counter argument is that we 
+can easily make it work much better and vastly simplify the code that is 
+having to work around the lack of it by applying Mel's patches.
+
+Dave McCracken
