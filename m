@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762877AbXGJVxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbXGJWCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762877AbXGJVxz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 17:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760550AbXGJVxq
+	id S1762115AbXGJWCf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 18:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXGJWC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 17:53:46 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:36540 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756042AbXGJVxo (ORCPT
+	Tue, 10 Jul 2007 18:02:27 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:54874 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758380AbXGJWC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 17:53:44 -0400
-Message-ID: <4693FE48.1010606@zytor.com>
-Date: Tue, 10 Jul 2007 14:46:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 10 Jul 2007 18:02:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Na0KONtL3rbxV1WrNWVERnQ5hgfGIQyXbEILcEoOIcc4rX23kgW8FzdDm50HTAlj9vmQIhEaKTL8rmBv+cIobZbbkbO6cH9PJrWkwfBw0nhx/KQf1xSp0z0pKHgEeFY2VFVGt0SfxSkTNdQgip7uXEbOQi3+ka/I/2NskOanIyU=
+Message-ID: <1a297b360707101502t2670f0d7g5197b9c32ecb967c@mail.gmail.com>
+Date: Wed, 11 Jul 2007 02:02:23 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "vraghavan3@mail.gatech.edu" <vraghavan3@mail.gatech.edu>
+Subject: Re: Reading a physical memory location
+Cc: "Nobin Mathew" <nobin.mathew@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1184091142.4693cc06850f7@webmail.mail.gatech.edu>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Segher Boessenkool <segher@kernel.crashing.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
-References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org> <4693EF48.1080209@zytor.com> <20070710214315.GD3492@stusta.de>
-In-Reply-To: <20070710214315.GD3492@stusta.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1184010444.469290cce48df@webmail.mail.gatech.edu>
+	 <8d6898730707091539y14cf5afbsed7ed769526da0a1@mail.gmail.com>
+	 <1184091142.4693cc06850f7@webmail.mail.gatech.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
->>
->> For now, I have:
-> 
-> Can't you use the global CFLAGS and append your specific ones?
-> 
+On 7/10/07, vraghavan3@mail.gatech.edu <vraghavan3@mail.gatech.edu> wrote:
+>
+> Thanks for the quick reply. But I was wondering as to why I would have to map
+> the physical address to the virtual address when I know that the string is
+> permanently in the physical memory because its loaded into flash. Is there a way
+> to directly read from the physical memory location? Also, do the functions
+> ioremap() and readl(va) work when called from within a kernel module?
+>
 
-No.  A lot of the x86-64 flags don't work with -m32.
+Of course, if you look at almost any of the memory mapped device
+drivers, you will find that ioremap/readl/writel is the backbone of
+your infrastructure.
 
->> CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
-> 
-> -g ???
 
-Leaves debugging information in setup.elf.  It is handy sometimes.
-
->>                    $(cflags-$(ARCH)) \
->>                    -Wall -Wstrict-prototypes \
->>                    -march=i386 -mregparm=3 \
-> 
-> Why -march=i386 ?
-
-So we can at least spit out an error message.
-
-	-hpa
+Manu
