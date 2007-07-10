@@ -1,83 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbXGJPsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbXGJPvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759152AbXGJPsp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 11:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbXGJPsi
+	id S1757705AbXGJPvI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 11:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbXGJPuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 11:48:38 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:47704 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753913AbXGJPsh (ORCPT
+	Tue, 10 Jul 2007 11:50:55 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:57484 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751266AbXGJPuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 11:48:37 -0400
-Date: Tue, 10 Jul 2007 17:49:35 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <david-b@pacbell.net>,
-       linux-usb-devel@lists.sourceforge.net,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Li Yang-r58472 <LeoLi@freescale.com>
-Message-ID: <20070710154935.GA3445@enneenne.com>
-References: <20070628103619.GW13886@enneenne.com> <989B956029373F45A0B8AF0297081890D834FA@zch01exm26.fsl.freescale.net> <20070628141205.GA13886@enneenne.com> <20070628142949.02ca9eab.akpm@linux-foundation.org>
+	Tue, 10 Jul 2007 11:50:55 -0400
+Date: Tue, 10 Jul 2007 16:50:51 +0100
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
+       kenchen@google.com, jschopp@austin.ibm.com, apw@shadowen.org,
+       a.p.zijlstra@chello.nl, y-goto@jp.fujitsu.com, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans -- anti-fragmentation
+Message-ID: <20070710155051.GA26249@skynet.ie>
+References: <20070710102043.GA20303@skynet.ie> <20070710200115.b5bbfb4a.kamezawa.hiroyu@jp.fujitsu.com> <20070710111202.GC25512@skynet.ie> <20070710203848.e7bbc98e.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070628142949.02ca9eab.akpm@linux-foundation.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] PXA27x UDC driver.
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <20070710203848.e7bbc98e.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 02:29:49PM -0700, Andrew Morton wrote:
-> >
-> > +
-> > +static int
-> > +write_packet(volatile u32 * uddr, struct pxa27x_request *req, unsigned max)
+On (10/07/07 20:38), KAMEZAWA Hiroyuki didst pronounce:
+> On Tue, 10 Jul 2007 12:12:02 +0100
+> mel@skynet.ie (Mel Gorman) wrote:
+> > > For (2), we need some method for specifing the range we will remove. For doing that,
+> > > ZONE seems to be good candidate.  Now we use "kernelcore=" boot option to create
+> > > ZONE_MOVABLE by hand.
+> > 
+> > At the risk of putting you on the spot, do you mind saying whether the
+> > grouping pages by mobility and ZONE_MOVABLE patches are going in the
+> > direction you want or should something totally different be done? If
+> > they are going the right direction, is there anything critical that is
+> > missing right now?
+> > 
+> "grouping pages by mobility and ZONE_MOVABLE" things are what I want. And
+> I want to go with them. But I know some people doesn't want to increase #
+> of zones. It is my concern. 
+
+I'm not overly keen on increasing the number of zones either but it is a
+simplier approach, solves some of the problems and is less intrusive than
+grouping pages by mobility so it's a reasonable starting point.
+
+> I know ZONE_MOVABLE works well but there are people who don't want new zone.
+> So making ZONE_MOVABLE as configurable will be good thing, as Nick Piggin pointed.
 > 
-> Please review Documentation/volatile-considered-harmful.txt
 
-The attibute volatile here is necessary in order to avoid getting the
-following warnings from the compiler:
+I tested your zone-configurable patch and they appear to work.  Your patch
+builds whether ZONE_MOVABLE is available or not and ZONE_MOVABLE is only
+available when the config option is set.  It is also considerably cleaner
+than the patch I put together for a configurable ZONE_MOVABLE which is too
+ugly to live in comparison.
 
-     CC      drivers/usb/gadget/pxa27x_udc.o
-   drivers/usb/gadget/pxa27x_udc.c: In function `write_ep0_fifo':
-   drivers/usb/gadget/pxa27x_udc.c:512: warning: passing arg 1 of `write_packet' discards qualifiers from pointer target type
-   drivers/usb/gadget/pxa27x_udc.c: In function `pxa27x_ep_alloc':
-   drivers/usb/gadget/pxa27x_udc.c:1206: warning: assignment discards qualifiers from pointer target type
-   drivers/usb/gadget/pxa27x_udc.c:1207: warning: assignment discards qualifiers from pointer target type
-   drivers/usb/gadget/pxa27x_udc.c:1208: warning: assignment discards qualifiers from pointer target type
-   drivers/usb/gadget/pxa27x_udc.c:1209: warning: assignment discards qualifiers from pointer target type
-   drivers/usb/gadget/pxa27x_udc.c: At top level:
-   drivers/usb/gadget/pxa27x_udc.c:2159: warning: initialization discards qualifiers from pointer target type
-   drivers/usb/gadget/pxa27x_udc.c:2160: warning: initialization discards qualifiers from pointer target type
+> About my other concerns , see node hotplug (below).
+> 
+> > > But this is the first step. I know Intel guy posted
+> > > his idea to specify Hotpluggable-Memory range in SRAT (by firmware).
+> > 
+> > There may be additional work required to make this play nicely with
+> > ZONE_MOVABLE but it shouldn't be anything fundamental.
+> > 
+> yes. And I don't know his idea about SRAT is acceped in firmware comunity or not.
+> For now, kernelcore= works enough for memory hotplug.
+> 
 
-This because the variables reg_* are assigned as:
+Sounds good.
 
-   .reg_udccsr = &UDCCSR0
+> > > And I think that
+> > > other method may be introduced for node-hotplug. 
+> > > 
+> > 
+> > Same as above really. If the node contains one zone - ZONE_MOVABLE, it
+> > would work for unplugging.
+> > 
+> Our concern on node hotplug is "bootmem" and hashtable , pgdata, memmap etc....
+> NUMA initilization (of each arch) includes something complicated.
+> But this is not directly related to ZONE_MOVABLE things I think.
+> It's node-hotplug problem.
+> We are now consdiering hot-add nodes after initcalls().
+> 
 
-where UDCCSR0 are defined as:
+I don't see off-hand how it's so different from normal memory hot-add
+but I'll take your word for it. I'll keep an eye out for patches related
+to it.
 
-   #define UDCCSR0         __REG(0x40600100) /* UDC Control/Status register - Endpoint 0 */
-
-and:
-
-   define __REG(x)	(*((volatile u32 *)io_p2v(x)))
-
-Do you know how I can resolve this?
-
-Thanks in advance,
-
-Rodolfo
+Thanks
 
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
