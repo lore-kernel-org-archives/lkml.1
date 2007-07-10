@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbXGJVKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764086AbXGJVKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763921AbXGJVKG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 17:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760020AbXGJVJx
+	id S1764086AbXGJVKf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 17:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbXGJVKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 17:09:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52070 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Jul 2007 17:10:20 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59314 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759769AbXGJVJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 17:09:52 -0400
-Date: Tue, 10 Jul 2007 23:09:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Bligh <mbligh@mbligh.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: Performance regression in 2.6.22-git1 (new sched code?)
-Message-ID: <20070710210945.GA4231@elte.hu>
-References: <4693C3D2.9020005@mbligh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4693C3D2.9020005@mbligh.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752956AbXGJVKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 17:10:19 -0400
+In-Reply-To: <4693EF48.1080209@zytor.com>
+References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org> <4693EF48.1080209@zytor.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <763AC431-73A6-4A5F-9453-A66A86D7DEEB@kernel.crashing.org>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Content-Transfer-Encoding: 7bit
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
+Date: Tue, 10 Jul 2007 23:10:05 +0200
+To: "H. Peter Anvin" <hpa@zytor.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> It seems to me GCC should grow an option to insert .code16gcc
+>> by itself (-m16 perhaps?)
 
-* Martin Bligh <mbligh@mbligh.org> wrote:
+> -m16 is the right thing,
 
-> ~ 1% on 4-way x86_64
-> 
-> http://test.kernel.org/perf/kernbench.elm3b6.png
-> 
-> ~ 4% on 16-way NUMA-Q (i386)
-> 
-> http://test.kernel.org/perf/kernbench.moe.png
-> 
-> ~ 1.5% on 4-way i386
-> 
-> http://test.kernel.org/perf/kernbench.elm3b132.png
+Probably not actually, -m16 might have 16-bit "int" etc.
+-mabi=16 is closer to what other architectures do here.
 
-thx! I'll check this tomorrow, meanwhile here are a few quick ideas.
+> and it also provides a proper hook for
+> eventually having a real 16-bit backend (there are at least two  
+> projects
+> for doing that.)
 
-1) does reverting this patch improve performance:
+Those would use -m16, yes.
 
-   commit 9c4801cebc2add1fe514bc8eb201b16372eee11a
-   Author: Ingo Molnar <mingo@elte.hu>
-   Date:   Mon Jul 9 18:52:01 2007 +0200
+> For now, I have:
+>
+> CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
+>                    $(cflags-$(ARCH)) \
+>                    -Wall -Wstrict-prototypes \
+>                    -march=i386 -mregparm=3 \
+>                    -include $(srctree)/$(src)/code16gcc.h \
+>                    -fno-strict-aliasing -fomit-frame-pointer \
+>                    $(call cc-option, -ffreestanding) \
+>                    $(call cc-option, -fno-unit-at-a-time) \
+>                    $(call cc-option, -fno-toplevel-reorder) \
+>                    $(call cc-option, -fno-stack-protector) \
+>                    $(call cc-option, -mpreferred-stack-boundary=2)
+>
+> ... since that will require less violence to eventually hack in the
+> proper -m16 option if/when it becomes available.
 
-       sched: more agressive idle balancing
+Looks good, except you don't want -fno-unit-at-a-time if
+-fno-toplevel-reorder works.  And of course it would be
+good to get rid of -fno-strict-aliasing, but let's not
+go there today ;-P
 
-2) does changing CONFIG_HZ=250 to CONFIG_HZ=100 improve the numbers? 
-   CFS has some internal tuning that depends on HZ - a higher HZ is a 
-   sign that the user wants more finegrained scheduling. So for maximum 
-   server throughput, use CONFIG_HZ=100.
 
-3) could you turn off CONFIG_SCHED_DEBUG? The cost is small but perhaps 
-   measurable.
+Segher
 
-(these 3 suggestions could be tested together - they should have 
-cumulative effects.)
-
-	Ingo
