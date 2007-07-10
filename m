@@ -1,107 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbXGJFJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbXGJFMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757656AbXGJFJz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 01:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXGJFJr
+	id S1759686AbXGJFMQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 01:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXGJFMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 01:09:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:22832 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbXGJFJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 01:09:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=P+ZohsP/y+vod9NIdA29NWYoaE2ibBIbpru6ZSXZFWyRI37RrvqL91H+acLUHZaZjnZ5XR2EPFkZqVWcpjdx064Tp7+iOXGYsm6zyqVs68NGitfmswTTWNuYowxXcO8gb8gLLAO1lni+xhddzzt1/pHA86h/fG+2hcPxFRMq1LM=
-Message-ID: <46931495.4050605@gmail.com>
-Date: Tue, 10 Jul 2007 14:09:41 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Sysfs and suicidal attributes
-References: <Pine.LNX.4.44L0.0707081015430.5323-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707081015430.5323-100000@netrider.rowland.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jul 2007 01:12:03 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42970 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751106AbXGJFMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 01:12:00 -0400
+Date: Tue, 10 Jul 2007 10:43:35 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       davem@davemloft.net, dwilder@us.ibm.com, hskinnemoen@atmel.com,
+       akpm@linux-foundation.org, Jim Keniston <jkenisto@us.ibm.com>,
+       rpjday@mindspring.com, srikar@linux.vnet.ibm.com
+Subject: [PATCH] Kprobes on select architectures no longer EXPERIMENTAL
+Message-ID: <20070710051335.GA30663@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Alan.
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-Alan Stern wrote:
-> You remember the problem we faced with "suicidal" sysfs attributes and 
-> the device_schedule_callback() routine that fixes it?
+Based on usage and testing over the past couple of years, kprobes on
+i386, ia64, powerpc and x86_64 is no longer EXPERIMENTAL.
 
-Sure.
+This is a follow-up to Robert P.J. Day's patch making "Instrumentation
+support" non-EXPERIMENTAL:
 
-> Well, it turns out that this approach may confict with suspend/resume
-> processing.  In brief, it's not a good idea to unregister devices while
-> a suspend is in progress, but on the other hand it's not a good idea to
-> block keventd waiting until the suspend is over.
+	http://marc.info/?l=linux-kernel&m=118396955423812&w=2
 
-Is it because keventd isn't frozen during suspend?  I'm afraid we might
-be trying to solve the problem at the wrong layer.  Device
-addition/removal should be _locked out_ during suspend/resume.
-Depending on executing thread being frozen is more subtle and fragile
-and freezing might go away altogether.
+Arch maintainers for sparc64, avr32 and s390 need to take a similar call.
 
-IMHO, what's needed is a giant rwlock protecting the whole device
-addition/removal while suspend is in progress (addition/removal during
-resume should be safe as long as we put the new devices on the already
-processed list).  The lock can probably replace dpm_sem and dpm_list_sem.
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ arch/i386/Kconfig    |    4 ++--
+ arch/ia64/Kconfig    |    4 ++--
+ arch/powerpc/Kconfig |    4 ++--
+ arch/x86_64/Kconfig  |    4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-It's probably necessary to use trylock from addition/removal to avoid
-deadlock.  Drivers which support hotplugging need to rescan/revalidate
-the bus during resume anyway so failing addition/removal during suspend
-shouldn't be a problem.
-
-> I haven't paid much attention to your sysfs updates.  Is it still true
-> that calls to show/store methods are mutually exclusive with attribute
-> unregistration?  Assuming the answer is Yes, would it be possible to
-> bypass that mutual exclusion in certain explicit cases?  Here's what I
-> have in mind:
-> 
-> 	The user writes to an attribute file.
-> 
-> 	The sysfs core calls the attribute's store method.
-> 
-> 	The method tells the sysfs core to pretend that the call
-> 	temporarily doesn't exist, or has completed, or something
-> 	like that.
-> 
-> 	The method safely unregisters the attribute file, with no
-> 	mutual exclusion problems and no deadlock.  Of course, the
-> 	unregistration will still block until all _other_ method
-> 	calls for this attribute are complete.
-> 
-> 	The method tells the sysfs core to stop pretending and
-> 	go back to its normal state.
-> 
-> 	The method returns, and the sysfs core takes whatever actions
-> 	are needed to fully release the attribute file.
-> 
-> The idea is that there could be a way to allow unregistration while a 
-> method is still running, if the method specifically requests it.  If we 
-> could do this then device_schedule_callback() would be unnecessary.
-
-Regardless of the suspend problem, I like the above idea.  Actually, I
-was thinking about doing exactly that for suicidal nodes when I first
-found out the problem.  All that's needed is an owner field which allows
-the owning thread to reenter (what was the name for this type of mutex?
- BSD folks like it).  It's probably better to put some restrictions to
-allow only the specific case tho.
-
-I like it because it shifts complexity from the drivers into driver
-core.  IOW, the driver model is kinder to drivers that way - the driver
-writer doesn't have to care whether something is suicidal or not - and I
-think that's the way we should be headed although we're not good at it yet.
-
-Thanks.
-
--- 
-tejun
+Index: linux-2.6.22/arch/i386/Kconfig
+===================================================================
+--- linux-2.6.22.orig/arch/i386/Kconfig
++++ linux-2.6.22/arch/i386/Kconfig
+@@ -1218,8 +1218,8 @@ menu "Instrumentation Support"
+ source "arch/i386/oprofile/Kconfig"
+ 
+ config KPROBES
+-	bool "Kprobes (EXPERIMENTAL)"
+-	depends on KALLSYMS && EXPERIMENTAL && MODULES
++	bool "Kprobes"
++	depends on KALLSYMS && MODULES
+ 	help
+ 	  Kprobes allows you to trap at almost any kernel address and
+ 	  execute a callback function.  register_kprobe() establishes
+Index: linux-2.6.22/arch/ia64/Kconfig
+===================================================================
+--- linux-2.6.22.orig/arch/ia64/Kconfig
++++ linux-2.6.22/arch/ia64/Kconfig
+@@ -580,8 +580,8 @@ menu "Instrumentation Support"
+ source "arch/ia64/oprofile/Kconfig"
+ 
+ config KPROBES
+-	bool "Kprobes (EXPERIMENTAL)"
+-	depends on KALLSYMS && EXPERIMENTAL && MODULES
++	bool "Kprobes"
++	depends on KALLSYMS && MODULES
+ 	help
+ 	  Kprobes allows you to trap at almost any kernel address and
+ 	  execute a callback function.  register_kprobe() establishes
+Index: linux-2.6.22/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6.22.orig/arch/powerpc/Kconfig
++++ linux-2.6.22/arch/powerpc/Kconfig
+@@ -894,8 +894,8 @@ menu "Instrumentation Support"
+ source "arch/powerpc/oprofile/Kconfig"
+ 
+ config KPROBES
+-	bool "Kprobes (EXPERIMENTAL)"
+-	depends on !BOOKE && !4xx && KALLSYMS && EXPERIMENTAL && MODULES
++	bool "Kprobes"
++	depends on !BOOKE && !4xx && KALLSYMS && MODULES
+ 	help
+ 	  Kprobes allows you to trap at almost any kernel address and
+ 	  execute a callback function.  register_kprobe() establishes
+Index: linux-2.6.22/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6.22.orig/arch/x86_64/Kconfig
++++ linux-2.6.22/arch/x86_64/Kconfig
+@@ -770,8 +770,8 @@ menu "Instrumentation Support"
+ source "arch/x86_64/oprofile/Kconfig"
+ 
+ config KPROBES
+-	bool "Kprobes (EXPERIMENTAL)"
+-	depends on KALLSYMS && EXPERIMENTAL && MODULES
++	bool "Kprobes"
++	depends on KALLSYMS && MODULES
+ 	help
+ 	  Kprobes allows you to trap at almost any kernel address and
+ 	  execute a callback function.  register_kprobe() establishes
