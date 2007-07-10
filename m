@@ -1,84 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbXGJIOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbXGJIRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758994AbXGJIOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 04:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbXGJIO0
+	id S1759985AbXGJIRx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 04:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbXGJIRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 04:14:26 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:52698 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017AbXGJIOZ (ORCPT
+	Tue, 10 Jul 2007 04:17:40 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50535 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755297AbXGJIRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 04:14:25 -0400
-Date: Tue, 10 Jul 2007 11:14:14 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Neil Horman <nhorman@redhat.com>,
-       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: Determine version of kernel that produced vmcore
-Message-ID: <20070710081413.GA29034@localdomain>
-References: <20070706132814.GA7079@suse.de> <20070706145804.GA31409@localdomain> <20070710064817.GC5471@in.ibm.com>
-MIME-Version: 1.0
+	Tue, 10 Jul 2007 04:17:38 -0400
+Date: Tue, 10 Jul 2007 11:17:36 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <clameter@sgi.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Matt Mackall <mpm@selenic.com>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+In-Reply-To: <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI>
+References: <20070708034952.022985379@sgi.com>  <20070708035018.074510057@sgi.com>
+ <20070708075119.GA16631@elte.hu>  <20070708110224.9cd9df5b.akpm@linux-foundation.org>
+  <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com>
+ <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710064817.GC5471@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 12:18:17PM +0530, Vivek Goyal wrote:
-> On Fri, Jul 06, 2007 at 05:58:04PM +0300, Dan Aloni wrote:
-> > 
->[..]
-> > It contains enough information in order to make a compact kernel
-> > dump (makedumpinfo needs to go over the struct page arrays). As
-> > you see, it also contains the kernel version.
-> > 
-> 
-> But this will not solve Bernhard's problem where looking at a vmcore
-> he wants to know which vmlinux (kernel version with time stamp) has
-> generated this vmcore. So adding a ELF NOTE should help.
+Hi Christoph,
 
-That, or pass it in *runtime* by other means.
- 
-> > However, this file needs to be passed somehow to the rootfs
-> > of the kdump kernel. This poses a chicken-and-egg problem on 
-> > my setup where the initramfs of the first kernel contains 
-> > a staticlu linked version of the kexec executable along with a
-> > kdump kernel to be loaded before mount rootfs and running 
-> > init. 
-> > 
-> 
-> Why are you loading kdump kernel from first kernel's initramfs?
-> I guess to enable the dump capture as soon as possible so if some
-> driver panics() you can capture the dump?
+On Mon, 9 Jul 2007, Pekka Enberg wrote:
+> > I assume with "slab external fragmentation" you mean allocating a
+> > whole page for a slab when there are not enough objects to fill the
+> > whole thing thus wasting memory? We could try to combat that by
+> > packing multiple variable-sized slabs within a single page. Also,
+> > adding some non-power-of-two kmalloc caches might help with internal
+> > fragmentation.
 
-Yes, that's one of the reasons.
- 
-> Can't we modify the initramfs generation process (mkinitrd) to take
-> care of this situation?. By the way, how is second kernel's initramfs
-> is generated currently? The moment we start packing a file which contains
-> the debuginfo for first kernel, initramfs of second kernel becomes dependent
-> on first kernel and to me its not a good approach.
+On Mon, 9 Jul 2007, Christoph Lameter wrote:
+> Ther are already non-power-of-two kmalloc caches for 96 and 192 bytes 
+> sizes.
 
-That's not what I'm aiming for, they are actually independent (my 
-initramfs is a build-time constant). I have described it in another
-mail.
- 
-> A dump kernel and its initrd should be independent of the crashing kernel.
+I know that, but for my setup at least, there seems to be a need for a 
+non-power of two cache between 512 and 1024. What I am seeing is average 
+allocation size for kmalloc-512 being around 270-280 which wastes total 
+of 10 KB of memory due to internal fragmentation. Might be a buggy caller 
+that can be fixed with its own cache too.
 
-I agree.
+On Mon, 9 Jul 2007, Pekka Enberg wrote:
+> > In any case, SLUB needs some serious tuning for smaller machines
+> > before we can get rid of SLOB.
 
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+On Mon, 9 Jul 2007, Christoph Lameter wrote:
+> Switch off CONFIG_SLUB_DEBUG to get memory savings.
+
+Curious, /proc/meminfo immediately after boot shows:
+
+SLUB (debugging enabled):
+
+(none):~# cat /proc/meminfo 
+MemTotal:        30260 kB
+MemFree:         22096 kB
+
+SLUB (debugging disabled):
+
+(none):~# cat /proc/meminfo 
+MemTotal:        30276 kB
+MemFree:         22244 kB
+
+SLOB:
+
+(none):~# cat /proc/meminfo 
+MemTotal:        30280 kB
+MemFree:         22004 kB
+
+That's 92 KB advantage for SLUB with debugging enabled and 240 KB when 
+debugging is disabled.
+
+Nick, Matt, care to retest SLUB and SLOB for your setups?
+
+				Pekka
