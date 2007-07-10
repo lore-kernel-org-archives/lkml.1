@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763562AbXGJUqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763830AbXGJUqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763562AbXGJUqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 16:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760223AbXGJUqM
+	id S1763830AbXGJUqt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760736AbXGJUqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 16:46:12 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:50366 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759802AbXGJUqK (ORCPT
+	Tue, 10 Jul 2007 16:46:39 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41541 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762599AbXGJUqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 16:46:10 -0400
-Message-ID: <4693EF48.1080209@zytor.com>
-Date: Tue, 10 Jul 2007 13:42:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 10 Jul 2007 16:46:38 -0400
+Date: Tue, 10 Jul 2007 13:46:36 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: akpm@linux-foundation.org, Martin Bligh <mbligh@mbligh.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] x86_64 - Use non locked version for local_cmpxchg()
+In-Reply-To: <20070710051616.GB16148@Krystal>
+Message-ID: <Pine.LNX.4.64.0707101345550.3055@schroedinger.engr.sgi.com>
+References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de>
+ <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com>
+ <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com>
+ <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal>
+ <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com>
+ <20070709225817.GA5111@Krystal> <Pine.LNX.4.64.0707091605380.20282@schroedinger.engr.sgi.com>
+ <20070710051616.GB16148@Krystal>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
-References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org>
-In-Reply-To: <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Segher Boessenkool wrote:
-> 
-> Well at least with -fno-toplevel-reorder it is guaranteed
-> to work (not the same thing as "is working", heh, but fairly
-> close).
-> 
-> It seems to me GCC should grow an option to insert .code16gcc
-> by itself (-m16 perhaps?)  Or GAS could get a flag to include
-> a file as a prelude before the main thing.  Neither will help
-> Linux right now of course.
-> 
+On Tue, 10 Jul 2007, Mathieu Desnoyers wrote:
 
--m16 is the right thing, and it also provides a proper hook for
-eventually having a real 16-bit backend (there are at least two projects
-for doing that.)
+> You are completely right: on x86_64, a bit got lost in the move to
+> cmpxchg.h, here is the fix. It applies on 2.6.22-rc6-mm1.
 
-For now, I have:
+A trival fix. Make sure that it gets merged soon.
 
-CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
-                   $(cflags-$(ARCH)) \
-                   -Wall -Wstrict-prototypes \
-                   -march=i386 -mregparm=3 \
-                   -include $(srctree)/$(src)/code16gcc.h \
-                   -fno-strict-aliasing -fomit-frame-pointer \
-                   $(call cc-option, -ffreestanding) \
-                   $(call cc-option, -fno-unit-at-a-time) \
-                   $(call cc-option, -fno-toplevel-reorder) \
-                   $(call cc-option, -fno-stack-protector) \
-                   $(call cc-option, -mpreferred-stack-boundary=2)
-
-... since that will require less violence to eventually hack in the
-proper -m16 option if/when it becomes available.
-
-	-hpa
+Acked-by: Christoph Lameter <clameter@sgi.com>
