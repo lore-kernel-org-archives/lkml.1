@@ -1,189 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761374AbXGJC0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762422AbXGJC1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761374AbXGJC0i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 22:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762376AbXGJC0D
+	id S1762422AbXGJC1b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 22:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbXGJC1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 22:26:03 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34126 "EHLO mx2.suse.de"
+	Mon, 9 Jul 2007 22:27:22 -0400
+Received: from ns.suse.de ([195.135.220.2]:38189 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761570AbXGJC0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 22:26:00 -0400
+	id S1757433AbXGJC1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 22:27:21 -0400
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 10 Jul 2007 12:25:55 +1000
-Message-Id: <1070710022555.13335@suse.de>
+Date: Tue, 10 Jul 2007 12:26:15 +1000
+Message-Id: <1070710022615.13375@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: andros "@" citi "." umich "." edu <andros@citi.umich.edu>
-Cc: Andy Adamson <andros@citi.umich.edu>
+Cc: "J. Bruce Fields" <bfields@citi.umich.edu>
 Cc: J "." Bruce Fields <bfields@citi.umich.edu>
 Cc: Neil Brown <neilb@suse.de>
-Subject: [PATCH 011 of 20] knfsd: nfsd4: return nfserr_wrongsec
+Subject: [PATCH 012 of 20] knfsd: nfsd4: make readonly access depend on pseudoflavor
 References: <20070710121949.12548.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: andros@citi.umich.edu <andros@citi.umich.edu>
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-Make the first actual use of the secinfo information by using it to
-return nfserr_wrongsec when an export is found that doesn't allow the
-flavor used on this request.
+Allow readonly access to vary depending on the pseudoflavor, using the
+flag passed with each pseudoflavor in the export downcall.  The rest of
+the flags are ignored for now, though some day we might also allow id
+squashing to vary based on the flavor.
 
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
-Signed-off-by: Andy Adamson <andros@citi.umich.edu>
+Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./fs/nfsd/export.c            |   26 ++++++++++++++++++++++++++
- ./fs/nfsd/nfsfh.c             |    6 ++++++
- ./fs/nfsd/nfssvc.c            |   10 ++++++++++
- ./fs/nfsd/vfs.c               |    4 ++++
- ./include/linux/nfsd/export.h |    1 +
- ./include/linux/nfsd/nfsd.h   |    1 +
- 6 files changed, 48 insertions(+)
+ ./fs/nfsd/nfsfh.c             |    2 +-
+ ./fs/nfsd/nfsproc.c           |    3 ++-
+ ./fs/nfsd/vfs.c               |   13 +++++++------
+ ./include/linux/nfsd/export.h |   13 ++++++++++++-
+ ./include/linux/nfsd/nfsd.h   |    3 ++-
+ 5 files changed, 24 insertions(+), 10 deletions(-)
 
-diff .prev/fs/nfsd/export.c ./fs/nfsd/export.c
---- .prev/fs/nfsd/export.c	2007-07-10 11:37:38.000000000 +1000
-+++ ./fs/nfsd/export.c	2007-07-10 11:39:34.000000000 +1000
-@@ -1228,6 +1228,28 @@ exp_find(struct auth_domain *clp, int fs
- 	return exp;
- }
+diff .prev/fs/nfsd/nfsfh.c ./fs/nfsd/nfsfh.c
+--- .prev/fs/nfsd/nfsfh.c	2007-07-10 11:39:34.000000000 +1000
++++ ./fs/nfsd/nfsfh.c	2007-07-10 11:40:31.000000000 +1000
+@@ -255,7 +255,7 @@ fh_verify(struct svc_rqst *rqstp, struct
+ 		goto out;
  
-+__be32 check_nfsd_access(struct svc_export *exp, struct svc_rqst *rqstp)
+ 	/* Finally, check access permissions. */
+-	error = nfsd_permission(exp, dentry, access);
++	error = nfsd_permission(rqstp, exp, dentry, access);
+ 
+ 	if (error) {
+ 		dprintk("fh_verify: %s/%s permission failure, "
+
+diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
+--- .prev/fs/nfsd/nfsproc.c	2007-07-10 11:19:55.000000000 +1000
++++ ./fs/nfsd/nfsproc.c	2007-07-10 11:40:31.000000000 +1000
+@@ -278,7 +278,8 @@ nfsd_proc_create(struct svc_rqst *rqstp,
+ 					 *   echo thing > device-special-file-or-pipe
+ 					 * by doing a CREATE with type==0
+ 					 */
+-					nfserr = nfsd_permission(newfhp->fh_export,
++					nfserr = nfsd_permission(rqstp,
++								 newfhp->fh_export,
+ 								 newfhp->fh_dentry,
+ 								 MAY_WRITE|MAY_LOCAL_ACCESS);
+ 					if (nfserr && nfserr != nfserr_rofs)
+
+diff .prev/fs/nfsd/vfs.c ./fs/nfsd/vfs.c
+--- .prev/fs/nfsd/vfs.c	2007-07-10 11:39:34.000000000 +1000
++++ ./fs/nfsd/vfs.c	2007-07-10 11:40:31.000000000 +1000
+@@ -328,7 +328,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
+ 	/* The size case is special. It changes the file as well as the attributes.  */
+ 	if (iap->ia_valid & ATTR_SIZE) {
+ 		if (iap->ia_size < inode->i_size) {
+-			err = nfsd_permission(fhp->fh_export, dentry, MAY_TRUNC|MAY_OWNER_OVERRIDE);
++			err = nfsd_permission(rqstp, fhp->fh_export, dentry, MAY_TRUNC|MAY_OWNER_OVERRIDE);
+ 			if (err)
+ 				goto out;
+ 		}
+@@ -616,7 +616,7 @@ nfsd_access(struct svc_rqst *rqstp, stru
+ 
+ 			sresult |= map->access;
+ 
+-			err2 = nfsd_permission(export, dentry, map->how);
++			err2 = nfsd_permission(rqstp, export, dentry, map->how);
+ 			switch (err2) {
+ 			case nfs_ok:
+ 				result |= map->access;
+@@ -1027,7 +1027,7 @@ nfsd_read(struct svc_rqst *rqstp, struct
+ 	__be32		err;
+ 
+ 	if (file) {
+-		err = nfsd_permission(fhp->fh_export, fhp->fh_dentry,
++		err = nfsd_permission(rqstp, fhp->fh_export, fhp->fh_dentry,
+ 				MAY_READ|MAY_OWNER_OVERRIDE);
+ 		if (err)
+ 			goto out;
+@@ -1056,7 +1056,7 @@ nfsd_write(struct svc_rqst *rqstp, struc
+ 	__be32			err = 0;
+ 
+ 	if (file) {
+-		err = nfsd_permission(fhp->fh_export, fhp->fh_dentry,
++		err = nfsd_permission(rqstp, fhp->fh_export, fhp->fh_dentry,
+ 				MAY_WRITE|MAY_OWNER_OVERRIDE);
+ 		if (err)
+ 			goto out;
+@@ -1785,7 +1785,8 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
+  * Check for a user's access permissions to this inode.
+  */
+ __be32
+-nfsd_permission(struct svc_export *exp, struct dentry *dentry, int acc)
++nfsd_permission(struct svc_rqst *rqstp, struct svc_export *exp,
++					struct dentry *dentry, int acc)
+ {
+ 	struct inode	*inode = dentry->d_inode;
+ 	int		err;
+@@ -1816,7 +1817,7 @@ nfsd_permission(struct svc_export *exp, 
+ 	 */
+ 	if (!(acc & MAY_LOCAL_ACCESS))
+ 		if (acc & (MAY_WRITE | MAY_SATTR | MAY_TRUNC)) {
+-			if (EX_RDONLY(exp) || IS_RDONLY(inode))
++			if (EX_RDONLY(exp, rqstp) || IS_RDONLY(inode))
+ 				return nfserr_rofs;
+ 			if (/* (acc & MAY_WRITE) && */ IS_IMMUTABLE(inode))
+ 				return nfserr_perm;
+
+diff .prev/include/linux/nfsd/export.h ./include/linux/nfsd/export.h
+--- .prev/include/linux/nfsd/export.h	2007-07-10 11:39:34.000000000 +1000
++++ ./include/linux/nfsd/export.h	2007-07-10 11:40:31.000000000 +1000
+@@ -112,10 +112,21 @@ struct svc_expkey {
+ 
+ #define EX_SECURE(exp)		(!((exp)->ex_flags & NFSEXP_INSECURE_PORT))
+ #define EX_ISSYNC(exp)		(!((exp)->ex_flags & NFSEXP_ASYNC))
+-#define EX_RDONLY(exp)		((exp)->ex_flags & NFSEXP_READONLY)
+ #define EX_NOHIDE(exp)		((exp)->ex_flags & NFSEXP_NOHIDE)
+ #define EX_WGATHER(exp)		((exp)->ex_flags & NFSEXP_GATHERED_WRITES)
+ 
++static inline int EX_RDONLY(struct svc_export *exp, struct svc_rqst *rqstp)
 +{
 +	struct exp_flavor_info *f;
 +	struct exp_flavor_info *end = exp->ex_flavors + exp->ex_nflavors;
 +
-+	/* legacy gss-only clients are always OK: */
-+	if (exp->ex_client == rqstp->rq_gssclient)
-+		return 0;
-+	/* ip-address based client; check sec= export option: */
 +	for (f = exp->ex_flavors; f < end; f++) {
 +		if (f->pseudoflavor == rqstp->rq_flavor)
-+			return 0;
++			return f->flags & NFSEXP_READONLY;
 +	}
-+	/* defaults in absence of sec= options: */
-+	if (exp->ex_nflavors == 0) {
-+		if (rqstp->rq_flavor == RPC_AUTH_NULL ||
-+		    rqstp->rq_flavor == RPC_AUTH_UNIX)
-+			return 0;
-+	}
-+	return nfserr_wrongsec;
++	return exp->ex_flags & NFSEXP_READONLY;
 +}
 +
- /*
-  * Uses rq_client and rq_gssclient to find an export; uses rq_client (an
-  * auth_unix client) if it's available and has secinfo information;
-@@ -1340,6 +1362,10 @@ exp_pseudoroot(struct svc_rqst *rqstp, s
- 	if (IS_ERR(exp))
- 		return nfserrno(PTR_ERR(exp));
- 	rv = fh_compose(fhp, exp, exp->ex_dentry, NULL);
-+	if (rv)
-+		goto out;
-+	rv = check_nfsd_access(exp, rqstp);
-+out:
- 	exp_put(exp);
- 	return rv;
- }
-
-diff .prev/fs/nfsd/nfsfh.c ./fs/nfsd/nfsfh.c
---- .prev/fs/nfsd/nfsfh.c	2007-07-10 11:35:37.000000000 +1000
-+++ ./fs/nfsd/nfsfh.c	2007-07-10 11:39:34.000000000 +1000
-@@ -20,6 +20,7 @@
- 
- #include <linux/sunrpc/clnt.h>
- #include <linux/sunrpc/svc.h>
-+#include <linux/sunrpc/svcauth_gss.h>
- #include <linux/nfsd/nfsd.h>
- 
- #define NFSDDBG_FACILITY		NFSDDBG_FH
-@@ -248,6 +249,11 @@ fh_verify(struct svc_rqst *rqstp, struct
- 	if (error)
- 		goto out;
- 
-+	/* Check security flavor */
-+	error = check_nfsd_access(exp, rqstp);
-+	if (error)
-+		goto out;
-+
- 	/* Finally, check access permissions. */
- 	error = nfsd_permission(exp, dentry, access);
- 
-
-diff .prev/fs/nfsd/nfssvc.c ./fs/nfsd/nfssvc.c
---- .prev/fs/nfsd/nfssvc.c	2007-07-10 11:19:56.000000000 +1000
-+++ ./fs/nfsd/nfssvc.c	2007-07-10 11:39:34.000000000 +1000
-@@ -494,6 +494,15 @@ out:
- 	module_put_and_exit(0);
- }
- 
-+static __be32 map_new_errors(u32 vers, __be32 nfserr)
-+{
-+	if (nfserr == nfserr_jukebox && vers == 2)
-+		return nfserr_dropit;
-+	if (nfserr == nfserr_wrongsec && vers < 4)
-+		return nfserr_acces;
-+	return nfserr;
-+}
-+
- int
- nfsd_dispatch(struct svc_rqst *rqstp, __be32 *statp)
- {
-@@ -536,6 +545,7 @@ nfsd_dispatch(struct svc_rqst *rqstp, __
- 
- 	/* Now call the procedure handler, and encode NFS status. */
- 	nfserr = proc->pc_func(rqstp, rqstp->rq_argp, rqstp->rq_resp);
-+	nfserr = map_new_errors(rqstp->rq_vers, nfserr);
- 	if (nfserr == nfserr_jukebox && rqstp->rq_vers == 2)
- 		nfserr = nfserr_dropit;
- 	if (nfserr == nfserr_dropit) {
-
-diff .prev/fs/nfsd/vfs.c ./fs/nfsd/vfs.c
---- .prev/fs/nfsd/vfs.c	2007-07-10 11:38:15.000000000 +1000
-+++ ./fs/nfsd/vfs.c	2007-07-10 11:39:34.000000000 +1000
-@@ -240,6 +240,9 @@ nfsd_lookup(struct svc_rqst *rqstp, stru
- 	err = nfsd_lookup_dentry(rqstp, fhp, name, len, &exp, &dentry);
- 	if (err)
- 		return err;
-+	err = check_nfsd_access(exp, rqstp);
-+	if (err)
-+		goto out;
- 	/*
- 	 * Note: we compose the file handle now, but as the
- 	 * dentry may be negative, it may need to be updated.
-@@ -247,6 +250,7 @@ nfsd_lookup(struct svc_rqst *rqstp, stru
- 	err = fh_compose(resfh, exp, dentry, fhp);
- 	if (!err && !dentry->d_inode)
- 		err = nfserr_noent;
-+out:
- 	dput(dentry);
- 	exp_put(exp);
- 	return err;
-
-diff .prev/include/linux/nfsd/export.h ./include/linux/nfsd/export.h
---- .prev/include/linux/nfsd/export.h	2007-07-10 11:34:22.000000000 +1000
-+++ ./include/linux/nfsd/export.h	2007-07-10 11:39:34.000000000 +1000
-@@ -116,6 +116,7 @@ struct svc_expkey {
- #define EX_NOHIDE(exp)		((exp)->ex_flags & NFSEXP_NOHIDE)
- #define EX_WGATHER(exp)		((exp)->ex_flags & NFSEXP_GATHERED_WRITES)
- 
-+__be32 check_nfsd_access(struct svc_export *exp, struct svc_rqst *rqstp);
+ __be32 check_nfsd_access(struct svc_export *exp, struct svc_rqst *rqstp);
  
  /*
-  * Function declarations
 
 diff .prev/include/linux/nfsd/nfsd.h ./include/linux/nfsd/nfsd.h
---- .prev/include/linux/nfsd/nfsd.h	2007-07-10 11:19:56.000000000 +1000
-+++ ./include/linux/nfsd/nfsd.h	2007-07-10 11:39:34.000000000 +1000
-@@ -236,6 +236,7 @@ void		nfsd_lockd_shutdown(void);
- #define	nfserr_badname		__constant_htonl(NFSERR_BADNAME)
- #define	nfserr_cb_path_down	__constant_htonl(NFSERR_CB_PATH_DOWN)
- #define	nfserr_locked		__constant_htonl(NFSERR_LOCKED)
-+#define	nfserr_wrongsec		__constant_htonl(NFSERR_WRONGSEC)
- #define	nfserr_replay_me	__constant_htonl(NFSERR_REPLAY_ME)
+--- .prev/include/linux/nfsd/nfsd.h	2007-07-10 11:39:34.000000000 +1000
++++ ./include/linux/nfsd/nfsd.h	2007-07-10 11:40:31.000000000 +1000
+@@ -119,7 +119,8 @@ __be32		nfsd_statfs(struct svc_rqst *, s
+ 				struct kstatfs *);
  
- /* error codes for internal use */
+ int		nfsd_notify_change(struct inode *, struct iattr *);
+-__be32		nfsd_permission(struct svc_export *, struct dentry *, int);
++__be32		nfsd_permission(struct svc_rqst *, struct svc_export *,
++				struct dentry *, int);
+ int		nfsd_sync_dir(struct dentry *dp);
+ 
+ #if defined(CONFIG_NFSD_V2_ACL) || defined(CONFIG_NFSD_V3_ACL)
