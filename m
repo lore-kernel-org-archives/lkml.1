@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763911AbXGJSyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbXGJSzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763911AbXGJSyO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760123AbXGJSxp
+	id S1762115AbXGJSzX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbXGJSzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:53:45 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57105 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758665AbXGJSxn (ORCPT
+	Tue, 10 Jul 2007 14:55:08 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:42351 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751475AbXGJSzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:53:43 -0400
-Date: Tue, 10 Jul 2007 20:54:15 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Rob Landley <rob@landley.net>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, gh@us.ibm.com,
-       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
-       joe@perches.com, auke-jan.h.kok@intel.com, hansendc@us.ibm.com,
-       davem@davemloft.net, Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       linux-doc@vger.kernel.org
-Subject: Re: Documentation of kernel messages (Summary)
-Message-ID: <20070710185415.GA3492@stusta.de>
-References: <1181747217.29512.9.camel@localhost.localdomain> <200707091248.24994.rob@landley.net> <20070709183309.GH3492@stusta.de> <200707101225.32843.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200707101225.32843.rob@landley.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 10 Jul 2007 14:55:05 -0400
+Subject: Re: ata and netdev (was Re: -mm merge plans for 2.6.23)
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Deepak Saxena <dsaxena@plexity.net>, Dan Faerch <dan@hacker.dk>,
+       Benjamin LaHaise <bcrl@kvack.org>
+In-Reply-To: <20070710112458.e9dbb55e.akpm@linux-foundation.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <4693C4F8.40903@garzik.org>
+	 <20070710112458.e9dbb55e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 10 Jul 2007 14:55:02 -0400
+Message-Id: <1184093702.3401.83.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 12:25:31PM -0400, Rob Landley wrote:
->...
-> Let's look at _english_ documentation.
+On Tue, 2007-07-10 at 11:24 -0700, Andrew Morton wrote:
+> > > ata-ahci-alpm-store-interrupt-value.patch
+> > > ata-ahci-alpm-expose-power-management-policy-option-to-users.patch
+> > > ata-ahci-alpm-enable-link-power-management-for-ata-drivers.patch
+> > > ata-ahci-alpm-enable-aggressive-link-power-management-for-ahci-controllers.patch
+> > > 
+> > >  These appear to need some work.
+> > 
+> > seemed mostly OK to me.  what comments did I miss?
 > 
-> If you go to http://kernel.org/doc/ols you should find, nicely split up, all 
-> the OLS papers from 2002-2007.  By my count, there are 337 of them, totaling 
-> 61.8 megabytes when they're split up like that.  Being PDFs, they don't 
-> compress all that well.
-> 
-> Which subset of these should be copied into the Documentation directory?
+> Oh, I thought these were the patches which affected scsi and which James
+> had issues with.  I guess I got confused.
 
-You don't have to copy everything.
+Well ... my concern was really how to make them more generic ... ahci
+isn't the only controller that can do phy power management, and it also
+seemed to me that the most generic entity for power management was the
+transport rather than the SCSI mid-layer, but that debate is still
+ongoing.
 
-And you anyway have to handle cases like e.g. most books where you are 
-not permitted to copy them, but might want to point people to them.
+James
 
-> How 
-> do you update them?  This is the documentation from just ONE SOURCE.
-
-You aren't legally permitted to update any OLS paper unless you've 
-gotten explicit permission by the author. And when he gives legal 
-permission, he can as well give you the LaTeX source. I'd expect legal 
-and technical update possibilities to usually be related this way.
-
-And you shouldn't include non-free documentation into the kernel sources.
-
-> And PDF isn't close to the worst of it: Linuxconf.au has lots of video, as 
-> does google video.  (I don't even have _english_ transcripts for those 
-> videos, which would be nice.)  Do you want to merge all of this into the 
-> kernel tarball as well?
-
-Not at all.
-
-> How does this help keep anything up to date?
-
-You can only update things you are legally and technically able to 
-update. For the rest, you can only ship pointers like kernel-docs.txt.
-
-> Rob
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
