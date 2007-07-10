@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764037AbXGJSVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763707AbXGJSW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764037AbXGJSVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760103AbXGJSVk
+	id S1763707AbXGJSW5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbXGJSWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:21:40 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:50033 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760060AbXGJSVj (ORCPT
+	Tue, 10 Jul 2007 14:22:49 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:55497 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754781AbXGJSWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:21:39 -0400
-Date: Tue, 10 Jul 2007 11:20:47 -0700
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Amit Arora <aarora@in.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: -mm merge plans for 2.6.23 -- sys_fallocate
-Message-ID: <20070710182047.GJ15463@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070710090737.GA16519@osiris.boeblingen.de.ibm.com> <20070710022213.81e7b432.akpm@linux-foundation.org> <20070710154503.GC27033@thunk.org>
+	Tue, 10 Jul 2007 14:22:48 -0400
+Message-ID: <4693CCC6.7050400@zytor.com>
+Date: Tue, 10 Jul 2007 11:15:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710154503.GC27033@thunk.org>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Daniel Drake <dsd@gentoo.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       zwane@infradead.org, Andi Kleen <ak@suse.de>,
+       "Antonino A. Daplas" <adaplas@pol.net>
+Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
+ mode
+References: <4678191D.76E4.0078.0@novell.com>	<4686D85B.6090803@gentoo.org>	<20070630154230.4ad373fa.akpm@linux-foundation.org>	<4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org> <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org> <4692BDEE.8020802@zytor.com> <4693BF02.2050705@gentoo.org> <4693C0A1.8010901@zytor.com> <4693CAFF.4000609@gentoo.org>
+In-Reply-To: <4693CAFF.4000609@gentoo.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 11:45:03AM -0400, Theodore Tso wrote:
-> On Tue, Jul 10, 2007 at 02:22:13AM -0700, Andrew Morton wrote:
-> > On Tue, 10 Jul 2007 11:07:37 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > > We reserved a different syscall number than the one that is used right now
-> > > in the patch. Please drop this patch... Martin or I will wire up the syscall
-> > > as soon as the x86 variant is merged. Everything else just causes trouble and
-> > > confusion.
-> > 
-> > OK, I dropped all the fallocate patches.
+Daniel Drake wrote:
+> H. Peter Anvin wrote:
+>> You're complaining that we didn't query EDID when you *explicitly* asked
+>> us not to.  This is not a bug!
 > 
-> Andrew, I want to clarify who is going to push the fallocate patches.
-> I can either push them to Linus as part of the ext4 patch set, or we
-> can wait for you to push them.  I thought since you had them in -mm
-> and we were going to wait you to push them (and presume that this was
-> going to happen soon).
+> I see -- I didn't realise CONFIG_FIRMWARE_EDID was one of options that
+> you shouldn't disable unless you have a good reason. Thanks for the
+> explanation.
 > 
-> Alternatively I can push them directly to Linus along with other ext4
-> patches.  We can drop the s390 patch if Martin or Heiko wants to wire
-> it up themselves.
+> So, 2.6.22-rc6-mm1 should work fine with CONFIG_FIRMWARE_EDID=y, or are
+> further patches needed?
 > 
-> As far as I know there hasn't been any real contention on the actual
-> syscall patches, other than the numbering issues, so it seems that
-> pushing them to Linus sooner rather than later is the right thing to
-> do. 
 
-Where is the latest and greatest version of those patches? Is it still the
-patch set distributed in 2.6.22-rc6-mm1? I'd mostly like to see the final
-set of flags we're planning on supporting. But yeah, I second the "sooner
-rather than later" :)
-	--Mark
+It should, yes.
 
---
-Mark Fasheh
-Senior Software Developer, Oracle
-mark.fasheh@oracle.com
+	-hpa
