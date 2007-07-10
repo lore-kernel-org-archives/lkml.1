@@ -1,100 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbXGJRSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761047AbXGJRTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762667AbXGJRSr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 13:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760405AbXGJRSR
+	id S1761047AbXGJRTA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 13:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbXGJRS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 13:18:17 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:39000 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760231AbXGJRSQ (ORCPT
+	Tue, 10 Jul 2007 13:18:26 -0400
+Received: from smtp121.iad.emailsrvr.com ([207.97.245.121]:40317 "EHLO
+	smtp121.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761308AbXGJRSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 13:18:16 -0400
-Date: Tue, 10 Jul 2007 13:18:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Sysfs and suicidal attributes
-In-Reply-To: <4693A1A5.9070900@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0707101303320.2706-100000@iolanthe.rowland.org>
+	Tue, 10 Jul 2007 13:18:25 -0400
+Message-ID: <4693BF02.2050705@gentoo.org>
+Date: Tue, 10 Jul 2007 13:16:50 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       zwane@infradead.org, Andi Kleen <ak@suse.de>,
+       "Antonino A. Daplas" <adaplas@pol.net>
+Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
+ mode
+References: <4678191D.76E4.0078.0@novell.com>	<4686D85B.6090803@gentoo.org>	<20070630154230.4ad373fa.akpm@linux-foundation.org>	<4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org> <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org> <4692BDEE.8020802@zytor.com>
+In-Reply-To: <4692BDEE.8020802@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007, Tejun Heo wrote:
-
-> > Addition during resume is _not_ safe.  The new device can easily get
-> > added to the already-processed list in the wrong position, so that the
-> > next time the system is suspended the PM core tries to suspend the new
-> > device's parent before suspending the new device.
+H. Peter Anvin wrote:
+> User error.
+> Please replace user and press any key.
 > 
-> When a bus device is being woken up and rescanning the bus, all
-> prerequisites for the bus should have been resumed already.  As long as
-> the newly added device is placed after the bus device itself, things
-> should be safe.  Well, that's the theory at least.
-
-What actually happened in practice was that a device send a wakeup
-request and hence was resumed without the PM core's knowledge.  As a
-result it was still on the "suspended" list when its new child was
-added to the end of the "resumed" list.  Then when the PM core got
-around to the parent, the parent was placed after the child.  Since the 
-"resumed" list is iterated in reverse order for suspending, you see the 
-problem.
-
-If the PM core had been holding the parent's semaphore this wouldn't 
-have occurred.  But it does illustrate the pitfalls of adding a device 
-during resume.
-
-> > I had envisioned using SRCU to synchronize existing device additions
-> > with the beginning of a suspend.  down_read_trylock should work just as
-> > well (aside from cacheline bouncing).
+> # CONFIG_FIRMWARE_EDID is not set
 > 
-> How high performance device addition/removal should be?  Wouldn't rwlock
-> be enough?
+> The user has *explicitly* disabled acquisition of EDID from the
+> firmware, so of course it doesn't probe for it.
 
-rwlock is a type of spinlock, right?  Hence it can't sleep and can't be
-used for device addition/removal.  Also rwlocks aren't fair and are
-subject to livelock.
+I'm not versed with all this EDID and resolution stuff, but shouldn't 
+the resolution be detected correctly under all configurations?
 
-> > Device removal isn't as much of a problem as addition.  We could allow
-> > it with no difficulty.  Failing it isn't really an option because
-> > device_del() returns void.  And anyway, my idea was to have the PM core
-> > acquire all the device semaphores at the start of the suspend -- this
-> > would automatically block any attempted removal until the semaphore was
-> > released.
-> 
-> Hmmm... locking all device mutexes sounds scary to me but I tend to be a
-> chicken and lockdep is great, so it might just work.  :-)
+The original problem is that as of 2.6.20.11, the resolution is 
+misdetected - it is wrong by 6 pixels. The same configuration with 
+2.6.20.10 works fine.
 
-These aren't mutexes; they are semaphores (although they are used as 
-mutexes).  I speculate that part of the reason they have never been 
-converted to mutexes is because of potential lockdep issues.
+With the 2.6.20.10/2.6.20.11 configuration, the user did have 
+CONFIG_FIRMWARE_EDID set. I'm not sure why he changed this for the -mm 
+testing, but then again I don't understand why it should matter.
 
-The order of locking isn't a problem.  The list itself defines the 
-correct order.
-
-> > What with all the sysfs changes, I wouldn't know where to begin
-> > looking.  The idea occurred to me mainly because I was considering
-> > blocking all access to sysfs during a suspend -- the problem being that
-> > a suspend is itself triggered by a write to a sysfs attribute!  
-> > Somehow that write would have to wait for all _other_ existing accesses
-> > to complete and block new ones.
-> 
-> Why is that necessary?  What happens if there's some long-running
-> read/write operation using bin attr?
-
-That is certainly a possible problem.  I don't know if there are any 
-such long-running operations.
-
-Is it necessary?  No.  But it would make things easier if suspend 
-handling could be localized in one place (the sysfs core) instead of 
-spread out among a bunch of attribute methods.
-
-Using a freezable workqueue for the callbacks would also localize the 
-suspend handling.
-
-Alan Stern
-
+Daniel
