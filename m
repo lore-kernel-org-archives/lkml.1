@@ -1,80 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764023AbXGJSZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764142AbXGJS0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764023AbXGJSZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbXGJSZT
+	id S1764142AbXGJS0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbXGJS0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:25:19 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:5782 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754481AbXGJSZR (ORCPT
+	Tue, 10 Jul 2007 14:26:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36840 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757554AbXGJS0B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:25:17 -0400
-Date: Tue, 10 Jul 2007 20:25:16 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       andi@firstfloor.org, akpm@linux-foundation.org
-Subject: Re: [x86 setup 16/33] String-handling functions for the new x86
- setup code.
-In-Reply-To: <11840376162370-git-send-email-hpa@zytor.com>
-Message-ID: <Pine.LNX.4.64.0707102022400.11053@fbirervta.pbzchgretzou.qr>
-References: <11840359321823-git-send-email-hpa@zytor.com>
- <11840360383913-git-send-email-hpa@zytor.com> <11840361432207-git-send-email-hpa@zytor.com>
- <11840362483663-git-send-email-hpa@zytor.com> <11840363531039-git-send-email-hpa@zytor.com>
- <11840364593068-git-send-email-hpa@zytor.com> <1184036564610-git-send-email-hpa@zytor.com>
- <11840366692770-git-send-email-hpa@zytor.com> <11840367741994-git-send-email-hpa@zytor.com>
- <11840368791603-git-send-email-hpa@zytor.com> <11840369841576-git-send-email-hpa@zytor.com>
- <11840370903975-git-send-email-hpa@zytor.com> <11840371953778-git-send-email-hpa@zytor.com>
- <11840373002601-git-send-email-hpa@zytor.com> <11840374052662-git-send-email-hpa@zytor.com>
- <1184037510289-git-send-email-hpa@zytor.com> <11840376162370-git-send-email-hpa@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jul 2007 14:26:01 -0400
+Date: Tue, 10 Jul 2007 11:24:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Deepak Saxena <dsaxena@plexity.net>, Dan Faerch <dan@hacker.dk>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: ata and netdev (was Re: -mm merge plans for 2.6.23)
+Message-Id: <20070710112458.e9dbb55e.akpm@linux-foundation.org>
+In-Reply-To: <4693C4F8.40903@garzik.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<4693C4F8.40903@garzik.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 10 Jul 2007 13:42:16 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-On Jul 9 2007 19:51, H. Peter Anvin wrote:
->
->strcmp(), memcpy(), memset(), as well as routines to copy to and from
->other segments (as pointed to by fs and gs).
+> 
+> (just to provide my indicator of status)
 
-I wonder, strcmp() is the only one not done in assembler.
-Is there a particular reason? (Or the other way around, why
-is memcpy/memset not C.) The opcode is rep[n]z cmps[bl];
+Thanks.
 
-Would perhaps using __builtin_memset
-and whatever GCC provides also work in 16-bit mode (would save
-implementing it again).
+> > libata-add-irq_flags-to-struct-pata_platform_info-fix.patch
+> 
+> are other pata_platform people happy with this?  I don't know embedded 
+> well enough to know if adding this struct member will break things.
 
->+/*
->+ * arch/i386/boot/string.c
->+ *
->+ * Very basic string functions
->+ */
->+
->+#include "boot.h"
->+#include <linux/edd.h>
+This is just a silly remove-unneeded-cast-of-void* cleanup.  I wrote this
+as a fixup against
+libata-add-irq_flags-to-struct-pata_platform_info.patch with the intention
+of folding it into that base patch, but you went and merged the submitter's
+original patch so this trivial fixup got stranded in -mm.  Feel free to give
+it the piss-off-too-trivial treatment.
 
-What's edd good for here?
+> > ata-ahci-alpm-store-interrupt-value.patch
+> > ata-ahci-alpm-expose-power-management-policy-option-to-users.patch
+> > ata-ahci-alpm-enable-link-power-management-for-ata-drivers.patch
+> > ata-ahci-alpm-enable-aggressive-link-power-management-for-ahci-controllers.patch
+> > 
+> >  These appear to need some work.
+> 
+> seemed mostly OK to me.  what comments did I miss?
 
->+int strcmp(const char *str1, const char *str2)
->+{
->+	const unsigned char *s1 = (const unsigned char *)str1;
->+	const unsigned char *s2 = (const unsigned char *)str2;
->+	int delta = 0;
->+
->+	while (*s1 || *s2) {
->+		delta = *s2 - *s1;
->+		if (delta)
->+			return delta;
->+		s1++;
->+		s2++;
->+	}
->+	return 0;
->+}
+Oh, I thought these were the patches which affected scsi and which James
+had issues with.  I guess I got confused.
 
+> 
+> > libata-add-human-readable-error-value-decoding.patch
+> 
+> still pondering; in my mbox queue
+> 
+> > libata-fix-hopefully-all-the-remaining-problems-with.patch
+> > testing-patch-for-ali-pata-fixes-hopefully-for-the-problems-with-atapi-dma.patch
+> > pata_ali-more-work.patch
+> 
+> No idea.  I would poke Alan.  Probably drop.
+> 
 
+Alan: poke.
 
-	Jan
--- 
+> 
+> > 8139too-force-media-setting-fix.patch
+> > blackfin-on-chip-ethernet-mac-controller-driver.patch
+> > atari_pamsnetc-old-declaration-ritchie-style-fix.patch
+> > sundance-phy-address-form-0-only-for-device-id-0x0200.patch
+> 
+> Needs a bug fix, so that the newly modified loop doesn't scan the final 
+> phy id, then loop back around to scan the first again.
+> 
+> 
+> > 3x59x-fix-pci-resource-management.patch
+> > update-smc91x-driver-with-arm-versatile-board-info.patch
+> > drivers-net-ns83820c-add-paramter-to-disable-auto.patch
+> > 
+> >  netdev patches which are stuck in limbo land.
+> 
+> ?  I don't think I've seen these.
+> 
+
+3x59x-fix-pci-resource-management.patch: you wrote it ;) I have a comment
+here:
+
+- I don't remember the story with cardbus either.  Presumably once upon a
+  time the cardbus layer was claiming IO regions on behalf of cardbus
+  devices (?)
+
+Need to think about that.
+
+update-smc91x-driver-with-arm-versatile-board-info.patch:
+
+See comment from rmk in changelog:
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/update-smc91x-driver-with-arm-versatile-board-info.patch
+
+Deepak, can we move this along a bit please?
+
+drivers-net-ns83820c-add-paramter-to-disable-auto.patch:
+
+See comments in changelog: ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/drivers-net-ns83820c-add-paramter-to-disable-auto.patch
+
+Dan, Ben: is there any prospect of progress here?
+
+> 
+> > bonding-bond_mainc-make-2-functions-static.patch
+> 
+> FWIW bonding stuff should go to me, since it lives mostly in drivers/net
+> 
+
+Ah, noted.
+
+> > x86-initial-fixmap-support.patch
+> 
+> Andi material?
+> 
+
+Spose so.  But it's buried in the middle of a series of four patches.
+
+> 
+> > mm-revert-kernel_ds-buffered-write-optimisation.patch
+> > revert-81b0c8713385ce1b1b9058e916edcf9561ad76d6.patch
+> > revert-6527c2bdf1f833cc18e8f42bd97973d583e4aa83.patch
+> > mm-clean-up-buffered-write-code.patch
+> > mm-debug-write-deadlocks.patch
+> > mm-trim-more-holes.patch
+> > mm-buffered-write-cleanup.patch
+> > mm-write-iovec-cleanup.patch
+> > mm-fix-pagecache-write-deadlocks.patch
+> > mm-buffered-write-iterator.patch
+> > fs-fix-data-loss-on-error.patch
+> > mm-restore-kernel_ds-optimisations.patch
+> >  pagefault-in-write deadlock fixes.  Will hold for 2.6.24.
+> 
+> Any of the above worth 2.6.23?  Just wondering if they were useful 
+> cleanups / minor fixes prior to new aops patches?
+> 
+
+The first few patches will a) fix up our writev performance regression and
+b) reintroduce the writev() deadlock which the writev()-regresion-adding
+patch fixed.
+
+So it's all a bit ugly.
+
+> 
+> > oss-trident-massive-whitespace-removal.patch
+> > oss-trident-fix-locking-around-write_voice_regs.patch
+> > oss-trident-replace-deprecated-pci_find_device-with-pci_get_device.patch
+> > remove-options-depending-on-oss_obsolete.patch
+> > 
+> >  Merge
+> 
+> what about just removing the OSS drivers in question?  :)
+> 
+
+Hey, I only work here.
+
+> 
+> > intel-iommu-dmar-detection-and-parsing-logic.patch
+> > intel-iommu-pci-generic-helper-function.patch
+> > intel-iommu-clflush_cache_range-now-takes-size-param.patch
+> > intel-iommu-iova-allocation-and-management-routines.patch
+> > intel-iommu-intel-iommu-driver.patch
+> > intel-iommu-avoid-memory-allocation-failures-in-dma-map-api-calls.patch
+> > intel-iommu-intel-iommu-cmdline-option-forcedac.patch
+> > intel-iommu-dmar-fault-handling-support.patch
+> > intel-iommu-iommu-gfx-workaround.patch
+> > intel-iommu-iommu-floppy-workaround.patch
+> > 
+> >  Don't know.  I don't think there were any great objections, but I don't
+> >  think much benefit has been demonstrated?
+> 
+> Just the general march of progress on new hardware :)
+> 
+> I would like to see this support merged in /some/ form.  We've been 
+> telling Intel for years they were sillyheads for not bothering with an 
+> IOMMU.  Now that they have, we should give them a cookie and support 
+> good technology.
+
+OK, thanks.
