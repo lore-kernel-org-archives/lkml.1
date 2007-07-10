@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbXGJWlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761675AbXGJWlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760055AbXGJWlQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 18:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbXGJWlA
+	id S1761675AbXGJWlf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 18:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbXGJWlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 18:41:00 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36348 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754102AbXGJWlA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 18:41:00 -0400
-Date: Tue, 10 Jul 2007 23:40:59 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Adel Gadllah <adel.gadllah@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix sparse problems with ARRAY_SIZE
-Message-ID: <20070710224059.GS21668@ftp.linux.org.uk>
-References: <4693AE32.7030403@gmail.com> <4693AF4C.8010005@gmail.com> <20070710194033.GB5751@martell.zuzino.mipt.ru> <20070710205817.GR21668@ftp.linux.org.uk>
-Mime-Version: 1.0
+	Tue, 10 Jul 2007 18:41:25 -0400
+Received: from waste.org ([66.93.16.53]:43799 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754764AbXGJWlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 18:41:24 -0400
+Date: Tue, 10 Jul 2007 17:40:46 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+Message-ID: <20070710224046.GV11115@waste.org>
+References: <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org> <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com> <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI> <469342DC.8070007@yahoo.com.au> <84144f020707100231p5013e1aer767562c26fc52eeb@mail.gmail.com> <20070710120224.GP11115@waste.org> <Pine.LNX.4.64.0707101510410.5490@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070710205817.GR21668@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <Pine.LNX.4.64.0707101510410.5490@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 09:58:18PM +0100, Al Viro wrote:
-> On Tue, Jul 10, 2007 at 11:40:33PM +0400, Alexey Dobriyan wrote:
-> > On Tue, Jul 10, 2007 at 06:09:48PM +0200, Adel Gadllah wrote:
-> > > --- linux-2.6.orig/include/linux/kernel.h
-> > > +++ linux-2.6/include/linux/kernel.h
-> > > @@ -35,7 +35,11 @@ extern const char linux_proc_banner[];
-> > >  #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
-> > >  #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
-> > >  
-> > > +#ifdef __CHECKER_
-> > > +#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-> > > +#else
-> > >  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
-> > > +#endif
+On Tue, Jul 10, 2007 at 03:12:38PM -0700, Christoph Lameter wrote:
+> On Tue, 10 Jul 2007, Matt Mackall wrote:
+> 
+> > following as the best MemFree numbers after several boots each:
 > > 
-> > Al Viro recently gave a hint that he have patches for sparse to not give
-> > spurious ARRAY_SIZE warnings.
+> > SLAB: 54796
+> > SLOB: 55044
+> > SLUB: 53944
+> > SLUB: 54788 (debug turned off)
 > 
-> I do.  Right now it's either 2 or 4 patches away from mainline sparse,
-> depending on reordering...  I'm splitting the last patch in series,
-> hopefully will reorder and send tonight.
-> 
-> Basically, it's a matter of getting __builtin_compatible_types_p()
-> implementation (really - evaluate.c:type_difference()) somewhere sane.
+> That was without "slub_debug" as a parameter or with !CONFIG_SLUB_DEBUG?
 
-Try git://git.kernel.org/pub/scm/linux/kernel/git/viro/sparse.git/,
-the branch is type_difference
+Without the parameter, as the other way doesn't compile in -mm1.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
