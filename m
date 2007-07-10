@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761943AbXGJL0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761600AbXGJLa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761943AbXGJL0X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 07:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbXGJL0P
+	id S1761600AbXGJLa2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 07:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbXGJLaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 07:26:15 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:46756 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbXGJL0O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 07:26:14 -0400
-In-Reply-To: <adazm25w998.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
+	Tue, 10 Jul 2007 07:30:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56890 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752272AbXGJLaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 07:30:20 -0400
+Date: Tue, 10 Jul 2007 13:30:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       shaohua.li@intel.com
+Subject: Re: [PATCH][RFC] kvm-scheduler integration
+Message-ID: <20070710113006.GA21053@elte.hu>
+References: <11838994974161-git-send-email-avi@qumranet.com> <20070708133539.GA12597@elte.hu> <4690E973.7000606@qumranet.com> <20070708134850.GB22911@elte.hu> <4690EC47.6060904@qumranet.com> <20070708135905.GA24991@elte.hu> <46936AF2.9010400@qumranet.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH 06/13] IB/ehca: Set SEND_GRH flag for all non-LL UD QPs on eHCA2
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OF42327D02.A1FE96AF-ONC1257314.003E9788-C1257314.003EE7E8@de.ibm.com>
-Date: Tue, 10 Jul 2007 13:26:10 +0200
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 10/07/2007 13:26:11,
-	Serialize complete at 10/07/2007 13:26:11
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46936AF2.9010400@qumranet.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier <rdreier@cisco.com> wrote on 09.07.2007 23:35:31:
 
-> Out of curiousity, does this mean that a GRH will be sent on all UD
-> messages (for non-LL QPs)?
+* Avi Kivity <avi@qumranet.com> wrote:
 
-No - the bit instructs the hardware to fetch the GRH parts of the QP 
-context.
-The GRH will only be used if the WQE says so.
+> How do you feel about some variant of this going into 2.6.23-rc1?  I 
+> initially thought of this as a 2.6.24 thing, but as it now looks 
+> solid, maybe we can hurry things along.
 
-Joachim
+yeah, fine by me. You were working on a more generic patch, right? I 
+think a good approach would be an atomic notifier chain.
+
+> If Shaohua ports his spinlock->mutex convertion to the sched branch, 
+> we get some real benefits:
+> 
+> - reduced latencies for desktop users
+> - less kvm patches to carry in -rt (maybe none?)
+
+yeah, and i think we can reach 'none'.
+
+	Ingo
