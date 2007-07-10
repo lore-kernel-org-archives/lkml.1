@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765005AbXGJSuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761131AbXGJSwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765005AbXGJSuu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXGJSum
+	id S1761131AbXGJSwT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbXGJSwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:50:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33368 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756846AbXGJSul (ORCPT
+	Tue, 10 Jul 2007 14:52:09 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:60868 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbXGJSwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:50:41 -0400
-Date: Tue, 10 Jul 2007 11:50:39 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Dave McCracken <dave.mccracken@oracle.com>, Mel Gorman <mel@skynet.ie>,
-       Andrew Morton <akpm@linux-foundation.org>, kenchen@google.com,
-       jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       y-goto@jp.fujitsu.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans -- anti-fragmentation
-In-Reply-To: <20070710152355.GI8779@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0707101148161.11906@schroedinger.engr.sgi.com>
-References: <20070710102043.GA20303@skynet.ie> <200707100929.46153.dave.mccracken@oracle.com>
- <20070710152355.GI8779@wotan.suse.de>
+	Tue, 10 Jul 2007 14:52:07 -0400
+Date: Tue, 10 Jul 2007 19:06:15 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Dave McCracken <dave.mccracken@oracle.com>
+cc: herbert.van.den.bergh@oracle.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] include private data mappings in RLIMIT_DATA limit
+In-Reply-To: <200707101219.29743.dave.mccracken@oracle.com>
+Message-ID: <Pine.LNX.4.64.0707101857310.20758@blonde.wat.veritas.com>
+References: <4692D616.4010004@oracle.com> <200707091954.10502.dave.mccracken@oracle.com>
+ <Pine.LNX.4.64.0707101727510.4717@blonde.wat.veritas.com>
+ <200707101219.29743.dave.mccracken@oracle.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAZGF2ZS5tY2NyYWNrZW5Ab3JhY2xlLmNvbQBoZXJiZXJ0LnZhbi5kZW4uYmVyZ2hAb3JhY2xlLmNvbQBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Nick Piggin wrote:
-
-> > The sheer list of patches lined up behind this set is strong evidence that 
-> > there are useful features which depend on a working order>0.  When you add in 
-> > the existing code that has to struggle with allocation failures or resort to 
-> > special pools (ie hugetlbfs), I see a clear vote for the need for this patch.
+On Tue, 10 Jul 2007, Dave McCracken wrote:
+> On Tuesday 10 July 2007, Hugh Dickins wrote:
+> > > >
+> > > > This brings the Linux behavior in line with what is documented in the
+> > > > POSIX man page for setrlimit(3p).
+> >
+> > Which says malloc() can fail from it, but conspicuously not that mmap()
+> > can fail from it: unlike the RLIMIT_AS case.  Would we be better off?
 > 
-> Really the only patches so far that I think have convincing reasons are
-> memory unplug and hugepage, and both of those can get a long way by using
-> a reserve zone (note it isn't entirely reserved, but still available for
-> things like pagecache). Beyond that, is there a big demand, and do we
-> want to make this fundamental change in direction in the kernel to
-> satisfy that demand?
+> True.  But keep in mind that when POSIX was written mmap() was new and shiny 
+> and pretty much only used for shared mappings, and definitely not used by 
+> malloc().
 
-SLUB can use it to use large order pages which generate less lock 
-contention which is important in SMP systems. Large pages also increase 
-the object density in slabs.
+Well, my bookmark is to SUSv3, which I think is equivalent these days?
+And that specifically says malloc() or mmap() in the RLIMIT_AS case,
+but only malloc() in the RLIMIT_DATA case.  We're wrong either way.
 
-> So small ones like order-1 and 2 seem reasonably good right now AFAIKS.
+> Given that RLIMIT_DATA is pretty much meaningless in current kernels, I would 
+> put forward the argument that this change is extremely unlikely to break 
+> anything because no one is currently setting it to anything other than 
+> unlimited.  Adding this feature would give administrators another tool, a way 
+> to control the private data size of a process without restricting its ability 
+> to attach to large shared mappings.
 
-Sorry no. Without the antifrag patches I had failures even with order 1 
-and 2 allocs from SLUB.
+That may be a good argument (though "extremely unlikely to break"s
+have a nasty habit of biting).  I'd still say that the contribution
+to Committed_AS is more appropriate and more useful here.
 
-> If you perhaps want to say start using order-4  pages for slab or
-> some other kernel memory allocations, then you can run into the situation
-> where memory gets fragmented such that you have one sixteenth of your
-> memory actualy used but you can't allocate from any of your slabs because
-> there are no order-4 pages left. I guess this is a big difference between
-> order-low failures and order-high.
+> > That change to /proc/PID/status VmData:
+> > -	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
+> > +	data = mm->total_vm - mm->shared_vm - mm->stack_vm - mm->exec_vm;
+> > looks plausible, but isn't exec_vm already counted as shared_vm,
+> > so now being doubly subtracted?  Besides which, we wouldn't want
+> > to change those numbers again without consulting Albert.
+> 
+> As I recall, this was added after Herbert discovered that exec_vm is not 
+> counted as shared_vm.  It's actually mapped as private/readonly.
 
-The order that is readily reclaimable should be configurable.
+Mapped private readonly yes, but vm_stat_account() says
+	if (file) {
+		mm->shared_vm += pages;
+		if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
+			mm->exec_vm += pages;
 
+Hugh
