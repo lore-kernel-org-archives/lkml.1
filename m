@@ -1,61 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbXGJHEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762727AbXGJHFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758014AbXGJHEU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 03:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbXGJHEH
+	id S1762727AbXGJHFc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 03:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXGJHFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 03:04:07 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:47633 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752517AbXGJHEG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 03:04:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=jLWHiXwCj6rsfyIlaK8VMXxoaLLjk8Xe8Ptek1/ftszRtavaPItSxvrQl8r4oHrcN0KRH0m/sid1qn13AFedQ3D62W/orXaFAYIkH9MrAJuNB7dbE3iEVQ1HXBuXHl2M4YX/RLyPz33q+GfKmg6w+VlbJgf2b5luuWx64zEjwVg=  ;
-X-YMail-OSG: ESs72ZsVM1lYPsDRLZsSEou9jMJYxcSiud6qkQFPrK3_5FvN
-Message-ID: <46932F5C.20709@yahoo.com.au>
-Date: Tue, 10 Jul 2007 17:03:56 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 10 Jul 2007 03:05:25 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:39370 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751406AbXGJHFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 03:05:24 -0400
+Message-ID: <46932F69.8020101@openvz.org>
+Date: Tue, 10 Jul 2007 11:04:09 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-References: <20070708034952.022985379@sgi.com> <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org> <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com> <4692E3BF.9010305@yahoo.com.au> <Pine.LNX.4.64.0707091849590.2860@schroedinger.engr.sgi.com> <4692E7D4.6060909@yahoo.com.au> <20070710062215.GE11115@waste.org>
-In-Reply-To: <20070710062215.GE11115@waste.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: sukadev@us.ibm.com
+CC: Cedric Le Goater <clg@fr.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 4/16] Change data structures for pid namespaces
+References: <468DF6F7.1010906@openvz.org> <468DF7AC.10302@openvz.org> <469299C5.1060402@fr.ibm.com> <20070710043250.GD15214@us.ibm.com>
+In-Reply-To: <20070710043250.GD15214@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, Jul 10, 2007 at 11:58:44AM +1000, Nick Piggin wrote:
-
->>Just a fancy way of saying roughly that memory waste will increase as
->>the size of the system increases. But that aspect of it I think is
->>not really a problem for non-tiny systems anyway because the waste
->>tends not to be too bad (and possibly the number of active allocations
->>does not increase O(n) with the size of RAM either).
+sukadev@us.ibm.com wrote:
+> Cedric Le Goater [clg@fr.ibm.com] wrote:
+> | Pavel Emelianov wrote:
+> | > struct pid_namespace will have the kmem_cache to allocate
+> | > the pids from, the parent, as they are hierarchical, and
+> | > the level of nesting value.
+> | > 
+> | > struct pid will have a variable length array of pid_number-s
+> | > one for each namespace this pid lives in. The level value
+> | > shows the level of the namespace this pid lives in and thus -
+> | > the number of elements in the numbers array.
+> | > 
+> | > Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+> | > 
+> | > ---
+> | > 
+> | >  include/linux/init_task.h     |    6 ++++++
+> | >  include/linux/pid.h           |    9 +++++++++
+> | >  include/linux/pid_namespace.h |    3 +++
+> | >  kernel/pid.c                  |    3 ++-
+> | >  4 files changed, 20 insertions(+), 1 deletion(-)
+> | > 
+> | > diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/pid.h linux-2.6.22-rc4-mm2-2/include/linux/pid.h
+> | > --- linux-2.6.22-rc4-mm2.orig/include/linux/pid.h	2007-06-14 12:14:29.000000000 +0400
+> | > +++ linux-2.6.22-rc4-mm2-2/include/linux/pid.h	2007-07-04 19:00:38.000000000 +0400
+> | > @@ -40,6 +40,13 @@ enum pid_type
+> | >   * processes.
+> | >   */
+> | > 
+> | > +struct pid_number {
+> | > +	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
+> | > +	int nr;
+> | > +	struct pid_namespace *ns;
+> | > +	struct hlist_node pid_chain;
+> | > +};
 > 
+> We meant to go back and look at removing the extra 'struct pid *' we had
+> here. Looks like you did that. Cool.
 > 
-> If active allocations doesn't increase O(n) with the size of RAM,
-> what's all that RAM for?
+> | > +
+> | >  struct pid
+> | >  {
+> | >  	atomic_t count;
+> | > @@ -40,6 +40,8 @@ enum pid_type
+> | >  	/* lists of tasks that use this pid */
+> | >  	struct hlist_head tasks[PIDTYPE_MAX];
+> | >  	struct rcu_head rcu;
+> | > +	int level;
+> | > +	struct pid_number numbers[1];
+> | >  };
+> | > 
+> | >  extern struct pid init_struct_pid;
+> | > diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/pid_namespace.h linux-2.6.22-rc4-mm2-2/include/linux/pid_namespace.h
+> | > --- linux-2.6.22-rc4-mm2.orig/include/linux/pid_namespace.h	2007-06-14 12:14:29.000000000 +0400
+> | > +++ linux-2.6.22-rc4-mm2-2/include/linux/pid_namespace.h	2007-07-04 19:00:39.000000000 +0400
+> | > @@ -16,7 +15,10 @@ struct pidmap {
+> | >  	struct kref kref;
+> | >  	struct pidmap pidmap[PIDMAP_ENTRIES];
+> | >  	int last_pid;
+> | > +	int level;
+> | >  	struct task_struct *child_reaper;
+> | > +	struct kmem_cache *pid_cachep;
+> | 
+> | so, that looks like a good idea to have the cache in the pidmap. could you 
+> | push that independently to see how it all fits together ?
 > 
-> If your memory isn't getting used for large VMAs or large amounts of
-> page cache, that means it's getting used by task structs,
-> radix_tree_nodes, sockets, dentries, inodes, etc.
+> Yes. I like this idea too.
 
-Yeah you could be right. Actually you most likey _are_ right for many
-workloads.
+OK. I will collect the patches you Acked and send them to Andrew independently.
 
--- 
-SUSE Labs, Novell Inc.
+> | 
+> | thanks,
+> | 
+> | C.
+> 
+
