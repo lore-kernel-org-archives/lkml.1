@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbXGJGPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbXGJGWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760286AbXGJGPg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 02:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXGJGP2
+	id S1760864AbXGJGWh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 02:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXGJGW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 02:15:28 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:35093 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbXGJGP1 (ORCPT
+	Tue, 10 Jul 2007 02:22:28 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:52383 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbXGJGW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 02:15:27 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: Documentation of kernel messages (Summary)
-Date: Tue, 10 Jul 2007 08:15:14 +0200
-User-Agent: KMail/1.9.7
-Cc: "Kunai, Takashi" <kunai@linux-foundation.jp>, holzheu@linux.vnet.ibm.com,
-       "Rob Landley" <rob@landley.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, gh@us.ibm.com,
-       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
-       hpa@zytor.com, joe@perches.com, auke-jan.h.kok@intel.com,
-       hansendc@us.ibm.com, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
-       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-References: <1181747217.29512.9.camel@localhost.localdomain> <200707090901.47900.oliver@neukum.org> <a781481a0707091559x7103fea6vc74c06f451e66d55@mail.gmail.com>
-In-Reply-To: <a781481a0707091559x7103fea6vc74c06f451e66d55@mail.gmail.com>
+	Tue, 10 Jul 2007 02:22:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DFIbjMNGhw6c9PYVJEUwrQbqsyJCTPWoVxssOB+TKfFtqoh3+OxhdJBtyAqcTc+cftxDZsXJxPSMEjPUhKH8hAh4bAZc/aFIPgCmtjVwJ9+JV1yUfzG2IBQmIbW1ieh18h5um3nL7BcbvSRnyhpToaD7V4pSGN90Gvr9m7kvxmE=
+Message-ID: <86802c440707092322k6906cdefgae821dbf8e21ef60@mail.gmail.com>
+Date: Mon, 9 Jul 2007 23:22:26 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH 1/4] try parent numa_node at first before using default
+Cc: "Christoph Lameter" <clameter@sgi.com>, akpm@linux-foundation.org,
+       ak@suse.de, rientjes@google.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070710044911.GB10748@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707100815.15619.oliver@neukum.org>
+References: <200707031835.l63IZo9K008197@imap1.linux-foundation.org>
+	 <200707031731.02456.yinghai.lu@sun.com>
+	 <20070710004416.GA6905@kroah.com>
+	 <Pine.LNX.4.64.0707091751410.2269@schroedinger.engr.sgi.com>
+	 <20070710044911.GB10748@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 10. Juli 2007 schrieb Satyam Sharma:
-> But, I'm not sure they'd be operating against a known target -- I don't
-> really know what exactly would be hashed, but if it's kernel printk()
-> messages (the format string, obviously), then please remember that
-> new messages would get added all the time, and unless we're also
-> willing to change the hash function every time a printk() gets added
-> to the kernel (whew!) it's going to be a problem -- especially because
-> we don't really want to generate new hash functions for every kernel
-> version / or for every kernel build, because we'd obviously like the
-> same error message to hash to the same value across versions.
+On 7/9/07, Greg KH <greg@kroah.com> wrote:
+> On Mon, Jul 09, 2007 at 05:52:34PM -0700, Christoph Lameter wrote:
+> > It means that the node for the device is the same as the parent device.
+> > F.e. if the parent device is a bus that is connected to node 4 then all
+> > the devices hooked up to the bus are allocated on that node.
+>
+> Yes, but is someone setting the parent device node information properly?
 
-I suggest exactly that you build a new hash function for every build.
-Nothing but your translating demon need ever see it. We build a new
-System.map every time and it doesn't hurt.
+> And this really needs some more changelog information please.  Why is
+> this needed from how things are done today?
 
-	Regards
-		Oliver
+please check if you are happy with the changlog
 
+----------------------------------------------------begin---------------------
+For pci_device, pcibios_scan_root and pci_scan_root will call pci_device_add.
+pci_device_add will call device_initialize and set_dev_node(&dev->dev,
+pcibus_to_node(bus)).
+other device such as netdev, and usb_device, set_dev_node is never be
+used. So that field numa_node always is -1.
+
+So for netdev, it will need to use dev->parent to get pci_device to
+use it's numa_node. esp in netdev_alloc_skb()
+not sure how other device such as infiniband do that.
+
+Actually before patch
+[PATCH 1/2] x86_64: get mp_bus_to_node as early
+there is a bug about squence of bus->sysdata and using pcibus_to_node.
+the numa_node of pci_dev->dev is never set correctly...always 0.
+
+So some device have to use pcibus_to_node(to_pci_dev(dev)->bus) directly
+such as dma_alloc_pages in arch/x86_64/kernel/pci-dma.c.
+or hwif_to_node in include/linux/ide.h
+
+with this patch, we could use device->numa_node direclty for all device.
+-------------------------------------------------end-----------
+
+
+
+YH
