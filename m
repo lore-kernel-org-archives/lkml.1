@@ -1,52 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbXGJNUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbXGJNUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755068AbXGJNUZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 09:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbXGJNUN
+	id S1758647AbXGJNUq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 09:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXGJNUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 09:20:13 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:8218 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbXGJNUL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 09:20:11 -0400
-In-Reply-To: <adak5t9w7kx.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
+	Tue, 10 Jul 2007 09:20:35 -0400
+Received: from mail.suse.de ([195.135.220.2]:51386 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755040AbXGJNUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 09:20:33 -0400
+Date: Tue, 10 Jul 2007 15:20:31 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070710132031.GE22862@suse.de>
+Mail-Followup-To: kexec@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+References: <20070706132814.GA7079@suse.de> <20070706145804.GA31409@localdomain> <20070709092154.GA19705@suse.de> <20070709114131.GA18750@localdomain> <20070709204938.GA21663@suse.de> <20070710044546.GA2240@localdomain>
 MIME-Version: 1.0
-Subject: Re: [PATCH 00/13] IB/ehca: eHCA2 enablement & some fixes
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OF1EC84A1D.3C3D1851-ONC1257314.003EEB89-C1257314.00495729@de.ibm.com>
-Date: Tue, 10 Jul 2007 15:20:08 +0200
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 10/07/2007 15:20:09,
-	Serialize complete at 10/07/2007 15:20:09
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070710044546.GA2240@localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier <rdreier@cisco.com> wrote on 10.07.2007 00:11:42:
+Hello,
 
-> thanks, I applied these for 2.6.23 and fixed a bunch of minor things
-> that scripts/checkpatch.pl complained about (since I was in a mood to
-> do mindless things).
+* Dan Aloni <da-x@monatomic.org> [2007-07-10 06:45]:
+> > > 
+> > > Not exactly. Let me describe the procedure in greater detail.
+> > > Basically, it would go like this:
+> > > 
+> > > 1. <normal bootloader boot>
+> > > 2. <normal initramfs>
+> > > 3. embed_configfile /proc/kcore.info /vmlinux-kdump
+> > > 4. kexec -l vmlinux-kdump <....>
+> > > 5. <boot continues>
+> > > 6. <crash>
+> > > 7. <kdump kernel boot>
+> > > 8. <kdump initramfs runs>
+> > > 9. makedumpfile -i /proc/vmcore.info <....>
+> > 
+> > I don't see why an additional tool would be needed here. kexec already
+> > modifies symbols, so why not adding the functionality into kexec? The
+> > advantage would be that there's no on-disk modification necessary.
+> 
+> Actually, 'embed_configfile /proc/kcore.info /vmlinux-kdump' makes
+> no on-disk modification, since it is all contained in initramfs (we
+> step out of initramfs in stage 5). 
 
-Thanks! Both for the quick merge and for the fixes!
+Well, that assumes that you load the kdump kernel in the initrd of the
+normal kernel. That's not always the case. For example, in SUSE the
+kdump kernel is loaded as init script in the normal boot process.
+Also, e.g. when testing, you may load the kdump kernel again. So you
+would always need to copy the kdump kernel, modify it with
+embed_configfile and then run kexec.
 
-> In the future please run that yourself and clean
-> up the obvious things.  I generally don't worry about the 80 column
-> stuff, but it will catch most whitespace problems and tell you that
-> foo(x,y) should be foo(x, y) etc.  So you don't have to completely
-> silence the script but at least take a look at the output.
+I think extending kexec to perform this task is more user friendly.
 
-Didn't know about that script before, so thanks for the pointer!
-I'll be sure to pass the next set of patches through it.
+> BTW another option would be containing the whole CONFIGFILE as a 
+> vmlinux-specific ELF note, to be easily read from /proc/vmcore.
+> You'd still need some util like embed_configfile at build time 
+> in order to integrate it, and you'd also need to modify 
+> makedumpfile so it can use it. Actually this sounds quite better
+> to me. I'll try to prepare patches both for makedumpfile and the 
+> kernel and see how easy it is.
 
-Joachim
+Well, in our kernel RPMs there's also a CONFIGFILE which can be
+located on disk based on the version. (If a user builds the kernel
+manually, then he probably builds it with -g anyway because if he
+doesn't, he cannot run makedumpfile.)
+
+The inclusion of the CONFIGFILE can be done by kexec when loading the
+kdump kernel, either from a file or from the compiled-in
+/proc/kcore.info file. I don't see a reason why a tool should modify
+the vmlinux file for kdump on-disk.  Actually, I like the idea of
+including a ELF note that contains CONFIGFILE.
+
+Currently, we still have another problem: On x86_64, if the kernel is
+relocatable, we only can use bzImage, not vmlinux kexec because of a
+GDB bug that doesn't get attention by the GDB developers although I
+found out the patch that broke GDB in that way ... But: That would
+require that embed_configfile must also be able to modify bzImage
+which is very problematic. Adding a ELF in kexec that could be read in
+the /proc/vmcore hasn't that problem.
+
+
+
+Thanks,
+   Bernhard
