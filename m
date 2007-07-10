@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763914AbXGKAdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764679AbXGKAdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763914AbXGKAdd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 20:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXGKAd0
+	id S1764679AbXGKAdw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 20:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759761AbXGKAdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 20:33:26 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49343 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbXGKAdZ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 20:33:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-In-Reply-To: Your message of "Wed, 11 Jul 2007 01:12:53 +0200."
-             <46941275.20303@s5r6.in-berlin.de>
-From: Valdis.Kletnieks@vt.edu
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <25865.1184096391@turing-police.cc.vt.edu> <20070710222652.GE3492@stusta.de>
-            <46941275.20303@s5r6.in-berlin.de>
+	Tue, 10 Jul 2007 20:33:43 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:38259 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759738AbXGKAdm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 20:33:42 -0400
+Date: Tue, 10 Jul 2007 12:49:02 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: stable@kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH] UML - limit requests on COW devices to 32 sectors
+Message-ID: <20070710164902.GA7820@c2.user-mode-linux.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1184113932_3928P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 10 Jul 2007 20:32:12 -0400
-Message-ID: <7427.1184113932@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1184113932_3928P
-Content-Type: text/plain; charset=us-ascii
+COWed devices can't handle more than 32 (64 on x86_64) sectors in one
+request due to the size of the bitmap being carried around in the
+io_thread_req.
 
-On Wed, 11 Jul 2007 01:12:53 +0200, Stefan Richter said:
-> Adrian Bunk wrote:
-> > On Tue, Jul 10, 2007 at 03:39:51PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> >> What the Rest Of The World could probably use is if some kind soul were to go
-> >> through and build a .21->.22 document that lists all the *userspace visible*
-> >> changes
-> 
-> > Already available:
-> >   http://kernelnewbies.org/Linux_2_6_22
-> 
-> And of course there are several journalists who cover such matters.
+Enforce that by telling the block layer not to put too many sectors in
+requests to COWed devices.
 
-Most journalists tend to do a very good 5-6 paragraphs about the *big* new
-stuff - they'd probably quit after the first 20% (tops) of what Diego and
-friends have done.
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ arch/um/drivers/ubd_kern.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Definitely the resource I was looking for - thanks Diego and all.. :)
-
---==_Exmh_1184113932_3928P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGlCUMcC3lWbTT17ARAvMTAKC4dq+d0ClIxkbK3WsEj49MkcnkwACffYUA
-TE8819W3i+UMFm5vXuhdGWk=
-=Tg5O
------END PGP SIGNATURE-----
-
---==_Exmh_1184113932_3928P--
+Index: linux-2.6.17/arch/um/drivers/ubd_kern.c
+===================================================================
+--- linux-2.6.17.orig/arch/um/drivers/ubd_kern.c	2007-07-09 08:53:09.000000000 -0400
++++ linux-2.6.17/arch/um/drivers/ubd_kern.c	2007-07-09 18:08:33.000000000 -0400
+@@ -712,6 +712,8 @@ static int ubd_add(int n, char **error_o
+ 	ubd_dev->queue->queuedata = ubd_dev;
+ 
+ 	blk_queue_max_hw_segments(ubd_dev->queue, MAX_SG);
++	if(ubd_dev->cow.file != NULL)
++		blk_queue_max_sectors(ubd_dev->queue, 8 * sizeof(long));
+ 	err = ubd_disk_register(MAJOR_NR, ubd_dev->size, n, &ubd_gendisk[n]);
+ 	if(err){
+ 		*error_out = "Failed to register device";
