@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762104AbXGJCZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbXGJCZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762104AbXGJCZD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jul 2007 22:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762221AbXGJCYo
+	id S1761623AbXGJCZq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jul 2007 22:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762300AbXGJCZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jul 2007 22:24:44 -0400
-Received: from mail.suse.de ([195.135.220.2]:38095 "EHLO mx1.suse.de"
+	Mon, 9 Jul 2007 22:25:06 -0400
+Received: from ns2.suse.de ([195.135.220.15]:34029 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762213AbXGJCYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jul 2007 22:24:43 -0400
+	id S1760930AbXGJCZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jul 2007 22:25:04 -0400
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 10 Jul 2007 12:24:39 +1000
-Message-Id: <1070710022439.13155@suse.de>
+Date: Tue, 10 Jul 2007 12:24:58 +1000
+Message-Id: <1070710022458.13206@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
@@ -20,7 +20,7 @@ Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
 Cc: "J. Bruce Fields" <bfields@citi.umich.edu>
 Cc: J "." Bruce Fields <bfields@citi.umich.edu>
 Cc: Neil Brown <neilb@suse.de>
-Subject: [PATCH 007 of 20] knfsd: nfsd: provide export lookup wrappers which take a svc_rqst
+Subject: [PATCH 008 of 20] knfsd: nfsd: set rq_client to ip-address-determined-domain
 References: <20070710121949.12548.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,143 +28,224 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: J. Bruce Fields <bfields@citi.umich.edu>
 
-Split the callers of exp_get_by_name(), exp_find(), and exp_parent()
-into those that are processing requests and those that are doing other
-stuff (like looking up filehandles for mountd).
+We want it to be possible for users to restrict exports both by IP
+address and by pseudoflavor.  The pseudoflavor information has
+previously been passed using special auth_domains stored in the
+rq_client field.  After the preceding patch that stored the pseudoflavor
+in rq_pflavor, that's now superfluous; so now we use rq_client for the
+ip information, as auth_null and auth_unix do.
 
-No change in behavior, just a (fairly pointless, on its own) cleanup.
+However, we keep around the special auth_domain in the rq_gssclient
+field for backwards compatibility purposes, so we can still do upcalls
+using the old "gss/pseudoflavor" auth_domain if upcalls using the unix
+domain to give us an appropriate export.  This allows us to continue
+supporting old mountd.
 
-(Note this has the effect of making nfsd_cross_mnt() pass
-rqstp->rq_client instead of exp->ex_client into exp_find_by_name().
-However, the two should have the same value at this point.)
+In fact, for this first patch, we always use the "gss/pseudoflavor"
+auth_domain (and only it) if it is available; thus rq_client is ignored
+in the auth_gss case, and this patch on its own makes no change in
+behavior; that will be left to later patches.
+
+Note on idmap: I'm almost tempted to just replace the auth_domain in the
+idmap upcall by a dummy value--no version of idmapd has ever used it,
+and it's unlikely anyone really wants to perform idmapping differently
+depending on the where the client is (they may want to perform
+*credential* mapping differently, but that's a different matter--the
+idmapper just handles id's used in getattr and setattr).  But I'm
+updating the idmapd code anyway, just out of general
+backwards-compatibility paranoia.
 
 Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./fs/nfsd/export.c            |   28 +++++++++++++++++++++++++++-
- ./fs/nfsd/nfsfh.c             |    5 ++---
- ./fs/nfsd/vfs.c               |    5 ++---
- ./include/linux/nfsd/export.h |    7 +++++++
- 4 files changed, 38 insertions(+), 7 deletions(-)
+ ./fs/nfsd/export.c                  |   15 +++++++++++----
+ ./fs/nfsd/nfs4idmap.c               |   13 +++++++++++--
+ ./fs/nfsd/nfsfh.c                   |    2 --
+ ./include/linux/sunrpc/svc.h        |    1 +
+ ./include/linux/sunrpc/svcauth.h    |    1 +
+ ./net/sunrpc/auth_gss/svcauth_gss.c |   21 ++++++++++++++++++---
+ ./net/sunrpc/svcauth_unix.c         |    4 +++-
+ 7 files changed, 45 insertions(+), 12 deletions(-)
 
 diff .prev/fs/nfsd/export.c ./fs/nfsd/export.c
---- .prev/fs/nfsd/export.c	2007-07-10 11:33:32.000000000 +1000
-+++ ./fs/nfsd/export.c	2007-07-10 11:34:22.000000000 +1000
-@@ -1228,6 +1228,32 @@ exp_find(struct auth_domain *clp, int fs
- 	return exp;
+--- .prev/fs/nfsd/export.c	2007-07-10 11:34:22.000000000 +1000
++++ ./fs/nfsd/export.c	2007-07-10 11:35:37.000000000 +1000
+@@ -1237,21 +1237,28 @@ struct svc_export *
+ rqst_exp_get_by_name(struct svc_rqst *rqstp, struct vfsmount *mnt,
+ 		struct dentry *dentry)
+ {
+-	return exp_get_by_name(rqstp->rq_client, mnt, dentry,
+-						&rqstp->rq_chandle);
++	struct auth_domain *clp;
++
++	clp = rqstp->rq_gssclient ? rqstp->rq_gssclient : rqstp->rq_client;
++	return exp_get_by_name(clp, mnt, dentry, &rqstp->rq_chandle);
  }
  
-+/*
-+ * Called from functions that handle requests; functions that do work on
-+ * behalf of mountd are passed a single client name to use, and should
-+ * use exp_get_by_name() or exp_find().
-+ */
-+struct svc_export *
-+rqst_exp_get_by_name(struct svc_rqst *rqstp, struct vfsmount *mnt,
-+		struct dentry *dentry)
+ struct svc_export *
+ rqst_exp_find(struct svc_rqst *rqstp, int fsid_type, u32 *fsidv)
+ {
+-	return exp_find(rqstp->rq_client, fsid_type, fsidv,
+-						&rqstp->rq_chandle);
++	struct auth_domain *clp;
++
++	clp = rqstp->rq_gssclient ? rqstp->rq_gssclient : rqstp->rq_client;
++	return exp_find(clp, fsid_type, fsidv, &rqstp->rq_chandle);
+ }
+ 
+ struct svc_export *
+ rqst_exp_parent(struct svc_rqst *rqstp, struct vfsmount *mnt,
+ 		struct dentry *dentry)
+ {
++	struct auth_domain *clp;
++
++	clp = rqstp->rq_gssclient ? rqstp->rq_gssclient : rqstp->rq_client;
+ 	return exp_parent(rqstp->rq_client, mnt, dentry, &rqstp->rq_chandle);
+ }
+ 
+
+diff .prev/fs/nfsd/nfs4idmap.c ./fs/nfsd/nfs4idmap.c
+--- .prev/fs/nfsd/nfs4idmap.c	2007-07-10 11:19:57.000000000 +1000
++++ ./fs/nfsd/nfs4idmap.c	2007-07-10 11:35:37.000000000 +1000
+@@ -587,6 +587,15 @@ idmap_lookup(struct svc_rqst *rqstp,
+ 	return ret;
+ }
+ 
++static char *
++rqst_authname(struct svc_rqst *rqstp)
 +{
-+	return exp_get_by_name(rqstp->rq_client, mnt, dentry,
-+						&rqstp->rq_chandle);
++	struct auth_domain *clp;
++
++	clp = rqstp->rq_gssclient ? rqstp->rq_gssclient : rqstp->rq_client;
++	return clp->name;
 +}
 +
-+struct svc_export *
-+rqst_exp_find(struct svc_rqst *rqstp, int fsid_type, u32 *fsidv)
-+{
-+	return exp_find(rqstp->rq_client, fsid_type, fsidv,
-+						&rqstp->rq_chandle);
-+}
-+
-+struct svc_export *
-+rqst_exp_parent(struct svc_rqst *rqstp, struct vfsmount *mnt,
-+		struct dentry *dentry)
-+{
-+	return exp_parent(rqstp->rq_client, mnt, dentry, &rqstp->rq_chandle);
-+}
+ static int
+ idmap_name_to_id(struct svc_rqst *rqstp, int type, const char *name, u32 namelen,
+ 		uid_t *id)
+@@ -600,7 +609,7 @@ idmap_name_to_id(struct svc_rqst *rqstp,
+ 		return -EINVAL;
+ 	memcpy(key.name, name, namelen);
+ 	key.name[namelen] = '\0';
+-	strlcpy(key.authname, rqstp->rq_client->name, sizeof(key.authname));
++	strlcpy(key.authname, rqst_authname(rqstp), sizeof(key.authname));
+ 	ret = idmap_lookup(rqstp, nametoid_lookup, &key, &nametoid_cache, &item);
+ 	if (ret == -ENOENT)
+ 		ret = -ESRCH; /* nfserr_badname */
+@@ -620,7 +629,7 @@ idmap_id_to_name(struct svc_rqst *rqstp,
+ 	};
+ 	int ret;
  
- /*
-  * Called when we need the filehandle for the root of the pseudofs,
-@@ -1243,7 +1269,7 @@ exp_pseudoroot(struct svc_rqst *rqstp, s
- 
- 	mk_fsid(FSID_NUM, fsidv, 0, 0, 0, NULL);
- 
--	exp = exp_find(rqstp->rq_client, FSID_NUM, fsidv, rqstp->rq_chandle);
-+	exp = rqst_exp_find(rqstp, FSID_NUM, fsidv);
- 	if (PTR_ERR(exp) == -ENOENT)
- 		return nfserr_perm;
- 	if (IS_ERR(exp))
+-	strlcpy(key.authname, rqstp->rq_client->name, sizeof(key.authname));
++	strlcpy(key.authname, rqst_authname(rqstp), sizeof(key.authname));
+ 	ret = idmap_lookup(rqstp, idtoname_lookup, &key, &idtoname_cache, &item);
+ 	if (ret == -ENOENT)
+ 		return sprintf(name, "%u", id);
 
 diff .prev/fs/nfsd/nfsfh.c ./fs/nfsd/nfsfh.c
---- .prev/fs/nfsd/nfsfh.c	2007-07-10 11:20:09.000000000 +1000
-+++ ./fs/nfsd/nfsfh.c	2007-07-10 11:34:22.000000000 +1000
-@@ -145,7 +145,7 @@ fh_verify(struct svc_rqst *rqstp, struct
- 				fh->fh_fsid[1] = fh->fh_fsid[2];
- 			}
- 			if ((data_left -= len)<0) goto out;
--			exp = exp_find(rqstp->rq_client, fh->fh_fsid_type, datap, &rqstp->rq_chandle);
-+			exp = rqst_exp_find(rqstp, fh->fh_fsid_type, datap);
- 			datap += len;
- 		} else {
- 			dev_t xdev;
-@@ -156,8 +156,7 @@ fh_verify(struct svc_rqst *rqstp, struct
- 			xdev = old_decode_dev(fh->ofh_xdev);
- 			xino = u32_to_ino_t(fh->ofh_xino);
- 			mk_fsid(FSID_DEV, tfh, xdev, xino, 0, NULL);
--			exp = exp_find(rqstp->rq_client, FSID_DEV, tfh,
--				       &rqstp->rq_chandle);
-+			exp = rqst_exp_find(rqstp, FSID_DEV, tfh);
- 		}
+--- .prev/fs/nfsd/nfsfh.c	2007-07-10 11:34:22.000000000 +1000
++++ ./fs/nfsd/nfsfh.c	2007-07-10 11:35:37.000000000 +1000
+@@ -120,8 +120,6 @@ fh_verify(struct svc_rqst *rqstp, struct
+ 		int data_left = fh->fh_size/4;
  
  		error = nfserr_stale;
+-		if (rqstp->rq_client == NULL)
+-			goto out;
+ 		if (rqstp->rq_vers > 2)
+ 			error = nfserr_badhandle;
+ 		if (rqstp->rq_vers == 4 && fh->fh_size == 0)
 
-diff .prev/fs/nfsd/vfs.c ./fs/nfsd/vfs.c
---- .prev/fs/nfsd/vfs.c	2007-07-10 11:34:00.000000000 +1000
-+++ ./fs/nfsd/vfs.c	2007-07-10 11:34:22.000000000 +1000
-@@ -113,7 +113,7 @@ nfsd_cross_mnt(struct svc_rqst *rqstp, s
+diff .prev/include/linux/sunrpc/svcauth.h ./include/linux/sunrpc/svcauth.h
+--- .prev/include/linux/sunrpc/svcauth.h	2007-07-10 11:19:57.000000000 +1000
++++ ./include/linux/sunrpc/svcauth.h	2007-07-10 11:35:37.000000000 +1000
+@@ -127,6 +127,7 @@ extern struct auth_domain *auth_unix_loo
+ extern int auth_unix_forget_old(struct auth_domain *dom);
+ extern void svcauth_unix_purge(void);
+ extern void svcauth_unix_info_release(void *);
++extern int svcauth_unix_set_client(struct svc_rqst *rqstp);
  
- 	while (follow_down(&mnt,&mounts)&&d_mountpoint(mounts));
- 
--	exp2 = exp_get_by_name(exp->ex_client, mnt, mounts, &rqstp->rq_chandle);
-+	exp2 = rqst_exp_get_by_name(rqstp, mnt, mounts);
- 	if (IS_ERR(exp2)) {
- 		err = PTR_ERR(exp2);
- 		dput(mounts);
-@@ -188,8 +188,7 @@ nfsd_lookup(struct svc_rqst *rqstp, stru
- 			dput(dentry);
- 			dentry = dp;
- 
--			exp2 = exp_parent(exp->ex_client, mnt, dentry,
--					  &rqstp->rq_chandle);
-+			exp2 = rqst_exp_parent(rqstp, mnt, dentry);
- 			if (PTR_ERR(exp2) == -ENOENT) {
- 				dput(dentry);
- 				dentry = dget(dparent);
+ static inline unsigned long hash_str(char *name, int bits)
+ {
 
-diff .prev/include/linux/nfsd/export.h ./include/linux/nfsd/export.h
---- .prev/include/linux/nfsd/export.h	2007-07-10 11:33:32.000000000 +1000
-+++ ./include/linux/nfsd/export.h	2007-07-10 11:34:22.000000000 +1000
-@@ -129,10 +129,16 @@ struct svc_export *	exp_get_by_name(stru
- 					struct vfsmount *mnt,
- 					struct dentry *dentry,
- 					struct cache_req *reqp);
-+struct svc_export *	rqst_exp_get_by_name(struct svc_rqst *,
-+					     struct vfsmount *,
-+					     struct dentry *);
- struct svc_export *	exp_parent(struct auth_domain *clp,
- 				   struct vfsmount *mnt,
- 				   struct dentry *dentry,
- 				   struct cache_req *reqp);
-+struct svc_export *	rqst_exp_parent(struct svc_rqst *,
-+					struct vfsmount *mnt,
-+					struct dentry *dentry);
- int			exp_rootfh(struct auth_domain *, 
- 					char *path, struct knfsd_fh *, int maxsize);
- __be32			exp_pseudoroot(struct svc_rqst *, struct svc_fh *);
-@@ -152,6 +158,7 @@ static inline void exp_get(struct svc_ex
- extern struct svc_export *
- exp_find(struct auth_domain *clp, int fsid_type, u32 *fsidv,
- 	 struct cache_req *reqp);
-+struct svc_export * rqst_exp_find(struct svc_rqst *, int, u32 *);
+diff .prev/include/linux/sunrpc/svc.h ./include/linux/sunrpc/svc.h
+--- .prev/include/linux/sunrpc/svc.h	2007-07-10 11:27:13.000000000 +1000
++++ ./include/linux/sunrpc/svc.h	2007-07-10 11:35:37.000000000 +1000
+@@ -249,6 +249,7 @@ struct svc_rqst {
+ 						 */
+ 	/* Catering to nfsd */
+ 	struct auth_domain *	rq_client;	/* RPC peer info */
++	struct auth_domain *	rq_gssclient;	/* "gss/"-style peer info */
+ 	struct svc_cacherep *	rq_cacherep;	/* cache info */
+ 	struct knfsd_fh *	rq_reffh;	/* Referrence filehandle, used to
+ 						 * determine what device number
+
+diff .prev/net/sunrpc/auth_gss/svcauth_gss.c ./net/sunrpc/auth_gss/svcauth_gss.c
+--- .prev/net/sunrpc/auth_gss/svcauth_gss.c	2007-07-10 11:27:13.000000000 +1000
++++ ./net/sunrpc/auth_gss/svcauth_gss.c	2007-07-10 11:35:37.000000000 +1000
+@@ -927,10 +927,23 @@ svcauth_gss_set_client(struct svc_rqst *
+ 	struct gss_svc_data *svcdata = rqstp->rq_auth_data;
+ 	struct rsc *rsci = svcdata->rsci;
+ 	struct rpc_gss_wire_cred *gc = &svcdata->clcred;
++	int stat;
  
- #endif /* __KERNEL__ */
+-	rqstp->rq_client = find_gss_auth_domain(rsci->mechctx, gc->gc_svc);
+-	if (rqstp->rq_client == NULL)
++	/*
++	 * A gss export can be specified either by:
++	 * 	export	*(sec=krb5,rw)
++	 * or by
++	 * 	export gss/krb5(rw)
++	 * The latter is deprecated; but for backwards compatibility reasons
++	 * the nfsd code will still fall back on trying it if the former
++	 * doesn't work; so we try to make both available to nfsd, below.
++	 */
++	rqstp->rq_gssclient = find_gss_auth_domain(rsci->mechctx, gc->gc_svc);
++	if (rqstp->rq_gssclient == NULL)
+ 		return SVC_DENIED;
++	stat = svcauth_unix_set_client(rqstp);
++	if (stat == SVC_DROP)
++		return stat;
+ 	return SVC_OK;
+ }
  
+@@ -1102,7 +1115,6 @@ svcauth_gss_accept(struct svc_rqst *rqst
+ 			svc_putnl(resv, GSS_SEQ_WIN);
+ 			if (svc_safe_putnetobj(resv, &rsip->out_token))
+ 				goto drop;
+-			rqstp->rq_client = NULL;
+ 		}
+ 		goto complete;
+ 	case RPC_GSS_PROC_DESTROY:
+@@ -1333,6 +1345,9 @@ out_err:
+ 	if (rqstp->rq_client)
+ 		auth_domain_put(rqstp->rq_client);
+ 	rqstp->rq_client = NULL;
++	if (rqstp->rq_gssclient)
++		auth_domain_put(rqstp->rq_gssclient);
++	rqstp->rq_gssclient = NULL;
+ 	if (rqstp->rq_cred.cr_group_info)
+ 		put_group_info(rqstp->rq_cred.cr_group_info);
+ 	rqstp->rq_cred.cr_group_info = NULL;
+
+diff .prev/net/sunrpc/svcauth_unix.c ./net/sunrpc/svcauth_unix.c
+--- .prev/net/sunrpc/svcauth_unix.c	2007-07-10 11:27:13.000000000 +1000
++++ ./net/sunrpc/svcauth_unix.c	2007-07-10 11:35:37.000000000 +1000
+@@ -638,7 +638,7 @@ static int unix_gid_find(uid_t uid, stru
+ 	}
+ }
+ 
+-static int
++int
+ svcauth_unix_set_client(struct svc_rqst *rqstp)
+ {
+ 	struct sockaddr_in *sin = svc_addr_in(rqstp);
+@@ -673,6 +673,8 @@ svcauth_unix_set_client(struct svc_rqst 
+ 	return SVC_OK;
+ }
+ 
++EXPORT_SYMBOL(svcauth_unix_set_client);
++
+ static int
+ svcauth_null_accept(struct svc_rqst *rqstp, __be32 *authp)
+ {
