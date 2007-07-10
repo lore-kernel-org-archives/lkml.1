@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759551AbXGJF0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbXGJFx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759551AbXGJF0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 01:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXGJF0P
+	id S1757370AbXGJFx1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 01:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbXGJFxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 01:26:15 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55441 "EHLO mail.dvmed.net"
+	Tue, 10 Jul 2007 01:53:18 -0400
+Received: from il.qumranet.com ([82.166.9.18]:55064 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbXGJF0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 01:26:14 -0400
-Message-ID: <46931840.1050002@garzik.org>
-Date: Tue, 10 Jul 2007 01:25:20 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1751475AbXGJFxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 01:53:17 -0400
+Message-ID: <46931ECB.2060601@qumranet.com>
+Date: Tue, 10 Jul 2007 08:53:15 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       andi@firstfloor.org, akpm@linux-foundation.org
-Subject: Re: x86 setup code rewrite in C
-References: <11840359321823-git-send-email-hpa@zytor.com>
-In-Reply-To: <11840359321823-git-send-email-hpa@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH][RFC] kvm-scheduler integration
+References: <11838994974161-git-send-email-avi@qumranet.com>	 <20070708133539.GA12597@elte.hu> <4690E973.7000606@qumranet.com>	 <20070708134850.GB22911@elte.hu>	 <1183937563.6005.365.camel@localhost.localdomain>	 <4691D82F.3030401@qumranet.com> <1184029745.6005.402.camel@localhost.localdomain>
+In-Reply-To: <1184029745.6005.402.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 10 Jul 2007 08:53:15 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> This patch set replaces the x86 setup code, which is currently all in
-> assembly, with a version written in C, using the ".code16gcc" feature
-> of binutils (which has been present since at least 2001.)
-> 
-> The new code is vastly easier to read, and, I hope, debug.  It should
-> be noted that I found a fair number of minor bugs while going through
-> this code, and have attempted to correct them.
-> 
-> In the process of doing so, it introduces several cleanups, in
-> particular:
-> 
-> - Obsoletes the hd_info field in the boot_params structure; they are
->   only ever used for ST-506 (pre-IDE) drives and are pretty much
->   guaranteed to be wrong on current BIOSes;
-> - Unifies the CPU feature bits between i386 and x86-64.  In the
->   future, it should be possible to use arch/i386/boot/cpucheck.c to do
->   the post-invocation CPU check currently done in
->   arch/x86_64/kernel/trampoline.S, although this patch set doesn't
->   introduce that change.
-> - boot_params is now a proper structure.
-> 
-> This code has been tested in -mm since early in the 2.6.22 cycle.
+Rusty Russell wrote:
+> On Mon, 2007-07-09 at 09:39 +0300, Avi Kivity wrote:
+>   
+>> Rusty Russell wrote:
+>>     
+>>> I think a "struct preempt_ops *" and a "void *preempt_ops_data" inside
+>>> every task struct is a better idea.  Call the config option
+>>> PREEMPT_SCHED_HOOKS and now there's nothing kvm-specific about it...
+>>>   
+>>>       
+>> I considered that, but your proposal does not allow a single task to
+>> have multiple preemption hooks installed (hookers?!).  Since in general
+>> there's no reason to suppose that users would be mutually exclusive, we
+>> need to have a struct hlist of these things.  All in all this seemed to
+>> indicate that the second user should have the honor of figuring out that
+>> stuff.
+>>     
+>
+> No; this is a "I'm doing something magic and need to know before someone
+> else takes the CPU".  Almost by definition, you cannot have two of them
+> at the same time.  Let someone else try that if and when...
+>   
 
-ACK
+Why can't you have two of them?  Say I'm writing a module to utilize
+branch recording to be able to debug a process in reverse (of course
+that doesn't really need sched hooks; let's pretend it does).  Why can't
+I debug a process that uses kvm?
 
-I don't claim to be an expert in this area, but I definitely support 
-this going in, and I really did read every patch.  :)
+More importantly, now the two subsystems have to know about each other
+so they don't step on each other's toes.
 
-The only minor problem I found was a misspelling "paragrap" (perhaps 
-plural) in one of the patches.
+> But having different hooks for different tasks makes a great deal of
+> sense.  This hook makes a great deal of sense.
+>   
 
-	Jeff
+If we make the hooks non-kvm-specific, I'd just add an hlist there.
 
+> But KVM-specific code in the scheduler is just wrong, and I think we all
+> know that.
+>   
+
+Even if I eradicate all mention of kvm from the patch, it's still kvm
+specific.  kvm at least is sensitive to the exact point where we switch
+in (it wants interrupts enabled) and it expects certain parameters to
+the callbacks.  If $new_abuser needs other conditions or parameters,
+which is quite likely IMO as it will most likely have to do with
+hardware, then we will need to update the hooks anyway.
+
+Removing 'kvm' from the patch is easy; but I don't like to pretend to
+generality where there ain't.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
