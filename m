@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbXGJToA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761863AbXGJToi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbXGJToA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbXGJTnn
+	id S1761863AbXGJToi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 15:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbXGJToa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 15:43:43 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:3848 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757620AbXGJTnm (ORCPT
+	Tue, 10 Jul 2007 15:44:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44543 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755134AbXGJTo3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 15:43:42 -0400
-Date: Tue, 10 Jul 2007 20:42:59 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Dave McCracken <dave.mccracken@oracle.com>
-cc: herbert.van.den.bergh@oracle.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] include private data mappings in RLIMIT_DATA limit
-In-Reply-To: <200707101412.19785.dave.mccracken@oracle.com>
-Message-ID: <Pine.LNX.4.64.0707102030150.2063@blonde.wat.veritas.com>
-References: <4692D616.4010004@oracle.com> <200707101219.29743.dave.mccracken@oracle.com>
- <Pine.LNX.4.64.0707101857310.20758@blonde.wat.veritas.com>
- <200707101412.19785.dave.mccracken@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAZGF2ZS5tY2NyYWNrZW5Ab3JhY2xlLmNvbQBoZXJiZXJ0LnZhbi5kZW4uYmVyZ2hAb3JhY2xlLmNvbQBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
-X-Brightmail-Tracker: AAAAAA==
+	Tue, 10 Jul 2007 15:44:29 -0400
+Date: Tue, 10 Jul 2007 12:44:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: avoiding rejects
+Message-Id: <20070710124422.a52b0458.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Dave McCracken wrote:
-> On Tuesday 10 July 2007, Hugh Dickins wrote:
-> >
-> > Mapped private readonly yes, but vm_stat_account() says
-> > 	if (file) {
-> > 		mm->shared_vm += pages;
-> > 		if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
-> > 			mm->exec_vm += pages;
-> 
-> In that code shared_vm includes everything that's mmap()ed, including private 
-> mappings.  But if you look at Herbert's patch he has the following change:
-> 
->         if (file) {
-> -               mm->shared_vm += pages;
-> +               if (flags & VM_SHARED)
-> +                       mm->shared_vm += pages;
->                 if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
->                         mm->exec_vm += pages;
-> 
-> This means that shared_vm now is truly only memory that's mapped VM_SHARED and 
-> does not include VM_EXEC memory.  That necessitates the separate subtraction 
-> of exec_vm in the data calculations.
 
-Ah, I just noticed at the beginning of the patch, and didn't look for
-a balancing change - thanks.  I'd strongly recommend that he not mess
-around with these numbers, unless there's _very_ good reason: they're
-not ideal, nothing ever will be, changing them around just causes pain.
-shared_vm may not be a full description of what it counts, but it'll
-do until you've a better name (readonly mappings share with the file
-even when they're private).
+There are many situations where patching the kernel involves adding a new
+item to a list, such as:
 
-Hugh
+- adding a makefile line
+- adding a new #include
+- adding a new Kconfig entry
+- adding a new PCI ID
+- adding a record to feature-removal.txt
+- adding a new sysctl table entry
+- etc
+
+Of course, everyone just sticks the new entry at the end of the existing
+entries.  This strategy carefully maximises the opportunity for patch
+rejects and leads to unhappiness.
+
+Most of these lists are unordered anyway, so inserting the new item at a
+randomly-chosen position is a better approach than just appending it.
