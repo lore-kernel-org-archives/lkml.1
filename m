@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762710AbXGJQzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbXGJQ42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762710AbXGJQzg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 12:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbXGJQzY
+	id S1762862AbXGJQ42 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 12:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbXGJQ4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 12:55:24 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:65032 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbXGJQzW (ORCPT
+	Tue, 10 Jul 2007 12:56:20 -0400
+Received: from mga01.intel.com ([192.55.52.88]:15872 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754812AbXGJQ4T convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 12:55:22 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [patch 4/4] Cell: Draw SPE helper penguin logos
-Date: Tue, 10 Jul 2007 18:54:23 +0200
-User-Agent: KMail/1.9.6
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       James Simmons <jsimmons@infradead.org>
-References: <20070710122702.765654000@pademelon.sonytel.be> <20070710123540.877411000@pademelon.sonytel.be>
-In-Reply-To: <20070710123540.877411000@pademelon.sonytel.be>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Tue, 10 Jul 2007 12:56:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,523,1175497200"; 
+   d="scan'208";a="266619135"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707101854.24352.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+Pzz6quAdfI1tCNyUAi6hFWACGN+dkntopY0J
- plZ9C5pNG+qWBtcO7kcjboPd6M987V5CDwCxCqf0Wk26Z9+c0e
- 8/LT/brzADwVDe5fHCVvQ==
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: OOPS at dmar_table_init (2.6.22-rc6-mm1 kernel)
+Date: Tue, 10 Jul 2007 09:56:10 -0700
+Message-ID: <8A3E977AB3C24845947ADAAE0526E39502804C7B@orsmsx419.amr.corp.intel.com>
+In-Reply-To: <20070710094930.1d4be2f4.rdunlap@xenotime.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: OOPS at dmar_table_init (2.6.22-rc6-mm1 kernel)
+Thread-Index: AcfDEcy1h64p5kPaSsKnTjgfWnrNKwAATnDw
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: "Randy Dunlap" <rdunlap@xenotime.net>, "Pavel Emelianov" <xemul@sw.ru>
+Cc: "Raj, Ashok" <ashok.raj@intel.com>, "Li, Shaohua" <shaohua.li@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>
+X-OriginalArrivalTime: 10 Jul 2007 16:56:16.0936 (UTC) FILETIME=[3B428A80:01C7C313]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 July 2007, Geert Uytterhoeven wrote:
-> Let spu_management_ops.enumerate_spus() return the number of found SPEs
-> and use that information to draw some little helper penguin logos.
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Acked-By: James Simmons <jsimmons@infradead.org>
+(Sorry for the top post) 
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+This bug is fixed and the fix should appear in the next MM release.
+See this link for the patch
+http://marc.info/?l=linux-kernel&m=118313130109808&w=2 
+
+-Anil
+-----Original Message-----
+From: Randy Dunlap [mailto:rdunlap@xenotime.net] 
+Sent: Tuesday, July 10, 2007 9:50 AM
+To: Pavel Emelianov
+Cc: Raj, Ashok; Li, Shaohua; Keshavamurthy, Anil S; Linux Kernel Mailing
+List; Andrew Morton
+Subject: Re: OOPS at dmar_table_init (2.6.22-rc6-mm1 kernel)
+
+On Tue, 10 Jul 2007 17:57:25 +0400 Pavel Emelianov wrote:
+
+> Hi.
+> 
+> While working with Andrew's kernel I faced an OOPS on x86_64 
+> machine. Unfortunately kernel logs are not appearing in serial 
+> console by the time oops happens, but I have some info on the
+> screen:
+> 
+> OOPs is at dmar_table_init() here:
+> ffffffff80532873 <dmar_table_init>:
+> ffffffff80532873:       41 55                   push   %r13
+> ffffffff80532875:       41 54                   push   %r12
+> ffffffff80532877:       55                      push   %rbp
+> ffffffff80532878:       53                      push   %rbx
+> ffffffff80532879:       51                      push   %rcx
+> ffffffff8053287a:       4c 8b 2d 07 21 01 00    mov
+73991(%rip),%r13        # ffffffff80544988 <dmar_tbl>
+> ffffffff80532881:       41 0f b6 45 24          movzbl 0x24(%r13),%eax
+<<<<<<<<<<< OOPS, %r13 = NULL
+> ffffffff80532886:       84 c0                   test   %al,%al
+> ffffffff80532888:       75 11                   jne
+ffffffff8053289b <dmar_table_init+0x28>
+> ffffffff8053288a:       48 c7 c7 b0 3d 45 80    mov
+$0xffffffff80453db0,%rdi
+> ffffffff80532891:       e8 c2 4a cf ff          callq
+ffffffff80227358 <printk>
+> ffffffff80532896:       e9 f2 01 00 00          jmpq
+ffffffff80532a8d <dmar_table_init+0x21a>
+> 
+> Looks like dmar_tbl is NULL. 
+> BUG is 100% reproducible. Is there any other info that can be useful?
+
+You could test the patch from
+http://lkml.org/lkml/2007/6/29/174 (see "Get diff 1").
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code
+***
