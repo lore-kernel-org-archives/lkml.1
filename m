@@ -1,137 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760879AbXGJFQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761027AbXGJFSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760879AbXGJFQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 01:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXGJFQT
+	id S1761027AbXGJFSR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 01:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbXGJFSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 01:16:19 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:48180 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751175AbXGJFQS (ORCPT
+	Tue, 10 Jul 2007 01:18:06 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60580 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751172AbXGJFSD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 01:16:18 -0400
-Date: Tue, 10 Jul 2007 01:16:16 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org
-Cc: Martin Bligh <mbligh@mbligh.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] x86_64 - Use non locked version for local_cmpxchg()
-Message-ID: <20070710051616.GB16148@Krystal>
-References: <20070708034952.022985379@sgi.com> <p73y7hrywel.fsf@bingen.suse.de> <Pine.LNX.4.64.0707090845520.13792@schroedinger.engr.sgi.com> <46925B5D.8000507@google.com> <Pine.LNX.4.64.0707091055090.16207@schroedinger.engr.sgi.com> <4692A1D0.50308@mbligh.org> <20070709214426.GC1026@Krystal> <Pine.LNX.4.64.0707091451200.18780@schroedinger.engr.sgi.com> <20070709225817.GA5111@Krystal> <Pine.LNX.4.64.0707091605380.20282@schroedinger.engr.sgi.com>
+	Tue, 10 Jul 2007 01:18:03 -0400
+Date: Mon, 9 Jul 2007 22:18:01 -0700
+From: sukadev@us.ibm.com
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 6/16] Helpers to obtain pid numbers
+Message-ID: <20070710051801.GE15214@us.ibm.com>
+References: <468DF6F7.1010906@openvz.org> <468DF7FE.5080201@openvz.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707091605380.20282@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:04:27 up 2 days, 19:09,  3 users,  load average: 0.10, 0.17, 0.17
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <468DF7FE.5080201@openvz.org>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You are completely right: on x86_64, a bit got lost in the move to
-cmpxchg.h, here is the fix. It applies on 2.6.22-rc6-mm1.
+Pavel Emelianov [xemul@openvz.org] wrote:
+| When showing pid to user or getting the pid numerical id for in-kernel
+| use the value of this id may differ depending on the namespace.
+| 
+| This set of helpers is used to get the global pid nr, the virtual (i.e.
+| seen by task in its namespace) nr and the nr as it is seen from the
+| specified namespace.
+| 
+| Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+| 
+| ---
+| 
+|  include/linux/pid.h   |   27 ++++++++++++
+|  include/linux/sched.h |  108 +++++++++++++++++++++++++++++++++++++++++++++-----
+|  kernel/pid.c          |    8 +++
+|  3 files changed, 132 insertions(+), 11 deletions(-)
+| 
+| diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/pid.h linux-2.6.22-rc4-mm2-2/include/linux/pid.h
+| --- linux-2.6.22-rc4-mm2.orig/include/linux/pid.h	2007-06-14 12:14:29.000000000 +0400
+| +++ linux-2.6.22-rc4-mm2-2/include/linux/pid.h	2007-07-04 19:00:38.000000000 +0400
+| @@ -83,6 +89,9 @@ extern void FASTCALL(detach_pid(struct t
+|  extern void FASTCALL(transfer_pid(struct task_struct *old,
+|  				  struct task_struct *new, enum pid_type));
+| 
+| +struct pid_namespace;
+| +extern struct pid_namespace init_pid_ns;
+| +
+|  /*
+|   * look up a PID in the hash table. Must be called with the tasklist_lock
+|   * or rcu_read_lock() held.
+| @@ -93,14 +99,36 @@ extern void FASTCALL(detach_pid(struct t
+|  extern struct pid *alloc_pid(void);
+|  extern void FASTCALL(free_pid(struct pid *pid));
+| 
+| +/*
+| + * the helpers to get the pid's id seen from different namespaces
+| + *
+| + * pid_nr()    : global id, i.e. the id seen from the init namespace;
+| + * pid_vnr()   : virtual id, i.e. the id seen from the namespace this pid
+| + *               belongs to. this only makes sence when called in the
+| + *               context of the task that belongs to the same namespace;
+| + * pid_nr_ns() : id seen from the ns specified.
+| + *
+| + * see also task_xid_nr() etc in include/linux/sched.h
+| + */
 
-x86_64 - Use non locked version for local_cmpxchg()
+I think its a bit confusing and error-prone to have both pid_nr() and pid_vnr().
 
-local_cmpxchg() should not use any LOCK prefix. This change probably got lost in
-the move to cmpxchg.h.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- include/asm-x86_64/cmpxchg.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6-lttng/include/asm-x86_64/cmpxchg.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-x86_64/cmpxchg.h	2007-07-10 01:10:10.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86_64/cmpxchg.h	2007-07-10 01:11:03.000000000 -0400
-@@ -128,7 +128,7 @@
- 	((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
- 					(unsigned long)(n),sizeof(*(ptr))))
- #define cmpxchg_local(ptr,o,n)\
--	((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
-+	((__typeof__(*(ptr)))__cmpxchg_local((ptr),(unsigned long)(o),\
- 					(unsigned long)(n),sizeof(*(ptr))))
- 
- #endif
-
-
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Mon, 9 Jul 2007, Mathieu Desnoyers wrote:
-> 
-> > > > Yep, I volountarily used the variant without lock prefix because the
-> > > > data is per cpu and I disable preemption.
-> > > 
-> > > local_cmpxchg generates this?
-> > > 
-> > 
-> > Yes.
-> 
-> Does not work here. If I use
-> 
-> static void __always_inline *slab_alloc(struct kmem_cache *s,
->                 gfp_t gfpflags, int node, void *addr)
-> {
->         void **object;
->         struct kmem_cache_cpu *c;
-> 
->         preempt_disable();
->         c = get_cpu_slab(s, smp_processor_id());
-> redo:
->         object = c->freelist;
->         if (unlikely(!object || !node_match(c, node)))
->                 return __slab_alloc(s, gfpflags, node, addr, c);
-> 
->         if (cmpxchg_local(&c->freelist, object, object[c->offset]) != object)
->                 goto redo;
-> 
->         preempt_enable();
->         if (unlikely((gfpflags & __GFP_ZERO)))
->                 memset(object, 0, c->objsize);
-> 
->         return object;
-> }
-> 
-> Then the code will include a lock prefix:
-> 
->     3270:       48 8b 1a                mov    (%rdx),%rbx
->     3273:       48 85 db                test   %rbx,%rbx
+BTW, shouldn't you use pid_vnr() in do_task_stat() ? You currently use pid_nr()
+and that returns the init-pid-ns id right ?
 
 
-
-
->     3276:       74 23                   je     329b <kmem_cache_alloc+0x4b>
->     3278:       8b 42 14                mov    0x14(%rdx),%eax
->     327b:       4c 8b 0c c3             mov    (%rbx,%rax,8),%r9
->     327f:       48 89 d8                mov    %rbx,%rax
->     3282:       f0 4c 0f b1 0a          lock cmpxchg %r9,(%rdx)
->     3287:       48 39 c3                cmp    %rax,%rbx
->     328a:       75 e4                   jne    3270 <kmem_cache_alloc+0x20>
->     328c:       66 85 f6                test   %si,%si
->     328f:       78 19                   js     32aa <kmem_cache_alloc+0x5a>
->     3291:       48 89 d8                mov    %rbx,%rax
->     3294:       48 83 c4 08             add    $0x8,%rsp
->     3298:       5b                      pop    %rbx
->     3299:       c9                      leaveq
->     329a:       c3                      retq
-> 
-> 
-> > What applies to local_inc, given as example in the local_ops.txt
-> > document, applies integrally to local_cmpxchg. And I would say that
-> > local_cmpxchg is by far the cheapest locking mechanism I have found, and
-> > use today, for my kernel tracer. The idea emerged from my need to trace
-> > every execution context, including NMIs, while still providing good
-> > performances. local_cmpxchg was the perfect fit; that's why I deployed
-> > it in local.h in each and every architecture.
-> 
-> Great idea. The SLUB allocator may be able to use your idea to improve 
-> both the alloc and free path.
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+| +
+|  static inline pid_t pid_nr(struct pid *pid)
+|  {
+|  	pid_t nr = 0;
+|  	if (pid)
+| -		nr = pid->nr;
+| +		nr = pid->numbers[0].nr;
+|  	return nr;
+|  }
+| 
+| +pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns);
+| +
+| +static inline pid_t pid_vnr(struct pid *pid)
+| +{
+| +	pid_t nr = 0;
+| +	if (pid)
+| +		nr = pid->numbers[pid->level].nr;
+| +	return nr;
+| +}
+| +
+|  #define do_each_pid_task(pid, type, task)				\
+|  	do {								\
+|  		struct hlist_node *pos___;				\
+| diff -upr linux-2.6.22-rc4-mm2.orig/kernel/pid.c linux-2.6.22-rc4-mm2-2/kernel/pid.c
+| --- linux-2.6.22-rc4-mm2.orig/kernel/pid.c	2007-06-14 12:14:29.000000000 +0400
+| +++ linux-2.6.22-rc4-mm2-2/kernel/pid.c	2007-07-04 19:00:38.000000000 +0400
+| @@ -339,6 +379,14 @@ struct pid *find_get_pid(pid_t nr)
+|  	return pid;
+|  }
+| 
+| +pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
+| +{
+| +	pid_t nr = 0;
+| +	if (pid && ns->level <= pid->level)
+| +		nr = pid->numbers[ns->level].nr;
+| +	return nr;
+| +}
+| +
+|  /*
+|   * Used by proc to find the first pid that is greater then or equal to nr.
+|   *
+| diff -upr linux-2.6.22-rc4-mm2.orig/include/linux/sched.h linux-2.6.22-rc4-mm2-2/include/linux/sched.h
+| --- linux-2.6.22-rc4-mm2.orig/include/linux/sched.h	2007-07-04 19:00:38.000000000 +0400
+| +++ linux-2.6.22-rc4-mm2-2/include/linux/sched.h	2007-07-04 19:00:38.000000000 +0400
+| @@ -1153,16 +1154,6 @@ struct task_struct {
+|  #endif
+|  };
+| 
+| -static inline pid_t task_pgrp_nr(struct task_struct *tsk)
+| -{
+| -	return tsk->signal->pgrp;
+| -}
+| -
+| -static inline pid_t task_session_nr(struct task_struct *tsk)
+| -{
+| -	return tsk->signal->__session;
+| -}
+| -
+|  static inline void set_task_session(struct task_struct *tsk, pid_t session)
+|  {
+|  	tsk->signal->__session = session;
+| @@ -1188,6 +1179,104 @@ static inline struct pid *task_session(s
+|  	return task->group_leader->pids[PIDTYPE_SID].pid;
+|  }
+| 
+| +struct pid_namespace;
+| +
+| +/*
+| + * the helpers to get the task's different pids as they are seen
+| + * from various namespaces
+| + *
+| + * task_xid_nr()     : global id, i.e. the id seen from the init namespace;
+| + * task_xid_vnr()    : virtual id, i.e. the id seen from the namespace the task
+| + *                     belongs to. this only makes sence when called in the
+| + *                     context of the task that belongs to the same namespace;
+| + * task_xid_nr_ns()  : id seen from the ns specified;
+| + *
+| + * set_task_vxid()   : assigns a virtual id to a task;
+| + *
+| + * task_ppid_nr_ns() : the parent's id as seen from the namespace specified.
+| + *                     the result depends on the namespace and whether the
+| + *                     task in question is the namespace's init. e.g. for the
+| + *                     namespace's init this will return 0 when called from
+| + *                     the namespace of this init, or appropriate id otherwise.
+| + *                     
+| + *
+| + * see also pid_nr() etc in include/linux/pid.h
+| + */
+| +
+| +static inline pid_t task_pid_nr(struct task_struct *tsk)
+| +{
+| +	return tsk->pid;
+| +}
+| +
+| +static inline pid_t task_pid_nr_ns(struct task_struct *tsk,
+| +		struct pid_namespace *ns)
+| +{
+| +	return pid_nr_ns(task_pid(tsk), ns);
+| +}
+| +
+| +static inline pid_t task_pid_vnr(struct task_struct *tsk)
+| +{
+| +	return pid_vnr(task_pid(tsk));
+| +}
+| +
+| +
+| +static inline pid_t task_tgid_nr(struct task_struct *tsk)
+| +{
+| +	return tsk->tgid;
+| +}
+| +
+| +static inline pid_t task_tgid_nr_ns(struct task_struct *tsk,
+| +		struct pid_namespace *ns)
+| +{
+| +	return pid_nr_ns(task_tgid(tsk), ns);
+| +}
+| +
+| +static inline pid_t task_tgid_vnr(struct task_struct *tsk)
+| +{
+| +	return pid_vnr(task_tgid(tsk));
+| +}
+| +
+| +
+| +static inline pid_t task_pgrp_nr(struct task_struct *tsk)
+| +{
+| +	return tsk->signal->pgrp;
+| +}
+| +
+| +static inline pid_t task_pgrp_nr_ns(struct task_struct *tsk,
+| +		struct pid_namespace *ns)
+| +{
+| +	return pid_nr_ns(task_pgrp(tsk), ns);
+| +}
+| +
+| +static inline pid_t task_pgrp_vnr(struct task_struct *tsk)
+| +{
+| +	return pid_vnr(task_pgrp(tsk));
+| +}
+| +
+| +
+| +static inline pid_t task_session_nr(struct task_struct *tsk)
+| +{
+| +	return tsk->signal->__session;
+| +}
+| +
+| +static inline pid_t task_session_nr_ns(struct task_struct *tsk,
+| +		struct pid_namespace *ns)
+| +{
+| +	return pid_nr_ns(task_session(tsk), ns);
+| +}
+| +
+| +static inline pid_t task_session_vnr(struct task_struct *tsk)
+| +{
+| +	return pid_vnr(task_session(tsk));
+| +}
+| +
+| +
+| +static inline pid_t task_ppid_nr_ns(struct task_struct *tsk,
+| +		struct pid_namespace *ns)
+| +{
+| +	return pid_nr_ns(task_pid(rcu_dereference(tsk->real_parent)), ns);
+| +}
+| +
+|  /**
+|   * pid_alive - check that a task structure is not stale
+|   * @p: Task structure to be checked.
