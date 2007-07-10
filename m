@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbXGJPvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbXGJPwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757705AbXGJPvI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 11:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbXGJPuz
+	id S1759352AbXGJPwO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 11:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXGJPv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 11:50:55 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:57484 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbXGJPuz (ORCPT
+	Tue, 10 Jul 2007 11:51:58 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:43205 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbXGJPv5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 11:50:55 -0400
-Date: Tue, 10 Jul 2007 16:50:51 +0100
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
-       kenchen@google.com, jschopp@austin.ibm.com, apw@shadowen.org,
-       a.p.zijlstra@chello.nl, y-goto@jp.fujitsu.com, clameter@sgi.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans -- anti-fragmentation
-Message-ID: <20070710155051.GA26249@skynet.ie>
-References: <20070710102043.GA20303@skynet.ie> <20070710200115.b5bbfb4a.kamezawa.hiroyu@jp.fujitsu.com> <20070710111202.GC25512@skynet.ie> <20070710203848.e7bbc98e.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 10 Jul 2007 11:51:57 -0400
+Message-ID: <4693AA56.9040109@zytor.com>
+Date: Tue, 10 Jul 2007 08:48:38 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070710203848.e7bbc98e.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+To: Andi Kleen <ak@suse.de>
+CC: Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
+References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de>
+In-Reply-To: <200707101721.58937.ak@suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (10/07/07 20:38), KAMEZAWA Hiroyuki didst pronounce:
-> On Tue, 10 Jul 2007 12:12:02 +0100
-> mel@skynet.ie (Mel Gorman) wrote:
-> > > For (2), we need some method for specifing the range we will remove. For doing that,
-> > > ZONE seems to be good candidate.  Now we use "kernelcore=" boot option to create
-> > > ZONE_MOVABLE by hand.
-> > 
-> > At the risk of putting you on the spot, do you mind saying whether the
-> > grouping pages by mobility and ZONE_MOVABLE patches are going in the
-> > direction you want or should something totally different be done? If
-> > they are going the right direction, is there anything critical that is
-> > missing right now?
-> > 
-> "grouping pages by mobility and ZONE_MOVABLE" things are what I want. And
-> I want to go with them. But I know some people doesn't want to increase #
-> of zones. It is my concern. 
-
-I'm not overly keen on increasing the number of zones either but it is a
-simplier approach, solves some of the problems and is less intrusive than
-grouping pages by mobility so it's a reasonable starting point.
-
-> I know ZONE_MOVABLE works well but there are people who don't want new zone.
-> So making ZONE_MOVABLE as configurable will be good thing, as Nick Piggin pointed.
+Andi Kleen wrote:
+> On Tuesday 10 July 2007 16:16:29 Segher Boessenkool wrote:
+>>> gcc for i386 can be used with the assembly prefix ".code16gcc" to  
+>>> generate
+>>> 16-bit (real-mode) code.  This header file provides the assembly  
+>>> prefix.
+>> This only works correctly with newer GCCs if you pass the
+>> -fno-toplevel-reorder option (and it only works on older
+>> GCC versions by accident).
 > 
-
-I tested your zone-configurable patch and they appear to work.  Your patch
-builds whether ZONE_MOVABLE is available or not and ZONE_MOVABLE is only
-available when the config option is set.  It is also considerably cleaner
-than the patch I put together for a configurable ZONE_MOVABLE which is too
-ugly to live in comparison.
-
-> About my other concerns , see node hotplug (below).
+> And on older ones (gcc-3.3-hammer / 3.4 / 4.0 ) -fno-unit-at-a-time
 > 
-> > > But this is the first step. I know Intel guy posted
-> > > his idea to specify Hotpluggable-Memory range in SRAT (by firmware).
-> > 
-> > There may be additional work required to make this play nicely with
-> > ZONE_MOVABLE but it shouldn't be anything fundamental.
-> > 
-> yes. And I don't know his idea about SRAT is acceped in firmware comunity or not.
-> For now, kernelcore= works enough for memory hotplug.
-> 
+> Still it seems quite fragile to me agreed.
 
-Sounds good.
+The alternative, of course, is to compile to an .s file and insert
+.code16gcc into the .s file.  This makes the Makefile uglier, but would
+be more resilient against oddball gcc changes.
 
-> > > And I think that
-> > > other method may be introduced for node-hotplug. 
-> > > 
-> > 
-> > Same as above really. If the node contains one zone - ZONE_MOVABLE, it
-> > would work for unplugging.
-> > 
-> Our concern on node hotplug is "bootmem" and hashtable , pgdata, memmap etc....
-> NUMA initilization (of each arch) includes something complicated.
-> But this is not directly related to ZONE_MOVABLE things I think.
-> It's node-hotplug problem.
-> We are now consdiering hot-add nodes after initcalls().
-> 
+I'm a bit surprised about the claim w.r.t. -fno-unit-at-a-time (although
+I guess that is the default and one would thus typically not see this.)
+ Got any pointers why that would cause a global asm() to be scrambled
+around?
 
-I don't see off-hand how it's so different from normal memory hot-add
-but I'll take your word for it. I'll keep an eye out for patches related
-to it.
-
-Thanks
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	-hpa
