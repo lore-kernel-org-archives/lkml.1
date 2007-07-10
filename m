@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762389AbXGJQyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbXGJQzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762389AbXGJQyu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 12:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbXGJQyj
+	id S1762173AbXGJQzG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 12:55:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbXGJQym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 12:54:39 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:5880 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754272AbXGJQyi (ORCPT
+	Tue, 10 Jul 2007 12:54:42 -0400
+Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:45450 "HELO
+	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756833AbXGJQyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 12:54:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IkzFb6om6uNkmrW6R/hw+1L/ziCTa2O6pr3ISjPKYkIbNJIPrFsp6776h9caA3AtKf3R1+PGE/tnShwfeg0Ql0VxZbZowtjfz0XxlMgeFJ/Qjz3VkAeivkK5C1febuRhW7oNCZO8lrK1J3yRacEl06QR/H3PICNiOvJgS6CwnzQ=
-Message-ID: <ec870ced0707100954h3472a9dbl4271b16859ee8fb8@mail.gmail.com>
-Date: Tue, 10 Jul 2007 18:54:35 +0200
-From: "Pawel Dziepak" <hryssta@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: utimes() with vfat is problematic
-Cc: linux-fsdevel@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       hirofumi@mail.parknet.co.jp
-In-Reply-To: <Pine.LNX.4.64.0707101836170.11053@fbirervta.pbzchgretzou.qr>
+	Tue, 10 Jul 2007 12:54:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=aDXZ4pMMwM4eYlgiiA2SbGMJiYAMourTpw8/I3MKF6TYcJsrRtZMBhnJohc0U481Kc6tp/sWWLCOnUuuJ9lkFlQAstc2jIqy3iR6sto57yyg/+GIXLfiTfFPjV72ZfXHh+8TQGD6WEQ7kcFZHmhEEbaO4oe2LauTDMAiwpVoqdk=  ;
+X-YMail-OSG: VIXocfoVM1maYN1Vn1biMSRnc0SRJIyVJCkuO.Q_VEFOOyB6JZHp6xJZYJ0PKzQoAYqq41YO7Q--
+From: David Brownell <david-b@pacbell.net>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [2.6 patch] spi.c:scan_boardinfo() mustn't be __init_or_module
+Date: Tue, 10 Jul 2007 09:54:36 -0700
+User-Agent: KMail/1.9.6
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20070710124442.GV3492@stusta.de>
+In-Reply-To: <20070710124442.GV3492@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0707101142270.11053@fbirervta.pbzchgretzou.qr>
-	 <ec870ced0707100318g87f22f8wcaa6a715c064338@mail.gmail.com>
-	 <Pine.LNX.4.64.0707101836170.11053@fbirervta.pbzchgretzou.qr>
+Message-Id: <200707100954.37027.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/10/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> Linux does check for write permission, but _only_ for time=NULL.
-> Hence it would be helpful if someone knows the exact SUS text,
-> or whether this is not explicitly specified in SUS, leaving room
-> for interpretation.
-I have already checked it strictly. This "problem" occurs not only on
-vfat partitions. You can *not* do uptime() for time!=NULL if you are
-not a file owner. So, everything in Linux is correct.
-It is not possible to solve your problem without changing SUS, it is
-not even a problem...
-I made mistake in my first post, because I was too implied by piece of
-code that you've quoted.
+On Tuesday 10 July 2007, Adrian Bunk wrote:
+> This patch fixes the following section mismatch:
+> 
+> <--  snip  -->
+> 
+> ...
+>   MODPOST vmlinux
+> WARNING: drivers/built-in.o(.text+0x889735): Section mismatch: reference to .init.text:scan_boardinfo (between 'spi_register_master' and '__unregister')
+> ...
+> 
+> <--  snip  -->
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Pawel
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+
+> 
+> ---
+> --- linux-2.6.22-rc6-mm1/drivers/spi/spi.c.old	2007-07-10 04:17:26.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/drivers/spi/spi.c	2007-07-10 04:18:01.000000000 +0200
+> @@ -302,8 +302,7 @@
+>   * creates board info from kernel command lines
+>   */
+>  
+> -static void __init_or_module
+> -scan_boardinfo(struct spi_master *master)
+> +static void scan_boardinfo(struct spi_master *master)
+>  {
+>  	struct boardinfo	*bi;
+>  	struct device		*dev = master->cdev.dev;
+> 
+
+
