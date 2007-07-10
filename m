@@ -1,48 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbXGKEvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbXGKEyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760073AbXGKEvZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 00:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXGKEvS
+	id S1759862AbXGKEyV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 00:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbXGKEyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 00:51:18 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43627 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 00:54:12 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:57889 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbXGKEvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 00:51:17 -0400
-Date: Wed, 11 Jul 2007 06:51:12 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: queued spinlock code and results
-Message-ID: <20070711045111.GA1563@wotan.suse.de>
-References: <20070708043228.GB22397@wotan.suse.de> <p733azz16vh.fsf@bingen.suse.de> <Pine.LNX.4.64.0707101348020.3055@schroedinger.engr.sgi.com> <20070711020638.GB27475@wotan.suse.de> <Pine.LNX.4.64.0707101924030.7089@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707101924030.7089@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+	id S1752104AbXGKEyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 00:54:10 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Netdev <netdev@vger.kernel.org>, Keiichi Kii <k-keiichi@bx.jp.nec.com>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Date: Wed, 11 Jul 2007 03:49:29 +0530
+Message-Id: <20070710221929.3414.80246.sendpatchset@cselinux1.cse.iitk.ac.in>
+Subject: [PATCH v2 (updated) -mm 4/9] netconsole: Add some useful tips to documentation
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 07:26:10PM -0700, Christoph Lameter wrote:
-> On Wed, 11 Jul 2007, Nick Piggin wrote:
-> 
-> > BTW. some advanced congestion algorithms like HBO may find these ticket
-> > locks useful because you can see immediately how many CPUs are contending
-> > the lock, and spinners know how many CPUs are in front of them. That info
-> > could be fed into the spin backoff scheme.
-> 
-> That would mean having to keep a lot of status information for a spinlock. 
-> Gets pretty complicated.
+[4/9 (updated)] netconsole: Add some useful tips to documentation
+
+Add some useful general-purpose tips. Also suggest solution for the frequent
+problem of console_loglevel set too low numerically (i.e. for high priority
+messages only) on the sender.
+
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+
+---
+
+ Documentation/networking/netconsole.txt |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+---
+
+diff -ruNp a/Documentation/networking/netconsole.txt b/Documentation/networking/netconsole.txt
+--- a/Documentation/networking/netconsole.txt	2007-04-26 08:38:32.000000000 +0530
++++ b/Documentation/networking/netconsole.txt	2007-07-11 03:11:08.000000000 +0530
+@@ -44,11 +44,35 @@ WARNING: the default target ethernet set
+ ethernet address to send packets, which can cause increased load on
+ other systems on the same ethernet segment.
  
-Did you look at the implementation? It takes 2 bytes on x86 and is almost
-the same code size and speed as the existing locks.
-
-
-> The RT tree already converts spinlocks to sleeping locks? If we want to be 
-> that complicated then maybe going with one sophisticated lock type for all 
-> would be the solution.
-
-I don't want to convert spinlocks to sleeping locks though.
++TIP: some LAN switches may be configured to suppress ethernet broadcasts
++so it is advised to explicitly specify the remote agents' MAC addresses
++from the config parameters passed to netconsole.
++
++TIP: to find out the MAC address of, say, 10.0.0.2, you may try using:
++
++ ping -c 1 10.0.0.2 ; /sbin/arp -n | grep 10.0.0.2
++
++TIP: in case the remote logging agent is on a separate LAN subnet than
++the sender, it is suggested to try specifying the MAC address of the
++default gateway (you may use /sbin/route -n to find it out) as the
++remote MAC address instead.
++
+ NOTE: the network device (eth1 in the above case) can run any kind
+ of other network traffic, netconsole is not intrusive. Netconsole
+ might cause slight delays in other traffic if the volume of kernel
+ messages is high, but should have no other impact.
+ 
++NOTE: if you find that the remote logging agent is not receiving or
++printing all messages from the sender, it is likely that you have set the
++"console_loglevel" parameter (on the sender) to only send high priority
++messages to the console. You can change this at runtime by updating
++/proc/sys/kernel/printk appropriately, say by:
++
++ echo 9 > /proc/sys/kernel/printk
++
++which would send all kernel messages to the console. Refer the proc(5)
++man page for more details.
++
+ Netconsole was designed to be as instantaneous as possible, to
+ enable the logging of even the most critical kernel bugs. It works
+ from IRQ contexts as well, and does not enable interrupts while
