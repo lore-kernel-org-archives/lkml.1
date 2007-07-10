@@ -1,105 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761768AbXGJGr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762232AbXGJGsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761768AbXGJGr4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 02:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXGJGrs
+	id S1762232AbXGJGsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 02:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbXGJGry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 02:47:48 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:18460 "EHLO relay.sw.ru"
+	Tue, 10 Jul 2007 02:47:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:34165 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbXGJGrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 02:47:47 -0400
-Message-ID: <46932B6D.2010303@openvz.org>
-Date: Tue, 10 Jul 2007 10:47:09 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: sukadev@us.ibm.com
-CC: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 7/16] Helpers to find the task by its numerical ids
-References: <468DF6F7.1010906@openvz.org> <468DF826.5030309@openvz.org> <20070710040045.GA15214@us.ibm.com>
-In-Reply-To: <20070710040045.GA15214@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1756690AbXGJGrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 02:47:53 -0400
+Subject: Re: [kvm-devel] [PATCH][RFC] kvm-scheduler integration
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Ingo Molnar <mingo@elte.hu>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46931ECB.2060601@qumranet.com>
+References: <11838994974161-git-send-email-avi@qumranet.com>
+	 <20070708133539.GA12597@elte.hu> <4690E973.7000606@qumranet.com>
+	 <20070708134850.GB22911@elte.hu>
+	 <1183937563.6005.365.camel@localhost.localdomain>
+	 <4691D82F.3030401@qumranet.com>
+	 <1184029745.6005.402.camel@localhost.localdomain>
+	 <46931ECB.2060601@qumranet.com>
+Content-Type: text/plain
+Date: Tue, 10 Jul 2007 16:47:35 +1000
+Message-Id: <1184050055.6005.523.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sukadev@us.ibm.com wrote:
-> Pavel Emelianov [xemul@openvz.org] wrote:
-> | When searching the task by numerical id on may need to find
-> | it using global pid (as it is done now in kernel) or by its
-> | virtual id, e.g. when sending a signal to a task from one
-> | namespace the sender will specify the task's virtual id.
-> | 
-> | Signed-off-by: Pavel Emelianov <xemul@openvz.org>
-> | 
-> | ---
-> | 
-> |  fs/proc/base.c        |    2 +-
-> |  include/linux/pid.h   |   13 +++++++++++--
-> |  include/linux/sched.h |   31 +++++++++++++++++++++++++++++--
-> |  kernel/pid.c          |   32 +++++++++++++++++---------------
-> |  4 files changed, 58 insertions(+), 20 deletions(-)
-> | 
-> | --- ./fs/proc/base.c.ve6	2007-07-06 10:58:56.000000000 +0400
-> | +++ ./fs/proc/base.c	2007-07-06 11:03:41.000000000 +0400
-> | @@ -2230,7 +2230,7 @@ static struct task_struct *next_tgid(uns
-> |  	rcu_read_lock();
-> |  retry:
-> |  	task = NULL;
-> | -	pid = find_ge_pid(tgid);
-> | +	pid = find_ge_pid(tgid, &init_pid_ns);
-> |  	if (pid) {
-> |  		tgid = pid->nr + 1;
-> |  		task = pid_task(pid, PIDTYPE_PID);
-> | --- ./include/linux/pid.h.ve6	2007-07-06 11:03:27.000000000 +0400
-> | +++ ./include/linux/pid.h	2007-07-06 11:03:27.000000000 +0400
-> | @@ -98,14 +98,23 @@ extern struct pid_namespace init_pid_ns;
-> |  /*
-> |   * look up a PID in the hash table. Must be called with the tasklist_lock
-> |   * or rcu_read_lock() held.
-> | + *
-> | + * find_pid_ns() finds the pid in the namespace specified
-> | + * find_pid() find the pid by its global id, i.e. in the init namespace
-> | + * find_vpid() finr the pid by its virtual id, i.e. in the current namespace
-> | + *
-> | + * see also find_task_by_pid() set in include/linux/sched.h
-> |   */
-> | -extern struct pid *FASTCALL(find_pid(int nr));
-> | +extern struct pid *FASTCALL(find_pid_ns(int nr, struct pid_namespace *ns));
-> | +
-> | +#define find_vpid(pid)	find_pid_ns(pid, current->nsproxy->pid_ns)
-> | +#define find_pid(pid)	find_pid_ns(pid, &init_pid_ns)
+On Tue, 2007-07-10 at 08:53 +0300, Avi Kivity wrote:
+> Rusty Russell wrote:
+> > No; this is a "I'm doing something magic and need to know before someone
+> > else takes the CPU".  Almost by definition, you cannot have two of them
+> > at the same time.  Let someone else try that if and when...
 > 
-> Adding a second interface maybe more confusing to drivers and non-pid
-> users.
-> 
-> But more importantly, modifying find_pid() to refer to only init_pid_ns
-> would require auditing existing find_pid() callers and switching them to
-> find_vpid().
-> 
-> For instance if capset() is called from a child pid namespace, the 'pid'
-> would refer to the pid or pgid from child pid ns. But cap_set_pg() calls
-> find_pid() which gets the number from init_pid_ns.
-> 
-> Is there a similar issue with sunos_killpg() ?
-> 
+> Why can't you have two of them?  Say I'm writing a module to utilize
+> branch recording to be able to debug a process in reverse (of course
+> that doesn't really need sched hooks; let's pretend it does).  Why can't
+> I debug a process that uses kvm?
+>
+> More importantly, now the two subsystems have to know about each other
+> so they don't step on each other's toes.
 
-Yes, I know this. The [PATCH 15/16] has to switch all the kernel-to-user
-boundaries to use the additional helpers. That's the hardest part and
-I agree that I could lost something in it.
+Exactly, if we have two at the same time, they need to know about each
+other.  Providing infrastructure which lets them avoid thinking about it
+is the wrong direction.
 
-However, this is relevant only (!) when you clone the namespace. So people
-who do not need them won't suffer when this patch set is in mainline.
+> > But KVM-specific code in the scheduler is just wrong, and I think we all
+> > know that.
+> 
+> Even if I eradicate all mention of kvm from the patch, it's still kvm
+> specific.  kvm at least is sensitive to the exact point where we switch
+> in (it wants interrupts enabled) and it expects certain parameters to
+> the callbacks.  If $new_abuser needs other conditions or parameters,
+> which is quite likely IMO as it will most likely have to do with
+> hardware, then we will need to update the hooks anyway.
 
-That's my intention - to make a set that doesn't affect the non-namespace-d
-case and go on polishing it. You have already pointed out 2 places. I expect
-people to find more of them. This is easier to patch only the boundary to 
-the user rather than the whole kernel :)
+If it's not general, then this whole approach is wrong: put it in
+arch/*/kernel/process.c:__switch_to and finish_arch_switch.  The
+congruent case which comes to mind is lazy FPU handling.
 
-Thanks,
-Pavel
+Which brings us to the question: why do you want interrupts enabled?
+
+Cheers,
+Rusty.
+
