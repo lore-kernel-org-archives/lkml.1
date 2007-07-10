@@ -1,137 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbXGJEYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbXGJE0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbXGJEYR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 00:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXGJEYF
+	id S1754918AbXGJE0R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 00:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXGJE0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 00:24:05 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:46567 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbXGJEYE (ORCPT
+	Tue, 10 Jul 2007 00:26:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48962 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbXGJE0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 00:24:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aqzha4ZwZWS5xxb0uxhgeFFCVR5Ohj1UDJrW4+HjBWWj+TVIQAJEpP4J+nZP1XzTD4iQCYmDhWkrR/Z30JotTG+CINDb0QU7vOK1/seKf3TaTZ21A2oOxfBR+H3VOQ0TxxmQkZnThs79OdnsMxzbWvA88QhDUrwYSMUxiZnD63s=
-Message-ID: <86802c440707092124k61627732u6817b5d48dd97b88@mail.gmail.com>
-Date: Mon, 9 Jul 2007 21:24:03 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86 setup code rewrite in C
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       andi@firstfloor.org, akpm@linux-foundation.org
-In-Reply-To: <11840359321823-git-send-email-hpa@zytor.com>
+	Tue, 10 Jul 2007 00:26:03 -0400
+Message-ID: <469309FA.6040501@torque.net>
+Date: Tue, 10 Jul 2007 00:24:26 -0400
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kai Makisara <Kai.Makisara@kolumbus.fi>
+CC: Bruce Allen <ballen@gravity.phys.uwm.edu>, Mark Lord <liml@rtr.ca>,
+       David Greaves <david@dgreaves.com>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Bruce Allen <bruce.allen@aei.mpg.de>, Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SMART problems in 2.6.22
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local>
+In-Reply-To: <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11840359321823-git-send-email-hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/9/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> This patch set replaces the x86 setup code, which is currently all in
-> assembly, with a version written in C, using the ".code16gcc" feature
-> of binutils (which has been present since at least 2001.)
->
-> The new code is vastly easier to read, and, I hope, debug.  It should
-> be noted that I found a fair number of minor bugs while going through
-> this code, and have attempted to correct them.
->
-> In the process of doing so, it introduces several cleanups, in
-> particular:
->
-> - Obsoletes the hd_info field in the boot_params structure; they are
->   only ever used for ST-506 (pre-IDE) drives and are pretty much
->   guaranteed to be wrong on current BIOSes;
-> - Unifies the CPU feature bits between i386 and x86-64.  In the
->   future, it should be possible to use arch/i386/boot/cpucheck.c to do
->   the post-invocation CPU check currently done in
->   arch/x86_64/kernel/trampoline.S, although this patch set doesn't
->   introduce that change.
-> - boot_params is now a proper structure.
->
-> This code has been tested in -mm since early in the 2.6.22 cycle.
->
->  arch/i386/boot/bootsect.S                     |   98 -
->  arch/i386/boot/edd.S                          |  231 --
->  arch/i386/boot/setup.S                        | 1075 -------------
->  arch/i386/boot/video.S                        | 2043 --------------------------
->  arch/i386/kernel/verify_cpu.S                 |   94 -
->  arch/x86_64/boot/bootsect.S                   |   98 -
->  arch/x86_64/boot/install.sh                   |    2
->  arch/x86_64/boot/mtools.conf.in               |   17
->  arch/x86_64/boot/setup.S                      |  826 ----------
->  arch/x86_64/boot/tools/build.c                |  185 --
->  b/Documentation/i386/zero-page.txt            |    1
->  b/MAINTAINERS                                 |    4
->  b/arch/i386/Kconfig.cpu                       |    6
->  b/arch/i386/boot/Makefile                     |   46
->  b/arch/i386/boot/a20.c                        |  161 ++
->  b/arch/i386/boot/apm.c                        |   97 +
->  b/arch/i386/boot/bitops.h                     |   45
->  b/arch/i386/boot/boot.h                       |  290 +++
->  b/arch/i386/boot/cmdline.c                    |   97 +
->  b/arch/i386/boot/code16gcc.h                  |    9
->  b/arch/i386/boot/compressed/Makefile          |    7
->  b/arch/i386/boot/compressed/head.S            |    6
->  b/arch/i386/boot/copy.S                       |  101 +
->  b/arch/i386/boot/cpu.c                        |   69
->  b/arch/i386/boot/cpucheck.c                   |  267 +++
->  b/arch/i386/boot/edd.c                        |  196 ++
->  b/arch/i386/boot/header.S                     |  283 +++
->  b/arch/i386/boot/main.c                       |  161 ++
->  b/arch/i386/boot/mca.c                        |   43
->  b/arch/i386/boot/memory.c                     |   99 +
->  b/arch/i386/boot/pm.c                         |  170 ++
->  b/arch/i386/boot/pmjump.S                     |   54
->  b/arch/i386/boot/printf.c                     |  331 ++++
->  b/arch/i386/boot/setup.ld                     |   54
->  b/arch/i386/boot/string.c                     |   34
->  b/arch/i386/boot/tools/build.c                |  160 --
->  b/arch/i386/boot/tty.c                        |  112 +
->  b/arch/i386/boot/version.c                    |   23
->  b/arch/i386/boot/vesa.h                       |   79 +
->  b/arch/i386/boot/video-bios.c                 |  125 +
->  b/arch/i386/boot/video-vesa.c                 |  284 +++
->  b/arch/i386/boot/video-vga.c                  |  260 +++
->  b/arch/i386/boot/video.c                      |  456 +++++
->  b/arch/i386/boot/video.h                      |  145 +
->  b/arch/i386/boot/voyager.c                    |   46
->  b/arch/i386/kernel/cpu/Makefile               |    2
->  b/arch/i386/kernel/cpu/addon_cpuid_features.c |   50
->  b/arch/i386/kernel/cpu/common.c               |    2
->  b/arch/i386/kernel/cpu/proc.c                 |   21
->  b/arch/i386/kernel/e820.c                     |    2
->  b/arch/i386/kernel/setup.c                    |   12
->  b/arch/x86_64/Kconfig                         |    4
->  b/arch/x86_64/boot/Makefile                   |  136 -
->  b/arch/x86_64/boot/compressed/Makefile        |    9
->  b/arch/x86_64/boot/compressed/head.S          |    6
->  b/arch/x86_64/kernel/Makefile                 |    2
->  b/arch/x86_64/kernel/setup.c                  |   21
->  b/arch/x86_64/kernel/verify_cpu.S             |   22
->  b/drivers/ide/legacy/hd.c                     |   73
->  b/include/asm-i386/boot.h                     |    6
->  b/include/asm-i386/bootparam.h                |   85 +
->  b/include/asm-i386/cpufeature.h               |   26
->  b/include/asm-i386/e820.h                     |   14
->  b/include/asm-i386/processor.h                |    1
->  b/include/asm-i386/required-features.h        |   39
->  b/include/asm-i386/setup.h                    |   10
->  b/include/asm-x86_64/alternative.h            |   68
->  b/include/asm-x86_64/boot.h                   |   16
->  b/include/asm-x86_64/bootparam.h              |    1
->  b/include/asm-x86_64/cpufeature.h             |  115 -
->  b/include/asm-x86_64/e820.h                   |    6
->  b/include/asm-x86_64/processor.h              |    3
->  b/include/asm-x86_64/required-features.h      |   46
->  b/include/asm-x86_64/segment.h                |    8
->  b/include/linux/edd.h                         |    4
->  b/include/linux/screen_info.h                 |    9
->  76 files changed, 4601 insertions(+), 5208 deletions(-)
+Kai Makisara wrote:
+> On Sun, 8 Jul 2007, Bruce Allen wrote:
+> 
+>> Mark, David, Doug, Tejin, Alan, Jeff, LKML,
+>>
+>> I'm afraid that there may be some problem with SMART + libata in the 2.6.22
+>> kernel.  An hour ago I discovered that I missed a month of correspondence
+>> (some LKML, some private) about this problem which Alan, Tejun, Jeff, Mark and
+>> others copied to me -- it was automatically shoved into one of my mailboxes by
+>> my mail client.  Sorry about that.  So I am trying to catch up to see if there
+>> is some real problem or not.
+>>
+>> Here is a typical bug report that worries me:
+>> http://article.gmane.org/gmane.linux.utilities.smartmontools/4712
+>>
+>> Here is another similar report:
+>> http://thread.gmane.org/gmane.linux.utilities.smartmontools/4713
+>>
+>> And another report:
+>> http://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg358354.html
+>>
+>> >From some of the earlier threads that I missed (below) I have the impression
+>> that the problem may be a very simple one, namely that starting with 2.6.22
+>> one needs to run a command to enable SMART when a box is first booted -- the
+>> kernel no longer does this as part of the init/setup of the disks. But that is
+>> NOT consistent with the first two reports above, which show 'SMART ENABLED'.
+>>
+>> Here are some of the earlier threads that I completely missed:
+>>
+>> http://www.ussg.iu.edu/hypermail/linux/kernel/0706.1/0849.html
+> 
+> I have done some more debugging on this one. An easy way to reproduce the 
+> problem is to use 'smartctl -H /dev/sdb'. If I enable debugging with '-r 
+> ioctl,2', I find the following difference between outputs using 2.6.21.1 
+> (works OK) and 2.6.22 (fails):
+> 
+> --- sm-2.6.21.1b.log    2007-07-09 23:47:28.000000000 +0300
+> +++ sm-2.6.22.log       2007-07-09 23:39:56.000000000 +0300
+> @@ -11,7 +11,7 @@
+>    status=0x0
+>   [ata pass-through(16): 85 08 0e 00 00 00 01 00 00 00 00 00 00 00 ec 00 ]
+>    scsi_status=0x0, host_status=0x0, driver_status=0x0
+> -  info=0x0  duration=0 milliseconds  resid=0
+> +  info=0x0  duration=4 milliseconds  resid=0
+>    Incoming data, len=512 [only first 256 bytes shown]:
+>   00     5a 0c ff 3f 37 c8 10 00  00 00 00 00 3f 00 00 00                        
+>   10     00 00 00 00 20 20 20 20  20 20 20 20 20 20 20 20                        
+> @@ -97,11 +97,11 @@
+>    scsi_status=0x2, host_status=0x0, driver_status=0x8
+>    info=0x1  duration=48 milliseconds  resid=0
+>    >>> Sense buffer, len=22:
+> - 00     72 00 00 00 00 00 00 0e  09 0c 00 00 00 00 00 00                        
+> - 10     00 4f 00 c2 00 50                                                       
+> + 00     72 00 00 00 00 00 00 0e  09 0c 00 00 00 01 00 00                        
+> + 10     00 00 00 00 00 50                                                       
+>    status=2: [desc] sense_key=0 asc=0 ascq=0
+>  Values from ATA status return descriptor are:
+> - 00     09 0c 00 00 00 00 00 00  00 4f 00 c2 00 50                              
+> + 00     09 0c 00 00 00 01 00 00  00 00 00 00 00 50                              
+>  REPORT-IOCTL: DeviceFD=3 Command=SMART STATUS returned 0
+>  
+>  REPORT-IOCTL: DeviceFD=3 Command=SMART STATUS CHECK
+> @@ -110,9 +110,13 @@
+>    info=0x1  duration=40 milliseconds  resid=0
+>    >>> Sense buffer, len=22:
+>   00     72 00 00 00 00 00 00 0e  09 0c 00 00 00 00 00 00                        
+> - 10     00 4f 00 c2 00 50                                                       
+> + 10     00 00 00 00 00 50                                                       
+>    status=2: [desc] sense_key=0 asc=0 ascq=0
+>  Values from ATA status return descriptor are:
+> - 00     09 0c 00 00 00 00 00 00  00 4f 00 c2 00 50                              
+> -REPORT-IOCTL: DeviceFD=3 Command=SMART STATUS CHECK returned 0
+> -
+> + 00     09 0c 00 00 00 00 00 00  00 00 00 00 00 50                              
+> +Error SMART Status command failed
+> +Please get assistance from http://smartmontools.sourceforge.net/
+> +Values from ATA status return descriptor are:
+> + 00     09 0c 00 00 00 00 00 00  00 00 00 00 00 50                              
+> +REPORT-IOCTL: DeviceFD=3 Command=SMART STATUS CHECK returned -1
+> +A mandatory SMART command failed: exiting. To continue, add one or more 
+> '-T permissive' options.
+> 
+> 
+> The log shows that the sense data returned by the commands differ: with 
+> 2.6.22 the bytes 4f and 2c (tf.lbam and tf.lbah) are not returned. Both of 
+> the status commands fail to return these bytes but the tests in smartctl 
+> are more strict for the second case. This is why the second status command 
+> seems to be failing.
+> 
+> Next I added printks to the function ata_qc_complete() in libata-core.c. 
+> The changed code from 2.6.22 at line 5222 looked like this:
+> 
+>                 /* read result TF if requested */
+>                 if (qc->flags & ATA_QCFLAG_RESULT_TF) {
+>                         if (qc->tf.feature == 0xda)
+>                                 printk("ata_qc_complete before: %02x %02x %02x %02x\n",
+>                                        qc->result_tf.feature,
+>                                        qc->result_tf.lbam, qc->result_tf.lbah,
+>                                        qc->result_tf.command);
+>                         fill_result_tf(qc);
+>                         if (qc->tf.feature == 0xda)
+>                                 printk("ata_qc_complete %ld: %02x %02x %02x %02x\n",
+>                                        qc->flags & ATA_QCFLAG_RESULT_TF,
+>                                        qc->result_tf.feature,
+>                                        qc->result_tf.lbam, qc->result_tf.lbah,
+>                                        qc->result_tf.command);
+>                 }
+> 
+> The output from 2.6.21.6 looks like this:
+> 
+> Jul  9 18:37:44 kai kernel: [  193.443874] ata_qc_complete before: 00 00 00 40
+> Jul  9 18:37:44 kai kernel: [  193.443880] ata_qc_complete 16: 00 4f c2 50
+> Jul  9 18:37:44 kai kernel: [  193.462802] ata_qc_complete before: 00 4f c2 40
+> Jul  9 18:37:44 kai kernel: [  193.462807] ata_qc_complete 16: 00 4f c2 50
+> 
+> i.e., the bytes are returned.
+> 
+> The output from 2.6.22 is different:
+> 
+> Jul  9 18:44:35 kai kernel: [  147.765965] ata_qc_complete before: 00 00 00 40
+> Jul  9 18:44:35 kai kernel: [  147.765970] ata_qc_complete 16: 00 00 00 50
+> Jul  9 18:44:35 kai kernel: [  147.784890] ata_qc_complete before: 00 00 00 40
+> Jul  9 18:44:35 kai kernel: [  147.784894] ata_qc_complete 16: 00 00 00 50
+> 
+> The lbam and lbah bytes are not returned but the command byte is.
+> 
+> fill_result_tf() basically calls the tf_read() method of the low-level  
+> driver. sata_nc has been changed between 2.6.21 and 2.6.22-rc1 and this 
+> particular smartctl problem may or may not be specific to CK804. Disabling 
+> adma did not change the results.
 
-is possible to put 16bit c in seperate directory. or rename them with _16.c?
+Kai,
+Thanks for the analysis.
+Some background documents for those interested:
+The SCSI to ATA Translation (SAT) draft:
+   http://www.t10.org/ftp/t10/drafts/sat/sat-r09.pdf
+in which the relevant section is 12.2.6 (page 110)
+table 93.
+A modern descriptor-based SCSI sense buffer is being used
+to convey the "ATA (status) return descriptor" back from
+the ATA device after the command has been completed.
+My SAT code in smartmontools requests this descriptor
+so it should be returned irrespective of whether the
+ATA command succeeded or failed.
 
-YH
+Now from the ATA side the command being executed is
+"SMART RETURN STATUS  B0h/DAh, non-data". For
+reference I use this draft from www.t13.org :
+D1699r3f-ATA8-ACS.pdf . See that command's
+_description_ section. That explains that 4f and c2
+in the LBA field indicates the disk is healthy. "threshold
+exceeded" is indicated by putting f4 and 2c in the same
+positions. [Whoever specified that must have hated people
+with dyslexia.] No ATA command error is indicated ("abort"
+is the only one listed for that ATA command) in the reports
+that I have seen.
+
+So when smartmontools sees 0 and 0 in those positions it
+pulls out the red card for that device. My guess is that
+libata in lk 2.6.22 is corrupting those FIS device to
+host register values.
+
+
+Doug Gilbert
+
+
