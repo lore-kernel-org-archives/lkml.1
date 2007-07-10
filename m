@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763430AbXGJXd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764660AbXGJXdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763430AbXGJXd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 19:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762722AbXGJXbA
+	id S1764660AbXGJXdp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 19:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762888AbXGJXbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 19:31:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58191 "EHLO
+	Tue, 10 Jul 2007 19:31:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54738 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762552AbXGJXa4 (ORCPT
+	by vger.kernel.org with ESMTP id S1762791AbXGJXbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 19:30:56 -0400
-Date: Tue, 10 Jul 2007 16:30:47 -0700
+	Tue, 10 Jul 2007 19:31:01 -0400
+Date: Tue, 10 Jul 2007 16:30:20 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: cmm@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, nfsv4@linux-nfs.org
-Subject: Re: [EXT4 set 4][PATCH 2/5] i_version: Add hi 32 bit inode version
- on ext4 on-disk inode
-Message-Id: <20070710163047.1aba94f9.akpm@linux-foundation.org>
-In-Reply-To: <1183275436.4010.127.camel@localhost.localdomain>
-References: <1183275436.4010.127.camel@localhost.localdomain>
+       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [EXT4 set 2][PATCH 2/5] cleanups: Add extent sanity checks
+Message-Id: <20070710163020.196d32a0.akpm@linux-foundation.org>
+In-Reply-To: <1183275382.4010.121.camel@localhost.localdomain>
+References: <1183275382.4010.121.camel@localhost.localdomain>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,30 +26,159 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 01 Jul 2007 03:37:16 -0400
+On Sun, 01 Jul 2007 03:36:22 -0400
 Mingming Cao <cmm@us.ibm.com> wrote:
 
-> This patch adds a 32-bit i_version_hi field to ext4_inode, which can be used for 64-bit inode versions. This field will store the higher 32 bits of the version, while Jean Noel's patch has added support to store the lower 32-bits in osd1.linux1.l_i_version.
+> with the patch all headers are checked. the code should become
+> more resistant to on-disk corruptions. needless BUG_ON() have
+> been removed. please, review for inclusion.
+> 
+> ...
 
-Please wordwrap this changelog entry to less than 80 columns.  Well, less
-than 258, anyway ;)
+> @@ -269,6 +239,70 @@
+>  	return size;
+>  }
+>  
+> +static inline int
+> +ext4_ext_max_entries(struct inode *inode, int depth)
 
-> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-> Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
-> Signed-off-by: Kalpak Shah <kalpak@clusterfs.com>
-> ---
-> Index: linux-2.6.21/include/linux/ext4_fs.h
-> ===================================================================
-> --- linux-2.6.21.orig/include/linux/ext4_fs.h
-> +++ linux-2.6.21/include/linux/ext4_fs.h
-> @@ -342,6 +342,7 @@ struct ext4_inode {
->  	__le32  i_atime_extra;  /* extra Access time      (nsec << 2 | epoch) */
->  	__le32  i_crtime;       /* File Creation time */
->  	__le32  i_crtime_extra; /* extra FileCreationtime (nsec << 2 | epoch) */
-> +	__le32	i_version_hi;	/* high 32 bits for 64-bit version */
->  };
+Please remove the `inline'.
 
-Aren't there forward- backward-compatibility issues here?  How does the
-filesystem driver work out whether this field is present and valid?
+`inline' is usually wrong.  It is wrong here.  If this function has a
+single callsite (it has) then the compiler will inline it.  If the function
+later gains more callsites then the compiler will know (correctly) not to
+inline it.
 
-The changelog should describe this design issue.
+We hope.  If we find the compiler still inlines a function as large as this
+one then we'd need to use noinline and complain at the gcc developers.
+
+> +{
+> +	int max;
+> +
+> +	if (depth == ext_depth(inode)) {
+> +		if (depth == 0)
+> +			max = ext4_ext_space_root(inode);
+> +		else
+> +			max = ext4_ext_space_root_idx(inode);
+> +	} else {
+> +		if (depth == 0)
+> +			max = ext4_ext_space_block(inode);
+> +		else
+> +			max = ext4_ext_space_block_idx(inode);
+> +	}
+> +
+> +	return max;
+> +}
+> +
+> +static int __ext4_ext_check_header(const char *function, struct inode *inode,
+> +					struct ext4_extent_header *eh,
+> +					int depth)
+> +{
+> +	const char *error_msg = NULL;
+
+Unneeded initialisation.
+
+> +	int max = 0;
+> +
+> +	if (unlikely(eh->eh_magic != EXT4_EXT_MAGIC)) {
+> +		error_msg = "invalid magic";
+> +		goto corrupted;
+> +	}
+> +	if (unlikely(le16_to_cpu(eh->eh_depth) != depth)) {
+> +		error_msg = "unexpected eh_depth";
+> +		goto corrupted;
+> +	}
+> +	if (unlikely(eh->eh_max == 0)) {
+> +		error_msg = "invalid eh_max";
+> +		goto corrupted;
+> +	}
+> +	max = ext4_ext_max_entries(inode, depth);
+> +	if (unlikely(le16_to_cpu(eh->eh_max) > max)) {
+> +		error_msg = "too large eh_max";
+> +		goto corrupted;
+> +	}
+> +	if (unlikely(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max))) {
+> +		error_msg = "invalid eh_entries";
+> +		goto corrupted;
+> +	}
+> +	return 0;
+> +
+> +corrupted:
+> +	ext4_error(inode->i_sb, function,
+> +			"bad header in inode #%lu: %s - magic %x, "
+> +			"entries %u, max %u(%u), depth %u(%u)",
+> +			inode->i_ino, error_msg, le16_to_cpu(eh->eh_magic),
+> +			le16_to_cpu(eh->eh_entries), le16_to_cpu(eh->eh_max),
+> +			max, le16_to_cpu(eh->eh_depth), depth);
+> +
+> +	return -EIO;
+> +}
+> +
+>
+> ...
+>
+> +	i = depth = ext_depth(inode);
+>
+
+Mulitple assignments like this are somewhat unpopular from the coding-style
+POV.  
+
+We have a local variable called `i' which is not used as a simple counter
+and which has no explanatory comment.  This is plain bad.  Please find a
+better name for this variable.  Review the code for other such lack of
+clarity - I'm sure there's more.
+
+
+> -	BUG_ON(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max));
+> -	BUG_ON(eh->eh_magic != EXT4_EXT_MAGIC);
+
+Yeah, this patch improves things a lot.
+
+How well-tested is it?  Have any of these errors actually been triggered?
+
+>  			path[i].p_hdr = ext_block_hdr(path[i].p_bh);
+> -			if (ext4_ext_check_header(__FUNCTION__, inode,
+> -							path[i].p_hdr)) {
+> -				err = -EIO;
+> -				goto out;
+> -			}
+>  		}
+>  
+> -		BUG_ON(le16_to_cpu(path[i].p_hdr->eh_entries)
+> -			   > le16_to_cpu(path[i].p_hdr->eh_max));
+> -		BUG_ON(path[i].p_hdr->eh_magic != EXT4_EXT_MAGIC);
+> -
+>  		if (!path[i].p_idx) {
+>  			/* this level hasn't been touched yet */
+>  			path[i].p_idx = EXT_LAST_INDEX(path[i].p_hdr);
+> @@ -1873,17 +1890,24 @@
+>  				i, EXT_FIRST_INDEX(path[i].p_hdr),
+>  				path[i].p_idx);
+>  		if (ext4_ext_more_to_rm(path + i)) {
+> +			struct buffer_head *bh;
+>  			/* go to the next level */
+>  			ext_debug("move to level %d (block %llu)\n",
+>  				  i + 1, idx_pblock(path[i].p_idx));
+>  			memset(path + i + 1, 0, sizeof(*path));
+> -			path[i+1].p_bh =
+> -				sb_bread(sb, idx_pblock(path[i].p_idx));
+> -			if (!path[i+1].p_bh) {
+> +			bh = sb_bread(sb, idx_pblock(path[i].p_idx));
+> +			if (!bh) {
+>  				/* should we reset i_size? */
+>  				err = -EIO;
+>  				break;
+>  			}
+> +			BUG_ON(i + 1 > depth);
+
+ouch.  Couldn't we do WARN_ON then return -EIO here?
+
+> +			if (ext4_ext_check_header(inode, ext_block_hdr(bh),
+> +							depth - i - 1)) {
+> +				err = -EIO;
+> +				break;
+> +			}
+> +			path[i+1].p_bh = bh;
+
+Really that should have been "i + 1".  checkpatch misses this.  It seems to
+be missing more stuff that it used to lately.
