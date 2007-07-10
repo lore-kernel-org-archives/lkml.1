@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbXGJOA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbXGJOBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755584AbXGJOA5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 10:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbXGJOAt
+	id S1757360AbXGJOBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 10:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbXGJOBC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 10:00:49 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:18966 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbXGJOAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 10:00:49 -0400
-Message-ID: <46939045.5070508@sw.ru>
-Date: Tue, 10 Jul 2007 17:57:25 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Ashok Raj <ashok.raj@intel.com>, Shaohua Li <shaohua.li@intel.com>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@osdl.org>
-Subject: OOPS at dmar_table_init (2.6.22-rc6-mm1 kernel)
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 10 Jul 2007 10:01:02 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:56674 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756356AbXGJOBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 10:01:00 -0400
+Date: Tue, 10 Jul 2007 16:00:56 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: tglx@linutronix.de, Tim Gardner <tim.gardner@canonical.com>
+Subject: acpi regression on some laptops
+Message-ID: <20070710160056.443ae9ae@i1501.lan.towertech.it>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-While working with Andrew's kernel I faced an OOPS on x86_64 
-machine. Unfortunately kernel logs are not appearing in serial 
-console by the time oops happens, but I have some info on the
-screen:
 
-OOPs is at dmar_table_init() here:
-ffffffff80532873 <dmar_table_init>:
-ffffffff80532873:       41 55                   push   %r13
-ffffffff80532875:       41 54                   push   %r12
-ffffffff80532877:       55                      push   %rbp
-ffffffff80532878:       53                      push   %rbx
-ffffffff80532879:       51                      push   %rcx
-ffffffff8053287a:       4c 8b 2d 07 21 01 00    mov    73991(%rip),%r13        # ffffffff80544988 <dmar_tbl>
-ffffffff80532881:       41 0f b6 45 24          movzbl 0x24(%r13),%eax  <<<<<<<<<<< OOPS, %r13 = NULL
-ffffffff80532886:       84 c0                   test   %al,%al
-ffffffff80532888:       75 11                   jne    ffffffff8053289b <dmar_table_init+0x28>
-ffffffff8053288a:       48 c7 c7 b0 3d 45 80    mov    $0xffffffff80453db0,%rdi
-ffffffff80532891:       e8 c2 4a cf ff          callq  ffffffff80227358 <printk>
-ffffffff80532896:       e9 f2 01 00 00          jmpq   ffffffff80532a8d <dmar_table_init+0x21a>
+ Hello,
 
-Looks like dmar_tbl is NULL. 
-BUG is 100% reproducible. Is there any other info that can be useful?
+   with respect to commit e9e2cdb412412326c4827fc78ba27f410d837e6e 
+ and the thread at [1] I just wanted to let you all know that
+ the problem is still present :)
 
-Thanks,
-Pavel
+ I tried several combo of options, but only acpi=off or acpi=ht
+ will let the PC boot.
+
+ I'm trying to debug it.. any help/pointers are appreciated. I dont't
+ have a deep knowledge of the subsystems involved.
+ 
+
+[1]
+  http://lkml.org/lkml/2007/6/21/360
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
