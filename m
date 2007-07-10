@@ -1,41 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763843AbXGJVjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763173AbXGJVmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763843AbXGJVjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 17:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760273AbXGJVjJ
+	id S1763173AbXGJVmw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 17:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759238AbXGJVmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 17:39:09 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:4058 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759345AbXGJVjI (ORCPT
+	Tue, 10 Jul 2007 17:42:44 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57332 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758110AbXGJVmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 17:39:08 -0400
-X-IronPort-AV: i="4.16,523,1175486400"; 
-   d="scan'208"; a="34595305:sNHT22154195"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Jan Dittmer" <jdi@l4x.org>
-Subject: Re: [GIT PULL] Blackfin arch fixes (try #2)
-Date: Tue, 10 Jul 2007 17:42:30 -0400
-User-Agent: KMail/1.9.5
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>, bryan.wu@analog.com,
-       "LKML" <linux-kernel@vger.kernel.org>
-References: <1183423041.10353.8.camel@roc-laptop> <8bd0f97a0707060022x16732628ofc3c0a6004776cbe@mail.gmail.com> <4693D39A.2040103@l4x.org>
-In-Reply-To: <4693D39A.2040103@l4x.org>
+	Tue, 10 Jul 2007 17:42:43 -0400
+Date: Tue, 10 Jul 2007 23:43:15 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
+Message-ID: <20070710214315.GD3492@stusta.de>
+References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org> <4693EF48.1080209@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200707101742.30775.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 10 Jul 2007 21:39:06.0495 (UTC) FILETIME=[BDE7C0F0:01C7C33A]
+In-Reply-To: <4693EF48.1080209@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 10 Jul 2007 14:44, Jan Dittmer pondered:
-> With the current -elf toolchain from svn (-uclinux toolchain fails to
-> build) 
+On Tue, Jul 10, 2007 at 01:42:48PM -0700, H. Peter Anvin wrote:
+> Segher Boessenkool wrote:
+> > 
+> > Well at least with -fno-toplevel-reorder it is guaranteed
+> > to work (not the same thing as "is working", heh, but fairly
+> > close).
+> > 
+> > It seems to me GCC should grow an option to insert .code16gcc
+> > by itself (-m16 perhaps?)  Or GAS could get a flag to include
+> > a file as a prelude before the main thing.  Neither will help
+> > Linux right now of course.
+> 
+> -m16 is the right thing, and it also provides a proper hook for 
+> eventually having a real 16-bit backend (there are at least two 
+> projects for doing that.)
+> 
+> For now, I have:
 
-I built from source yesterday without any issues - what error did you get?
+Can't you use the global CFLAGS and append your specific ones?
 
--Robin
+> CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
+
+-g ???
+
+>                    $(cflags-$(ARCH)) \
+>                    -Wall -Wstrict-prototypes \
+>                    -march=i386 -mregparm=3 \
+
+Why -march=i386 ?
+
+>                    -include $(srctree)/$(src)/code16gcc.h \
+>                    -fno-strict-aliasing -fomit-frame-pointer \
+>                    $(call cc-option, -ffreestanding) \
+
+No need to test, -ffreestanding is supported by all gcc versions we 
+support.
+
+>                    $(call cc-option, -fno-unit-at-a-time) \
+>                    $(call cc-option, -fno-toplevel-reorder) \
+>                    $(call cc-option, -fno-stack-protector) \
+>                    $(call cc-option, -mpreferred-stack-boundary=2)
+> 
+> ... since that will require less violence to eventually hack in the
+> proper -m16 option if/when it becomes available.
+> 
+> 	-hpa
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
