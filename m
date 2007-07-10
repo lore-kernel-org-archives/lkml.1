@@ -1,114 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763667AbXGJJhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763793AbXGJJlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763667AbXGJJhz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 05:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbXGJJhr
+	id S1763793AbXGJJlB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 05:41:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758200AbXGJJkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 05:37:47 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:54148 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756268AbXGJJhq (ORCPT
+	Tue, 10 Jul 2007 05:40:53 -0400
+Received: from procserver.webwayone.co.uk ([62.8.115.202]:4501 "EHLO
+	procserver.webwayone.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757527AbXGJJkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 05:37:46 -0400
-From: Zhang Wei <wei.zhang@freescale.com>
-To: akpm@linux-foundation.org, paulus@samba.org, galak@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Zhang Wei <wei.zhang@freescale.com>
-Subject: [PATCH 3/4] Extend the DMA-engine API.
-Date: Tue, 10 Jul 2007 17:45:11 +0800
-Message-Id: <11840607111926-git-send-email-wei.zhang@freescale.com>
-X-Mailer: git-send-email 1.5.1
+	Tue, 10 Jul 2007 05:40:52 -0400
+X-Greylist: delayed 1272 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jul 2007 05:40:52 EDT
+X-DKIM: Sendmail DKIM Filter v1.2.0 procserver.webwayone.co.uk l6A9JYt5018403
+DomainKey-Signature: a=rsa-sha1; s=procserver; d=webwayone.co.uk; c=nofws; q=dns;
+	h=x-dkim:from:to:subject:references:x-hashcash:date:
+	in-reply-to:message-id:user-agent:mime-version:content-type:
+	x-spam-status:x-scanned-by;
+	b=RYJBFg/u8pXSSuI0Jok/FlXKcBbITMAYtaUfHV2LAy/zmhxodKOoIP0D7glp9oVyv
+	rUatRmUDn7u5vxtBB1arg==
+X-DKIM: Sendmail DKIM Filter v1.2.0 procserver.webwayone.co.uk l6A9JYt5018403
+From: Graham Murray <gmurray@webwayone.co.uk>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Specialix SX cards not detected in kernels >=2.6.20
+References: <13055248471022532464@wsc.cz>
+X-Hashcash: 1:20:070710:linux-kernel@vger.kernel.org::lJgKfX0edV5QarGJ:0000000000000000000000000000000008tWd
+Date: Tue, 10 Jul 2007 10:19:34 +0100
+In-Reply-To: <13055248471022532464@wsc.cz> (Jiri Slaby's message of "Tue, 10
+	Jul 2007 09:17:06 +0200 (CEST)")
+Message-ID: <7wzm24sjix.fsf@gmdev.webwayone.co.uk>
+User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/22.1.50 (i686-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add channel wait queue and transfer callback dma_xfer_callback().
-If the DMA controller and driver support interrupt, when the
-transfer is finished, it will wakeup the wait queue
-and call the callback function of the channel.
+Jiri Slaby <jirislaby@gmail.com> writes:
 
-Add dma_async_raw_xfer() to API and device_raw_xfer() to struct dma_device
-for RAW physical address DMA transfer, which will be used at transfer
-between I/O address and memory address.
+> In switched ids. Could you try the patch below?
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
----
- include/linux/dmaengine.h |   35 +++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index c94d8f1..d9dfc57 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -28,6 +28,7 @@
- #include <linux/kref.h>
- #include <linux/completion.h>
- #include <linux/rcupdate.h>
-+#include <linux/wait.h>
- 
- /**
-  * enum dma_event - resource PNP/power managment events
-@@ -108,6 +109,8 @@ struct dma_chan {
- 	struct list_head client_node;
- 	struct list_head device_node;
- 	struct dma_chan_percpu *local;
-+
-+	wait_queue_head_t wait_q;
- };
- 
- void dma_chan_cleanup(struct kref *kref);
-@@ -138,6 +141,12 @@ static inline void dma_chan_put(struct dma_chan *chan)
- typedef void (*dma_event_callback) (struct dma_client *client,
- 		struct dma_chan *chan, enum dma_event event);
- 
-+/*
-+ * typedef dma_xfer_callback
-+ *   - function pointer to a DMA transfer callback when finished
-+ */
-+typedef void (*dma_xfer_callback) (struct dma_chan *chan, void *data);
-+
- /**
-  * struct dma_client - info on the entity making use of DMA services
-  * @event_callback: func ptr to call when something happens
-@@ -187,6 +196,9 @@ struct dma_device {
- 
- 	int (*device_alloc_chan_resources)(struct dma_chan *chan);
- 	void (*device_free_chan_resources)(struct dma_chan *chan);
-+	dma_cookie_t (*device_raw_xfer)(struct dma_chan *chan,
-+			dma_addr_t dest, dma_addr_t src, size_t len,
-+			dma_xfer_callback cb, void *data);
- 	dma_cookie_t (*device_memcpy_buf_to_buf)(struct dma_chan *chan,
- 			void *dest, void *src, size_t len);
- 	dma_cookie_t (*device_memcpy_buf_to_pg)(struct dma_chan *chan,
-@@ -209,6 +221,29 @@ void dma_async_client_chan_request(struct dma_client *client,
- 		unsigned int number);
- 
- /**
-+ * dma_async_raw_xfer - transfor data between physical addresses with callback
-+ * @chan: DMA channel to be used
-+ * @dest: destination address (physical)
-+ * @src: source address (physical)
-+ * @len: length
-+ */
-+static inline dma_cookie_t dma_async_raw_xfer(struct dma_chan *chan,
-+				dma_addr_t dest, dma_addr_t src, size_t len,
-+				dma_xfer_callback cb, void *data)
-+{
-+	int cpu = get_cpu();
-+	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
-+	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
-+	put_cpu();
-+
-+	if (chan->device->device_raw_xfer)
-+		return chan->device->device_raw_xfer(chan, dest, src, len,
-+							cb, data);
-+	else
-+		return -EPERM;
-+}
-+
-+/**
-  * dma_async_memcpy_buf_to_buf - offloaded copy between virtual addresses
-  * @chan: DMA channel to offload copy to
-  * @dest: destination address (virtual)
--- 
-1.5.1
-
+Thanks. That fixed the problem - the card works again now.
