@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762086AbXGJI1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761764AbXGJI2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762086AbXGJI1f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 04:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbXGJI1Q
+	id S1761764AbXGJI2x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 04:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbXGJI2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 04:27:16 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:35278 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752541AbXGJI1O (ORCPT
+	Tue, 10 Jul 2007 04:28:46 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:17630 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752541AbXGJI2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 04:27:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=iNuTBADFGLnOIXXEvMXBtUjKx23HMPi7EQkmPWkd9CCGiwU3erZ0Q65DBfc7rSSOe6KPw6aP79nqjWBN/VazpC0cHBGGHv3LxDZ67H/Tbv7WBP98xCTHqEnLYiWWst95zJozhFt5dEceXNHBigi2+9e66KdvIMrif2O43/BlWyY=  ;
-X-YMail-OSG: kCYxxGYVM1lwfIoRSDTEQRHBRb6tWsyisz4cYSo0ZeefXLu.nXWAeflBe9F_D.oDasF9S0WgaQ--
-Message-ID: <469342DC.8070007@yahoo.com.au>
-Date: Tue, 10 Jul 2007 18:27:08 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Matt Mackall <mpm@selenic.com>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-References: <20070708034952.022985379@sgi.com>  <20070708035018.074510057@sgi.com> <20070708075119.GA16631@elte.hu>  <20070708110224.9cd9df5b.akpm@linux-foundation.org>  <4691A415.6040208@yahoo.com.au> <84144f020707090404l657a62c7x89d7d06b3dd6c34b@mail.gmail.com> <Pine.LNX.4.64.0707090907010.13970@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0707101049230.23040@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 10 Jul 2007 04:28:45 -0400
+Date: Tue, 10 Jul 2007 10:28:57 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Sysfs and suicidal attributes
+Message-ID: <20070710102857.15a57337@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <46931495.4050605@gmail.com>
+References: <Pine.LNX.4.44L0.0707081015430.5323-100000@netrider.rowland.org>
+	<46931495.4050605@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka J Enberg wrote:
+On Tue, 10 Jul 2007 14:09:41 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-> Curious, /proc/meminfo immediately after boot shows:
+> > I haven't paid much attention to your sysfs updates.  Is it still true
+> > that calls to show/store methods are mutually exclusive with attribute
+> > unregistration?  Assuming the answer is Yes, would it be possible to
+> > bypass that mutual exclusion in certain explicit cases?  Here's what I
+> > have in mind:
+> > 
+> > 	The user writes to an attribute file.
+> > 
+> > 	The sysfs core calls the attribute's store method.
+> > 
+> > 	The method tells the sysfs core to pretend that the call
+> > 	temporarily doesn't exist, or has completed, or something
+> > 	like that.
+> > 
+> > 	The method safely unregisters the attribute file, with no
+> > 	mutual exclusion problems and no deadlock.  Of course, the
+> > 	unregistration will still block until all _other_ method
+> > 	calls for this attribute are complete.
+> > 
+> > 	The method tells the sysfs core to stop pretending and
+> > 	go back to its normal state.
+> > 
+> > 	The method returns, and the sysfs core takes whatever actions
+> > 	are needed to fully release the attribute file.
+> > 
+> > The idea is that there could be a way to allow unregistration while a 
+> > method is still running, if the method specifically requests it.  If we 
+> > could do this then device_schedule_callback() would be unnecessary.
 > 
-> SLUB (debugging enabled):
+> Regardless of the suspend problem, I like the above idea.  Actually, I
+> was thinking about doing exactly that for suicidal nodes when I first
+> found out the problem.  All that's needed is an owner field which allows
+> the owning thread to reenter (what was the name for this type of mutex?
+>  BSD folks like it).  It's probably better to put some restrictions to
+> allow only the specific case tho.
 > 
-> (none):~# cat /proc/meminfo 
-> MemTotal:        30260 kB
-> MemFree:         22096 kB
-> 
-> SLUB (debugging disabled):
-> 
-> (none):~# cat /proc/meminfo 
-> MemTotal:        30276 kB
-> MemFree:         22244 kB
-> 
-> SLOB:
-> 
-> (none):~# cat /proc/meminfo 
-> MemTotal:        30280 kB
-> MemFree:         22004 kB
-> 
-> That's 92 KB advantage for SLUB with debugging enabled and 240 KB when 
-> debugging is disabled.
+> I like it because it shifts complexity from the drivers into driver
+> core.  IOW, the driver model is kinder to drivers that way - the driver
+> writer doesn't have to care whether something is suicidal or not - and I
+> think that's the way we should be headed although we're not good at it yet.
 
-Interesting. What kernel version are you using?
+It might be that I misunderstand the idea, but doesn't the device
+driver writer need to consider whether the attribute is suicidal as
+well? (If it is the method that needs to call the sysfs core.)
 
-
-> Nick, Matt, care to retest SLUB and SLOB for your setups?
-
-I don't think there has been a significant change in the area of
-memory efficiency in either since I last tested, and Christoph and
-I both produced the same result.
-
-I can't say where SLOB is losing its memory, but there are a few
-places that can still be improved, so I might get keen and take
-another look at it once all the improvements to both allocators
-gets upstream.
-
--- 
-SUSE Labs, Novell Inc.
+A general immediate disconnect of the buffers (which will be handled in
+a second pass) would be great, but doesn't sound easy.
