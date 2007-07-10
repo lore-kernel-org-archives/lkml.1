@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761133AbXGJTkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbXGJTnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761133AbXGJTkr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 15:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbXGJTkj
+	id S1761147AbXGJTnr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 15:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXGJTnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 15:40:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:48049 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754022AbXGJTki (ORCPT
+	Tue, 10 Jul 2007 15:43:40 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37184 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755289AbXGJTnj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 15:40:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=mO3qoWU6VCxr9KVatpb9tUVERMDPY8YeNACflKXfD2wdM8OEOYDXdY4wb2c7BE5oAXUorJ318MoMuVPkG0OZ9UAUUVuCz7JhCiyBXVVFOJKVSjc7fny+rnINzkIGPH/iOr024WrahNKWmEDXbgDXUWw8C2p16Q1fI3RsKUMCJmE=
-Date: Tue, 10 Jul 2007 23:40:33 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Adel Gadllah <adel.gadllah@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix sparse problems with ARRAY_SIZE
-Message-ID: <20070710194033.GB5751@martell.zuzino.mipt.ru>
-References: <4693AE32.7030403@gmail.com> <4693AF4C.8010005@gmail.com>
+	Tue, 10 Jul 2007 15:43:39 -0400
+Date: Tue, 10 Jul 2007 12:43:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Adrian Bunk <bunk@stusta.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] slub.c:early_kmem_cache_node_alloc() shouldn't be
+ __init
+In-Reply-To: <20070710190123.GB3492@stusta.de>
+Message-ID: <Pine.LNX.4.64.0707101243240.12485@schroedinger.engr.sgi.com>
+References: <20070710124445.GX3492@stusta.de>
+ <Pine.LNX.4.64.0707101132110.11882@schroedinger.engr.sgi.com>
+ <20070710190123.GB3492@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4693AF4C.8010005@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 06:09:48PM +0200, Adel Gadllah wrote:
-> --- linux-2.6.orig/include/linux/kernel.h
-> +++ linux-2.6/include/linux/kernel.h
-> @@ -35,7 +35,11 @@ extern const char linux_proc_banner[];
->  #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
->  #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
->  
-> +#ifdef __CHECKER_
-> +#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-> +#else
->  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
-> +#endif
+On Tue, 10 Jul 2007, Adrian Bunk wrote:
 
-Al Viro recently gave a hint that he have patches for sparse to not give
-spurious ARRAY_SIZE warnings.
+> But I'm not convinced it's really worth manually forcing noinline only 
+> for moving a few bytes to __init in the CONFIG_NUMA=y case - in the  
+> long term this will only bit rot.
+
+Allright then
+
+Acked-by: Christoph Lameter <clameter@sgi.com>
 
