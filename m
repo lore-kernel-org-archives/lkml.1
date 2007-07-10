@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbXGJI5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbXGJI5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761932AbXGJI5b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 04:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbXGJI5N
+	id S1759044AbXGJI5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 04:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757569AbXGJI5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 04:57:13 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:42573 "EHLO mail4.iitk.ac.in"
+	Tue, 10 Jul 2007 04:57:17 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:42579 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755858AbXGJI5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756424AbXGJI5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Jul 2007 04:57:12 -0400
 X-Virus-Scanner: This message was checked by NOD32 Antivirus system
 	for Linux Server. For more information on NOD32 Antivirus System,
@@ -20,85 +20,145 @@ Cc: Matt Mackall <mpm@selenic.com>, Keiichi Kii <k-keiichi@bx.jp.nec.com>,
        Stephen Hemminger <shemminger@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>
-Date: Tue, 10 Jul 2007 14:49:20 +0530
-Message-Id: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
-Subject: [RFC][PATCH v2 -mm 0/9] netconsole: Multiple targets and dynamic reconfigurability
+Date: Tue, 10 Jul 2007 14:49:25 +0530
+Message-Id: <20070710091925.23907.3312.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
+References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
+Subject: [PATCH v2 -mm 1/9] netconsole: Cleanups, codingstyle, prettyfication
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[0/9] netconsole: Multiple targets and dynamic reconfigurability
-
-This patchset is a rework of the original idea and patches posted by
-Keiichi Kii and Takayoshi Kochi at: http://lkml.org/lkml/2007/6/13/72
-
-This is v2 of the patchset, the previous version is available at:
-http://lkml.org/lkml/2007/7/4/107
-
-This is diffed against 2.6.22-rc6-mm1 + the earlier netpoll fixlet and the
-configfs cleanup patches (those are already merged in -mm AFAIK, and hence
-not reproduced here).
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
 [1/9] netconsole: Cleanups, codingstyle, prettyfication
-[2/9] netconsole: Remove bogus check
-[3/9] netconsole: Simplify boot/module option setup logic
-[4/9] netconsole: Add some useful tips to documentation
-[5/9] netconsole: Introduce netconsole_target
-[6/9] netconsole: Introduce netconsole_netdev_notifier
-[7/9] netconsole: Use netif_running() in write_msg()
-[8/9] netconsole: Support multiple logging targets
-[9/9] netconsole: Support dynamic reconfiguration using configfs
 
-Changes since v1:
-=================
+(1) Remove unwanted headers.
+(2) Mark __init and __exit as appropriate.
+(3) Various trivial codingstyle and prettification stuff.
 
-* Split / merge various patches in the patchset as suggested in reviews.
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
 
-* Get rid of redundant "id" and "dev_status" fields.
+---
 
-* Use netif_running() instead of IFF_UP.
+ drivers/net/netconsole.c |   55 +++++++++++++++++++++++------------------------
+ 1 file changed, 27 insertions(+), 28 deletions(-)
 
-* Explain the boot/module option setup simplification and the netdev
-  notifier patches in more detail (justify why they're good / required).
+---
 
-* Get rid of possible trailing newline from echo(1) in store_dev_name().
-
-* Fix a panic bug -- now, when no boot/module option is specified, we
-  skip only the part that creates and inserts param string-created
-  targets. Rest of the initialization (notifier, configfs subsystem)
-  is done as usual.
-
-* Get rid of lock-skipping special-casing where possible.
-
-* Use config_item_name() instead of "empty_item".
-
-* Introduce netpoll_print_options() in netpoll and use it.
-
-* Style cleanups (reduce #ifdefs, indentation, whitespace fixes, etc).
-
-* Miscellaneous fixes in documentation (as suggested in reviews).
-
-About this patchset:
-====================
-
-What?
-
-Support multiple remote logging targets in netconsole. Also, ability to
-dynamically add or remove targets or modify parameters (IP, port, remote
-MAC address) of targets at runtime, from userspace, using configfs.
-
-Why?
-
->From Keiichi Kii's original post:
-
-[...] current netconsole is not flexible. For example, if you want to change
-ip address for logging agent, in the case of built-in netconsole, you can't
-change config except for changing boot parameter and rebooting your system,
-or in the case of module netconsole, you need to remove it and reload
-with different parameters. [...] and we have been losing serial console
-port with PCs and Servers.
-
-(... and especially laptops, I would add.)
-
-Kindly review and comment.
-
-Satyam
+diff -ruNp a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+--- a/drivers/net/netconsole.c	2007-04-26 08:38:32.000000000 +0530
++++ b/drivers/net/netconsole.c	2007-07-03 20:27:17.000000000 +0530
+@@ -35,35 +35,32 @@
+  ****************************************************************/
+ 
+ #include <linux/mm.h>
+-#include <linux/tty.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/console.h>
+-#include <linux/tty_driver.h>
+ #include <linux/moduleparam.h>
+ #include <linux/string.h>
+-#include <linux/sysrq.h>
+-#include <linux/smp.h>
+ #include <linux/netpoll.h>
+ 
+ MODULE_AUTHOR("Maintainer: Matt Mackall <mpm@selenic.com>");
+ MODULE_DESCRIPTION("Console driver for network interfaces");
+ MODULE_LICENSE("GPL");
+ 
+-static char config[256];
+-module_param_string(netconsole, config, 256, 0);
++#define MAX_PARAM_LENGTH	256
++#define MAX_PRINT_CHUNK		1000
++
++static char config[MAX_PARAM_LENGTH];
++module_param_string(netconsole, config, MAX_PARAM_LENGTH, 0);
+ MODULE_PARM_DESC(netconsole, " netconsole=[src-port]@[src-ip]/[dev],[tgt-port]@<tgt-ip>/[tgt-macaddr]\n");
+ 
+ static struct netpoll np = {
+-	.name = "netconsole",
+-	.dev_name = "eth0",
+-	.local_port = 6665,
+-	.remote_port = 6666,
+-	.remote_mac = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
++	.name		= "netconsole",
++	.dev_name	= "eth0",
++	.local_port	= 6665,
++	.remote_port	= 6666,
++	.remote_mac	= {0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+ };
+-static int configured = 0;
+-
+-#define MAX_PRINT_CHUNK 1000
++static int configured;
+ 
+ static void write_msg(struct console *con, const char *msg, unsigned int len)
+ {
+@@ -75,7 +72,7 @@ static void write_msg(struct console *co
+ 
+ 	local_irq_save(flags);
+ 
+-	for(left = len; left; ) {
++	for (left = len; left;) {
+ 		frag = min(left, MAX_PRINT_CHUNK);
+ 		netpoll_send_udp(&np, msg, frag);
+ 		msg += frag;
+@@ -86,12 +83,12 @@ static void write_msg(struct console *co
+ }
+ 
+ static struct console netconsole = {
+-	.name = "netcon",
+-	.flags = CON_ENABLED | CON_PRINTBUFFER,
+-	.write = write_msg
++	.name	= "netcon",
++	.flags	= CON_ENABLED | CON_PRINTBUFFER,
++	.write	= write_msg,
+ };
+ 
+-static int option_setup(char *opt)
++static int __init option_setup(char *opt)
+ {
+ 	configured = !netpoll_parse_options(&np, opt);
+ 	return 1;
+@@ -99,28 +96,30 @@ static int option_setup(char *opt)
+ 
+ __setup("netconsole=", option_setup);
+ 
+-static int init_netconsole(void)
++static int __init init_netconsole(void)
+ {
+-	int err;
++	int err = 0;
+ 
+-	if(strlen(config))
++	if (strnlen(config, MAX_PARAM_LENGTH))
+ 		option_setup(config);
+ 
+-	if(!configured) {
+-		printk("netconsole: not configured, aborting\n");
+-		return 0;
++	if (!configured) {
++		printk(KERN_INFO "netconsole: not configured, aborting\n");
++		goto out;
+ 	}
+ 
+ 	err = netpoll_setup(&np);
+ 	if (err)
+-		return err;
++		goto out;
+ 
+ 	register_console(&netconsole);
+ 	printk(KERN_INFO "netconsole: network logging started\n");
+-	return 0;
++
++out:
++	return err;
+ }
+ 
+-static void cleanup_netconsole(void)
++static void __exit cleanup_netconsole(void)
+ {
+ 	unregister_console(&netconsole);
+ 	netpoll_cleanup(&np);
