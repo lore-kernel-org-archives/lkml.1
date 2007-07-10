@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760226AbXGJMrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760729AbXGJMsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760226AbXGJMrn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 08:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXGJMoo
+	id S1760729AbXGJMsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 08:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbXGJMp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 08:44:44 -0400
-Received: from waste.org ([66.93.16.53]:46745 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756057AbXGJMoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 08:44:23 -0400
-Date: Tue, 10 Jul 2007 07:43:44 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Some love to default profiler
-Message-ID: <20070710124343.GS11166@waste.org>
-References: <20070704213420.GA5864@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070704213420.GA5864@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 10 Jul 2007 08:45:57 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:36624 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758594AbXGJMpz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 08:45:55 -0400
+Date: Tue, 10 Jul 2007 08:45:39 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: 2.6.22 vs amanda, 2.6.22 1, amanda 0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200707100845.40304.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 01:34:20AM +0400, Alexey Dobriyan wrote:
-> 1) Drop __KERNEL__ out of profile.h. It contains only internal kernel stuff and
->    not in exported headers list
-> 2) Put profile.c under CONFIG_PROFILING. You enabled profiling in config, you
->    will get it. Removes conditional branch from schedule(). Code savings on my
->    usual config:
-> 
-> 	   text	   data	    bss	    dec	    hex	filename
-> 	2921871	 179895	 180224	3281990	 321446	vmlinux		before
-> 	2920141	 179847	 180224	3280212	 320d54	vmlinux		after
-> 	--------------------------------------------------------------
-> 	  -1730     -48           -1778
-> 
-> 3) Make timer_hook static (hi, Adrian!)
-> 4) Convert do {} while (0) into static inline functions
-> 5) minor misc stuff
+Greetings;
 
-Something here suggests this should have been 5 patches.
+Running 2.6.22 with no other patches last night, something went south in my 
+amanda backup run, and so far my forensics are coming up empty.  The only 
+obvious thing is that an amdump.1 file was not generated, and when I awoke 
+this am, cupsd was stuck and using 70+% of the cpu, and there were several 
+amanda related procs apparently waiting on it.  I restarted cups which will 
+normally unjam the jobs and complete any pending, but none were pending even 
+before I restarted cups.  After the cups restart, the amanda related stuff 
+went away and the cpu cooled down by 15 degrees.
 
-Otherwise, looks good to me.
+The expected files were written to the tape however.
+
+I will now reboot to 2.6.22-ck1 as the scheduler performance with a plain .22 
+is back to normal, with kmail being hung for 30 seconds at a time.  This is 
+not acceptable performance for a desktop even with full pre-emption checked 
+in the build config.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Giving money and power to governments is like giving whiskey and
+car keys to teenage boys.
+	-- P.J. O'Rourke
