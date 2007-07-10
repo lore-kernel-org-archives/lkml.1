@@ -1,50 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761409AbXGJUJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761655AbXGJUKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761409AbXGJUJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 16:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbXGJUJF
+	id S1761655AbXGJUKD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 16:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757206AbXGJUJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 16:09:05 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43734 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756015AbXGJUJE (ORCPT
+	Tue, 10 Jul 2007 16:09:55 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:42227 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbXGJUJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 16:09:04 -0400
-Date: Tue, 10 Jul 2007 13:09:03 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>
-Subject: Re: -mm merge plans for 2.6.23
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707101303450.22199@schroedinger.engr.sgi.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	Tue, 10 Jul 2007 16:09:54 -0400
+Message-ID: <4693E77D.2020706@oracle.com>
+Date: Tue, 10 Jul 2007 13:09:33 -0700
+From: Herbert van den Bergh <Herbert.van.den.Bergh@oracle.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070418)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hugh Dickins <hugh@veritas.com>
+CC: Dave McCracken <dave.mccracken@oracle.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] include private data mappings in RLIMIT_DATA limit
+References: <4692D616.4010004@oracle.com> <200707101219.29743.dave.mccracken@oracle.com> <Pine.LNX.4.64.0707101857310.20758@blonde.wat.veritas.com> <200707101412.19785.dave.mccracken@oracle.com> <Pine.LNX.4.64.0707102030150.2063@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0707102030150.2063@blonde.wat.veritas.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Andrew Morton wrote:
 
-> slub-exploit-page-mobility-to-increase-allocation-order.patch
-> slub-reduce-antifrag-max-order.patch
+
+Hugh Dickins wrote:
+> On Tue, 10 Jul 2007, Dave McCracken wrote:
+>> On Tuesday 10 July 2007, Hugh Dickins wrote:
+>>> Mapped private readonly yes, but vm_stat_account() says
+>>> 	if (file) {
+>>> 		mm->shared_vm += pages;
+>>> 		if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
+>>> 			mm->exec_vm += pages;
+>> In that code shared_vm includes everything that's mmap()ed, including private 
+>> mappings.  But if you look at Herbert's patch he has the following change:
+>>
+>>         if (file) {
+>> -               mm->shared_vm += pages;
+>> +               if (flags & VM_SHARED)
+>> +                       mm->shared_vm += pages;
+>>                 if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
+>>                         mm->exec_vm += pages;
+>>
+>> This means that shared_vm now is truly only memory that's mapped VM_SHARED and 
+>> does not include VM_EXEC memory.  That necessitates the separate subtraction 
+>> of exec_vm in the data calculations.
 > 
->  These are slub changes which are dependent on Mel's stuff, and I have a note
->  here that there were reports of page allocation failures with these.  What's
->  up with that?
+> Ah, I just noticed at the beginning of the patch, and didn't look for
+> a balancing change - thanks.  I'd strongly recommend that he not mess
+> around with these numbers, unless there's _very_ good reason: they're
+> not ideal, nothing ever will be, changing them around just causes pain.
+> shared_vm may not be a full description of what it counts, but it'll
+> do until you've a better name (readonly mappings share with the file
+> even when they're private).
 
-Those were fixed and all has been well since as far as I know.
+The result of counting only VM_SHARED file mappings in shared_vm is that
+it no longer includes MAP_PRIVATE file mappings.  These file mappings are
+shared until they are written to, at which point they become private.
+The vm doesn't currently track this change from shared to private,
+so either way the accounting is off by a bit.  But the intention of the
+private mapping is to not share the page with other processes, so I think
+the right thing to do is to charge the process with this memory usage as
+private memory.  I am continuing to make the assumption that the code
+already made that all VM_EXEC mappings are also shared.  But one thing
+that has changed is that when a mapping is no longer VM_EXEC, it is also
+no longer counted as shared, but as private, and charged to the data size.
 
->  Maybe I should just drop the 100-odd marginal-looking MM patches?  We're
->  simply not showing compelling reasons for merging them and quite a lot of them
->  are stuck in a 90% complete state.
+This has generally little effect on /proc/pid/stats VmData.
 
-As far as I can tell the antifrag patches are stable and are significantly 
-enhancing various aspects of the VM and also make it more reliable. SLUB 
-can use it to increase scalability. MM has been using order 3 allocs via 
-SLUB for months now without a problem. Without the antifrag patches order 
-1 allocs could cause OOMs.
+One of the motivations for this change was to make it easier for a
+system administrator to manage processes that could allocate large
+amounts of private memory, either through malloc() or through mmap(),
+possibly due to programming errors.  As Dave also pointed out, if these
+processes need to be able to attach to large shared memory segments, such
+as a database buffer cache, then attempting to control the memory usage of
+these processes with RLIMIT_AS becomes very tricky.  The sysadmin may set
+the RLIMIT_AS to the current buffer cache shared memory segment size of
+say 8GB plus 200M for process private allocations, but the next day the
+DBA decides to increase the shared memory segment to 10GB, and wonders
+why his processes won't start.  Now, with RLIMIT_DATA being effective again,
+all that is needed is to set RLIMIT_DATA to a reasonable value for the 
+application.
 
-It opens the door for functionality that we wanted for a long time such a 
-memory unplug etc.
+I don't anticipate that a lot of people need to be concerned about the 
+effect of this resource limit change.  By default RLIMIT_DATA is set to
+unlimited.  For those who do want to set it, they will need to understand 
+what it does, just like any other resource limit.
+
+Perhaps an update of the man page is in order as well.
+
+Thanks,
+Herbert.
 
