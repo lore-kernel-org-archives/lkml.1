@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764343AbXGJVTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762194AbXGJVYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764343AbXGJVTG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 17:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759968AbXGJVS4
+	id S1762194AbXGJVYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 17:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbXGJVYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 17:18:56 -0400
-Received: from mga09.intel.com ([134.134.136.24]:29568 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758640AbXGJVSz convert rfc822-to-8bit (ORCPT
+	Tue, 10 Jul 2007 17:24:00 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:37357 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757825AbXGJVX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 17:18:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,523,1175497200"; 
-   d="scan'208";a="104909948"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 10 Jul 2007 17:23:59 -0400
+Message-ID: <4693F809.9030903@zytor.com>
+Date: Tue, 10 Jul 2007 14:20:09 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: -mm merge plans for 2.6.23 - ioat/dma engine
-Date: Tue, 10 Jul 2007 14:18:53 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02A8708C@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20070710114703.a24eb7bd.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: -mm merge plans for 2.6.23 - ioat/dma engine
-Thread-Index: AcfDIroZJlwofJ+RTg+fVfnWoQUu1AAFIk5g
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       <linux-kernel@vger.kernel.org>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-X-OriginalArrivalTime: 10 Jul 2007 21:18:53.0407 (UTC) FILETIME=[EAD936F0:01C7C337]
+To: Pawel Dziepak <hryssta@gmail.com>
+CC: Segher Boessenkool <segher@kernel.crashing.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
+References: <11840359321823-git-send-email-hpa@zytor.com>	 <11840373002601-git-send-email-hpa@zytor.com>	 <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org>	 <200707101721.58937.ak@suse.de> <4693AA56.9040109@zytor.com>	 <551EA412-3D35-4BCD-ACAE-B6A7BE3CBF9B@kernel.crashing.org>	 <4693EF8E.9070403@zytor.com> <ec870ced0707101408p25b6115ao20aa5835072e7bad@mail.gmail.com>
+In-Reply-To: <ec870ced0707101408p25b6115ao20aa5835072e7bad@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton [mailto:akpm@linux-foundation.org] 
+Pawel Dziepak wrote:
 > 
->I am presently pulling 
->git://lost.foo-projects.org/~cleech/linux-2.6#master
->into -mm.
->
->Will you be taking over the IOAT git tree?  If so, please send me a
->suitable git URL when it's ready.
+> Unfortunately, .code16gcc is still experimental (at least binutils'
+> website says that). What is worse, it says that it is possible that
+> 16bit code produced on GCC won't work on pre-80386 processors (before
+> switching to protected mode you have to think about cpu as a
+> pre-80386).
+> 
 
-I'll be getting there Real Soon Now.  The transition seems to be a
-little rocky at the moment...
+.code16gcc has been in production use in real projects since at least 2001.
 
->The above tree has several changes in it from January (see
->ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2
->.6.22-rc6/2.6.22-rc6-mm1/broken-out/git-ioat.patch).
-> Please take a look at those, work out what we should do with it all.
+16-bit code produced by gcc is indeed, guaranteed to not work on pre-386
+x86s, but so is the code we had there before.  Saying "before switching
+to protected mode you have to think about [the] cpu as a pre-80386" is
+blatantly false; 32-bit registers and addressing are readily available
+in real mode using size override prefixes (which is what ".code16gcc"
+takes care of.)
 
-Will do.  Thanks for your patience.
+> I don't think that -m16 flag will be introduced quickly. In fact, only
+> OS developers _sometimes_ use 16 bit code...
+> 
+> I did a fast test and now I know that assembler instructions are
+> almost ignored by GCC and passed to gas. The situation is the same
+> with .code16gcc, what mean that gas has to translate 32bit code from
+> GCC to 16 bit code. The result binary was correct 16 bit program (at
+> least its code looked good), but it is IMHO too many translations from
+> C to 32bit assembler and then to 16bit assembler, that can cause
+> unpredictable errors.
 
-sln
-======================================================================
-Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
-Shannon.Nelson@intel.com                I don't speak for Intel
-(503) 712-7659                    Parents can't afford to be squeamish.
+You're saying "I don't understand it, and it scares me."  The
+differences compared to standard .code16 are pretty minute, mostly in
+the matter of a couple of different default sizes (e.g. "call" defaults
+to "calll" not "callw".)
+
+> Additionally, I prefer to write architecture depend procedures in
+> assembler (but is only *my* opinion, and you probably disagree).
+> Assembler is faster, you have bigger control over the code, and
+> portability of C is in this circumstances not necessary.
+
+... and the code is an utter, unmaintainable mess.
+
+	-hpa
