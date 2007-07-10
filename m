@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbXGJMr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760226AbXGJMrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759496AbXGJMr1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 08:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbXGJMom
+	id S1760226AbXGJMrn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 08:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXGJMoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 08:44:42 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:56654 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756085AbXGJMoQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 08:44:16 -0400
-Date: Tue, 10 Jul 2007 14:44:49 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "David S. Miller" <davem@davemloft.net>, jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2,6 patch] sunhme.c:quattro_pci_find() must be __devinit
-Message-ID: <20070710124449.GZ3492@stusta.de>
+	Tue, 10 Jul 2007 08:44:44 -0400
+Received: from waste.org ([66.93.16.53]:46745 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756057AbXGJMoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 08:44:23 -0400
+Date: Tue, 10 Jul 2007 07:43:44 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Some love to default profiler
+Message-ID: <20070710124343.GS11166@waste.org>
+References: <20070704213420.GA5864@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070704213420.GA5864@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following section mismatch:
+On Thu, Jul 05, 2007 at 01:34:20AM +0400, Alexey Dobriyan wrote:
+> 1) Drop __KERNEL__ out of profile.h. It contains only internal kernel stuff and
+>    not in exported headers list
+> 2) Put profile.c under CONFIG_PROFILING. You enabled profiling in config, you
+>    will get it. Removes conditional branch from schedule(). Code savings on my
+>    usual config:
+> 
+> 	   text	   data	    bss	    dec	    hex	filename
+> 	2921871	 179895	 180224	3281990	 321446	vmlinux		before
+> 	2920141	 179847	 180224	3280212	 320d54	vmlinux		after
+> 	--------------------------------------------------------------
+> 	  -1730     -48           -1778
+> 
+> 3) Make timer_hook static (hi, Adrian!)
+> 4) Convert do {} while (0) into static inline functions
+> 5) minor misc stuff
 
-<--  snip  -->
+Something here suggests this should have been 5 patches.
 
-...
-  MODPOST vmlinux
-WARNING: drivers/built-in.o(.text+0x272f8b): Section mismatch: reference to .init.text:quattro_pci_find (between 'happy_meal_pci_probe' and 'happy_meal_pci_remove')
-...
+Otherwise, looks good to me.
 
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
---- linux-2.6.22-rc6-mm1/drivers/net/sunhme.c.old	2007-07-10 04:41:59.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/drivers/net/sunhme.c	2007-07-10 04:42:56.000000000 +0200
-@@ -2625,7 +2625,7 @@
- #endif /* CONFIG_SBUS */
- 
- #ifdef CONFIG_PCI
--static struct quattro * __init quattro_pci_find(struct pci_dev *pdev)
-+static struct quattro * __devinit quattro_pci_find(struct pci_dev *pdev)
- {
- 	struct pci_dev *bdev = pdev->bus->self;
- 	struct quattro *qp;
-
+-- 
+Mathematics is the supreme nostalgia of our time.
