@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763707AbXGJSW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764100AbXGJSXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763707AbXGJSW5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 14:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbXGJSWt
+	id S1764100AbXGJSXU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 14:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763286AbXGJSWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 14:22:49 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:55497 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754781AbXGJSWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 14:22:48 -0400
-Message-ID: <4693CCC6.7050400@zytor.com>
-Date: Tue, 10 Jul 2007 11:15:34 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 10 Jul 2007 14:22:55 -0400
+Received: from rtr.ca ([64.26.128.89]:3675 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762593AbXGJSWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 14:22:54 -0400
+Message-ID: <4693CE7A.5070502@rtr.ca>
+Date: Tue, 10 Jul 2007 14:22:50 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-To: Daniel Drake <dsd@gentoo.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       zwane@infradead.org, Andi Kleen <ak@suse.de>,
-       "Antonino A. Daplas" <adaplas@pol.net>
-Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
- mode
-References: <4678191D.76E4.0078.0@novell.com>	<4686D85B.6090803@gentoo.org>	<20070630154230.4ad373fa.akpm@linux-foundation.org>	<4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org> <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org> <4692BDEE.8020802@zytor.com> <4693BF02.2050705@gentoo.org> <4693C0A1.8010901@zytor.com> <4693CAFF.4000609@gentoo.org>
-In-Reply-To: <4693CAFF.4000609@gentoo.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bruce Allen <ballen@gravity.phys.uwm.edu>, Mark Lord <liml@rtr.ca>,
+       David Greaves <david@dgreaves.com>, Douglas Gilbert <dougg@torque.net>,
+       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kai Makisara <Kai.Makisara@kolumbus.fi>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Bruce Allen <bruce.allen@aei.mpg.de>
+Subject: Re: [smartmontools-support] SMART problems in 2.6.22
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <Pine.LNX.4.63.0707082003360.23123@trinity.phys.uwm.edu> <20070709233535.GA5020@atlantic.linksys.moosehall>
+In-Reply-To: <20070709233535.GA5020@atlantic.linksys.moosehall>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Drake wrote:
-> H. Peter Anvin wrote:
->> You're complaining that we didn't query EDID when you *explicitly* asked
->> us not to.  This is not a bug!
-> 
-> I see -- I didn't realise CONFIG_FIRMWARE_EDID was one of options that
-> you shouldn't disable unless you have a good reason. Thanks for the
-> explanation.
-> 
-> So, 2.6.22-rc6-mm1 should work fine with CONFIG_FIRMWARE_EDID=y, or are
-> further patches needed?
-> 
+Adam Spiers wrote:
+> On Sun, Jul 08, 2007 at 08:14:10PM -0500, Bruce Allen wrote:
+>> On Sun, 8 Jul 2007, Bruce Allen wrote:
+>>..
+>> http://article.gmane.org/gmane.linux.utilities.smartmontools/4704/match=diamondmax
+>>
+>> Again, this indicates that SMART is enabled.  But it's not clear what the 
+>> kernel version here is.  The report indicates that the problem started 
+>> with an FC7 kernel upgrade
 
-It should, yes.
+So it's a bug in the sata_nv.c port driver.
 
-	-hpa
+In particular, I see this in the bug report:
+
+>Jun 30 10:23:42 atlantic kernel: ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1501000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
+
+That looks a bit strange, because the driver goes to some effort
+to prevent these kind of commands from ever being issued "in ADMA mode",
+precisely because there's no way to do a tf_read in that mode.
+
+Mmm.. buggy somewhere in there.
