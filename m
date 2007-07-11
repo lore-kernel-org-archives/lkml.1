@@ -1,139 +1,582 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934883AbXGKXdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935080AbXGKXdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934883AbXGKXdb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXGKXcy
+	id S935080AbXGKXdt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934889AbXGKXdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:32:54 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33544 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:33:00 -0400
+Received: from mx1.suse.de ([195.135.220.2]:33554 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932849AbXGKXcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:32:53 -0400
+	id S934874AbXGKXc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:32:59 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Jan Kara <jack@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 02/61] debugfs: add rename for debugfs files
-Date: Wed, 11 Jul 2007 16:31:21 -0700
-Message-Id: <11841967493890-git-send-email-gregkh@suse.de>
+Cc: Lennart Poettering <mzxreary@0pointer.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 03/61] DMI-based module autoloading
+Date: Wed, 11 Jul 2007 16:31:22 -0700
+Message-Id: <1184196753488-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841967403365-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841967493890-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
+ <11841967493890-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kara <jack@suse.cz>
+From: Lennart Poettering <mzxreary@0pointer.de>
 
-Implement debugfs_rename() to allow renaming files/directories in debugfs.
+The patch below adds DMI/SMBIOS based module autoloading to the Linux
+kernel. The idea is to load laptop drivers automatically (and other
+drivers which cannot be autoloaded otherwise), based on the DMI system
+identification information of the BIOS.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
+Right now most distros manually try to load all available laptop
+drivers on bootup in the hope that at least one of them loads
+successfully. This patch does away with all that, and uses udev to
+automatically load matching drivers on the right machines.
+
+Basically the patch just exports the DMI information that has been
+parsed by the kernel anyway to userspace via a sysfs device
+/sys/class/dmi/id and makes sure that proper modalias attributes are
+available. Besides adding the "modalias" attribute it also adds
+attributes for a few other DMI fields which might be useful for
+writing udev rules.
+
+This patch is not an attempt to export the entire DMI/SMBIOS data to
+userspace. We already have "dmidecode" which parses the complete DMI
+info from userspace. The purpose of this patch is machine model
+identification and good udev integration.
+
+To take advantage of DMI based module autoloading, a driver should
+export one or more MODULE_ALIAS fields similar to these:
+
+MODULE_ALIAS("dmi:*:svnMICRO-STARINT'LCO.,LTD:pnMS-1013:pvr0131*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
+MODULE_ALIAS("dmi:*:svnMicro-StarInternational:pnMS-1058:pvr0581:rvnMSI:rnMS-1058:*:ct10:*");
+MODULE_ALIAS("dmi:*:svnMicro-StarInternational:pnMS-1412:*:rvnMSI:rnMS-1412:*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
+MODULE_ALIAS("dmi:*:svnNOTEBOOK:pnSAM2000:pvr0131*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
+
+These lines are specific to my msi-laptop.c driver. They are basically
+just a concatenation of a few carefully selected DMI fields with all
+potentially bad characters stripped.
+
+Besides laptop drivers, modules like "hdaps", the i2c modules
+and the hwmon modules are good candidates for "dmi:" MODULE_ALIAS
+lines.
+
+Besides merely exporting the DMI data via sysfs the patch adds
+support for a few more DMI fields. Especially the CHASSIS fields are
+very useful to identify different laptop modules. The patch also adds
+working MODULE_ALIAS lines to my msi-laptop.c driver.
+
+I'd like to thank Kay Sievers for helping me to clean up this patch
+for posting it on lkml.
+
+Patch is against Linus' current GIT HEAD. Should probably apply to
+older kernels as well without modification.
+
+
+Signed-off-by: Lennart Poettering <mzxreary@0pointer.de>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/debugfs/inode.c      |   63 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/debugfs.h |    9 ++++++
- 2 files changed, 72 insertions(+), 0 deletions(-)
+ drivers/firmware/Kconfig    |    9 ++
+ drivers/firmware/Makefile   |    1 +
+ drivers/firmware/dmi-id.c   |  222 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/firmware/dmi_scan.c |   73 +++++++++++++-
+ drivers/misc/msi-laptop.c   |   44 ++++++++-
+ include/linux/dmi.h         |    8 ++
+ 6 files changed, 348 insertions(+), 9 deletions(-)
+ create mode 100644 drivers/firmware/dmi-id.c
 
-diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index ec8896b..1d533a2 100644
---- a/fs/debugfs/inode.c
-+++ b/fs/debugfs/inode.c
-@@ -368,6 +368,69 @@ void debugfs_remove(struct dentry *dentry)
- }
- EXPORT_SYMBOL_GPL(debugfs_remove);
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index 88f4621..05f02a3 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -84,4 +84,13 @@ config DCDBAS
+ 	  Say Y or M here to enable the driver for use by Dell systems
+ 	  management software such as Dell OpenManage.
  
-+/**
-+ * debugfs_rename - rename a file/directory in the debugfs filesystem
-+ * @old_dir: a pointer to the parent dentry for the renamed object. This
-+ *          should be a directory dentry.
-+ * @old_dentry: dentry of an object to be renamed.
-+ * @new_dir: a pointer to the parent dentry where the object should be
-+ *          moved. This should be a directory dentry.
-+ * @new_name: a pointer to a string containing the target name.
++config DMIID
++    bool "Export DMI identification via sysfs to userspace"
++    depends on DMI
++    default y
++	help
++	  Say Y here if you want to query SMBIOS/DMI system identification
++	  information from userspace through /sys/class/dmi/id/ or if you want
++	  DMI-based module auto-loading.
++
+ endmenu
+diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
+index 98e395f..8d4ebc8 100644
+--- a/drivers/firmware/Makefile
++++ b/drivers/firmware/Makefile
+@@ -7,3 +7,4 @@ obj-$(CONFIG_EFI_VARS)		+= efivars.o
+ obj-$(CONFIG_EFI_PCDP)		+= pcdp.o
+ obj-$(CONFIG_DELL_RBU)          += dell_rbu.o
+ obj-$(CONFIG_DCDBAS)		+= dcdbas.o
++obj-$(CONFIG_DMIID)		+= dmi-id.o
+diff --git a/drivers/firmware/dmi-id.c b/drivers/firmware/dmi-id.c
+new file mode 100644
+index 0000000..59c3b5a
+--- /dev/null
++++ b/drivers/firmware/dmi-id.c
+@@ -0,0 +1,222 @@
++/*
++ * Export SMBIOS/DMI info via sysfs to userspace
 + *
-+ * This function renames a file/directory in debugfs.  The target must not
-+ * exist for rename to succeed.
++ * Copyright 2007, Lennart Poettering
 + *
-+ * This function will return a pointer to old_dentry (which is updated to
-+ * reflect renaming) if it succeeds. If an error occurs, %NULL will be
-+ * returned.
-+ *
-+ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
-+ * returned.
++ * Licensed under GPLv2
 + */
-+struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
-+		struct dentry *new_dir, const char *new_name)
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/dmi.h>
++#include <linux/device.h>
++#include <linux/autoconf.h>
++
++#define DEFINE_DMI_ATTR(_name, _mode, _show)		\
++static struct device_attribute sys_dmi_##_name##_attr =	\
++	__ATTR(_name, _mode, _show, NULL);
++
++#define DEFINE_DMI_ATTR_WITH_SHOW(_name, _mode, _field)			\
++static ssize_t sys_dmi_##_name##_show(struct device *dev,		\
++				      struct device_attribute *attr,	\
++				      char *page)			\
++{									\
++	ssize_t len;							\
++	len = scnprintf(page, PAGE_SIZE, "%s\n", dmi_get_system_info(_field)); \
++	page[len-1] = '\n';						\
++	return len;							\
++}									\
++DEFINE_DMI_ATTR(_name, _mode, sys_dmi_##_name##_show);
++
++DEFINE_DMI_ATTR_WITH_SHOW(bios_vendor,		0444, DMI_BIOS_VENDOR);
++DEFINE_DMI_ATTR_WITH_SHOW(bios_version,		0444, DMI_BIOS_VERSION);
++DEFINE_DMI_ATTR_WITH_SHOW(bios_date,		0444, DMI_BIOS_DATE);
++DEFINE_DMI_ATTR_WITH_SHOW(sys_vendor,		0444, DMI_SYS_VENDOR);
++DEFINE_DMI_ATTR_WITH_SHOW(product_name,		0444, DMI_PRODUCT_NAME);
++DEFINE_DMI_ATTR_WITH_SHOW(product_version,	0444, DMI_PRODUCT_VERSION);
++DEFINE_DMI_ATTR_WITH_SHOW(product_serial,	0400, DMI_PRODUCT_SERIAL);
++DEFINE_DMI_ATTR_WITH_SHOW(product_uuid,		0400, DMI_PRODUCT_UUID);
++DEFINE_DMI_ATTR_WITH_SHOW(board_vendor,		0444, DMI_BOARD_VENDOR);
++DEFINE_DMI_ATTR_WITH_SHOW(board_name,		0444, DMI_BOARD_NAME);
++DEFINE_DMI_ATTR_WITH_SHOW(board_version,	0444, DMI_BOARD_VERSION);
++DEFINE_DMI_ATTR_WITH_SHOW(board_serial,		0400, DMI_BOARD_SERIAL);
++DEFINE_DMI_ATTR_WITH_SHOW(board_asset_tag,	0444, DMI_BOARD_ASSET_TAG);
++DEFINE_DMI_ATTR_WITH_SHOW(chassis_vendor,	0444, DMI_CHASSIS_VENDOR);
++DEFINE_DMI_ATTR_WITH_SHOW(chassis_type,		0444, DMI_CHASSIS_TYPE);
++DEFINE_DMI_ATTR_WITH_SHOW(chassis_version,	0444, DMI_CHASSIS_VERSION);
++DEFINE_DMI_ATTR_WITH_SHOW(chassis_serial,	0400, DMI_CHASSIS_SERIAL);
++DEFINE_DMI_ATTR_WITH_SHOW(chassis_asset_tag,	0444, DMI_CHASSIS_ASSET_TAG);
++
++static void ascii_filter(char *d, const char *s)
 +{
-+	int error;
-+	struct dentry *dentry = NULL, *trap;
-+	const char *old_name;
++	/* Filter out characters we don't want to see in the modalias string */
++	for (; *s; s++)
++		if (*s > ' ' && *s < 127 && *s != ':')
++			*(d++) = *s;
 +
-+	trap = lock_rename(new_dir, old_dir);
-+	/* Source or destination directories don't exist? */
-+	if (!old_dir->d_inode || !new_dir->d_inode)
-+		goto exit;
-+	/* Source does not exist, cyclic rename, or mountpoint? */
-+	if (!old_dentry->d_inode || old_dentry == trap ||
-+	    d_mountpoint(old_dentry))
-+		goto exit;
-+	dentry = lookup_one_len(new_name, new_dir, strlen(new_name));
-+	/* Lookup failed, cyclic rename or target exists? */
-+	if (IS_ERR(dentry) || dentry == trap || dentry->d_inode)
-+		goto exit;
++	*d = 0;
++}
 +
-+	old_name = fsnotify_oldname_init(old_dentry->d_name.name);
++static ssize_t get_modalias(char *buffer, size_t buffer_size)
++{
++	static const struct mafield {
++		const char *prefix;
++		int field;
++	} fields[] = {
++		{ "bvn", DMI_BIOS_VENDOR },
++		{ "bvr", DMI_BIOS_VERSION },
++		{ "bd",  DMI_BIOS_DATE },
++		{ "svn", DMI_SYS_VENDOR },
++		{ "pn",  DMI_PRODUCT_NAME },
++		{ "pvr", DMI_PRODUCT_VERSION },
++		{ "rvn", DMI_BOARD_VENDOR },
++		{ "rn",  DMI_BOARD_NAME },
++		{ "rvr", DMI_BOARD_VERSION },
++		{ "cvn", DMI_CHASSIS_VENDOR },
++		{ "ct",  DMI_CHASSIS_TYPE },
++		{ "cvr", DMI_CHASSIS_VERSION },
++		{ NULL,  DMI_NONE }
++	};
 +
-+	error = simple_rename(old_dir->d_inode, old_dentry, new_dir->d_inode,
-+		dentry);
-+	if (error) {
-+		fsnotify_oldname_free(old_name);
-+		goto exit;
++	ssize_t l, left;
++	char *p;
++	const struct mafield *f;
++
++	strcpy(buffer, "dmi");
++	p = buffer + 3; left = buffer_size - 4;
++
++	for (f = fields; f->prefix && left > 0; f++) {
++		const char *c;
++		char *t;
++
++		c = dmi_get_system_info(f->field);
++		if (!c)
++			continue;
++
++		t = kmalloc(strlen(c) + 1, GFP_KERNEL);
++		if (!t)
++			break;
++		ascii_filter(t, c);
++		l = scnprintf(p, left, ":%s%s", f->prefix, t);
++		kfree(t);
++
++		p += l;
++		left -= l;
 +	}
-+	d_move(old_dentry, dentry);
-+	fsnotify_move(old_dir->d_inode, new_dir->d_inode, old_name,
-+		old_dentry->d_name.name, S_ISDIR(old_dentry->d_inode->i_mode),
-+		NULL, old_dentry->d_inode);
-+	fsnotify_oldname_free(old_name);
-+	unlock_rename(new_dir, old_dir);
-+	dput(dentry);
-+	return old_dentry;
-+exit:
-+	if (dentry && !IS_ERR(dentry))
-+		dput(dentry);
-+	unlock_rename(new_dir, old_dir);
-+	return NULL;
++
++	p[0] = ':';
++	p[1] = 0;
++
++	return p - buffer + 1;
 +}
-+EXPORT_SYMBOL_GPL(debugfs_rename);
 +
- static decl_subsys(debug, NULL, NULL);
- 
- static int __init debugfs_init(void)
-diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index 5a9c495..104e51e 100644
---- a/include/linux/debugfs.h
-+++ b/include/linux/debugfs.h
-@@ -38,6 +38,9 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
- 
- void debugfs_remove(struct dentry *dentry);
- 
-+struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
-+                struct dentry *new_dir, const char *new_name);
-+
- struct dentry *debugfs_create_u8(const char *name, mode_t mode,
- 				 struct dentry *parent, u8 *value);
- struct dentry *debugfs_create_u16(const char *name, mode_t mode,
-@@ -85,6 +88,12 @@ static inline struct dentry *debugfs_create_symlink(const char *name,
- static inline void debugfs_remove(struct dentry *dentry)
- { }
- 
-+static inline struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
-+                struct dentry *new_dir, char *new_name)
++static ssize_t sys_dmi_modalias_show(struct device *dev,
++				     struct device_attribute *attr, char *page)
 +{
-+	return ERR_PTR(-ENODEV);
++	ssize_t r;
++	r = get_modalias(page, PAGE_SIZE-1);
++	page[r] = '\n';
++	page[r+1] = 0;
++	return r+1;
 +}
 +
- static inline struct dentry *debugfs_create_u8(const char *name, mode_t mode,
- 					       struct dentry *parent,
- 					       u8 *value)
++DEFINE_DMI_ATTR(modalias, 0444, sys_dmi_modalias_show);
++
++static struct attribute *sys_dmi_attributes[DMI_STRING_MAX+2];
++
++static struct attribute_group sys_dmi_attribute_group = {
++	.attrs = sys_dmi_attributes,
++};
++
++static struct attribute_group* sys_dmi_attribute_groups[] = {
++	&sys_dmi_attribute_group,
++	NULL
++};
++
++static int dmi_dev_uevent(struct device *dev, char **envp,
++			    int num_envp, char *buffer, int buffer_size)
++{
++	strcpy(buffer, "MODALIAS=");
++	get_modalias(buffer+9, buffer_size-9);
++	envp[0] = buffer;
++	envp[1] = NULL;
++
++	return 0;
++}
++
++static struct class dmi_class = {
++	.name = "dmi",
++	.dev_release = (void(*)(struct device *)) kfree,
++	.dev_uevent = dmi_dev_uevent,
++};
++
++static struct device *dmi_dev;
++
++/* Initialization */
++
++#define ADD_DMI_ATTR(_name, _field) \
++	if (dmi_get_system_info(_field)) \
++		sys_dmi_attributes[i++] = & sys_dmi_##_name##_attr.attr;
++
++extern int dmi_available;
++
++static int __init dmi_id_init(void)
++{
++	int ret, i;
++
++	if (!dmi_available)
++		return -ENODEV;
++
++	/* Not necessarily all DMI fields are available on all
++	 * systems, hence let's built an attribute table of just
++	 * what's available */
++	i = 0;
++	ADD_DMI_ATTR(bios_vendor,       DMI_BIOS_VENDOR);
++	ADD_DMI_ATTR(bios_version,      DMI_BIOS_VERSION);
++	ADD_DMI_ATTR(bios_date,         DMI_BIOS_DATE);
++	ADD_DMI_ATTR(sys_vendor,        DMI_SYS_VENDOR);
++	ADD_DMI_ATTR(product_name,      DMI_PRODUCT_NAME);
++	ADD_DMI_ATTR(product_version,   DMI_PRODUCT_VERSION);
++	ADD_DMI_ATTR(product_serial,    DMI_PRODUCT_SERIAL);
++	ADD_DMI_ATTR(product_uuid,      DMI_PRODUCT_UUID);
++	ADD_DMI_ATTR(board_vendor,      DMI_BOARD_VENDOR);
++	ADD_DMI_ATTR(board_name,        DMI_BOARD_NAME);
++	ADD_DMI_ATTR(board_version,     DMI_BOARD_VERSION);
++	ADD_DMI_ATTR(board_serial,      DMI_BOARD_SERIAL);
++	ADD_DMI_ATTR(board_asset_tag,   DMI_BOARD_ASSET_TAG);
++	ADD_DMI_ATTR(chassis_vendor,    DMI_CHASSIS_VENDOR);
++	ADD_DMI_ATTR(chassis_type,      DMI_CHASSIS_TYPE);
++	ADD_DMI_ATTR(chassis_version,   DMI_CHASSIS_VERSION);
++	ADD_DMI_ATTR(chassis_serial,    DMI_CHASSIS_SERIAL);
++	ADD_DMI_ATTR(chassis_asset_tag, DMI_CHASSIS_ASSET_TAG);
++	sys_dmi_attributes[i++] = &sys_dmi_modalias_attr.attr;
++
++	ret = class_register(&dmi_class);
++	if (ret)
++		return ret;
++
++	dmi_dev = kzalloc(sizeof(*dmi_dev), GFP_KERNEL);
++	if (!dmi_dev) {
++		ret = -ENOMEM;
++		goto fail_class_unregister;
++	}
++
++	dmi_dev->class = &dmi_class;
++	strcpy(dmi_dev->bus_id, "id");
++	dmi_dev->groups = sys_dmi_attribute_groups;
++
++	ret = device_register(dmi_dev);
++	if (ret)
++		goto fail_class_unregister;
++
++	return 0;
++
++fail_class_unregister:
++
++	class_unregister(&dmi_class);
++
++	return ret;
++}
++
++arch_initcall(dmi_id_init);
+diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
+index 37deee6..f7318b3 100644
+--- a/drivers/firmware/dmi_scan.c
++++ b/drivers/firmware/dmi_scan.c
+@@ -84,6 +84,7 @@ static int __init dmi_checksum(u8 *buf)
+ 
+ static char *dmi_ident[DMI_STRING_MAX];
+ static LIST_HEAD(dmi_devices);
++int dmi_available;
+ 
+ /*
+  *	Save a DMI string
+@@ -102,6 +103,51 @@ static void __init dmi_save_ident(struct dmi_header *dm, int slot, int string)
+ 	dmi_ident[slot] = p;
+ }
+ 
++static void __init dmi_save_uuid(struct dmi_header *dm, int slot, int index)
++{
++	u8 *d = (u8*) dm + index;
++	char *s;
++	int is_ff = 1, is_00 = 1, i;
++
++	if (dmi_ident[slot])
++		return;
++
++	for (i = 0; i < 16 && (is_ff || is_00); i++) {
++		if(d[i] != 0x00) is_ff = 0;
++		if(d[i] != 0xFF) is_00 = 0;
++	}
++
++	if (is_ff || is_00)
++		return;
++
++	s = dmi_alloc(16*2+4+1);
++	if (!s)
++		return;
++
++	sprintf(s,
++		"%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
++		d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],
++		d[8], d[9], d[10], d[11], d[12], d[13], d[14], d[15]);
++
++        dmi_ident[slot] = s;
++}
++
++static void __init dmi_save_type(struct dmi_header *dm, int slot, int index)
++{
++	u8 *d = (u8*) dm + index;
++	char *s;
++
++	if (dmi_ident[slot])
++		return;
++
++	s = dmi_alloc(4);
++	if (!s)
++		return;
++
++	sprintf(s, "%u", *d & 0x7F);
++	dmi_ident[slot] = s;
++}
++
+ static void __init dmi_save_devices(struct dmi_header *dm)
+ {
+ 	int i, count = (dm->length - sizeof(struct dmi_header)) / 2;
+@@ -192,11 +238,21 @@ static void __init dmi_decode(struct dmi_header *dm)
+ 		dmi_save_ident(dm, DMI_PRODUCT_NAME, 5);
+ 		dmi_save_ident(dm, DMI_PRODUCT_VERSION, 6);
+ 		dmi_save_ident(dm, DMI_PRODUCT_SERIAL, 7);
++		dmi_save_uuid(dm, DMI_PRODUCT_UUID, 8);
+ 		break;
+ 	case 2:		/* Base Board Information */
+ 		dmi_save_ident(dm, DMI_BOARD_VENDOR, 4);
+ 		dmi_save_ident(dm, DMI_BOARD_NAME, 5);
+ 		dmi_save_ident(dm, DMI_BOARD_VERSION, 6);
++		dmi_save_ident(dm, DMI_BOARD_SERIAL, 7);
++		dmi_save_ident(dm, DMI_BOARD_ASSET_TAG, 8);
++		break;
++	case 3:		/* Chassis Information */
++		dmi_save_ident(dm, DMI_CHASSIS_VENDOR, 4);
++		dmi_save_type(dm, DMI_CHASSIS_TYPE, 5);
++		dmi_save_ident(dm, DMI_CHASSIS_VERSION, 6);
++		dmi_save_ident(dm, DMI_CHASSIS_SERIAL, 7);
++		dmi_save_ident(dm, DMI_CHASSIS_ASSET_TAG, 8);
+ 		break;
+ 	case 10:	/* Onboard Devices Information */
+ 		dmi_save_devices(dm);
+@@ -243,18 +299,20 @@ void __init dmi_scan_machine(void)
+ 		if (efi.smbios == EFI_INVALID_TABLE_ADDR)
+ 			goto out;
+ 
+-               /* This is called as a core_initcall() because it isn't
+-                * needed during early boot.  This also means we can
+-                * iounmap the space when we're done with it.
+-		*/
++		/* This is called as a core_initcall() because it isn't
++		 * needed during early boot.  This also means we can
++		 * iounmap the space when we're done with it.
++		 */
+ 		p = dmi_ioremap(efi.smbios, 32);
+ 		if (p == NULL)
+ 			goto out;
+ 
+ 		rc = dmi_present(p + 0x10); /* offset of _DMI_ string */
+ 		dmi_iounmap(p, 32);
+-		if (!rc)
++		if (!rc) {
++			dmi_available = 1;
+ 			return;
++		}
+ 	}
+ 	else {
+ 		/*
+@@ -268,8 +326,10 @@ void __init dmi_scan_machine(void)
+ 
+ 		for (q = p; q < p + 0x10000; q += 16) {
+ 			rc = dmi_present(q);
+-			if (!rc)
++			if (!rc) {
++				dmi_available = 1;
+ 				return;
++			}
+ 		}
+ 	}
+  out:	printk(KERN_INFO "DMI not present or invalid.\n");
+@@ -404,3 +464,4 @@ int dmi_get_year(int field)
+ 
+ 	return year;
+ }
++
+diff --git a/drivers/misc/msi-laptop.c b/drivers/misc/msi-laptop.c
+index 41e901f..932a415 100644
+--- a/drivers/misc/msi-laptop.c
++++ b/drivers/misc/msi-laptop.c
+@@ -23,6 +23,8 @@
+  * msi-laptop.c - MSI S270 laptop support. This laptop is sold under
+  * various brands, including "Cytron/TCM/Medion/Tchibo MD96100".
+  *
++ * Driver also supports S271, S420 models.
++ *
+  * This driver exports a few files in /sys/devices/platform/msi-laptop-pf/:
+  *
+  *   lcd_level - Screen brightness: contains a single integer in the
+@@ -281,25 +283,56 @@ static struct platform_device *msipf_device;
+ 
+ /* Initialization */
+ 
++static int dmi_check_cb(struct dmi_system_id *id)
++{
++        printk("msi-laptop: Identified laptop model '%s'.\n", id->ident);
++        return 0;
++}
++
+ static struct dmi_system_id __initdata msi_dmi_table[] = {
+ 	{
+ 		.ident = "MSI S270",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "MICRO-STAR INT'L CO.,LTD"),
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "MS-1013"),
+-		}
++			DMI_MATCH(DMI_PRODUCT_VERSION, "0131"),
++			DMI_MATCH(DMI_CHASSIS_VENDOR, "MICRO-STAR INT'L CO.,LTD")
++		},
++		.callback = dmi_check_cb
++	},
++	{
++		.ident = "MSI S271",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Micro-Star International"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MS-1058"),
++			DMI_MATCH(DMI_PRODUCT_VERSION, "0581"),
++			DMI_MATCH(DMI_BOARD_NAME, "MS-1058")
++		},
++		.callback = dmi_check_cb
++	},
++	{
++		.ident = "MSI S420",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Micro-Star International"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MS-1412"),
++			DMI_MATCH(DMI_BOARD_VENDOR, "MSI"),
++			DMI_MATCH(DMI_BOARD_NAME, "MS-1412")
++		},
++		.callback = dmi_check_cb
+ 	},
+ 	{
+ 		.ident = "Medion MD96100",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "NOTEBOOK"),
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "SAM2000"),
+-		}
++			DMI_MATCH(DMI_PRODUCT_VERSION, "0131"),
++			DMI_MATCH(DMI_CHASSIS_VENDOR, "MICRO-STAR INT'L CO.,LTD")
++		},
++		.callback = dmi_check_cb
+ 	},
+ 	{ }
+ };
+ 
+-
+ static int __init msi_init(void)
+ {
+ 	int ret;
+@@ -394,3 +427,8 @@ MODULE_AUTHOR("Lennart Poettering");
+ MODULE_DESCRIPTION("MSI Laptop Support");
+ MODULE_VERSION(MSI_DRIVER_VERSION);
+ MODULE_LICENSE("GPL");
++
++MODULE_ALIAS("dmi:*:svnMICRO-STARINT'LCO.,LTD:pnMS-1013:pvr0131*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
++MODULE_ALIAS("dmi:*:svnMicro-StarInternational:pnMS-1058:pvr0581:rvnMSI:rnMS-1058:*:ct10:*");
++MODULE_ALIAS("dmi:*:svnMicro-StarInternational:pnMS-1412:*:rvnMSI:rnMS-1412:*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
++MODULE_ALIAS("dmi:*:svnNOTEBOOK:pnSAM2000:pvr0131*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
+diff --git a/include/linux/dmi.h b/include/linux/dmi.h
+index 904bf3d..b8ac7b0 100644
+--- a/include/linux/dmi.h
++++ b/include/linux/dmi.h
+@@ -12,9 +12,17 @@ enum dmi_field {
+ 	DMI_PRODUCT_NAME,
+ 	DMI_PRODUCT_VERSION,
+ 	DMI_PRODUCT_SERIAL,
++	DMI_PRODUCT_UUID,
+ 	DMI_BOARD_VENDOR,
+ 	DMI_BOARD_NAME,
+ 	DMI_BOARD_VERSION,
++	DMI_BOARD_SERIAL,
++	DMI_BOARD_ASSET_TAG,
++	DMI_CHASSIS_VENDOR,
++	DMI_CHASSIS_TYPE,
++	DMI_CHASSIS_VERSION,
++	DMI_CHASSIS_SERIAL,
++	DMI_CHASSIS_ASSET_TAG,
+ 	DMI_STRING_MAX,
+ };
+ 
 -- 
 1.5.2.2
 
