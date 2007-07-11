@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbXGKKOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbXGKKSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbXGKKOs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbXGKKOm
+	id S1761539AbXGKKSZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758386AbXGKKSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:14:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44202 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755974AbXGKKOl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:14:41 -0400
-Date: Wed, 11 Jul 2007 11:14:37 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>, Hugh Dickins <hugh@veritas.com>,
-       Jes Sorensen <jes@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] mm: recheck lock rlim after f_op->mmap() method
-Message-ID: <20070711101437.GA21735@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Hugh Dickins <hugh@veritas.com>, Jes Sorensen <jes@sgi.com>,
-	linux-kernel@vger.kernel.org
-References: <20070709184917.GA8720@dnb.sw.ru> <Pine.LNX.4.64.0707101813390.4717@blonde.wat.veritas.com> <20070711093253.GA19061@infradead.org> <20070711101245.GA18770@dnb.sw.ru>
+	Wed, 11 Jul 2007 06:18:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:60416 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757899AbXGKKSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 06:18:18 -0400
+Subject: Re: [PATCH RFC] try_module_get usage
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: dedekind@infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1184140531.4608.16.camel@sebastian.kern.oss.ntt.co.jp>
+References: <1184140531.4608.16.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Wed, 11 Jul 2007 20:18:01 +1000
+Message-Id: <1184149081.6005.606.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070711101245.GA18770@dnb.sw.ru>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 02:12:45PM +0400, Dmitry Monakhov wrote:
-> > > Or would this simpler patch be the right one?  I suspect the
-> > > mspec driver only says VM_LOCKED because of a deep-seated but
-> > > irrational fear that its pages might fall into reclaim.
-> > 
-> > Looks good.  We probably should add a debug check to do_mmap_pgoff
-> > so that ->mmap methods don't change flags that are not for drivers.
-> As result fglrx totally goes crazy, because it change vm_flags
-> even from  ->nopage() calback :)
+On Wed, 2007-07-11 at 16:55 +0900, Fernando Luis Vázquez Cao wrote:
+> I keep seeing uses of try_module_get(THIS_MODULE) which seem to mimic
+> the behavior of the former MOD_INC_USE_COUNT. The UBI driver is one
+> example:
+> 
+> int ubi_get_device_info(int ubi_num, struct ubi_device_info *di)
+> {
+>         const struct ubi_device *ubi;
+> 
+>         if (!try_module_get(THIS_MODULE))
+>                 return -ENODEV;
 
-Well, everyone with half a brain knows that fglrx is not just legally
-problematic but an utter piece of junk.  We should add more debug checks
-to stop it from doing such stupid things.  And yes, chaning flags from
-->nopage() does not just deserve a warning but a panic.
+Yes, this code is wrong.
+
+Thanks,
+Rusty.
+
