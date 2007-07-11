@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935221AbXGKXfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934852AbXGKXga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935221AbXGKXfw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934840AbXGKXdV
+	id S934852AbXGKXga (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934876AbXGKXdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:33:21 -0400
-Received: from mail.suse.de ([195.135.220.2]:33579 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:33:24 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33593 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934600AbXGKXdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:33:19 -0400
+	id S934985AbXGKXdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:33:23 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 07/61] PM: Remove pm_parent from struct dev_pm_info
-Date: Wed, 11 Jul 2007 16:31:26 -0700
-Message-Id: <11841967711788-git-send-email-gregkh@suse.de>
+Subject: [PATCH 08/61] PM: Remove saved_state from struct dev_pm_info
+Date: Wed, 11 Jul 2007 16:31:27 -0700
+Message-Id: <11841967793134-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841967674155-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841967711788-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -24,145 +24,33 @@ References: <20070711233021.GA5253@kroah.com>
  <1184196759393-git-send-email-gregkh@suse.de>
  <11841967633087-git-send-email-gregkh@suse.de>
  <11841967674155-git-send-email-gregkh@suse.de>
+ <11841967711788-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The pm_parent member of struct dev_pm_info (defined in include/linux/pm.h) is
-only used to check if the device's parent is in the right state while the
-device is being suspended or resumed.  However, this can be done just as well
-with the help of the parent pointer in struct device, so pm_parent can be
-removed along with some code that handles it.
+The saved_state member of struct dev_pm_info, defined in include/linux/pm.h, is
+not used anywhere, so it can be removed.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/power/main.c    |   30 ++++--------------------------
- drivers/base/power/resume.c  |    7 +++----
- drivers/base/power/suspend.c |    7 +++----
- include/linux/pm.h           |    3 ---
- 4 files changed, 10 insertions(+), 37 deletions(-)
+ include/linux/pm.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 7b3cc3c..eb9f38d 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -33,28 +33,7 @@ DEFINE_MUTEX(dpm_list_mtx);
- 
- int (*platform_enable_wakeup)(struct device *dev, int is_on);
- 
--
--/**
-- *	device_pm_set_parent - Specify power dependency.
-- *	@dev:		Device who needs power.
-- *	@parent:	Device that supplies power.
-- *
-- *	This function is used to manually describe a power-dependency
-- *	relationship. It may be used to specify a transversal relationship
-- *	(where the power supplier is not the physical (or electrical)
-- *	ancestor of a specific device.
-- *	The effect of this is that the supplier will not be powered down
-- *	before the power dependent.
-- */
--
--void device_pm_set_parent(struct device * dev, struct device * parent)
--{
--	put_device(dev->power.pm_parent);
--	dev->power.pm_parent = get_device(parent);
--}
--EXPORT_SYMBOL_GPL(device_pm_set_parent);
--
--int device_pm_add(struct device * dev)
-+int device_pm_add(struct device *dev)
- {
- 	int error;
- 
-@@ -63,21 +42,20 @@ int device_pm_add(struct device * dev)
- 		 kobject_name(&dev->kobj));
- 	mutex_lock(&dpm_list_mtx);
- 	list_add_tail(&dev->power.entry, &dpm_active);
--	device_pm_set_parent(dev, dev->parent);
--	if ((error = dpm_sysfs_add(dev)))
-+	error = dpm_sysfs_add(dev);
-+	if (error)
- 		list_del(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
- 	return error;
- }
- 
--void device_pm_remove(struct device * dev)
-+void device_pm_remove(struct device *dev)
- {
- 	pr_debug("PM: Removing info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
- 	mutex_lock(&dpm_list_mtx);
- 	dpm_sysfs_remove(dev);
--	put_device(dev->power.pm_parent);
- 	list_del_init(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
- }
-diff --git a/drivers/base/power/resume.c b/drivers/base/power/resume.c
-index f6cfea4..99679e7 100644
---- a/drivers/base/power/resume.c
-+++ b/drivers/base/power/resume.c
-@@ -29,12 +29,11 @@ int resume_device(struct device * dev)
- 
- 	down(&dev->sem);
- 
--	if (dev->power.pm_parent
--			&& dev->power.pm_parent->power.power_state.event) {
-+	if (dev->parent && dev->parent->power.power_state.event) {
- 		dev_err(dev, "PM: resume from %d, parent %s still %d\n",
- 			dev->power.power_state.event,
--			dev->power.pm_parent->bus_id,
--			dev->power.pm_parent->power.power_state.event);
-+			dev->parent->bus_id,
-+			dev->parent->power.power_state.event);
- 	}
- 
- 	if (dev->bus && dev->bus->resume) {
-diff --git a/drivers/base/power/suspend.c b/drivers/base/power/suspend.c
-index 9d6701c..19fae88 100644
---- a/drivers/base/power/suspend.c
-+++ b/drivers/base/power/suspend.c
-@@ -55,13 +55,12 @@ int suspend_device(struct device * dev, pm_message_t state)
- 		dev_dbg(dev, "PM: suspend %d-->%d\n",
- 			dev->power.power_state.event, state.event);
- 	}
--	if (dev->power.pm_parent
--			&& dev->power.pm_parent->power.power_state.event) {
-+	if (dev->parent && dev->parent->power.power_state.event) {
- 		dev_err(dev,
- 			"PM: suspend %d->%d, parent %s already %d\n",
- 			dev->power.power_state.event, state.event,
--			dev->power.pm_parent->bus_id,
--			dev->power.pm_parent->power.power_state.event);
-+			dev->parent->bus_id,
-+			dev->parent->power.power_state.event);
- 	}
- 
- 	dev->power.prev_state = dev->power.power_state;
 diff --git a/include/linux/pm.h b/include/linux/pm.h
-index b2c4fde..3fd65ad 100644
+index 3fd65ad..6e7f066 100644
 --- a/include/linux/pm.h
 +++ b/include/linux/pm.h
-@@ -269,13 +269,10 @@ struct dev_pm_info {
+@@ -268,7 +268,6 @@ struct dev_pm_info {
+ #ifdef	CONFIG_PM
  	unsigned		should_wakeup:1;
  	pm_message_t		prev_state;
- 	void			* saved_state;
--	struct device		* pm_parent;
+-	void			* saved_state;
  	struct list_head	entry;
  #endif
  };
- 
--extern void device_pm_set_parent(struct device * dev, struct device * parent);
--
- extern int device_power_down(pm_message_t state);
- extern void device_power_up(void);
- extern void device_resume(void);
 -- 
 1.5.2.2
 
