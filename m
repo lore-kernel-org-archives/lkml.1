@@ -1,127 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764798AbXGKNoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764952AbXGKNp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764798AbXGKNoP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 09:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760528AbXGKNoB
+	id S1764952AbXGKNp3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 09:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763094AbXGKNpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 09:44:01 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:49799 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760323AbXGKNoA (ORCPT
+	Wed, 11 Jul 2007 09:45:19 -0400
+Received: from 41.150.104.212.access.eclipse.net.uk ([212.104.150.41]:46252
+	"EHLO localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1763194AbXGKNpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 09:44:00 -0400
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Vivek Goyal <vgoyal@in.ibm.com>, Neil Horman <nhorman@redhat.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Bernhard Walle <bwalle@suse.de>
-Subject: Re: Determine version of kernel that produced vmcore
-In-reply-to: <20070711073216.GA11757@localdomain>
-Message-Id: <20070711224304oomichi@mail.jp.nec.com>
-References: <20070711073216.GA11757@localdomain>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:5W0000
-From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Date: Wed, 11 Jul 2007 22:43:04 +0900
+	Wed, 11 Jul 2007 09:45:17 -0400
+X-Greylist: delayed 2461 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 09:45:17 EDT
+Date: Wed, 11 Jul 2007 14:03:28 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Dave McCracken <dave.mccracken@oracle.com>, Mel Gorman <mel@skynet.ie>,
+       Andrew Morton <akpm@linux-foundation.org>, kenchen@google.com,
+       jschopp@austin.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
+       a.p.zijlstra@chello.nl, y-goto@jp.fujitsu.com, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans -- anti-fragmentation
+Message-ID: <20070711130328.GA14807@shadowen.org>
+References: <20070710102043.GA20303@skynet.ie> <200707100929.46153.dave.mccracken@oracle.com> <20070710152355.GI8779@wotan.suse.de> <200707101211.46003.dave.mccracken@oracle.com> <20070711025946.GD27475@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070711025946.GD27475@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 11, 2007 at 04:59:46AM +0200, Nick Piggin wrote:
 
-Hi Dan,
+> > Yes, these projects have workarounds, because they have to.  But the 
+> > workarounds are painful and often require that the user specify in advance 
+> > what memory they intend to use for this purpose, something users often have 
+> > to learn by trial and error.  Mel's patches would eliminate this barrier to 
+> > use of the features.
+> > 
+> > I don't see Mel's patches as "a fundamental change in direction".  I think 
+> > you're overstating the case.  I see it as fixing a deficiency in the design 
+> > of the page allocator, and a long overdue fix.
+> 
+> I would still say that with Mel's patches in, you need to have a fallback
+> to order-0 because memory can still get fragemnted. But no Mel's patches
+> are not exactly a fundamental change in direction itself, but introducing
+> higher order allocations without fallbacks is a change (OK, order 1 or 2
+> is used today, and mostly because of the nature of the allocator they're OK
+> too, but if we're talking about like 64K+ of contiguous pages).
 
-2007/07/11 10:32:16 +0300, Dan Aloni <da-x@monatomic.org> wrote:
->> This implementation looks interesting. No need of debug compiled
->> vmlinux for dump filtering purposes. No run time vmlinux binary modifications
->> as suggested by your previous mails. People can export kernel CONFIG info
->> like PAGESIZE etc with the help of this ELF note and any tool which is
->> processing kernel core file can benifit from this. No guesses required for
->> determining the page size of crashed kernel.
->> 
->> All the info required by dump filtering tool, put it into an ELF note, 
->> pass it to second kernel which appends it to final vmcore. The only concern
->> here again is that type of ELF note is not standard. The contents of 
->> ELF notes will keep on changing over a period of time. For example if a 
->> new memory model evolves. Now everytime this note data changes one shall
->> have to update mkdumpfile and user shall have to newer version. If there
->> are any issues, user will not come to know about the issue during kdump
->> service enablement time, instead it will be detected during dump 
->> capture time. It is too late till then.
->
->I guess that dump filtering will needed to be tested at least once 
->under various platforms for every major release of the kernel to see 
->if the information exported by the kernel through this elf note is 
->still sufficient. 
->
->Adding more info to this elf note as needed can be done through a simple 
->patch to the kernel and it can be tested along with mkdumpfile changes 
->even before a major version gets released.
+However much one improves fragmentation the chances of finding a
+higher order page is always going to be lower than that of geting
+an order-0, there are less of them for a start.  It is pretty much
+inevitable that you would want to have a fallback for anything
+which is critical for system continuation.  The thrust of the
+anti-fragmentation work is not to claim a guarenteed availability but
+to expand the range of order over which we find a high probability
+of availability.  As you say elsewhere orders 0-2 pretty much work
+with buddy even in the face of random allocation, where intution
+might indicate it should not.  Simplistic reclaim can find us a page.
+Indeed you then find that the kernel uses those sizes in preference
+to order-0 for simplicity as they can be pretty much relied on, as
+is done with the process kernel stacks.  Much of what is proposed
+as uses for this work is an extension of this, using bigger pages
+where available for performance or simplicity.  SLUB as an example is
+making use of the fact that general availablity of near zero order
+is virtually guarenteed.  Obviously as order increases cirtainly
+decreases and you have to trade off the ramifications of failure
+to allocate against the cost of handling that failure.
 
-As Vivek said, I think it is not a good idea that both kernel's code and
-makedumpfile's code should be changed when makedumpfile needs more debug
-information (ex. To extend the supported CPU architectures. To fix some
-machine-specific problems, etc.).
-Also it is difficult to change the list of necessary items in kernel,
-because we should be careful about CPU architecture, linux version, and
-memory model. makedumpfile needs the following items, and those existence
-depends on CPU architecture, linux version, and memory model. If we don't
-be careful about them, the kernel building may fail.
-I think it is not a good idea that each items are defined by ifdef, it
-is too complex.
+Specifically thinking about the pagecache, a fusion of Christoph's
+high order pagecache with fsblocks ability to handle discontigious
+pages at higher order sounds like it could be a very powerful
+solution to both problems, offering contigious pages where available
+and working regardless where not.
 
-* Symbols
-  - mem_map
-  - mem_section
-  - pkmap_count
-  - system_utsname
-  - init_uts_ns
-  - _stext
-  - swapper_pg_dir
-  - phys_base
-  - node_online_map
-  - node_data
-  - pgdat_list
-  - contig_page_data
-
-* Structure sizes
-  - page
-  - mem_section
-  - pglist_data
-  - zone
-  - free_area
-  - list_head
-
-* Field offsets
-  - page.flags
-  - page._count
-  - page.mapping
-  - page.lru
-  - mem_section.section_mem_map
-  - pglist_data.node_zones
-  - pglist_data.nr_zones
-  - pglist_data.node_mem_map
-  - pglist_data.node_start_pfn
-  - pglist_data.node_spanned_pages
-  - pglist_data.pgdat_next
-  - zone.free_pages
-  - zone.free_area
-  - zone.vm_stat
-  - zone.spanned_pages
-  - free_area.free_list
-  - list_head.next
-  - list_head.prev
-
-* The numbers of array
-  - mem_section
-  - pgdat_list
-  - node_data
-  - zone.free_area
-
-
-I'd like to know your motivation for this work.
-I think you don't want to manage an extra file (mkdfinfo file) besides
-a vmlinux file from distributor's point of view, right ?
-
-
-Thanks
-Ken'ichi Ohmichi
+-apw
