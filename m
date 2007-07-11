@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761605AbXGKJGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761648AbXGKJIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761605AbXGKJGy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 05:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757161AbXGKJGr
+	id S1761648AbXGKJIX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 05:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbXGKJIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 05:06:47 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:29095 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757126AbXGKJGq (ORCPT
+	Wed, 11 Jul 2007 05:08:15 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:21647 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757161AbXGKJIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 05:06:46 -0400
-X-Greylist: delayed 2727 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 05:06:46 EDT
-Message-ID: <469492F5.8070006@panasas.com>
-Date: Wed, 11 Jul 2007 11:21:09 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Wed, 11 Jul 2007 05:08:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=KQxrGBnX0f95QmbrS4oGYwF7EFVLjuB/Ebudi1/O00ap8Ks59o5A0FYe1PuawI77rWb+J6v/354eg0Gm5hjqqN08Aws36+Hr8cmql2LnpRckdavGYqFyzCzNSpFx5AMs2EK5kHfZE5kI6AavNIZLkdHar0rYbKoQMx1QdvDSYYk=
+Message-ID: <84144f020707110208v49e6b451rea0313fe6eabde7@mail.gmail.com>
+Date: Wed, 11 Jul 2007 12:08:09 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Al Viro" <viro@ftp.linux.org.uk>
+Subject: Re: revoke (Was: -mm merge plans for 2.6.23)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Christoph Hellwig" <hch@lst.de>, viro@zeniv.linux.org.uk,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <20070711084253.GT21668@ftp.linux.org.uk>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: avoiding rejects
-References: <20070710124422.a52b0458.akpm@linux-foundation.org>
-In-Reply-To: <20070710124422.a52b0458.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Jul 2007 08:21:10.0508 (UTC) FILETIME=[7001A2C0:01C7C394]
+Content-Disposition: inline
+References: <84144f020707110141pd8912aaw9df05d665a35d482@mail.gmail.com>
+	 <20070711084253.GT21668@ftp.linux.org.uk>
+X-Google-Sender-Auth: 6050b010d5c19948
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> 
-> Most of these lists are unordered anyway, so inserting the new item at a
-> randomly-chosen position is a better approach than just appending it.
-> -
-But you have lost the order you have just stated. 
-"Order by time of addition" ascending ;)
+Hi Al,
 
-Sometimes what I do is a diff with only post sync lines. 
-With -p and the end of the list it mostly works.
+On Wed, Jul 11, 2007 at 11:41:35AM +0300, Pekka Enberg wrote:
+> > Well, revoke is in limbo land waiting for the VFS maintainers to take
+> > a look at it...
 
-consider this file
-<list1>
-BEGIN LIST
-	I1
-	I2
-	I3
-END LIST
-..
-...
-</list1>
+On 7/11/07, Al Viro <viro@ftp.linux.org.uk> wrote:
+> Could you send a sanely split series against the .22 to fsdevel?
 
-and consider this patch
-
-<list2.patch>
---- list1	2007-07-11 10:33:26.000000000 +0300
-+++ list2	2007-07-11 10:22:16.000000000 +0300
-@@ -5,2 +5,3 @@ BEGIN LIST
-+	add1
- END LIST
- ..
-</list2.patch>
-
-Now this will work. In fact you can apply this patch 
-multiple times and it will keep adding Items. "patch"
-will not warn about reverse patching, but ...
-It will add Items from the top. Actually it will add
-the Item at an absolute line in the file. At -# line 
-stated at hunk header, like "-5" above.
-
-Free Life
-Boaz
+I sent the series from 2.6.22-rc6-mm1 module the ones that are
+required for -mm only. I can split the core code further if you want,
+but it seems bit pointless...
