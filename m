@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932750AbXGKS7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbXGKS7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932750AbXGKS7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbXGKS7I
+	id S932728AbXGKS7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932554AbXGKS7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:59:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42047 "EHLO mx1.redhat.com"
+	Wed, 11 Jul 2007 14:59:17 -0400
+Received: from smtp50.hccnet.nl ([62.251.0.47]:38563 "EHLO smtp50.hccnet.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbXGKS7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:59:07 -0400
+	id S932160AbXGKS7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 14:59:15 -0400
+Message-ID: <469528A5.6040605@hccnet.nl>
+Date: Wed, 11 Jul 2007 20:59:49 +0200
+From: Gert Vervoort <gert.vervoort@hccnet.nl>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Adrian Bunk <bunk@stusta.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22: dvb header files break compilation on x86-64
+References: <4691F8D6.30600@hccnet.nl> <20070711160254.GH3492@stusta.de>
+In-Reply-To: <20070711160254.GH3492@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: [PATCH 2/7] x86_64: Put allocated ELF notes in read-only data segment
-X-Windows: even your dog won't like it.
-Message-Id: <20070711185902.A82A44D0555@magilla.localdomain>
-Date: Wed, 11 Jul 2007 11:59:02 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adrian Bunk wrote:
+> On Mon, Jul 09, 2007 at 10:59:02AM +0200, Gert Vervoort wrote:
+>   
+>> Some of the linux/dvb header files include libc header files and break 
+>> compilation on x86-64 in compat_ioctl.c:
+>>
+>>
+>>   CC      fs/timerfd.o
+>>   CC      fs/eventfd.o
+>>   CC      fs/compat.o
+>>   CC      fs/compat_ioctl.o
+>> In file included from fs/compat_ioctl.c:111:
+>> include/linux/dvb/audio.h:27:20: error: stdint.h: No such file or directory
+>> In file included from fs/compat_ioctl.c:112:
+>> include/linux/dvb/dmx.h:28:18: error: time.h: No such file or directory
+>> make[1]: *** [fs/compat_ioctl.o] Error 1
+>> make: *** [fs] Error 2
+>> [root@apollo linux-2.6.x]#
+>>     
+>
+> According to the line numbers your build is pulling a version of the 
+> header cleaned for userspace.
+>
+> Does this happen with a freshly unpacked vanilla 2.6.22 kernel from 
+> ftp.kernel.org?
+>
+>   
+Indeed, it seems that these files, in the kernel tree I used with the 
+2.6.22 patch, where modified in the past (a diff of 
+include/linux/dvb/audio.h between my tree and a fresh tree clearly 
+showed the problem).
 
-This changes the x86_64 linker script to use the asm-generic NOTES macro so
-that ELF note sections with SHF_ALLOC set are linked into the kernel image
-along with other read-only data.  The PT_NOTE also points to their location.
+I replaced my tree with a fresh 2.6.22 tree and it now compiles without 
+any problems.
 
-This paves the way for putting useful build-time information into ELF notes
-that can be found easily later in a kernel memory dump.
+   Gert
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86_64/kernel/vmlinux.lds.S |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86_64/kernel/vmlinux.lds.S b/arch/x86_64/kernel/vmlinux.lds.S
-index dbccfda..287e525 100644
---- a/arch/x86_64/kernel/vmlinux.lds.S
-+++ b/arch/x86_64/kernel/vmlinux.lds.S
-@@ -48,7 +48,9 @@ SECTIONS
-   __ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) { *(__ex_table) }
-   __stop___ex_table = .;
- 
--  BUG_TABLE
-+  NOTES :text :note
-+
-+  BUG_TABLE :text
- 
-   RODATA
- 
+> Please send the first 50 lines of the file include/linux/dvb/audio.h in 
+> your kernel sources.
+>
+> What is the output of "make V==1" for fs/compat_ioctl.o?
+>
+>   
+>>    Gert
+>>     
+>
+> cu
+> Adrian
+>
+>   
+
