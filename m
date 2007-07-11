@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbXGKQqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbXGKQvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761550AbXGKQqy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbXGKQqr
+	id S1760231AbXGKQvT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 12:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbXGKQvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:46:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54972 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751706AbXGKQqr (ORCPT
+	Wed, 11 Jul 2007 12:51:10 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4641 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751459AbXGKQvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:46:47 -0400
-Date: Wed, 11 Jul 2007 09:46:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: -mm merge plans -- lumpy reclaim
-Message-Id: <20070711094600.b2a525d5.akpm@linux-foundation.org>
-In-Reply-To: <4694A427.7070708@shadowen.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<46937DA2.4040302@shadowen.org>
-	<4694A427.7070708@shadowen.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 12:51:08 -0400
+Date: Wed, 11 Jul 2007 17:51:05 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Songmao Tian <tiansm@lemote.com>
+cc: LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: about cs5536 interrupt ack
+In-Reply-To: <Pine.LNX.4.64N.0707111634430.26459@blysk.ds.pg.gda.pl>
+Message-ID: <Pine.LNX.4.64N.0707111729310.26459@blysk.ds.pg.gda.pl>
+References: <4694A495.1050006@lemote.com> <Pine.LNX.4.64N.0707111347360.26459@blysk.ds.pg.gda.pl>
+ <4694F4EB.8040000@lemote.com> <Pine.LNX.4.64N.0707111634430.26459@blysk.ds.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 10:34:31 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+On Wed, 11 Jul 2007, Maciej W. Rozycki wrote:
 
-> [Seems a PEBKAC occured on the subject line, resending lest it become a
-> victim of "oh thats spam".]
+> > > You can still dispatch interrupts manually by examining the IRR register,
+> > > but having a way to ask the 8259A's prioritiser would be nice.  Although
+> > > given such a lethal erratum you report I would not count on the prioritiser
+> > > to provide any useful flexibility...
+> > >   
+> > yeah, that's a straight thought, tried but failed:(, patch followed.
 > 
-> Andy Whitcroft wrote:
-> > Andrew Morton wrote:
-> > 
-> > [...]
-> >> lumpy-reclaim-v4.patch
-> >> have-kswapd-keep-a-minimum-order-free-other-than-order-0.patch
-> >> only-check-absolute-watermarks-for-alloc_high-and-alloc_harder-allocations.patch
-> >>
-> >>  Lumpy reclaim.  In a similar situation to Mel's patches.  Stuck due to
-> >>  general lack or interest and effort.
-> > 
-> > The lumpy reclaim patches originally came out of work to support Mel's
-> > anti-fragmentation work.  As such I think they have become somewhat
-> > attached to those patches.  Whilst lumpy is most effective where
-> > placement controls are in place as offered by Mel's work, we see benefit
-> > from reduction in the "blunderbuss" effect when we reclaim at higher
-> > orders.  While placement control is pretty much required for the very
-> > highest orders such as huge page size, lower order allocations are
-> > benefited in terms of lower collateral damage.
-> > 
-> > There are now a few areas other than huge page allocations which can
-> > benefit.  Stacks are still order 1.  Jumbo frames want higher order
-> > contiguous pages for there incoming hardware buffers.  SLUB is showing
-> > performance benefits from moving to a higher allocation order.  All of
-> > these should benefit from more aggressive targeted reclaim, indeed I
-> > have been surprised just how often my test workloads trigger lumpy at
-> > order 1 to get new stacks.
-> > 
-> > Truly representative work loads are hard to generate for some of these.
-> >  Though we have heard some encouraging noises from those who can
-> > reproduce these problems.
+>  You may have to modify other functions from arch/mips/kernel/i8259.c; 
+> yes, this makes the whole experience not as pretty as one would hope...
 
-I'd expect that the main application for lumpy-reclaim is in keeping a pool
-of order-2 (say) pages in reserve for GFP_ATOMIC allocators.  ie: jumbo
-frames.
+ BTW, have you considered skipping the whole 8259A legacy burden and using 
+the interrupt mapper directly?  From a brief look at the datasheet I 
+conclude you should be able to OR all the interrupt lines to a single 
+8259A input (say IRQ0 for the sake of this consideration -- it does not 
+matter), set it to the level triggered mode, mask all the 8259A inputs but 
+this one and ignore the device from then on.
 
-At present this relies upon the wakeup_kswapd(..., order) mechanism.
+ It would work as a "virtual wire", using the Intel's terminology, with 
+its INT output simply following its IR0 input.  You can type:
 
-How effective is this at solving the jumbo frame problem?
+$ grep '8259A Virtual Wire' arch/i386/kernel/io_apic.c
 
-(And do we still have a jumbo frame problem?  Reports seems to have subsided)
+for a reference; ;-) you can skip the AEOI setup as in a system based on a 
+MIPS processor an INTA cycle will be unlikely to reach the 8259A by 
+accident (which may happen in the wild world of broken PCs) -- which you 
+have learnt the hard way by now already.
+
+ You can then dispatch interrupts based on the interrupt mapper registers 
+which has this nice side effect of much of the sharing having been 
+removed.  It will not work with edge-triggered interrupts, but you do not 
+need that 8254 timer, do you?
+
+  Maciej
