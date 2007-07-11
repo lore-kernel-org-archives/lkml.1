@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbXGKKZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbXGKKhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762189AbXGKKZX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759041AbXGKKZJ
+	id S1761619AbXGKKhE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:37:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759647AbXGKKgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:25:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48407 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758597AbXGKKZF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:25:05 -0400
-Date: Wed, 11 Jul 2007 11:24:49 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Ram Pai <linuxram@us.ibm.com>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: [RFC PATCH 1/1] VFS: Augment /proc/mount with subroot and shared-subtree
-Message-ID: <20070711102449.GA22185@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ram Pai <linuxram@us.ibm.com>,
-	Al Viro <viro@ftp.linux.org.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-References: <1182442837.3342.13.camel@ram.us.ibm.com> <467AB5EE.3030909@zytor.com> <1182494654.2812.22.camel@ram.us.ibm.com> <467B7509.8010106@zytor.com> <1182497690.2812.54.camel@ram.us.ibm.com> <467B7F6F.4030007@zytor.com> <20070625214640.GC29058@ram.us.ibm.com> <1182808816.2816.7.camel@ram.us.ibm.com> <20070630094446.GB22889@infradead.org> <468652E2.4050901@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <468652E2.4050901@zytor.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 11 Jul 2007 06:36:54 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41926 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759108AbXGKKgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 06:36:53 -0400
+Cc: schwidefsky@de.ibm.com, aarora@in.ibm.com, ak@suse.de,
+       linux-kernel@vger.kernel.org, tytso@mit.edu, heiko.carstens@de.ibm.com,
+       akpm@linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 11 Jul 2007 12:36:52 +0200
+From: "Michael Kerrisk" <michael.kerrisk@gmx.net>
+In-Reply-To: <4694A58A.8020401@yahoo.com.au>
+Message-ID: <20070711103652.58230@gmx.net>
+MIME-Version: 1.0
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+ <20070710090737.GA16519@osiris.boeblingen.de.ibm.com>
+ <20070710022213.81e7b432.akpm@linux-foundation.org>
+ <20070710154503.GC27033@thunk.org> <20070710180531.GB8908@osiris.ibm.com>
+ <20070710114119.d8e874a1.akpm@linux-foundation.org>
+ <20070711093626.GB19061@infradead.org> <4694A58A.8020401@yahoo.com.au>
+Subject: Re: testcases, was Re: -mm merge plans for 2.6.23 -- sys_fallocate
+To: Nick Piggin <nickpiggin@yahoo.com.au>, hch@infradead.org
+X-Authenticated: #2864774
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX18irwk2c3wiC0i6cIzNeGuPTJCRfIxTo1Wachaoo1
+ VopS0j9By9RKxmiWWLQKU2kl73kOzM76Durg== 
+Content-Transfer-Encoding: 7bit
+X-GMX-UID: 84qhcvRcRkkNffLMWGRq2SBudWkvKFMC
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 30, 2007 at 08:56:02AM -0400, H. Peter Anvin wrote:
-> Is that conjecture, or do you have evidence to that effect?  Most users 
-> of this file are using it via the glibc interfaces, and there probably 
-> aren't all that many users of it in the first place.
 
-I have written parsers for personal projects that might not have been
-happy to deal with additional fields myself for example..
+> Christoph Hellwig wrote:
+> > On Tue, Jul 10, 2007 at 11:41:19AM -0700, Andrew Morton wrote:
+> > 
+> >>I'd support an ununofficial rule that submitters of new syscalls also
+> >> raise a patch against LTP, come to that...
+> > 
+> > 
+> > s/ununofficial//, please.  And extend this to every new kernel interface
+> > that's not bound to a specific piece of hardware.
+> 
+> Agree, and cc manpages maintainer too? (preferably write most
+> of the manpage body as well, IMO).
 
+Yes, please.  Docs written by, or with input from, the implementer
+provide one of the few ways for everyone else to spot differences
+between implementation and intention.
+-- 
+Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
+Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
