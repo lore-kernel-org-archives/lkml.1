@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764048AbXGKMV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbXGKMYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764048AbXGKMV2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761440AbXGKMVU
+	id S1763606AbXGKMYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759415AbXGKMYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:21:20 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:34214 "EHLO e5.ny.us.ibm.com"
+	Wed, 11 Jul 2007 08:24:09 -0400
+Received: from verein.lst.de ([213.95.11.210]:55027 "EHLO mail.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761393AbXGKMVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:21:19 -0400
-Date: Wed, 11 Jul 2007 18:00:48 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: containers@lists.osdl.org, menage@google.com, Paul Jackson <pj@sgi.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: containers (was Re: -mm merge plans for 2.6.23)
-Message-ID: <20070711123048.GA31130@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070710105240.GA20914@linux.vnet.ibm.com> <6599ad830707101134k29951c45h4af0807603f52b76@mail.gmail.com> <20070710115319.0bdaff34.akpm@linux-foundation.org> <20070711045516.GH2927@linux.vnet.ibm.com> <20070710222942.382fc9ba.akpm@linux-foundation.org> <20070711090423.GA6758@elte.hu> <20070711022352.71604404.pj@sgi.com> <20070711100323.GA23473@linux.vnet.ibm.com> <20070711101958.GA10095@elte.hu> <20070711113953.GB23473@linux.vnet.ibm.com>
+	id S1757621AbXGKMYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 08:24:08 -0400
+Date: Wed, 11 Jul 2007 14:23:24 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, linux-mm@kvack.org
+Subject: lguest, Re: -mm merge plans for 2.6.23
+Message-ID: <20070711122324.GA21714@lst.de>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070711113953.GB23473@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 05:09:53PM +0530, Srivatsa Vaddagiri wrote:
-> > (btw., if this goes into 2.6.23 then we cannot possibly turn it off in 2.6.24,
-> 
-> The fact that we will have two interface for group scheduler in 2.6.24
-> is what worries me a bit (one user-id based and other container based).
+> lguest-export-symbols-for-lguest-as-a-module.patch
 
-I know breaking user-interface is a bad thing across releases. But in
-this particular case, it's probably ok (since fair-group scheduling is a
-brand new feature in Linux)?
+__put_task_struct is one of those no way in hell should this be exported
+things because we don't want modules messing with task lifetimes.
 
-If we have that option of breaking API between 2.6.23 and 2.6.24
-for fair-group scheduler, then we are in a much more flexible position.
+Fortunately I can't find anything actually using this in lguest, so
+it looks the issue has been solved in the meantime.
 
-For 2.6.23, I can send a user-id based interface for fair-group
-scheduler (with some /proc interface to tune group nice value).
 
-For 2.6.24, this user-id interface will be removed and we will instead
-switch to container based interface. Fair-user scheduling will continue
-to work, its just that users will have to use a daemon (sources sent in
-previous mail) to enable it on top of container-based interface.
+I also have a rather bad feeling about exporting access_process_vm.
+This is the proverbial sledge hammer for access to user vm addresses
+and I'd rather keep it away from module programmers with "if all
+you have is a hammer ..." in mind.
 
-Hmm..?
+In lguest this is used by send_dma which from my short reading of the
+code seems to be the central IPC mechanism.  The double copy here
+doesn't look very efficient to me either.  Maybe some VM folks could
+look into a better way to archive this that might be both more
+efficient and not require the export.
 
--- 
-Regards,
-vatsa
+
+> lguest-the-guest-code.patch
+> lguest-the-host-code.patch
+> lguest-the-host-code-lguest-vs-clockevents-fix-resume-logic.patch
+> lguest-the-asm-offsets.patch
+> lguest-the-makefile-and-kconfig.patch
+> lguest-the-console-driver.patch
+> lguest-the-net-driver.patch
+> lguest-the-block-driver.patch
+> lguest-the-documentation-example-launcher.patch
+
+Just started to reading this (again) so no useful comment here, but it
+would be nice if the code could follow CodingStyle and place the || and
+&& at the end of the line in multiline conditionals instead of at the
+beginning of the new one.
