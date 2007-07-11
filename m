@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765653AbXGKRwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbXGKRwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765653AbXGKRwA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 13:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbXGKRvw
+	id S1758424AbXGKRwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 13:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759959AbXGKRvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 13:51:52 -0400
-Received: from pool-70-109-119-137.alb.east.verizon.net ([70.109.119.137]:50258
-	"EHLO gaimboi.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756551AbXGKRvv (ORCPT
+	Wed, 11 Jul 2007 13:51:55 -0400
+Received: from mercury.sygneca.com ([83.142.230.29]:47802 "EHLO
+	mx2.sygneca.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759414AbXGKRvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 13:51:51 -0400
-Message-ID: <46951969.4030109@tmr.com>
-Date: Wed, 11 Jul 2007 13:54:49 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
-       Zhang Rui <rui.zhang@intel.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] the scheduled ACPI_PROCFS removal
-References: <20070709145755.GD3492@stusta.de> <20070709174544.2a6b7067@the-village.bc.nu> <Pine.LNX.4.64.0707092044520.2887@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0707092044520.2887@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 13:51:54 -0400
+Message-ID: <46951892.20406@martinorr.name>
+Date: Wed, 11 Jul 2007 18:51:14 +0100
+From: Martin Orr <martin@martinorr.name>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070621)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_tiberius-6120-1184176306-0001-2"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Stefano Rivoir <s.rivoir@gts.it>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>	<4693327E.6000006@gts.it>	<alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>	<46947ADF.4080605@gts.it> <p73vecrxf0t.fsf@bingen.suse.de>
+In-Reply-To: <p73vecrxf0t.fsf@bingen.suse.de>
+X-Enigmail-Version: 0.95.0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jul 9 2007 17:45, Alan Cox wrote:
->>> This patch contains the scheduled removal of the ACPI procfs interface.
->> What part of "we do not gratuitously break user space interfaces" is so
->> hard for people to understand.
-> 
-> Generally I am with you on that, but if everyone keeps on using /proc --
-> and I do[*] -- we will never get rid of it.
-> 
-Is there some reason why you should get rid of it? Is it causing a lot 
-work to maintain?
-> 
-> [*] Does someone have an alternative for /proc/acpi/battery/BAT1/{state,info}?
-> 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
+
+--=_tiberius-6120-1184176306-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+O#n 11/07/07 14:10, Andi Kleen wrote:
+> Stefano Rivoir <s.rivoir@gts.it> writes:
+>> Linus Torvalds wrote:
+>>> On Tue, 10 Jul 2007, Stefano Rivoir wrote:
+>> Ok, the guilty bit is gcc: in my box, compiling kernel with gcc 4.2.x
+>> (which is installed on my debian/sid) turns into a hang (in init,
+>> seemingly, maybe not even in kernel itself), while gcc-4.1 is allright=
+=2E
+>=20
+> The standard way to track this down is to compile different directories=
+
+> of the kernel with different gcc versions. Then when you find the direc=
+tory
+> go down to files. Then you could eventually go down to functions, altho=
+ugh
+> that tends to involve quite some editing work. But already knowing
+> the file would be useful.
+
+I have done this.  The file is arch/x86_64/kernel/signal.c: if I compile
+this with gcc 20070627 then everything works, if I compile it with gcc
+20070707 then udevsettle hangs.  This is independent of the gcc version u=
+sed
+to compile the rest of the kernel.  (The dates refer to versions of the
+Debian gcc-4.2 package and its dependencies.)
 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+--=20
+Martin Orr
+
+
+--=_tiberius-6120-1184176306-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGlRijZ6a/BjxtAMARAp9VAJ9e8jy1uiK8Re69sKG0BGr9eZIWBgCg+LoE
+ARaZj/Vs/SUulNR4JYu7b5A=
+=dBFe
+-----END PGP SIGNATURE-----
+
+--=_tiberius-6120-1184176306-0001-2--
