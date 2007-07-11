@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761484AbXGKJsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761705AbXGKJxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761484AbXGKJsz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 05:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760683AbXGKJsm
+	id S1761705AbXGKJxm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 05:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbXGKJxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 05:48:42 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:34808 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759437AbXGKJsl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 05:48:41 -0400
-Date: Wed, 11 Jul 2007 10:48:38 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       kenchen@google.com, jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       y-goto@jp.fujitsu.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans -- anti-fragmentation
-Message-ID: <20070711094838.GD7568@skynet.ie>
-References: <20070710102043.GA20303@skynet.ie> <20070710130356.GG8779@wotan.suse.de> <Pine.LNX.4.64.0707101142340.11906@schroedinger.engr.sgi.com>
+	Wed, 11 Jul 2007 05:53:34 -0400
+Received: from styx.suse.cz ([82.119.242.94]:46983 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756203AbXGKJxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 05:53:33 -0400
+Date: Wed, 11 Jul 2007 11:58:05 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Jan Kratochvil <honza@jikos.cz>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Ernie Petrides <petrides@redhat.com>
+Subject: Re: [PATCH][RESEND] PIE randomization
+In-Reply-To: <20070710094730.GH7012@devserv.devel.redhat.com>
+Message-ID: <Pine.LNX.4.64.0707111157290.11634@jikos.suse.cz>
+References: <20070522161642.b71ddacb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231044540.22906@jikos.suse.cz> <20070704082554.GQ7012@devserv.devel.redhat.com>
+ <Pine.LNX.4.64.0707041927090.11634@jikos.suse.cz> <468D5A3A.1010306@redhat.com>
+ <468D5B28.8080308@redhat.com> <Pine.LNX.4.64.0707070205460.11634@jikos.suse.cz>
+ <20070707123004.GZ7012@devserv.devel.redhat.com> <Pine.LNX.4.64.0707091333230.11634@jikos.suse.cz>
+ <Pine.LNX.4.64.0707092356450.11634@jikos.suse.cz> <20070710094730.GH7012@devserv.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707101142340.11906@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (10/07/07 11:46), Christoph Lameter didst pronounce:
-> On Tue, 10 Jul 2007, Nick Piggin wrote:
-> 
-> > I realise in your pragmatic approach, you are encouraging users to
-> > put fallbacks in place in case a higher order page cannot be allocated,
-> > but I don't think either higher order pagecache or higher order slubs
-> > have such fallbacks (fsblock or a combination of fsblock and higher
-> > order pagecache could have, but...).
-> 
-> We have run mm kernels for month now without the need of a fallback. I 
-> purpose of ZONE_MOVABLE was to guarantee that higher order pages could be 
-> reclaimed and thus make the scheme reliable?
-> 
+On Tue, 10 Jul 2007, Jakub Jelinek wrote:
 
-That and they would be available within a specified limit. With grouping
-pages by mobility, high order pages will be available but it's workload
-dependant on how many there will be. This sort of predictability is
-important for hugepages and memory unplug although it's of less
-relevance to order-3 and order-4 users.
+> Restore BAD_ADDR check strictness, use IS_ERR in the only place where
+> the stricter BAD_ADDR can't work, as the value is a load bias rather
+> than userland address.
+> Signed-off-by: Jakub Jelinek <jakub@redhat.com>
 
-> The experience so far shows that the approach works reliably. If there are 
-> issues then they need to be fixed. Putting in workarounds in other places 
-> such as in fsblock may just be hiding problems if there are any.
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-I think fsblock as it stands would gain from grouping pages by mobility.
-It could use high order pages where they were available and fallback to
-using the slower vmap approach when they weren't. I don't see why
-highorder page cache and fsblock would be mutually exclusive. For that
-matter, I don't see why any of these approachs are mutually exclusive
-with what Andrea is doing other than having more than one way of
-skinning a cat in the kernal at the same time might be confusing.
+Andrew, fold this into pie-randomization.patch if possible please. Thanks,
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jiri Kosina
+SUSE Labs
