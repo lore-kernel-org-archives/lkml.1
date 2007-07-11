@@ -1,156 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbXGKS4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbXGKS62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932656AbXGKS4Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932102AbXGKS4H
+	id S932728AbXGKS62 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759414AbXGKS6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:56:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41071 "EHLO mx1.redhat.com"
+	Wed, 11 Jul 2007 14:58:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41848 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932742AbXGKS4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:56:04 -0400
+	id S1750796AbXGKS6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 14:58:20 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc vDSO: install unstripped copies on disk
-X-Shopping-List: (1) Gelatinous sodium captors
-   (2) Insufficient opinion surprises
-   (3) Belligerent snowbulbs
-   (4) Mystic lieutenants
-   (5) Gelatinous squinty concussion friction
-Message-Id: <20070711185559.B45804D0555@magilla.localdomain>
-Date: Wed, 11 Jul 2007 11:55:59 -0700 (PDT)
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 1/7] i386: Put allocated ELF notes in read-only data segment
+X-Shopping-List: (1) Injured surfing longitudes
+   (2) Malignant will-o'-the-wisps
+   (3) Wry dirt
+   (4) Devious ostentatious proportion bread
+Message-Id: <20070711185744.B10014D0555@magilla.localdomain>
+Date: Wed, 11 Jul 2007 11:57:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This keeps an unstripped copy of the vDSO images built before they are
-stripped and embedded in the kernel.  The unstripped copies get installed
-in $(MODLIB)/vdso/ by "make install".  These files can be useful when they
-contain source-level debugging information.
+This changes the i386 linker script and the asm-generic macro it uses so
+that ELF note sections with SHF_ALLOC set are linked into the kernel image
+along with other read-only data.  The PT_NOTE also points to their location.
+
+This paves the way for putting useful build-time information into ELF notes
+that can be found easily later in a kernel memory dump.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/Makefile               |    5 ++++-
- arch/powerpc/kernel/vdso32/Makefile |   20 +++++++++++++++++---
- arch/powerpc/kernel/vdso64/Makefile |   19 ++++++++++++++++---
- 3 files changed, 37 insertions(+), 7 deletions(-)
+ arch/i386/kernel/vmlinux.lds.S    |    6 +++---
+ include/asm-generic/vmlinux.lds.h |    6 +++++-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index fbafd96..1f768ca 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -168,6 +168,10 @@ endef
+diff --git a/arch/i386/kernel/vmlinux.lds.S b/arch/i386/kernel/vmlinux.lds.S
+index aa87b06..f5b1db5 100644
+--- a/arch/i386/kernel/vmlinux.lds.S
++++ b/arch/i386/kernel/vmlinux.lds.S
+@@ -60,7 +60,9 @@ SECTIONS
+   	__stop___ex_table = .;
+   }
  
- install:
- 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) install
-+ifeq ($(CONFIG_PPC64),y)
-+	$(Q)$(MAKE) $(build)=arch/$(ARCH)/kernel/vdso64 install
-+endif
-+	$(Q)$(MAKE) $(build)=arch/$(ARCH)/kernel/vdso32 install
+-  BUG_TABLE
++  NOTES :text :note
++
++  BUG_TABLE :text
  
- archclean:
- 	$(Q)$(MAKE) $(clean)=$(boot)
-@@ -209,4 +213,3 @@ checkbin:
- 	fi
+   . = ALIGN(4);
+   .tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {
+@@ -206,6 +208,4 @@ SECTIONS
+   STABS_DEBUG
  
- CLEAN_FILES += $(TOUT)
+   DWARF_DEBUG
 -
-diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
-index 3726358..e6a6ef1 100644
---- a/arch/powerpc/kernel/vdso32/Makefile
-+++ b/arch/powerpc/kernel/vdso32/Makefile
-@@ -9,11 +9,11 @@ ifeq ($(CONFIG_PPC32),y)
- CROSS32CC := $(CC)
- endif
+-  NOTES
+ }
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 84155eb..d86c929 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -224,7 +224,11 @@
+ 	}
  
--targets := $(obj-vdso32) vdso32.so
-+targets := $(obj-vdso32) vdso32.so vdso32.so.dbg
- obj-vdso32 := $(addprefix $(obj)/, $(obj-vdso32))
+ #define NOTES								\
+-	.notes : { *(.note.*) } :note
++	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
++		VMLINUX_SYMBOL(__start_notes) = .;			\
++		*(.note.*)						\
++		VMLINUX_SYMBOL(__stop_notes) = .;			\
++	}
  
- 
--EXTRA_CFLAGS := -shared -s -fno-common -fno-builtin
-+EXTRA_CFLAGS := -shared -fno-common -fno-builtin
- EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso32.so.1 \
- 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
- EXTRA_AFLAGS := -D__VDSO32__ -s
-@@ -26,9 +26,14 @@ CPPFLAGS_vdso32.lds += -P -C -Upowerpc
- $(obj)/vdso32_wrapper.o : $(obj)/vdso32.so
- 
- # link rule for the .so file, .lds has to be first
--$(obj)/vdso32.so: $(src)/vdso32.lds $(obj-vdso32)
-+$(obj)/vdso32.so.dbg: $(src)/vdso32.lds $(obj-vdso32)
- 	$(call if_changed,vdso32ld)
- 
-+# strip rule for the .so file
-+$(obj)/%.so: OBJCOPYFLAGS := -S
-+$(obj)/%.so: $(obj)/%.so.dbg FORCE
-+	$(call if_changed,objcopy)
-+
- # assembly rules for the .S files
- $(obj-vdso32): %.o: %.S
- 	$(call if_changed_dep,vdso32as)
-@@ -39,3 +44,12 @@ quiet_cmd_vdso32ld = VDSO32L $@
- quiet_cmd_vdso32as = VDSO32A $@
-       cmd_vdso32as = $(CROSS32CC) $(a_flags) -c -o $@ $<
- 
-+# install commands for the unstripped file
-+quiet_cmd_vdso_install = INSTALL $@
-+      cmd_vdso_install = cp $@.dbg $(MODLIB)/vdso/$@
-+
-+vdso32.so: $(obj)/vdso32.so.dbg
-+	@mkdir -p $(MODLIB)/vdso
-+	$(call cmd,vdso_install)
-+
-+install: vdso32.so
-diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-index 43af9b2..3d474e9 100644
---- a/arch/powerpc/kernel/vdso64/Makefile
-+++ b/arch/powerpc/kernel/vdso64/Makefile
-@@ -4,10 +4,10 @@ obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o
- 
- # Build rules
- 
--targets := $(obj-vdso64) vdso64.so
-+targets := $(obj-vdso64) vdso64.so vdso64.so.dbg
- obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
- 
--EXTRA_CFLAGS := -shared -s -fno-common -fno-builtin
-+EXTRA_CFLAGS := -shared -fno-common -fno-builtin
- EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
- 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
- EXTRA_AFLAGS := -D__VDSO64__ -s
-@@ -20,9 +20,14 @@ CPPFLAGS_vdso64.lds += -P -C -U$(ARCH)
- $(obj)/vdso64_wrapper.o : $(obj)/vdso64.so
- 
- # link rule for the .so file, .lds has to be first
--$(obj)/vdso64.so: $(src)/vdso64.lds $(obj-vdso64)
-+$(obj)/vdso64.so.dbg: $(src)/vdso64.lds $(obj-vdso64)
- 	$(call if_changed,vdso64ld)
- 
-+# strip rule for the .so file
-+$(obj)/%.so: OBJCOPYFLAGS := -S
-+$(obj)/%.so: $(obj)/%.so.dbg FORCE
-+	$(call if_changed,objcopy)
-+
- # assembly rules for the .S files
- $(obj-vdso64): %.o: %.S
- 	$(call if_changed_dep,vdso64as)
-@@ -33,4 +38,12 @@ quiet_cmd_vdso64ld = VDSO64L $@
- quiet_cmd_vdso64as = VDSO64A $@
-       cmd_vdso64as = $(CC) $(a_flags) -c -o $@ $<
- 
-+# install commands for the unstripped file
-+quiet_cmd_vdso_install = INSTALL $@
-+      cmd_vdso_install = cp $@.dbg $(MODLIB)/vdso/$@
-+
-+vdso64.so: $(obj)/vdso64.so.dbg
-+	@mkdir -p $(MODLIB)/vdso
-+	$(call cmd,vdso_install)
- 
-+install: vdso64.so
+ #define INITCALLS							\
+   	*(.initcall0.init)						\
