@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934044AbXGKWi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934533AbXGKWip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934044AbXGKWi0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 18:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbXGKWiP
+	id S934533AbXGKWip (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 18:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933187AbXGKWiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 18:38:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41941 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753378AbXGKWiN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 18:38:13 -0400
-Date: Wed, 11 Jul 2007 15:37:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Martin Orr <martin@martinorr.name>, Stefano Rivoir <s.rivoir@gts.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-In-Reply-To: <20070711221626.GA25510@one.firstfloor.org>
-Message-ID: <alpine.LFD.0.999.0707111534340.20061@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
- <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>
- <46947ADF.4080605@gts.it> <p73vecrxf0t.fsf@bingen.suse.de>
- <46951892.20406@martinorr.name> <alpine.LFD.0.999.0707111059200.3412@woody.linux-foundation.org>
- <469544D3.90004@martinorr.name> <alpine.LFD.0.999.0707111410430.20061@woody.linux-foundation.org>
- <20070711221626.GA25510@one.firstfloor.org>
+	Wed, 11 Jul 2007 18:38:21 -0400
+Received: from mail.windriver.com ([147.11.1.11]:44095 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932947AbXGKWiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 18:38:20 -0400
+Message-ID: <46955BB1.20200@windriver.com>
+Date: Wed, 11 Jul 2007 17:37:37 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Roland McGrath <roland@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Pass -g to assembler under CONFIG_DEBUG_INFO
+References: <20070711213012.4D4694D0555@magilla.localdomain>
+In-Reply-To: <20070711213012.4D4694D0555@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Jul 2007 22:37:38.0613 (UTC) FILETIME=[15B42E50:01C7C40C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 12 Jul 2007, Andi Kleen wrote:
+Roland McGrath wrote:
+>> Jason's kgdb tree does
+>>
+>> AFLAGS		+= -gdwarf2
+>>
+>> (for all architectures!)  Which is better?
+>>     
 >
-> I just checked with today's gcc 4.2 (070711) freshly compiled and from a quick inspection 
-> the code looks correct again. So perhaps it has been already fixed? 
+> It makes no difference on any platform I care about.  -g says "turn on the
+> default flavor for the target", while -gdwarf2 turns on DWARF flavor even
+> if the default is different.  Every target I know anything in particular
+> about has DWARF as the default flavor anyway.
+>   
 
-Did you see the breakage with the original compiler? It might be some 
-config setup or something.
+The -gdwarf2 had a specific reason. 
 
-But yeah, if Debian/sid is just using random compiler snapshots of the 
-day, I htink we can just bury this as "pointless".
+I had not looked at the recent gcc 4.1.x + binutils, but in the gcc 
+3.x.x compilers when you pass just -g the assembler emitted stabs debug 
+data on most archs.  This not only made the debug object files bigger, 
+but also the stabs sections were not always parsed correctly in various 
+versions of gdb.  I found the dwarf2 sections to be smaller and more 
+reliable to allow source level assembly stepping as well as debug frame 
+info through the assembly linked functions (ie better back traces).
 
-Who the heck takes a compiler snapshot and runs with it? At least when 
-your kernel breaks, it seldom breaks subtly (but I would expect that most 
-distros would not pick random nightly kernel builds). When your compiler 
-breaks, you have random problems in totally unexpected places, the last 
-thing you want to have is a random nightly snapshot in a distro - even a 
-development one.
+If it is the case that the gcc 4.1.x + binutils all emit dwarf2 as the 
+default you can use just -g.
 
-Strange.
+I'll also take a moment to mention that in the kgdb branch, I also 
+modified the top level make file so that you can un-optimize kernel 
+modules compiled outside the kernel tree.  I find this this is useful if 
+you want to step through significant chunks of code in your kernel 
+module IE:
 
-		Linus
+make ARCH=i386 -C KERN_SRC_LOCATION M=/my_mod COMPTIMIZE=-O0
+
+Jason.
