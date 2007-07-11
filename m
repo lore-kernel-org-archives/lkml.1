@@ -1,231 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934495AbXGKWj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934564AbXGKWkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934495AbXGKWj7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 18:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757855AbXGKWjv
+	id S934564AbXGKWkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 18:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757855AbXGKWkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 18:39:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:5637 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbXGKWju (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 18:39:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qE2MCFXXdpo/feEV93M8dLHSFJsACLG0CD3dPqA7ivnMakoCBOnn5SBY1KrHYZp+8D2amXmKy52IYlu+h52Ul1wUx4STbVxBxjC2c8Jwt1cY6s8gd7TcP2d14hN/4wNd2CBWquG/XCFW9xexstMfsbNg6RW9rBPwuVAYCOs/tlE=
-Message-ID: <a44ae5cd0707111539l5e5adc4ct76ae2f4cb9063e58@mail.gmail.com>
-Date: Wed, 11 Jul 2007 15:39:49 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: 2.6.22-rc6-mm1 -- BUG - EIP: [<c01a77a1>] sysfs_addrm_finish+0x1c2/0x226 SS:ESP 0068:c5ff9db8
-Cc: "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4694A769.7040502@gmail.com>
+	Wed, 11 Jul 2007 18:40:13 -0400
+Received: from knuth.cs.hmc.edu ([134.173.42.100]:51884 "EHLO knuth.cs.hmc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758756AbXGKWkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 18:40:10 -0400
+X-Greylist: delayed 687 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 18:40:10 EDT
+Message-ID: <46955982.1030905@cs.hmc.edu>
+Date: Wed, 11 Jul 2007 15:28:18 -0700
+From: Kevin Lloyd <klloyd@cs.hmc.edu>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
+To: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de
+CC: linux-kernel@vger.kernel.org, torvalds@osdl.org, linux@sierrawireless.com
+Subject: [PATCH 01/02] Sierra Wireless - Add TRU-Install (c) Support
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0707030932h16a90ca3j8ad65b7a3ec64b03@mail.gmail.com>
-	 <a44ae5cd0707040036x74c82dcci12b0a3f83a27af56@mail.gmail.com>
-	 <468C9E74.4080606@gmail.com>
-	 <a44ae5cd0707060101g38147b2gb3d33d9903082113@mail.gmail.com>
-	 <468F36F5.4010803@gmail.com>
-	 <a44ae5cd0707071753g6dd4445bsaac2e2296327e510@mail.gmail.com>
-	 <469038EF.7040709@gmail.com>
-	 <a44ae5cd0707072156y7d0c9e5am2ded3efdc036bcf7@mail.gmail.com>
-	 <469484E1.6040000@gmail.com> <4694A769.7040502@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/11/07, Tejun Heo <htejun@gmail.com> wrote:
-> Tejun Heo wrote:
-> > Miles Lane wrote:
-> >>> Thanks a lot.  Just in case, if you remove the patch (patch -R -p1), the
-> >>> oops goes away, right?
-> >> I double-checked.  I can boot fine after building without your patch.
-> >> Also, I reproduced the initial BUG I reported (triggered by
-> >> "modprobe -r ipw2200").
-> >
-> > This is creepy.  I was able to reproduce the oops here with your
-> > configuration file and making buffers for kallsyms static solved the
-> > problem.  It isn't stack overflow.  At maximum those arrays added 254
-> > bytes to the stack and when the oops occurs stack area was left more
-> > than enough.  I'll keep looking into why that happened but the attached
-> > patch should get us going on the original subject.
->
-> Alright, found out what was going on.  KSYM_NAME_LEN doesn't include
-> space for the trailing '\0'.  Gees, I've read enough assembly for the
-> month to find that out.  Anyways, here's proper debug patch.
->
-> Thanks.
->
-> --
-> tejun
->
-> ---
->  fs/sysfs/dir.c        |   43 +++++++++++++++++++++++++++++++++++++++++++
->  fs/sysfs/sysfs.h      |   16 ++--------------
->  include/linux/sysfs.h |    3 +++
->  net/core/net-sysfs.c  |    6 +++++-
->  4 files changed, 53 insertions(+), 15 deletions(-)
->
-> Index: tree0/fs/sysfs/dir.c
-> ===================================================================
-> --- tree0.orig/fs/sysfs/dir.c
-> +++ tree0/fs/sysfs/dir.c
-> @@ -11,15 +11,52 @@
->  #include <linux/namei.h>
->  #include <linux/idr.h>
->  #include <linux/completion.h>
-> +#include <linux/kallsyms.h>
->  #include <asm/semaphore.h>
->  #include "sysfs.h"
->
-> +struct kobject *sysfs_debug_me;
-> +
->  DEFINE_MUTEX(sysfs_mutex);
->  spinlock_t sysfs_assoc_lock = SPIN_LOCK_UNLOCKED;
->
->  static spinlock_t sysfs_ino_lock = SPIN_LOCK_UNLOCKED;
->  static DEFINE_IDA(sysfs_ino_ida);
->
-> +struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
-> +{
-> +       if (sd) {
-> +               if (sd->s_flags & SYSFS_FLAG_XXX) {
-> +                       char c0[KSYM_NAME_LEN + 1], c1[KSYM_NAME_LEN + 1];
-> +
-> +                       lookup_symbol_name((unsigned long)__builtin_return_address(0), c0);
-> +                       lookup_symbol_name((unsigned long)__builtin_return_address(1), c1);
-> +
-> +                       printk("sysfs_get(%s): cnt=%d++ called from %s:%s\n",
-> +                              sd->s_name, atomic_read(&sd->s_count), c0, c1);
-> +               }
-> +               WARN_ON(!atomic_read(&sd->s_count));
-> +               atomic_inc(&sd->s_count);
-> +       }
-> +       return sd;
-> +}
-> +
-> +void sysfs_put(struct sysfs_dirent * sd)
-> +{
-> +       if (sd && sd->s_flags & SYSFS_FLAG_XXX) {
-> +               char c0[KSYM_NAME_LEN + 1], c1[KSYM_NAME_LEN + 1];
-> +
-> +               lookup_symbol_name((unsigned long)__builtin_return_address(0), c0);
-> +               lookup_symbol_name((unsigned long)__builtin_return_address(1), c1);
-> +
-> +               printk("sysfs_put(%s): cnt=%d-- called from %s:%s\n",
-> +                      sd->s_name, atomic_read(&sd->s_count), c0, c1);
-> +       }
-> +
-> +       if (sd && atomic_dec_and_test(&sd->s_count))
-> +               release_sysfs_dirent(sd);
-> +}
-> +
->  /**
->   *     sysfs_link_sibling - link sysfs_dirent into sibling list
->   *     @sd: sysfs_dirent of interest
-> @@ -317,6 +354,10 @@ void release_sysfs_dirent(struct sysfs_d
->          * sd->s_parent won't change beneath us.
->          */
->         parent_sd = sd->s_parent;
-> +       if (parent_sd->s_flags & SYSFS_FLAG_XXX)
-> +               printk("put from release(%s): cnt=%d-- (rel=%s)\n",
-> +                      parent_sd->s_name, atomic_read(&parent_sd->s_count),
-> +                      sd->s_name);
->
->         if (sysfs_type(sd) == SYSFS_KOBJ_LINK)
->                 sysfs_put(sd->s_elem.symlink.target_sd);
-> @@ -695,6 +736,8 @@ static int create_dir(struct kobject *ko
->         if (!sd)
->                 return -ENOMEM;
->         sd->s_elem.dir.kobj = kobj;
-> +       if (sysfs_debug_me && sysfs_debug_me == kobj)
-> +               sd->s_flags |= SYSFS_FLAG_XXX;
->
->         /* link in */
->         sysfs_addrm_start(&acxt, parent_sd);
-> Index: tree0/fs/sysfs/sysfs.h
-> ===================================================================
-> --- tree0.orig/fs/sysfs/sysfs.h
-> +++ tree0/fs/sysfs/sysfs.h
-> @@ -108,20 +108,8 @@ static inline unsigned int sysfs_type(st
->         return sd->s_flags & SYSFS_TYPE_MASK;
->  }
->
-> -static inline struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
-> -{
-> -       if (sd) {
-> -               WARN_ON(!atomic_read(&sd->s_count));
-> -               atomic_inc(&sd->s_count);
-> -       }
-> -       return sd;
-> -}
-> -
-> -static inline void sysfs_put(struct sysfs_dirent * sd)
-> -{
-> -       if (sd && atomic_dec_and_test(&sd->s_count))
-> -               release_sysfs_dirent(sd);
-> -}
-> +struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd);
-> +void sysfs_put(struct sysfs_dirent * sd);
->
->  static inline int sysfs_is_shadowed_inode(struct inode *inode)
->  {
-> Index: tree0/include/linux/sysfs.h
-> ===================================================================
-> --- tree0.orig/include/linux/sysfs.h
-> +++ tree0/include/linux/sysfs.h
-> @@ -87,9 +87,12 @@ struct sysfs_ops {
->
->  #define SYSFS_FLAG_MASK                ~SYSFS_TYPE_MASK
->  #define SYSFS_FLAG_REMOVED     0x0100
-> +#define SYSFS_FLAG_XXX         0x0200
->
->  #ifdef CONFIG_SYSFS
->
-> +extern struct kobject *sysfs_debug_me;
-> +
->  extern int sysfs_schedule_callback(struct kobject *kobj,
->                 void (*func)(void *), void *data, struct module *owner);
->
-> Index: tree0/net/core/net-sysfs.c
-> ===================================================================
-> --- tree0.orig/net/core/net-sysfs.c
-> +++ tree0/net/core/net-sysfs.c
-> @@ -472,6 +472,7 @@ int netdev_register_sysfs(struct net_dev
->  {
->         struct device *dev = &(net->dev);
->         struct attribute_group **groups = net->sysfs_groups;
-> +       int rc;
->
->         device_initialize(dev);
->         dev->class = &net_class;
-> @@ -489,7 +490,10 @@ int netdev_register_sysfs(struct net_dev
->                 *groups++ = &wireless_group;
->  #endif
->
-> -       return device_add(dev);
-> +       sysfs_debug_me = &dev->kobj;
-> +       rc = device_add(dev);
-> +       sysfs_debug_me = NULL;
-> +       return rc;
->  }
->
->  int netdev_sysfs_init(void)
->
->
+From: Kevin Lloyd <linux@sierrawireless.com>
 
-Tejun,
+This patch adds compatibility with Sierra Wireless' new TRU-Install feature. Future devices that use this feature will not work unless this patch has been applied.
 
-Does this patch replace or add to the last patch you sent me?
-I'll try applying them with --dry-run and assume that if #1 + #2
-doesn't apply cleanly, then you only want me to test with this
-latest patch.
+This patch was tested on the 2.6.21.1 kernel source patched with the following patches (found at http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/usb/):
+    usb-sierra-cleanup-urb-startup.patch
+    usb-sierra-fix-status-usage.patch
+    usb-sierra-status.patch
 
-I'll be able to test this later this evening.  I've had house guests and
-so haven't been available the last few days.
+There were two previous submissions for similar support (6/6/2007 & 6/5/2007) they were however rejected so please disregard those.
 
-        Miles
+Signed-off-by: Kevin Lloyd <linux@sierrawireless.com>
+
+---
+
+diff -uprN a/drivers/usb/serial/sierra.c b/drivers/usb/serial/sierra.c
+--- a/drivers/usb/serial/sierra.c	2007-07-10 16:53:07.000000000 -0700
++++ b/drivers/usb/serial/sierra.c	2007-07-10 16:35:48.000000000 -0700
+@@ -1,7 +1,7 @@
+ /*
+   USB Driver for Sierra Wireless
+ 
+-  Copyright (C) 2006  Kevin Lloyd <linux@sierrawireless.com>
++  Copyright (C) 2007  Kevin Lloyd <linux@sierrawireless.com>
+ 
+   IMPORTANT DISCLAIMER: This driver is not commercially supported by
+   Sierra Wireless. Use at your own risk.
+@@ -12,10 +12,9 @@
+ 
+   Portions based on the option driver by Matthias Urlichs <smurf@smurf.noris.de>
+   Whom based his on the Keyspan driver by Hugh Blemings <hugh@blemings.org>
+-
+ */
+ 
+-#define DRIVER_VERSION "v.1.0.6"
++#define DRIVER_VERSION "v.1.2.4"
+ #define DRIVER_AUTHOR "Kevin Lloyd <linux@sierrawireless.com>"
+ #define DRIVER_DESC "USB Driver for Sierra Wireless USB modems"
+ 
+@@ -28,6 +27,70 @@
+ #include <linux/usb.h>
+ #include <linux/usb/serial.h>
+ 
++#define SWIMS_USB_REQUEST_SetMode	0x0B
++#define SWIMS_USB_REQUEST_TYPE_SetMode	0x40
++#define SWIMS_USB_INDEX_SetMode		0x0000
++#define SWIMS_SET_MODE_Modem		0x0001
++
++/* per port private data */
++#define N_IN_URB	4
++#define N_OUT_URB	4
++#define IN_BUFLEN	4096
++
++static int debug;
++
++enum devicetype {
++	DEVICE_3_PORT =		0,
++	DEVICE_1_PORT =		1,
++	DEVICE_INSTALLER =	2,
++};
++
++int sierra_set_power_state(struct usb_device *udev, __u16 swiState)
++{
++	int result;
++	dev_dbg("SET POWER STATE");
++	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
++			0x00,			/* __u8 request      */
++			0x40,			/* __u8 request type */
++			swiState,		/* __u16 value       */
++			0,			/* __u16 index       */
++			NULL,			/* void *data        */
++			0,			/* __u16 size 	     */
++			USB_CTRL_SET_TIMEOUT);	/* int timeout 	     */
++	return result;
++}
++
++int sierra_set_ms_mode(struct usb_device *udev, __u16 eSocMode)
++{
++	int result;
++	dev_dbg("DEVICE MODE SWITCH");
++	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
++			SWIMS_USB_REQUEST_SetMode,	/* __u8 request      */
++			SWIMS_USB_REQUEST_TYPE_SetMode,	/* __u8 request type */
++			eSocMode,			/* __u16 value       */
++			SWIMS_USB_INDEX_SetMode,	/* __u16 index       */
++			NULL,				/* void *data        */
++			0,				/* __u16 size 	     */
++			USB_CTRL_SET_TIMEOUT);		/* int timeout       */
++	return result;
++}
++
++int sierra_probe(struct usb_interface *iface, const struct usb_device_id *id)
++{
++	int result;	
++	struct usb_device *udev;
++
++	udev = usb_get_dev(interface_to_usbdev(iface));
++
++	/* Check if in installer mode */
++	if (id->driver_info == DEVICE_INSTALLER){
++		dev_dbg("FOUND DEVICE(SW)\n");
++		result = sierra_set_ms_mode(udev, SWIMS_SET_MODE_Modem);
++		return 0;
++	}
++
++	return usb_serial_probe(iface, id);	
++}
+ 
+ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(0x1199, 0x0017) },	/* Sierra Wireless EM5625 */
+@@ -43,8 +106,10 @@ static struct usb_device_id id_table [] 
+ 	{ USB_DEVICE(0x1199, 0x6812) },	/* Sierra Wireless MC8775 */
+ 	{ USB_DEVICE(0x1199, 0x6820) },	/* Sierra Wireless AirCard 875 */
+ 
+-	{ USB_DEVICE(0x1199, 0x0112) }, /* Sierra Wireless AirCard 580 */
+-	{ USB_DEVICE(0x0F3D, 0x0112) }, /* AirPrime/Sierra PC 5220 */
++	{ USB_DEVICE(0x1199, 0x0112), .driver_info = DEVICE_1_PORT }, /* Sierra Wireless AirCard 580 */
++	{ USB_DEVICE(0x0F3D, 0x0112), .driver_info = DEVICE_1_PORT }, /* Airprime/Sierra PC 5220 */
++
++	{ USB_DEVICE(0x1199, 0x0FFF), .driver_info = DEVICE_INSTALLER},	
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(usb, id_table);
+@@ -56,6 +121,7 @@ static struct usb_device_id id_table_1po
+ };
+ 
+ static struct usb_device_id id_table_3port [] = {
++	/* CDMA Devices */
+ 	{ USB_DEVICE(0x1199, 0x0017) },	/* Sierra Wireless EM5625 */
+ 	{ USB_DEVICE(0x1199, 0x0018) },	/* Sierra Wireless MC5720 */
+ 	{ USB_DEVICE(0x1199, 0x0218) },	/* Sierra Wireless MC5720 */
+@@ -63,6 +129,8 @@ static struct usb_device_id id_table_3po
+ 	{ USB_DEVICE(0x1199, 0x0019) },	/* Sierra Wireless AirCard 595 */
+ 	{ USB_DEVICE(0x1199, 0x0120) },	/* Sierra Wireless AirCard 595U */
+ 	{ USB_DEVICE(0x1199, 0x0021) },	/* Sierra Wireless AirCard 597E */
++
++	/* GSM/UMTS Devices */
+ 	{ USB_DEVICE(0x1199, 0x6802) },	/* Sierra Wireless MC8755 */
+ 	{ USB_DEVICE(0x1199, 0x6804) },	/* Sierra Wireless MC8755 */
+ 	{ USB_DEVICE(0x1199, 0x6803) },	/* Sierra Wireless MC8765 */
+@@ -73,20 +141,13 @@ static struct usb_device_id id_table_3po
+ 
+ static struct usb_driver sierra_driver = {
+ 	.name       = "sierra",
+-	.probe      = usb_serial_probe,
++	.probe      = sierra_probe,
+ 	.disconnect = usb_serial_disconnect,
+ 	.id_table   = id_table,
+ 	.no_dynamic_id = 	1,
+ };
+ 
+ 
+-static int debug;
+-
+-/* per port private data */
+-#define N_IN_URB	4
+-#define N_OUT_URB	4
+-#define IN_BUFLEN	4096
+-
+ struct sierra_port_private {
+ 	spinlock_t lock;	/* lock the structure */
+ 	int outstanding_urbs;	/* number of out urbs in flight */
+@@ -421,8 +482,7 @@ static int sierra_open(struct usb_serial
+ 	int i;
+ 	struct urb *urb;
+ 	int result;
+-	__u16 set_mode_dzero = 0x0000;
+-
++	
+ 	portdata = usb_get_serial_port_data(port);
+ 
+ 	dbg("%s", __FUNCTION__);
+@@ -457,12 +517,6 @@ static int sierra_open(struct usb_serial
+ 
+ 	port->tty->low_latency = 1;
+ 
+-	/* set mode to D0 */
+-	result = usb_control_msg(serial->dev,
+-				 usb_rcvctrlpipe(serial->dev, 0),
+-				 0x00, 0x40, set_mode_dzero, 0, NULL,
+-				 0, USB_CTRL_SET_TIMEOUT);
+-
+ 	sierra_send_setup(port);
+ 
+ 	/* start up the interrupt endpoint if we have one */
+@@ -510,6 +564,9 @@ static int sierra_startup(struct usb_ser
+ 
+ 	dbg("%s", __FUNCTION__);
+ 
++	/*Set Device mode to D0 */
++	sierra_set_power_state(serial->dev, 0x0000);
++
+ 	/* Now setup per port private data */
+ 	for (i = 0; i < serial->num_ports; i++) {
+ 		port = serial->port[i];
+diff -uprN a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
+--- a/drivers/usb/storage/unusual_devs.h	2007-07-10 16:57:52.000000000 -0700
++++ b/drivers/usb/storage/unusual_devs.h	2007-07-10 16:40:41.000000000 -0700
+@@ -1384,6 +1384,17 @@ UNUSUAL_DEV(  0x1019, 0x0c55, 0x0000, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_ucr61s2b_init,
+ 		0 ),
+ 
++/* Reported by Kevin Lloyd <linux@sierrawireless.com>
++ * Entry is needed for the initializer function override, 
++ * which instructs the device to load as a modem
++ * device.
++ */
++UNUSUAL_DEV(  0x1199, 0x0fff, 0x0000, 0x9999,
++		"Sierra Wireless",
++		"USB MMC Storage",
++		US_SC_DEVICE, US_PR_DEVICE, NULL, 
++		US_FL_IGNORE_DEVICE),
++
+ /* Reported by Jaco Kroon <jaco@kroon.co.za>
+  * The usb-storage module found on the Digitech GNX4 (and supposedly other
+  * devices) misbehaves and causes a bunch of invalid I/O errors.
+
+
