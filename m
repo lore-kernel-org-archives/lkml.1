@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764556AbXGKQFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765226AbXGKQGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764556AbXGKQFh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755311AbXGKQFa
+	id S1765226AbXGKQGq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 12:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbXGKQGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:05:30 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1165 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754778AbXGKQF3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:05:29 -0400
-Date: Wed, 11 Jul 2007 17:05:26 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-cc: Songmao Tian <tiansm@lemote.com>,
-       LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: about cs5536 interrupt ack
-In-Reply-To: <4694FA7B.6030409@ru.mvista.com>
-Message-ID: <Pine.LNX.4.64N.0707111653130.26459@blysk.ds.pg.gda.pl>
-References: <4694A495.1050006@lemote.com> <Pine.LNX.4.64N.0707111347360.26459@blysk.ds.pg.gda.pl>
- <4694FA7B.6030409@ru.mvista.com>
+	Wed, 11 Jul 2007 12:06:39 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:38812 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755311AbXGKQGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 12:06:38 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH] serial: do not add port that is not initialized
+Date: Wed, 11 Jul 2007 10:05:53 -0600
+User-Agent: KMail/1.9.6
+Cc: Yinghai Lu <Yinghai.Lu@sun.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200707101703.36173.yinghai.lu@sun.com> <20070711071742.GA12952@flint.arm.linux.org.uk>
+In-Reply-To: <20070711071742.GA12952@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707111005.53836.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> > does it return if you write 0xc to the address 0x20 in the I/O port space
-> > and then read back from that location?  You should complain to the
-> > manufacturer -- they may be able to fix the problem in a later revision.
+On Wednesday 11 July 2007 01:17:42 am Russell King wrote:
+> On Tue, Jul 10, 2007 at 05:03:35PM -0700, Yinghai Lu wrote:
+> > [PATCH] serial: do not add port that is not initialized
+> > 
+> > if the port is not initialized with correct iobase, and membase, we don't
+> > need to add that port.
+> > for x86, when pnpacpi is enabled, we will not get extra ttyS1/ttyS2/ttyS3 in
+> > /sys/devices/platform/serial8250/tty
+> > 
+> > Sign-off-by: Yinghai Lu <yinghai.lu@sun.com>
 > 
->    Haha, here's an excerpt form CS5535 spec. update:
-> 
-> 96. PIC does not support Polling mode
-> 
-> [...]
-> 
-> Implications: This mode is not normally used in x86 systems.
-> Resolution: None.
+> What if someone wants to run setserial on /dev/ttyS1 to set it's base
+> address, irq and other parameters?  People still do this.
 
- Yes, of course:
+I agree that people still use setserial that way, and we shouldn't
+make this change because it would break things.
 
-$ grep OCW3 arch/i386/kernel/*.c
-arch/i386/kernel/time.c:		outb(0x0c, PIC_MASTER_OCW3);
+But I also agree with Yinghai that these extra phantom devices are
+just weird.  It would be a lot nicer if there were a way to say,
+"please, Mr. Serial Driver, create me a new ttyS device with these
+parameters."
 
-not at all, indeed!
+But no, I'm not volunteering to do that.
 
-> > You can still dispatch interrupts manually by examining the IRR register,
-> > but having a way to ask the 8259A's prioritiser would be nice.  Although
-> > given such a lethal erratum you report I would not count on the prioritiser
-> > to provide any useful flexibility...
-> 
->    Why not? AMD just decided not to implement poll mode, that's all.
-
- If they have decided to skip such an "unimportant" bit of logic, they 
-could have skipped more, only providing support for the basic FNM 
-INT/INTA/EOI scheme -- the only one "architecturally" supported from the 
-original IBM PC on.  And indeed, a brief look at the datasheed reveals 
-they claim to have removed the SFNM too (which IMO provides a more 
-reasonable nesting resolution and should be the default for setups where 
-nesting is used, such as the environment as set up at the bootstrap by the 
-PC BIOS).
-
-  Maciej
+Bjorn
