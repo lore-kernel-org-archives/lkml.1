@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763015AbXGKVje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763242AbXGKVlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763015AbXGKVje (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbXGKVj1
+	id S1763242AbXGKVlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXGKVlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:39:27 -0400
-Received: from www.osadl.org ([213.239.205.134]:34901 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754977AbXGKVj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:39:26 -0400
-Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <20070711140244.b08ae4d9.rdunlap@xenotime.net>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
-	 <20070711140244.b08ae4d9.rdunlap@xenotime.net>
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 23:39:19 +0200
-Message-Id: <1184189959.12353.150.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 17:41:15 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:38292 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752004AbXGKVlO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:41:14 -0400
+Date: Wed, 11 Jul 2007 17:41:13 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+cc: Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [2.6.22-rc7] khubd NULL deref oops...
+In-Reply-To: <6278d2220707111151o2b5f8b23ha14bf77be71b8b61@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0707111734540.2718-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy,
+On Wed, 11 Jul 2007, Daniel J Blueman wrote:
 
-On Wed, 2007-07-11 at 14:02 -0700, Randy Dunlap wrote: 
-> I certainly haven't.  I can barely keep up with reading about 1/2
-> of lkml emails.  And in my non-scientific method, I think that we
-> are suffering from both (a) more patch submittals and (b) fewer
-> qualified reviewers (per kernel KLOC) than we had 3-5 years ago.
+> > Try disabling CONFIG_USB_SUSPEND.  It makes lots of USB bugs go away
 > 
-> I don't see how you can expect Andrew to review these or any other
-> specific patchset.  Do you have some suggestions on how to clone
-> Andrew?
+> I'll give it a shot. For the record, I wasn't trying to perform a
+> suspend at this time (or since booting).
 
-Ingo was talking to Andi, the x86_64 maintainer, not to Andrew.
+I doubt that USB suspend has any connection with this problem.  It's
+clear that the problem occurs in the driver core when the SCSI core
+tries to unregister a device.  It's not directly related to USB at all.
 
-And I share his opinion that the maintainer of the subsystem, which is
-affected by such a fundamental patch, could have at least shown any
-public sign of interest, disgust, comment or what ever in a 3+ month
-time frame.
+In fact, it looks like the bug is connected with 
+CONFIG_SYSFS_DEPRECATED.  You can try to see what happens with that 
+switch disabled.
 
-Especially about a patch, which is a logical consequence of an almost
-two years public and transparent effort to consolidate the time code in
-the kernel.
-
-I for my part have no problem maintaining the set for another round out
-of tree and weed out eventually problems in -mm, but my expectation for
-qualified response of the responsible maintainer is exactly zero right
-now.
-
-Thanks,
-
-	tglx
-
+Alan Stern
 
