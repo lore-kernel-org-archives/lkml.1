@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936572AbXGKX4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936515AbXGKX5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936572AbXGKX4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935264AbXGKXgi
+	id S936515AbXGKX5J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935276AbXGKXgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:36:38 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33455 "EHLO mx2.suse.de"
+	Wed, 11 Jul 2007 19:36:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34020 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934920AbXGKXgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:36:36 -0400
+	id S935270AbXGKXgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:36:40 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <htejun@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 49/61] sysfs: Fix oops in sysfs_drop_dentry on x86_64
-Date: Wed, 11 Jul 2007 16:32:08 -0700
-Message-Id: <11841969731234-git-send-email-gregkh@suse.de>
+Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 50/61] sysfs: make sysfs_drop_dentry() access inodes using ilookup()
+Date: Wed, 11 Jul 2007 16:32:09 -0700
+Message-Id: <11841969771935-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <1184196968712-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841969731234-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -67,43 +66,124 @@ References: <20070711233021.GA5253@kroah.com>
  <1184196954330-git-send-email-gregkh@suse.de>
  <11841969641445-git-send-email-gregkh@suse.de>
  <1184196968712-git-send-email-gregkh@suse.de>
+ <11841969731234-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Tejun Heo <htejun@gmail.com>
 
-Fix oops on x86_64 caused by the dereference of dir in
-sysfs_drop_dentry() made before checking if dir is not NULL
-(cf. http://marc.info/?l=linux-kernel&m=118151626704924&w=2).
+sysfs_drop_dentry() used to go through sd->s_dentry and
+sd->s_parent->s_dentry to access the inodes.  This is incorrect
+because inode can be cached without dentry.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+This patch makes sysfs_drop_dentry() access inodes using ilookup() on
+sd->s_ino.  This is both correct and simpler.
+
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/inode.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ fs/sysfs/inode.c |   63 ++++++++++++++++++++++++------------------------------
+ 1 files changed, 28 insertions(+), 35 deletions(-)
 
 diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 732fd7f..ee31bf3 100644
+index ee31bf3..63daa06 100644
 --- a/fs/sysfs/inode.c
 +++ b/fs/sysfs/inode.c
-@@ -285,7 +285,7 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
- int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+@@ -219,9 +219,9 @@ void sysfs_instantiate(struct dentry *dentry, struct inode *inode)
+  */
+ void sysfs_drop_dentry(struct sysfs_dirent *sd)
  {
- 	struct sysfs_dirent **pos, *sd;
--	struct sysfs_dirent *parent_sd = dir->d_fsdata;
-+	struct sysfs_dirent *parent_sd;
- 	int found = 0;
+-	struct dentry *dentry = NULL, *parent = NULL;
+-	struct inode *dir;
++	struct dentry *dentry = NULL;
+ 	struct timespec curtime;
++	struct inode *inode;
  
- 	if (!dir)
-@@ -295,6 +295,7 @@ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
- 		/* no inode means this hasn't been made visible yet */
- 		return -ENOENT;
+ 	/* We're not holding a reference to ->s_dentry dentry but the
+ 	 * field will stay valid as long as sysfs_lock is held.
+@@ -229,19 +229,9 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ 	spin_lock(&sysfs_lock);
+ 	spin_lock(&dcache_lock);
  
-+	parent_sd = dir->d_fsdata;
- 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
- 	for (pos = &parent_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
- 		sd = *pos;
++	/* drop dentry if it's there and dput() didn't kill it yet */
+ 	if (sd->s_dentry && sd->s_dentry->d_inode) {
+-		/* get dentry if it's there and dput() didn't kill it yet */
+ 		dentry = dget_locked(sd->s_dentry);
+-		parent = dentry->d_parent;
+-	} else if (sd->s_parent->s_dentry->d_inode) {
+-		/* We need to update the parent even if dentry for the
+-		 * victim itself doesn't exist.
+-		 */
+-		parent = dget_locked(sd->s_parent->s_dentry);
+-	}
+-
+-	/* drop */
+-	if (dentry) {
+ 		spin_lock(&dentry->d_lock);
+ 		__d_drop(dentry);
+ 		spin_unlock(&dentry->d_lock);
+@@ -250,36 +240,39 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ 	spin_unlock(&dcache_lock);
+ 	spin_unlock(&sysfs_lock);
+ 
+-	/* nothing to do if the parent isn't in dcache */
+-	if (!parent)
+-		return;
++	dput(dentry);
++	/* XXX: unpin if directory, this will go away soon */
++	if (sd->s_type & SYSFS_DIR)
++		dput(dentry);
+ 
+ 	/* adjust nlink and update timestamp */
+-	dir = parent->d_inode;
+-	mutex_lock(&dir->i_mutex);
+-
+ 	curtime = CURRENT_TIME;
+ 
+-	dir->i_ctime = dir->i_mtime = curtime;
++	inode = ilookup(sysfs_sb, sd->s_ino);
++	if (inode) {
++		mutex_lock(&inode->i_mutex);
+ 
+-	if (dentry) {
+-		dentry->d_inode->i_ctime = curtime;
+-		drop_nlink(dentry->d_inode);
+-		if (sd->s_type & SYSFS_DIR) {
+-			drop_nlink(dentry->d_inode);
+-			drop_nlink(dir);
+-			/* XXX: unpin if directory, this will go away soon */
+-			dput(dentry);
+-		}
++		inode->i_ctime = curtime;
++		drop_nlink(inode);
++		if (sd->s_type & SYSFS_DIR)
++			drop_nlink(inode);
++
++		mutex_unlock(&inode->i_mutex);
++		iput(inode);
+ 	}
+ 
+-	mutex_unlock(&dir->i_mutex);
++	/* adjust nlink and udpate timestamp of the parent */
++	inode = ilookup(sysfs_sb, sd->s_parent->s_ino);
++	if (inode) {
++		mutex_lock(&inode->i_mutex);
+ 
+-	/* bye bye */
+-	if (dentry)
+-		dput(dentry);
+-	else
+-		dput(parent);
++		inode->i_ctime = inode->i_mtime = curtime;
++		if (sd->s_type & SYSFS_DIR)
++			drop_nlink(inode);
++
++		mutex_unlock(&inode->i_mutex);
++		iput(inode);
++	}
+ }
+ 
+ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
 -- 
 1.5.2.2
 
