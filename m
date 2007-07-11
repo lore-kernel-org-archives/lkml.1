@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764738AbXGKO2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765118AbXGKO2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764738AbXGKO2Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 10:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763255AbXGKO2P
+	id S1765118AbXGKO2u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 10:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762554AbXGKO2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 10:28:15 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:43028 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761962AbXGKO2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 10:28:13 -0400
-Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Neil Brown <neilb@suse.de>
-Cc: cmm@us.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <18068.25879.745638.343290@notabene.brown>
-References: <1183275424.4010.126.camel@localhost.localdomain>
-	 <20070710163038.ceb2ae94.akpm@linux-foundation.org>
-	 <1184105380.3759.65.camel@localhost.localdomain>
-	 <20070710182237.e2f88bf3.akpm@linux-foundation.org>
-	 <18068.19667.942363.686858@notabene.brown>
-	 <18068.25879.745638.343290@notabene.brown>
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 09:28:06 -0500
-Message-Id: <1184164086.12154.15.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
+	Wed, 11 Jul 2007 10:28:42 -0400
+Received: from host28-104-static.26-213-b.business.telecomitalia.it ([213.26.104.28]:58644
+	"EHLO zeus.san-lorenzo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760692AbXGKO2l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 10:28:41 -0400
+Message-ID: <4694E915.10607@gts.it>
+Date: Wed, 11 Jul 2007 16:28:37 +0200
+From: Stefano Rivoir <s.rivoir@gts.it>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stefano Rivoir <s.rivoir@gts.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org> <46947ADF.4080605@gts.it> <alpine.LFD.0.999.0707110002460.3412@woody.linux-foundation.org> <20070711105552.GG4887@tamriel.snowman.net>
+In-Reply-To: <20070711105552.GG4887@tamriel.snowman.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 15:05 +1000, Neil Brown wrote:
-> It just occurred to me:
+Stephen Frost wrote:
+> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
+>> I'm hoping your Debian/sid gcc version is some very experimental 
+>> known-buggy one, and not something that people _expect_ to be solid and 
+>> work well?
 > 
->  If i_version is 64bit, then knfsd would need to be careful when
->  reading it on a 32bit host.  What are the locking rules?
-
-How does knfsd use i_version?  I would think that if all it was doing
-was to compare (i_version == previous_version), then locking wouldn't
-really matter.  Well, theoretically, previous_version could be
-0x100000000, and i_version could be 0x1ffffffff, knfsd checks the high
-word, then ext4 updates i_version to 0x200000000, then knfsd checks the
-low word, detecting no change.  How likely is this?  (I don't understand
-why i_version even needs to be 64 bits in the first place.)
-
->  Presumably it is only updated under i_mutex protection, but having to
->  get i_mutex to read it would seem a little heavy handed.
-
-How does knfsd protect itself from the inode changing after i_version is
-checked?  Is any locking being done otherwise?
-
->  Should it use a seqlock like i_size?
->  Could we use the same seqlock that i_size uses, or would we need a
->  separate one?
+> No such luck. :(  Debian's close to moving to gcc-4.2 as the default
+> compiler in sid.  We've rebuilt the archive a number of times (both
+> since the 4.2 release and during its development) using gcc-4.2 and
+> thought we'd identified most of the issues with it.
 > 
-> NeilBrown
+> It clearly sounds like we need to open a high-severity bug on this issue
+> and track it down before we move to it as the default compiler.  I'll
+> start harassing the appropriate folks also.
+> 
+> Stefano, can you file that bug, including the config, dmesg, and
+> backtrace from gcc if you can get it?
+
+Yes, I'll file a bug (here and on b.d.o) tonight, when I'll be on the 
+box again.
+
+Bye.
 
 -- 
-David Kleikamp
-IBM Linux Technology Center
+Stefano RIVOIR
 
