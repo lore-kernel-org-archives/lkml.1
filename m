@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbXGKWJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbXGKWJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933134AbXGKWJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 18:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761750AbXGKWJU
+	id S932656AbXGKWJo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 18:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764954AbXGKWJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 18:09:20 -0400
-Received: from mail.suse.de ([195.135.220.2]:56809 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 18:09:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56828 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761441AbXGKWJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 18:09:19 -0400
-From: Neil Brown <neilb@suse.de>
-To: Daniel Phillips <phillips@phunq.net>
-Date: Thu, 12 Jul 2007 08:09:15 +1000
+	id S1764590AbXGKWJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 18:09:22 -0400
+Message-ID: <4695550C.7040501@redhat.com>
+Date: Wed, 11 Jul 2007 18:09:16 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Piotr Muszynski <piotr@itg.hitachi.co.jp>
+CC: linux-kernel@vger.kernel.org,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: REQUEST_SENSE and ide-cd.c
+References: <46949541.4040206@itg.hitachi.co.jp>
+In-Reply-To: <46949541.4040206@itg.hitachi.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18069.21771.945367.815193@notabene.brown>
-Cc: Zan Lynx <zlynx@acm.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-In-Reply-To: message from Daniel Phillips on Wednesday July 11
-References: <200707111916.35036.jesper.juhl@gmail.com>
-	<46951941.9080908@acm.org>
-	<200707111305.08603.phillips@phunq.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday July 11, phillips@phunq.net wrote:
-> On Wednesday 11 July 2007 10:54, Zan Lynx wrote:
-> > Jesper Juhl wrote:
-> > > Hi,
-> > >
-> > > I'm wondering if it's time to make 4K stacks the default and to start
-> > > considering removing the 8K stack option alltogether soon?
-> > >
-> > > One of the big problem spots was XFS, but that got some stack usage
-> > > fixes recently, and the 4K stack option has been around for quite a
-> > > while now, so people really should have gotten around to fixing any
-> > > code that can't handle it.   Are there still any big problem areas
-> > > remaining?
-> >
-> > Has anyone fixed the infrequent crashes with 4K stacks and ext3 -> LVM
-> > snapshot -> LVM -> DM mirror -> libata?
+On 07/11/2007 04:30 AM, Piotr Muszynski wrote:
+
+[cc: linux-usb, linux-ide]
+
+> I am adding transparent ATAPI capability to USB gadget Mass Storage
+> driver. The idea is to pass USB traffic to block device queue as packet
+> requests. At the end of the queue, the requests are handled by ide-cd.c
+> driver.
 > 
-> Ahem: ext3 -> LVM snapshot -> LVM -> DM mirror -> DM crypt -> md -> libata,
-> or worse.
+> It breaks when the ide-cd.c driver unconditionally generates
+> REQUEST_SENSE for requests that ended in unit attention condition.
 > 
-> No, it's not fixed.  The model is wrong.  Virtual block drivers should not
-> be callling submit_bio.  The recursive IO submissions should be handled
-> on a dedicated stack, most probably allocated as part of the request queue.
-> This could be done easily in device mapper and md, or better, in
-> submit_bio.
-
-Maybe you should read that latest kernel source code.  Particularly
-generic_make_request in block/ll_rw_blk.c.
-The comment preceding it read:
-
-/*
- * We only want one ->make_request_fn to be active at a time,
- * else stack usage with stacked devices could be a problem.
- * So use current->bio_{list,tail} to keep a list of requests
- * submited by a make_request_fn function.
- * current->bio_tail is also used as a flag to say if
- * generic_make_request is currently active in this task or not.
- * If it is NULL, then no make_request is active.  If it is non-NULL,
- * then a make_request is active, and new requests should be added
- * at the tail
- */
-
-NeilBrown
+> By clearing the drive's unit attention condition, this additional
+> REQUEST_SENSE confuses the host, which fires it's own REQUEST_SENSE
+> packet, to which the drive replies with NO SENSE.
+> 
+> I can see three solutions:
+> 
+> 1. Intercept the sense data returned by ide-cd.c and emulate unit
+> attention condition in file_storage.c driver;
+> 
+> 2. Introduce a new request flag causing ide-cd.c to skip calling
+> cdrom_queue_request_sense() for flagged requests, like below:
+> 
+>     cdrom_decode_status() 2.6.12:
+>     -    if (stat & ERR_STAT) {
+>     +    if (stat & ERR_STAT && !(rq->flags & REQ_NO_AUTOSENSE)) {
+>              spin_lock_irqsave(&ide_lock, flags);
+>              blkdev_dequeue_request(rq);
+>              HWGROUP(drive)->rq = NULL;
+>              spin_unlock_irqrestore(&ide_lock, flags);
+>              cdrom_queue_request_sense(drive, rq->sense, rq);
+>          } else
+>              cdrom_end_request(drive, 0);
+> 
+> 3. Acknowledge that ide-cd.c was not meant to work as in (2) and search
+> for another mechanism. Where?
+> 
+> (1) would unnecessarily duplicate the drive's state. I'd rather do (3).
+> 
+> So far, the (2) works well, but how bad is it?
+> I'd greatly appreciate any critical feedback.
