@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764050AbXGKReo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765781AbXGKRfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764050AbXGKReo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 13:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbXGKRei
+	id S1765781AbXGKRfB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 13:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765534AbXGKRew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 13:34:38 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1528 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755819AbXGKReh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 13:34:37 -0400
-Date: Wed, 11 Jul 2007 19:34:41 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-cc: Rodolfo Giometti <giometti@enneenne.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-In-Reply-To: <20070711152455.GK31193@csclub.uwaterloo.ca>
-Message-ID: <Pine.LNX.4.64.0707111853170.1817@scrub.home>
-References: <1183031060.1170.145.camel@pmac.infradead.org>
- <20070701192441.GW13886@enneenne.com> <20070710160151.GB31195@csclub.uwaterloo.ca>
- <200707110318.49244.zippel@linux-m68k.org> <20070711152455.GK31193@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Jul 2007 13:34:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40021 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755606AbXGKReu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 13:34:50 -0400
+Date: Wed, 11 Jul 2007 10:34:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andreas Dilger <adilger@clusterfs.com>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
+ features in larger inode
+Message-Id: <20070711103405.1656dd71.akpm@linux-foundation.org>
+In-Reply-To: <20070711121056.GV6417@schatzie.adilger.int>
+References: <1183275482.4010.133.camel@localhost.localdomain>
+	<20070710163247.5c8bfa3f.akpm@linux-foundation.org>
+	<20070711121056.GV6417@schatzie.adilger.int>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 11 Jul 2007 06:10:56 -0600 Andreas Dilger <adilger@clusterfs.com> wrote:
 
-On Wed, 11 Jul 2007, Lennart Sorensen wrote:
-
-> On Wed, Jul 11, 2007 at 03:18:46AM +0200, Roman Zippel wrote:
-> > This is really not an API that needs to deal with such large time range.
+> On Jul 10, 2007  16:32 -0700, Andrew Morton wrote:
+> > >  	err = ext4_reserve_inode_write(handle, inode, &iloc);
+> > > +	if (EXT4_I(inode)->i_extra_isize <
+> > > +	    EXT4_SB(inode->i_sb)->s_want_extra_isize &&
+> > > +	    !(EXT4_I(inode)->i_state & EXT4_STATE_NO_EXPAND)) {
+> > > +		/* We need extra buffer credits since we may write into EA block
+> > > +		 * with this same handle */
+> > > +		if ((jbd2_journal_extend(handle,
+> > > +			     EXT4_DATA_TRANS_BLOCKS(inode->i_sb))) == 0) {
+> > > +			ret = ext4_expand_extra_isize(inode,
+> > > +				EXT4_SB(inode->i_sb)->s_want_extra_isize,
+> > > +				iloc, handle);
+> > > +			if (ret) {
+> > > +				EXT4_I(inode)->i_state |= EXT4_STATE_NO_EXPAND;
+> > > +				if (!expand_message) {
+> > > +					ext4_warning(inode->i_sb, __FUNCTION__,
+> > > +					"Unable to expand inode %lu. Delete"
+> > > +					" some EAs or run e2fsck.",
+> > > +					inode->i_ino);
+> > > +					expand_message = 1;
+> > > +				}
+> > > +			}
+> > > +		}
+> > > +	}
+> > 
+> > Maybe that message should come out once per mount rather than once per boot
+> > (or once per modprobe)?
 > 
-> No one will want to use PPS API to keep accurate time past 2030?  Why
-> not?  Or should we be forced to invent a new PPS API before then to fix
-> this one?
+> Probably true.
+> 
+> > What are the consequences of a jbd2_journal_extend() failure in here?
+> 
+> Not fatal, just like every user of i_extra_isize.  If the inode isn't a
+> large inode, or it can't be expanded then there will be a minor loss of
+> functionality on that inode.  If the i_extra_isize is critical, then
+> the sysadmin will have run e2fsck to force s_min_extra_isize large enough.
+> 
+> Note that this is only applicable for filesystems which are upgraded.  For
+> new inodes (i.e. all inodes that exist in the filesystem if it was always
+> run on a kernel with the currently understood extra fields) then this will
+> never be invoked (until such a time new extra fields are added).
 
-That's not necessary.
+I'd suggest that we get a comment in the code explaining this: this
+unchecked error does rather stand out.
 
-> Actually, come to think of it, is this passing a current time, or it it
-> passing an interval since last PPS?  If it is an interval, then yes
-> never mind, we don't need that many seconds (usually 1 or 2 at most).
-> For some reason I thought this was for passing the current time of a
-> stamp.
+> > > +	if (EXT4_I(inode)->i_file_acl) {
+> > > +		bh = sb_bread(inode->i_sb, EXT4_I(inode)->i_file_acl);
+> > > +		error = -EIO;
+> > > +		if (!bh)
+> > > +			goto cleanup;
+> > > +		if (ext4_xattr_check_block(bh)) {
+> > > +			ext4_error(inode->i_sb, __FUNCTION__,
+> > > +				"inode %lu: bad block %llu", inode->i_ino,
+> > > +				EXT4_I(inode)->i_file_acl);
+> > > +			error = -EIO;
+> > > +			goto cleanup;
+> > > +		}
+> > > +		base = BHDR(bh);
+> > > +		first = BFIRST(bh);
+> > > +		end = bh->b_data + bh->b_size;
+> > > +		min_offs = end - base;
+> > > +		free = ext4_xattr_free_space(first, &min_offs, base,
+> > > +					     &total_blk);
+> > > +		if (free < new_extra_isize) {
+> > > +			if (!tried_min_extra_isize && s_min_extra_isize) {
+> > > +				tried_min_extra_isize++;
+> > > +				new_extra_isize = s_min_extra_isize;
+> > 
+> > Aren't we missing a brelse(bh) here?
+> 
+> Seems likely, yes.
 
-It's an absolute time stamp, but users of this interface are more 
-interested in the time difference between events and how they change over 
-time. E.g. NTP time stamps are 64bit fixed point values with a 32bit 
-integral part.
-This is not an interface to read the current system time, so 32bit will 
-continue to work.
+OK - could we get a positive ack from someone indicating that this will get
+looked at?  Because I am about to forget about it.
 
-bye, Roman
