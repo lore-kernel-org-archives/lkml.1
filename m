@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762145AbXGKJlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762230AbXGKJlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762145AbXGKJlA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 05:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761274AbXGKJkq
+	id S1762230AbXGKJlb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 05:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762143AbXGKJlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 05:40:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56947 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761135AbXGKJko (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 05:40:44 -0400
-Date: Wed, 11 Jul 2007 10:40:34 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>, rientjes@google.com,
-       Christoph Lameter <clameter@sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 0/5] more about numa_node with struct device
-Message-ID: <20070711094034.GC19061@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Yinghai Lu <Yinghai.Lu@Sun.COM>,
-	Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-	Greg KH <greg@kroah.com>, rientjes@google.com,
-	Christoph Lameter <clameter@sgi.com>,
-	David Miller <davem@davemloft.net>,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	netdev@vger.kernel.org
-References: <200707101652.20613.yinghai.lu@sun.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 11 Jul 2007 05:41:00 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38393 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762125AbXGKJk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 05:40:59 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: -mm merge plans for 2.6.23 -- sys_fallocate
+Date: Wed, 11 Jul 2007 11:40:50 +0200
+User-Agent: KMail/1.9.6
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Amit Arora <aarora@in.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070710180531.GB8908@osiris.ibm.com> <20070710114119.d8e874a1.akpm@linux-foundation.org>
+In-Reply-To: <20070710114119.d8e874a1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707101652.20613.yinghai.lu@sun.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200707111140.50933.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 04:52:19PM -0700, Yinghai Lu wrote:
-> these are revised or new patch with numa_node in struct device in addition to 
 
-Do you have a pointer to a background posting why you want all this?
+> I'd support an ununofficial rule that submitters of new syscalls also raise
+> a patch against LTP, come to that...
+
+And a patch for the manpages. Definitely in favor. 
+
+-Andi
