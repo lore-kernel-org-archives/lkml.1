@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933382AbXGKTZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933399AbXGKT0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933382AbXGKTZx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 15:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762659AbXGKTTk
+	id S933399AbXGKT0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 15:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932628AbXGKTTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 15:19:40 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38281 "EHLO
+	Wed, 11 Jul 2007 15:19:41 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38280 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932411AbXGKTTb (ORCPT
+	with ESMTP id S932357AbXGKTTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 15:19:31 -0400
+	Wed, 11 Jul 2007 15:19:30 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: torvalds@linux-foundation.org, andi@firstfloor.org,
        linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>
-Subject: [x86 setup 13/33] Header file to produce 16-bit code with gcc
-Date: Wed, 11 Jul 2007 12:18:38 -0700
-Message-Id: <1184181540369-git-send-email-hpa@zytor.com>
+Subject: [x86 setup 08/33] Define zero-page offset 0x1e4 as a scratch field, and use it
+Date: Wed, 11 Jul 2007 12:18:33 -0700
+Message-Id: <11841815391923-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841815401013-git-send-email-hpa@zytor.com>
+In-Reply-To: <118418153972-git-send-email-hpa@zytor.com>
 References: <1184181538674-git-send-email-hpa@zytor.com>
  <118418153862-git-send-email-hpa@zytor.com>
  <11841815382283-git-send-email-hpa@zytor.com>
@@ -27,12 +27,7 @@ References: <1184181538674-git-send-email-hpa@zytor.com>
  <11841815393014-git-send-email-hpa@zytor.com>
  <1184181539416-git-send-email-hpa@zytor.com>
  <118418153972-git-send-email-hpa@zytor.com>
- <11841815391923-git-send-email-hpa@zytor.com>
- <11841815403678-git-send-email-hpa@zytor.com>
- <11841815403041-git-send-email-hpa@zytor.com>
- <11841815402349-git-send-email-hpa@zytor.com>
- <11841815401013-git-send-email-hpa@zytor.com>
-Message-Id: <ab1907cf095c021d5e721b9df84d7c4e6de82e66.1184181208.git.hpa@zytor.com>
+Message-Id: <e21d26f6728a59ddc9f19efdc111c5ed069cd1c0.1184181208.git.hpa@zytor.com>
 In-Reply-To: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 References: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,36 +35,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: H. Peter Anvin <hpa@zytor.com>
 
-gcc for i386 can be used with the assembly prefix ".code16gcc" to generate
-16-bit (real-mode) code.  This header file provides the assembly prefix.
+The relocatable kernel code needs a scratch field for the decompressor
+to determine its own location.  It was using a location inside
+struct screen_info; reserve a free location and document it as scratch
+instead.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/i386/boot/code16gcc.h |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
- create mode 100644 arch/i386/boot/code16gcc.h
+ Documentation/i386/zero-page.txt   |    1 +
+ arch/i386/boot/compressed/head.S   |    6 +++---
+ arch/x86_64/boot/compressed/head.S |    6 +++---
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/i386/boot/code16gcc.h b/arch/i386/boot/code16gcc.h
-new file mode 100644
-index 0000000..3bd8480
---- /dev/null
-+++ b/arch/i386/boot/code16gcc.h
-@@ -0,0 +1,15 @@
-+/*
-+ * code16gcc.h
-+ *
-+ * This file is -include'd when compiling 16-bit C code.
-+ * Note: this asm() needs to be emitted before gcc omits any code.
-+ * Depending on gcc version, this requires -fno-unit-at-a-time or
-+ * -fno-toplevel-reorder.
-+ *
-+ * Hopefully gcc will eventually have a real -m16 option so we can
-+ * drop this hack long term.
-+ */
-+
-+#ifndef __ASSEMBLY__
-+asm(".code16gcc");
-+#endif
+diff --git a/Documentation/i386/zero-page.txt b/Documentation/i386/zero-page.txt
+index c04a421..75b3680 100644
+--- a/Documentation/i386/zero-page.txt
++++ b/Documentation/i386/zero-page.txt
+@@ -37,6 +37,7 @@ Offset	Type		Description
+ 0x1d0	unsigned long	EFI memory descriptor map pointer
+ 0x1d4	unsigned long	EFI memory descriptor map size
+ 0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
++0x1e4	unsigned long	Scratch field for the kernel setup code
+ 0x1e8	char		number of entries in E820MAP (below)
+ 0x1e9	unsigned char	number of entries in EDDBUF (below)
+ 0x1ea	unsigned char	number of entries in EDD_MBR_SIG_BUFFER (below)
+diff --git a/arch/i386/boot/compressed/head.S b/arch/i386/boot/compressed/head.S
+index 3517a32..f35ea22 100644
+--- a/arch/i386/boot/compressed/head.S
++++ b/arch/i386/boot/compressed/head.S
+@@ -45,10 +45,10 @@ startup_32:
+  * at and where we were actually loaded at.  This can only be done
+  * with a short local call on x86.  Nothing  else will tell us what
+  * address we are running at.  The reserved chunk of the real-mode
+- * data at 0x34-0x3f are used as the stack for this calculation.
+- * Only 4 bytes are needed.
++ * data at 0x1e4 (defined as a scratch field) are used as the stack
++ * for this calculation. Only 4 bytes are needed.
+  */
+-	leal 0x40(%esi), %esp
++	leal (0x1e4+4)(%esi), %esp
+ 	call 1f
+ 1:	popl %ebp
+ 	subl $1b, %ebp
+diff --git a/arch/x86_64/boot/compressed/head.S b/arch/x86_64/boot/compressed/head.S
+index f9d5692..1312bfa 100644
+--- a/arch/x86_64/boot/compressed/head.S
++++ b/arch/x86_64/boot/compressed/head.S
+@@ -46,10 +46,10 @@ startup_32:
+  * at and where we were actually loaded at.  This can only be done
+  * with a short local call on x86.  Nothing  else will tell us what
+  * address we are running at.  The reserved chunk of the real-mode
+- * data at 0x34-0x3f are used as the stack for this calculation.
+- * Only 4 bytes are needed.
++ * data at 0x1e4 (defined as a scratch field) are used as the stack
++ * for this calculation. Only 4 bytes are needed.
+  */
+-	leal	0x40(%esi), %esp
++	leal	(0x1e4+4)(%esi), %esp
+ 	call	1f
+ 1:	popl	%ebp
+ 	subl	$1b, %ebp
 -- 
 1.5.2.2
 
