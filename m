@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbXGKUvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932522AbXGKUvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932859AbXGKUvf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 16:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759232AbXGKUv0
+	id S932522AbXGKUvw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 16:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761193AbXGKUv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 11 Jul 2007 16:51:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58212 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760370AbXGKUv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Jul 2007 16:51:26 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:15362 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758156AbXGKUvZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 16:51:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=grYx7okYaxhFp4L+pjZqT1qsyWDASsO9sPj7zkXNQ8YawBS0m3reXl3A6unfDbdz96BX2QiMsQ5PLwQDFV1tXubCQt3YE4l4C/q+iuSOc6UXwywcW6ntbkEtcPNBRV3mLVdJvCeqv3PEYOf/M0lmVhb1/6c5OHGRqMcX4l+4AKc=
-Subject: Re: [Linux-fbdev-devel] [GEODE] Add framebuffer support for the
-	AMD Geode LX
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Jordan Crouse <jordan.crouse@amd.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, info-linux@geode.amd.com,
-       Ondrej Zajicek <santiago@crfreenet.org>
-In-Reply-To: <20070710175039.GB32055@localhost.localdomain>
-References: <20070709173211.GA6157@cosmic.amd.com>
-	 <20070710175039.GB32055@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 04:51:17 +0800
-Message-Id: <1184187077.4504.11.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] Add /sys/kernel/notes
+In-Reply-To: Linus Torvalds's message of  Wednesday, 11 July 2007 12:16:33 -0700 <alpine.LFD.0.999.0707111215170.20061@woody.linux-foundation.org>
+X-Fcc: ~/Mail/linus
+X-Zippy-Says: Yow!  Legally-imposed CULTURE-reduction is CABBAGE-BRAINED!
+Message-Id: <20070711205120.396CD4D0555@magilla.localdomain>
+Date: Wed, 11 Jul 2007 13:51:20 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-10 at 19:50 +0200, Ondrej Zajicek wrote:
-> On Mon, Jul 09, 2007 at 11:32:11AM -0600, Jordan Crouse wrote:
+[I'd meant to send that from roland@redhat.com, so please correct any
+followups.]
 
-> If don't support panning, it should ensure that
-> xres_virtual == xres and yres_virtual == yres
-> 
+> Umm. You seem to make it readable by everybody. That's a mistake, I think. 
+> I don't know if there is anything security-conscious there, but just on 
+> general principles, I don't think we really would want normal users 
+> reading kernel configuration info, no?
 
-There is no rule for this, but the above suggestion is preferred.
+What I expect to find in notes I'd call kernel version and identification
+info, not configuration info.  I don't think it's likely to be any more
+revealing than "uname -v".  The main use I have in mind is to check
+exactly which kernel binary you have, though indeed that is only of any
+use to someone who can do something with kernel addresses and such.  It
+is probably a lot less revealing on its own than /proc/config.gz or
+/proc/kallsyms, which are world-readable.
 
-Tony
+It hadn't really occurred to me that the kernel binary would be
+deliberately hidden from the user.  If you are doing that, indeed
+/sys/kernel/noes is of no use to the user and you probably want to hide
+it too.  Still, I think it is more useful that the default be to let an
+unprivileged user see this as they can see /proc/kallsyms.  Both are
+useful for the same sorts of things, i.e. making sense of kernel
+addresses from oops logs or whatnot.  /sys/kernel/notes will be a part of
+"eu-addr2line -k 0x12345" being reliable and automatic, for example (it
+already works now with kernel-debuginfo installed, but this will help it
+reliably figure out if you botched the install or something).
 
+
+Thanks,
+Roland
