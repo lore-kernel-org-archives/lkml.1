@@ -1,67 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbXGKBcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbXGKBey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbXGKBcD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 21:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbXGKBbw
+	id S1757756AbXGKBey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 21:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXGKBep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 21:31:52 -0400
-Received: from trinity.phys.uwm.edu ([129.89.57.159]:42441 "EHLO
-	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbXGKBbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 21:31:51 -0400
-Date: Tue, 10 Jul 2007 20:31:11 -0500 (CDT)
-From: Bruce Allen <ballen@gravity.phys.uwm.edu>
-X-X-Sender: ballen@trinity.phys.uwm.edu
-To: Jeff Garzik <jeff@garzik.org>, Kai Makisara <Kai.Makisara@kolumbus.fi>,
-       Douglas Gilbert <dougg@torque.net>
-cc: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
-       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Dvorak <fermentol@gmail.com>,
-       Klaus Fuerstberger <kfuerstberger@arcor.de>,
-       Bruce Allen <bruce.allen@aei.mpg.de>, Robert Hancock <hancockr@shaw.ca>
-Subject: Re: SMART problems in 2.6.22
-In-Reply-To: <469309FA.6040501@torque.net>
-Message-ID: <Pine.LNX.4.63.0707102024300.4142@trinity.phys.uwm.edu>
-References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
- <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local> <469309FA.6040501@torque.net>
+	Tue, 10 Jul 2007 21:34:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60679 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750743AbXGKBeo (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 21:34:44 -0400
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 1/7] manpage for fallocate
+From: "Barry Naujok" <bnaujok@sgi.com>
+Organization: SGI
+Cc: xfs@oss.sgi.com
+Content-Type: multipart/mixed; boundary=----------WTbI0GSzrQq8swZHzkUhcQ
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+References: <20070710201200.GA10255@amitarora.in.ibm.com> <20070710201820.GA8797@amitarora.in.ibm.com>
+Date: Wed, 11 Jul 2007 11:37:45 +1000
+Message-ID: <op.tu91g7bh3jf8g2@pc-bnaujok.melbourne.sgi.com>
+In-Reply-To: <20070710201820.GA8797@amitarora.in.ibm.com>
+User-Agent: Opera Mail/9.10 (Win32)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Douglas Gilbert wrote:
+------------WTbI0GSzrQq8swZHzkUhcQ
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 
-> Kai Makisara wrote:
+On Wed, 11 Jul 2007 06:18:20 +1000, Amit K. Arora  
+<aarora@linux.vnet.ibm.com> wrote:
 
->> I have done some more debugging on this one. An easy way to reproduce 
->> the
+> Following is the modified version of the manpage originally submitted by
+> David Chinner. Please use `nroff -man fallocate.2 | less` to view.
 
-<SNIP>
+A few more touch-ups attached.
 
->> The log shows that the sense data returned by the commands differ: with 
->> 2.6.22 the bytes 4f and 2c (tf.lbam and tf.lbah) are not returned. Both 
->> of the status commands fail to return these bytes but the tests in 
->> smartctl are more strict for the second case. This is why the second 
->> status command seems to be failing.
+Regards,
+Barry.
+------------WTbI0GSzrQq8swZHzkUhcQ
+Content-Disposition: attachment; filename=fallocate.2
+Content-Type: application/octet-stream; name=fallocate.2
+Content-Transfer-Encoding: Base64
 
-<SNIP>
+LlRIIGZhbGxvY2F0ZSAyCi5TSCBOQU1FCmZhbGxvY2F0ZSBcLSBhbGxvY2F0ZSBv
+ciByZW1vdmUgZmlsZSBzcGFjZQouU0ggU1lOT1BTSVMKLkIgI2luY2x1ZGUgPHN5
+cy9zeXNjYWxsLmg+Ci5QUAouQkkgImludCBzeXNjYWxsKGludCwgaW50ICIgZmQg
+IiwgaW50ICIgbW9kZSAiLCBsb2ZmX3QgIiBvZmZzZXQgIiwgbG9mZl90ICIgbGVu
+ICk7Ci5TSCBERVNDUklQVElPTgpUaGUKLkIgZmFsbG9jYXRlCnN5c2NhbGwgYWxs
+b3dzIGEgdXNlciB0byBkaXJlY3RseSBtYW5pcHVsYXRlIHRoZSBhbGxvY2F0ZWQg
+ZGlzayBzcGFjZQpmb3IgdGhlIGZpbGUgcmVmZXJyZWQgdG8gYnkKLkkgZmQKZm9y
+IHRoZSBieXRlIHJhbmdlIHN0YXJ0aW5nIGF0Ci5JIG9mZnNldAphbmQgY29udGlu
+dWluZyBmb3IKLkkgbGVuCmJ5dGVzLgpUaGUKLkkgbW9kZQpwYXJhbWV0ZXIgZGV0
+ZXJtaW5lcyB0aGUgb3BlcmF0aW9uIHRvIGJlIHBlcmZvcm1lZCBvbiB0aGUgZ2l2
+ZW4gcmFuZ2UuCkN1cnJlbnRseSB0aGVyZSBhcmUgZm91ciBtb2RlczoKLlRQCi5C
+IEZBTExPQ19BTExPQ0FURQphbGxvY2F0ZXMgYW5kIGluaXRpYWxpc2VzIHRvIHpl
+cm8gdGhlIGRpc2sgc3BhY2Ugd2l0aGluIHRoZSBnaXZlbiByYW5nZS4KQWZ0ZXIg
+YSBzdWNjZXNzZnVsIGNhbGwsIHN1YnNlcXVlbnQgd3JpdGVzIGFyZSBndWFyYW50
+ZWVkIG5vdCB0byBmYWlsIGJlY2F1c2UKb2YgbGFjayBvZiBkaXNrIHNwYWNlLiAg
+SWYgdGhlIHNpemUgb2YgdGhlIGZpbGUgaXMgbGVzcyB0aGFuCi5JUiBvZmZzZXQg
+KyBsZW4gLAp0aGVuIHRoZSBmaWxlIGlzIGluY3JlYXNlZCB0byB0aGlzIHNpemU7
+IG90aGVyd2lzZSB0aGUgZmlsZSBzaXplIGlzIGxlZnQKdW5jaGFuZ2VkLgouQiBG
+QUxMT0NfQUxMT0NBVEUKY2xvc2VseSByZXNlbWJsZXMKLkJSIHBvc2l4X2ZhbGxv
+Y2F0ZSAoMykKYW5kIGlzIGludGVuZGVkIGFzIGEgbWV0aG9kIG9mIG9wdGltYWxs
+eSBpbXBsZW1lbnRpbmcgdGhpcyBmdW5jdGlvbi4KLkIgRkFMTE9DX0FMTE9DQVRF
+Cm1heSBhbGxvY2F0ZSBhIGxhcmdlciByYW5nZSB0aGF0IHdhcyBzcGVjaWZpZWQu
+Ci5UUAouQiBGQUxMT0NfUkVTVl9TUEFDRQpwcm92aWRlcyB0aGUgc2FtZSBmdW5j
+dGlvbmFsaXR5IGFzCi5CIEZBTExPQ19BTExPQ0FURQpleGNlcHQgaXQgZG9lcyBu
+b3QgZXZlciBjaGFuZ2UgdGhlIGZpbGUgc2l6ZS4gVGhpcyBhbGxvd3MgYWxsb2Nh
+dGlvbgpvZiB6ZXJvIGJsb2NrcyBiZXlvbmQgdGhlIGVuZCBvZiBmaWxlIGFuZCBp
+cyB1c2VmdWwgZm9yIG9wdGltaXNpbmcKYXBwZW5kIHdvcmtsb2Fkcy4KLlRQCi5C
+IEZBTExPQ19ERUFMTE9DQVRFCnJlbW92ZXMgYW55IHByZWFsbG9jYXRlZCBzcGFj
+ZSB3aXRoaW4gdGhlIGdpdmVuIHJhbmdlLiBUaGUgZmlsZSBzaXplCm1heSBjaGFu
+Z2UgaWYgZGVhbGxvY2F0aW9uIGlzIHRvd2FyZHMgdGhlIGVuZCBvZiB0aGUgZmls
+ZS4KLlRQCi5CIEZBTExPQ19VTlJFU1ZfU1BBQ0UKcmVtb3ZlcyB0aGUgdW5kZXJs
+eWluZyBkaXNrIHNwYWNlIHdpdGhpbiB0aGUgZ2l2ZW4gcmFuZ2UuIFRoZSBkaXNr
+IHNwYWNlCnNoYWxsIGJlIHJlbW92ZWQgcmVnYXJkbGVzcyBvZiBpdCdzIGNvbnRl
+bnRzIHNvIGJvdGggYWxsb2NhdGVkIHNwYWNlCmZyb20KLkIgRkFMTE9DX0FMTE9D
+QVRFCmFuZAouQiBGQUxMT0NfUkVTVl9TUEFDRQphcyB3ZWxsIGFzIGZyb20KLkJS
+IHdyaXRlICgzKQp3aWxsIGJlIHJlbW92ZWQuCi5CIEZBTExPQ19VTlJFU1ZfU1BB
+Q0UKc2hhbGwgbmV2ZXIgcmVtb3ZlIGRpc2sgYmxvY2tzIG91dHNpZGUgdGhlIHJh
+bmdlIHNwZWNpZmllZC4KLkIgRkFMTE9DX1VOUkVTVl9TUEFDRQpzaGFsbCBuZXZl
+ciBjaGFuZ2UgdGhlIGZpbGUgc2l6ZS4gSWYgY2hhbmdpbmcgdGhlIGZpbGUgc2l6
+ZQppcyByZXF1aXJlZCB3aGVuIGRlYWxsb2NhdGluZyBibG9ja3MgZnJvbSBhbiBv
+ZmZzZXQgdG8gZW5kCm9mIGZpbGUgKG9yIGJleW9uZCBlbmQgb2YgZmlsZSkgaXMg
+cmVxdWlyZWQsCi5CUiBmdHVuY2F0ZTY0ICgzKQpvcgouQiBGQUxMT0NfREVBTExP
+Q0FURQpzaG91bGQgYmUgdXNlZC4KCi5TSCBSRVRVUk4gVkFMVUUKLkIgZmFsbG9j
+YXRlCnJldHVybnMgemVybyBvbiBzdWNjZXNzLCBvciBhbiBlcnJvciBudW1iZXIg
+b24gZmFpbHVyZS4KTm90ZSB0aGF0Ci5JIGVycm5vCmlzIG5vdCBzZXQuCi5TSCBF
+UlJPUlMKLlRQCi5CIEVCQURGCi5JIGZkCmlzIG5vdCBhIHZhbGlkIGZpbGUgZGVz
+Y3JpcHRvciwgb3IgaXMgbm90IG9wZW5lZCBmb3Igd3JpdGluZy4KLlRQCi5CIEVG
+QklHCi5JUiBvZmZzZXQgKyBsZW4KZXhjZWVkcyB0aGUgbWF4aW11bSBmaWxlIHNp
+emUuCi5UUAouQiBFSU5WQUwKLkkgb2Zmc2V0Cm9yCi5JIGxlbgp3YXMgbGVzcyB0
+aGFuIDAuCi5UUAouQiBFTk9ERVYKLkkgZmQKZG9lcyBub3QgcmVmZXIgdG8gYSBy
+ZWd1bGFyIGZpbGUgb3IgYSBkaXJlY3RvcnkuCi5UUAouQiBFTk9TUEMKVGhlcmUg
+aXMgbm90IGVub3VnaCBzcGFjZSBsZWZ0IG9uIHRoZSBkZXZpY2UgY29udGFpbmlu
+ZyB0aGUgZmlsZQpyZWZlcnJlZCB0byBieQouSVIgZmQgLgouVFAKLkIgRVNQSVBF
+Ci5JIGZkCnJlZmVycyB0byBhIHBpcGUgb2YgZmlsZSBkZXNjcmlwdG9yLgouVFAK
+LkIgRU5PU1lTClRoZSBmaWxlc3lzdGVtIHVuZGVybHlpbmcgdGhlIGZpbGUgZGVz
+Y3JpcHRvciBkb2VzIG5vdCBzdXBwb3J0IHRoaXMKb3BlcmF0aW9uLgouU0ggQVZB
+SUxBQklMSVRZClRoZQouQiBmYWxsb2NhdGUKc3lzdGVtIGNhbGwgaXMgYXZhaWxh
+YmxlIHNpbmNlIDIuNi5YWAouU0ggU0VFIEFMU08KLkJSIHN5c2NhbGwgKDIpLAou
+QlIgcG9zaXhfZmFkdmlzZSAoMyksCi5CUiBmdHJ1bmNhdGUgKDMpLgo=
 
-> Kai, Thanks for the analysis.
+------------WTbI0GSzrQq8swZHzkUhcQ--
 
-<SNIP>
-
-> So when smartmontools sees 0 and 0 in those positions it pulls out the 
-> red card for that device. My guess is that libata in lk 2.6.22 is 
-> corrupting those FIS device to host register values.
-
-Kai, Doug: thank you very much for tracking down the source of this 
-problem.
-
-Jeff: OK, from what I am reading here I think that this is a genuine 
-libata/kernel bug.  But I'm out of my depth here, so the ball is in your 
-court.  Hopefully you'll understand what's going on and how to fix it.
-
-Cheers,
- 	Bruce
