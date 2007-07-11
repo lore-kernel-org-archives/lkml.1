@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765226AbXGKQGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761824AbXGKQM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765226AbXGKQGq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbXGKQGj
+	id S1761824AbXGKQM4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 12:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbXGKQMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:06:39 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:38812 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755311AbXGKQGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:06:38 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] serial: do not add port that is not initialized
-Date: Wed, 11 Jul 2007 10:05:53 -0600
-User-Agent: KMail/1.9.6
-Cc: Yinghai Lu <Yinghai.Lu@sun.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200707101703.36173.yinghai.lu@sun.com> <20070711071742.GA12952@flint.arm.linux.org.uk>
-In-Reply-To: <20070711071742.GA12952@flint.arm.linux.org.uk>
+	Wed, 11 Jul 2007 12:12:47 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:44096 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754423AbXGKQMq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 12:12:46 -0400
+Message-ID: <4695017A.6060606@kernel.org>
+Date: Wed, 11 Jul 2007 09:12:42 -0700
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.4 (Macintosh/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
+       casey@schaufler-ca.com, Andrew Morton <akpm@google.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, KaiGai Kohei <kaigai@kaigai.gr.jp>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, Steve Beattie <sbeattie@suse.de>
+Subject: Re: [PATCH 1/1] file capabilities: clear caps cleanup
+References: <20070711141850.GA6690@sergelap.austin.ibm.com>
+In-Reply-To: <20070711141850.GA6690@sergelap.austin.ibm.com>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707111005.53836.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 July 2007 01:17:42 am Russell King wrote:
-> On Tue, Jul 10, 2007 at 05:03:35PM -0700, Yinghai Lu wrote:
-> > [PATCH] serial: do not add port that is not initialized
-> > 
-> > if the port is not initialized with correct iobase, and membase, we don't
-> > need to add that port.
-> > for x86, when pnpacpi is enabled, we will not get extra ttyS1/ttyS2/ttyS3 in
-> > /sys/devices/platform/serial8250/tty
-> > 
-> > Sign-off-by: Yinghai Lu <yinghai.lu@sun.com>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Fine with me.
+
+Cheers
+
+Andrew
+
+Serge E. Hallyn wrote:
+>>From 88115394044e697ac852f7fb9f30483e87f4f598 Mon Sep 17 00:00:00 2001
+> From: Serge E. Hallyn <serue@us.ibm.com>
+> Date: Wed, 11 Jul 2007 10:01:01 -0400
+> Subject: [PATCH 1/1] file capabilities: clear caps cleanup
 > 
-> What if someone wants to run setserial on /dev/ttyS1 to set it's base
-> address, irq and other parameters?  People still do this.
+> As suggested by Steve Beattie, rather than jump into a
+> conditional block in certain cases, define and use a
+> static inline bprm_clear_caps().
 
-I agree that people still use setserial that way, and we shouldn't
-make this change because it would break things.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-But I also agree with Yinghai that these extra phantom devices are
-just weird.  It would be a lot nicer if there were a way to say,
-"please, Mr. Serial Driver, create me a new ttyS device with these
-parameters."
-
-But no, I'm not volunteering to do that.
-
-Bjorn
+iD8DBQFGlQF6+bHCR3gb8jsRArmZAJ9Je0Da0SDtg78tx5ks7gvY/E5x/wCfYikC
+bkD1uf7L3cdKzBMEvdjqB/c=
+=/z3n
+-----END PGP SIGNATURE-----
