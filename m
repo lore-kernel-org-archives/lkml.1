@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935499AbXGKXjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935474AbXGKXjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935499AbXGKXjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934985AbXGKXd7
+	id S935474AbXGKXjo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934798AbXGKXeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:33:59 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33735 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:34:01 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33221 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934988AbXGKXdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:33:54 -0400
+	id S933491AbXGKXd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:33:59 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 14/61] PM: Remove prev_state from struct dev_pm_info
-Date: Wed, 11 Jul 2007 16:31:33 -0700
-Message-Id: <11841968111201-git-send-email-gregkh@suse.de>
+Subject: [PATCH 15/61] PM: Remove power_state.event checks from suspend core code
+Date: Wed, 11 Jul 2007 16:31:34 -0700
+Message-Id: <11841968151257-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841968071826-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841968111201-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -31,83 +31,66 @@ References: <20070711233021.GA5253@kroah.com>
  <11841967992975-git-send-email-gregkh@suse.de>
  <11841968032469-git-send-email-gregkh@suse.de>
  <11841968071826-git-send-email-gregkh@suse.de>
+ <11841968111201-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The prev_state member of struct dev_pm_info (defined in include/linux/pm.h) is
-only used during a resume to check if the device's state before the suspend was
-'off', in which case the device is not resumed.  However, in such cases the
-decision whether or not to resume the device should be made on the driver level
-and the resume callbacks from the device's bus and class should be executed
-anyway (the may be needed for some things other than just powering on the
-device).
+The suspend routines should be called for every device during a system sleep
+transition, regardless of the device's state, so that drivers can regard these
+method calls as notifications that the system is about to go to sleep, rather
+than as directives to put their devices into the 'off' state.
+
+This is documented in Documentation/power/devices.txt and is already done in
+the core resume code, so it seems reasonable to make the core suspend code
+behave accordingly.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/power/resume.c  |    3 +--
- drivers/base/power/suspend.c |    2 --
- drivers/usb/core/hub.c       |    5 -----
- include/linux/pm.h           |    1 -
- 4 files changed, 1 insertions(+), 10 deletions(-)
+ drivers/base/power/suspend.c |   11 ++++-------
+ 1 files changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/base/power/resume.c b/drivers/base/power/resume.c
-index 99679e7..0c96106 100644
---- a/drivers/base/power/resume.c
-+++ b/drivers/base/power/resume.c
-@@ -88,8 +88,7 @@ void dpm_resume(void)
- 		list_move_tail(entry, &dpm_active);
- 
- 		mutex_unlock(&dpm_list_mtx);
--		if (!dev->power.prev_state.event)
--			resume_device(dev);
-+		resume_device(dev);
- 		mutex_lock(&dpm_list_mtx);
- 		put_device(dev);
- 	}
 diff --git a/drivers/base/power/suspend.c b/drivers/base/power/suspend.c
-index af2cedf..5178b0f 100644
+index 5178b0f..a3ff394 100644
 --- a/drivers/base/power/suspend.c
 +++ b/drivers/base/power/suspend.c
-@@ -71,8 +71,6 @@ int suspend_device(struct device * dev, pm_message_t state)
+@@ -71,21 +71,19 @@ int suspend_device(struct device * dev, pm_message_t state)
  			dev->parent->power.power_state.event);
  	}
  
--	dev->power.prev_state = dev->power.power_state;
--
- 	if (dev->class && dev->class->suspend && !dev->power.power_state.event) {
+-	if (dev->class && dev->class->suspend && !dev->power.power_state.event) {
++	if (dev->class && dev->class->suspend) {
  		suspend_device_dbg(dev, state, "class ");
  		error = dev->class->suspend(dev, state);
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 24f10a1..a9cf8b3 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -1109,11 +1109,6 @@ void usb_root_hub_lost_power(struct usb_device *rhdev)
+ 		suspend_report_result(dev->class->suspend, error);
+ 	}
  
- 	dev_warn(&rhdev->dev, "root hub lost power or was reset\n");
+-	if (!error && dev->type && dev->type->suspend
+-	    && !dev->power.power_state.event) {
++	if (!error && dev->type && dev->type->suspend) {
+ 		suspend_device_dbg(dev, state, "type ");
+ 		error = dev->type->suspend(dev, state);
+ 		suspend_report_result(dev->type->suspend, error);
+ 	}
  
--	/* Make sure no potential wakeup events get lost,
--	 * by forcing the root hub to be resumed.
--	 */
--	rhdev->dev.power.prev_state.event = PM_EVENT_ON;
--
- 	spin_lock_irqsave(&device_state_lock, flags);
- 	hub = hdev_to_hub(rhdev);
- 	for (port1 = 1; port1 <= rhdev->maxchild; ++port1) {
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 6e7f066..273781c 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -267,7 +267,6 @@ struct dev_pm_info {
- 	unsigned		can_wakeup:1;
- #ifdef	CONFIG_PM
- 	unsigned		should_wakeup:1;
--	pm_message_t		prev_state;
- 	struct list_head	entry;
- #endif
- };
+-	if (!error && dev->bus && dev->bus->suspend
+-	    && !dev->power.power_state.event) {
++	if (!error && dev->bus && dev->bus->suspend) {
+ 		suspend_device_dbg(dev, state, "");
+ 		error = dev->bus->suspend(dev, state);
+ 		suspend_report_result(dev->bus->suspend, error);
+@@ -104,8 +102,7 @@ static int suspend_device_late(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
+-	if (dev->bus && dev->bus->suspend_late
+-	    && !dev->power.power_state.event) {
++	if (dev->bus && dev->bus->suspend_late) {
+ 		suspend_device_dbg(dev, state, "LATE ");
+ 		error = dev->bus->suspend_late(dev, state);
+ 		suspend_report_result(dev->bus->suspend_late, error);
 -- 
 1.5.2.2
 
