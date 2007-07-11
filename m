@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935310AbXGKXgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935339AbXGKXh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935310AbXGKXgx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934998AbXGKXd2
+	id S935339AbXGKXh3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934877AbXGKXdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:33:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33179 "EHLO mx2.suse.de"
+	Wed, 11 Jul 2007 19:33:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33673 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934993AbXGKXd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:33:27 -0400
+	id S935049AbXGKXdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:33:39 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 09/61] PM: Simplify suspend_device
-Date: Wed, 11 Jul 2007 16:31:28 -0700
-Message-Id: <1184196783245-git-send-email-gregkh@suse.de>
+Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Subject: [PATCH 10/61] Driver core: include linux/mutex.h from attribute_container.c
+Date: Wed, 11 Jul 2007 16:31:29 -0700
+Message-Id: <1184196787247-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841967793134-git-send-email-gregkh@suse.de>
+In-Reply-To: <1184196783245-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -26,103 +26,34 @@ References: <20070711233021.GA5253@kroah.com>
  <11841967674155-git-send-email-gregkh@suse.de>
  <11841967711788-git-send-email-gregkh@suse.de>
  <11841967793134-git-send-email-gregkh@suse.de>
+ <1184196783245-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Michael S. Tsirkin <mst@dev.mellanox.co.il>
 
-Reduce code duplication in drivers/base/suspend.c by introducing a separate
-function for printing diagnostic messages.
+attribute_container.c uses DEFINE_MUTEX, so while
+linux/mutex.h seems to be pulled in indirectly
+by one of the headers it includes, the right thing
+is to include linux/mutex.h directly.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
 ---
- drivers/base/power/suspend.c |   49 +++++++++++++++--------------------------
- 1 files changed, 18 insertions(+), 31 deletions(-)
+ drivers/base/attribute_container.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/base/power/suspend.c b/drivers/base/power/suspend.c
-index 19fae88..af2cedf 100644
---- a/drivers/base/power/suspend.c
-+++ b/drivers/base/power/suspend.c
-@@ -40,6 +40,14 @@ static inline char *suspend_verb(u32 event)
- }
+diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
+index 1ec0654..7370d7c 100644
+--- a/drivers/base/attribute_container.c
++++ b/drivers/base/attribute_container.c
+@@ -18,6 +18,7 @@
+ #include <linux/slab.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
  
+ #include "base.h"
  
-+static void
-+suspend_device_dbg(struct device *dev, pm_message_t state, char *info)
-+{
-+	dev_dbg(dev, "%s%s%s\n", info, suspend_verb(state.event),
-+		((state.event == PM_EVENT_SUSPEND) && device_may_wakeup(dev)) ?
-+		", may wakeup" : "");
-+}
-+
- /**
-  *	suspend_device - Save state of one device.
-  *	@dev:	Device.
-@@ -66,37 +74,21 @@ int suspend_device(struct device * dev, pm_message_t state)
- 	dev->power.prev_state = dev->power.power_state;
- 
- 	if (dev->class && dev->class->suspend && !dev->power.power_state.event) {
--		dev_dbg(dev, "class %s%s\n",
--			suspend_verb(state.event),
--			((state.event == PM_EVENT_SUSPEND)
--					&& device_may_wakeup(dev))
--				? ", may wakeup"
--				: ""
--			);
-+		suspend_device_dbg(dev, state, "class ");
- 		error = dev->class->suspend(dev, state);
- 		suspend_report_result(dev->class->suspend, error);
- 	}
- 
--	if (!error && dev->type && dev->type->suspend && !dev->power.power_state.event) {
--		dev_dbg(dev, "%s%s\n",
--			suspend_verb(state.event),
--			((state.event == PM_EVENT_SUSPEND)
--					&& device_may_wakeup(dev))
--				? ", may wakeup"
--				: ""
--			);
-+	if (!error && dev->type && dev->type->suspend
-+	    && !dev->power.power_state.event) {
-+		suspend_device_dbg(dev, state, "type ");
- 		error = dev->type->suspend(dev, state);
- 		suspend_report_result(dev->type->suspend, error);
- 	}
- 
--	if (!error && dev->bus && dev->bus->suspend && !dev->power.power_state.event) {
--		dev_dbg(dev, "%s%s\n",
--			suspend_verb(state.event),
--			((state.event == PM_EVENT_SUSPEND)
--					&& device_may_wakeup(dev))
--				? ", may wakeup"
--				: ""
--			);
-+	if (!error && dev->bus && dev->bus->suspend
-+	    && !dev->power.power_state.event) {
-+		suspend_device_dbg(dev, state, "");
- 		error = dev->bus->suspend(dev, state);
- 		suspend_report_result(dev->bus->suspend, error);
- 	}
-@@ -114,14 +106,9 @@ static int suspend_device_late(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
- 
--	if (dev->bus && dev->bus->suspend_late && !dev->power.power_state.event) {
--		dev_dbg(dev, "LATE %s%s\n",
--			suspend_verb(state.event),
--			((state.event == PM_EVENT_SUSPEND)
--					&& device_may_wakeup(dev))
--				? ", may wakeup"
--				: ""
--			);
-+	if (dev->bus && dev->bus->suspend_late
-+	    && !dev->power.power_state.event) {
-+		suspend_device_dbg(dev, state, "LATE ");
- 		error = dev->bus->suspend_late(dev, state);
- 		suspend_report_result(dev->bus->suspend_late, error);
- 	}
 -- 
 1.5.2.2
 
