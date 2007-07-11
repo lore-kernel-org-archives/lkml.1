@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbXGKBXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbXGKBcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbXGKBXA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 21:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbXGKBWu
+	id S1756734AbXGKBcD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 21:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbXGKBbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 21:22:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49426 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751020AbXGKBWs (ORCPT
+	Tue, 10 Jul 2007 21:31:52 -0400
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:42441 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbXGKBbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 21:22:48 -0400
-Date: Tue, 10 Jul 2007 18:22:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: cmm@us.ibm.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, nfsv4@linux-nfs.org
-Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
-Message-Id: <20070710182237.e2f88bf3.akpm@linux-foundation.org>
-In-Reply-To: <1184105380.3759.65.camel@localhost.localdomain>
-References: <1183275424.4010.126.camel@localhost.localdomain>
-	<20070710163038.ceb2ae94.akpm@linux-foundation.org>
-	<1184105380.3759.65.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jul 2007 21:31:51 -0400
+Date: Tue, 10 Jul 2007 20:31:11 -0500 (CDT)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: Jeff Garzik <jeff@garzik.org>, Kai Makisara <Kai.Makisara@kolumbus.fi>,
+       Douglas Gilbert <dougg@torque.net>
+cc: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
+       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Bruce Allen <bruce.allen@aei.mpg.de>, Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SMART problems in 2.6.22
+In-Reply-To: <469309FA.6040501@torque.net>
+Message-ID: <Pine.LNX.4.63.0707102024300.4142@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
+ <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local> <469309FA.6040501@torque.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 18:09:40 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
+On Tue, 10 Jul 2007, Douglas Gilbert wrote:
 
-> On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
-> > On Sun, 01 Jul 2007 03:37:04 -0400
-> > Mingming Cao <cmm@us.ibm.com> wrote:
-> > 
-> > > This patch converts the 32-bit i_version in the generic inode to a 64-bit
-> > > i_version field.
-> > > 
-> > 
-> > That's obvious from the patch.  But what was the reason for making this
-> > (unrelated to ext4) change?
-> > 
-> 
-> The need is came from NFSv4
-> 
-> On Fri, 2007-05-25 at 18:25 +0200, Jean noel Cordenner wrote: 
-> > Hi,
-> > 
-> > This is an update of the i_version patch.
-> > The i_version field is a 64bit counter that is set on every inode
-> > creation and that is incremented every time the inode data is modified
-> > (similarly to the "ctime" time-stamp).
-> > The aim is to fulfill a NFSv4 requirement for rfc3530:
-> > "5.5.  Mandatory Attributes - Definitions
-> > Name		#	DataType   Access   Description
-> > ___________________________________________________________________
-> > change		3	uint64       READ     A value created by the
-> > 		server that the client can use to determine if file
-> > 		data, directory contents or attributes of the object
-> > 		have been modified.  The servermay return the object's
-> > 		time_metadata attribute for this attribute's value but
-> > 		only if the filesystem object can not be updated more
-> > 		frequently than the resolution of time_metadata.
-> > "
-> > 
-> 
-> > Please update the changelog for this.
-> > 
-> 
-> Is above description clear to you?
-> 
+> Kai Makisara wrote:
 
-Yes, thanks.  It doesn't actually tell us why we want to implement
-this attribute and it doesn't tell us what the implications of failing
-to do so are, but I guess we can take that on trust from the NFS guys.
+>> I have done some more debugging on this one. An easy way to reproduce 
+>> the
 
-But I suspect the ext4 implementation doesn't actually do this.  afaict we
-won't update i_version for file overwrites (especially if s_time_gran can
-indeed be 1,000,000,000) and of course for MAP_SHARED modifications.  What
-would be the implications of this?
+<SNIP>
 
-And how does the NFS server know that the filesystem implements i_version? 
-Will a zero-value of i_version have special significance, telling the
-server to not send this attribute, perhaps?
+>> The log shows that the sense data returned by the commands differ: with 
+>> 2.6.22 the bytes 4f and 2c (tf.lbam and tf.lbah) are not returned. Both 
+>> of the status commands fail to return these bytes but the tests in 
+>> smartctl are more strict for the second case. This is why the second 
+>> status command seems to be failing.
 
+<SNIP>
 
+> Kai, Thanks for the analysis.
+
+<SNIP>
+
+> So when smartmontools sees 0 and 0 in those positions it pulls out the 
+> red card for that device. My guess is that libata in lk 2.6.22 is 
+> corrupting those FIS device to host register values.
+
+Kai, Doug: thank you very much for tracking down the source of this 
+problem.
+
+Jeff: OK, from what I am reading here I think that this is a genuine 
+libata/kernel bug.  But I'm out of my depth here, so the ball is in your 
+court.  Hopefully you'll understand what's going on and how to fix it.
+
+Cheers,
+ 	Bruce
