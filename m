@@ -1,111 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759763AbXGKGYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760419AbXGKGZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759763AbXGKGYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbXGKGYM
+	id S1760419AbXGKGZg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbXGKGZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:24:12 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:23186 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755093AbXGKGYL (ORCPT
+	Wed, 11 Jul 2007 02:25:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53412 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754107AbXGKGZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:24:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=ND1dEgRyCyxSXmANhpL07VwEP0lJgyCJ/munWUz/QfZ9ThhPlWjebcED7q82rbEJPZ11xY2rEgT7TQ99KVxxgfN/DdcMR4B7avJK8cVq+rbhGv6YsrOp3yTKazngjr3rFt8Eug06htP8vZ8Sj9F5cN5TNGq41RTCjIB/mlEJ014=  ;
-X-YMail-OSG: c9Pe_ogVM1l_XeCicIBnM4GL2KxHF3hK3pUIU4v3ukUYOa5xGObttDQe3xLw1bcRWwO61VxKUg--
-Message-ID: <46947784.6050100@yahoo.com.au>
-Date: Wed, 11 Jul 2007 16:24:04 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Matthew Hawkins <darthmdh@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org>	 <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>	 <20070710181419.6d1b2f7e.akpm@linux-foundation.org>	 <b21f8390707101954s3ae69db8vc30287277941cb1f@mail.gmail.com>	 <4694683B.3060705@yahoo.com.au>	 <2c0942db0707102247n3b6e5933i9803a2161d6c00b1@mail.gmail.com>	 <469470A3.5040606@yahoo.com.au> <2c0942db0707102304s3f666eceib454043c716e2178@mail.gmail.com>
-In-Reply-To: <2c0942db0707102304s3f666eceib454043c716e2178@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 11 Jul 2007 02:25:26 -0400
+Date: Tue, 10 Jul 2007 23:25:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Jose R. Santos" <jrs@us.ibm.com>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 2][PATCH 5/5] cleanups: Export jbd2-debug via debugfs
+Message-Id: <20070710232509.4838644e.akpm@linux-foundation.org>
+In-Reply-To: <20070711003809.3ced667b@naruto>
+References: <1183275408.4010.124.camel@localhost.localdomain>
+	<20070710163025.9db582f8.akpm@linux-foundation.org>
+	<20070711003809.3ced667b@naruto>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> On 7/10/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Wed, 11 Jul 2007 00:38:09 -0500 "Jose R. Santos" <jrs@us.ibm.com> wrote:
+
 > 
->> >> OK that's a good data point. It would be really good to be able to
->> >> do an analysis on your overnight IO patterns and the corresponding
->> >> memory reclaim behaviour and see why things are getting evicted.
->> >
->> > Eviction can happen for multiple reasons, as I'm sure you're painfully
->> > aware. It can happen because of poor balancing choices, or it can
->>
->> s/balancing/reclaim, yes. And for the nightly cron job case, this is
->> could quite possibly be the cause. At least updatedb should be fairly
->> easy to apply use-once heuristics for, so if they're not working then
->> we should hopefully be able to improve it.
+> > Alternatively (and preferably) do this via an update to
+> > Documentation/filesystems/ext4.txt.
 > 
+> Seems like I also need to update the doc on Kconfig as well.  Do you
+> prefer this in separate patches? (current patch, kconfig patch, ext4
+> doc update patch?
+
+All these changes are logically connected (aren't they?).  A single patch
+is fine.
+
+> > Shoudln't all this debug info be a per-superblock thing rather than
+> > kernel-wide?
 > 
-> <nod> Sorry, I'm not so clear on the terminology, am I.
+> I don't think it is worth pursuing this feature since this seems to
+> have been broken for a while now (its been there since the first git
+> revission in ext3) and nobody has noticed it until now.  It could be
+> address on a later patch though, since the initial purpose of the patch
+> was to fix the broken JBD2_DEBUG option. Of course, this may not be
+> clearly express in the changelog. :)
 > 
-> So, that's one part of it: one could argue that for that bit swap
-> prefetch is a bit of a band-aid over the issue. A useful band-aid,
-> that works today, isn't invasive, and can be ripped out at some future
-> time if the underlying issue is eventually solved by a proper use-once
-> aging mechanism, but nevertheless a band-aid.
 
-I think for some workloads it is probably a bandaid, and for others
-the concept of prefetching likely to be used again data back in is
-undeniably going to be a win for others.
+I don't think that making it all per-superblock is worth the effort - it's
+a developer-only thing and developer will have the knowledge to test ext4
+on an otherwise-ext3 setup if they're really fussed about the accuracy.
 
-A lot of postitive reports I have seen about this say that desktop
-the next morning is more responsive. So I kind of want to know what's
-happening here -- as far as I can tell, swap prefetching shouldn't
-help a huge amount to recover from a simple updatedb alone --
-although if other cron stuff happened that used a bit more memory
-afterwards and pushing out some of updatedb's cache, perhaps that's
-when swap prefetching finds its niche. I don't know.
+So yes, a bare make-it-work patch sounds appropriate.  Or remove it, but
+hey, it might be useful.  The timestamping stuff certainly looks useful.
 
-However, I don't like the fact that there is _any_ swap happening
-on 1GB desktops after a single updatedb run. Is something else
-running that hogs a huge amount of memory? Maybe that explains it,
-but I don't know. I do know that we probably don't do very good
-use-once algorithms on the dentry and inode caches, so updatedb
-might cause them to push swap out. We could test that by winding
-the vfs reclaim right up.
-
-
-> The other part is when I've got evolution and a few other things open,
-> then I run gimp on a raw photo and do some work on it, quit out of
-> gimp, do a couple of things in a shell to upload the photo to my
-> server, then switch back to evolution. Hang, waiting on swap in. Well,
-> the kernel had some free time there to repopulate evolution's working
-> set, and swap prefetch would help that, while better (or perfect!)
-> heuristics in the reclaim *won't*.
-> 
-> That's the real issue here.
-
-Yeah that's an issue, and swap prefetching has the potential to
-help there no doubt at all. How much is the saving? I don't think
-it will be like an order of magnitude because unfortunately we
-also get mapped pagecache being thrown out as well as swap, so
-for example all your evolution mailbox, libraries, executable,
-etc. is still going to have to be paged back in.
-
-Regarding swap prefetching. I'm not going to argue for or against
-it anymore because I have really stopped following where it is
-up to, for now. If the code and the results meet the standard that
-Andrew wants then I don't particularly mind if he merges it.
-
-It would be nice if some of you guys would still report and test
-problems with reclaim when prefetching is turned off -- I have
-never encountered the morning after sluggishness (although I don't
-doubt for a minute that it is a problem for some).
-
--- 
-SUSE Labs, Novell Inc.
