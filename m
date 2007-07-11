@@ -1,42 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbXGKF0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXGKF2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760594AbXGKF0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 01:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbXGKF0F
+	id S1760787AbXGKF2Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 01:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757502AbXGKF2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 01:26:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47943 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752675AbXGKF0E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 01:26:04 -0400
-Date: Tue, 10 Jul 2007 22:25:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: miklos@szeredi.hu, netdev@vger.kernel.org, ebiederm@xmission.com,
-       viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH resend] rewrite AF_UNIX garbage collector, fixes race
-Message-Id: <20070710222511.bcc87825.akpm@linux-foundation.org>
-In-Reply-To: <20070710.221224.48800386.davem@davemloft.net>
-References: <E1I61UT-0006Gk-00@dorka.pomaz.szeredi.hu>
-	<20070710.221224.48800386.davem@davemloft.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 11 Jul 2007 01:28:00 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:45291 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752675AbXGKF16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 01:27:58 -0400
+Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, nfsv4@linux-nfs.org
+In-Reply-To: <20070710212237.06aac2a3.akpm@linux-foundation.org>
+References: <1183275424.4010.126.camel@localhost.localdomain>
+	 <20070710163038.ceb2ae94.akpm@linux-foundation.org>
+	 <1184105380.3759.65.camel@localhost.localdomain>
+	 <20070710182237.e2f88bf3.akpm@linux-foundation.org>
+	 <1184113156.20193.13.camel@localhost.localdomain>
+	 <20070710212237.06aac2a3.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Tue, 10 Jul 2007 22:27:57 -0400
+Message-Id: <1184120877.20193.49.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 22:12:24 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+On Tue, 2007-07-10 at 21:22 -0700, Andrew Morton wrote:
+> On Tue, 10 Jul 2007 20:19:16 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
+> 
+> > On Tue, 2007-07-10 at 18:22 -0700, Andrew Morton wrote:
+> > > On Tue, 10 Jul 2007 18:09:40 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
+> > > 
+> > > > On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
+> > > > > On Sun, 01 Jul 2007 03:37:04 -0400
+> > > > > Mingming Cao <cmm@us.ibm.com> wrote:
+> > > > > 
+> > > > > > This patch converts the 32-bit i_version in the generic inode to a 64-bit
+> > > > > > i_version field.
+> > > > > > 
+> > > > > 
+> > > > > That's obvious from the patch.  But what was the reason for making this
+> > > > > (unrelated to ext4) change?
+> > > > > 
+> > > > 
+> > > > The need is came from NFSv4
+> > > > 
+> > > > On Fri, 2007-05-25 at 18:25 +0200, Jean noel Cordenner wrote: 
+> > > > > Hi,
+> > > > > 
+> > > > > This is an update of the i_version patch.
+> > > > > The i_version field is a 64bit counter that is set on every inode
+> > > > > creation and that is incremented every time the inode data is modified
+> > > > > (similarly to the "ctime" time-stamp).
+> > > > > The aim is to fulfill a NFSv4 requirement for rfc3530:
+> > > > > "5.5.  Mandatory Attributes - Definitions
+> > > > > Name		#	DataType   Access   Description
+> > > > > ___________________________________________________________________
+> > > > > change		3	uint64       READ     A value created by the
+> > > > > 		server that the client can use to determine if file
+> > > > > 		data, directory contents or attributes of the object
+> > > > > 		have been modified.  The servermay return the object's
+> > > > > 		time_metadata attribute for this attribute's value but
+> > > > > 		only if the filesystem object can not be updated more
+> > > > > 		frequently than the resolution of time_metadata.
+> > > > > "
+> > > > > 
+> > > > 
+> > > > > Please update the changelog for this.
+> > > > > 
+> > > > 
+> > > > Is above description clear to you?
+> > > > 
+> > > 
+> > > Yes, thanks.  It doesn't actually tell us why we want to implement
+> > > this attribute and it doesn't tell us what the implications of failing
+> > > to do so are, but I guess we can take that on trust from the NFS guys.
+> > > 
+> > > But I suspect the ext4 implementation doesn't actually do this.  afaict we
+> > > won't update i_version for file overwrites (especially if s_time_gran can
+> > > indeed be 1,000,000,000) and of course for MAP_SHARED modifications.  What
+> > > would be the implications of this?
+> > > 
+> > 
+> > In the case of overwrite (file date updated), I assume the ctime/mtime
+> > is being updated and the inode is being dirtied, so the version number
+> > is being updated.
+> > 
+> >  vfs_write()->..
+> >         ->__generic_file_aio_write_nolock()
+> >                 ->file_update_time()
+> >                         ->mark_inode_dirty_sync()
+> >                         ->__mark_inode_dirty(I_DIRTY_SYNC)
+> >                                 ->ext4_dirty_inode()
+> >                                         ->ext4_mark_inode_dirty()
+> 
+> That assumes an mtime update for every write().  OK, so two writes in a
+> single nanosecond won't be happening.  But in that case why is this code:
+> 
+> static inline struct timespec ext4_current_time(struct inode *inode)
+> {
+> 	return (inode->i_sb->s_time_gran < NSEC_PER_SEC) ?
+> 		current_fs_time(inode->i_sb) : CURRENT_TIME_SEC;
+> }
+> 
+> checking (s_time_gran < NSEC_PER_SEC) ??
+> 
 
-> But myself, nor any other developers, are going to review your work
-> any faster if you do things like try to slip things in behind the
-> maintainer's back as you attempted to do yesterday by asking Andrew to
-> put your AF_UNIX garbage collector rewrite directly into his -mm tree.
+Ext4 can still load/read ext3 fs (which by default with 128 bytes old
+inode size, means doens't have support nanosecond timestamps), so it's
+not always gurantee nanosecond timestamps granularity.(it depends on the
+size of the inode (>128 bytes), by default, a fresh ext4  increase inode
+size to 256 bytes to have the room to store nanoseond timestamps, inode
+versioning etc)
 
-mmm...  I didn't see it as a slip-behind-the-back thing.  More a "park it
-in -mm for a bit of concurrent testing and so it doesn't get lost and so I
-don't have to worry about it any more" thing.  Plenty of that goes on.
+> Overall it is a bit unpleasing to rely upon mtime updates for a correct NFS
+> server implementation: if we were to later decrease s_time_gran (as we
+> might do, for performance reasons), the NFS server implementation starts
+> reporting incorrect information.
+> 
 
-It wasn't done in a very subtle way though ;)
+:( that is a problem...
+
+> > > And how does the NFS server know that the filesystem implements i_version? 
+> > > Will a zero-value of i_version have special significance, telling the
+> > > server to not send this attribute, perhaps?
+> > 
+> > Bruce raised up this question a few days back when he reviewed this
+> > patch, I think the solution is add a superblock flag for fs support
+> > inode versioning, probably at VFS layer?
+> 
+> That would work.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
