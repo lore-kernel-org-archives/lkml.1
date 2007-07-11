@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762887AbXGKKUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbXGKKZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762887AbXGKKUo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760690AbXGKKU0
+	id S1762189AbXGKKZX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759041AbXGKKZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:20:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49069 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760331AbXGKKUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:20:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation Redesign
-Date: Wed, 11 Jul 2007 12:27:51 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, Pavel Machek <pavel@ucw.cz>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200707081737.21932.a1426z@gawab.com> <46940F45.3090005@goop.org> <200707110711.26767.a1426z@gawab.com>
-In-Reply-To: <200707110711.26767.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 06:25:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48407 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758597AbXGKKZF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 06:25:05 -0400
+Date: Wed, 11 Jul 2007 11:24:49 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ram Pai <linuxram@us.ibm.com>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: [RFC PATCH 1/1] VFS: Augment /proc/mount with subroot and shared-subtree
+Message-ID: <20070711102449.GA22185@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Ram Pai <linuxram@us.ibm.com>,
+	Al Viro <viro@ftp.linux.org.uk>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+References: <1182442837.3342.13.camel@ram.us.ibm.com> <467AB5EE.3030909@zytor.com> <1182494654.2812.22.camel@ram.us.ibm.com> <467B7509.8010106@zytor.com> <1182497690.2812.54.camel@ram.us.ibm.com> <467B7F6F.4030007@zytor.com> <20070625214640.GC29058@ram.us.ibm.com> <1182808816.2816.7.camel@ram.us.ibm.com> <20070630094446.GB22889@infradead.org> <468652E2.4050901@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707111227.52609.rjw@sisk.pl>
+In-Reply-To: <468652E2.4050901@zytor.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 11 July 2007 06:11, Al Boldi wrote:
-> Jeremy Fitzhardinge wrote:
-> > Jeremy Maitin-Shepard wrote:
-> > >   In
-> > > addition, I recall that the Linux boot procedure on x86 and on some
-> > > other platforms necessarily uses certain low-address memory, like the
-> > > first 640K, which must be backed up regardless.
-> >
-> > Well, the traditional framebuffer/ISA space between 640k and 1M probably
-> > needs to be identity mapped, but I don't think there's anything in there
-> > which specifically needs to be save/restored (except framebuffer
-> > contents, maybe?).
-> >
-> > > For these reasons, it seems that it would be easiest to simply backup
-> > > the first e.g. 16 or 64 MB of memory, and not have to worry about
-> > > loading the kernel at a non-standard address and specifying a
-> > > complicated exact memmap.  Someone might prove me wrong, though.
-> >
-> > Yes, I suppose.  You're certain the old kernel's devices are completely
-> > quiescent at that point?
-> 
-> That's exactly the problem; trying to save a state from within the kernel 
-> would probably necessitate a freezer hack, which we are trying so dearly to 
-> avoid.
+On Sat, Jun 30, 2007 at 08:56:02AM -0400, H. Peter Anvin wrote:
+> Is that conjecture, or do you have evidence to that effect?  Most users 
+> of this file are using it via the glibc interfaces, and there probably 
+> aren't all that many users of it in the first place.
 
-Well, I don't think that avoiding the freezer whatever it takes would be a good
-idea.  There needs to be some balance. ;-)
+I have written parsers for personal projects that might not have been
+happy to deal with additional fields myself for example..
 
-> The only way the kexec approach may be successful, is by completely relying 
-> on the kexec'd hibernate-mode kernel to save state, otherwise we would be 
-> back to square one.  And if that required a special boot procedure for the 
-> kexec'd hibernate-mode kernel, then why not?
-
-Because such things are very difficult for many users.  My experience with
-the userland suspend shows that clearly.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
