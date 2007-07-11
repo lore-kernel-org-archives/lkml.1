@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765302AbXGKOu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765191AbXGKO6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765302AbXGKOu3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 10:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763057AbXGKOuS
+	id S1765191AbXGKO6p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 10:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762316AbXGKO6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 10:50:18 -0400
-Received: from ns1.coraid.com ([65.14.39.133]:26908 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759723AbXGKOuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 10:50:17 -0400
-Date: Wed, 11 Jul 2007 10:46:10 -0400
-From: "Ed L. Cashin" <ecashin@coraid.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Greg K-H <greg@kroah.com>
-Subject: Re: [PATCH 02/12] handle multiple network paths to AoE device
-Message-ID: <20070711144610.GE32346@coraid.com>
-References: <1d8423c28c48a6d26516cdc707dbcdf015a4e347.1182883861.git.ecashin@coraid.com> <60bd316bfa72fb225cefad39569999e583f4f72e.1182883861.git.ecashin@coraid.com> <20070702212949.5a1a1a31.akpm@linux-foundation.org>
+	Wed, 11 Jul 2007 10:58:36 -0400
+Received: from javad.com ([216.122.176.236]:2108 "EHLO javad.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759723AbXGKO6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 10:58:35 -0400
+X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 10:58:35 EDT
+From: Sergei Organov <s.organov@javad.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Gmail and flowed text
+References: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com>
+Date: Wed, 11 Jul 2007 18:51:16 +0400
+In-Reply-To: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com>
+	(Satyam Sharma's message of "Wed, 11 Jul 2007 19:06:23 +0530")
+Message-ID: <87r6nfouxn.fsf@javad.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070702212949.5a1a1a31.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: text/plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 09:29:49PM -0700, Andrew Morton wrote:
-> On Tue, 26 Jun 2007 14:50:10 -0400 "Ed L. Cashin" <ecashin@coraid.com> wrote:
-...
-> > +loop:
-> > +	skb = aoecmd_ata_id(d);
-> >  	spin_unlock_irqrestore(&d->lock, flags);
-> > +	if (!skb && !msleep_interruptible(200)) {
-> > +		spin_lock_irqsave(&d->lock, flags);
-> > +		goto loop;
-> > +	}
-> > +	aoenet_xmit(skb);
-> >  	aoecmd_cfg(major, minor);
-> > -
-> >  	return 0;
-> >  }
-> 
-> interruptible sleep?  Does this code work as intended when there's a signal
-> pending?  (Maybe that's what the interruptible sleep is for: don't know,
-> and am not inclined to work it out given the (low) level of comments in
-> here and the (lower) level of changelogging).
+"Satyam Sharma" <satyam.sharma@gmail.com> writes:
+[...]
+> And yet another patch falls victim to format=flowed ...
+>
+> I need some ideas here myself:
+>
+> I don't want to subscribe from my university mail account -- I like
+> to keep important messages on server, and the account has a
+> 100 MB or so limit that wouldn't survive a week of lkml traffic.
+>
+> Which leaves Gmail,
 
-Yes, if a signal is pending, then msleep_interruptible will not return
-0.  That means we will not loop but will call aoenet_xmit with a NULL
-skb, which is a noop.  So if the system is too low on memory or the
-aoe driver is too low on frames, then the user can hit control-C to
-interrupt the attempt to do a revalidate.
-
-I will add a comment to that effect in the resubmitted patch.
+You may also try free gmane service, <http://www.gmane.org>, that is
+mail-to-news gateway that has "gmane.linux.kernel" news group that is a
+mirror of lkml.
 
 -- 
-  Ed L Cashin <ecashin@coraid.com>
+Sergei.
