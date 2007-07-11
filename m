@@ -1,53 +1,2948 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765651AbXGKSsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764417AbXGKSv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765651AbXGKSsP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbXGKSsH
+	id S1764417AbXGKSv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757079AbXGKSvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:48:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49435 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756371AbXGKSsG (ORCPT
+	Wed, 11 Jul 2007 14:51:49 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58342 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756523AbXGKSvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:48:06 -0400
-Subject: Re: containers (was Re: -mm merge plans for 2.6.23)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: vatsa@linux.vnet.ibm.com, mingo@elte.hu, containers@lists.osdl.org,
-       menage@google.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070711100331.47ca379d.pj@sgi.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <20070710105240.GA20914@linux.vnet.ibm.com>
-	 <6599ad830707101134k29951c45h4af0807603f52b76@mail.gmail.com>
-	 <20070710115319.0bdaff34.akpm@linux-foundation.org>
-	 <20070711045516.GH2927@linux.vnet.ibm.com>
-	 <20070710222942.382fc9ba.akpm@linux-foundation.org>
-	 <20070711090423.GA6758@elte.hu> <20070711022352.71604404.pj@sgi.com>
-	 <20070711100323.GA23473@linux.vnet.ibm.com>
-	 <20070711101958.GA10095@elte.hu>
-	 <20070711113953.GB23473@linux.vnet.ibm.com>
-	 <20070711044244.c0916fe5.pj@sgi.com> <1184155593.20032.29.camel@twins>
-	 <20070711100331.47ca379d.pj@sgi.com>
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 20:47:48 +0200
-Message-Id: <1184179668.5281.35.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 14:51:45 -0400
+Date: Wed, 11 Jul 2007 20:52:16 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove the documentation for the legacy CDROM drivers
+Message-ID: <20070711185216.GN3492@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 10:03 -0700, Paul Jackson wrote:
-> Peter wrote:
-> > I'd very much like to have it, but that is just me.
-> 
-> Why? [linear combinations of uid, container, pid, pgrp weighting]
+This patch removes the documentation for the removed legacy CDROM drivers.
 
-Good question, and I really have no other answer than that it seems
-usefull and not impossible (or even hard) to implement :-/
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-I'm not even that interested in using it, it just seems like a nice
-idea.
+---
 
+ Documentation/cdrom/00-INDEX        |   22 
+ Documentation/cdrom/aztcd           |  822 ---------------------
+ Documentation/cdrom/cdu31a          |  196 -----
+ Documentation/cdrom/cm206           |  185 ----
+ Documentation/cdrom/gscd            |   60 -
+ Documentation/cdrom/isp16           |  100 --
+ Documentation/cdrom/mcdx            |   29 
+ Documentation/cdrom/optcd           |   57 -
+ Documentation/cdrom/sbpcd           | 1061 ----------------------------
+ Documentation/cdrom/sjcd            |   60 -
+ Documentation/cdrom/sonycd535       |  122 ---
+ Documentation/kernel-parameters.txt |   37 
+ MAINTAINERS                         |   12 
+ 13 files changed, 2763 deletions(-)
+
+--- linux-2.6.22-rc6-mm1/Documentation/kernel-parameters.txt.old	2007-07-11 20:29:15.000000000 +0200
++++ linux-2.6.22-rc6-mm1/Documentation/kernel-parameters.txt	2007-07-11 20:30:31.000000000 +0200
+@@ -34,7 +34,6 @@
+ 	APIC	APIC support is enabled.
+ 	APM	Advanced Power Management support is enabled.
+ 	AX25	Appropriate AX.25 support is enabled.
+-	CD	Appropriate CD support is enabled.
+ 	DRM	Direct Rendering Management support is enabled.
+ 	EDD	BIOS Enhanced Disk Drive Services (EDD) is enabled
+ 	EFI	EFI Partitioning (GPT) is enabled
+@@ -319,9 +318,6 @@
+ 
+ 	autotest	[IA64]
+ 
+-	aztcd=		[HW,CD] Aztech CD268 CDROM driver
+-			Format: <io>,0x79 (?)
+-
+ 	baycom_epp=	[HW,AX25]
+ 			Format: <io>,<mode>
+ 
+@@ -364,10 +360,6 @@
+ 			possible to determine what the correct size should be.
+ 			This option provides an override for these situations.
+ 
+-	cdu31a=		[HW,CD]
+-			Format: <io>,<irq>[,PAS]
+-			See header of drivers/cdrom/cdu31a.c.
+-
+ 	chandev=	[HW,NET] Generic channel device initialisation
+ 
+ 	checkreqprot	[SELINUX] Set initial checkreqprot flag value.
+@@ -421,9 +413,6 @@
+ 	hpet=		[X86-32,HPET] option to disable HPET and use PIT.
+ 			Format: disable
+ 
+-	cm206=		[HW,CD]
+-			Format: { auto | [<io>,][<irq>] }
+-
+ 	com20020=	[HW,NET] ARCnet - COM20020 chipset
+ 			Format:
+ 			<io>[,<irq>[,<nodeID>[,<backplane>[,<ckp>[,<timeout>]]]]]
+@@ -666,9 +655,6 @@
+ 	gpt		[EFI] Forces disk with valid GPT signature but
+ 			invalid Protective MBR to be treated as GPT.
+ 
+-	gscd=		[HW,CD]
+-			Format: <io>
+-
+ 	gvp11=		[HW,SCSI]
+ 
+ 	hashdist=	[KNL,NUMA] Large hashes allocated during boot
+@@ -849,9 +835,6 @@
+ 			tasks in the system -- can cause problems and
+ 			suboptimal load balancer performance.
+ 
+-	isp16=		[HW,CD]
+-			Format: <io>,<irq>,<dma>,<setup>
+-
+ 	iucv=		[HW,NET]
+ 
+ 	js=		[HW,JOY] Analog joystick
+@@ -1006,11 +989,6 @@
+ 
+ 	mcatest=	[IA-64]
+ 
+-	mcd=		[HW,CD]
+-			Format: <port>,<irq>,<mitsumi_bug_93_wait>
+-
+-	mcdx=		[HW,CD]
+-
+ 	mce		[IA-32] Machine Check Exception
+ 
+ 	md=		[HW] RAID subsystems devices and level
+@@ -1243,9 +1221,6 @@
+ 	oprofile.timer=	[HW]
+ 			Use timer interrupt instead of performance counters
+ 
+-	optcd=		[HW,CD]
+-			Format: <io>
+-
+ 	osst=		[HW,SCSI] SCSI Tape Driver
+ 			Format: <buffer_size>,<write_threshold>
+ 			See also Documentation/scsi/st.txt.
+@@ -1561,11 +1536,6 @@
+ 
+ 	sbni=		[NET] Granch SBNI12 leased line adapter
+ 
+-	sbpcd=		[HW,CD] Soundblaster CD adapter
+-			Format: <io>,<type>
+-			See a comment before function sbpcd_setup() in
+-			drivers/cdrom/sbpcd.c.
+-
+ 	sc1200wdt=	[HW,WDT] SC1200 WDT (watchdog) driver
+ 			Format: <io>[,<timeout>[,<isapnp>]]
+ 
+@@ -1618,10 +1588,6 @@
+ 	simeth=		[IA-64]
+ 	simscsi=
+ 
+-	sjcd=		[HW,CD]
+-			Format: <io>,<irq>,<dma>
+-			See header of drivers/cdrom/sjcd.c.
+-
+ 	slram=		[HW,MTD]
+ 
+ 	slub_debug[=options[,slabs]]	[MM, SLUB]
+@@ -1798,9 +1764,6 @@
+ 
+ 	snd-ymfpci=	[HW,ALSA]
+ 
+-	sonycd535=	[HW,CD]
+-			Format: <io>[,<irq>]
+-
+ 	sonypi.*=	[HW] Sony Programmable I/O Control Device driver
+ 			See Documentation/sonypi.txt
+ 
+--- linux-2.6.22-rc6-mm1/MAINTAINERS.old	2007-07-11 19:46:36.000000000 +0200
++++ linux-2.6.22-rc6-mm1/MAINTAINERS	2007-07-11 19:47:38.000000000 +0200
+@@ -2657,12 +2657,6 @@
+ W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
+ S:	Maintained
+ 
+-NON-IDE/NON-SCSI CDROM DRIVERS [GENERAL] (come on, crew - mark your responsibility)
+-P:	Eberhard Moenkeberg
+-M:	emoenke@gwdg.de
+-L:	linux-kernel@vger.kernel.org
+-S:	Maintained
+-
+ NTFS FILESYSTEM
+ P:	Anton Altaparmakov
+ M:	aia21@cantab.net
+@@ -3127,12 +3121,6 @@
+ W:	http://www.mihu.de/linux/saa7146
+ S:	Maintained
+ 
+-SBPCD CDROM DRIVER
+-P:	Eberhard Moenkeberg
+-M:	emoenke@gwdg.de
+-L:	linux-kernel@vger.kernel.org
+-S:	Maintained
+-
+ SC1200 WDT DRIVER
+ P:	Zwane Mwaikambo
+ M:	zwane@arm.linux.org.uk
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/00-INDEX.old	2007-07-11 19:45:12.000000000 +0200
++++ linux-2.6.22-rc6-mm1/Documentation/cdrom/00-INDEX	2007-07-11 19:45:28.000000000 +0200
+@@ -2,32 +2,10 @@
+ 	- this file (info on CD-ROMs and Linux)
+ Makefile
+ 	- only used to generate TeX output from the documentation.
+-aztcd
+-	- info on Aztech/Orchid/Okano/Wearnes/Conrad/CyCDROM driver.
+ cdrom-standard.tex
+ 	- LaTeX document on standardizing the CD-ROM programming interface.
+-cdu31a
+-	- info on the Sony CDU31A/CDU33A CD-ROM driver.
+-cm206
+-	- info on the Philips/LMS cm206/cm260 CD-ROM driver.
+-gscd
+-	- info on the Goldstar R420 CD-ROM driver.
+ ide-cd
+ 	- info on setting up and using ATAPI (aka IDE) CD-ROMs.
+-isp16
+-	- info on the CD-ROM interface on ISP16, MAD16 or Mozart sound card.
+-mcd
+-	- info on limitations of standard Mitsumi CD-ROM driver.
+-mcdx
+-	- info on improved Mitsumi CD-ROM driver.
+-optcd
+-	- info on the Optics Storage 8000 AT CD-ROM driver
+ packet-writing.txt
+ 	- Info on the CDRW packet writing module
+-sbpcd
+-	- info on the SoundBlaster/Panasonic CD-ROM interface driver.
+-sjcd
+-	- info on the SANYO CDR-H94A CD-ROM interface driver.
+-sonycd535
+-	- info on the Sony CDU-535 (and 531) CD-ROM driver.
+ 
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/aztcd	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,822 +0,0 @@
+-$Id: README.aztcd,v 2.60 1997/11/29 09:51:25 root Exp root $
+-          Readme-File Documentation/cdrom/aztcd
+-           			for 
+-	     AZTECH CD-ROM CDA268-01A, ORCHID CD-3110,
+-      OKANO/WEARNES CDD110, CONRAD TXC, CyCDROM CR520, CR540
+-                           CD-ROM Drives 
+-                       Version 2.6 and newer
+-                   (for other drives see 6.-8.)
+-
+-NOTE: THIS DRIVER WILL WORK WITH THE CD-ROM DRIVES LISTED, WHICH HAVE
+-      A PROPRIETARY INTERFACE (implemented on a sound card or on an
+-      ISA-AT-bus card). 
+-      IT WILL DEFINITELY NOT WORK WITH CD-ROM DRIVES WITH *IDE*-INTERFACE,
+-      such as the Aztech CDA269-031SE !!! (The only known exceptions are
+-      'faked' IDE drives like the CyCDROM CR520ie which work with aztcd
+-      under certain conditions, see 7.). IF YOU'RE USING A CD-ROM DRIVE
+-      WITH IDE-INTERFACE, SOMETIMES ALSO CALLED ATAPI-COMPATIBLE, PLEASE 
+-      USE THE ide-cd.c DRIVER, WRITTEN BY MARK LORD AND SCOTT SNYDER !
+-      THE STANDARD-KERNEL 1.2.x NOW ALSO SUPPORTS IDE-CDROM-DRIVES, SEE THE
+-      HARDDISK (!) SECTION OF make config, WHEN COMPILING A NEW KERNEL!!!
+-----------------------------------------------------------------------------
+-
+-Contents of this file:
+-                         1.  NOTE
+-                         2.  INSTALLATION
+-                         3.  CONFIGURING YOUR KERNEL
+-                         4.  RECOMPILING YOUR KERNEL
+-                         4.1   AZTCD AS A RUN-TIME LOADABLE MODULE
+-                         4.2   CDROM CONNECTED TO A SOUNDCARD
+-                         5.  KNOWN PROBLEMS, FUTURE DEVELOPMENTS
+-			 5.1   MULTISESSION SUPPORT
+-			 5.2   STATUS RECOGNITION
+-			 5.3   DOSEMU's CDROM SUPPORT
+-                         6.  BUG REPORTS
+-                         7.  OTHER DRIVES
+-                         8.  IF YOU DON'T SUCCEED ... DEBUGGING  
+-                         9.  TECHNICAL HISTORY OF THE DRIVER
+-                        10.  ACKNOWLEDGMENTS
+-                        11.  PROGRAMMING ADD ONS: CDPLAY.C
+-                        APPENDIX: Source code of cdplay.c
+-----------------------------------------------------------------------------
+-
+-1. NOTE 
+-This software has been successfully in alpha and beta test and is part of
+-the standard kernel since kernel 1.1.8x since December 1994. It works with
+-AZTECH CDA268-01A, ORCHID CDS-3110, ORCHID/WEARNES CDD110 and CONRAD TXC 
+-(Nr.99 31 23 -series 04) and has proven to be stable with kernel 
+-versions 1.0.9 and newer. But with any software there still may be bugs in it. 
+-So if you encounter problems, you are invited to help us improve this software. 
+-Please send me a detailed bug report (see chapter BUG REPORTS). You are also 
+-invited in helping us to increase the number of drives, which are supported.
+-
+-Please read the README-files carefully and always keep a backup copy of your 
+-old kernel, in order to reboot if something goes wrong!
+-
+-2. INSTALLATION
+-The driver consists of a header file 'aztcd.h', which normally should reside 
+-in /usr/src/linux/drivers/cdrom and the source code 'aztcd.c', which normally 
+-resides in the same place. It uses /dev/aztcd (/dev/aztcd0 in some distri-
+-butions), which must be a valid block device with major number 29 and reside 
+-in directory /dev. To mount a CD-ROM, your kernel needs to have the ISO9660-
+-filesystem support included.
+-
+-PLEASE NOTE: aztcd.c has been developed in parallel to the linux kernel,
+-which had and is having many major and minor changes which are not backward
+-compatible. Quite definitely aztcd.c version 1.80 and newer will NOT work
+-in kernels older than 1.3.33. So please always use the most recent version
+-of aztcd.c with the appropriate linux-kernel.
+-
+-3.  CONFIGURING YOUR KERNEL
+-If your kernel is already configured for using the AZTECH driver you will
+-see the following message while Linux boots:
+-    Aztech CD-ROM Init: DriverVersion=<version number> BaseAddress=<baseaddress>
+-    Aztech CD-ROM Init: FirmwareVersion=<firmware version id of your I/O-card>>>
+-    Aztech CD-ROM Init: <drive type> detected
+-    Aztech CD-ROM Init: End
+-If the message looks different and you are sure to have a supported drive,
+-it may have a different base address. The Aztech driver does look for the 
+-CD-ROM drive at the base address specified in aztcd.h at compile time. This 
+-address can be overwritten by boot parameter aztcd=....You should reboot and 
+-start Linux with boot parameter aztcd=<base address>, e.g. aztcd=0x320. If 
+-you do not know the base address, start your PC with DOS and look at the boot 
+-message of your CD-ROM's DOS driver. If that still does not help, use boot
+-parameter aztcd=<base address>,0x79 , this tells aztcd to try a little harder.
+-aztcd may be configured to use autoprobing the base address by recompiling
+-it (see chapter 4.).
+-
+-If the message looks correct, as user 'root' you should be able to mount the 
+-drive by
+-          mount -t iso9660 -r /dev/aztcd0 /mnt
+-and use it as any other filesystem. (If this does not work, check if
+-/dev/aztcd0 and /mnt do exist and create them, if necessary by doing
+-      mknod /dev/aztcd0 b 29 0
+-      mkdir /mnt                       
+-
+-If you still get a different message while Linux boots or when you get the 
+-message, that the ISO9660-filesystem is not supported by your kernel, when
+-you try to mount the CD-ROM drive, you have to recompile your kernel.
+-
+-If you do *not* have an Aztech/Orchid/Okano/Wearnes/TXC drive and want to 
+-bypass drive detection during Linux boot up, start with boot parameter aztcd=0.
+-
+-Most distributions nowadays do contain a boot disk image containing aztcd.
+-Please note, that this driver will not work with IDE/ATAPI drives! With these 
+-you must use ide-cd.c instead.
+-
+-4. RECOMPILING YOUR KERNEL
+-If your kernel is not yet configured for the AZTECH driver and the ISO9660-
+-filesystem, you have to recompile your kernel: 
+-
+-- Edit aztcd.h to set the I/O-address to your I/O-Base address (AZT_BASE_ADDR), 
+-  the driver does not use interrupts or DMA, so if you are using an AZTECH
+-  CD268, an ORCHID CD-3110 or ORCHID/WEARNES CDD110 that's the only item you 
+-  have to set up. If you have a soundcard, read chapter 4.2.
+-  Users of other drives should read chapter OTHER DRIVES of this file.
+-  You also can configure that address by kernel boot parameter aztcd=... 
+-- aztcd may be configured to use autoprobing the base address by setting
+-  AZT_BASE_ADDR to '-1'. In that case aztcd probes the addresses listed 
+-  under AZT_BASE_AUTO. But please remember, that autoprobing always may 
+-  incorrectly influence other hardware components too!
+-- There are some other points, which may be configured, e.g. auto-eject the
+-  CD when unmounting a drive, tray locking etc., see aztcd.h for details.
+-- If you're using a linux kernel version prior to 2.1.0, in aztcd.h
+-  uncomment the line '#define AZT_KERNEL_PRIOR_2_1'
+-- Build a new kernel, configure it for 'Aztech/Orchid/Okano/Wearnes support' 
+-  (if you want aztcd to be part of the kernel). Do not configure it for
+-  'Aztech... support', if you want to use aztcd as a run time loadable module. 
+-  But in any case you must have the ISO9660-filesystem included in your
+-  kernel.
+-- Activate the new kernel, normally this is done by running LILO (don't for-
+-  get to configure it before and to keep a copy of your old kernel in case
+-  something goes wrong!).
+-- Reboot
+-- If you've included aztcd in your kernel, you now should see during boot 
+-  some messages like
+-    Aztech CD-ROM Init: DriverVersion=<version number> BaseAddress=<baseaddress>
+-    Aztech CD-ROM Init: FirmwareVersion=<firmware version id of your I/O-card>
+-    Aztech CD-ROM Init: <drive type> detected
+-    Aztech CD-ROM Init: End
+-- If you have not included aztcd in your kernel, but want to load aztcd as a 
+-  run time loadable module see 4.1. 
+-- If the message looks correct, as user 'root' you should be able to mount 
+-  the drive by
+-          mount -t iso9660 -r /dev/aztcd0 /mnt
+-  and use it as any other filesystem. (If this does not work, check if
+-  /dev/aztcd0 and /mnt do exist and create them, if necessary by doing
+-      mknod /dev/aztcd0 b 29 0
+-      mkdir /mnt                       
+-- If this still does not help, see chapters OTHER DRIVES and DEBUGGING.
+-
+-4.1 AZTCD AS A RUN-TIME LOADABLE MODULE
+-If you do not need aztcd permanently, you can also load and remove the driver
+-during runtime via insmod and rmmod. To build aztcd as a loadable module you 
+-must configure your kernel for AZTECH module support (answer 'm' when con-
+-figuring the kernel). Anyhow, you may run into problems, if the version of 
+-your boot kernel is not the same than the source kernel version, from which 
+-you create the modules. So rebuild your kernel, if necessary. 
+-
+-Now edit the base address of your AZTECH interface card in
+-/usr/src/linux/drivers/cdrom/aztcd.h to the appropriate value. 
+-aztcd may be configured to use autoprobing the base address by setting
+-AZT_BASE_ADDR to '-1'. In that case aztcd probes the addresses listed 
+-under AZT_BASE_AUTO. But please remember, that autoprobing always may 
+-incorrectly influence other hardware components too!
+-There are also some special features which may be configured, e.g. 
+-auto-eject a CD when unmounting the drive etc; see aztcd.h for details. 
+-Then change to /usr/src/linux and do a 
+-                    make modules  
+-	            make modules_install
+-After that you can run-time load the driver via
+-                    insmod /lib/modules/X.X.X/misc/aztcd.o
+-and remove it via   rmmod  aztcd.
+-If you did not set the correct base address in aztcd.h, you can also supply the
+-base address when loading the driver via
+-                    insmod /lib/modules/X.X.X/misc/aztcd.o aztcd=<base address>
+-Again specifying aztcd=-1 will cause autoprobing.
+-If you do not have the iso9660-filesystem in your boot kernel, you also have
+-to load it before you can mount the CDROM:
+-                    insmod /lib/modules/X.X.X/fs/isofs.o
+-The mount procedure works as described in 4. above.
+-(In all commands 'X.X.X' is the current linux kernel version number)
+-
+-4.2 CDROM CONNECTED TO A SOUNDCARD
+-Most soundcards do have a bus interface to the CDROM-drive. In many cases
+-this soundcard needs to be configured, before the CDROM can be used. This
+-configuration procedure consists of writing some kind of initialization
+-data to the soundcard registers. The AZTECH-CDROM driver in the moment does
+-only support one type of soundcard (SoundWave32). Users of other soundcards
+-should try to boot DOS first and let their DOS drivers initialize the
+-soundcard and CDROM, then warm boot (or use loadlin) their PC to start
+-Linux.
+-Support for the CDROM-interface of SoundWave32-soundcards is directly
+-implemented in the AZTECH driver. Please edit linux/drivers/cdrom/aztdc.h,
+-uncomment line '#define AZT_SW32' and set the appropriate value for
+-AZT_BASE_ADDR and AZT_SW32_BASE_ADDR. This support was tested with an Orchid
+-CDS-3110 connected to a SoundWave32.
+-If you want your soundcard to be supported, find out, how it needs to be
+-configured and mail me (see 6.) the appropriate information. 
+-
+-5. KNOWN PROBLEMS, FUTURE DEVELOPMENTS
+-5.1 MULTISESSION SUPPORT
+-Multisession support for CD's still is a myth. I implemented and tested a basic
+-support for multisession and XA CDs, but I still have not enough CDs and appli-
+-cations to test it rigorously. So if you'd like to help me, please contact me
+-(Email address see below). As of version 1.4 and newer you can enable the 
+-multisession support in aztcd.h by setting AZT_MULTISESSION to 1. Doing so 
+-will cause the ISO9660-filesystem to deal with multisession CDs, ie. redirect 
+-requests to the Table of Contents (TOC) information from the last session, 
+-which contains the info of all previous sessions etc.. If you do set 
+-AZT_MULTISESSION to 0, you can use multisession CDs anyway. In that case the 
+-drive's firmware will do automatic redirection. For the ISO9660-filesystem any 
+-multisession CD  will then look like a 'normal' single session CD. But never-
+-theless the data of all sessions are viewable and accessible. So with practical-
+-ly all real world applications you won't notice the difference. But as future
+-applications may make use of advanced multisession features, I've started to
+-implement the interface for the ISO9660 multisession interface via ioctl
+-CDROMMULTISESSION.
+-
+-5.2 STATUS RECOGNITION
+-The drive status recognition does not work correctly in all cases. Changing
+-a disk or having the door open, when a drive is already mounted, is detected 
+-by the Aztech driver itself, but nevertheless causes multiple read attempts
+-by the different layers of the ISO9660-filesystem driver, which finally timeout,
+-so you have to wait quite a little... But isn't it bad style to change a disk 
+-in a mounted drive, anyhow ?!
+-
+-The driver uses busy wait in most cases for the drive handshake (macros
+-STEN_LOW and DTEN_LOW). I tested with a 486/DX2 at 66MHz and a Pentium at
+-60MHz and 90MHz. Whenever you use a much faster machine you are likely to get 
+-timeout messages. In that case edit aztcd.h and increase the timeout value 
+-AZT_TIMEOUT. 
+-
+-For some 'slow' drive commands I implemented waiting with a timer waitqueue
+-(macro STEN_LOW_WAIT). If you get this timeout message, you may also edit
+-aztcd.h and increase the timeout value AZT_STATUS_DELAY. The waitqueue has
+-shown to be a little critical. If you get kernel panic messages, edit aztcd.c
+-and substitute STEN_LOW_WAIT by STEN_LOW. Busy waiting with STEN_LOW is more
+-stable, but also causes CPU overhead.
+-
+-5.3 DOSEMU's CD-ROM SUPPORT
+-With release 1.20 aztcd was modified to allow access to CD-ROMS when running
+-under dosemu-0.60.0 aztcd-versions before 1.20 are most likely to crash
+-Linux, when a CD-ROM is accessed under dosemu. This problem has partly been
+-fixed, but still when accessing a directory for the first time the system
+-might hang for some 30sec. So be patient, when using dosemu's CD-ROM support
+-in combination with aztcd :-) ! 
+-This problem has now (July 1995) been fixed by a modification to dosemu's
+-CD-ROM driver. The new version came with dosemu-0.60.2, see dosemu's
+-README.CDROM.
+-
+-6. BUG REPORTS
+-Please send detailed bug reports and bug fixes via EMail to
+-
+-        Werner.Zimmermann@fht-esslingen.de
+-
+-Please include a description of your CD-ROM drive type and interface card, 
+-the exact firmware message during Linux bootup, the version number of the 
+-AZTECH-CDROM-driver and the Linux kernel version. Also a description of your 
+-system's other hardware could be of interest, especially microprocessor type, 
+-clock frequency, other interface cards such as soundcards, ethernet adapter, 
+-game cards etc..
+-
+-I will try to collect the reports and make the necessary modifications from 
+-time to time. I may also come back to you directly with some bug fixes and 
+-ask you to do further testing and debugging.
+-
+-Editors of CD-ROMs are invited to send a 'cooperation' copy of their
+-CD-ROMs to the volunteers, who provided the CD-ROM support for Linux. My
+-snail mail address for such 'stuff' is
+-           Prof. Dr. W. Zimmermann
+-           Fachhochschule fuer Technik Esslingen
+-           Fachbereich IT
+-           Flandernstrasse 101
+-           D-73732 Esslingen
+-           Germany
+-
+-
+-7. OTHER DRIVES
+-The following drives ORCHID CDS3110, OKANO CDD110, WEARNES CDD110 and Conrad
+-TXC Nr. 993123-series 04 nearly look the same as AZTECH CDA268-01A, especially 
+-they seem to use the same command codes. So it was quite simple to make the 
+-AZTECH driver work with these drives. 
+-
+-Unfortunately I do not have any of these drives available, so I couldn't test
+-it myself. In some installations, it seems necessary to initialize the drive 
+-with the DOS driver before (especially if combined with a sound card) and then 
+-do a warm boot (CTRL-ALT-RESET) or start Linux from DOS, e.g. with 'loadlin'.
+-
+-If you do not succeed, read chapter DEBUGGING. Thanks in advance!
+-
+-Sorry for the inconvenience, but it is difficult to develop for hardware, 
+-which you don't have available for testing. So if you like, please help us.
+-
+-If you do have a CyCDROM CR520ie thanks to Hilmar Berger's help your chances
+-are good, that it will work with aztcd. The CR520ie is sold as an IDE-drive
+-and really is connected to the IDE interface (primary at 0x1F0 or secondary
+-at 0x170, configured as slave, not as master). Nevertheless it is not ATAPI
+-compatible but still uses Aztech's command codes.
+-
+-
+-8. DEBUGGING : IF YOU DON'T SUCCEED, TRY THE FOLLOWING
+--reread the complete README file
+--make sure, that your drive is hardware configured for 
+-    transfer mode: polled
+-    IRQ:           not used
+-    DMA:           not used
+-    Base Address:  something like 300, 320 ...
+- You can check this, when you start the DOS driver, which came with your
+- drive. By appropriately configuring the drive and the DOS driver you can
+- check, whether your drive does operate in this mode correctly under DOS. If
+- it does not operate under DOS, it won't under Linux.
+- If your drive's base address is something like 0x170 or 0x1F0 (and it is
+- not a CyCDROM CR520ie or CR 940ie) you most likely are having an IDE/ATAPI-
+- compatible drive, which is not supported by aztcd.c, use ide-cd.c instead.
+- Make sure the Base Address is configured correctly in aztcd.h, also make
+- sure, that /dev/aztcd0 exists with the correct major number (compare it with
+- the entry in file /usr/include/linux/major.h for the Aztech drive). 
+--insert a CD-ROM and close the tray
+--cold boot your PC (i.e. via the power on switch or the reset button)
+--if you start Linux via DOS, e.g. using loadlin, make sure, that the DOS
+- driver for the CD-ROM drive is not loaded (comment out the calling lines 
+- in DOS' config.sys!)
+--look for the aztcd: init message during Linux init and note them exactly
+--log in as root and do a mount -t iso9660 /dev/aztcd0 /mnt
+--if you don't succeed in the first time, try several times. Try also to open
+- and close the tray, then mount again. Please note carefully all commands
+- you typed in and the aztcd-messages, which you get.
+--if you get an 'Aztech CD-ROM init: aborted' message, read the remarks about
+- the version string below.
+-
+-If this does not help, do the same with the following differences 
+--start DOS before; make now sure, that the DOS driver for the CD-ROM is 
+- loaded under DOS (i.e. uncomment it again in config.sys)
+--warm boot your PC (i.e. via CTRL-ALT-DEL)
+- if you have it, you can also start via loadlin (try both).
+- ...
+- Again note all commands and the aztcd-messages.
+-
+-If you see STEN_LOW or STEN_LOW_WAIT error messages, increase the timeout
+-values.
+-
+-If this still does not help, 
+--look in aztcd.c for the lines  #if 0
+-                                #define AZT_TEST1
+-                                ...
+-                                #endif
+- and substitute '#if 0' by '#if 1'.
+--recompile your kernel and repeat the above two procedures. You will now get 
+- a bundle of debugging messages from the driver. Again note your commands
+- and the appropriate messages. If you have syslogd running, these messages
+- may also be found in syslogd's kernel log file. Nevertheless in some
+- installations syslogd does not yet run, when init() is called, thus look for
+- the aztcd-messages during init, before the login-prompt appears.
+- Then look in aztcd.c, to find out, what happened. The normal calling sequence 
+- is: aztcd_init() during Linux bootup procedure init()
+- after doing a 'mount -t iso9660 /dev/aztcd0 /mnt' the normal calling sequence is
+-     aztcd_open()    -> Status 2c after cold reboot with CDROM or audio CD inserted
+-                     -> Status 8  after warm reboot with CDROM inserted          
+-                     -> Status 2e after cold reboot with no disk, closed tray
+-                     -> Status 6e after cold reboot, mount with door open
+-     aztUpdateToc()
+-     aztGetDiskInfo()
+-     aztGetQChannelInfo()   repeated several times
+-     aztGetToc()
+-     aztGetQChannelInfo()   repeated several times
+-     a list of track information
+-     do_aztcd_request()  }  
+-     azt_transfer()    } repeated several times
+-     azt_poll          }
+- Check, if there is a difference in the calling sequence or the status flags!
+- 
+- There are a lot of other messages, eg. the ACMD-command code (defined in
+- aztcd.h), status info from the getAztStatus-command and the state sequence of
+- the finite state machine in azt_poll(). The most important are the status
+- messages, look how they are defined and try to understand, if they make
+- sense in the context where they appear. With a CD-ROM inserted the status 
+- should always be 8, except in aztcd_open(). Try to open the tray, insert an
+- audio disk, insert no disk or reinsert the CD-ROM and check, if the status
+- bits change accordingly. The status bits are the most likely point, where 
+- the drive manufacturers may implement changes.
+-            
+-If you still don't succeed, a good point to start is to look in aztcd.c in 
+-function aztcd_init, where the drive should be detected during init. Do the
+-following:
+--reboot the system with boot parameter 'aztcd=<your base address>,0x79'. With
+- parameter 0x79 most of the drive version detection is bypassed. After that 
+- you should see the complete version string including leading and trailing 
+- blanks during init. 
+- Now adapt the statement
+-      if ((result[1]=='A')&&(result[2]=='Z' ...)
+- in aztcd_init() to exactly match the first 3 or 4 letters you have seen.
+--Another point is the 'smart' card detection feature in aztcd_init(). Normally
+- the CD-ROM drive is ready, when aztcd_init is trying to read the version
+- string and a time consuming ACMD_SOFT_RESET command can be avoided. This is
+- detected by looking, if AFL_OP_OK can be read correctly. If the CD-ROM drive 
+- hangs in some unknown state, e.g. because of an error before a warm start or 
+- because you first operated under DOS, even the version string may be correct, 
+- but the following commands will not. Then change the code in such a way, 
+- that the ACMD_SOFT_RESET is issued in any case, by substituting the
+- if-statement 'if ( ...=AFL_OP_OK)' by 'if (1)'.
+-
+-If you succeed, please mail me the exact version string of your drive and
+-the code modifications, you have made together with a short explanation.
+-If you don't succeed, you may mail me the output of the debugging messages.
+-But remember, they are only useful, if they are exact and complete and you
+-describe in detail your hardware setup and what you did (cold/warm reboot,
+-with/without DOS, DOS-driver started/not started, which Linux-commands etc.)
+-
+-
+-9. TECHNICAL HISTORY OF THE DRIVER
+-The AZTECH-Driver is a rework of the Mitsumi-Driver. Four major items had to
+-be reworked:
+-
+-a) The Mitsumi drive does issue complete status information acknowledging
+-each command, the Aztech drive does only signal that the command was
+-processed. So whenever the complete status information is needed, an extra
+-ACMD_GET_STATUS command is issued. The handshake procedure for the drive
+-can be found in the functions aztSendCmd(), sendAztCmd() and getAztStatus().
+-
+-b) The Aztech Drive does not have a ACMD_GET_DISK_INFO command, so the
+-necessary info about the number of tracks (firstTrack, lastTrack), disk
+-length etc. has to be read from the TOC in the lead in track (see function
+-aztGetDiskInfo()).
+-
+-c) Whenever data is read from the drive, the Mitsumi drive is started with a
+-command to read an indefinite (0xffffff) number of sectors. When the appropriate 
+-number of sectors is read, the drive is stopped by a ACDM_STOP command. This
+-does not work with the Aztech drive. I did not find a way to stop it. The
+-stop and pause commands do only work in AUDIO mode but not in DATA mode.
+-Therefore I had to modify the 'finite state machine' in function azt_poll to
+-only read a certain number of sectors and then start a new read on demand. As I 
+-have not completely understood, how the buffer/caching scheme of the Mitsumi 
+-driver was implemented, I am not sure, if I have covered all cases correctly, 
+-whenever you get timeout messages, the bug is most likely to be in that
+-function azt_poll() around switch(cmd) .... case ACD_S_DATA. 
+-
+-d) I did not get information about changing drive mode. So I doubt, that the
+-code around function azt_poll() case AZT_S_MODE does work. In my test I have
+-not been able to switch to reading in raw mode. For reading raw mode, Aztech
+-uses a different command than for cooked mode, which I only have implemen-
+-ted in the ioctl-section but not in the section which is used by the ISO9660. 
+-
+-The driver was developed on an AST PC with Intel 486/DX2, 8MB RAM, 340MB IDE 
+-hard disk and on an AST PC with Intel Pentium 60MHz, 16MB RAM, 520MB IDE 
+-running Linux kernel version 1.0.9 from the LST 1.8 Distribution. The kernel 
+-was compiled with gcc.2.5.8. My CD-ROM drive is an Aztech CDA268-01A. My
+-drive says, that it has Firmware Version AZT26801A1.3. It came with an ISA-bus
+-interface card and works with polled I/O without DMA and without interrupts.
+-The code for all other drives was 'remote' tested and debugged by a number of 
+-volunteers on the Internet.
+-
+-Points, where I feel that possible problems might be and all points where I 
+-did not completely understand the drive's behaviour or trust my own code are 
+-marked with /*???*/ in the source code. There are also some parts in the 
+-Mitsumi driver, where I did not completely understand their code.
+-
+-
+-10. ACKNOWLEDGMENTS
+-Without the help of P.Bush, Aztech, who delivered technical information
+-about the Aztech Drive and without the help of E.Moenkeberg, GWDG, who did a
+-great job in analyzing the command structure of various CD-ROM drives, this
+-work would not have been possible. E.Moenkeberg was also a great help in 
+-making the software 'kernel ready' and in answering many of the CDROM-related 
+-questions in the newsgroups. He really is *the* Linux CD-ROM guru. Thanks 
+-also to all the guys on the Internet, who collected valuable technical 
+-information about CDROMs. 
+-
+-Joe Nardone (joe@access.digex.net) was a patient tester even for my first
+-trial, which was more than slow, and made suggestions for code improvement.
+-Especially the 'finite state machine' azt_poll() was rewritten by Joe to get
+-clean C code and avoid the ugly 'gotos', which I copied from mcd.c.
+-
+-Robby Schirmer (schirmer@fmi.uni-passau.de) tested the audio stuff (ioctls) 
+-and suggested a lot of patches for them.
+-
+-Joseph Piskor and Peter Nugent were the first users with the ORCHID CD3110
+-and also were very patient with the problems which occurred.
+-
+-Reinhard Max delivered the information for the CDROM-interface of the
+-SoundWave32 soundcards.
+-
+-Jochen Kunz and Olaf Kaluza delivered the information for supporting Conrad's 
+-TXC drive.
+-
+-Hilmar Berger delivered the patches for supporting CyCDROM CR520ie.
+-
+-Anybody, who is interested in these items should have a look at 'ftp.gwdg.de',
+-directory 'pub/linux/cdrom' and at 'ftp.cdrom.com', directory 'pub/cdrom'.
+-
+-11. PROGRAMMING ADD ONs: cdplay.c
+-You can use the ioctl-functions included in aztcd.c in your own programs. As
+-an example on how to do this, you will find a tiny CD Player for audio CDs 
+-named 'cdplay.c'. It allows you to play audio CDs. You can play a specified 
+-track, pause and resume or skip tracks forward and backwards. If you quit the 
+-program without stopping the  drive, playing is continued. You can also 
+-(mis)use cdplay to read and hexdump data disks. You can find the code in the 
+-APPENDIX of this file, which you should cut out with an editor and store in a 
+-separate file 'cdplay.c'. To compile it and make it executable, do
+-  gcc -s -Wall -O2 -L/usr/lib cdplay.c -o /usr/local/bin/cdplay # compiles it
+-  chmod +755 /usr/local/bin/cdplay                              # makes it executable
+-  ln -s /dev/aztcd0 /dev/cdrom                                  # creates a link
+-   (for /usr/lib substitute the top level directory, where your include files 
+-    reside,  and for /usr/local/bin the directory, where you want the executable 
+-    binary to reside )
+-
+-You have to set the correct permissions for cdplay *and* for /dev/mcd0 or
+-/dev/aztcd0 in order to use it. Remember, that you should not have /dev/cdrom 
+-mounted, when you're playing audio CDs. 
+-
+-This program is just a hack for testing the ioctl-functions in aztcd.c. I will 
+-not maintain it, so if you run into problems, discard it or have a look into 
+-the source code 'cdplay.c'. The program does only contain a minimum of user 
+-protection and input error detection. If you use the commands in the wrong 
+-order or if you try to read a CD at wrong addresses, you may get error messages
+-or even hang your machine. If you get STEN_LOW, STEN_LOW_WAIT or segment violation 
+-error messages when using cdplay, after that, the system might not be stable 
+-any more, so you'd better reboot. As the ioctl-functions run in kernel mode,
+-most normal Linux-multitasking protection features do not work. By using
+-uninitialized 'wild' pointers etc., it is easy to write to other users' data 
+-and program areas, destroy kernel tables etc.. So if you experiment with ioctls
+-as always when you are doing systems programming and kernel hacking, you
+-should have a backup copy of your system in a safe place (and you also
+-should try restoring from a backup copy first)!
+-
+-A reworked and improved version called 'cdtester.c', which has yet more
+-features for testing CDROM-drives can be found in
+-Documentation/cdrom/sbpcd, written by E.Moenkeberg.
+-
+-Werner Zimmermann
+-Fachhochschule fuer Technik Esslingen
+-(EMail: Werner.Zimmermann@fht-esslingen.de)
+-October, 1997
+-
+----------------------------------------------------------------------------
+-APPENDIX: Source code of cdplay.c
+-
+-/* Tiny Audio CD Player
+-
+-   Copyright 1994, 1995, 1996 Werner Zimmermann (Werner.Zimmermann@fht-esslingen.de)
+-
+-This program originally was written to test the audio functions of the
+-AZTECH.CDROM-driver, but it should work with every CD-ROM drive. Before 
+-using it, you should set a symlink from /dev/cdrom to your real CDROM
+-device.
+-
+-The GNU General Public License applies to this program.
+-
+-History:  V0.1  W.Zimmermann: First release. Nov. 8, 1994
+-          V0.2  W.Zimmermann: Enhanced functionality. Nov. 9, 1994
+-          V0.3  W.Zimmermann: Additional functions. Nov. 28, 1994          
+-          V0.4  W.Zimmermann: fixed some bugs. Dec. 17, 1994
+-          V0.5  W.Zimmermann: clean 'scanf' commands without compiler warnings
+-                              Jan. 6, 1995
+-          V0.6  W.Zimmermann: volume control (still experimental). Jan. 24, 1995
+-          V0.7  W.Zimmermann: read raw modified. July 26, 95
+-*/
+-
+-#include <stdio.h>
+-#include <ctype.h>
+-#include <sys/ioctl.h>
+-#include <sys/types.h>
+-#include <fcntl.h>
+-#include <unistd.h>
+-#include <linux/cdrom.h>
+-#include <linux/../../drivers/cdrom/aztcd.h>
+-
+-void help(void)
+-{ printf("Available Commands:  STOP         s      EJECT/CLOSE  e       QUIT         q\n");
+-  printf("                     PLAY TRACK   t      PAUSE        p       RESUME       r\n");
+-  printf("                     NEXT TRACK   n      REPEAT LAST  l       HELP         h\n");
+-  printf("                     SUB CHANNEL  c      TRACK INFO   i       PLAY AT      a\n");
+-  printf("                     READ         d      READ RAW     w       VOLUME       v\n");
+-}
+-
+-int main(void)
+-{ int handle;
+-  unsigned char command=' ', ini=0, first=1, last=1;
+-  unsigned int cmd, i,j,k, arg1,arg2,arg3;
+-  struct cdrom_ti       ti;
+-  struct cdrom_tochdr   tocHdr;
+-  struct cdrom_subchnl  subchnl;
+-  struct cdrom_tocentry entry;
+-  struct cdrom_msf      msf;
+-  union  { struct cdrom_msf msf;
+-           unsigned char buf[CD_FRAMESIZE_RAW];
+-         } azt;
+-  struct cdrom_volctrl  volctrl;
+-
+-  printf("\nMini-Audio CD-Player V0.72   (C) 1994,1995,1996  W.Zimmermann\n");
+-  handle=open("/dev/cdrom",O_RDWR);
+-  ioctl(handle,CDROMRESUME);
+-  
+-  if (handle<=0) 
+-    { printf("Drive Error: already playing, no audio disk, door open\n");
+-      printf("             or no permission (you must be ROOT in order to use this program)\n");
+-    }
+-  else
+-    { help();
+-      while (1)
+-        { printf("Type command (h = help):  ");
+-          scanf("%s",&command); 
+-          switch (command)
+-            { case 'e':   cmd=CDROMEJECT;
+-                          ioctl(handle,cmd);
+-                          break;  
+-              case 'p':   if (!ini)
+-                             { printf("Command not allowed - play track first\n");
+-                             }
+-                          else
+-                             { cmd=CDROMPAUSE;
+-                               if (ioctl(handle,cmd)) printf("Drive Error\n");
+-                             }
+-                          break;
+-              case 'r':   if (!ini)
+-                             { printf("Command not allowed - play track first\n");
+-                             }
+-                          else
+-                             { cmd=CDROMRESUME;
+-                               if (ioctl(handle,cmd)) printf("Drive Error\n");
+-                             }
+-                          break;
+-              case 's':   cmd=CDROMPAUSE;
+-                          if (ioctl(handle,cmd)) printf("Drive error or already stopped\n");
+-                          cmd=CDROMSTOP;
+-                          if (ioctl(handle,cmd)) printf("Drive error\n");
+-                          break;
+-              case 't':   cmd=CDROMREADTOCHDR;
+-                          if (ioctl(handle,cmd,&tocHdr)) printf("Drive Error\n");
+-                          first=tocHdr.cdth_trk0;
+-                          last= tocHdr.cdth_trk1;
+-                          if ((first==0)||(first>last))
+-                            { printf ("--could not read TOC\n");
+-                            }
+-                          else
+-                            { printf("--first track: %d   --last track: %d   --enter track number: ",first,last);
+-                              cmd=CDROMPLAYTRKIND;
+-                              scanf("%i",&arg1);
+-                              ti.cdti_trk0=arg1;
+-                              if (ti.cdti_trk0<first) ti.cdti_trk0=first;
+-                              if (ti.cdti_trk0>last)  ti.cdti_trk0=last;
+-                              ti.cdti_ind0=0;
+-                              ti.cdti_trk1=last;
+-                              ti.cdti_ind1=0;
+-                              if (ioctl(handle,cmd,&ti)) printf("Drive Error\n");
+-                              ini=1;
+-                            } 
+-                          break;
+-              case 'n':   if (!ini++) 
+-                            { if (ioctl(handle,CDROMREADTOCHDR,&tocHdr)) printf("Drive Error\n");
+-                              first=tocHdr.cdth_trk0;
+-                              last= tocHdr.cdth_trk1;
+-                              ti.cdti_trk0=first-1;
+-                            }
+-                          if ((first==0)||(first>last))
+-                            { printf ("--could not read TOC\n");
+-                            }
+-                          else
+-                            { cmd=CDROMPLAYTRKIND;
+-                              if (++ti.cdti_trk0 > last)  ti.cdti_trk0=last;
+-                              ti.cdti_ind0=0;
+-                              ti.cdti_trk1=last;
+-                              ti.cdti_ind1=0;
+-                              if (ioctl(handle,cmd,&ti)) printf("Drive Error\n");
+-                              ini=1;
+-                            }
+-                          break;
+-              case 'l':   if (!ini++)
+-                            { if (ioctl(handle,CDROMREADTOCHDR,&tocHdr)) printf("Drive Error\n");
+-                              first=tocHdr.cdth_trk0;
+-                              last= tocHdr.cdth_trk1;
+-                              ti.cdti_trk0=first+1;
+-                            }
+-                          if ((first==0)||(first>last))
+-                            { printf ("--could not read TOC\n");
+-                            }
+-                          else
+-                            { cmd=CDROMPLAYTRKIND;
+-                              if (--ti.cdti_trk0 < first) ti.cdti_trk0=first;
+-                              ti.cdti_ind0=0;
+-                              ti.cdti_trk1=last;
+-                              ti.cdti_ind1=0;
+-                              if (ioctl(handle,cmd,&ti)) printf("Drive Error\n");
+-                              ini=1;
+-                            }  
+-                          break;
+-              case 'c':   subchnl.cdsc_format=CDROM_MSF;
+-                          if (ioctl(handle,CDROMSUBCHNL,&subchnl)) 
+-                            printf("Drive Error\n");
+-                          else
+-                            { printf("AudioStatus:%s   Track:%d  Mode:%d   MSF=%d:%d:%d\n", \
+-                              subchnl.cdsc_audiostatus==CDROM_AUDIO_PLAY ? "PLAYING":"NOT PLAYING",\
+-                              subchnl.cdsc_trk,subchnl.cdsc_adr, \
+-                              subchnl.cdsc_absaddr.msf.minute, subchnl.cdsc_absaddr.msf.second, \
+-                              subchnl.cdsc_absaddr.msf.frame);
+-                            }
+-                          break;              
+-              case 'i':   if (!ini)
+-                            { printf("Command not allowed - play track first\n");
+-                            }
+-                          else
+-                            { cmd=CDROMREADTOCENTRY;
+-                              printf("Track No.: ");
+-                              scanf("%d",&arg1);
+-                              entry.cdte_track=arg1;
+-                              if (entry.cdte_track<first) entry.cdte_track=first;
+-                              if (entry.cdte_track>last)  entry.cdte_track=last;
+-			      entry.cdte_format=CDROM_MSF;
+-                              if (ioctl(handle,cmd,&entry)) 
+-                               { printf("Drive error or invalid track no.\n");
+-                               }
+-                              else
+-                               { printf("Mode %d Track, starts at %d:%d:%d\n", \
+-                               entry.cdte_adr,entry.cdte_addr.msf.minute, \
+-                               entry.cdte_addr.msf.second,entry.cdte_addr.msf.frame);
+-                               }
+-                            }
+-                          break;
+-              case 'a':   cmd=CDROMPLAYMSF;
+-                          printf("Address (min:sec:frame)  ");
+-                          scanf("%d:%d:%d",&arg1,&arg2,&arg3);
+-                          msf.cdmsf_min0  =arg1;
+-                          msf.cdmsf_sec0  =arg2;
+-                          msf.cdmsf_frame0=arg3;
+-                          if (msf.cdmsf_sec0  > 59) msf.cdmsf_sec0  =59;
+-                          if (msf.cdmsf_frame0> 74) msf.cdmsf_frame0=74;
+-                          msf.cdmsf_min1=60;
+-                          msf.cdmsf_sec1=00;
+-                          msf.cdmsf_frame1=00;
+-                          if (ioctl(handle,cmd,&msf)) 
+-                           { printf("Drive error or invalid address\n");
+-                           }
+-                          break;
+-#ifdef AZT_PRIVATE_IOCTLS /*not supported by every CDROM driver*/
+-              case 'd':   cmd=CDROMREADCOOKED;
+-                          printf("Address (min:sec:frame)  ");
+-                          scanf("%d:%d:%d",&arg1,&arg2,&arg3);
+-                          azt.msf.cdmsf_min0  =arg1;
+-                          azt.msf.cdmsf_sec0  =arg2;
+-                          azt.msf.cdmsf_frame0=arg3;
+-                          if (azt.msf.cdmsf_sec0  > 59) azt.msf.cdmsf_sec0  =59;
+-                          if (azt.msf.cdmsf_frame0> 74) azt.msf.cdmsf_frame0=74;
+-                          if (ioctl(handle,cmd,&azt.msf)) 
+-                           { printf("Drive error, invalid address or unsupported command\n");
+-                           }
+-                          k=0;
+-                          getchar();
+-                          for (i=0;i<128;i++)
+-                           { printf("%4d:",i*16);
+-                             for (j=0;j<16;j++)
+-                               { printf("%2x ",azt.buf[i*16+j]);
+-                               }
+-                             for (j=0;j<16;j++)
+-                               { if (isalnum(azt.buf[i*16+j])) 
+-                                   printf("%c",azt.buf[i*16+j]);
+-                                 else
+-                                   printf(".");
+-                               }
+-                             printf("\n"); 
+-                             k++;
+-                             if (k>=20)
+-                              { printf("press ENTER to continue\n");
+-                                getchar();
+-                                k=0;
+-                              }
+-                           } 
+-                          break;
+-              case 'w':   cmd=CDROMREADRAW;
+-                          printf("Address (min:sec:frame)  ");
+-                          scanf("%d:%d:%d",&arg1,&arg2,&arg3);
+-                          azt.msf.cdmsf_min0  =arg1;
+-                          azt.msf.cdmsf_sec0  =arg2;
+-                          azt.msf.cdmsf_frame0=arg3;                          
+-                          if (azt.msf.cdmsf_sec0  > 59) azt.msf.cdmsf_sec0  =59;
+-                          if (azt.msf.cdmsf_frame0> 74) azt.msf.cdmsf_frame0=74;
+-                          if (ioctl(handle,cmd,&azt)) 
+-                           { printf("Drive error, invalid address or unsupported command\n");
+-                           }
+-                          k=0;
+-                          for (i=0;i<147;i++)
+-                           { printf("%4d:",i*16);
+-                             for (j=0;j<16;j++)
+-                               { printf("%2x ",azt.buf[i*16+j]);
+-                               }
+-                             for (j=0;j<16;j++)
+-                               { if (isalnum(azt.buf[i*16+j])) 
+-                                   printf("%c",azt.buf[i*16+j]);
+-                                 else
+-                                   printf(".");
+-                               }
+-                             printf("\n"); 
+-                             k++;
+-                             if (k>=20)
+-                              { getchar();
+-                                k=0;
+-                              }
+-                           } 
+-                          break;
+-#endif
+-              case 'v':   cmd=CDROMVOLCTRL;
+-                          printf("--Channel 0 Left  (0-255): ");
+-                          scanf("%d",&arg1);
+-                          printf("--Channel 1 Right (0-255): ");
+-                          scanf("%d",&arg2);
+-                          volctrl.channel0=arg1;
+-                          volctrl.channel1=arg2;
+-                          volctrl.channel2=0;
+-                          volctrl.channel3=0;
+-                          if (ioctl(handle,cmd,&volctrl)) 
+-                           { printf("Drive error or unsupported command\n");
+-                           }
+-                          break;  
+-              case 'q':   if (close(handle)) printf("Drive Error: CLOSE\n");
+-                          exit(0);
+-              case 'h':   help();
+-                          break;
+-              default:    printf("unknown command\n");
+-                          break;
+-            }
+-       }
+-    }
+-  return 0;
+-}
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/cdu31a	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,196 +0,0 @@
+-
+-		CDU31A/CDU33A Driver Info
+-		-------------------------
+-
+-Information on the Sony CDU31A/CDU33A CDROM driver for the Linux
+-kernel.
+-
+-   Corey Minyard (minyard@metronet.com)
+-  
+-   Colossians 3:17
+-
+-Crude Table of Contents
+------------------------
+-
+-  Setting Up the Hardware
+-  Configuring the Kernel
+-  Configuring as a Module
+-  Driver Special Features
+-
+-  
+-This device driver handles Sony CDU31A/CDU33A CDROM drives and
+-provides a complete block-level interface as well as an ioctl()
+-interface as specified in include/linux/cdrom.h).  With this
+-interface, CDROMs can be accessed, standard audio CDs can be played
+-back normally, and CD audio information can be read off the drive.
+-
+-Note that this will only work for CDU31A/CDU33A drives.  Some vendors
+-market their drives as CDU31A compatible.  They lie.  Their drives are
+-really CDU31A hardware interface compatible (they can plug into the
+-same card).  They are not software compatible.
+-
+-Setting Up the Hardware
+------------------------
+-
+-The CDU31A driver is unable to safely tell if an interface card is
+-present that it can use because the interface card does not announce
+-its presence in any way besides placing 4 I/O locations in memory.  It
+-used to just probe memory and attempt commands, but Linus wisely asked
+-me to remove that because it could really screw up other hardware in
+-the system.
+-
+-Because of this, you must tell the kernel where the drive interface
+-is, what interrupts are used, and possibly if you are on a PAS-16
+-soundcard.
+-
+-If you have the Sony CDU31A/CDU33A drive interface card, the following
+-diagram will help you set it up.  If you have another card, you are on
+-your own.  You need to make sure that the I/O address and interrupt is
+-not used by another card in the system.  You will need to know the I/O
+-address and interrupt you have set.  Note that use of interrupts is
+-highly recommended, if possible, it really cuts down on CPU used.
+-Unfortunately, most soundcards do not support interrupts for their
+-CDROM interfaces.  By default, the Sony interface card comes with
+-interrupts disabled.
+-   
+-        +----------+-----------------+----------------------+
+-        |  JP1     |  34 Pin Conn    |                      |
+-        |  JP2     +-----------------+                      |
+-        |  JP3                                              |
+-        |  JP4                                              |
+-        |                                                   +--+
+-        |                                                   |  +-+
+-        |                                                   |  | |  External
+-        |                                                   |  | |  Connector
+-        |                                                   |  | |
+-        |                                                   |  +-+
+-        |                                                   +--+
+-        |                                                   |
+-        |                                          +--------+
+-        |                                          |
+-        +------------------------------------------+
+-   
+-      JP1 sets the Base Address, using the following settings:
+-   
+-        Address         Pin 1           Pin 2
+-        -------         -----           -----
+-        0x320           Short           Short
+-        0x330           Short           Open
+-        0x340           Open            Short
+-        0x360           Open            Open
+-   
+-      JP2 and JP3 configure the DMA channel; they must be set the same.
+-   
+-        DMA             Pin 1           Pin 2           Pin 3
+-        ---             -----           -----           -----
+-        1               On              Off             On
+-        2               Off             On              Off
+-        3               Off             Off             On
+-   
+-      JP4 Configures the IRQ:
+-   
+-        IRQ     Pin 1           Pin 2           Pin 3           Pin 4
+-        ---     -----           -----           -----           -----
+-        3       Off             Off             On              Off
+-        4       Off             Off*            Off             On
+-        5       On              Off             Off             Off
+-        6       Off             On              Off             Off
+-   
+-                  The documentation states to set this for interrupt
+-                  4, but I think that is a mistake.
+-
+-Note that if you have another interface card, you will need to look at
+-the documentation to find the I/O base address.  This is specified to
+-the SLCD.SYS driver for DOS with the /B: parameter, so you can look at
+-you DOS driver setup to find the address, if necessary.
+-
+-Configuring the Kernel
+-----------------------
+-
+-You must tell the kernel where the drive is at boot time.  This can be
+-done at the Linux boot prompt, by using LILO, or by using Bootlin.
+-Note that this is no substitute for HOWTOs and LILO documentation, if
+-you are confused please read those for info on bootline configuration
+-and LILO.
+-
+-At the linux boot prompt, press the ALT key and add the following line
+-after the boot name (you can let the kernel boot, it will tell you the
+-default boot name while booting):
+-
+-	cdu31a=<base address>,<interrupt>[,PAS]
+-
+-The base address needs to have "0x" in front of it, since it is in
+-hex.  For instance, to configure a drive at address 320 on interrupt 5,
+-use the following:
+-
+-	cdu31a=0x320,5
+-
+-I use the following boot line:
+-
+-	cdu31a=0x1f88,0,PAS
+-
+-because I have a PAS-16 which does not support interrupt for the
+-CDU31A interface.
+-
+-Adding this as an append line at the beginning of the /etc/lilo.conf
+-file will set it for lilo configurations.  I have the following as the
+-first line in my lilo.conf file:
+-
+-	append="cdu31a=0x1f88,0"
+-
+-I'm not sure how to set up Bootlin (I have never used it), if someone
+-would like to fill in this section please do.
+-
+-
+-Configuring as a Module
+------------------------
+-
+-The driver supports loading as a module.  However, you must specify
+-the boot address and interrupt on the boot line to insmod.  You can't
+-use modprobe to load it, since modprobe doesn't support setting
+-variables.
+-
+-Anyway, I use the following line to load my driver as a module
+-
+-  /sbin/insmod /lib/modules/`uname -r`/misc/cdu31a.o cdu31a_port=0x1f88
+-
+-You can set the following variables in the driver:
+-
+-  cdu31a_port=<I/O address> - sets the base I/O.  If hex, put 0x in
+-			      front of it.  This must be specified.
+-
+-  cdu31a_irq=<interrupt> - Sets the interrupt number.  Leaving this
+-			   off will turn interrupts off.
+-
+-
+-Driver Special Features
+------------------------
+-
+-This section describes features beyond the normal audio and CD-ROM
+-functions of the drive.
+-
+-2048 byte buffer mode
+-
+-If a disk is mounted with -o block=2048, data is copied straight from
+-the drive data port to the buffer.  Otherwise, the readahead buffer
+-must be involved to hold the other 1K of data when a 1K block
+-operation is done.  Note that with 2048 byte blocks you cannot execute
+-files from the CD.
+-
+-XA compatibility
+-
+-The driver should support XA disks for both the CDU31A and CDU33A.  It
+-does this transparently, the using program doesn't need to set it.
+-
+-Multi-Session
+-
+-A multi-session disk looks just like a normal disk to the user.  Just
+-mount one normally, and all the data should be there.  A special
+-thanks to Koen for help with this!
+-
+-Raw sector I/O
+-
+-Using the CDROMREADAUDIO it is possible to read raw audio and data
+-tracks.  Both operations return 2352 bytes per sector.  On the data
+-tracks, the first 12 bytes is not returned by the drive and the value
+-of that data is indeterminate.
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/cm206	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,185 +0,0 @@
+-This is the readme file for the driver for the Philips/LMS cdrom drive
+-cm206 in combination with the cm260 host adapter card. 
+-
+-				(c) 1995 David A. van Leeuwen
+-   
+-Changes since version 0.99
+---------------------------
+-- Interfacing to the kernel is routed though an extra interface layer, 
+-  cdrom.c. This allows runtime-configurable `behavior' of the cdrom-drive, 
+-  independent of the driver. 
+-
+-Features since version 0.33
+----------------------------
+-- Full audio support, that is, both  workman, workbone and cdp work
+-  now reasonably. Reading TOC still takes some time. xmcd has been
+-  reported to run successfully. 
+-- Made auto-probe code a little better, I hope
+-
+-Features since version 0.28
+----------------------------
+-- Full speed transfer rate (300 kB/s).
+-- Minimum kernel memory usage for buffering (less than 3 kB).
+-- Multisession support.
+-- Tray locking.
+-- Statistics of driver accessible to the user.
+-- Module support.
+-- Auto-probing of adapter card's base port and irq line,
+-  also configurable at boot time or module load time.
+-
+-
+-Decide how you are going to use the driver. There are two
+-options:
+-
+-   (a) installing the driver as a resident part of the kernel
+-   (b) compiling the driver as a loadable module
+-
+-   Further, you must decide if you are going to specify the base port
+-   address and the interrupt request line of the adapter card cm260 as
+-   boot options for (a), module parameters for (b), use automatic
+-   probing of these values, or hard-wire your adaptor card's settings
+-   into the source code. If you don't care, you can choose 
+-   autoprobing, which is the default. In that case you can move on to
+-   the next step.
+-
+-Compiling the kernel
+---------------------
+-1) move to /usr/src/linux and do a 
+-
+-	make config
+-
+-   If you have chosen option (a), answer yes to CONFIG_CM206 and
+-   CONFIG_ISO9660_FS.
+-
+-   If you have chosen option (b), answer yes to CONFIG_MODVERSIONS
+-   and no (!) to CONFIG_CM206 and CONFIG_ISO9660_FS. 
+-
+-2) then do a 
+-	
+-	make clean; make zImage; make modules
+-
+-3) do the usual things to install a new image (backup the old one, run
+-   `rdev -R zImage 1', copy the new image in place, run lilo).  Might
+-   be `make zlilo'.
+-
+-Using the driver as a module
+-----------------------------
+-If you will only occasionally use the cd-rom driver, you can choose
+-option (b), install as a loadable module. You may have to re-compile
+-the module when you upgrade the kernel to a new version. 
+-
+-Since version 0.96, much of the functionality has been transferred to
+-a generic cdrom interface in the file cdrom.c. The module cm206.o
+-depends on cdrom.o. If the latter is not compiled into the kernel,
+-you must explicitly load it before cm206.o:
+-
+-	 insmod /usr/src/linux/modules/cdrom.o
+-
+-To install the module, you use the command, as root
+-
+-	insmod /usr/src/linux/modules/cm206.o
+-
+-You can specify the base address on the command line as well as the irq 
+-line to be used, e.g.
+-
+-	insmod /usr/src/linux/modules/cm206.o cm206=0x300,11
+-
+-The order of base port and irq line doesn't matter; if you specify only
+-one, the other will have the value of the compiled-in default.  You
+-may also have to install the file-system module `iso9660.o', if you
+-didn't compile that into the kernel. 
+-
+-
+-Using the driver as part of the kernel
+---------------------------------------
+-If you have chosen option (a), you can specify the base-port
+-address and irq on the lilo boot command line, e.g.:
+-
+-	LILO: linux cm206=0x340,11
+-
+-This assumes that your linux kernel image keyword is `linux'. 
+-If you specify either IRQ (3--11) or base port (0x300--0x370),
+-auto probing is turned off for both settings, thus setting the 
+-other value to the compiled-in default.
+-
+-Note that you can also put these parameters in the lilo configuration file:
+-
+-# linux config
+-image = /vmlinuz
+-   root = /dev/hda1
+-   label = Linux
+-   append = "cm206=0x340,11"
+-   read-only
+-
+-
+-If module parameters and LILO config options don't work
+--------------------------------------------------------
+-If autoprobing does not work, you can hard-wire the default values
+-of the base port address (CM206_BASE) and interrupt request line
+-(CM206_IRQ) into the file /usr/src/linux/drivers/cdrom/cm206.h. Change
+-the defines of CM206_IRQ and CM206_BASE.
+-
+-
+-Mounting the cdrom
+-------------------
+-1) Make sure that the right device is installed in /dev.
+-
+-  	mknod /dev/cm206cd b 32 0
+-
+-2) Make sure there is a mount point, e.g., /cdrom 
+-
+-	mkdir /cdrom
+-
+-3) mount using a command like this (run as root):
+-
+-	mount -rt iso9660 /dev/cm206cd /cdrom
+-
+-4) For user-mounts, add a line in /etc/fstab
+-
+-	/dev/cm206cd      /cdrom     iso9660 	ro,noauto,user
+-
+-   This will allow users to give the commands
+-
+-	mount /cdrom
+-	umount /cdrom
+-
+-If things don't work
+---------------------
+-
+-- Try to do a `dmesg' to find out if the driver said anything about
+-  what is going wrong during the initialization.
+-
+-- Try to do a `dd if=/dev/cm206cd | od -tc | less' to read from the
+-  CD.
+-
+-- Look in the /proc directory to see if `cm206' shows up under one of
+-  `interrupts', `ioports', `devices' or `modules' (if applicable).
+-
+-
+-DISCLAIMER 
+----------- 
+-I cannot guarantee that this driver works, or that the hardware will
+-not be harmed, although I consider it most unlikely. 
+-
+-I hope that you'll find this driver in some way useful. 
+-
+-					David van Leeuwen
+-					david@tm.tno.nl
+-
+-Note for Linux CDROM vendors
+------------------------------
+-You are encouraged to include this driver on your Linux CDROM. If
+-you do, you might consider sending me a free copy of that cd-rom.
+-You can contact me through my e-mail address, david@tm.tno.nl. 
+-If this driver is compiled into a kernel to boot off a cdrom, 
+-you should actually send me a free copy of that cd-rom. 
+-
+-Copyright
+----------
+-The copyright of the cm206 driver for Linux is 
+-
+-    (c) 1995 David A. van Leeuwen
+-
+-The driver is released under the conditions of the GNU general public
+-license, which can be found in the file COPYING in the root of this
+-source tree.
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/gscd	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,60 +0,0 @@
+-	Goldstar R420 CD-Rom device driver README
+-
+-For all kind of other information about the GoldStar R420 CDROM
+-and this Linux device driver see the WWW page:
+-
+-        http://linux.rz.fh-hannover.de/~raupach        
+-
+-
+-      If you are the editor of a Linux CD, you should
+-      enable gscd.c within your boot floppy kernel. Please,
+-      send me one of your CDs for free.
+-
+-
+-This current driver version 0.4a only supports reading data from the disk.
+-Currently we have no audio and no multisession or XA support.
+-The polling interface is used, no DMA.
+-
+-
+-Sometimes the GoldStar R420 is sold in a 'Reveal Multimedia Kit'. This kit's
+-drive interface is compatible, too.
+-
+-
+-Installation
+-------------
+-
+-Change to '/usr/src/linux/drivers/cdrom' and edit the file 'gscd.h'. Insert
+-the i/o address of your interface card.
+-
+-The default base address is 0x340. This will work for most applications. 
+-Address selection is accomplished by jumpers PN801-1 to PN801-4 on the 
+-GoldStar Interface Card.
+-Appropriate settings are: 0x300, 0x310, 0x320, 0x330, 0x340, 0x350, 0x360
+-0x370, 0x380, 0x390, 0x3A0, 0x3B0, 0x3C0, 0x3D0, 0x3E0, 0x3F0             
+-
+-Then go back to '/usr/src/linux/' and 'make config' to build the new
+-configuration for your kernel. If you want to use the GoldStar driver
+-like a module, don't select 'GoldStar CDROM support'. By the way, you
+-have to include the iso9660 filesystem.
+-
+-Now start compiling the kernel with 'make zImage'.
+-If you want to use the driver as a module, you have to do 'make modules' 
+-and 'make modules_install', additionally.
+-Install your new kernel as usual - maybe you do it with 'make zlilo'.
+-
+-Before you can use the driver, you have to
+-   mknod /dev/gscd0 b 16 0
+-to create the appropriate device file (you only need to do this once).
+-
+-If you use modules, you can try to insert the driver.
+-Say: 'insmod /usr/src/linux/modules/gscd.o'
+-or:  'insmod /usr/src/linux/modules/gscd.o gscd=<address>'
+-The driver should report its results.
+-
+-That's it! Mount a disk, i.e. 'mount -rt iso9660 /dev/gscd0 /cdrom'
+-
+-Feel free to report errors and suggestions to the following address.
+-Be sure, I'm very happy to receive your comments!
+- 
+-        Oliver Raupach                                Hannover, Juni 1995
+-(raupach@nwfs1.rz.fh-hannover.de)
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/isp16	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,100 +0,0 @@
+- -- Documentation/cdrom/isp16
+-
+-Docs by Eric van der Maarel <H.T.M.v.d.Maarel@marin.nl>
+-
+-This is the README for version 0.6 of the cdrom interface on an
+-ISP16, MAD16 or Mozart sound card.
+-
+-The detection and configuration of this interface used to be included
+-in both the sjcd and optcd cdrom driver. Drives supported by these
+-drivers came packed with Media Magic's multi media kit, which also
+-included the ISP16 card. The idea (thanks Leo Spiekman)
+-to move it from these drivers into a separate module and moreover, not to
+-rely on the MAD16 sound driver, are as follows:
+--duplication of code in the kernel is a waste of resources and should
+- be avoided;
+--however, kernels and notably those included with Linux distributions
+- (cf Slackware 3.0 included version 0.5 of the isp16 configuration
+- code included in the drivers) don't always come with sound support
+- included. Especially when they already include a bunch of cdrom drivers.
+- Hence, the cdrom interface should be configurable _independently_ of
+- sound support.
+-
+-The ISP16, MAD16 and Mozart sound cards have an OPTi 82C928 or an
+-OPTi 82C929 chip.  The interface on these cards should work with
+-any cdrom attached to the card, which is 'electrically' compatible
+-with Sanyo/Panasonic, Sony or Mitsumi non-ide drives. However, the
+-command sets for any proprietary drives may differ
+-(and hence may not be supported in the kernel) from these four types.
+-For a fact I know the interface works and the way of configuration
+-as described in this documentation works in combination with the
+-sjcd (in Sanyo/Panasonic compatibility mode) cdrom drivers
+-(probably with the optcd (in Sony compatibility mode) as well).
+-If you have such an OPTi based sound card and you want to use the
+-cdrom interface with a cdrom drive supported by any of the other cdrom
+-drivers, it will probably work. Please let me know any experience you
+-might have).
+-I understand that cards based on the OPTi 82C929 chips may be configured
+-(hardware jumpers that is) as an IDE interface. Initialisation of such a
+-card in this mode is not supported (yet?).
+-
+-The suggestion to configure the ISP16 etc. sound card by booting DOS and 
+-do a warm reboot to boot Linux somehow doesn't work, at least not
+-on my machine (IPC P90), with the OPTi 82C928 based card.
+-
+-Booting the kernel through the boot manager LILO allows the use
+-of some command line options on the 'LILO boot:' prompt. At boot time
+-press Alt or Shift while the LILO prompt is written on the screen and enter
+-any kernel options. Alternatively these options may be used in
+-the appropriate section in /etc/lilo.conf. Adding 'append="<cmd_line_options>"'
+-will do the trick as well.
+-The syntax of 'cmd_line_options' is
+-
+-        isp16=[<port>[,<irq>[,<dma>]]][[,]<drive_type>]
+-
+-If there is no ISP16 or compatibles detected, there's probably no harm done.
+-These options indicate the values that your cdrom drive has been (or will be)
+-configured to use.
+-Valid values for the base i/o address are:
+-  port=0x340,0x320,0x330,0x360
+-for the interrupt request number 
+-  irq=0,3,5,7,9,10,11
+-for the direct memory access line
+-  dma=0,3,5,6,7
+-and for the type of drive
+-  drive_type=noisp16,Sanyo,Panasonic,Sony,Mitsumi.
+-Note that these options are case sensitive.
+-The values 0 for irq and dma indicate that they are not used, and
+-the drive will be used in 'polling' mode. The values 5 and 7 for irq
+-should be avoided in order to avoid any conflicts with optional
+-sound card configuration.
+-The syntax of the command line does not allow the specification of
+-irq when there's nothing specified for the base address and no
+-specification of dma when there is no specification of irq.
+-The value 'noisp16' for drive_type, which may be used as the first
+-non-integer option value (e.g. 'isp16=noisp16'), makes sure that probing
+-for and subsequent configuration of an ISP16-compatible card is skipped
+-all together. This can be useful to overcome possible conflicts which
+-may arise while the kernel is probing your hardware.
+-The default values are
+-  port=0x340
+-  irq=0
+-  dma=0
+-  drive_type=Sanyo
+-reflecting my own configuration. The defaults can be changed in
+-the file linux/drivers/cdrom/ips16.h.
+-
+-The cdrom interface can be configured at run time by loading the
+-initialisation driver as a module. In that case, the interface
+-parameters can be set by giving appropriate values on the command
+-line. Configuring the driver can then be done by the following
+-command (assuming you have iso16.o installed in a proper place):
+-
+-  insmod isp16.o isp16_cdrom_base=<port> isp16_cdrom_irq=<irq> \
+-    isp16_cdrom_dma=<dma> isp16_cdrom_type=<drive_type>
+-
+-where port, irq, dma and drive_type can have any of the values mentioned
+-above.
+-
+-
+-Have fun!
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/mcdx	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,29 +0,0 @@
+-If you are using the driver as a module, you can specify your ports and IRQs
+-like
+-
+- # insmod mcdx.o mcdx=0x300,11,0x304,5
+-
+-and so on ("address,IRQ" pairs).
+-This will override the configuration in mcdx.h.
+-
+-This driver:
+-
+-    o   handles XA and (hopefully) multi session CDs as well as
+-        ordinary CDs;
+-    o   supports up to 5 drives (of course, you'll need free 
+-        IRQs, i/o ports and slots);
+-    o   plays audio
+-
+-This version doesn't support yet:
+-
+-    o   shared IRQs (but it seems to be possible - I've successfully
+-                connected two drives to the same irq.  So it's `only' a 
+-                problem of the driver.)
+-
+-This driver never will:
+-
+-    o   Read digital audio (i.e. copy directly), due to missing
+-        hardware features. 
+-
+-
+-heiko@lotte.sax.de
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/optcd	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,57 +0,0 @@
+-This is the README file for the Optics Storage 8000 AT CDROM device driver.
+-
+-This is the driver for the so-called 'DOLPHIN' drive, with the 34-pin
+-Sony-compatible interface. For the IDE-compatible Optics Storage 8001
+-drive, you will want the ATAPI CDROM driver. The driver also seems to
+-work with the Lasermate CR328A. If you have a drive that works with
+-this driver, and that doesn't report itself as DOLPHIN, please drop me
+-a mail.
+-
+-The support for multisession CDs is in ALPHA stage. If you use it,
+-please mail me your experiences. Multisession support can be disabled
+-at compile time.
+-
+-You can find some older versions of the driver at
+-      dutette.et.tudelft.nl:/pub/linux/
+-and at Eberhard's mirror
+-      ftp.gwdg.de:/pub/linux/cdrom/drivers/optics/
+-
+-Before you can use the driver, you have to create the device file once:
+- # mknod /dev/optcd0 b 17 0
+-
+-To specify the base address if the driver is "compiled-in" to your kernel,
+-you can use the kernel command line item (LILO option)
+-             optcd=0x340
+-with the right address.
+-
+-If you have compiled optcd as a module, you can load it with
+- # insmod /usr/src/linux/modules/optcd.o
+-or
+- # insmod /usr/src/linux/modules/optcd.o optcd=0x340
+-with the matching address value of your interface card.
+-
+-The driver employs a number of buffers to do read-ahead and block size
+-conversion. The number of buffers is configurable in optcd.h, and has
+-influence on the driver performance. For my machine (a P75), 6 buffers
+-seems optimal, as can be seen from this table:
+-
+-#bufs	kb/s	%cpu
+-1	97	0.1
+-2	191	0.3
+-3	188	0.2
+-4	246	0.3
+-5	189	19
+-6	280	0.4
+-7	281	7.0
+-8	246	2.8
+-16	281	3.4
+-
+-If you get a throughput significantly below 300 kb/s, try tweaking
+-N_BUFS, and don't forget to mail me your results!
+-
+-I'd appreciate success/failure reports. If you find a bug, try
+-recompiling the driver with some strategically chosen debug options
+-(these can be found in optcd.h) and include the messages generated in
+-your bug report. Good luck.
+-
+-Leo Spiekman (spiekman@dutette.et.tudelft.nl)
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/sbpcd	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,1061 +0,0 @@
+-This README belongs to release 4.2 or newer of the SoundBlaster Pro
+-(Matsushita, Kotobuki, Panasonic, CreativeLabs, Longshine and Teac)
+-CD-ROM driver for Linux.
+-
+-sbpcd really, really is NOT for ANY IDE/ATAPI drive!
+-Not even if you have an "original" SoundBlaster card with an IDE interface!
+-So, you'd better have a look into README.ide if your port address is 0x1F0,
+-0x170, 0x1E8, 0x168 or similar.
+-I get tons of mails from IDE/ATAPI drive users - I really can't continue
+-any more to answer them all. So, if your drive/interface information sheets
+-mention "IDE" (primary, secondary, tertiary, quaternary) and the DOS driver
+-invoking line within your CONFIG.SYS is using an address below 0x230:
+-DON'T ROB MY LAST NERVE - jumper your interface to address 0x170 and IRQ 15
+-(that is the "secondary IDE" configuration), set your drive to "master" and
+-use ide-cd as your driver. If you do not have a second IDE hard disk, use the
+-LILO commands
+-   hdb=noprobe hdc=cdrom
+-and get lucky.
+-To make it fully clear to you: if you mail me about IDE/ATAPI drive problems,
+-my answer is above, and I simply will discard your mail, hoping to stop the
+-flood and to find time to lead my 12-year old son towards happy computing.
+-
+-The driver is able to drive the whole family of "traditional" AT-style (that
+-is NOT the new "Enhanced IDE" or "ATAPI" drive standard) Matsushita,
+-Kotobuki, Panasonic drives, sometimes labelled as "CreativeLabs". The
+-well-known drives are CR-521, CR-522, CR-523, CR-562, CR-563.
+-CR-574 is an IDE/ATAPI drive.
+-
+-The Longshine LCS-7260 is a double-speed drive which uses the "old"
+-Matsushita command set. It is supported - with help by Serge Robyns.
+-Vertos ("Elitegroup Computer Systems", ECS) has a similar drive - support
+-has started; get in contact if you have such a "Vertos 100" or "ECS-AT"
+-drive.
+-
+-There exists an "IBM External ISA CD-ROM Drive" which in fact is a CR-563
+-with a special controller board. This drive is supported (the interface is
+-of the "LaserMate" type), and it is possibly the best buy today (cheaper than
+-an internal drive, and you can use it as an internal, too - e.g. plug it into
+-a soundcard).
+-
+-CreativeLabs has a new drive "CD200" and a similar drive "CD200F". The latter
+-is made by Funai and sometimes named "E2550UA", newer models may be named
+-"MK4015". The CD200F drives should fully work.
+-CD200 drives without "F" are still giving problems: drive detection and
+-playing audio should work, data access will result in errors. I need qualified
+-feedback about the bugs within the data functions or a drive (I never saw a
+-CD200).
+-
+-The quad-speed Teac CD-55A drive is supported, but still does not reach "full
+-speed". The data rate already reaches 500 kB/sec if you set SBP_BUFFER_FRAMES
+-to 64 (it is not recommended to do that for normal "file access" usage, but it
+-can speed up things a lot if you use something like "dd" to read from the
+-drive; I use it for verifying self-written CDs this way).
+-The drive itself is able to deliver 600 kB/sec, so this needs
+-work; with the normal setup, the performance currently is not even as good as
+-double-speed.
+-
+-This driver is NOT for Mitsumi or Sony or Aztech or Philips or XXX drives,
+-and again: this driver is in no way usable for any IDE/ATAPI drive. If you 
+-think your drive should work and it doesn't: send me the DOS driver for your
+-beast (gzipped + uuencoded) and your CONFIG.SYS if you want to ask me for help,
+-and include an original log message excerpt, and try to give all information
+-a complete idiot needs to understand your hassle already with your first
+-mail. And if you want to say "as I have mailed you before", be sure that I
+-don't remember your "case" by such remarks; at the moment, I have some 
+-hundreds of open correspondences about Linux CDROM questions (hope to reduce if
+-the IDE/ATAPI user questions disappear). 
+-
+-
+-This driver will work with the soundcard interfaces (SB Pro, SB 16, Galaxy,
+-SoundFX, Mozart, MAD16 ...) and with the "no-sound" cards (Panasonic CI-101P,
+-LaserMate, WDH-7001C, Longshine LCS-6853, Teac ...).
+-
+-It works with the "configurable" interface "Sequoia S-1000", too, which is 
+-used on the Spea Media FX and Ensonic Soundscape sound cards. You have to
+-specify the type "SBPRO 2" and the true CDROM port address with it, not the
+-"configuration port" address.
+-
+-If you have a sound card which needs a "configuration driver" instead of
+-jumpers for interface types and addresses (like Mozart cards) - those
+-drivers get invoked before the DOS CDROM driver in your CONFIG.SYS, typical
+-names are "cdsetup.sys" and "mztinit.sys" - let the sound driver do the
+-CDROM port configuration (the leading comments in linux/drivers/sound/mad16.c
+-are just for you!). Hannu Savolainen's mad16.c code is able to set up my
+-Mozart card - I simply had to add
+-   #define MAD16_CONF 0x06
+-   #define MAD16_CDSEL 0x03
+-to configure the CDROM interface for type "Panasonic" (LaserMate) and address
+-0x340.
+-
+-The interface type has to get configured in linux/drivers/cdrom/sbpcd.h, 
+-because the register layout is different between the "SoundBlaster" and the
+-"LaserMate" type.
+-
+-I got a report that the Teac interface card "I/F E117098" is of type
+-"SoundBlaster" (i.e. you have to set SBPRO to 1) even with the addresses
+-0x300 and above. This is unusual, and it can't get covered by the auto
+-probing scheme.
+-The Teac 16-bit interface cards (like P/N E950228-00A, default address 0x2C0)
+-need the SBPRO 3 setup.
+-
+-If auto-probing found the drive, the address is correct. The reported type
+-may be wrong. A "mount" will give success only if the interface type is set
+-right. Playing audio should work with a wrong set interface type, too.
+-
+-With some Teac and some CD200 drives I have seen interface cards which seem
+-to lack the "drive select" lines; always drive 0 gets addressed. To avoid
+-"mirror drives" (four drives detected where you only have one) with such
+-interface cards, set MAX_DRIVES to 1 and jumper your drive to ID 0 (if
+-possible).
+-
+-
+-Up to 4 drives per interface card, and up to 4 interface cards are supported.
+-All supported drive families can be mixed, but the CR-521 drives are 
+-hard-wired to drive ID 0. The drives have to use different drive IDs, and each
+-drive has to get a unique minor number (0...3), corresponding indirectly to 
+-its drive ID.
+-The drive IDs may be selected freely from 0 to 3 - they do not have to be in
+-consecutive order.
+-
+-As Don Carroll, don@ds9.us.dell.com or FIDO 1:382/14, told me, it is possible
+-to change old drives to any ID, too. He writes in this sense:
+-   "In order to be able to use more than one single speed drive
+-   (they do not have the ID jumpers) you must add a DIP switch
+-   and two resistors. The pads are already on the board next to
+-   the power connector. You will see the silkscreen for the
+-   switch if you remove the top cover.
+-                    1 2 3 4
+-             ID 0 = x F F x             O = "on"
+-             ID 1 = x O F x             F = "off"
+-             ID 2 = x F O x             x = "don't care"
+-             ID 3 = x O O x
+-   Next to the switch are the positions for R76 (7k) and R78
+-   (12k). I had to play around with the resistor values - ID 3
+-   did not work with other values. If the values are not good,
+-   ID 3 behaves like ID 0."
+-
+-To use more than 4 drives, you simply need a second controller card at a 
+-different address and a second cable.
+-
+-The driver supports reading of data from the CD and playing of audio tracks.
+-The audio part should run with WorkMan, xcdplayer, with the "non-X11" products
+-CDplayer and WorkBone - tell me if it is not compatible with other software.
+-The only accepted measure for correctness with the audio functions is the
+-"cdtester" utility (appended) - most audio player programmers seem to be
+-better musicians than programmers. ;-)
+-
+-With the CR-56x and the CD200 drives, the reading of audio frames is possible.
+-This is implemented by an IOCTL function which reads READ_AUDIO frames of
+-2352 bytes at once (configurable with the "READ_AUDIO" define, default is 0).
+-Reading the same frame a second time gives different data; the frame data 
+-start at a different position, but all read bytes are valid, and we always
+-read 98 consecutive chunks (of 24 Bytes) as a frame. Reading more than 1 frame
+-at once possibly misses some chunks at each frame boundary. This lack has to
+-get corrected by external, "higher level" software which reads the same frame 
+-again and tries to find and eliminate overlapping chunks (24-byte-pieces).
+-
+-The transfer rate with reading audio (1-frame-pieces) currently is very slow.
+-This can be better reading bigger chunks, but the "missing" chunks possibly
+-occur at the beginning of each single frame.
+-The software interface possibly may change a bit the day the SCSI driver
+-supports it too.
+-
+-With all but the CR-52x drives, MultiSession is supported.
+-Photo CDs work (the "old" drives like CR-521 can access only the first
+-session of a photoCD).
+-At ftp.gwdg.de:/pub/linux/hpcdtoppm/ you will find Hadmut Danisch's package to
+-convert photo CD image files and Gerd Knorr's viewing utility.
+-
+-The transfer rate will reach 150 kB/sec with CR-52x drives, 300 kB/sec with
+-CR-56x drives, and currently not more than 500 kB/sec (usually less than
+-250 kB/sec) with the Teac quad speed drives.
+-XA (PhotoCD) disks with "old" drives give only 50 kB/sec.
+-
+-This release consists of
+-- this README file
+-- the driver file linux/drivers/cdrom/sbpcd.c
+-- the stub files linux/drivers/cdrom/sbpcd[234].c
+-- the header file linux/drivers/cdrom/sbpcd.h.
+-
+-
+-To install:
+------------
+-
+-1. Setup your hardware parameters. Though the driver does "auto-probing" at a
+-   lot of (not all possible!) addresses, this step is recommended for
+-   everyday use. You should let sbpcd auto-probe once and use the reported
+-   address if a drive got found. The reported type may be incorrect; it is
+-   correct if you can mount a data CD. There is no choice for you with the
+-   type; only one is right, the others are deadly wrong.
+-
+-   a. Go into /usr/src/linux/drivers/cdrom/sbpcd.h and configure it for your
+-      hardware (near the beginning):
+-      a1. Set it up for the appropriate type of interface board.
+-          "Original" CreativeLabs sound cards need "SBPRO 1".
+-          Most "compatible" sound cards (almost all "non-CreativeLabs" cards)
+-          need "SBPRO 0".
+-          The "no-sound" board from OmniCd needs the "SBPRO 1" setup.
+-          The Teac 8-bit "no-sound" boards need the "SBPRO 1" setup.
+-          The Teac 16-bit "no-sound" boards need the "SBPRO 3" setup.
+-          All other "no-sound" boards need the "SBPRO 0" setup.
+-          The Spea Media FX and Ensoniq SoundScape cards need "SBPRO 2".
+-          sbpcd.c holds some examples in its auto-probe list.
+-          If you configure "SBPRO" wrong, the playing of audio CDs will work,
+-          but you will not be able to mount a data CD.
+-      a2. Tell the address of your CDROM_PORT (not of the sound port).
+-      a3. If 4 drives get found, but you have only one, set MAX_DRIVES to 1.
+-      a4. Set DISTRIBUTION to 0.
+-   b. Additionally for 2.a1 and 2.a2, the setup may be done during
+-      boot time (via the "kernel command line" or "LILO option"):
+-          sbpcd=0x320,LaserMate
+-      or
+-          sbpcd=0x230,SoundBlaster
+-      or
+-          sbpcd=0x338,SoundScape
+-      or
+-          sbpcd=0x2C0,Teac16bit
+-      This is especially useful if you install a fresh distribution.
+-      If the second parameter is a number, it gets taken as the type
+-      setting; 0 is "LaserMate", 1 is "SoundBlaster", 2 is "SoundScape",
+-      3 is "Teac16bit".
+-      So, for example
+-          sbpcd=0x230,1
+-      is equivalent to
+-          sbpcd=0x230,SoundBlaster
+-
+-2. "cd /usr/src/linux" and do a "make config" and select "y" for Matsushita
+-   CD-ROM support and for ISO9660 FileSystem support. If you do not have a
+-   second, third, or fourth controller installed, do not say "y" to the 
+-   secondary Matsushita CD-ROM questions.
+-
+-3. Then make the kernel image ("make zlilo" or similar).
+-
+-4. Make the device file(s). This step usually already has been done by the
+-   MAKEDEV script.
+-   The driver uses MAJOR 25, so, if necessary, do
+-        mknod /dev/sbpcd  b 25 0       (if you have only one drive)
+-   and/or
+-        mknod /dev/sbpcd0 b 25 0
+-        mknod /dev/sbpcd1 b 25 1
+-        mknod /dev/sbpcd2 b 25 2
+-        mknod /dev/sbpcd3 b 25 3
+-   to make the node(s).
+-
+-   The "first found" drive gets MINOR 0 (regardless of its jumpered ID), the
+-   "next found" (at the same cable) gets MINOR 1, ...
+-   
+-   For a second interface board, you have to make nodes like
+-        mknod /dev/sbpcd4 b 26 0
+-        mknod /dev/sbpcd5 b 26 1
+-   and so on. Use the MAJORs 26, 27, 28.
+-
+-   If you further make a link like
+-        ln -s sbpcd /dev/cdrom
+-   you can use the name /dev/cdrom, too.
+-
+-5. Reboot with the new kernel.
+-
+-You should now be able to do
+-              mkdir /CD
+-and 
+-              mount -rt iso9660 /dev/sbpcd /CD
+-or
+-              mount -rt iso9660 -o block=2048 /dev/sbpcd /CD
+-and see the contents of your CD in the /CD directory.
+-To use audio CDs, a mounting is not recommended (and it would fail if the
+-first track is not a data track).
+-
+-
+-Using sbpcd as a "loadable module":
+------------------------------------
+-
+-If you do NOT select "Matsushita/Panasonic CDROM driver support" during the
+-"make config" of your kernel, you can build the "loadable module" sbpcd.o.
+-
+-If sbpcd gets used as a module, the support of more than one interface
+-card (i.e. drives 4...15) is disabled.
+-
+-You can specify interface address and type with the "insmod" command like:
+- # insmod /usr/src/linux/modules/sbpcd.o sbpcd=0x340,0
+-or
+- # insmod /usr/src/linux/modules/sbpcd.o sbpcd=0x230,1
+-or
+- # insmod /usr/src/linux/modules/sbpcd.o sbpcd=0x338,2
+-where the last number represents the SBPRO setting (no strings allowed here).
+-
+-
+-Things of interest:
+--------------------
+-
+-The driver is configured to try the LaserMate type of interface at I/O port
+-0x0340 first. If this is not appropriate, sbpcd.h should get changed
+-(you will find the right place - just at the beginning).
+-
+-No DMA and no IRQ is used.
+-
+-To reduce or increase the amount of kernel messages, edit sbpcd.c and play
+-with the "DBG_xxx" switches (initialization of the variable "sbpcd_debug").
+-Don't forget to reflect on what you do; enabling all DBG_xxx switches at once
+-may crash your system, and each message line is accompanied by a delay.
+-
+-The driver uses the "variable BLOCK_SIZE" feature. To use it, you have to
+-specify "block=2048" as a mount option. Doing this will disable the direct
+-execution of a binary from the CD; you have to copy it to a device with the
+-standard BLOCK_SIZE (1024) first. So, do not use this if your system is
+-directly "running from the CDROM" (like some of Yggdrasil's installation
+-variants). There are CDs on the market (like the German "unifix" Linux
+-distribution) which MUST get handled with a block_size of 1024. Generally,
+-one can say all the CDs which hold files of the name YMTRANS.TBL are defective;
+-do not use block=2048 with those.
+-
+-Within sbpcd.h, you will find some "#define"s (e.g. EJECT and JUKEBOX). With
+-these, you can configure the driver for some special things.
+-You can use the appended program "cdtester" to set the auto-eject feature
+-during runtime. Jeff Tranter's "eject" utility can do this, too (and more)
+-for you.
+-
+-There is an ioctl CDROMMULTISESSION to obtain with a user program if
+-the CD is an XA disk and - if it is - where the last session starts. The
+-"cdtester" program illustrates how to call it.
+-
+-
+-Auto-probing at boot time:
+---------------------------
+-
+-The driver does auto-probing at many well-known interface card addresses,
+-but not all:
+-Some probings can cause a hang if an NE2000 ethernet card gets touched, because
+-SBPCD's auto-probing happens before the initialization of the net drivers.
+-Those "hazardous" addresses are excluded from auto-probing; the "kernel 
+-command line" feature has to be used during installation if you have your 
+-drive at those addresses. The "module" version is allowed to probe at those
+-addresses, too.
+-
+-The auto-probing looks first at the configured address resp. the address
+-submitted by the kernel command line. With this, it is possible to use this
+-driver within installation boot floppies, and for any non-standard address,
+-too.
+-
+-Auto-probing will make an assumption about the interface type ("SBPRO" or not),
+-based upon the address. That assumption may be wrong (initialization will be
+-o.k., but you will get I/O errors during mount). In that case, use the "kernel
+-command line" feature and specify address & type at boot time to find out the
+-right setup.
+-
+-For everyday use, address and type should get configured within sbpcd.h. That
+-will stop the auto-probing due to success with the first try.
+-
+-The kernel command "sbpcd=0" suppresses each auto-probing and causes
+-the driver not to find any drive; it is meant for people who love sbpcd
+-so much that they do not want to miss it, even if they miss the drives. ;-)  
+-
+-If you configure "#define CDROM_PORT 0" in sbpcd.h, the auto-probing is
+-initially disabled and needs an explicit kernel command to get activated.
+-Once activated, it does not stop before success or end-of-list. This may be
+-useful within "universal" CDROM installation boot floppies (but using the 
+-loadable module would be better because it allows an "extended" auto-probing
+-without fearing NE2000 cards).
+-
+-To shorten the auto-probing list to a single entry, set DISTRIBUTION 0 within
+-sbpcd.h.
+-
+-
+-Setting up address and interface type:
+---------------------------------------
+-
+-If your I/O port address is not 0x340, you have to look for the #defines near
+-the beginning of sbpcd.h and configure them: set SBPRO to 0 or 1 or 2, and
+-change CDROM_PORT to the address of your CDROM I/O port.
+-
+-Almost all of the "SoundBlaster compatible" cards behave like the no-sound
+-interfaces, i.e. need SBPRO 0! 
+-
+-With "original" SB Pro cards, an initial setting of CD_volume through the
+-sound card's MIXER register gets done.
+-If you are using a "compatible" sound card of types "LaserMate" or "SPEA",
+-you can set SOUND_BASE (in sbpcd.h) to get it done with your card, too...
+-
+-
+-Using audio CDs:
+-----------------
+-
+-Workman, WorkBone, xcdplayer, cdplayer and the nice little tool "cdplay" (see
+-README.aztcd from the Aztech driver package) should work.
+-
+-The program CDplayer likes to talk to "/dev/mcd" only, xcdplayer wants
+-"/dev/rsr0", workman loves "/dev/sr0" or "/dev/cdrom" - so, make the 
+-appropriate links to use them without the need to supply parameters.
+-
+-
+-Copying audio tracks:
+----------------------
+-
+-The following program will copy track 1 (or a piece of it) from an audio CD
+-into the file "track01":
+-
+-/*=================== begin program ========================================*/
+-/*
+- * read an audio track from a CD
+- *
+- * (c) 1994 Eberhard Moenkeberg <emoenke@gwdg.de>
+- *          may be used & enhanced freely
+- *
+- * Due to non-existent sync bytes at the beginning of each audio frame (or due
+- * to a firmware bug within all known drives?), it is currently a kind of
+- * fortune if two consecutive frames fit together.
+- * Usually, they overlap, or a little piece is missing. This happens in units
+- * of 24-byte chunks. It has to get fixed by higher-level software (reading
+- * until an overlap occurs, and then eliminate the overlapping chunks). 
+- * ftp.gwdg.de:/pub/linux/misc/cdda2wav-sbpcd.*.tar.gz holds an example of
+- * such an algorithm.
+- * This example program further is missing to obtain the SubChannel data
+- * which belong to each frame.
+- *
+- * This is only an example of the low-level access routine. The read data are
+- * pure 16-bit CDDA values; they have to get converted to make sound out of
+- * them.
+- * It is no fun to listen to it without prior overlap/underlap correction!
+- */
+-#include <stdio.h>
+-#include <sys/ioctl.h>
+-#include <sys/types.h>
+-#include <linux/cdrom.h>
+-
+-static struct cdrom_tochdr hdr;
+-static struct cdrom_tocentry entry[101];
+-static struct cdrom_read_audio arg;
+-static u_char buffer[CD_FRAMESIZE_RAW];
+-static int datafile, drive;
+-static int i, j, limit, track, err;
+-static char filename[32];
+-
+-int main(int argc, char *argv[])
+-{
+-/*
+- * open /dev/cdrom
+- */
+-  drive=open("/dev/cdrom", 0);
+-  if (drive<0)
+-    {
+-      fprintf(stderr, "can't open drive.\n");
+-      exit (-1);
+-    }
+-/*
+- * get TocHeader
+- */
+-  fprintf(stdout, "getting TocHeader...\n");
+-  err=ioctl(drive, CDROMREADTOCHDR, &hdr);
+-  if (err!=0)
+-    {
+-      fprintf(stderr, "can't get TocHeader (error %d).\n", err);
+-      exit (-1);
+-    }
+-  else
+-    fprintf(stdout, "TocHeader: %d %d\n", hdr.cdth_trk0, hdr.cdth_trk1);
+-/*
+- * get and display all TocEntries
+- */
+-  fprintf(stdout, "getting TocEntries...\n");
+-  for (i=1;i<=hdr.cdth_trk1+1;i++)
+-    {
+-      if (i!=hdr.cdth_trk1+1) entry[i].cdte_track = i;
+-      else entry[i].cdte_track = CDROM_LEADOUT;
+-      entry[i].cdte_format = CDROM_LBA;
+-      err=ioctl(drive, CDROMREADTOCENTRY, &entry[i]);
+-      if (err!=0)
+-	{
+-	  fprintf(stderr, "can't get TocEntry #%d (error %d).\n", i, err);
+-	  exit (-1);
+-	}
+-      else
+-	{
+-	  fprintf(stdout, "TocEntry #%d: %1X %1X %06X %02X\n",
+-		 entry[i].cdte_track,
+-		 entry[i].cdte_adr,
+-		 entry[i].cdte_ctrl,
+-		 entry[i].cdte_addr.lba,
+-		 entry[i].cdte_datamode);
+-	}
+-    }
+-  fprintf(stdout, "got all TocEntries.\n");
+-/*
+- * ask for track number (not implemented here)
+- */
+-track=1;
+-#if 0 /* just read a little piece (4 seconds) */
+-entry[track+1].cdte_addr.lba=entry[track].cdte_addr.lba+300;
+-#endif
+-/*
+- * read track into file
+- */
+-  sprintf(filename, "track%02d\0", track);
+-  datafile=creat(filename, 0755);
+-  if (datafile<0)
+-    {
+-      fprintf(stderr, "can't open datafile %s.\n", filename);
+-      exit (-1);
+-    }
+-  arg.addr.lba=entry[track].cdte_addr.lba;
+-  arg.addr_format=CDROM_LBA; /* CDROM_MSF would be possible here, too. */
+-  arg.nframes=1;
+-  arg.buf=&buffer[0];
+-  limit=entry[track+1].cdte_addr.lba;
+-  for (;arg.addr.lba<limit;arg.addr.lba++)
+-    {
+-      err=ioctl(drive, CDROMREADAUDIO, &arg);
+-      if (err!=0)
+-	{
+-	  fprintf(stderr, "can't read abs. frame #%d (error %d).\n", 
+-		 arg.addr.lba, err);
+-	}
+-      j=write(datafile, &buffer[0], CD_FRAMESIZE_RAW);
+-      if (j!=CD_FRAMESIZE_RAW)
+-	{
+-	  fprintf(stderr,"I/O error (datafile) at rel. frame %d\n",
+-			 arg.addr.lba-entry[track].cdte_addr.lba);
+-	}
+-      arg.addr.lba++;
+-    }
+-    return 0;
+-}
+-/*===================== end program ========================================*/
+-
+-At ftp.gwdg.de:/pub/linux/misc/cdda2wav-sbpcd.*.tar.gz is an adapted version of
+-Heiko Eissfeldt's digital-audio to .WAV converter (the original is there, too).
+-This is preliminary, as Heiko himself will care about it.
+-
+-
+-Known problems:
+----------------
+-
+-Currently, the detection of disk change or removal is actively disabled.
+-
+-Most attempts to read the UPC/EAN code result in a stream of zeroes. All my
+-drives are mostly telling there is no UPC/EAN code on disk or there is, but it
+-is an all-zero number. I guess now almost no CD holds such a number.
+-
+-Bug reports, comments, wishes, donations (technical information is a donation,
+-too :-) etc. to emoenke@gwdg.de.
+-
+-SnailMail address, preferable for CD editors if they want to submit a free
+-"cooperation" copy:
+-                         Eberhard Moenkeberg
+-                         Reinholdstr. 14
+-                         D-37083 Goettingen
+-                         Germany
+----
+-
+-
+-Appendix -- the "cdtester" utility:
+-
+-/*
+- * cdtester.c -- test the audio functions of a CD driver
+- *
+- * (c) 1995 Eberhard Moenkeberg <emoenke@gwdg.de>
+- *          published under the GPL
+- *
+- *          made under heavy use of the "Tiny Audio CD Player"
+- *          from Werner Zimmermann <zimmerma@rz.fht-esslingen.de>
+- *          (see linux/drivers/block/README.aztcd)
+- */
+-#undef AZT_PRIVATE_IOCTLS /* not supported by every CDROM driver */
+-#define SBP_PRIVATE_IOCTLS /* not supported by every CDROM driver */
+-
+-#include <stdio.h>
+-#include <stdio.h>
+-#include <malloc.h>
+-#include <sys/ioctl.h>
+-#include <sys/types.h>
+-#include <linux/cdrom.h>
+-
+-#ifdef AZT_PRIVATE_IOCTLS
+-#include <linux/../../drivers/cdrom/aztcd.h>
+-#endif /* AZT_PRIVATE_IOCTLS */
+-#ifdef SBP_PRIVATE_IOCTLS
+-#include <linux/../../drivers/cdrom/sbpcd.h>
+-#include <linux/fs.h>
+-#endif /* SBP_PRIVATE_IOCTLS */
+-
+-struct cdrom_tochdr hdr;
+-struct cdrom_tochdr tocHdr;
+-struct cdrom_tocentry TocEntry[101];
+-struct cdrom_tocentry entry;
+-struct cdrom_multisession ms_info;
+-struct cdrom_read_audio read_audio;
+-struct cdrom_ti ti;
+-struct cdrom_subchnl subchnl;
+-struct cdrom_msf msf;
+-struct cdrom_volctrl volctrl;
+-#ifdef AZT_PRIVATE_IOCTLS
+-union
+-{
+-	struct cdrom_msf msf;
+-	unsigned char buf[CD_FRAMESIZE_RAW];
+-} azt;
+-#endif /* AZT_PRIVATE_IOCTLS */
+-int i, i1, i2, i3, j, k;
+-unsigned char sequence=0;
+-unsigned char command[80];
+-unsigned char first=1, last=1;
+-char *default_device="/dev/cdrom";
+-char dev[20];
+-char filename[20];
+-int drive;
+-int datafile;
+-int rc;
+-
+-void help(void)
+-{
+-	printf("Available Commands:\n");
+-	printf("STOP          s      EJECT        e       QUIT         q\n");
+-	printf("PLAY TRACK    t      PAUSE        p       RESUME       r\n");
+-	printf("NEXT TRACK    n      REPEAT LAST  l       HELP         h\n");
+-	printf("SUBCHANNEL_Q  c      TRACK INFO   i       PLAY AT      a\n");
+-	printf("READ          d      READ RAW     w       READ AUDIO   A\n");
+-	printf("MS-INFO       M      TOC          T       START        S\n");
+-	printf("SET EJECTSW   X      DEVICE       D       DEBUG        Y\n");
+-	printf("AUDIO_BUFSIZ  Z      RESET        R       SET VOLUME   v\n");
+-	printf("GET VOLUME    V\n");
+-}
+-
+-/*
+- *  convert MSF number (3 bytes only) to Logical_Block_Address 
+- */
+-int msf2lba(u_char *msf)
+-{
+-	int i;
+-	
+-	i=(msf[0] * CD_SECS + msf[1]) * CD_FRAMES + msf[2] - CD_BLOCK_OFFSET;
+-	if (i<0) return (0);
+-	return (i);
+-}
+-/*
+- *  convert logical_block_address to m-s-f_number (3 bytes only)
+- */
+-void lba2msf(int lba, unsigned char *msf)
+-{
+-	lba += CD_BLOCK_OFFSET;
+-	msf[0] = lba / (CD_SECS*CD_FRAMES);
+-	lba %= CD_SECS*CD_FRAMES;
+-	msf[1] = lba / CD_FRAMES;
+-	msf[2] = lba % CD_FRAMES;
+-}
+-
+-int init_drive(char *dev)
+-{
+-	unsigned char msf_ent[3];
+-
+-	/*
+-	 * open the device
+-	 */
+-	drive=open(dev,0);
+-	if (drive<0) return (-1);
+-	/*
+-	 * get TocHeader
+-	 */
+-	printf("getting TocHeader...\n");
+-	rc=ioctl(drive,CDROMREADTOCHDR,&hdr);
+-	if (rc!=0)
+-	{
+-		printf("can't get TocHeader (error %d).\n",rc);
+-		return (-2);
+-	}
+-	else
+-		first=hdr.cdth_trk0;
+-		last=hdr.cdth_trk1;
+-		printf("TocHeader: %d %d\n",hdr.cdth_trk0,hdr.cdth_trk1);
+-	/*
+-	 * get and display all TocEntries
+-	 */
+-	printf("getting TocEntries...\n");
+-	for (i=1;i<=hdr.cdth_trk1+1;i++)
+-	{
+-		if (i!=hdr.cdth_trk1+1) TocEntry[i].cdte_track = i;
+-		else TocEntry[i].cdte_track = CDROM_LEADOUT;
+-		TocEntry[i].cdte_format = CDROM_LBA;
+-		rc=ioctl(drive,CDROMREADTOCENTRY,&TocEntry[i]);
+-		if (rc!=0)
+-		{
+-			printf("can't get TocEntry #%d (error %d).\n",i,rc);
+-		}
+-		else
+-		{
+-			lba2msf(TocEntry[i].cdte_addr.lba,&msf_ent[0]);
+-			if (TocEntry[i].cdte_track==CDROM_LEADOUT)
+-			{
+-				printf("TocEntry #%02X: %1X %1X %02d:%02d:%02d (lba: 0x%06X) %02X\n",
+-				       TocEntry[i].cdte_track,
+-				       TocEntry[i].cdte_adr,
+-				       TocEntry[i].cdte_ctrl,
+-				       msf_ent[0],
+-				       msf_ent[1],
+-				       msf_ent[2],
+-				       TocEntry[i].cdte_addr.lba,
+-				       TocEntry[i].cdte_datamode);
+-			}
+-			else
+-			{
+-				printf("TocEntry #%02d: %1X %1X %02d:%02d:%02d (lba: 0x%06X) %02X\n",
+-				       TocEntry[i].cdte_track,
+-				       TocEntry[i].cdte_adr,
+-				       TocEntry[i].cdte_ctrl,
+-				       msf_ent[0],
+-				       msf_ent[1],
+-				       msf_ent[2],
+-				       TocEntry[i].cdte_addr.lba,
+-				       TocEntry[i].cdte_datamode);
+-			}
+-		}
+-	}
+-	return (hdr.cdth_trk1); /* number of tracks */
+-}
+-
+-void display(int size,unsigned char *buffer)
+-{
+-	k=0;
+-	getchar();
+-	for (i=0;i<(size+1)/16;i++)
+-	{
+-		printf("%4d:",i*16);
+-		for (j=0;j<16;j++)
+-		{
+-			printf(" %02X",buffer[i*16+j]);
+-		}
+-		printf("  ");
+-		for (j=0;j<16;j++)
+-		{
+-			if (isalnum(buffer[i*16+j])) 
+-				printf("%c",buffer[i*16+j]);
+-			else
+-				printf(".");
+-		}
+-		printf("\n"); 
+-		k++;
+-		if (k>=20)
+-		{
+-			printf("press ENTER to continue\n");
+-			getchar();
+-			k=0;
+-		}
+-	} 
+-} 
+-
+-int main(int argc, char *argv[])
+-{
+-	printf("\nTesting tool for a CDROM driver's audio functions V0.1\n");
+-	printf("(C) 1995 Eberhard Moenkeberg <emoenke@gwdg.de>\n");
+-	printf("initializing...\n");
+-	
+-	rc=init_drive(default_device);
+-	if (rc<0) printf("could not open %s (rc=%d).\n",default_device,rc);
+-	help();
+-	while (1)
+-	{
+-		printf("Give a one-letter command (h = help): ");
+-		scanf("%s",command);
+-		command[1]=0;
+-		switch (command[0])
+-		{
+-		case 'D':
+-			printf("device name (f.e. /dev/sbpcd3): ? ");
+-			scanf("%s",&dev);
+-			close(drive);
+-			rc=init_drive(dev);
+-			if (rc<0) printf("could not open %s (rc %d).\n",dev,rc);
+-			break;
+-		case 'e':
+-			rc=ioctl(drive,CDROMEJECT);
+-			if (rc<0) printf("CDROMEJECT: rc=%d.\n",rc);
+-			break;
+-		case 'p':
+-			rc=ioctl(drive,CDROMPAUSE);
+-			if (rc<0) printf("CDROMPAUSE: rc=%d.\n",rc);
+-			break;
+-		case 'r':
+-			rc=ioctl(drive,CDROMRESUME);
+-			if (rc<0) printf("CDROMRESUME: rc=%d.\n",rc);
+-			break;
+-		case 's':
+-			rc=ioctl(drive,CDROMSTOP);
+-			if (rc<0) printf("CDROMSTOP: rc=%d.\n",rc);
+-			break;
+-		case 'S':
+-			rc=ioctl(drive,CDROMSTART);
+-			if (rc<0) printf("CDROMSTART: rc=%d.\n",rc);
+-			break;
+-		case 't':
+-			rc=ioctl(drive,CDROMREADTOCHDR,&tocHdr);
+-			if (rc<0)
+-			{
+-				printf("CDROMREADTOCHDR: rc=%d.\n",rc);
+-				break;
+-			}
+-			first=tocHdr.cdth_trk0;
+-			last= tocHdr.cdth_trk1;
+-			if ((first==0)||(first>last))
+-			{
+-				printf ("--got invalid TOC data.\n");
+-			}
+-			else
+-			{
+-				printf("--enter track number(first=%d, last=%d): ",first,last);
+-				scanf("%d",&i1);
+-				ti.cdti_trk0=i1;
+-				if (ti.cdti_trk0<first) ti.cdti_trk0=first;
+-				if (ti.cdti_trk0>last) ti.cdti_trk0=last;
+-				ti.cdti_ind0=0;
+-				ti.cdti_trk1=last;
+-				ti.cdti_ind1=0;
+-				rc=ioctl(drive,CDROMSTOP);
+-				rc=ioctl(drive,CDROMPLAYTRKIND,&ti);
+-				if (rc<0) printf("CDROMPLAYTRKIND: rc=%d.\n",rc);
+-			}
+-			break;
+-		case 'n':
+-			rc=ioctl(drive,CDROMSTOP);
+-			if (++ti.cdti_trk0>last) ti.cdti_trk0=last;
+-			ti.cdti_ind0=0;
+-			ti.cdti_trk1=last;
+-			ti.cdti_ind1=0;
+-			rc=ioctl(drive,CDROMPLAYTRKIND,&ti);
+-			if (rc<0) printf("CDROMPLAYTRKIND: rc=%d.\n",rc);
+-			break;
+-		case 'l':
+-			rc=ioctl(drive,CDROMSTOP);
+-			if (--ti.cdti_trk0<first) ti.cdti_trk0=first;
+-			ti.cdti_ind0=0;
+-			ti.cdti_trk1=last;
+-			ti.cdti_ind1=0;
+-			rc=ioctl(drive,CDROMPLAYTRKIND,&ti);
+-			if (rc<0) printf("CDROMPLAYTRKIND: rc=%d.\n",rc);
+-			break;
+-		case 'c':
+-			subchnl.cdsc_format=CDROM_MSF;
+-			rc=ioctl(drive,CDROMSUBCHNL,&subchnl);
+-			if (rc<0) printf("CDROMSUBCHNL: rc=%d.\n",rc);
+-			else
+-			{
+-				printf("AudioStatus:%s  Track:%d  Mode:%d  MSF=%02d:%02d:%02d\n",
+-				       subchnl.cdsc_audiostatus==CDROM_AUDIO_PLAY ? "PLAYING":"NOT PLAYING",
+-				       subchnl.cdsc_trk,subchnl.cdsc_adr, 
+-				       subchnl.cdsc_absaddr.msf.minute,
+-				       subchnl.cdsc_absaddr.msf.second,
+-				       subchnl.cdsc_absaddr.msf.frame);
+-			}
+-			break;              
+-		case 'i':
+-			printf("Track No.: ");
+-			scanf("%d",&i1);
+-			entry.cdte_track=i1;
+-			if (entry.cdte_track<first) entry.cdte_track=first;
+-			if (entry.cdte_track>last)  entry.cdte_track=last;
+-			entry.cdte_format=CDROM_MSF;
+-			rc=ioctl(drive,CDROMREADTOCENTRY,&entry);
+-			if (rc<0) printf("CDROMREADTOCENTRY: rc=%d.\n",rc);
+-			else
+-			{
+-				printf("Mode %d Track, starts at %02d:%02d:%02d\n",
+-				       entry.cdte_adr,
+-				       entry.cdte_addr.msf.minute,
+-				       entry.cdte_addr.msf.second,
+-				       entry.cdte_addr.msf.frame);
+-			}
+-			break;
+-		case 'a':
+-			printf("Address (min:sec:frm)  ");
+-			scanf("%d:%d:%d",&i1,&i2,&i3);
+-			msf.cdmsf_min0=i1;
+-			msf.cdmsf_sec0=i2;
+-			msf.cdmsf_frame0=i3;
+-			if (msf.cdmsf_sec0>59) msf.cdmsf_sec0=59;
+-			if (msf.cdmsf_frame0>74) msf.cdmsf_frame0=74;
+-			lba2msf(TocEntry[last+1].cdte_addr.lba-1,&msf.cdmsf_min1);
+-			rc=ioctl(drive,CDROMSTOP);
+-			rc=ioctl(drive,CDROMPLAYMSF,&msf);
+-			if (rc<0) printf("CDROMPLAYMSF: rc=%d.\n",rc);
+-			break;
+-		case 'V':
+-			rc=ioctl(drive,CDROMVOLREAD,&volctrl);
+-			if (rc<0) printf("CDROMVOLCTRL: rc=%d.\n",rc);
+-			printf("Volume: channel 0 (left) %d, channel 1 (right) %d\n",volctrl.channel0,volctrl.channel1);
+-			break;  
+-		case 'R':
+-			rc=ioctl(drive,CDROMRESET);
+-			if (rc<0) printf("CDROMRESET: rc=%d.\n",rc);
+-			break;
+-#ifdef AZT_PRIVATE_IOCTLS /*not supported by every CDROM driver*/
+-		case 'd':
+-			printf("Address (min:sec:frm)  ");
+-			scanf("%d:%d:%d",&i1,&i2,&i3);
+-			azt.msf.cdmsf_min0=i1;
+-			azt.msf.cdmsf_sec0=i2;
+-			azt.msf.cdmsf_frame0=i3;
+-			if (azt.msf.cdmsf_sec0>59) azt.msf.cdmsf_sec0=59;
+-			if (azt.msf.cdmsf_frame0>74) azt.msf.cdmsf_frame0=74;
+-			rc=ioctl(drive,CDROMREADMODE1,&azt.msf);
+-			if (rc<0) printf("CDROMREADMODE1: rc=%d.\n",rc);
+-			else display(CD_FRAMESIZE,azt.buf);
+-			break;
+-		case 'w':
+-			printf("Address (min:sec:frame)  ");
+-			scanf("%d:%d:%d",&i1,&i2,&i3);
+-			azt.msf.cdmsf_min0=i1;
+-			azt.msf.cdmsf_sec0=i2;
+-			azt.msf.cdmsf_frame0=i3;
+-			if (azt.msf.cdmsf_sec0>59) azt.msf.cdmsf_sec0=59;
+-			if (azt.msf.cdmsf_frame0>74) azt.msf.cdmsf_frame0=74;
+-			rc=ioctl(drive,CDROMREADMODE2,&azt.msf);
+-			if (rc<0) printf("CDROMREADMODE2: rc=%d.\n",rc);
+-			else display(CD_FRAMESIZE_RAW,azt.buf); /* currently only 2336 */
+-			break;  
+-#endif
+-		case 'v':
+-			printf("--Channel 0 (Left)  (0-255): ");
+-			scanf("%d",&i1);
+-			volctrl.channel0=i1;
+-			printf("--Channel 1 (Right) (0-255): ");
+-			scanf("%d",&i1);
+-			volctrl.channel1=i1;
+-			volctrl.channel2=0;
+-			volctrl.channel3=0;
+-			rc=ioctl(drive,CDROMVOLCTRL,&volctrl);
+-			if (rc<0) printf("CDROMVOLCTRL: rc=%d.\n",rc);
+-			break;  
+-		case 'q':
+-			close(drive);
+-			exit(0);
+-		case 'h':
+-			help();
+-			break;
+-		case 'T': /* display TOC entry - without involving the driver */
+-			scanf("%d",&i);
+-			if ((i<hdr.cdth_trk0)||(i>hdr.cdth_trk1))
+-				printf("invalid track number.\n");
+-			else
+-				printf("TocEntry %02d: adr=%01X ctrl=%01X msf=%02d:%02d:%02d mode=%02X\n",
+-				       TocEntry[i].cdte_track,
+-				       TocEntry[i].cdte_adr,
+-				       TocEntry[i].cdte_ctrl,
+-				       TocEntry[i].cdte_addr.msf.minute,
+-				       TocEntry[i].cdte_addr.msf.second,
+-				       TocEntry[i].cdte_addr.msf.frame,
+-				       TocEntry[i].cdte_datamode);
+-			break;
+-		case 'A': /* read audio data into file */
+-			printf("Address (min:sec:frm) ? ");
+-			scanf("%d:%d:%d",&i1,&i2,&i3);
+-			read_audio.addr.msf.minute=i1;
+-			read_audio.addr.msf.second=i2;
+-			read_audio.addr.msf.frame=i3;
+-			read_audio.addr_format=CDROM_MSF;
+-			printf("# of frames ? ");
+-			scanf("%d",&i1);
+-			read_audio.nframes=i1;
+-			k=read_audio.nframes*CD_FRAMESIZE_RAW;
+-			read_audio.buf=malloc(k);
+-			if (read_audio.buf==NULL)
+-			{
+-				printf("can't malloc %d bytes.\n",k);
+-				break;
+-			}
+-			sprintf(filename,"audio_%02d%02d%02d_%02d.%02d\0",
+-				read_audio.addr.msf.minute,
+-				read_audio.addr.msf.second,
+-				read_audio.addr.msf.frame,
+-				read_audio.nframes,
+-				++sequence);
+-			datafile=creat(filename, 0755);
+-			if (datafile<0)
+-			{
+-				printf("can't open datafile %s.\n",filename);
+-				break;
+-			}
+-			rc=ioctl(drive,CDROMREADAUDIO,&read_audio);
+-			if (rc!=0)
+-			{
+-				printf("CDROMREADAUDIO: rc=%d.\n",rc);
+-			}
+-			else
+-			{
+-				rc=write(datafile,&read_audio.buf,k);
+-				if (rc!=k) printf("datafile I/O error (%d).\n",rc);
+-			}
+-			close(datafile);
+-			break;
+-		case 'X': /* set EJECT_SW (0: disable, 1: enable auto-ejecting) */
+-			scanf("%d",&i);
+-			rc=ioctl(drive,CDROMEJECT_SW,i);
+-			if (rc!=0)
+-				printf("CDROMEJECT_SW: rc=%d.\n",rc);
+-			else
+-				printf("EJECT_SW set to %d\n",i);
+-			break;
+-		case 'M': /* get the multisession redirection info */
+-			ms_info.addr_format=CDROM_LBA;
+-			rc=ioctl(drive,CDROMMULTISESSION,&ms_info);
+-			if (rc!=0)
+-			{
+-				printf("CDROMMULTISESSION(lba): rc=%d.\n",rc);
+-			}
+-			else
+-			{
+-				if (ms_info.xa_flag) printf("MultiSession offset (lba): %d (0x%06X)\n",ms_info.addr.lba,ms_info.addr.lba);
+-				else
+-				{
+-					printf("this CD is not an XA disk.\n");
+-					break;
+-				}
+-			}
+-			ms_info.addr_format=CDROM_MSF;
+-			rc=ioctl(drive,CDROMMULTISESSION,&ms_info);
+-			if (rc!=0)
+-			{
+-				printf("CDROMMULTISESSION(msf): rc=%d.\n",rc);
+-			}
+-			else
+-			{
+-				if (ms_info.xa_flag)
+-					printf("MultiSession offset (msf): %02d:%02d:%02d (0x%02X%02X%02X)\n",
+-					       ms_info.addr.msf.minute,
+-					       ms_info.addr.msf.second,
+-					       ms_info.addr.msf.frame,
+-					       ms_info.addr.msf.minute,
+-					       ms_info.addr.msf.second,
+-					       ms_info.addr.msf.frame);
+-				else printf("this CD is not an XA disk.\n");
+-			}
+-			break;
+-#ifdef SBP_PRIVATE_IOCTLS
+-		case 'Y': /* set the driver's message level */
+-#if 0 /* not implemented yet */
+-			printf("enter switch name (f.e. DBG_CMD): ");
+-			scanf("%s",&dbg_switch);
+-			j=get_dbg_num(dbg_switch);
+-#else
+-			printf("enter DDIOCSDBG switch number: ");
+-			scanf("%d",&j);
+-#endif
+-			printf("enter 0 for \"off\", 1 for \"on\": ");
+-			scanf("%d",&i);
+-			if (i==0) j|=0x80;
+-			printf("calling \"ioctl(drive,DDIOCSDBG,%d)\"\n",j);
+-			rc=ioctl(drive,DDIOCSDBG,j);
+-			printf("DDIOCSDBG: rc=%d.\n",rc);
+-			break;
+-		case 'Z': /* set the audio buffer size */
+-			printf("# frames wanted: ? ");
+-			scanf("%d",&j);
+-			rc=ioctl(drive,CDROMAUDIOBUFSIZ,j);
+-			printf("%d frames granted.\n",rc);
+-			break;
+-#endif /* SBP_PRIVATE_IOCTLS */
+-		default:
+-			printf("unknown command: \"%s\".\n",command);
+-			break;
+-		}
+-	}
+-	return 0;
+-}
+-/*==========================================================================*/
+-
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/sjcd	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,60 +0,0 @@
+- -- Documentation/cdrom/sjcd
+-				80% of the work takes 20% of the time,
+-				20% of the work takes 80% of the time...
+-						(Murphy's law)
+-
+-				Once started, training can not be stopped...
+-						(Star Wars)
+-
+-This is the README for the sjcd cdrom driver, version 1.6.
+-
+-This file is meant as a tips & tricks edge for the usage of the SANYO CDR-H94A
+-cdrom drive. It will grow as the questions arise. ;-)
+-For info on configuring the ISP16 sound card look at Documentation/cdrom/isp16.
+-
+-The driver should work with any of the Panasonic, Sony or Mitsumi style
+-CDROM interfaces.
+-The cdrom interface on Media Magic's soft configurable sound card ISP16,
+-which used to be included in the driver, is now supported in a separate module.
+-This initialisation module will probably also work with other interfaces
+-based on an OPTi 82C928 or 82C929 chip (like MAD16 and Mozart): see the
+-documentation Documentation/cdrom/isp16.
+-
+-The device major for sjcd is 18, and minor is 0. Create a block special
+-file in your /dev directory (e.g., /dev/sjcd) with these numbers.
+-(For those who don't know, being root and doing the following should do
+-the trick:
+-  mknod -m 644 /dev/sjcd b 18 0
+-and mount the cdrom by /dev/sjcd).
+-
+-The default configuration parameters are:
+-  base address 0x340
+-  no irq
+-  no dma
+-(Actually the CDR-H94A doesn't know how to use irq and dma.)
+-As of version 1.2, setting base address at boot time is supported
+-through the use of command line options: type at the "boot:" prompt:
+-  linux sjcd=<base_address>
+-(where you would use the kernel labeled "linux" in lilo's configuration
+-file /etc/lilo.conf). You could also use 'append="sjcd=<configuration_info>"'
+-in the appropriate section of /etc/lilo.conf
+-If you're building a kernel yourself you can set your default base
+-i/o address with SJCD_BASE_ADDR in /usr/src/linux/drivers/cdrom/sjcd.h.
+-
+-The sjcd driver supports being loaded as a module. The following
+-command will set the base i/o address on the fly (assuming you
+-have installed the module in an appropriate place).
+-  insmod sjcd.o sjcd_base=<base_address>
+-
+-
+-Have fun!
+-
+-If something is wrong, please email to		vadim@rbrf.ru
+-					or 	vadim@ipsun.ras.ru
+-					or	model@cecmow.enet.dec.com
+-					or	H.T.M.v.d.Maarel@marin.nl
+-
+-It happens sometimes that Vadim is not reachable by mail. For these
+-instances, Eric van der Maarel will help too.
+-
+-		Vadim V. Model, Eric van der Maarel, Eberhard Moenkeberg
+--- linux-2.6.22-rc6-mm1/Documentation/cdrom/sonycd535	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,122 +0,0 @@
+-              README FOR LINUX SONY CDU-535/531 DRIVER
+-              ========================================
+-
+-This is the Sony CDU-535 (and 531) driver version 0.7 for Linux.
+-I do not think I have the documentation to add features like DMA support
+-so if anyone else wants to pursue it or help me with it, please do.
+-(I need to see what was done for the CDU-31A driver -- perhaps I can
+-steal some of that code.)
+-
+-This is a Linux device driver for the Sony CDU-535 CDROM drive.  This is
+-one of the older Sony drives with its own interface card (Sony bus).
+-The DOS driver for this drive is named SONY_CDU.SYS - when you boot DOS
+-your drive should be identified as a SONY CDU-535.  The driver works
+-with a CDU-531 also.  One user reported that the driver worked on drives
+-OEM'ed by Procomm, drive and interface board were labelled Procomm.
+-
+-The Linux driver is based on Corey Minyard's sonycd 0.3 driver for
+-the CDU-31A.  Ron Jeppesen just changed the commands that were sent
+-to the drive to correspond to the CDU-535 commands and registers.
+-There were enough changes to let bugs creep in but it seems to be stable.
+-Ron was able to tar an entire CDROM (should read all blocks) and built
+-ghostview and xfig off Walnut Creek's X11R5/GNU CDROM.  xcdplayer and
+-workman work with the driver.  Others have used the driver without
+-problems except those dealing with wait loops (fixed in third release).
+-Like Minyard's original driver this one uses a polled interface (this
+-is also the default setup for the DOS driver).  It has not been tried
+-with interrupts or DMA enabled on the board.
+-
+-REQUIREMENTS
+-============
+-
+-	- Sony CDU-535 drive, preferably without interrupts and DMA 
+-	  enabled on the card.
+-
+-	- Drive must be set up as unit 1.  Only the first unit will be 
+-	  recognized
+-
+-	- You must enter your interface address into 
+-          /usr/src/linux/drivers/cdrom/sonycd535.h and build the
+-          appropriate kernel or use the "kernel command line" parameter
+-                sonycd535=0x320
+-          with the correct interface address.
+-
+-NOTES:
+-======
+-
+-1) The drive MUST be turned on when booting or it will not be recognized!
+-   (but see comments on modularized version below)
+-
+-2) when the cdrom device is opened the eject button is disabled to keep the
+-   user from ejecting a mounted disk and replacing it with another.
+-   Unfortunately xcdplayer and workman also open the cdrom device so you
+-   have to use the eject button in the software.  Keep this in mind if your
+-   cdrom player refuses to give up its disk -- exit workman or xcdplayer, or
+-   umount the drive if it has been mounted.
+-
+-THANKS
+-======
+-
+-Many thanks to Ron Jeppesen (ronj.an@site007.saic.com) for getting
+-this project off the ground.  He wrote the initial release
+-and the first two patches to this driver (0.1, 0.2, and 0.3).
+-Thanks also to Eberhard Moenkeberg (emoenke@gwdg.de) for prodding
+-me to place this code into the mainstream Linux source tree
+-(as of Linux version 1.1.91), as well as some patches to make
+-it a better device citizen.  Further thanks to Joel Katz
+-<joelkatz@webchat.org> for his MODULE patches (see details below),
+-Porfiri Claudio <C.Porfiri@nisms.tei.ericsson.se> for patches
+-to make the driver work with the older CDU-510/515 series, and
+-Heiko Eissfeldt <heiko@colossus.escape.de> for pointing out that
+-the verify_area() checks were ignoring the results of said checks
+-(note: verify_area() has since been replaced by access_ok()).
+-
+-(Acknowledgments from Ron Jeppesen in the 0.3 release:)
+-Thanks to Corey Minyard who wrote the original CDU-31A driver on which
+-this driver is based.  Thanks to Ken Pizzini and Bob Blair who provided 
+-patches and feedback on the first release of this driver.
+-
+-Ken Pizzini
+-ken@halcyon.com
+-
+-------------------------------------------------------------------------------
+-(The following is from Joel Katz <joelkatz@webchat.org>.)
+-
+-	To build a version of sony535.o that can be installed as a module,
+-use the following command:
+-
+-gcc -c -D__KERNEL__ -DMODULE -O2 sonycd535.c -o sonycd535.o
+-
+-	To install the module, simply type:
+-
+-insmod sony535.o
+-	or
+-insmod sony535.o sonycd535=<address>
+-
+-	And to remove it:
+-
+-rmmod sony535
+-
+-	The code checks to see if MODULE is defined and behaves as it used
+-to if MODULE is not defined. That means your patched file should behave
+-exactly as it used to if compiled into the kernel.
+-
+-	I have an external drive, and I usually leave it powered off. I used
+-to have to reboot if I needed to use the CDROM drive. Now I don't.
+-
+-	Even if you have an internal drive, why waste the 96K of memory
+-(unswappable) that the driver uses if you use your CD-ROM drive infrequently?
+-
+-	This driver will not install (whether compiled in or loaded as a
+-module) if the CDROM drive is not available during its initialization. This
+-means that you can have the driver compiled into the kernel and still load
+-the module later (assuming the driver doesn't install itself during
+-power-on). This only wastes 12K when you boot with the CDROM drive off.
+-
+-	This is what I usually do; I leave the driver compiled into the
+-kernel, but load it as a module if I powered the system up with the drive
+-off and then later decided to use the CDROM drive.
+-
+-	Since the driver only uses a single page to point to the chunks,
+-attempting to set the buffer cache to more than 2 Megabytes would be very
+-bad; don't do that.
 
