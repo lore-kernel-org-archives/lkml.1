@@ -1,36 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbXGKS4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbXGKS4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932736AbXGKS4A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932628AbXGKSzu
+	id S932656AbXGKS4Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932102AbXGKS4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:55:50 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:27931 "EHLO kernel.dk"
+	Wed, 11 Jul 2007 14:56:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41071 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932652AbXGKSzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:55:38 -0400
-Date: Wed, 11 Jul 2007 20:55:40 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove the documentation for the legacy CDROM
-	drivers
-Message-ID: <20070711185538.GE4587@kernel.dk>
-References: <20070711185216.GN3492@stusta.de>
+	id S932742AbXGKS4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 14:56:04 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070711185216.GN3492@stusta.de>
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc vDSO: install unstripped copies on disk
+X-Shopping-List: (1) Gelatinous sodium captors
+   (2) Insufficient opinion surprises
+   (3) Belligerent snowbulbs
+   (4) Mystic lieutenants
+   (5) Gelatinous squinty concussion friction
+Message-Id: <20070711185559.B45804D0555@magilla.localdomain>
+Date: Wed, 11 Jul 2007 11:55:59 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11 2007, Adrian Bunk wrote:
-> This patch removes the documentation for the removed legacy CDROM drivers.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Thanks, added.
+This keeps an unstripped copy of the vDSO images built before they are
+stripped and embedded in the kernel.  The unstripped copies get installed
+in $(MODLIB)/vdso/ by "make install".  These files can be useful when they
+contain source-level debugging information.
 
--- 
-Jens Axboe
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/Makefile               |    5 ++++-
+ arch/powerpc/kernel/vdso32/Makefile |   20 +++++++++++++++++---
+ arch/powerpc/kernel/vdso64/Makefile |   19 ++++++++++++++++---
+ 3 files changed, 37 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index fbafd96..1f768ca 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -168,6 +168,10 @@ endef
+ 
+ install:
+ 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) install
++ifeq ($(CONFIG_PPC64),y)
++	$(Q)$(MAKE) $(build)=arch/$(ARCH)/kernel/vdso64 install
++endif
++	$(Q)$(MAKE) $(build)=arch/$(ARCH)/kernel/vdso32 install
+ 
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=$(boot)
+@@ -209,4 +213,3 @@ checkbin:
+ 	fi
+ 
+ CLEAN_FILES += $(TOUT)
+-
+diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
+index 3726358..e6a6ef1 100644
+--- a/arch/powerpc/kernel/vdso32/Makefile
++++ b/arch/powerpc/kernel/vdso32/Makefile
+@@ -9,11 +9,11 @@ ifeq ($(CONFIG_PPC32),y)
+ CROSS32CC := $(CC)
+ endif
+ 
+-targets := $(obj-vdso32) vdso32.so
++targets := $(obj-vdso32) vdso32.so vdso32.so.dbg
+ obj-vdso32 := $(addprefix $(obj)/, $(obj-vdso32))
+ 
+ 
+-EXTRA_CFLAGS := -shared -s -fno-common -fno-builtin
++EXTRA_CFLAGS := -shared -fno-common -fno-builtin
+ EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso32.so.1 \
+ 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
+ EXTRA_AFLAGS := -D__VDSO32__ -s
+@@ -26,9 +26,14 @@ CPPFLAGS_vdso32.lds += -P -C -Upowerpc
+ $(obj)/vdso32_wrapper.o : $(obj)/vdso32.so
+ 
+ # link rule for the .so file, .lds has to be first
+-$(obj)/vdso32.so: $(src)/vdso32.lds $(obj-vdso32)
++$(obj)/vdso32.so.dbg: $(src)/vdso32.lds $(obj-vdso32)
+ 	$(call if_changed,vdso32ld)
+ 
++# strip rule for the .so file
++$(obj)/%.so: OBJCOPYFLAGS := -S
++$(obj)/%.so: $(obj)/%.so.dbg FORCE
++	$(call if_changed,objcopy)
++
+ # assembly rules for the .S files
+ $(obj-vdso32): %.o: %.S
+ 	$(call if_changed_dep,vdso32as)
+@@ -39,3 +44,12 @@ quiet_cmd_vdso32ld = VDSO32L $@
+ quiet_cmd_vdso32as = VDSO32A $@
+       cmd_vdso32as = $(CROSS32CC) $(a_flags) -c -o $@ $<
+ 
++# install commands for the unstripped file
++quiet_cmd_vdso_install = INSTALL $@
++      cmd_vdso_install = cp $@.dbg $(MODLIB)/vdso/$@
++
++vdso32.so: $(obj)/vdso32.so.dbg
++	@mkdir -p $(MODLIB)/vdso
++	$(call cmd,vdso_install)
++
++install: vdso32.so
+diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
+index 43af9b2..3d474e9 100644
+--- a/arch/powerpc/kernel/vdso64/Makefile
++++ b/arch/powerpc/kernel/vdso64/Makefile
+@@ -4,10 +4,10 @@ obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o
+ 
+ # Build rules
+ 
+-targets := $(obj-vdso64) vdso64.so
++targets := $(obj-vdso64) vdso64.so vdso64.so.dbg
+ obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
+ 
+-EXTRA_CFLAGS := -shared -s -fno-common -fno-builtin
++EXTRA_CFLAGS := -shared -fno-common -fno-builtin
+ EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
+ 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
+ EXTRA_AFLAGS := -D__VDSO64__ -s
+@@ -20,9 +20,14 @@ CPPFLAGS_vdso64.lds += -P -C -U$(ARCH)
+ $(obj)/vdso64_wrapper.o : $(obj)/vdso64.so
+ 
+ # link rule for the .so file, .lds has to be first
+-$(obj)/vdso64.so: $(src)/vdso64.lds $(obj-vdso64)
++$(obj)/vdso64.so.dbg: $(src)/vdso64.lds $(obj-vdso64)
+ 	$(call if_changed,vdso64ld)
+ 
++# strip rule for the .so file
++$(obj)/%.so: OBJCOPYFLAGS := -S
++$(obj)/%.so: $(obj)/%.so.dbg FORCE
++	$(call if_changed,objcopy)
++
+ # assembly rules for the .S files
+ $(obj-vdso64): %.o: %.S
+ 	$(call if_changed_dep,vdso64as)
+@@ -33,4 +38,12 @@ quiet_cmd_vdso64ld = VDSO64L $@
+ quiet_cmd_vdso64as = VDSO64A $@
+       cmd_vdso64as = $(CC) $(a_flags) -c -o $@ $<
+ 
++# install commands for the unstripped file
++quiet_cmd_vdso_install = INSTALL $@
++      cmd_vdso_install = cp $@.dbg $(MODLIB)/vdso/$@
++
++vdso64.so: $(obj)/vdso64.so.dbg
++	@mkdir -p $(MODLIB)/vdso
++	$(call cmd,vdso_install)
+ 
++install: vdso64.so
