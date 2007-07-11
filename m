@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765500AbXGKQ5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbXGKRCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765500AbXGKQ5k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbXGKQ5b
+	id S1760206AbXGKRCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 13:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXGKRCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:57:31 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:54128 "EHLO fieldses.org"
+	Wed, 11 Jul 2007 13:02:03 -0400
+Received: from mga02.intel.com ([134.134.136.20]:50412 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752136AbXGKQ53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:57:29 -0400
-Date: Wed, 11 Jul 2007 12:57:24 -0400
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
-Message-ID: <20070711165724.GD4138@fieldses.org>
-References: <1183275424.4010.126.camel@localhost.localdomain> <20070710163038.ceb2ae94.akpm@linux-foundation.org> <1184105380.3759.65.camel@localhost.localdomain> <20070710182237.e2f88bf3.akpm@linux-foundation.org> <1184113156.20193.13.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184113156.20193.13.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	id S1751964AbXGKRCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 13:02:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,527,1175497200"; 
+   d="scan'208";a="264954540"
+Date: Wed, 11 Jul 2007 09:58:48 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org
+Subject: Re: SCSI link power management patches - a question..
+Message-Id: <20070711095848.f556d124.kristen.c.accardi@intel.com>
+In-Reply-To: <11044.1184118159@turing-police.cc.vt.edu>
+References: <11044.1184118159@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 08:19:16PM -0400, Mingming Cao wrote:
-> On Tue, 2007-07-10 at 18:22 -0700, Andrew Morton wrote:
-> > And how does the NFS server know that the filesystem implements i_version? 
-> > Will a zero-value of i_version have special significance, telling the
-> > server to not send this attribute, perhaps?
+On Tue, 10 Jul 2007 21:42:39 -0400
+Valdis.Kletnieks@vt.edu wrote:
+
+> I refitted the 4 patches you posted to a 22-rc6-mm1 kernel, and tried it on
+> my Dell Latitude D820 laptop, using the libata driver for the disk and DVD.
+> I got this:
 > 
-> Bruce raised up this question a few days back when he reviewed this
-> patch, I think the solution is add a superblock flag for fs support
-> inode versioning, probably at VFS layer?
+> [    0.702000] scsi0 : ata_piix
+> [    0.702000] scsi1 : ata_piix
+> [    0.702000] ata1: SATA max UDMA/133 cmd 0x00000000000101f0 ctl 0x00000000000103f6 bmdma 0x
+> 000000000001bfa0 irq 14
+> [    0.702000] ata2: PATA max UDMA/100 cmd 0x0000000000010170 ctl 0x0000000000010376 bmdma 0x
+> 000000000001bfa8 irq 15
+> [    0.857000] ata1.00: ATA-7: ST980825AS, 8.04, max UDMA/133
+> [    0.857000] ata1.00: 156301488 sectors, multi 8: LBA48 NCQ (depth 0/32)
+> [    0.864000] ata1.00: configured for UDMA/133
+> [    1.169000] ata2.00: ATAPI: PHILIPS DVD+/-RW SDVD8820, AD15, max UDMA/33
+> [    1.342000] ata2.00: configured for UDMA/33
+> ....
+> [    1.342000]  sda: sda1 sda2
+> [    1.433000] sd 0:0:0:0: [sda] Attached SCSI disk
+> [    1.435000] scsi 1:0:0:0: CD-ROM            PHILIPS  DVD+-RW SDVD8820 AD15 PQ: 0 ANSI: 5
+> [    1.454000] sr0: scsi3-mmc drive: 24x/24x writer cd/rw xa/form2 cdda tray
+> [    1.454000] Uniform CD-ROM driver Revision: 3.20
+> [    1.454000] sr 1:0:0:0: Attached scsi CD-ROM sr0
+> [    1.454000] ata2.00: Unable to set Link PM policy
+> 
+> and /sys/class/scsi_host/host[01]/link_power_management_policy are both
+> stuck at 'max_performance'.  After reading the code,it *appears* that this
+> is because:
+> 
+> host0 - the 2 ports on the first ATA chain, and it's stuck because the DVD
+> doesn't support the required power management, and *all* devices on the chain
+> need to support it (as it didnt complain on ata1, the hard drive).
+> 
+> host1 - the second ATA chain, not connected to anything, so no PM available.
+> 
+> How do I double-check my analysis? Neither hdparm nor sdparm gave me anything
+> on /dev/dvd that told me either way, and I'd like to verify that the base
+> problem is "screwed by the hardware" before I give up....
+> 
+> 
+> 
 
-Sounds fine.  As long as it's something that's standard across
-filesystems, then I can just do something like
+Hi,
+I only implemented the needed support for using ALPM for the ahci driver, 
+and it looks like you are using ata_piix.
 
-	if (sb->s_flags & MS_CHANGEATTR)
-		/* return i_version to client as change attribute */
-	else
-		/* return ctime to client as change attribute */
-
---b.
+Kristen
