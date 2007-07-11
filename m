@@ -1,116 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933549AbXGKVbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765968AbXGKVfD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933549AbXGKVbV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760339AbXGKVbH
+	id S1765968AbXGKVfD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:35:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbXGKVev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:31:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58157 "EHLO
+	Wed, 11 Jul 2007 17:34:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43800 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755134AbXGKVbF (ORCPT
+	by vger.kernel.org with ESMTP id S1755206AbXGKVes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:31:05 -0400
-Date: Wed, 11 Jul 2007 14:29:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Martin Orr <martin@martinorr.name>
-cc: Andi Kleen <andi@firstfloor.org>, Stefano Rivoir <s.rivoir@gts.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-In-Reply-To: <469544D3.90004@martinorr.name>
-Message-ID: <alpine.LFD.0.999.0707111410430.20061@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
- <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>
- <46947ADF.4080605@gts.it> <p73vecrxf0t.fsf@bingen.suse.de>
- <46951892.20406@martinorr.name> <alpine.LFD.0.999.0707111059200.3412@woody.linux-foundation.org>
- <469544D3.90004@martinorr.name>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 11 Jul 2007 17:34:48 -0400
+Date: Wed, 11 Jul 2007 14:34:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Mike Anderson <andmike@us.ibm.com>, netdev@vger.kernel.org
+Subject: Re: [2.6.23 PATCH 14/18] dm: netlink add to core
+Message-Id: <20070711143423.36722a41.akpm@linux-foundation.org>
+In-Reply-To: <20070711210159.GF24114@agk.fab.redhat.com>
+References: <20070711210159.GF24114@agk.fab.redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 11 Jul 2007 22:01:59 +0100
+Alasdair G Kergon <agk@redhat.com> wrote:
 
-
-On Wed, 11 Jul 2007, Martin Orr wrote:
-
-> On 11/07/07 19:01, Linus Torvalds wrote:
-> > Can you do
-> > 
-> > 	make arch/x86_64/kernel/signal.s
-> > 
-> > with both compilers, and post the results somewhere? It's probably going 
+> From: Mike Anderson <andmike@us.ibm.com>
 > 
-> OK, they are at:
-> http://www.srcf.ucam.org/~mpo25/2007/linux-signal/
+> This patch adds support for the dm_path_event dm_send_event funtions which
+> create and send netlink attribute events.
+> 
+> ...
+>
+> --- linux.orig/drivers/md/dm-netlink.c	2007-07-11 21:37:50.000000000 +0100
+> +++ linux/drivers/md/dm-netlink.c	2007-07-11 21:37:51.000000000 +0100
+> @@ -40,6 +40,17 @@ struct dm_event_cache {
+>  
+>  static struct dm_event_cache _dme_cache;
+>  
+> +struct dm_event {
+> +        struct dm_event_cache *cdata;
+> +        struct mapped_device *md;
+> +        struct sk_buff *skb;
+> +        struct list_head elist;
+> +};
+> +
+> +static struct sock *_dm_netlink_sock;
+> +static uint32_t _dm_netlink_daemon_pid;
+> +static DEFINE_SPINLOCK(_dm_netlink_pid_lock);
 
-Ok, do_notify_resume() which inlines the "setup_frame()" code has has been 
-totally buggered by the new compiler.
+The usage of this lock makes my head spin a bit.  It's a shame it wasn't
+documented.
 
-The code is the
+There's obviously something very significant happening with process IDs in
+here.  A description of the design would be helpful.  Especially for the
+containerisation guys who no doubt will need to tear their hair out over it
+all ;)
 
-        err |= __put_user(0, &frame->uc.uc_flags);
-        err |= __put_user(0, &frame->uc.uc_link);
-        err |= __put_user(me->sas_ss_sp, &frame->uc.uc_stack.ss_sp);
-        err |= __put_user(sas_ss_flags(regs->rsp),
-                          &frame->uc.uc_stack.ss_flags);
-        err |= __put_user(me->sas_ss_size, &frame->uc.uc_stack.ss_size);
-        err |= setup_sigcontext(&frame->uc.uc_mcontext, regs, set->sig[0], me);
-        err |= __put_user(fp, &frame->uc.uc_mcontext.fpstate);
 
-and both compilers do a pretty bad job at this, but at least the old 
-compiler generated the errors properly:
+> +static int dm_netlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
+> +{
+> +	int r = 0;
+> +
+> +	if (security_netlink_recv(skb, CAP_SYS_ADMIN))
+> +		return -EPERM;
+> +
+> +	spin_lock(&_dm_netlink_pid_lock);
+> +	if (_dm_netlink_daemon_pid) {
+> +		if (_dm_netlink_daemon_pid != nlh->nlmsg_pid)
+> +			r = -EBUSY;
+> +	} else
+> +		_dm_netlink_daemon_pid = nlh->nlmsg_pid;
+> +	spin_unlock(&_dm_netlink_pid_lock);
+> +
+> +	return r;
+> +}
 
--       orl     100(%rsp), %esi # __pu_err, __pu_err
--       orl     96(%rsp), %esi  # __pu_err, __pu_err
--       orl     16(%rsp), %esi  # __pu_err, __pu_err
--       orl     20(%rsp), %esi  # __pu_err, __pu_err
--       orl     24(%rsp), %esi  # __pu_err, __pu_err
--       orl     28(%rsp), %esi  # __pu_err, __pu_err
--       orl     32(%rsp), %esi  # __pu_err, __pu_err
--       orl     36(%rsp), %esi  # __pu_err, __pu_err
--       orl     40(%rsp), %esi  # __pu_err, __pu_err
--       orl     44(%rsp), %esi  # __pu_err, __pu_err
--       orl     48(%rsp), %esi  # __pu_err, __pu_err
--       orl     52(%rsp), %esi  # __pu_err, __pu_err
--       orl     56(%rsp), %esi  # __pu_err, __pu_err
--       orl     60(%rsp), %esi  # __pu_err, __pu_err
--       orl     64(%rsp), %esi  # __pu_err, __pu_err
--       orl     68(%rsp), %esi  # __pu_err, __pu_err
--       orl     72(%rsp), %esi  # __pu_err, __pu_err
--       orl     76(%rsp), %esi  # __pu_err, __pu_err
--       orl     80(%rsp), %esi  # __pu_err, __pu_err
--       orl     84(%rsp), %esi  # __pu_err, __pu_err
--       orl     88(%rsp), %esi  # __pu_err, __pu_err
--       orl     92(%rsp), %esi  # __pu_err, __pu_err
+This really does need some comments.  nfi what it's all trying to do here.
 
-and the new compiler is just incredibly broken:
+> +static void dm_netlink_rcv(struct sock *sk, int len)
+> +{
+> +	unsigned qlen = 0;
 
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %eax, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
-+       orl     %ecx, %esi      # __pu_err, __pu_err
+stupid gcc.
 
-I don't think this is worth even trying to fix. This is terminal compiler 
-breakage. Make a bug-report to the gcc people, the inline asm stuff has 
-been totally buggered by that compiler version.
+> +
+> +	do
+> +		netlink_run_queue(sk, &qlen, &dm_netlink_rcv_msg);
+> +	while (qlen);
+> +
+> +}
 
-If it mis-compiled that part, it probably miscompiled a lot of other 
-things too.
+stray blank line there.
 
-		Linus
+> +static int dm_netlink_rcv_event(struct notifier_block *this,
+> +				unsigned long event, void *ptr)
+> +{
+> +	struct netlink_notify *n = ptr;
+> +
+> +	spin_lock(&_dm_netlink_pid_lock);
+> +
+> +	if (event == NETLINK_URELEASE &&
+> +	    n->protocol == NETLINK_DM && n->pid &&
+> +	    n->pid == _dm_netlink_daemon_pid)
+> +		_dm_netlink_daemon_pid = 0;
+> +
+> +	spin_unlock(&_dm_netlink_pid_lock);
+> +
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +static struct notifier_block dm_netlink_notifier = {
+> +	.notifier_call  = dm_netlink_rcv_event,
+> +};
+> +
+>  int __init dm_netlink_init(void)
+>  {
+>  	int r;
+>  
+> +	r = netlink_register_notifier(&dm_netlink_notifier);
+> +	if (r)
+> +		return r;
+> +
+> +	_dm_netlink_sock = netlink_kernel_create(NETLINK_DM, 0,
+> +						 dm_netlink_rcv, NULL,
+> +						 THIS_MODULE);
+
+I think we're supposed to use the genetlink APIs here.  One for the net
+guys to check, please.
+
+> +	if (!_dm_netlink_sock) {
+> +		r = -ENOBUFS;
+> +		goto notifier_out;
+> +	}
+>  	r = dme_cache_init(&_dme_cache, DM_EVENT_SKB_SIZE);
+> -	if (!r)
+> -		DMINFO("version 1.0.0 loaded");
+> +	if (r)
+> +		goto socket_out;
+> +
+> +	DMINFO("version 1.0.0 loaded");
+> +
+> +	return 0;
+> +
+> +socket_out:
+> +	sock_release(_dm_netlink_sock->sk_socket);
+> +notifier_out:
+> +	netlink_unregister_notifier(&dm_netlink_notifier);
+> +	DMERR("%s: dme_cache_init failed: %d", __FUNCTION__, r);
+>  
+>  	return r;
+>  }
+> @@ -100,4 +292,6 @@ int __init dm_netlink_init(void)
+>  void dm_netlink_exit(void)
+>  {
+>  	dme_cache_destroy(&_dme_cache);
+> +	sock_release(_dm_netlink_sock->sk_socket);
+> +	netlink_unregister_notifier(&dm_netlink_notifier);
+>  }
+> Index: linux/drivers/md/dm-netlink.h
+> ===================================================================
+> --- linux.orig/drivers/md/dm-netlink.h	2007-07-11 21:37:50.000000000 +0100
+> +++ linux/drivers/md/dm-netlink.h	2007-07-11 21:37:51.000000000 +0100
+> @@ -21,19 +21,22 @@
+>  #ifndef DM_NETLINK_H
+>  #define DM_NETLINK_H
+>  
+> -struct dm_event_cache;
+> +#include <linux/dm-netlink-if.h>
+> +
+> +struct dm_table;
+>  struct mapped_device;
+> -struct dm_event {
+> -	struct dm_event_cache *cdata;
+> -	struct mapped_device *md;
+> -	struct sk_buff *skb;
+> -	struct list_head elist;
+> -};
+> +struct dm_event;
+> +
+> +void dm_event_add(struct mapped_device *md, struct list_head *elist);
+>  
+>  #ifdef CONFIG_DM_NETLINK
+>  
+>  int dm_netlink_init(void);
+>  void dm_netlink_exit(void);
+> +void dm_netlink_send_events(struct list_head *events);
+> +
+> +void dm_path_event(enum dm_netlink_event_type evt_type, struct dm_table *t,
+> +                   const char *path, int nr_valid_paths);
+>  
+>  #else	/* CONFIG_DM_NETLINK */
+>  
+> @@ -44,6 +47,14 @@ static inline int __init dm_netlink_init
+>  static inline void dm_netlink_exit(void)
+>  {
+>  }
+> +static void inline dm_netlink_send_events(struct list_head *events)
+> +{
+> +}
+> +static void inline dm_path_event(enum dm_netlink_event_type evt_type,
+> +			  struct dm_table *t, const char *path,
+> +			  int nr_valid_paths)
+> +{
+> +}
+
+Please use `static inline void', not `static void inline'.  Just a
+consistency thing.
+
+>  #endif	/* CONFIG_DM_NETLINK */
+>  
+> Index: linux/drivers/md/dm.c
+> ===================================================================
+> --- linux.orig/drivers/md/dm.c	2007-07-11 21:37:50.000000000 +0100
+> +++ linux/drivers/md/dm.c	2007-07-11 21:37:51.000000000 +0100
+> @@ -111,8 +111,11 @@ struct mapped_device {
+>  	/*
+>  	 * Event handling.
+>  	 */
+> +	atomic_t event_seq;	/* Used for netlink events */
+>  	atomic_t event_nr;
+>  	wait_queue_head_t eventq;
+> +	struct list_head event_list;
+> +	spinlock_t event_lock;
+>  
+>  	/*
+>  	 * freeze/thaw support require holding onto a super block
+> @@ -1001,6 +1004,9 @@ static struct mapped_device *alloc_dev(i
+>  	atomic_set(&md->holders, 1);
+>  	atomic_set(&md->open_count, 0);
+>  	atomic_set(&md->event_nr, 0);
+> +	atomic_set(&md->event_seq, 0);
+> +	INIT_LIST_HEAD(&md->event_list);
+> +	spin_lock_init(&md->event_lock);
+>  
+>  	md->queue = blk_alloc_queue(GFP_KERNEL);
+>  	if (!md->queue)
+> @@ -1099,6 +1105,14 @@ static void free_dev(struct mapped_devic
+>  static void event_callback(void *context)
+>  {
+>  	struct mapped_device *md = (struct mapped_device *) context;
+> +	unsigned long flags;
+> +	LIST_HEAD(events);
+> +
+> +	spin_lock_irqsave(&md->event_lock, flags);
+> +	list_splice_init(&md->event_list, &events);
+> +	spin_unlock_irqrestore(&md->event_lock, flags);
+> +
+> +	dm_netlink_send_events(&events);
+>  
+>  	atomic_inc(&md->event_nr);
+>  	wake_up(&md->eventq);
+> @@ -1516,6 +1530,11 @@ out:
+>  /*-----------------------------------------------------------------
+>   * Event notification.
+>   *---------------------------------------------------------------*/
+> +uint32_t dm_next_event_seq(struct mapped_device *md)
+> +{
+> +	return atomic_add_return(1, &md->event_seq);
+> +}
+> +
+>  uint32_t dm_get_event_nr(struct mapped_device *md)
+>  {
+>  	return atomic_read(&md->event_nr);
+> @@ -1527,6 +1546,15 @@ int dm_wait_event(struct mapped_device *
+>  			(event_nr != atomic_read(&md->event_nr)));
+>  }
+>  
+> +void dm_event_add(struct mapped_device *md, struct list_head *elist)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&md->event_lock, flags);
+> +	list_add(elist, &md->event_list);
+> +	spin_unlock_irqrestore(&md->event_lock, flags);
+> +}
+> +
+>
+> ...
+>
+> +/*
+> + * Device Mapper Netlink Interface
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + *
+> + * Copyright IBM Corporation, 2005, 2006
+> + * 	Author: Mike Anderson <andmike@us.ibm.com>
+> + */
+> +#ifndef _LINUX_DM_NETLINK_IF_H
+> +#define _LINUX_DM_NETLINK_IF_H
+> +
+> +#include <linux/netlink.h>
+> +
+> +/*
+> + * Single netlink message type used for all DM events
+> + */
+> +#define DM_EVENT_MSG NLMSG_MIN_TYPE + 1
+> +
+> +enum dm_netlink_event_type {
+> +	DM_EVENT_PATH_FAILED = 1,
+> +	DM_EVENT_PATH_REINSTATED = 2,
+> +	DM_EVENT_MAX,
+> +};
+> +
+> +enum dm_netlink_event_attr {
+> +	DM_EVENT_ATTR_SEQNUM		= 1,	/* Sequence number */
+> +	DM_EVENT_ATTR_TSSEC		= 2,	/* Time Stamp seconds */
+> +	DM_EVENT_ATTR_TSUSEC		= 3,	/* Time Stamp micro seconds */
+> +	DM_EVENT_ATTR_NAME		= 4,	/* Major:Minor */
+> +						/* 5 is deprecated */
+> +	DM_EVENT_ATTR_NUM_VALID_PATHS	= 6,	/* (Multipath) */
+> +	DM_EVENT_ATTR_PATH		= 7,	/* (Multipath) Pathname */
+> +	DM_EVENT_ATTR_MAX,
+> +};
+> +
+> +#define DM_EVENT_IF_VERSION 0x10
+> +
+> +struct dm_netlink_msghdr {
+> +	uint16_t type;
+> +	uint16_t version;
+> +	uint16_t reserved1;
+> +	uint16_t reserved2;
+> +} __attribute__((aligned(sizeof(uint64_t))));
+> +
+> +#endif	/* _LINUX_DM_NETLINK_IF_H */
