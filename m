@@ -1,73 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934383AbXGKWTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934369AbXGKWT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934383AbXGKWTd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 18:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765079AbXGKWTV
+	id S934369AbXGKWT6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 18:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765266AbXGKWTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 18:19:21 -0400
-Received: from [212.12.190.144] ([212.12.190.144]:33028 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760166AbXGKWTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 18:19:19 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Mark Lord <lkml@rtr.ca>, Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: Hibernation Redesign
-Date: Thu, 12 Jul 2007 01:17:24 +0300
-User-Agent: KMail/1.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, jeremy@goop.org,
-       pavel@ucw.cz, nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200707081737.21932.a1426z@gawab.com> <87644rcc7a.fsf@jbms.ath.cx> <46954212.7060105@rtr.ca>
-In-Reply-To: <46954212.7060105@rtr.ca>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 11 Jul 2007 18:19:46 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:42054 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765079AbXGKWTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 18:19:45 -0400
+Subject: Re: [dm-devel] Re: [2.6.23 PATCH 16/18] dm mpath: rdac
+From: Chandra Seetharaman <sekharan@us.ibm.com>
+Reply-To: sekharan@us.ibm.com
+To: device-mapper development <dm-devel@redhat.com>
+Cc: Alasdair G Kergon <agk@redhat.com>, Mike Christie <michaelc@cs.wisc.edu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070711144303.9400acba.akpm@linux-foundation.org>
+References: <20070711210242.GH24114@agk.fab.redhat.com>
+	 <20070711144303.9400acba.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 11 Jul 2007 15:19:42 -0700
+Message-Id: <1184192382.5146.15.camel@linuxchandra>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707120117.24549.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Jeremy Maitin-Shepard wrote:
-> > I'll certainly admit the kexec idea is vaporware currently,
+On Wed, 2007-07-11 at 14:43 -0700, Andrew Morton wrote:
+> On Wed, 11 Jul 2007 22:02:42 +0100
+> Alasdair G Kergon <agk@redhat.com> wrote:
+> 
+> > From: Mike Christie <michaelc@cs.wisc.edu>
+> > 
+> > This patch from Chandra Seetharaman and updated to upstream by me,
+> > supports LSI/Engenio devices in RDAC mode. Like dm-emc
+> > it requires userspace support. In your multipath.conf file you must have:
+> > 
+> > path_checker            rdac
+> > hardware_handler        "1 rdac"
+> > 
+> > And you also then must have a updated multipath tools release which
+> > has rdac support.
+> > 
+> > ...
+> >
+> > +static spinlock_t list_lock = SPIN_LOCK_UNLOCKED;
+> 
+> This defeats lockdep.  Please use DEFINE_SPINLOCK.
 
-Your idea is starting to become a reality with this thread:
-"[PATCH 0/2] Kexec jump: The first step to kexec base hibernation"
+Will do
+> 
+> > +#define submit_c9_inquiry(h) \
+> > +	submit_inquiry(h, 0xC9, sizeof(struct c9_inquiry), c9_inquiry_endio)
+> > +#define submit_c4_inquiry(h) \
+> > +	submit_inquiry(h, 0xC4, sizeof(struct c4_inquiry), c4_inquiry_endio)
+> > +#define submit_c8_inquiry(h) \
+> > +	submit_inquiry(h, 0xC8, sizeof(struct c8_inquiry), c8_inquiry_endio)
+> > +#define submit_c2_inquiry(h) \
+> > +	submit_inquiry(h, 0xC2, sizeof(struct c2_inquiry), c2_inquiry_endio)
+> 
+> These don't have to be implemented as macros.
 
-> > but it does
-> > differ in a significant way from freezer-based approaches, such that I
-> > don't think it should be referred to as just another implementation of a
-> > freezer.  Specifically, it doesn't require that the "old kernel" be in a
-> > "consistent" state to a greater extent than suspend to ram; it is the
-> > case that all of the devices must be quiesced or shut down to some
-> > extent, but doing this without races and deadlocks (and without the
-> > freezer) is certainly very, very similar to what needs to be done for
-> > suspend to ram, which will need to be solved anyway.  Unlike the
-> > existing hibernate approaches, however, it will not be necessary to use
-> > any of the driver infrastructure once switched to the "save image"
-> > kernel, and thus it will not matter what locks are held, for instance.
->
-> I really doubt that kexec(a special kernel) is going to solve anything
-> here. The new kernel will have to initialize, probe for devices, etc.
-> Which will take time.
-> Which will slow down hibernate to an unacceptable degree.
-> Right now, it (TuxOnIce) is *very* fast.
-> Adding 10 seconds or so for reprobing/resetting/reiniting devices
-> is not going to be useful.
-> And modifying all of the drivers to *not* do their usual probe sequence
-> sounds rather intrusive and is likely also a non-starter here.
->
-> Or is it?
+They were all spanning two lines, wanted to make it look clean were it
+was used.
 
-Well, it's definitely less intrusive than readying drivers for the freezer.  
-And, it's not even necessary for a modular kernel, where you would only 
-build in the drivers you need to hibernate.
+Will change.
 
+> 
+> > +static struct request *get_rdac_req(struct rdac_handler *h,
+> > +			void *buffer, unsigned buflen, int rw)
+> > +{
+> > +	struct request *rq;
+> > +	struct request_queue *q = bdev_get_queue(h->path->dev->bdev);
+> > +
+> > +	rq = blk_get_request(q, rw, GFP_ATOMIC);
+> 
+> GFP_ATOMIC is unreliable.  Is it really unavoidable?
 
-Thanks!
+We can avoid it here.
 
---
-Al
+Will change.
+> 
+> > +	if (!rq) {
+> > +		DMINFO("get_rdac_req: blk_get_request failed");
+> > +		return NULL;
+> > +	}
+> > +
+> > +	if (buflen && blk_rq_map_kern(q, rq, buffer, buflen, GFP_ATOMIC)) {
+> > +		blk_put_request(rq);
+> > +		DMINFO("get_rdac_req: blk_rq_map_kern failed");
+> > +		return NULL;
+> > +	}
+> > +
+> > + 	memset(&rq->cmd, 0, BLK_MAX_CDB);
+> > +	rq->sense = h->sense;
+> > +	memset(rq->sense, 0, SCSI_SENSE_BUFFERSIZE);
+> > +	rq->sense_len = 0;
+> > +
+> > +	rq->end_io_data = h;
+> > +	rq->timeout = h->timeout;
+> > +	rq->cmd_type = REQ_TYPE_BLOCK_PC;
+> > +	rq->cmd_flags = REQ_FAILFAST | REQ_NOMERGE;
+> > +	return rq;
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +
+> > +/* Acquires h->ctlr->lock */
+> > +static void submit_mode_select(struct rdac_handler *h)
+> > +{
+> > +	struct request *rq;
+> > +	struct request_queue *q = bdev_get_queue(h->path->dev->bdev);
+> > +
+> > +	spin_lock(&h->ctlr->lock);
+> > +	if (h->ctlr->submitted) {
+> > +		list_add(&h->entry, &h->ctlr->cmd_list);
+> > +		goto drop_lock;
+> > +	}
+> > +
+> > +	if (!q) {
+> > +		DMINFO("submit_mode_select: no queue");
+> > +		goto fail_path;
+> > +	}
+> > +
+> > +	rq = rdac_failover_get(h);
+> > +	if (!rq) {
+> > +		DMERR("submit_mode_select: no rq");
+> > +		goto fail_path;
+> > +	}
+> > +
+> > +	DMINFO("queueing MODE_SELECT command on %s", h->path->dev->name);
+> > +
+> > +	blk_execute_rq_nowait(q, NULL, rq, 1, mode_select_endio);
+> 
+> I suspect we could call this after dropping the lock?
+
+We could.
+
+Will do.
+> 
+> > +	h->ctlr->submitted = 1;
+> > +	goto drop_lock;
+> > +fail_path:
+> > +	dm_pg_init_complete(h->path, MP_FAIL_PATH);
+> > +drop_lock:
+> > +	spin_unlock(&h->ctlr->lock);
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +static void c2_inquiry_endio(struct request *req, int error)
+> > +{
+> > +	struct rdac_handler *h = req->end_io_data;
+> > +	struct c2_inquiry *sp;
+> > +
+> > +	if (had_failures(req, error)) {
+> > +		dm_pg_init_complete(h->path, MP_FAIL_PATH);
+> > +		goto done;
+> > +	}
+> > +
+> > +	sp = (struct c2_inquiry *)&h->inq;
+> 
+> That's funny-looking and un-typesafe.  Why not do
+> 
+> 	sp = &h->inq.c2;
+> 
+> ?
+> 
+> (Dittoes in various other places..)
+
+Will change.
+> 
+> > +
+> > +	/* If more than MODE6_MAX_LUN luns are supported, use mode select 10 */
+> > +	if (sp->max_lun_supported >= MODE6_MAX_LUN)
+> > +		h->ctlr->use_10_ms = 1;
+> > +	else
+> > +		h->ctlr->use_10_ms = 0;
+> > +
+> > +	h->cmd_to_send = SEND_MODE_SELECT;
+> > +	queue_work(rdac_wkqd, &h->work);
+> > +done:
+> > +	__blk_put_request(req->q, req);
+> > +}
+> > +
+> > +static void rdac_destroy(struct hw_handler *hwh)
+> > +{
+> > +	struct rdac_handler *h = (struct rdac_handler *) hwh->context;
+> 
+> Unneeded (and undesirable) cast of void*.  Please check the whole
+> patch(set) for this.
+
+Will do.
+> 
+> > +	if (h->ctlr)
+> > +		kref_put(&h->ctlr->kref, release_ctlr);
+> > +	kfree(h);
+> > +	hwh->context = NULL;
+> > +}
+> > +
+> 
+> --
+> dm-devel mailing list
+> dm-devel@redhat.com
+> https://www.redhat.com/mailman/listinfo/dm-devel
+-- 
+
+----------------------------------------------------------------------
+    Chandra Seetharaman               | Be careful what you choose....
+              - sekharan@us.ibm.com   |      .......you may get it.
+----------------------------------------------------------------------
+
 
