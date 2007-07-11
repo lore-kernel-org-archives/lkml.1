@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbXGKEEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbXGKEMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751833AbXGKEEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 00:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbXGKEEX
+	id S1754559AbXGKEMM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 00:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXGKEMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 00:04:23 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:45281 "EHLO mail4.iitk.ac.in"
+	Wed, 11 Jul 2007 00:12:00 -0400
+Received: from 241-226.umostel.ru ([77.246.241.226]:62452 "EHLO mail.aknet.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751326AbXGKEET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 00:04:19 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Wed, 11 Jul 2007 03:40:22 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2 -mm 4/9] netconsole: Add some useful tips to documentation
-In-Reply-To: <200707101434.39938.jesper.juhl@gmail.com>
-Message-ID: <Pine.LNX.4.64.0707110256220.2445@cselinux1.cse.iitk.ac.in>
-References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070710091941.23907.45658.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070710094142.GM11115@waste.org> <200707101434.39938.jesper.juhl@gmail.com>
+	id S1751367AbXGKEL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 00:11:59 -0400
+Message-ID: <46945895.6070004@aknet.ru>
+Date: Wed, 11 Jul 2007 08:12:05 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: William Tambe <tambewilliam@gmail.com>
+CC: Hugh Dickins <hugh@veritas.com>,
+       "Rohland, Hans-Christoph" <hans-christoph.rohland@sap.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Concerning a post that you made about expandable anonymous shared
+ mappings
+References: <468562F6.4010604@gmail.com> <Pine.LNX.4.64.0707021619020.32337@blonde.wat.veritas.com> <46893F97.7080200@aknet.ru> <Pine.LNX.4.64.0707031606370.16965@blonde.wat.veritas.com> <4692E5DF.7080304@gmail.com> <Pine.LNX.4.64.0707102056140.4107@blonde.wat.veritas.com> <4693F242.2030004@gmail.com>
+In-Reply-To: <4693F242.2030004@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesper,
+Hi.
 
-On Tue, 10 Jul 2007, Jesper Juhl wrote:
-> On Tuesday 10 July 2007 11:41:43 Matt Mackall wrote:
-> > On Tue, Jul 10, 2007 at 02:49:41PM +0530, Satyam Sharma wrote:
-> > > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> > >
-> > > [4/9] netconsole: Add some useful tips to documentation
-> > >
-> > > Add some useful general-purpose tips.
-> > >
-> > > Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> > > Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-> >
-> > Acked-by: Matt Mackall <mpm@selenic.com>
-> >
-> > As long as we're on the subject, I've been meaning to add a note
-> > telling people to set their console log level to something useful, as
-> > having that set too low is the most common problem people encounter.
-> 
-> How about this?
-> [...]
-> +Some people forget to raise the kernels log_level to an
-> +appropriate level and thus don't see all the kernel log messages they
-> +expect. You can add the kernel boot option "ignore_loglevel" to see all
-> +messages or you can use SysRq to set the log level to a specific value.
-> +
+William Tambe wrote:
+> I understand your concern. But since I am working on a dynamic memory 
+> management code that I wish to use with other projects that I have, I 
+> didn't find appropriate to use shm_open.
+Could you please provide a detailed list of the
+problems you have with shm_open? If they are
+valid, then I can bet the patch will be applied,
+no matter what. :)
 
-IMHO something that mentions /proc/sys/kernel/printk would be better.
+> In fact there is a name associated with the shared memory requested with 
+> shm_open, so that it can be mmap(ed) in another process. And I do not 
+> wish to have it accessible by any other process, unless I choose to do so.
+In this case you need to use shm_unlink() right
+after shm_open(). Then this shm will be accessable
+only to your process and its children, via an fd,
+and not to anyone else. And you still can do anything
+with it (ftruncate/mmap/mremap whatever).
 
-You don't need to have built with SysRq support for that, it's clearly
-more flexible than the ignore_loglevel option and wouldn't require a
-reboot either. I'll send out an updated patch shortly.
+> And I think remap(ing) ANONYMOUS memory kind of make a lot of things easier.
+In what way, exactly?
 
-Satyam
