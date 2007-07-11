@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764924AbXGKOjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764885AbXGKOrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764924AbXGKOjc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 10:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760736AbXGKOjW
+	id S1764885AbXGKOrb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 10:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759709AbXGKOrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 10:39:22 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:41939 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760692AbXGKOjV (ORCPT
+	Wed, 11 Jul 2007 10:47:20 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:36347 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbXGKOrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 10:39:21 -0400
-Date: Wed, 11 Jul 2007 10:39:18 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, Steve Beattie <sbeattie@suse.de>
-Subject: Re: [PATCH 1/1] file capabilities: clear caps cleanup
-In-Reply-To: <20070711141850.GA6690@sergelap.austin.ibm.com>
-Message-ID: <Line.LNX.4.64.0707111038500.23589@d.namei>
-References: <20070711141850.GA6690@sergelap.austin.ibm.com>
+	Wed, 11 Jul 2007 10:47:19 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [RFC 0/3] lro: Generic Large Receive Offload for TCP traffic
+Date: Wed, 11 Jul 2007 16:21:24 +0200
+User-Agent: KMail/1.8.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+To: netdev <netdev@vger.kernel.org>
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707111621.24852.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007, Serge E. Hallyn wrote:
+Generic Large Receive Offload proposal
 
-> >From 88115394044e697ac852f7fb9f30483e87f4f598 Mon Sep 17 00:00:00 2001
-> From: Serge E. Hallyn <serue@us.ibm.com>
-> Date: Wed, 11 Jul 2007 10:01:01 -0400
-> Subject: [PATCH 1/1] file capabilities: clear caps cleanup
-> 
-> As suggested by Steve Beattie, rather than jump into a
-> conditional block in certain cases, define and use a
-> static inline bprm_clear_caps().
-> 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+After some discussions on the mailing list concerning our LRO approach,
+we agreed to provide a generic LRO patch. The algorithm is based on
+the version we developed for eHEA. The performance improvements we
+observed were significant.
 
-Good idea.
+The LRO functionality is provided as a module, the files are put in
+linux/net/ipv4/inet_lro.c
+linux/include/linux/inet_lro.h
 
-Acked-by: James Morris <jmorris@namei.org>
+Would this be the proper place for this functionality?
+
+Currently, the interface is exported via EXPORT_SYMBOL. Or should we use
+EXPORT_SYMBOL_GPL instead?
 
 
--- 
-James Morris
-<jmorris@namei.org>
+The interface for the network drivers (see inet_lro.h):
+
+A driver has to declare a "LRO Management" struct (lro_mgr) and a LRO descriptor array
+of a driver defined size and enters the address of the array and the number of its
+elements in the lro_mgr struct. The driver also specifies how many packets
+may be aggregated per tcp session in the lro_mgr struct. In addition to that
+the driver provides a function that determines the TCP and IP header for the
+incoming packet (also entered in the lro_mgr struct). For some ethernet chips this
+function doesn't need to do a lot of checking there as the tcp / ip checksums are 
+checked by the HW and provides information about the packet protocoll.
+
+To pass packets to the network stack using LRO the following functions are used 
+in the NAPI poll function:
+
+void lro_receive_skb(struct net_lro_mgr *lro_mgr,
+                     struct sk_buff *skb,
+                     void *priv);
+
+or 
+
+void lro_vlan_hwaccel_receive_skb(struct net_lro_mgr *lro_mgr,
+                                  struct sk_buff *skb,
+                                  struct vlan_group *vgrp,
+                                  u16 vlan_tag,
+                                  void *priv);
+
+and before leaving the poll function the driver has to flush all open LRO sessions 
+and pass the aggregated packets to the stack:
+
+void lro_flush_all(struct net_lro_mgr *lro_mgr);
+
+[RFC 3/3] includes an eHEA patch which shows how LRO is integrated
+in the eHEA driver using this interface.
+
+
+Regards,
+Jan-Bernd
