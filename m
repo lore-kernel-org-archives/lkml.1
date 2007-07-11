@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763272AbXGKMPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763861AbXGKMRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763272AbXGKMPi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763752AbXGKMPS
+	id S1763861AbXGKMRQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760739AbXGKMRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:15:18 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:62833 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763437AbXGKMPP (ORCPT
+	Wed, 11 Jul 2007 08:17:03 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:54074 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758967AbXGKMRB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:15:15 -0400
-Subject: Re: Documentation of kernel messages (Summary)
-From: Michael Holzheu <holzheu@linux.vnet.ibm.com>
-Reply-To: holzheu@linux.vnet.ibm.com
-To: Rob Landley <rob@landley.net>
-Cc: Gerrit Huizenga <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lf_kernel_messages@linux-foundation.org, mtk-manpages@gmx.net,
-       jack@suse.cz, randy.dunlap@oracle.com, gregkh@suse.de, pavel@ucw.cz,
-       tim.bird@am.sony.com, arjan@infradead.org, sam@ravnborg.org,
-       jengelh@computergmbh.de, joe@perches.com, auke-jan.h.kok@intel.com,
-       hansendc@us.ibm.com, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
-       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       linux-doc@vger.kernel.org
-In-Reply-To: <200707101212.38981.rob@landley.net>
-References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com>
-	 <200707101212.38981.rob@landley.net>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 11 Jul 2007 14:15:16 +0200
-Message-Id: <1184156116.11139.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+	Wed, 11 Jul 2007 08:17:01 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Hibernation Redesign
+Date: Wed, 11 Jul 2007 22:17:18 +1000
+User-Agent: KMail/1.9.6
+Cc: rjw@sisk.pl, a1426z@gawab.com, jeremy@goop.org, jbms@cmu.edu, pavel@ucw.cz,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <200707081737.21932.a1426z@gawab.com> <200707112200.43613.nigel@nigel.suspend2.net> <E1I8b0l-0000DB-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I8b0l-0000DB-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3194981.oKP9ORUtj3";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707112217.19220.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rob,
+--nextPart3194981.oKP9ORUtj3
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Tue, 2007-07-10 at 12:12 -0400, Rob Landley wrote:
+Hi.
 
-[snip]
+On Wednesday 11 July 2007 22:09:39 Miklos Szeredi wrote:
+> > > Freezing of tasks is slowing down suspend.  Don't know how serious
+> > > this is, suspend is pretty fast, but could possibly be even faster.
+> >=20
+> > It's FUD. Freezing of tasks normally takes next to no time. I've never=
+=20
+> > understood the rediculously long timeout it has. If freezing succeeds, =
+all=20
+> > processes are frozen within 1/2 a second tops. If it fails, nothing is=
+=20
+going=20
+> > to change in the following 19.5 seconds (or whatever it is if I don't=20
+> > remember the value properly).
+>=20
+> Right.  The 20s timeout is again a sign of brokenness.
+>=20
+> If we expect something to fail, it should fail immediately, without
+> waiting for arbitrary timeouts.
+>=20
+> And if we don't expect it to fail, why the timeout?
 
-> > Yeah, but it seems like having a translations directory in the kernel
-> > avoids that problem - anyone can update, it is a single source, no digging
-> > for sites that aren't tied to the kernel, available in the distros
-> > directly, etc.
-> 
-> No.  It doesn't help.
-> 
-> 99% of the kernel directory is C.  That means any random passerby can review 
-> code.  Everyone who has the kernel tarball should be able to review code 
-> that's in there, plus when you compile it breaks.  So merging _code_ into the 
-> kernel helps keep it up to date.
-> 
-> Merging documentation into the kernel doesn't help keep it up to date, because 
-> documentation being out of date doesn't break the build.  It may get the 
-> documentation more review, but the existing state of Documentation/* argues 
-> against that.  It's a struggle to keep the english versions on the same 
-> continent as "up to date" or "complete", and most of the _good_ documentation 
-> is out in OLS papers and such (which I'm off indexing as we speak).
+Two reasons:
 
-With the checker tool, which we suggested in the initial proposal, it is
-possible to verify
+1) The processing does take time. We're sending (pseudo-)signals to other=20
+processes, and the amount of time it will take for them to enter the=20
+refrigerator will depend upon the number of processes there are, the=20
+scheduling algorithm being used, the rate at which they're forking and what=
+=20
+other activity is occuring. That's why I said "normally" above.
 
- * that every marked message has a description
- * that there are no descriptions without corresponding messages
- * that format strings of message and description match
+2) Things do get broken. New functionality gets added which sometimes doesn=
+'t=20
+immediately play well with the freezer. In such cases, we want to fail nice=
+ly=20
+rather than wrongly assuming it will always work and waiting indefinitely.
 
-So when compiling the kernel using C=1, you will at least see warnings,
-when a message has changed or a message disappeared:
+Regards,
 
->> make modules C=1
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CHECK   drivers/kmsgtest/kmsgtest.c
-drivers/kmsgtest/kmsgtest.c: Missing description for: kmsgtest.1
-drivers/kmsgtest/kmsgtest.c: Description without message for: kmsgtest.3
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
 
-Michael
+--nextPart3194981.oKP9ORUtj3
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQBGlMpPN0y+n1M3mo0RAqtEAJ9Vbzuig+b5+SPuENvp4Vtp4PhOqwCggxKI
+s6qrdNCp9/X4WclOqpCoPFY=
+=Oqee
+-----END PGP SIGNATURE-----
 
+--nextPart3194981.oKP9ORUtj3--
