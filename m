@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765566AbXGKSZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765984AbXGKSZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765566AbXGKSZo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbXGKSZ3
+	id S1765984AbXGKSZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759261AbXGKSZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:25:29 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:59754 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761379AbXGKSZJ (ORCPT
+	Wed, 11 Jul 2007 14:25:31 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33796 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757286AbXGKSZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:25:09 -0400
-Date: Wed, 11 Jul 2007 13:20:33 -0500
-From: "Jose R. Santos" <jrs@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [EXT4 set 2][PATCH 3/5] cleanups: set_jbd2_64bit_feature for
- >16TB ext4 fs
-Message-ID: <20070711132033.3d6f5efe@rx8>
-In-Reply-To: <20070710163022.333ece67.akpm@linux-foundation.org>
-References: <1183275392.4010.122.camel@localhost.localdomain>
-	<20070710163022.333ece67.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Wed, 11 Jul 2007 14:25:29 -0400
+Date: Wed, 11 Jul 2007 21:25:28 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <clameter@sgi.com>
+cc: Matt Mackall <mpm@selenic.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+In-Reply-To: <Pine.LNX.4.64.0707111104370.14730@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0707112121130.17548@sbz-30.cs.Helsinki.FI>
+References: <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
+ <20070709095116.c2ea700f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
+ <4692E44E.6000606@yahoo.com.au> <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com>
+ <4692E8B5.3030404@yahoo.com.au> <Pine.LNX.4.64.0707091905480.3108@schroedinger.engr.sgi.com>
+ <20070710083212.GG11115@waste.org> <Pine.LNX.4.64.0707101836280.7011@schroedinger.engr.sgi.com>
+ <20070711020646.GZ11115@waste.org> <Pine.LNX.4.64.0707111104370.14730@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set the journals JBD2_FEATURE_INCOMPAT_64BIT on devices with more
-than 32bit block sizes during mount time.  This ensure proper record
-lenth when writing to the journal.
+Hi Christoph,
 
-Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
-Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
----
- fs/ext4/super.c |    7 	7 +	0 -	0 !
- 1 file changed, 7 insertions(+)
+On Wed, 11 Jul 2007, Christoph Lameter wrote:
+> Of course you are the maintainer but you only authored a single patch 
+> which was the original submission in all the time that SLOB was in the 
+> tree. I keep having to clean up the allocator that has--according to 
+> Pekka--more memory requirements than SLUB. There is no point in keeping it 
+> around anymore it seems.
 
-Index: linux-2.6/fs/ext4/super.c
-===================================================================
---- linux-2.6.orig/fs/ext4/super.c	2007-07-11 09:36:00.000000000 -0500
-+++ linux-2.6/fs/ext4/super.c	2007-07-11 09:36:20.000000000 -0500
-@@ -1804,6 +1804,13 @@ static int ext4_fill_super (struct super
- 		goto failed_mount3;
- 	}
- 
-+	if (ext4_blocks_count(es) > 0xffffffffULL &&
-+	    !jbd2_journal_set_features(EXT4_SB(sb)->s_journal, 0, 0,
-+				       JBD2_FEATURE_INCOMPAT_64BIT)) {
-+		printk(KERN_ERR "ext4: Failed to set 64-bit journal feature\n");
-+		goto failed_mount4;
-+	}
-+
- 	/* We have now updated the journal if required, so we can
- 	 * validate the data journaling mode. */
- 	switch (test_opt(sb, DATA_FLAGS)) {
+Well, it was a test setup with UML and busybox and didn't have all the 
+SLOB optimizations Nick mentioned, so we shouldn't draw any definite 
+conclusions from it. I couldn't get 2.6.22-rc6-mm1 to compile so I'll try 
+again after Andrew pushes a new release out.
+
+Furthermore, as much as I would like to see SLOB nuked too, we can't do 
+that until Matt and Nick are satisfied with SLUB for small devices and 
+what I can gather, they aren't.
+
+			Pekka
