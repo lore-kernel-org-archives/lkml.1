@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935647AbXGKXoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935613AbXGKXoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935647AbXGKXoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935061AbXGKXel
+	id S935613AbXGKXoi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935143AbXGKXep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:34:41 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33294 "EHLO mx2.suse.de"
+	Wed, 11 Jul 2007 19:34:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33302 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934881AbXGKXej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:34:39 -0400
+	id S935137AbXGKXen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:34:43 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 25/61] sysfs: fix error handling in binattr write()
-Date: Wed, 11 Jul 2007 16:31:44 -0700
-Message-Id: <1184196856662-git-send-email-gregkh@suse.de>
+Subject: [PATCH 26/61] sysfs: flatten cleanup paths in sysfs_add_link() and create_dir()
+Date: Wed, 11 Jul 2007 16:31:45 -0700
+Message-Id: <1184196860992-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841968512510-git-send-email-gregkh@suse.de>
+In-Reply-To: <1184196856662-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -42,87 +42,161 @@ References: <20070711233021.GA5253@kroah.com>
  <11841968431153-git-send-email-gregkh@suse.de>
  <11841968471598-git-send-email-gregkh@suse.de>
  <11841968512510-git-send-email-gregkh@suse.de>
+ <1184196856662-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-Error handling in fs/sysfs/bin.c:write() was wrong because size_t
-count is used to receive return value from flush_write() which is
-negative on failure.
-
-This patch updates write() such that int variable is used instead.
-read() is updated the same way for consistency.
+Flatten cleanup paths in sysfs_add_link() and create_dir() to improve
+readability and ease further changes to these functions.  This is in
+preparation of object reference simplification.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/bin.c |   23 +++++++++--------------
- 1 files changed, 9 insertions(+), 14 deletions(-)
+ fs/sysfs/dir.c     |   73 ++++++++++++++++++++++++++++++---------------------
+ fs/sysfs/symlink.c |   27 ++++++++++--------
+ 2 files changed, 58 insertions(+), 42 deletions(-)
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index d3b9f5f..606267a 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -33,16 +33,13 @@ fill_read(struct dentry *dentry, char *buffer, loff_t off, size_t count)
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index f09626c..b4c4824 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -207,40 +207,53 @@ static int init_symlink(struct inode * inode)
+ 	return 0;
  }
  
- static ssize_t
--read(struct file * file, char __user * userbuf, size_t count, loff_t * off)
-+read(struct file *file, char __user *userbuf, size_t bytes, loff_t *off)
+-static int create_dir(struct kobject * k, struct dentry * p,
+-		      const char * n, struct dentry ** d)
++static int create_dir(struct kobject *kobj, struct dentry *parent,
++		      const char *name, struct dentry **p_dentry)
  {
- 	char *buffer = file->private_data;
- 	struct dentry *dentry = file->f_path.dentry;
- 	int size = dentry->d_inode->i_size;
- 	loff_t offs = *off;
--	int ret;
+ 	int error;
+ 	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;
++	struct dentry *dentry;
++	struct sysfs_dirent *sd;
+ 
+-	mutex_lock(&p->d_inode->i_mutex);
+-	*d = lookup_one_len(n, p, strlen(n));
+-	if (!IS_ERR(*d)) {
+- 		if (sysfs_dirent_exist(p->d_fsdata, n))
+-  			error = -EEXIST;
+-  		else
+-			error = sysfs_make_dirent(p->d_fsdata, *d, k, mode,
+-								SYSFS_DIR);
+-		if (!error) {
+-			error = sysfs_create(*d, mode, init_dir);
+-			if (!error) {
+-				inc_nlink(p->d_inode);
+-				(*d)->d_op = &sysfs_dentry_ops;
+-				d_rehash(*d);
+-			}
+-		}
+-		if (error && (error != -EEXIST)) {
+-			struct sysfs_dirent *sd = (*d)->d_fsdata;
+-			if (sd) {
+- 				list_del_init(&sd->s_sibling);
+-				sysfs_put(sd);
+-			}
+-			d_drop(*d);
+-		}
+-		dput(*d);
+-	} else
+-		error = PTR_ERR(*d);
+-	mutex_unlock(&p->d_inode->i_mutex);
++	mutex_lock(&parent->d_inode->i_mutex);
++
++	dentry = lookup_one_len(name, parent, strlen(name));
++	if (IS_ERR(dentry)) {
++		error = PTR_ERR(dentry);
++		goto out_unlock;
++	}
++
++	error = -EEXIST;
++	if (sysfs_dirent_exist(parent->d_fsdata, name))
++		goto out_dput;
++
++	error = sysfs_make_dirent(parent->d_fsdata, dentry, kobj, mode,
++				  SYSFS_DIR);
++	if (error)
++		goto out_drop;
++
++	error = sysfs_create(dentry, mode, init_dir);
++	if (error)
++		goto out_sput;
++
++	inc_nlink(parent->d_inode);
++	dentry->d_op = &sysfs_dentry_ops;
++	d_rehash(dentry);
++
++	*p_dentry = dentry;
++	error = 0;
++	goto out_dput;
++
++ out_sput:
++	sd = dentry->d_fsdata;
++	list_del_init(&sd->s_sibling);
++	sysfs_put(sd);
++ out_drop:
++	d_drop(dentry);
++ out_dput:
++	dput(dentry);
++ out_unlock:
++	mutex_unlock(&parent->d_inode->i_mutex);
+ 	return error;
+ }
+ 
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 7b9c5bf..b463f17 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -49,30 +49,33 @@ static int sysfs_add_link(struct dentry * parent, const char * name, struct kobj
+ {
+ 	struct sysfs_dirent * parent_sd = parent->d_fsdata;
+ 	struct sysfs_symlink * sl;
+-	int error = 0;
++	int error;
+ 
+ 	error = -ENOMEM;
+-	sl = kmalloc(sizeof(*sl), GFP_KERNEL);
++	sl = kzalloc(sizeof(*sl), GFP_KERNEL);
+ 	if (!sl)
+-		goto exit1;
++		goto err_out;
+ 
+ 	sl->link_name = kmalloc(strlen(name) + 1, GFP_KERNEL);
+ 	if (!sl->link_name)
+-		goto exit2;
++		goto err_out;
+ 
+ 	strcpy(sl->link_name, name);
+ 	sl->target_kobj = kobject_get(target);
+ 
+ 	error = sysfs_make_dirent(parent_sd, NULL, sl, S_IFLNK|S_IRWXUGO,
+ 				SYSFS_KOBJ_LINK);
+-	if (!error)
+-		return 0;
 -
--	if (count > PAGE_SIZE)
--		count = PAGE_SIZE;
-+	int count = min_t(size_t, bytes, PAGE_SIZE);
- 
- 	if (size) {
- 		if (offs > size)
-@@ -51,15 +48,14 @@ read(struct file * file, char __user * userbuf, size_t count, loff_t * off)
- 			count = size - offs;
- 	}
- 
--	ret = fill_read(dentry, buffer, offs, count);
--	if (ret < 0) 
--		return ret;
--	count = ret;
-+	count = fill_read(dentry, buffer, offs, count);
-+	if (count < 0)
-+		return count;
- 
- 	if (copy_to_user(userbuf, buffer, count))
- 		return -EFAULT;
- 
--	pr_debug("offs = %lld, *off = %lld, count = %zd\n", offs, *off, count);
-+	pr_debug("offs = %lld, *off = %lld, count = %d\n", offs, *off, count);
- 
- 	*off = offs + count;
- 
-@@ -78,16 +74,15 @@ flush_write(struct dentry *dentry, char *buffer, loff_t offset, size_t count)
- 	return attr->write(kobj, buffer, offset, count);
+-	kobject_put(target);
+-	kfree(sl->link_name);
+-exit2:
+-	kfree(sl);
+-exit1:
++	if (error)
++		goto err_out;
++
++	return 0;
++
++ err_out:
++	if (sl) {
++		kobject_put(sl->target_kobj);
++		kfree(sl->link_name);
++		kfree(sl);
++	}
+ 	return error;
  }
  
--static ssize_t write(struct file * file, const char __user * userbuf,
--		     size_t count, loff_t * off)
-+static ssize_t write(struct file *file, const char __user *userbuf,
-+		     size_t bytes, loff_t *off)
- {
- 	char *buffer = file->private_data;
- 	struct dentry *dentry = file->f_path.dentry;
- 	int size = dentry->d_inode->i_size;
- 	loff_t offs = *off;
-+	int count = min_t(size_t, bytes, PAGE_SIZE);
- 
--	if (count > PAGE_SIZE)
--		count = PAGE_SIZE;
- 	if (size) {
- 		if (offs > size)
- 			return 0;
 -- 
 1.5.2.2
 
