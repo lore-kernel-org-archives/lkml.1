@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763339AbXGKMmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763922AbXGKMpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763339AbXGKMmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758298AbXGKMmh
+	id S1763922AbXGKMpr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761622AbXGKMpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:42:37 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42994 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757013AbXGKMmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:42:36 -0400
-X-Authenticated: #27760234
-X-Provags-ID: V01U2FsdGVkX193c6M64fh3g+2TtzdemWEXlcWunC9ZUTUJEm6+38
-	K2ZcXcQCadVGSU
-Date: Wed, 11 Jul 2007 14:42:33 +0200
-From: Richard Mittendorfer <delist@gmx.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: PCI devices power management, w/o sysfs? [Was: Re: Liunx power
- consumption on laptops ...]
-Message-Id: <20070711144233.92a584fd.delist@gmx.net>
-In-Reply-To: <468D4D82.8030009@linux.intel.com>
-References: <468D4D82.8030009@linux.intel.com>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 11 Jul 2007 08:45:38 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:36509 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761426AbXGKMpg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 08:45:36 -0400
+Date: Wed, 11 Jul 2007 06:45:34 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 7][PATCH 1/1]Remove 32000 subdirs limit.
+Message-ID: <20070711124534.GA6417@schatzie.adilger.int>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <1183275498.4010.135.camel@localhost.localdomain> <20070710224011.e60b9864.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070710224011.e60b9864.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings *!
+On Jul 10, 2007  22:40 -0700, Andrew Morton wrote:
+> On Sun, 01 Jul 2007 03:38:18 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
+> > A EXT4_FEATURE_RO_COMPAT_DIR_NLINK flag has been added and it is set if
+> > the subdir count for any directory crosses 65000.
+> 
+> Would I be correct in assuming that a later fsck will clear
+> EXT4_FEATURE_RO_COMPAT_DIR_NLINK if there are no longer any >65000 subdir
+> directories?
 
-I'm looking for a way to disable (PM low power mode) some devices I
-rarely/never use on my laptop to save some more power. With 2.6.17,
-IIRC, I was able to echo -n 2 > /sys/bus/pci/../power to put things
-into low power mode. (I don't know if it ever worked, but at least it
-looked like it did.)
+Correct.
 
-..-2.6.22(-ck1) w/ CONFIG_PM_SYSFS_DEPRECATED doesn't let me change this
-state. evident :) -----------------^^^^^^^^^^
+> If so, that is worth a mention in the changelog, perhaps?
+> 
+> Please remind us what is the behaviour of an RO_COMPAT flag?  It means that
+> old ext4, ext3 and ext2 can only mount this fs read-only, yes?
 
-Is there a proper way to do this (setpci, if I'd know the registers)?
-Is it gone/going inside drivers (like USB_SUSPEND) and I don't have to
-worry?
+Also correct.  The COMPAT flag behaviour is described in detail in
+Documentation/filesystems/ext[234].txt
 
-I currently don't load the modules in question - but I'm not sure if it
-helps, as they might already be powered on by PCI initialization/BIOS
-(/sys/bus/pci/../state cats "0").
+> > +static inline void ext4_inc_count(handle_t *handle, struct inode *inode)
+> > +{
+> > +	inc_nlink(inode);
+> > +	if (is_dx(inode) && inode->i_nlink > 1) {
+> > +		/* limit is 16-bit i_links_count */
+> > +		if (inode->i_nlink >= EXT4_LINK_MAX || inode->i_nlink == 2) {
+> > +			inode->i_nlink = 1;
+> > +			EXT4_SET_RO_COMPAT_FEATURE(inode->i_sb,
+> > +					      EXT4_FEATURE_RO_COMPAT_DIR_NLINK);
+> > +		}
+> > +	}
+> > +}
+> 
+> Why do we set EXT4_FEATURE_RO_COMPAT_DIR_NLINK if i_nlink==2?
 
-THX, ritch
+Because that means it was previously 1 (inc_nlink() was already called).
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
