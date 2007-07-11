@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXGKUKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932860AbXGKUL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933024AbXGKUKV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 16:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763609AbXGKUKK
+	id S932860AbXGKUL6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 16:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759791AbXGKULv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 16:10:10 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:57794 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760231AbXGKUKI (ORCPT
+	Wed, 11 Jul 2007 16:11:51 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32879 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758105AbXGKULu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 16:10:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EpMg+fl0IqmruDJW3KmzZb8KQfiXN7AqUlBDbHkDUAdkbWp99dcx+WWIWtwDbisNVImk3uSbxYuENKCioi4bET38PcvIEBk9amKZn4tbNbZap57IYq60cuYYRA3aOTU1acVPp0C0lQk/vTGqRtor8mzB6hKeqSGfIzKVo2o1t5s=
-Message-ID: <68676e00707111310v4862974am37dc7c723486b96c@mail.gmail.com>
-Date: Wed, 11 Jul 2007 22:10:07 +0200
-From: Luca <kronos.it@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: Re: [kvm-devel] [PATCH 2/2] KVM: Use the scheduler preemption hooks to make kvm preemptible
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1184169333786-git-send-email-avi@qumranet.com>
+	Wed, 11 Jul 2007 16:11:50 -0400
+Date: Wed, 11 Jul 2007 13:11:48 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ethan Solomita <solo@google.com>
+cc: Andrew Morton <akpm@google.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
+Subject: Re: [RFC 1/7] cpuset write dirty map
+In-Reply-To: <46952D0A.1090304@google.com>
+Message-ID: <Pine.LNX.4.64.0707111311040.18429@schroedinger.engr.sgi.com>
+References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>
+ <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>
+ <468023CA.2090401@google.com> <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
+ <46952D0A.1090304@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11841693332609-git-send-email-avi@qumranet.com>
-	 <1184169333786-git-send-email-avi@qumranet.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/11/07, Avi Kivity <avi@qumranet.com> wrote:
-> Current kvm disables preemption while the new virtualization registers are
-> in use.  This of course is not very good for latency sensitive workloads (one
-> use of virtualization is to offload user interface and other latency
-> insensitive stuff to a container, so that it is easier to analyze the
-> remaining workload).  This patch re-enables preemption for kvm; preemption
-> is now only disabled when switching the registers in and out, and during
-> the switch to guest mode and back.
-[...]
-> diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
-> index 33fa28a..92644b5 100644
-> --- a/drivers/kvm/Kconfig
-> +++ b/drivers/kvm/Kconfig
-> @@ -10,7 +10,7 @@ if VIRTUALIZATION
->
->  config KVM
->         tristate "Kernel-based Virtual Machine (KVM) support"
-> -       depends on X86 && EXPERIMENTAL
-> +       depends on X86 && EXPERIMENTAL && PREEMPT_HOOKS
->         depends on X86_CMPXCHG64 || 64BIT
+On Wed, 11 Jul 2007, Ethan Solomita wrote:
 
-select PREEMPT_HOOKS maybe?
+> 	Christoph -- I have a question about one part of the patches. In
+> throttle_vm_writeout() you added a clause that checks for __GFP_FS |
+> __GFP_IO and if they're not both set it calls blk_congestion_wait()
+> immediately and then returns, no change for looping. Two questions:
+> 
+> 1. This seems like an unrelated bug fix. Should you submit it as a
+> standalone patch?
 
-Luca
+This may be a leftover from earlier times when the logic was different in 
+throttle vm writeout? 
