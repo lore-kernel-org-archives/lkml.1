@@ -1,71 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763684AbXGKQy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764701AbXGKQz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763684AbXGKQy3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbXGKQyT
+	id S1764701AbXGKQz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 12:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbXGKQzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:54:19 -0400
-Received: from mga01.intel.com ([192.55.52.88]:7920 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbXGKQyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:54:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,527,1175497200"; 
-   d="scan'208";a="267061344"
-Date: Wed, 11 Jul 2007 09:51:05 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
-       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-Message-Id: <20070711095105.ed166521.kristen.c.accardi@intel.com>
-In-Reply-To: <20070709193603.GA5722@ucw.cz>
-References: <20070705194909.337398431@intel.com>
-	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>
-	<20070709193603.GA5722@ucw.cz>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jul 2007 12:55:21 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:1225 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753954AbXGKQzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 12:55:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aHZWJZhjYJCH2grlT51lPfVVmUqgftSUFGNiN5LvRv+XSXDrCHbYz+FO5+bSqzSi9DVwgfu2wwWiL8d6HIT+cqvnPOzgbddSAVWReuaHWffcxSa1BMqb9Sl7viEmaWltpLQjktG18P5rDm/+KYRU1rBodpo6Q14vcSLmkqUVzFY=
+Message-ID: <ca35ce500707110955t44d9b998r769c02df3e29e00a@mail.gmail.com>
+Date: Wed, 11 Jul 2007 18:55:19 +0200
+From: mikie <mikie.pl@gmail.com>
+To: "Duncan Sands" <duncan.sands@math.u-psud.fr>
+Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
+Cc: "Indan Zupancic" <indan@nul.nu>, "Kay Sievers" <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200707111507.11656.duncan.sands@math.u-psud.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
+	 <200707111433.33156.duncan.sands@math.u-psud.fr>
+	 <ca35ce500707110547h1eb9ad68i1f2fe74f46981366@mail.gmail.com>
+	 <200707111507.11656.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jul 2007 19:36:04 +0000
-Pavel Machek <pavel@ucw.cz> wrote:
+2007/7/11, Duncan Sands <duncan.sands@math.u-psud.fr>:
+> Hi,
+>
+> > Actually I had to mount it (I  hope that not having it mounted does
+> > not change a lot in this matter).
+>
+> probably not.  Not having sysfs mounted can cause hotplug to fail,
+> but I think not having /proc/bus/usb mounted shouldn't cause any
+> trouble nowadays.
+>
+> > I:* If#= 1 Alt= 3 #EPs= 3 Cls=ff(vend.) Sub=00 Prot=00 Driver=speedtch
+> > E:  Ad=06(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+> > E:  Ad=07(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+> > E:  Ad=87(I) Atr=01(Isoc) MxPS= 960 Ivl=1ms
+>
+> The * means that this altsetting is being used - this is the altsetting
+> when using isochronous mode.  So it looks to me like isochronous mode is
+> being used.
+>
+> > I have CONFIG_USB_DEBUG=y set in kernel. However I do not see any of
+> > the messages you are referring to. It does not say that it tried isoc
+> > and falls to bulk, nothing like that. Also nothing about "setting
+> > interface to ?? failed".
+>
+> Most likely it is using isochronous transfer.  The question then is: why
+> is it slow?  I will look in my cupboard to see if I have the same modem,
+> and if so see what speed I can get out of it.
+>
+> > Which debug option should I switch to see these?
+>
+> Something like this IIRC:
+>         echo 7 > /proc/sys/kernel/printk
+> Then it should turn up in dmesg.
+>
 
-> Hi!
-> 
-> > This patch will modify the scsi subsystem to allow
-> > users to set a power management policy for the link.
-> > 
-> > The scsi subsystem will create a new sysfs file for each
-> > host in /sys/class/scsi_host called "link_power_management_policy".
-> > This file can have 3 possible values:
-> > 
-> > Value		Meaning
-> > -------------------------------------------------------------------
-> > min_power	User wishes the link to conserve power as much as
-> > 		possible, even at the cost of some performance
-> > 
-> > max_performance User wants priority to be on performance, not power
-> > 		savings
-> > 
-> > medium_power	User wants power savings, with less performance cost
-> > 		than min_power (but less power savings as well).
-> 
-> Has that anything to do with HIPM vs. DIPM? 
-> 
-> 							Pavel
-Hi Pavel,
-I'm not sure I'm understanding your question, but if you mean the different
-levels of power savings you would get, no.  With ALPM you have the option of
-instructing the link to either go into slumber or partial mode when it 
-determines the link is quiet.  Slumber uses less power, but has more latency
-to come out of.  So, for a SATA device, setting the link_power_managment
-file to "medium_power" will set up the link to only go into Partial mode,
-which has less power savings (about half by my informal measurement), but 
-less latency, and therefore less of a performance hit.
+I made a more advanced testing. I used one computer only to be
+absolutely sure that this is not a hardware issue. So I took a laptop
+(P4 1.8GHz, OHCI usb host), and booted into Knoppix LiveCD. It was
+running kernel 2.6.19 and the version of speedtch module was 1.10.
+First I did something like rmmod speedtch; rmmod ohci-hcd to be sure
+that I start with a fresh environment.
+I also did: echo 7 > /proc/sys/kernel/printk which caused the usual
+debug messages being printed directly in the console.
+Then I did modprobe ohci-hcd;modprobe speedtch enable_isoc=1
 
-Hopefully this answers your question.
-Kristen
+Certainly I've put the same firmware in the /lib/firmware so that udev
+found it correctly and loaded it up to the modem. The ADSL link went
+up with the same values (7456 downlink). PPPd started (I use
+pppoatm.so, if that is important). In this setup I achieved transfer
+rates of around 480...500 kbyte/s. Then I did the similar thing, but
+speedtch without enable_isoc, and the result was exactly the same.
+In both cases I still could not see the messages from the speedtch
+driver about enabling isochronous mode, or falling back to bulk,
+nothing like that.
+
+Right after that, to minimize the risk of any outside network being
+overloaded (I doubt that anyway), I switched to Windows Xp. Transfers
+were up to 730 kbyte/s. So this proves definitely that it is not a
+hardware related issue.
+The transfers were so fast that the LED (marked usb led) on the modem,
+which usually blinks where any transfers are in process, it went
+completely off, and only blinked once a few seconds...
+
+So there is a small progress when compared to my server box (celeron
+633 to remind you), where I can get only 400kbyte/s (on this laptop it
+went 100kbyte/s faster).
+
+I still cannot get the full 6mbit/s that my ADSL service runs at on
+the linux system.
+
+-- 
+Regards,
+MK
