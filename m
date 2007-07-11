@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934491AbXGKXET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934292AbXGKXFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934491AbXGKXET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXGKXDv
+	id S934292AbXGKXFP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761990AbXGKXFC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:03:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59430 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932782AbXGKXDt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:03:49 -0400
-Date: Wed, 11 Jul 2007 16:03:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Jason Wessel <jason.wessel@windriver.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] Pass -g to assembler under CONFIG_DEBUG_INFO
-Message-Id: <20070711160335.8705f742.akpm@linux-foundation.org>
-In-Reply-To: <20070711224327.9B0ED4D0555@magilla.localdomain>
-References: <46955BB1.20200@windriver.com>
-	<20070711224327.9B0ED4D0555@magilla.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 19:05:02 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:56659 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757409AbXGKXFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:05:00 -0400
+Date: Wed, 11 Jul 2007 16:03:37 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+Message-ID: <20070711230337.GC4306@sequoia.sous-sol.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu> <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org> <1184191488.12353.160.camel@chaos> <alpine.LFD.0.999.0707111518020.20061@woody.linux-foundation.org> <1184194219.12353.170.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184194219.12353.170.camel@chaos>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 15:43:27 -0700 (PDT)
-Roland McGrath <roland@redhat.com> wrote:
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> The HPET change, which is the larger part of the conversion set simply
+> because we now share the code with i386, might be split out by disabling
+> HPET in the first step, doing the PIT / APIC conversion and then the
+> HPET one in a separate step.
 
-> > The -gdwarf2 had a specific reason. 
-> 
-> I have no objection to it.  
-> 
+The timer specific changes (i.e. the merges between arches) can be
+done more slowly, but the setup above is basically where I started,
+and it was already broken on one of my test boxes.  Anyway, I'll help
+you however I can, because it's important to me to get this merged.
 
-OK, thanks.  So I ended up with the below as a probably-2.6.23 thing:
-
-
-From: Roland McGrath <roland@redhat.com>
-
-The assembler for a while now supports -gdwarf to generate source line info
-just like the C compiler does.  Source-level assembly debugging sounds like an
-oxymoron, but it is handy to be able to see the right source file and read its
-comments rather than just the disassembly.  This patch enables -gdwarf for
-assembly files when CONFIG_DEBUG_INFO=y and the assembler supports the option.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- Makefile |    1 +
- 1 files changed, 1 insertion(+)
-
-diff -puN Makefile~pass-g-to-assembler-under-config_debug_info Makefile
---- a/Makefile~pass-g-to-assembler-under-config_debug_info
-+++ a/Makefile
-@@ -498,6 +498,7 @@ endif
- 
- ifdef CONFIG_DEBUG_INFO
- CFLAGS		+= -g
-+AFLAGS		+= $(call as-option, -gdwarf)
- endif
- 
- # Force gcc to behave correct even for buggy distributions
-_
-
-
-If there are problems it'll most likely be with oddball architectures
-running older compilers, I guess.  If something blows up we might need to
-make this an arch/foo/Makefile thing.
-
+thanks,
+-chris
