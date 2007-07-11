@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935327AbXGKXvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936235AbXGKXvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935327AbXGKXvT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935218AbXGKXfv
+	id S936235AbXGKXvs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935225AbXGKXfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:35:51 -0400
-Received: from mail.suse.de ([195.135.220.2]:33952 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:35:54 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33980 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935182AbXGKXfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:35:46 -0400
+	id S935054AbXGKXfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:35:51 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <htejun@gmail.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 39/61] sysfs: kill unnecessary attribute->owner
-Date: Wed, 11 Jul 2007 16:31:58 -0700
-Message-Id: <11841969191116-git-send-email-gregkh@suse.de>
+Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 40/61] driver-core: make devt_attr and uevent_attr static
+Date: Wed, 11 Jul 2007 16:31:59 -0700
+Message-Id: <118419692665-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841969142368-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841969191116-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -58,1201 +56,256 @@ References: <20070711233021.GA5253@kroah.com>
  <1184196905515-git-send-email-gregkh@suse.de>
  <11841969101299-git-send-email-gregkh@suse.de>
  <11841969142368-git-send-email-gregkh@suse.de>
+ <11841969191116-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-sysfs is now completely out of driver/module lifetime game.  After
-deletion, a sysfs node doesn't access anything outside sysfs proper,
-so there's no reason to hold onto the attribute owners.  Note that
-often the wrong modules were accounted for as owners leading to
-accessing removed modules.
-
-This patch kills now unnecessary attribute->owner.  Note that with
-this change, userland holding a sysfs node does not prevent the
-backing module from being unloaded.
-
-For more info regarding lifetime rule cleanup, please read the
-following message.
-
-  http://article.gmane.org/gmane.linux.kernel/510293
-
-(tweaked by Greg to not delete the field just yet, to make it easier to
-merge things properly.)
+devt_attr and uevent_attr are either allocated dynamically with or
+embedded in device and class_device as they needed their owner field
+set to the module implementing the driver.  Now that sysfs implements
+immediate disconnect and owner field removed from struct attribute,
+there is no reason to do this.  Remove these attributes from
+[class_]device and use static attribute structures instead.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/ppc/syslib/mv64x60.c           |    1 -
- arch/s390/kernel/ipl.c              |    2 --
- drivers/base/bus.c                  |    2 --
- drivers/base/class.c                |    2 --
- drivers/base/core.c                 |    4 ----
- drivers/base/firmware_class.c       |    2 +-
- drivers/block/pktcdvd.c             |    3 +--
- drivers/char/ipmi/ipmi_msghandler.c |   10 ----------
- drivers/cpufreq/cpufreq_stats.c     |    3 +--
- drivers/cpufreq/cpufreq_userspace.c |    2 +-
- drivers/cpufreq/freq_table.c        |    1 -
- drivers/firmware/dcdbas.h           |    3 +--
- drivers/firmware/dell_rbu.c         |    6 +++---
- drivers/firmware/edd.c              |    2 +-
- drivers/firmware/efivars.c          |    6 +++---
- drivers/i2c/chips/eeprom.c          |    1 -
- drivers/i2c/chips/max6875.c         |    1 -
- drivers/infiniband/core/sysfs.c     |    1 -
- drivers/input/mouse/psmouse.h       |    1 -
- drivers/macintosh/windfarm_core.c   |    2 --
- drivers/misc/asus-laptop.c          |    3 +--
- drivers/net/ibmveth.c               |    2 +-
- drivers/parisc/pdc_stable.c         |    4 ++--
- drivers/pci/hotplug/acpiphp_ibm.c   |    1 -
- drivers/pci/pci-sysfs.c             |    4 ----
- drivers/pci/probe.c                 |    2 --
- drivers/pcmcia/socket_sysfs.c       |    2 +-
- drivers/rapidio/rio-sysfs.c         |    1 -
- drivers/rtc/rtc-ds1553.c            |    1 -
- drivers/rtc/rtc-ds1742.c            |    1 -
- drivers/s390/cio/chp.c              |    2 --
- drivers/s390/net/qeth_sys.c         |    2 +-
- drivers/scsi/arcmsr/arcmsr_attr.c   |    3 ---
- drivers/scsi/libsas/sas_expander.c  |    1 -
- drivers/scsi/lpfc/lpfc_attr.c       |    2 --
- drivers/scsi/qla2xxx/qla_attr.c     |    6 ------
- drivers/spi/at25.c                  |    1 -
- drivers/video/aty/radeon_base.c     |    2 --
- drivers/video/backlight/backlight.c |    2 +-
- drivers/video/backlight/lcd.c       |    2 +-
- drivers/w1/slaves/w1_ds2433.c       |    1 -
- drivers/w1/slaves/w1_therm.c        |    1 -
- drivers/w1/w1.c                     |    2 --
- drivers/zorro/zorro-sysfs.c         |    1 -
- fs/ecryptfs/main.c                  |    2 --
- fs/ocfs2/cluster/masklog.c          |    1 -
- fs/partitions/check.c               |    1 -
- fs/sysfs/bin.c                      |   19 +++++--------------
- fs/sysfs/file.c                     |   21 +++++----------------
- include/linux/sysdev.h              |    3 +--
- include/linux/sysfs.h               |   12 ++++++++----
- kernel/module.c                     |    9 +++------
- kernel/params.c                     |    1 -
- net/bridge/br_sysfs_br.c            |    3 +--
- net/bridge/br_sysfs_if.c            |    3 +--
- 55 files changed, 44 insertions(+), 135 deletions(-)
+ drivers/base/class.c   |   44 ++++++++++++++++----------------------------
+ drivers/base/core.c    |   45 +++++++++++++++------------------------------
+ include/linux/device.h |    5 -----
+ 3 files changed, 31 insertions(+), 63 deletions(-)
 
-diff --git a/arch/ppc/syslib/mv64x60.c b/arch/ppc/syslib/mv64x60.c
-index 8485a68..032f4b7 100644
---- a/arch/ppc/syslib/mv64x60.c
-+++ b/arch/ppc/syslib/mv64x60.c
-@@ -2415,7 +2415,6 @@ static struct bin_attribute mv64xxx_hs_reg_attr = { /* Hotswap register */
- 	.attr = {
- 		.name = "hs_reg",
- 		.mode = S_IRUGO | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size  = VAL_LEN_MAX,
- 	.read  = mv64xxx_hs_reg_read,
-diff --git a/arch/s390/kernel/ipl.c b/arch/s390/kernel/ipl.c
-index 82b131d..9a13b24 100644
---- a/arch/s390/kernel/ipl.c
-+++ b/arch/s390/kernel/ipl.c
-@@ -312,7 +312,6 @@ static struct bin_attribute ipl_parameter_attr = {
- 	.attr = {
- 		.name = "binary_parameter",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = PAGE_SIZE,
- 	.read = &ipl_parameter_read,
-@@ -336,7 +335,6 @@ static struct bin_attribute ipl_scp_data_attr = {
- 	.attr = {
- 		.name = "scp_data",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = PAGE_SIZE,
- 	.read = &ipl_scp_data_read,
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index f299e0d..61c6752 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -574,7 +574,6 @@ static int add_probe_files(struct bus_type *bus)
- 
- 	bus->drivers_probe_attr.attr.name = "drivers_probe";
- 	bus->drivers_probe_attr.attr.mode = S_IWUSR;
--	bus->drivers_probe_attr.attr.owner = bus->owner;
- 	bus->drivers_probe_attr.store = store_drivers_probe;
- 	retval = bus_create_file(bus, &bus->drivers_probe_attr);
- 	if (retval)
-@@ -582,7 +581,6 @@ static int add_probe_files(struct bus_type *bus)
- 
- 	bus->drivers_autoprobe_attr.attr.name = "drivers_autoprobe";
- 	bus->drivers_autoprobe_attr.attr.mode = S_IWUSR | S_IRUGO;
--	bus->drivers_autoprobe_attr.attr.owner = bus->owner;
- 	bus->drivers_autoprobe_attr.show = show_drivers_autoprobe;
- 	bus->drivers_autoprobe_attr.store = store_drivers_autoprobe;
- 	retval = bus_create_file(bus, &bus->drivers_autoprobe_attr);
 diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 8c506db..9cbfde2 100644
+index 9cbfde2..4d22226 100644
 --- a/drivers/base/class.c
 +++ b/drivers/base/class.c
-@@ -605,7 +605,6 @@ int class_device_add(struct class_device *class_dev)
- 		goto out3;
- 	class_dev->uevent_attr.attr.name = "uevent";
- 	class_dev->uevent_attr.attr.mode = S_IWUSR;
--	class_dev->uevent_attr.attr.owner = parent_class->owner;
- 	class_dev->uevent_attr.store = store_uevent;
- 	error = class_device_create_file(class_dev, &class_dev->uevent_attr);
+@@ -312,9 +312,6 @@ static void class_dev_release(struct kobject * kobj)
+ 
+ 	pr_debug("device class '%s': release.\n", cd->class_id);
+ 
+-	kfree(cd->devt_attr);
+-	cd->devt_attr = NULL;
+-
+ 	if (cd->release)
+ 		cd->release(cd);
+ 	else if (cls->release)
+@@ -547,6 +544,9 @@ static ssize_t show_dev(struct class_device *class_dev, char *buf)
+ 	return print_dev_t(buf, class_dev->devt);
+ }
+ 
++static struct class_device_attribute class_devt_attr =
++	__ATTR(dev, S_IRUGO, show_dev, NULL);
++
+ static ssize_t store_uevent(struct class_device *class_dev,
+ 			    const char *buf, size_t count)
+ {
+@@ -554,6 +554,9 @@ static ssize_t store_uevent(struct class_device *class_dev,
+ 	return count;
+ }
+ 
++static struct class_device_attribute class_uevent_attr =
++	__ATTR(uevent, S_IWUSR, NULL, store_uevent);
++
+ void class_device_initialize(struct class_device *class_dev)
+ {
+ 	kobj_set_kset_s(class_dev, class_obj_subsys);
+@@ -603,30 +606,15 @@ int class_device_add(struct class_device *class_dev)
+ 				  &parent_class->subsys.kobj, "subsystem");
  	if (error)
-@@ -620,7 +619,6 @@ int class_device_add(struct class_device *class_dev)
- 		}
- 		attr->attr.name = "dev";
- 		attr->attr.mode = S_IRUGO;
--		attr->attr.owner = parent_class->owner;
- 		attr->show = show_dev;
- 		error = class_device_create_file(class_dev, attr);
- 		if (error) {
+ 		goto out3;
+-	class_dev->uevent_attr.attr.name = "uevent";
+-	class_dev->uevent_attr.attr.mode = S_IWUSR;
+-	class_dev->uevent_attr.store = store_uevent;
+-	error = class_device_create_file(class_dev, &class_dev->uevent_attr);
++
++	error = class_device_create_file(class_dev, &class_uevent_attr);
+ 	if (error)
+ 		goto out3;
+ 
+ 	if (MAJOR(class_dev->devt)) {
+-		struct class_device_attribute *attr;
+-		attr = kzalloc(sizeof(*attr), GFP_KERNEL);
+-		if (!attr) {
+-			error = -ENOMEM;
+-			goto out4;
+-		}
+-		attr->attr.name = "dev";
+-		attr->attr.mode = S_IRUGO;
+-		attr->show = show_dev;
+-		error = class_device_create_file(class_dev, attr);
+-		if (error) {
+-			kfree(attr);
++		error = class_device_create_file(class_dev, &class_devt_attr);
++		if (error)
+ 			goto out4;
+-		}
+-
+-		class_dev->devt_attr = attr;
+ 	}
+ 
+ 	error = class_device_add_attrs(class_dev);
+@@ -669,10 +657,10 @@ int class_device_add(struct class_device *class_dev)
+  out6:
+ 	class_device_remove_attrs(class_dev);
+  out5:
+-	if (class_dev->devt_attr)
+-		class_device_remove_file(class_dev, class_dev->devt_attr);
++	if (MAJOR(class_dev->devt))
++		class_device_remove_file(class_dev, &class_devt_attr);
+  out4:
+-	class_device_remove_file(class_dev, &class_dev->uevent_attr);
++	class_device_remove_file(class_dev, &class_uevent_attr);
+  out3:
+ 	kobject_del(&class_dev->kobj);
+  out2:
+@@ -772,9 +760,9 @@ void class_device_del(struct class_device *class_dev)
+ 		sysfs_remove_link(&class_dev->kobj, "device");
+ 	}
+ 	sysfs_remove_link(&class_dev->kobj, "subsystem");
+-	class_device_remove_file(class_dev, &class_dev->uevent_attr);
+-	if (class_dev->devt_attr)
+-		class_device_remove_file(class_dev, class_dev->devt_attr);
++	class_device_remove_file(class_dev, &class_uevent_attr);
++	if (MAJOR(class_dev->devt))
++		class_device_remove_file(class_dev, &class_devt_attr);
+ 	class_device_remove_attrs(class_dev);
+ 	class_device_remove_groups(class_dev);
+ 
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index cff4fbf..e3fb87b 100644
+index e3fb87b..0455aa7 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
-@@ -683,8 +683,6 @@ int device_add(struct device *dev)
- 
- 	dev->uevent_attr.attr.name = "uevent";
- 	dev->uevent_attr.attr.mode = S_IRUGO | S_IWUSR;
--	if (dev->driver)
--		dev->uevent_attr.attr.owner = dev->driver->owner;
- 	dev->uevent_attr.store = store_uevent;
- 	dev->uevent_attr.show = show_uevent;
- 	error = device_create_file(dev, &dev->uevent_attr);
-@@ -700,8 +698,6 @@ int device_add(struct device *dev)
- 		}
- 		attr->attr.name = "dev";
- 		attr->attr.mode = S_IRUGO;
--		if (dev->driver)
--			attr->attr.owner = dev->driver->owner;
- 		attr->show = show_dev;
- 		error = device_create_file(dev, attr);
- 		if (error) {
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 89a5f4a..0e51148 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -271,7 +271,7 @@ out:
+@@ -310,6 +310,9 @@ static ssize_t store_uevent(struct device *dev, struct device_attribute *attr,
+ 	return count;
  }
  
- static struct bin_attribute firmware_attr_data_tmpl = {
--	.attr = {.name = "data", .mode = 0644, .owner = THIS_MODULE},
-+	.attr = {.name = "data", .mode = 0644},
- 	.size = 0,
- 	.read = firmware_data_read,
- 	.write = firmware_data_write,
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index f1b9dd7..ce64e86 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -146,8 +146,7 @@ static void pkt_kobj_release(struct kobject *kobj)
-  **********************************************************/
- 
- #define DEF_ATTR(_obj,_name,_mode) \
--	static struct attribute _obj = { \
--		.name = _name, .owner = THIS_MODULE, .mode = _mode }
-+	static struct attribute _obj = { .name = _name, .mode = _mode }
- 
- /**********************************************************
-   /sys/class/pktcdvd/pktcdvd[0-7]/
-diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
-index 8e222f2..b5df7e6 100644
---- a/drivers/char/ipmi/ipmi_msghandler.c
-+++ b/drivers/char/ipmi/ipmi_msghandler.c
-@@ -2171,52 +2171,42 @@ static int create_files(struct bmc_device *bmc)
- 	int err;
- 
- 	bmc->device_id_attr.attr.name = "device_id";
--	bmc->device_id_attr.attr.owner = THIS_MODULE;
- 	bmc->device_id_attr.attr.mode = S_IRUGO;
- 	bmc->device_id_attr.show = device_id_show;
- 
- 	bmc->provides_dev_sdrs_attr.attr.name = "provides_device_sdrs";
--	bmc->provides_dev_sdrs_attr.attr.owner = THIS_MODULE;
- 	bmc->provides_dev_sdrs_attr.attr.mode = S_IRUGO;
- 	bmc->provides_dev_sdrs_attr.show = provides_dev_sdrs_show;
- 
- 	bmc->revision_attr.attr.name = "revision";
--	bmc->revision_attr.attr.owner = THIS_MODULE;
- 	bmc->revision_attr.attr.mode = S_IRUGO;
- 	bmc->revision_attr.show = revision_show;
- 
- 	bmc->firmware_rev_attr.attr.name = "firmware_revision";
--	bmc->firmware_rev_attr.attr.owner = THIS_MODULE;
- 	bmc->firmware_rev_attr.attr.mode = S_IRUGO;
- 	bmc->firmware_rev_attr.show = firmware_rev_show;
- 
- 	bmc->version_attr.attr.name = "ipmi_version";
--	bmc->version_attr.attr.owner = THIS_MODULE;
- 	bmc->version_attr.attr.mode = S_IRUGO;
- 	bmc->version_attr.show = ipmi_version_show;
- 
- 	bmc->add_dev_support_attr.attr.name = "additional_device_support";
--	bmc->add_dev_support_attr.attr.owner = THIS_MODULE;
- 	bmc->add_dev_support_attr.attr.mode = S_IRUGO;
- 	bmc->add_dev_support_attr.show = add_dev_support_show;
- 
- 	bmc->manufacturer_id_attr.attr.name = "manufacturer_id";
--	bmc->manufacturer_id_attr.attr.owner = THIS_MODULE;
- 	bmc->manufacturer_id_attr.attr.mode = S_IRUGO;
- 	bmc->manufacturer_id_attr.show = manufacturer_id_show;
- 
- 	bmc->product_id_attr.attr.name = "product_id";
--	bmc->product_id_attr.attr.owner = THIS_MODULE;
- 	bmc->product_id_attr.attr.mode = S_IRUGO;
- 	bmc->product_id_attr.show = product_id_show;
- 
- 	bmc->guid_attr.attr.name = "guid";
--	bmc->guid_attr.attr.owner = THIS_MODULE;
- 	bmc->guid_attr.attr.mode = S_IRUGO;
- 	bmc->guid_attr.show = guid_show;
- 
- 	bmc->aux_firmware_rev_attr.attr.name = "aux_firmware_revision";
--	bmc->aux_firmware_rev_attr.attr.owner = THIS_MODULE;
- 	bmc->aux_firmware_rev_attr.attr.mode = S_IRUGO;
- 	bmc->aux_firmware_rev_attr.show = aux_firmware_rev_show;
- 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index d2f0cbd..917b9ba 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -25,8 +25,7 @@ static spinlock_t cpufreq_stats_lock;
- 
- #define CPUFREQ_STATDEVICE_ATTR(_name,_mode,_show) \
- static struct freq_attr _attr_##_name = {\
--	.attr = {.name = __stringify(_name), .owner = THIS_MODULE, \
--		.mode = _mode, }, \
-+	.attr = {.name = __stringify(_name), .mode = _mode, }, \
- 	.show = _show,\
- };
- 
-diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-index 860345c..a648970 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -120,7 +120,7 @@ store_speed (struct cpufreq_policy *policy, const char *buf, size_t count)
- 
- static struct freq_attr freq_attr_scaling_setspeed =
++static struct device_attribute uevent_attr =
++	__ATTR(uevent, S_IRUGO | S_IWUSR, show_uevent, store_uevent);
++
+ static int device_add_attributes(struct device *dev,
+ 				 struct device_attribute *attrs)
  {
--	.attr = { .name = "scaling_setspeed", .mode = 0644, .owner = THIS_MODULE },
-+	.attr = { .name = "scaling_setspeed", .mode = 0644 },
- 	.show = show_speed,
- 	.store = store_speed,
- };
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index e749092..5409f3a 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -199,7 +199,6 @@ static ssize_t show_available_freqs (struct cpufreq_policy *policy, char *buf)
- struct freq_attr cpufreq_freq_attr_scaling_available_freqs = {
- 	.attr = { .name = "scaling_available_frequencies",
- 		  .mode = 0444,
--		  .owner=THIS_MODULE
- 		},
- 	.show = show_available_freqs,
- };
-diff --git a/drivers/firmware/dcdbas.h b/drivers/firmware/dcdbas.h
-index 58a8518..dcdba0f 100644
---- a/drivers/firmware/dcdbas.h
-+++ b/drivers/firmware/dcdbas.h
-@@ -67,8 +67,7 @@
- #define DCDBAS_BIN_ATTR_RW(_name) \
- struct bin_attribute bin_attr_##_name = { \
- 	.attr =  { .name = __stringify(_name), \
--		   .mode = 0600, \
--		   .owner = THIS_MODULE }, \
-+		   .mode = 0600 }, \
- 	.read =  _name##_read, \
- 	.write = _name##_write, \
- }
-diff --git a/drivers/firmware/dell_rbu.c b/drivers/firmware/dell_rbu.c
-index fc702e4..f8afecb 100644
---- a/drivers/firmware/dell_rbu.c
-+++ b/drivers/firmware/dell_rbu.c
-@@ -687,18 +687,18 @@ static ssize_t write_rbu_packet_size(struct kobject *kobj, char *buffer,
+@@ -423,6 +426,9 @@ static ssize_t show_dev(struct device *dev, struct device_attribute *attr,
+ 	return print_dev_t(buf, dev->devt);
  }
  
- static struct bin_attribute rbu_data_attr = {
--	.attr = {.name = "data",.owner = THIS_MODULE,.mode = 0444},
-+	.attr = {.name = "data", .mode = 0444},
- 	.read = read_rbu_data,
- };
- 
- static struct bin_attribute rbu_image_type_attr = {
--	.attr = {.name = "image_type",.owner = THIS_MODULE,.mode = 0644},
-+	.attr = {.name = "image_type", .mode = 0644},
- 	.read = read_rbu_image_type,
- 	.write = write_rbu_image_type,
- };
- 
- static struct bin_attribute rbu_packet_size_attr = {
--	.attr = {.name = "packet_size",.owner = THIS_MODULE,.mode = 0644},
-+	.attr = {.name = "packet_size", .mode = 0644},
- 	.read = read_rbu_packet_size,
- 	.write = write_rbu_packet_size,
- };
-diff --git a/drivers/firmware/edd.c b/drivers/firmware/edd.c
-index d8806e4..1523227 100644
---- a/drivers/firmware/edd.c
-+++ b/drivers/firmware/edd.c
-@@ -74,7 +74,7 @@ static struct edd_device *edd_devices[EDD_MBR_SIG_MAX];
- 
- #define EDD_DEVICE_ATTR(_name,_mode,_show,_test) \
- struct edd_attribute edd_attr_##_name = { 	\
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
- 	.show	= _show,				\
- 	.test	= _test,				\
- };
-diff --git a/drivers/firmware/efivars.c b/drivers/firmware/efivars.c
-index 1324984..bfd2d67 100644
---- a/drivers/firmware/efivars.c
-+++ b/drivers/firmware/efivars.c
-@@ -131,21 +131,21 @@ struct efivar_attribute {
- 
- #define EFI_ATTR(_name, _mode, _show, _store) \
- struct subsys_attribute efi_attr_##_name = { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE}, \
-+	.attr = {.name = __stringify(_name), .mode = _mode}, \
- 	.show = _show, \
- 	.store = _store, \
- };
- 
- #define EFIVAR_ATTR(_name, _mode, _show, _store) \
- struct efivar_attribute efivar_attr_##_name = { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE}, \
-+	.attr = {.name = __stringify(_name), .mode = _mode}, \
- 	.show = _show, \
- 	.store = _store, \
- };
- 
- #define VAR_SUBSYS_ATTR(_name, _mode, _show, _store) \
- struct subsys_attribute var_subsys_attr_##_name = { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE}, \
-+	.attr = {.name = __stringify(_name), .mode = _mode}, \
- 	.show = _show, \
- 	.store = _store, \
- };
-diff --git a/drivers/i2c/chips/eeprom.c b/drivers/i2c/chips/eeprom.c
-index bfce13c..5990dd5 100644
---- a/drivers/i2c/chips/eeprom.c
-+++ b/drivers/i2c/chips/eeprom.c
-@@ -143,7 +143,6 @@ static struct bin_attribute eeprom_attr = {
- 	.attr = {
- 		.name = "eeprom",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = EEPROM_SIZE,
- 	.read = eeprom_read,
-diff --git a/drivers/i2c/chips/max6875.c b/drivers/i2c/chips/max6875.c
-index 76645c1..1405ce5 100644
---- a/drivers/i2c/chips/max6875.c
-+++ b/drivers/i2c/chips/max6875.c
-@@ -152,7 +152,6 @@ static struct bin_attribute user_eeprom_attr = {
- 	.attr = {
- 		.name = "eeprom",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = USER_EEPROM_SIZE,
- 	.read = max6875_read,
-diff --git a/drivers/infiniband/core/sysfs.c b/drivers/infiniband/core/sysfs.c
-index 08c299e..bf9b992 100644
---- a/drivers/infiniband/core/sysfs.c
-+++ b/drivers/infiniband/core/sysfs.c
-@@ -479,7 +479,6 @@ alloc_group_attrs(ssize_t (*show)(struct ib_port *,
- 
- 		element->attr.attr.name  = element->name;
- 		element->attr.attr.mode  = S_IRUGO;
--		element->attr.attr.owner = THIS_MODULE;
- 		element->attr.show       = show;
- 		element->index		 = i;
- 
-diff --git a/drivers/input/mouse/psmouse.h b/drivers/input/mouse/psmouse.h
-index 27a6883..1317bdd 100644
---- a/drivers/input/mouse/psmouse.h
-+++ b/drivers/input/mouse/psmouse.h
-@@ -119,7 +119,6 @@ static struct psmouse_attribute psmouse_attr_##_name = {			\
- 		.attr	= {							\
- 			.name	= __stringify(_name),				\
- 			.mode	= _mode,					\
--			.owner	= THIS_MODULE,					\
- 		},								\
- 		.show	= psmouse_attr_show_helper,				\
- 		.store	= psmouse_attr_set_helper,				\
-diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
-index 11ced17..4fcb245 100644
---- a/drivers/macintosh/windfarm_core.c
-+++ b/drivers/macintosh/windfarm_core.c
-@@ -212,7 +212,6 @@ int wf_register_control(struct wf_control *new_ct)
- 	list_add(&new_ct->link, &wf_controls);
- 
- 	new_ct->attr.attr.name = new_ct->name;
--	new_ct->attr.attr.owner = THIS_MODULE;
- 	new_ct->attr.attr.mode = 0644;
- 	new_ct->attr.show = wf_show_control;
- 	new_ct->attr.store = wf_store_control;
-@@ -325,7 +324,6 @@ int wf_register_sensor(struct wf_sensor *new_sr)
- 	list_add(&new_sr->link, &wf_sensors);
- 
- 	new_sr->attr.attr.name = new_sr->name;
--	new_sr->attr.attr.owner = THIS_MODULE;
- 	new_sr->attr.attr.mode = 0444;
- 	new_sr->attr.show = wf_show_sensor;
- 	new_sr->attr.store = NULL;
-diff --git a/drivers/misc/asus-laptop.c b/drivers/misc/asus-laptop.c
-index 4f9060a..7798f59 100644
---- a/drivers/misc/asus-laptop.c
-+++ b/drivers/misc/asus-laptop.c
-@@ -737,8 +737,7 @@ static void asus_hotk_notify(acpi_handle handle, u32 event, void *data)
- 	struct device_attribute dev_attr_##_name = {			\
- 		.attr = {						\
- 			.name = __stringify(_name),			\
--			.mode = 0,					\
--			.owner = THIS_MODULE },				\
-+			.mode = 0 },					\
- 		.show   = NULL,						\
- 		.store  = NULL,						\
- 	}
-diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
-index 6ec3d50..d96eb72 100644
---- a/drivers/net/ibmveth.c
-+++ b/drivers/net/ibmveth.c
-@@ -1337,7 +1337,7 @@ const char * buf, size_t count)
- 
- #define ATTR(_name, _mode)      \
-         struct attribute veth_##_name##_attr = {               \
--        .name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE \
-+        .name = __stringify(_name), .mode = _mode, \
-         };
- 
- static ATTR(active, 0644);
-diff --git a/drivers/parisc/pdc_stable.c b/drivers/parisc/pdc_stable.c
-index 924ef06..fc4bde2 100644
---- a/drivers/parisc/pdc_stable.c
-+++ b/drivers/parisc/pdc_stable.c
-@@ -121,14 +121,14 @@ struct pdcspath_entry pdcspath_entry_##_name = { \
- 
- #define PDCS_ATTR(_name, _mode, _show, _store) \
- struct subsys_attribute pdcs_attr_##_name = { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE}, \
-+	.attr = {.name = __stringify(_name), .mode = _mode}, \
- 	.show = _show, \
- 	.store = _store, \
- };
- 
- #define PATHS_ATTR(_name, _mode, _show, _store) \
- struct pdcspath_attribute paths_attr_##_name = { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE}, \
-+	.attr = {.name = __stringify(_name), .mode = _mode}, \
- 	.show = _show, \
- 	.store = _store, \
- };
-diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
-index e7322c2..74556ec 100644
---- a/drivers/pci/hotplug/acpiphp_ibm.c
-+++ b/drivers/pci/hotplug/acpiphp_ibm.c
-@@ -117,7 +117,6 @@ static struct notification ibm_note;
- static struct bin_attribute ibm_apci_table_attr = {
- 	    .attr = {
- 		    .name = "apci_table",
--		    .owner = THIS_MODULE,
- 		    .mode = S_IRUGO,
- 	    },
- 	    .read = ibm_read_apci_table,
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 284e83a..d448f8d 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -499,7 +499,6 @@ static int pci_create_resource_files(struct pci_dev *pdev)
- 			sprintf(res_attr_name, "resource%d", i);
- 			res_attr->attr.name = res_attr_name;
- 			res_attr->attr.mode = S_IRUSR | S_IWUSR;
--			res_attr->attr.owner = THIS_MODULE;
- 			res_attr->size = pci_resource_len(pdev, i);
- 			res_attr->mmap = pci_mmap_resource;
- 			res_attr->private = &pdev->resource[i];
-@@ -582,7 +581,6 @@ static struct bin_attribute pci_config_attr = {
- 	.attr =	{
- 		.name = "config",
- 		.mode = S_IRUGO | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 256,
- 	.read = pci_read_config,
-@@ -593,7 +591,6 @@ static struct bin_attribute pcie_config_attr = {
- 	.attr =	{
- 		.name = "config",
- 		.mode = S_IRUGO | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 4096,
- 	.read = pci_read_config,
-@@ -628,7 +625,6 @@ int __must_check pci_create_sysfs_dev_files (struct pci_dev *pdev)
- 			rom_attr->size = pci_resource_len(pdev, PCI_ROM_RESOURCE);
- 			rom_attr->attr.name = "rom";
- 			rom_attr->attr.mode = S_IRUSR;
--			rom_attr->attr.owner = THIS_MODULE;
- 			rom_attr->read = pci_read_rom;
- 			rom_attr->write = pci_write_rom;
- 			retval = sysfs_create_bin_file(&pdev->dev.kobj, rom_attr);
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index e48fcf0..08783bd 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -39,7 +39,6 @@ static void pci_create_legacy_files(struct pci_bus *b)
- 		b->legacy_io->attr.name = "legacy_io";
- 		b->legacy_io->size = 0xffff;
- 		b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
--		b->legacy_io->attr.owner = THIS_MODULE;
- 		b->legacy_io->read = pci_read_legacy_io;
- 		b->legacy_io->write = pci_write_legacy_io;
- 		class_device_create_bin_file(&b->class_dev, b->legacy_io);
-@@ -49,7 +48,6 @@ static void pci_create_legacy_files(struct pci_bus *b)
- 		b->legacy_mem->attr.name = "legacy_mem";
- 		b->legacy_mem->size = 1024*1024;
- 		b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
--		b->legacy_mem->attr.owner = THIS_MODULE;
- 		b->legacy_mem->mmap = pci_mmap_legacy_mem;
- 		class_device_create_bin_file(&b->class_dev, b->legacy_mem);
- 	}
-diff --git a/drivers/pcmcia/socket_sysfs.c b/drivers/pcmcia/socket_sysfs.c
-index a2bb465..dbfbe65 100644
---- a/drivers/pcmcia/socket_sysfs.c
-+++ b/drivers/pcmcia/socket_sysfs.c
-@@ -366,7 +366,7 @@ static struct device_attribute *pccard_socket_attributes[] = {
- };
- 
- static struct bin_attribute pccard_cis_attr = {
--	.attr = { .name = "cis", .mode = S_IRUGO | S_IWUSR, .owner = THIS_MODULE},
-+	.attr = { .name = "cis", .mode = S_IRUGO | S_IWUSR },
- 	.size = 0x200,
- 	.read = pccard_show_cis,
- 	.write = pccard_store_cis,
-diff --git a/drivers/rapidio/rio-sysfs.c b/drivers/rapidio/rio-sysfs.c
-index eed9143..a3972b9 100644
---- a/drivers/rapidio/rio-sysfs.c
-+++ b/drivers/rapidio/rio-sysfs.c
-@@ -197,7 +197,6 @@ static struct bin_attribute rio_config_attr = {
- 	.attr = {
- 		 .name = "config",
- 		 .mode = S_IRUGO | S_IWUSR,
--		 .owner = THIS_MODULE,
- 		 },
- 	.size = 0x200000,
- 	.read = rio_read_config,
-diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
-index afa64c7..b024cfb 100644
---- a/drivers/rtc/rtc-ds1553.c
-+++ b/drivers/rtc/rtc-ds1553.c
-@@ -290,7 +290,6 @@ static struct bin_attribute ds1553_nvram_attr = {
- 	.attr = {
- 		.name = "nvram",
- 		.mode = S_IRUGO | S_IWUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = RTC_OFFSET,
- 	.read = ds1553_nvram_read,
-diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
-index d68288b..1638acd 100644
---- a/drivers/rtc/rtc-ds1742.c
-+++ b/drivers/rtc/rtc-ds1742.c
-@@ -159,7 +159,6 @@ static struct bin_attribute ds1742_nvram_attr = {
- 	.attr = {
- 		.name = "nvram",
- 		.mode = S_IRUGO | S_IWUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.read = ds1742_nvram_read,
- 	.write = ds1742_nvram_write,
-diff --git a/drivers/s390/cio/chp.c b/drivers/s390/cio/chp.c
-index ac289e6..96a8a72 100644
---- a/drivers/s390/cio/chp.c
-+++ b/drivers/s390/cio/chp.c
-@@ -165,7 +165,6 @@ static struct bin_attribute chp_measurement_chars_attr = {
- 	.attr = {
- 		.name = "measurement_chars",
- 		.mode = S_IRUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = sizeof(struct cmg_chars),
- 	.read = chp_measurement_chars_read,
-@@ -217,7 +216,6 @@ static struct bin_attribute chp_measurement_attr = {
- 	.attr = {
- 		.name = "measurement",
- 		.mode = S_IRUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = sizeof(struct cmg_entry),
- 	.read = chp_measurement_read,
-diff --git a/drivers/s390/net/qeth_sys.c b/drivers/s390/net/qeth_sys.c
-index 65ffc21..bb0287a 100644
---- a/drivers/s390/net/qeth_sys.c
-+++ b/drivers/s390/net/qeth_sys.c
-@@ -991,7 +991,7 @@ static struct attribute_group qeth_osn_device_attr_group = {
- 
- #define QETH_DEVICE_ATTR(_id,_name,_mode,_show,_store)			     \
- struct device_attribute dev_attr_##_id = {				     \
--	.attr = {.name=__stringify(_name), .mode=_mode, .owner=THIS_MODULE },\
-+	.attr = {.name=__stringify(_name), .mode=_mode, },\
- 	.show	= _show,						     \
- 	.store	= _store,						     \
- };
-diff --git a/drivers/scsi/arcmsr/arcmsr_attr.c b/drivers/scsi/arcmsr/arcmsr_attr.c
-index 03bfed6..8908228 100644
---- a/drivers/scsi/arcmsr/arcmsr_attr.c
-+++ b/drivers/scsi/arcmsr/arcmsr_attr.c
-@@ -188,7 +188,6 @@ static struct bin_attribute arcmsr_sysfs_message_read_attr = {
- 	.attr = {
- 		.name = "mu_read",
- 		.mode = S_IRUSR ,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 1032,
- 	.read = arcmsr_sysfs_iop_message_read,
-@@ -198,7 +197,6 @@ static struct bin_attribute arcmsr_sysfs_message_write_attr = {
- 	.attr = {
- 		.name = "mu_write",
- 		.mode = S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 1032,
- 	.write = arcmsr_sysfs_iop_message_write,
-@@ -208,7 +206,6 @@ static struct bin_attribute arcmsr_sysfs_message_clear_attr = {
- 	.attr = {
- 		.name = "mu_clear",
- 		.mode = S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 1,
- 	.write = arcmsr_sysfs_iop_message_clear,
-diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
-index e34442e..578ed79 100644
---- a/drivers/scsi/libsas/sas_expander.c
-+++ b/drivers/scsi/libsas/sas_expander.c
-@@ -1368,7 +1368,6 @@ static void sas_ex_smp_hook(struct domain_device *dev)
- 	memset(bin_attr, 0, sizeof(*bin_attr));
- 
- 	bin_attr->attr.name = SMP_BIN_ATTR_NAME;
--	bin_attr->attr.owner = THIS_MODULE;
- 	bin_attr->attr.mode = 0600;
- 
- 	bin_attr->size = 0;
-diff --git a/drivers/scsi/lpfc/lpfc_attr.c b/drivers/scsi/lpfc/lpfc_attr.c
-index 95fe77e..f81fe50 100644
---- a/drivers/scsi/lpfc/lpfc_attr.c
-+++ b/drivers/scsi/lpfc/lpfc_attr.c
-@@ -1200,7 +1200,6 @@ static struct bin_attribute sysfs_ctlreg_attr = {
- 	.attr = {
- 		.name = "ctlreg",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 256,
- 	.read = sysfs_ctlreg_read,
-@@ -1422,7 +1421,6 @@ static struct bin_attribute sysfs_mbox_attr = {
- 	.attr = {
- 		.name = "mbox",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = MAILBOX_CMD_SIZE,
- 	.read = sysfs_mbox_read,
-diff --git a/drivers/scsi/qla2xxx/qla_attr.c b/drivers/scsi/qla2xxx/qla_attr.c
-index 8081b63..9658725 100644
---- a/drivers/scsi/qla2xxx/qla_attr.c
-+++ b/drivers/scsi/qla2xxx/qla_attr.c
-@@ -73,7 +73,6 @@ static struct bin_attribute sysfs_fw_dump_attr = {
- 	.attr = {
- 		.name = "fw_dump",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 0,
- 	.read = qla2x00_sysfs_read_fw_dump,
-@@ -149,7 +148,6 @@ static struct bin_attribute sysfs_nvram_attr = {
- 	.attr = {
- 		.name = "nvram",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 512,
- 	.read = qla2x00_sysfs_read_nvram,
-@@ -198,7 +196,6 @@ static struct bin_attribute sysfs_optrom_attr = {
- 	.attr = {
- 		.name = "optrom",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = OPTROM_SIZE_24XX,
- 	.read = qla2x00_sysfs_read_optrom,
-@@ -279,7 +276,6 @@ static struct bin_attribute sysfs_optrom_ctl_attr = {
- 	.attr = {
- 		.name = "optrom_ctl",
- 		.mode = S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 0,
- 	.write = qla2x00_sysfs_write_optrom_ctl,
-@@ -327,7 +323,6 @@ static struct bin_attribute sysfs_vpd_attr = {
- 	.attr = {
- 		.name = "vpd",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 0,
- 	.read = qla2x00_sysfs_read_vpd,
-@@ -375,7 +370,6 @@ static struct bin_attribute sysfs_sfp_attr = {
- 	.attr = {
- 		.name = "sfp",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = SFP_DEV_SIZE * 2,
- 	.read = qla2x00_sysfs_read_sfp,
-diff --git a/drivers/spi/at25.c b/drivers/spi/at25.c
-index 8efa07e..fde1ded 100644
---- a/drivers/spi/at25.c
-+++ b/drivers/spi/at25.c
-@@ -314,7 +314,6 @@ static int at25_probe(struct spi_device *spi)
- 	 */
- 	at25->bin.attr.name = "eeprom";
- 	at25->bin.attr.mode = S_IRUSR;
--	at25->bin.attr.owner = THIS_MODULE;
- 	at25->bin.read = at25_bin_read;
- 
- 	at25->bin.size = at25->chip.byte_len;
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 2ce0501..3b3c657 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -2126,7 +2126,6 @@ static ssize_t radeon_show_edid2(struct kobject *kobj, char *buf, loff_t off, si
- static struct bin_attribute edid1_attr = {
- 	.attr   = {
- 		.name	= "edid1",
--		.owner	= THIS_MODULE,
- 		.mode	= 0444,
- 	},
- 	.size	= EDID_LENGTH,
-@@ -2136,7 +2135,6 @@ static struct bin_attribute edid1_attr = {
- static struct bin_attribute edid2_attr = {
- 	.attr   = {
- 		.name	= "edid2",
--		.owner	= THIS_MODULE,
- 		.mode	= 0444,
- 	},
- 	.size	= EDID_LENGTH,
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index c65e81f..7e06223 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -172,7 +172,7 @@ static struct class backlight_class = {
- 
- #define DECLARE_ATTR(_name,_mode,_show,_store)			\
- {							 	\
--	.attr	= { .name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
-+	.attr	= { .name = __stringify(_name), .mode = _mode }, \
- 	.show	= _show,					\
- 	.store	= _store,					\
- }
-diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-index 6ef8f0a..648b53c 100644
---- a/drivers/video/backlight/lcd.c
-+++ b/drivers/video/backlight/lcd.c
-@@ -157,7 +157,7 @@ static struct class lcd_class = {
- 
- #define DECLARE_ATTR(_name,_mode,_show,_store)			\
- {							 	\
--	.attr	= { .name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
-+	.attr	= { .name = __stringify(_name), .mode = _mode }, \
- 	.show	= _show,					\
- 	.store	= _store,					\
- }
-diff --git a/drivers/w1/slaves/w1_ds2433.c b/drivers/w1/slaves/w1_ds2433.c
-index 8ea17a5..4e13aa7 100644
---- a/drivers/w1/slaves/w1_ds2433.c
-+++ b/drivers/w1/slaves/w1_ds2433.c
-@@ -252,7 +252,6 @@ static struct bin_attribute w1_f23_bin_attr = {
- 	.attr = {
- 		.name = "eeprom",
- 		.mode = S_IRUGO | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = W1_EEPROM_SIZE,
- 	.read = w1_f23_read_bin,
-diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
-index 1a6937d..8ba4e57 100644
---- a/drivers/w1/slaves/w1_therm.c
-+++ b/drivers/w1/slaves/w1_therm.c
-@@ -48,7 +48,6 @@ static struct bin_attribute w1_therm_bin_attr = {
- 	.attr = {
- 		.name = "w1_slave",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = W1_SLAVE_DATA_SIZE,
- 	.read = w1_therm_read_bin,
-diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
-index 7d6876d..1838cb2 100644
---- a/drivers/w1/w1.c
-+++ b/drivers/w1/w1.c
-@@ -128,7 +128,6 @@ static struct bin_attribute w1_slave_attr_bin_id = {
-       .attr = {
-               .name = "id",
-               .mode = S_IRUGO,
--              .owner = THIS_MODULE,
-       },
-       .size = 8,
-       .read = w1_slave_read_id,
-@@ -167,7 +166,6 @@ static struct bin_attribute w1_default_attr = {
-       .attr = {
-               .name = "rw",
-               .mode = S_IRUGO | S_IWUSR,
--              .owner = THIS_MODULE,
-       },
-       .size = PAGE_SIZE,
-       .read = w1_default_read,
-diff --git a/drivers/zorro/zorro-sysfs.c b/drivers/zorro/zorro-sysfs.c
-index c3ba0ec..7e03cc6 100644
---- a/drivers/zorro/zorro-sysfs.c
-+++ b/drivers/zorro/zorro-sysfs.c
-@@ -78,7 +78,6 @@ static struct bin_attribute zorro_config_attr = {
- 	.attr =	{
- 		.name = "config",
- 		.mode = S_IRUGO | S_IWUSR,
--		.owner = THIS_MODULE
- 	},
- 	.size = sizeof(struct ConfigDev),
- 	.read = zorro_read_config,
-diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-index 606128f..02ca6f1 100644
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -840,8 +840,6 @@ static int __init ecryptfs_init(void)
- 		goto out;
- 	}
- 	kobj_set_kset_s(&ecryptfs_subsys, fs_subsys);
--	sysfs_attr_version.attr.owner = THIS_MODULE;
--	sysfs_attr_version_str.attr.owner = THIS_MODULE;
- 	rc = do_sysfs_registration();
- 	if (rc) {
- 		printk(KERN_ERR "sysfs registration failed\n");
-diff --git a/fs/ocfs2/cluster/masklog.c b/fs/ocfs2/cluster/masklog.c
-index 2b205f5..e9e042b 100644
---- a/fs/ocfs2/cluster/masklog.c
-+++ b/fs/ocfs2/cluster/masklog.c
-@@ -74,7 +74,6 @@ struct mlog_attribute {
- #define define_mask(_name) {			\
- 	.attr = {				\
- 		.name = #_name,			\
--		.owner = THIS_MODULE,		\
- 		.mode = S_IRUGO | S_IWUSR,	\
- 	},					\
- 	.mask = ML_##_name,			\
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 9a3a058..98e0b85 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -397,7 +397,6 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
- 		static struct attribute addpartattr = {
- 			.name = "whole_disk",
- 			.mode = S_IRUSR | S_IRGRP | S_IROTH,
--			.owner = THIS_MODULE,
- 		};
- 
- 		sysfs_create_file(&p->kobj, &addpartattr);
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index 618b8ae..3c5574a 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -175,25 +175,20 @@ static int open(struct inode * inode, struct file * file)
- 	if (!sysfs_get_active(attr_sd))
- 		return -ENODEV;
- 
--	/* Grab the module reference for this attribute */
--	error = -ENODEV;
--	if (!try_module_get(attr->attr.owner))
--		goto err_sput;
--
- 	error = -EACCES;
- 	if ((file->f_mode & FMODE_WRITE) && !(attr->write || attr->mmap))
--		goto err_mput;
-+		goto err_out;
- 	if ((file->f_mode & FMODE_READ) && !(attr->read || attr->mmap))
--		goto err_mput;
-+		goto err_out;
- 
- 	error = -ENOMEM;
- 	bb = kzalloc(sizeof(*bb), GFP_KERNEL);
- 	if (!bb)
--		goto err_mput;
-+		goto err_out;
- 
- 	bb->buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!bb->buffer)
--		goto err_mput;
-+		goto err_out;
- 
- 	mutex_init(&bb->mutex);
- 	file->private_data = bb;
-@@ -203,9 +198,7 @@ static int open(struct inode * inode, struct file * file)
- 	sysfs_get(attr_sd);
- 	return 0;
- 
-- err_mput:
--	module_put(attr->attr.owner);
-- err_sput:
-+ err_out:
- 	sysfs_put_active(attr_sd);
- 	kfree(bb);
- 	return error;
-@@ -214,13 +207,11 @@ static int open(struct inode * inode, struct file * file)
- static int release(struct inode * inode, struct file * file)
- {
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
--	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
- 	struct bin_buffer *bb = file->private_data;
- 
- 	if (bb->mmapped)
- 		sysfs_put_active_two(attr_sd);
- 	sysfs_put(attr_sd);
--	module_put(attr->attr.owner);
- 	kfree(bb->buffer);
- 	kfree(bb);
- 	return 0;
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index d673d9b..a84b734 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -241,7 +241,6 @@ sysfs_write_file(struct file *file, const char __user *buf, size_t count, loff_t
- static int sysfs_open_file(struct inode *inode, struct file *file)
- {
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
--	struct attribute *attr = attr_sd->s_elem.attr.attr;
- 	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
- 	struct sysfs_buffer * buffer;
- 	struct sysfs_ops * ops = NULL;
-@@ -251,11 +250,6 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	if (!sysfs_get_active_two(attr_sd))
- 		return -ENODEV;
- 
--	/* Grab the module reference for this attribute */
--	error = -ENODEV;
--	if (!try_module_get(attr->owner))
--		goto err_sput;
--
- 	/* if the kobject has no ktype, then we assume that it is a subsystem
- 	 * itself, and use ops for it.
- 	 */
-@@ -272,7 +266,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	 * or the subsystem have no operations.
- 	 */
- 	if (!ops)
--		goto err_mput;
-+		goto err_out;
- 
- 	/* File needs write support.
- 	 * The inode's perms must say it's ok, 
-@@ -280,7 +274,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	 */
- 	if (file->f_mode & FMODE_WRITE) {
- 		if (!(inode->i_mode & S_IWUGO) || !ops->store)
--			goto err_mput;
-+			goto err_out;
- 	}
- 
- 	/* File needs read support.
-@@ -289,7 +283,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	 */
- 	if (file->f_mode & FMODE_READ) {
- 		if (!(inode->i_mode & S_IRUGO) || !ops->show)
--			goto err_mput;
-+			goto err_out;
- 	}
- 
- 	/* No error? Great, allocate a buffer for the file, and store it
-@@ -298,7 +292,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	error = -ENOMEM;
- 	buffer = kzalloc(sizeof(struct sysfs_buffer), GFP_KERNEL);
- 	if (!buffer)
--		goto err_mput;
-+		goto err_out;
- 
- 	init_MUTEX(&buffer->sem);
- 	buffer->needs_read_fill = 1;
-@@ -310,9 +304,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	sysfs_get(attr_sd);
- 	return 0;
- 
-- err_mput:
--	module_put(attr->owner);
-- err_sput:
-+ err_out:
- 	sysfs_put_active_two(attr_sd);
- 	return error;
- }
-@@ -320,12 +312,9 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- static int sysfs_release(struct inode * inode, struct file * filp)
- {
- 	struct sysfs_dirent *attr_sd = filp->f_path.dentry->d_fsdata;
--	struct attribute *attr = attr_sd->s_elem.attr.attr;
- 	struct sysfs_buffer *buffer = filp->private_data;
- 
- 	sysfs_put(attr_sd);
--	/* After this point, attr should not be accessed. */
--	module_put(attr->owner);
- 
- 	if (buffer) {
- 		if (buffer->page)
-diff --git a/include/linux/sysdev.h b/include/linux/sysdev.h
-index e699ab2..e285746 100644
---- a/include/linux/sysdev.h
-+++ b/include/linux/sysdev.h
-@@ -101,8 +101,7 @@ struct sysdev_attribute {
- 
- #define _SYSDEV_ATTR(_name,_mode,_show,_store)			\
- {								\
--	.attr = { .name = __stringify(_name), .mode = _mode,	\
--		 .owner = THIS_MODULE },			\
-+	.attr = { .name = __stringify(_name), .mode = _mode },	\
- 	.show	= _show,					\
- 	.store	= _store,					\
- }
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 2f86b08..161e19a 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -20,9 +20,13 @@ struct module;
- struct nameidata;
- struct dentry;
- 
-+/* FIXME
-+ * The *owner field is no longer used, but leave around
-+ * until the tree gets cleaned up fully.
-+ */
- struct attribute {
- 	const char		* name;
--	struct module 		* owner;
-+	struct module		* owner;
- 	mode_t			mode;
- };
- 
-@@ -39,14 +43,14 @@ struct attribute_group {
++static struct device_attribute devt_attr =
++	__ATTR(dev, S_IRUGO, show_dev, NULL);
++
+ /*
+  *	devices_subsys - structure to be registered with kobject core.
   */
+@@ -681,31 +687,14 @@ int device_add(struct device *dev)
+ 		blocking_notifier_call_chain(&dev->bus->bus_notifier,
+ 					     BUS_NOTIFY_ADD_DEVICE, dev);
  
- #define __ATTR(_name,_mode,_show,_store) { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
- 	.show	= _show,					\
- 	.store	= _store,					\
- }
+-	dev->uevent_attr.attr.name = "uevent";
+-	dev->uevent_attr.attr.mode = S_IRUGO | S_IWUSR;
+-	dev->uevent_attr.store = store_uevent;
+-	dev->uevent_attr.show = show_uevent;
+-	error = device_create_file(dev, &dev->uevent_attr);
++	error = device_create_file(dev, &uevent_attr);
+ 	if (error)
+ 		goto attrError;
  
- #define __ATTR_RO(_name) { \
--	.attr	= { .name = __stringify(_name), .mode = 0444, .owner = THIS_MODULE },	\
--	.show	= _name##_show,	\
-+	.attr	= { .name = __stringify(_name), .mode = 0444 },	\
-+	.show	= _name##_show,					\
- }
- 
- #define __ATTR_NULL { .attr = { .name = NULL } }
-diff --git a/kernel/module.c b/kernel/module.c
-index 9bd93de..015d60c 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -488,8 +488,7 @@ static void free_modinfo_##field(struct module *mod)                  \
-         mod->field = NULL;                                            \
- }                                                                     \
- static struct module_attribute modinfo_##field = {                    \
--	.attr = { .name = __stringify(field), .mode = 0444,           \
--		  .owner = THIS_MODULE },                             \
-+	.attr = { .name = __stringify(field), .mode = 0444 },         \
- 	.show = show_modinfo_##field,                                 \
- 	.setup = setup_modinfo_##field,                               \
- 	.test = modinfo_##field##_exists,                             \
-@@ -793,7 +792,7 @@ static ssize_t show_refcnt(struct module_attribute *mattr,
- }
- 
- static struct module_attribute refcnt = {
--	.attr = { .name = "refcnt", .mode = 0444, .owner = THIS_MODULE },
-+	.attr = { .name = "refcnt", .mode = 0444 },
- 	.show = show_refcnt,
- };
- 
-@@ -851,7 +850,7 @@ static ssize_t show_initstate(struct module_attribute *mattr,
- }
- 
- static struct module_attribute initstate = {
--	.attr = { .name = "initstate", .mode = 0444, .owner = THIS_MODULE },
-+	.attr = { .name = "initstate", .mode = 0444 },
- 	.show = show_initstate,
- };
- 
-@@ -1032,7 +1031,6 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
- 		sattr->mattr.show = module_sect_show;
- 		sattr->mattr.store = NULL;
- 		sattr->mattr.attr.name = sattr->name;
--		sattr->mattr.attr.owner = mod;
- 		sattr->mattr.attr.mode = S_IRUGO;
- 		*(gattr++) = &(sattr++)->mattr.attr;
+ 	if (MAJOR(dev->devt)) {
+-		struct device_attribute *attr;
+-		attr = kzalloc(sizeof(*attr), GFP_KERNEL);
+-		if (!attr) {
+-			error = -ENOMEM;
+-			goto ueventattrError;
+-		}
+-		attr->attr.name = "dev";
+-		attr->attr.mode = S_IRUGO;
+-		attr->show = show_dev;
+-		error = device_create_file(dev, attr);
+-		if (error) {
+-			kfree(attr);
++		error = device_create_file(dev, &devt_attr);
++		if (error)
+ 			goto ueventattrError;
+-		}
+-
+-		dev->devt_attr = attr;
  	}
-@@ -1090,7 +1088,6 @@ int module_add_modinfo_attrs(struct module *mod)
- 		if (!attr->test ||
- 		    (attr->test && attr->test(mod))) {
- 			memcpy(temp_attr, attr, sizeof(*temp_attr));
--			temp_attr->attr.owner = mod;
- 			error = sysfs_create_file(&mod->mkobj.kobj,&temp_attr->attr);
- 			++temp_attr;
- 		}
-diff --git a/kernel/params.c b/kernel/params.c
-index e61c46c..effbaae 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -491,7 +491,6 @@ param_sysfs_setup(struct module_kobject *mk,
- 			pattr->mattr.show = param_attr_show;
- 			pattr->mattr.store = param_attr_store;
- 			pattr->mattr.attr.name = (char *)&kp->name[name_skip];
--			pattr->mattr.attr.owner = mk->mod;
- 			pattr->mattr.attr.mode = kp->perm;
- 			*(gattr++) = &(pattr++)->mattr.attr;
- 		}
-diff --git a/net/bridge/br_sysfs_br.c b/net/bridge/br_sysfs_br.c
-index 33c6c4a..31ace23 100644
---- a/net/bridge/br_sysfs_br.c
-+++ b/net/bridge/br_sysfs_br.c
-@@ -383,8 +383,7 @@ static ssize_t brforward_read(struct kobject *kobj, char *buf,
  
- static struct bin_attribute bridge_forward = {
- 	.attr = { .name = SYSFS_BRIDGE_FDB,
--		  .mode = S_IRUGO,
--		  .owner = THIS_MODULE, },
-+		  .mode = S_IRUGO, },
- 	.read = brforward_read,
- };
+ 	if (dev->class) {
+@@ -766,10 +755,8 @@ int device_add(struct device *dev)
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	device_remove_attrs(dev);
+  AttrsError:
+-	if (dev->devt_attr) {
+-		device_remove_file(dev, dev->devt_attr);
+-		kfree(dev->devt_attr);
+-	}
++	if (MAJOR(dev->devt))
++		device_remove_file(dev, &devt_attr);
  
-diff --git a/net/bridge/br_sysfs_if.c b/net/bridge/br_sysfs_if.c
-index 2da2292..79db51f 100644
---- a/net/bridge/br_sysfs_if.c
-+++ b/net/bridge/br_sysfs_if.c
-@@ -29,8 +29,7 @@ struct brport_attribute {
- #define BRPORT_ATTR(_name,_mode,_show,_store)		        \
- struct brport_attribute brport_attr_##_name = { 	        \
- 	.attr = {.name = __stringify(_name), 			\
--		 .mode = _mode, 				\
--		 .owner = THIS_MODULE, },			\
-+		 .mode = _mode },				\
- 	.show	= _show,					\
- 	.store	= _store,					\
- };
+ 	if (dev->class) {
+ 		sysfs_remove_link(&dev->kobj, "subsystem");
+@@ -791,7 +778,7 @@ int device_add(struct device *dev)
+ 		}
+ 	}
+  ueventattrError:
+-	device_remove_file(dev, &dev->uevent_attr);
++	device_remove_file(dev, &uevent_attr);
+  attrError:
+ 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+ 	kobject_del(&dev->kobj);
+@@ -868,10 +855,8 @@ void device_del(struct device * dev)
+ 
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+-	if (dev->devt_attr) {
+-		device_remove_file(dev, dev->devt_attr);
+-		kfree(dev->devt_attr);
+-	}
++	if (MAJOR(dev->devt))
++		device_remove_file(dev, &devt_attr);
+ 	if (dev->class) {
+ 		sysfs_remove_link(&dev->kobj, "subsystem");
+ 		/* If this is not a "fake" compatible device, remove the
+@@ -925,7 +910,7 @@ void device_del(struct device * dev)
+ 			up(&dev->class->sem);
+ 		}
+ 	}
+-	device_remove_file(dev, &dev->uevent_attr);
++	device_remove_file(dev, &uevent_attr);
+ 	device_remove_attrs(dev);
+ 	bus_remove_device(dev);
+ 
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 2e1a298..be2debe 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -238,7 +238,6 @@ extern int __must_check class_device_create_file(struct class_device *,
+  * @devt: for internal use by the driver core only.
+  * @node: for internal use by the driver core only.
+  * @kobj: for internal use by the driver core only.
+- * @devt_attr: for internal use by the driver core only.
+  * @groups: optional additional groups to be created
+  * @dev: if set, a symlink to the struct device is created in the sysfs
+  * directory for this struct class device.
+@@ -263,8 +262,6 @@ struct class_device {
+ 	struct kobject		kobj;
+ 	struct class		* class;	/* required */
+ 	dev_t			devt;		/* dev_t, creates the sysfs "dev" */
+-	struct class_device_attribute *devt_attr;
+-	struct class_device_attribute uevent_attr;
+ 	struct device		* dev;		/* not necessary, but nice to have */
+ 	void			* class_data;	/* class-specific data */
+ 	struct class_device	*parent;	/* parent of this child device, if there is one */
+@@ -419,8 +416,6 @@ struct device {
+ 	struct device_type	*type;
+ 	unsigned		is_registered:1;
+ 	unsigned		uevent_suppress:1;
+-	struct device_attribute uevent_attr;
+-	struct device_attribute *devt_attr;
+ 
+ 	struct semaphore	sem;	/* semaphore to synchronize calls to
+ 					 * its driver.
 -- 
 1.5.2.2
 
