@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765984AbXGKSZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXGKS0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765984AbXGKSZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759261AbXGKSZb
+	id S932244AbXGKS0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760389AbXGKSZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:25:31 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33796 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757286AbXGKSZ3 (ORCPT
+	Wed, 11 Jul 2007 14:25:37 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58315 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760162AbXGKSZf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:25:29 -0400
-Date: Wed, 11 Jul 2007 21:25:28 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Matt Mackall <mpm@selenic.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-In-Reply-To: <Pine.LNX.4.64.0707111104370.14730@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0707112121130.17548@sbz-30.cs.Helsinki.FI>
-References: <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
- <20070709095116.c2ea700f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
- <4692E44E.6000606@yahoo.com.au> <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com>
- <4692E8B5.3030404@yahoo.com.au> <Pine.LNX.4.64.0707091905480.3108@schroedinger.engr.sgi.com>
- <20070710083212.GG11115@waste.org> <Pine.LNX.4.64.0707101836280.7011@schroedinger.engr.sgi.com>
- <20070711020646.GZ11115@waste.org> <Pine.LNX.4.64.0707111104370.14730@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 14:25:35 -0400
+Date: Wed, 11 Jul 2007 20:26:07 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] ANON_INODES shouldn't be user visible
+Message-ID: <20070711182607.GM3492@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+There doesn't seem to be a good reason for ANON_INODES being
+an user visible option.
 
-On Wed, 11 Jul 2007, Christoph Lameter wrote:
-> Of course you are the maintainer but you only authored a single patch 
-> which was the original submission in all the time that SLOB was in the 
-> tree. I keep having to clean up the allocator that has--according to 
-> Pekka--more memory requirements than SLUB. There is no point in keeping it 
-> around anymore it seems.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Well, it was a test setup with UML and busybox and didn't have all the 
-SLOB optimizations Nick mentioned, so we shouldn't draw any definite 
-conclusions from it. I couldn't get 2.6.22-rc6-mm1 to compile so I'll try 
-again after Andrew pushes a new release out.
+---
 
-Furthermore, as much as I would like to see SLOB nuked too, we can't do 
-that until Matt and Nick are satisfied with SLUB for small devices and 
-what I can gather, they aren't.
+ init/Kconfig |   16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
 
-			Pekka
+--- linux-2.6.22-rc6-mm1/init/Kconfig.old	2007-07-11 06:34:48.000000000 +0200
++++ linux-2.6.22-rc6-mm1/init/Kconfig	2007-07-11 06:35:21.000000000 +0200
+@@ -525,25 +525,19 @@
+ 	  run glibc-based applications correctly.
+ 
+ config ANON_INODES
+-	bool "Enable anonymous inode source" if EMBEDDED
+-	default y
+-	help
+-	  Anonymous inode source for pseudo-files like epoll, signalfd,
+-	  timerfd and eventfd.
+-
+-	  If unsure, say Y.
++	bool
+ 
+ config EPOLL
+ 	bool "Enable eventpoll support" if EMBEDDED
+ 	default y
+-	depends on ANON_INODES
++	select ANON_INODES
+ 	help
+ 	  Disabling this option will cause the kernel to be built without
+ 	  support for epoll family of system calls.
+ 
+ config SIGNALFD
+ 	bool "Enable signalfd() system call" if EMBEDDED
+-	depends on ANON_INODES
++	select ANON_INODES
+ 	default y
+ 	help
+ 	  Enable the signalfd() system call that allows to receive signals
+@@ -553,7 +547,7 @@
+ 
+ config TIMERFD
+ 	bool "Enable timerfd() system call" if EMBEDDED
+-	depends on ANON_INODES
++	select ANON_INODES
+ 	default y
+ 	help
+ 	  Enable the timerfd() system call that allows to receive timer
+@@ -563,7 +557,7 @@
+ 
+ config EVENTFD
+ 	bool "Enable eventfd() system call" if EMBEDDED
+-	depends on ANON_INODES
++	select ANON_INODES
+ 	default y
+ 	help
+ 	  Enable the eventfd() system call that allows to receive both
+
