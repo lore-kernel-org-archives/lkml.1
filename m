@@ -1,95 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbXGKFHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760921AbXGKFJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760575AbXGKFHw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 01:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbXGKFHo
+	id S1760921AbXGKFJW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 01:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXGKFJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 01:07:44 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:63561 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752645AbXGKFHo (ORCPT
+	Wed, 11 Jul 2007 01:09:11 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:41340 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752645AbXGKFJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 01:07:44 -0400
-Date: Wed, 11 Jul 2007 01:02:38 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Li, Tong N" <tong.n.li@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/10] *Tests* Scheduler profiling - Use immediate values
-Message-ID: <20070711050238.GC4025@Krystal>
-References: <20070707015009.GA10775@Krystal> <5FD5754DDBA0B1499B5A0B4BB5419485015CCB91@fmsmsx411.amr.corp.intel.com>
+	Wed, 11 Jul 2007 01:09:09 -0400
+Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Neil Brown <neilb@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       nfsv4@linux-nfs.org
+In-Reply-To: <18068.19667.942363.686858@notabene.brown>
+References: <1183275424.4010.126.camel@localhost.localdomain>
+	 <20070710163038.ceb2ae94.akpm@linux-foundation.org>
+	 <1184105380.3759.65.camel@localhost.localdomain>
+	 <20070710182237.e2f88bf3.akpm@linux-foundation.org>
+	 <18068.19667.942363.686858@notabene.brown>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Tue, 10 Jul 2007 22:09:08 -0400
+Message-Id: <1184119748.20193.37.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <5FD5754DDBA0B1499B5A0B4BB5419485015CCB91@fmsmsx411.amr.corp.intel.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:58:23 up 3 days, 19:03,  3 users,  load average: 0.47, 0.24, 0.21
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-* Li, Tong N (tong.n.li@intel.com) wrote:
-> Mathieu,
-> 
-> > 	cycles_per_iter = 0.0;
-> > 	for (i=0; i<NR_TESTS; i++) {
-> > 		time1 = get_cycles();
-> > 		for (j = 0; j < NR_ITER; j++) {
-> > 			testval = &array[random() % ARRAY_SIZE];
-> > 		}
-> > 		time2 = get_cycles();
-> > 		cycles_per_iter += (time2 - time1)/(double)NR_ITER;
-> > 	}
-> > 	cycles_per_iter /= (double)NR_TESTS;
-> > 	printf("Just getting the pointer, doing noting with it, cycles
-> per
-> > iteration (mean) : %g\n", cycles_per_iter);
+On Wed, 2007-07-11 at 13:21 +1000, Neil Brown wrote:
+> On Tuesday July 10, akpm@linux-foundation.org wrote:
 > > 
+> > Yes, thanks.  It doesn't actually tell us why we want to implement
+> > this attribute and it doesn't tell us what the implications of failing
+> > to do so are, but I guess we can take that on trust from the NFS guys.
 > 
-> Some comments on the code:
+> You would like to think so, but remember NFSv4 was designed by a
+> committee :-)
 > 
-> 1. random() is counted in cycle_per_iter, which can skew the results.
-> You could pre-compute the random addresses and store them in an array.
-> Then, during the actual timing, walk the array:
+> The 'change' number is used for cache consistency, and as the spec
+> makes very strong statements about the 'change' number, it is very
+> hard (or impossible) to implement a server correctly without storing a
+> change number in stable storage (just one of my grips about V4).
 > 
-> index = 0;
-> for (i = 0; i < ARRAY_SIZE; i++)
->       index = *(int *)(array + index * CACHE_LINE_SIZE);
+> > 
+> > But I suspect the ext4 implementation doesn't actually do this.  afaict we
+> > won't update i_version for file overwrites (especially if s_time_gran can
+> > indeed be 1,000,000,000) and of course for MAP_SHARED modifications.  What
+> > would be the implications of this?
 > 
-> 2. You may want to flush the cache before the timing starts.
+> The first part sounds like a bug - i_version should really be updated
+> by every call to ->commit_write (if that is still what it is called).
 > 
-> 3. You want to access memory at the cache-line granularity to avoid
-> addresses falling into the same line (and thus unwanted hits).
+> The MAP_SHARED thing is less obvious.  I guess every time we notice
+> that the page might have been changed, we need to increment i_version.
 > 
+> > 
+> > And how does the NFS server know that the filesystem implements i_version? 
+> > Will a zero-value of i_version have special significance, telling the
+> > server to not send this attribute, perhaps?
+> 
+> That is a very important question.  Zero probably makes sense, but
+> what ever it is needs to be agreed and documented.
+> And just by-the-way, the server doesn't really have the option of not
+> sending the attribute.  If i_version isn't defined, it has to fake
+> something using mtime, and hope that is good enough.
+> 
+> Alternately we could mandate that i_version is always kept up-to-date
+> and if a filesystem doesn't have anything to load from storage, it
+> just sets it to the current time in nanoseconds.
+> 
+> That would mean that a client would need to flush it's cache whenever
+> the inode fell out of cache on the server, but I don't think we can
+> reliably do better than that.
+> 
+> I think I like that approach.
+> 
+> So my vote is to increment i_version in common code every time any
+> change is made to the file, 
 
-This is true, my test code was not perfect. Thanks for the hints.
-The improvements you propose will clearly accelerate my test program
-quite a bit, but I doubt that it will cause even higher memory
-latencies. Although using a random() at each memory access is slow, it
-should give a good enough dispersion. And since do 3 cache trashing
-passes in my code, I make sure that each and every cache lines are
-trashed. In fact, since I do multiple accesses to each cache line (as
-you noted in point 3), it takes more time, but makes it more certain
-that I hit all of them at least once.
+David Chinneer pointed that we need to journal the version number
+updates together with the operations that causes the change of the inode
+version number, in order to survive server crashes so clients won't see
+the counter go backwards.
 
-> If you do these, I expect you'll get a higher memory latency.
+So increment i_version in fs code is probably the place to ensure the
+inode version changes are stored to disk. It's seems update the ext4
+inode version in every ext4_mark_inode_dirty() is the easiest way.
+
+> and alloc_inode should initialise it to
+> current time, which might be changed by the filesystem before it calls
+> unlock_new_inode. 
+> ... but doesn't lustre want to control its i_version... so maybe not :-(
 > 
+> NeilBrown
 
-I will use these comments in my next tests, thanks. :) However, I still
-feel confident that the numbers I got from my run still hold.
-
-Mathieu
-
->   tong
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
