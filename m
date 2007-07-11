@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762730AbXGKKzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbXGKK53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762730AbXGKKzd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760498AbXGKKzX
+	id S1762734AbXGKK53 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759746AbXGKK5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:55:23 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49442 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758978AbXGKKzW (ORCPT
+	Wed, 11 Jul 2007 06:57:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49224 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758842AbXGKK5U convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:55:22 -0400
-Message-ID: <4694B702.2050507@s5r6.in-berlin.de>
-Date: Wed, 11 Jul 2007 12:54:58 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
+	Wed, 11 Jul 2007 06:57:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Hibernation Redesign
+Date: Wed, 11 Jul 2007 13:04:39 +0200
+User-Agent: KMail/1.9.5
+Cc: a1426z@gawab.com, jeremy@goop.org, jbms@cmu.edu, pavel@ucw.cz,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <200707081737.21932.a1426z@gawab.com> <200707111227.52609.rjw@sisk.pl> <E1I8Ze4-0008OM-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I8Ze4-0008OM-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>, rientjes@google.com,
-       Christoph Lameter <clameter@sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/5] try parent numa_node at first before using default
-References: <200707101641.17672.yinghai.lu@sun.com> <200707101652.31378.yinghai.lu@sun.com>
-In-Reply-To: <200707101652.31378.yinghai.lu@sun.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200707111304.40504.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -547,6 +547,8 @@ static void klist_children_put(struct klist_node *n)
->  
->  void device_initialize(struct device *dev)
->  {
-> +	int node;
-> +
->  	kobj_set_kset_s(dev, devices_subsys);
->  	kobject_init(&dev->kobj);
->  	klist_init(&dev->klist_children, klist_children_get,
-> @@ -557,7 +559,9 @@ void device_initialize(struct device *dev)
->  	spin_lock_init(&dev->devres_lock);
->  	INIT_LIST_HEAD(&dev->devres_head);
->  	device_init_wakeup(dev, 0);
-> -	set_dev_node(dev, -1);
-> +
-> +	node = dev->parent ? dev_to_node(dev->parent) : -1;
-> +	set_dev_node(dev, node);
->  }
+On Wednesday, 11 July 2007 12:42, Miklos Szeredi wrote:
+> > > > Yes, I suppose.  You're certain the old kernel's devices are completely
+> > > > quiescent at that point?
+> > > 
+> > > That's exactly the problem; trying to save a state from within the
+> > > kernel would probably necessitate a freezer hack, which we are
+> > > trying so dearly to avoid.
+> > 
+> > Well, I don't think that avoiding the freezer whatever it takes
+> > would be a good idea.  There needs to be some balance. ;-)
+> 
+> Well, it takes some extra locking in the drivers.  Which is needed
+> _anyway_ if we want to have a working s2ram without the freezer.
+> 
+> With the kexec approach, I don't see any extra requirements from the
+> kernel to be able to drop the freezer.
 
-Two remarks:
+This is not my point.  I think that if what it takes to implement the kexec
+approach, as a complete working solution, is much more complicated than
+what we have now, then the current soultion is favorable.
 
-  - device_add() is perhaps a better place to do this.  Otherwise you
-    had to change code like drivers/input/gameport/gameport.c::
-    gameport_init_port() which sets the parent device *after* the
-    call to device_initialize().
+Anyway, to implement the kexec approach we must separate the hibernation
+from the suspend at the drivers level, which I'm still going to do, but I need to
+take part in endless discussions regarding the freezer, how it is bad and
+how we should drop it, because it breaks things (which NB is not true, because
+it doesn't).
 
-  - device_move() should update the device.node.
+>From a practical point of view, the freezer is not the most problematic part
+of the infrastructure.  For example, none of the bug reports that we have
+registered in the bugzilla is related to the freezer.  Moreover, to drop it,
+we first need to redesign the other things.
+
+Greetings,
+Rafael
+
+
 -- 
-Stefan Richter
--=====-=-=== -=== -=-==
-http://arcgraph.de/sr/
+"Premature optimization is the root of all evil." - Donald Knuth
