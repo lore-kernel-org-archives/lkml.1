@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933834AbXGKTdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932350AbXGKTdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933834AbXGKTdZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 15:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765847AbXGKTUJ
+	id S932350AbXGKTdn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 15:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761539AbXGKTUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 15:20:09 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38293 "EHLO
+	Wed, 11 Jul 2007 15:20:12 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38295 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763945AbXGKTTo (ORCPT
+	with ESMTP id S1764139AbXGKTTs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 15:19:44 -0400
+	Wed, 11 Jul 2007 15:19:48 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: torvalds@linux-foundation.org, andi@firstfloor.org,
        linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>
-Subject: [x86 setup 28/33] Code for actual protected-mode entry
-Date: Wed, 11 Jul 2007 12:18:53 -0700
-Message-Id: <11841815433948-git-send-email-hpa@zytor.com>
+Subject: [x86 setup 31/33] Use the new x86 setup code for i386
+Date: Wed, 11 Jul 2007 12:18:56 -0700
+Message-Id: <11841815433482-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <1184181543569-git-send-email-hpa@zytor.com>
+In-Reply-To: <11841815433079-git-send-email-hpa@zytor.com>
 References: <1184181538674-git-send-email-hpa@zytor.com>
  <118418153862-git-send-email-hpa@zytor.com>
  <11841815382283-git-send-email-hpa@zytor.com>
@@ -47,7 +47,10 @@ References: <1184181538674-git-send-email-hpa@zytor.com>
  <11841815422973-git-send-email-hpa@zytor.com>
  <11841815423976-git-send-email-hpa@zytor.com>
  <1184181543569-git-send-email-hpa@zytor.com>
-Message-Id: <43b8a8153855d9af17029fcfcadebd8d4b14b7c4.1184181208.git.hpa@zytor.com>
+ <11841815433948-git-send-email-hpa@zytor.com>
+ <1184181543792-git-send-email-hpa@zytor.com>
+ <11841815433079-git-send-email-hpa@zytor.com>
+Message-Id: <70ac788a6377732e01a3f870f1bb2fe216f5b995.1184181208.git.hpa@zytor.com>
 In-Reply-To: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 References: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -55,254 +58,367 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: H. Peter Anvin <hpa@zytor.com>
 
-This is the code which actually does the switch to protected mode,
-including all preparation.  It is also responsible for invoking the
-boot loader hooks, if present.
+This patch hooks the new x86 setup code into the Makefile machinery.  It
+also adapts boot/tools/build.c to a two-file (as opposed to three-file)
+universe, and simplifies it substantially.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/i386/boot/pm.c     |  170 +++++++++++++++++++++++++++++++++++++++++++++++
- arch/i386/boot/pmjump.S |   54 +++++++++++++++
- 2 files changed, 224 insertions(+), 0 deletions(-)
- create mode 100644 arch/i386/boot/pm.c
- create mode 100644 arch/i386/boot/pmjump.S
+ arch/i386/boot/Makefile            |   48 +++++++++--
+ arch/i386/boot/compressed/Makefile |    7 ++-
+ arch/i386/boot/tools/build.c       |  160 ++++++++++++++++--------------------
+ 3 files changed, 118 insertions(+), 97 deletions(-)
 
-diff --git a/arch/i386/boot/pm.c b/arch/i386/boot/pm.c
-new file mode 100644
-index 0000000..3fa53e1
---- /dev/null
-+++ b/arch/i386/boot/pm.c
-@@ -0,0 +1,170 @@
-+/* -*- linux-c -*- ------------------------------------------------------- *
-+ *
-+ *   Copyright (C) 1991, 1992 Linus Torvalds
-+ *   Copyright 2007 rPath, Inc. - All Rights Reserved
-+ *
-+ *   This file is part of the Linux kernel, and is made available under
-+ *   the terms of the GNU General Public License version 2.
-+ *
-+ * ----------------------------------------------------------------------- */
+diff --git a/arch/i386/boot/Makefile b/arch/i386/boot/Makefile
+index bfbc320..08678a0 100644
+--- a/arch/i386/boot/Makefile
++++ b/arch/i386/boot/Makefile
+@@ -25,27 +25,56 @@ SVGA_MODE := -DSVGA_MODE=NORMAL_VGA
+ 
+ #RAMDISK := -DRAMDISK=512
+ 
+-targets		:= vmlinux.bin bootsect bootsect.o \
+-		   setup setup.o zImage bzImage
++targets		:= vmlinux.bin setup.bin setup.elf zImage bzImage
+ subdir- 	:= compressed
+ 
++setup-y		+= a20.o apm.o cmdline.o copy.o cpu.o cpucheck.o edd.o
++setup-y		+= header.o main.o mca.o memory.o pm.o pmjump.o
++setup-y		+= printf.o string.o tty.o video.o version.o voyager.o
 +
-+/*
-+ * arch/i386/boot/pm.c
-+ *
-+ * Prepare the machine for transition to protected mode.
-+ */
++# The link order of the video-*.o modules can matter.  In particular,
++# video-vga.o *must* be listed first, followed by video-vesa.o.
++# Hardware-specific drivers should follow in the order they should be
++# probed, and video-bios.o should typically be last.
++setup-y		+= video-vga.o
++setup-y		+= video-vesa.o
++setup-y		+= video-bios.o
 +
-+#include "boot.h"
-+#include <asm/segment.h>
+ hostprogs-y	:= tools/build
+ 
+ HOSTCFLAGS_build.o := $(LINUXINCLUDE)
+ 
+ # ---------------------------------------------------------------------------
+ 
++# How to compile the 16-bit code.  Note we always compile for -march=i386,
++# that way we can complain to the user if the CPU is insufficient.
++cflags-i386   := 
++cflags-x86_64 := -m32
++CFLAGS		:= $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
++		   $(cflags-$(ARCH)) \
++		   -Wall -Wstrict-prototypes \
++		   -march=i386 -mregparm=3 \
++		   -include $(srctree)/$(src)/code16gcc.h \
++		   -fno-strict-aliasing -fomit-frame-pointer \
++		   $(call cc-option, -ffreestanding) \
++		   $(call cc-option, -fno-toplevel-reorder,\
++			$(call cc-option, -fno-unit-at-a-time)) \
++		   $(call cc-option, -fno-stack-protector) \
++		   $(call cc-option, -mpreferred-stack-boundary=2)
++AFLAGS		:= $(CFLAGS) -D__ASSEMBLY__
 +
-+/*
-+ * Invoke the realmode switch hook if present; otherwise
-+ * disable all interrupts.
-+ */
-+static void realmode_switch_hook(void)
-+{
-+	if (boot_params.hdr.realmode_swtch) {
-+		asm volatile("lcallw *%0"
-+			     : : "m" (boot_params.hdr.realmode_swtch)
-+			     : "eax", "ebx", "ecx", "edx");
-+	} else {
-+		asm volatile("cli");
-+		outb(0x80, 0x70); /* Disable NMI */
-+		io_delay();
-+	}
-+}
+ $(obj)/zImage:  IMAGE_OFFSET := 0x1000
+ $(obj)/zImage:  EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK)
+ $(obj)/bzImage: IMAGE_OFFSET := 0x100000
++$(obj)/bzImage: EXTRA_CFLAGS := -D__BIG_KERNEL__
+ $(obj)/bzImage: EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
+ $(obj)/bzImage: BUILDFLAGS   := -b
+ 
+ quiet_cmd_image = BUILD   $@
+-cmd_image = $(obj)/tools/build $(BUILDFLAGS) $(obj)/bootsect $(obj)/setup \
++cmd_image = $(obj)/tools/build $(BUILDFLAGS) $(obj)/setup.bin \
+ 	    $(obj)/vmlinux.bin $(ROOT_DEV) > $@
+ 
+-$(obj)/zImage $(obj)/bzImage: $(obj)/bootsect $(obj)/setup \
++$(obj)/zImage $(obj)/bzImage: $(obj)/setup.bin \
+ 			      $(obj)/vmlinux.bin $(obj)/tools/build FORCE
+ 	$(call if_changed,image)
+ 	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
+@@ -53,12 +82,17 @@ $(obj)/zImage $(obj)/bzImage: $(obj)/bootsect $(obj)/setup \
+ $(obj)/vmlinux.bin: $(obj)/compressed/vmlinux FORCE
+ 	$(call if_changed,objcopy)
+ 
+-LDFLAGS_bootsect := -Ttext 0x0 -s --oformat binary
+-LDFLAGS_setup	 := -Ttext 0x0 -s --oformat binary -e begtext
++SETUP_OBJS = $(addprefix $(obj)/,$(setup-y))
+ 
+-$(obj)/setup $(obj)/bootsect: %: %.o FORCE
++LDFLAGS_setup.elf	:= -T
++$(obj)/setup.elf: $(src)/setup.ld $(SETUP_OBJS) FORCE
+ 	$(call if_changed,ld)
+ 
++OBJCOPYFLAGS_setup.bin	:= -O binary
 +
-+/*
-+ * A zImage kernel is loaded at 0x10000 but wants to run at 0x1000.
-+ * A bzImage kernel is loaded and runs at 0x100000.
-+ */
-+static void move_kernel_around(void)
-+{
-+	/* Note: rely on the compile-time option here rather than
-+	   the LOADED_HIGH flag.  The Qemu kernel loader unconditionally
-+	   sets the loadflags to zero. */
-+#ifndef __BIG_KERNEL__
-+	u16 dst_seg, src_seg;
-+	u32 syssize;
++$(obj)/setup.bin: $(obj)/setup.elf FORCE
++	$(call if_changed,objcopy)
 +
-+	dst_seg =  0x1000 >> 4;
-+	src_seg = 0x10000 >> 4;
-+	syssize = boot_params.hdr.syssize; /* Size in 16-byte paragraphs */
+ $(obj)/compressed/vmlinux: FORCE
+ 	$(Q)$(MAKE) $(build)=$(obj)/compressed IMAGE_OFFSET=$(IMAGE_OFFSET) $@
+ 
+diff --git a/arch/i386/boot/compressed/Makefile b/arch/i386/boot/compressed/Makefile
+index a661217..189fa1d 100644
+--- a/arch/i386/boot/compressed/Makefile
++++ b/arch/i386/boot/compressed/Makefile
+@@ -9,9 +9,14 @@ targets		:= vmlinux vmlinux.bin vmlinux.bin.gz head.o misc.o piggy.o \
+ EXTRA_AFLAGS	:= -traditional
+ 
+ LDFLAGS_vmlinux := -T
+-CFLAGS_misc.o += -fPIC
+ hostprogs-y	:= relocs
+ 
++CFLAGS  := -m32 -D__KERNEL__ $(LINUX_INCLUDE) -O2 \
++	   -fno-strict-aliasing -fPIC \
++	   $(call cc-option,-ffreestanding) \
++	   $(call cc-option,-fno-stack-protector)
++LDFLAGS := -m elf_i386
 +
-+	while (syssize) {
-+		int paras  = (syssize >= 0x1000) ? 0x1000 : syssize;
-+		int dwords = paras << 2;
+ $(obj)/vmlinux: $(src)/vmlinux.lds $(obj)/head.o $(obj)/misc.o $(obj)/piggy.o FORCE
+ 	$(call if_changed,ld)
+ 	@:
+diff --git a/arch/i386/boot/tools/build.c b/arch/i386/boot/tools/build.c
+index 0579841..886f47d 100644
+--- a/arch/i386/boot/tools/build.c
++++ b/arch/i386/boot/tools/build.c
+@@ -1,13 +1,12 @@
+ /*
+  *  Copyright (C) 1991, 1992  Linus Torvalds
+  *  Copyright (C) 1997 Martin Mares
++ *  Copyright (C) 2007 H. Peter Anvin
+  */
+ 
+ /*
+  * This file builds a disk-image from three different files:
+  *
+- * - bootsect: compatibility mbr which prints an error message if
+- *             someone tries to boot the kernel directly.
+  * - setup: 8086 machine code, sets up system parm
+  * - system: 80386 code for actual system
+  *
+@@ -21,6 +20,7 @@
+  * High loaded stuff by Hans Lermen & Werner Almesberger, Feb. 1996
+  * Cross compiling fixes by Gertjan van Wingerde, July 1996
+  * Rewritten by Martin Mares, April 1997
++ * Substantially overhauled by H. Peter Anvin, April 2007
+  */
+ 
+ #include <stdio.h>
+@@ -32,23 +32,25 @@
+ #include <sys/sysmacros.h>
+ #include <unistd.h>
+ #include <fcntl.h>
++#include <sys/mman.h>
+ #include <asm/boot.h>
+ 
+-typedef unsigned char byte;
+-typedef unsigned short word;
+-typedef unsigned long u32;
++typedef unsigned char  u8;
++typedef unsigned short u16;
++typedef unsigned long  u32;
+ 
+ #define DEFAULT_MAJOR_ROOT 0
+ #define DEFAULT_MINOR_ROOT 0
+ 
+-/* Minimal number of setup sectors (see also bootsect.S) */
+-#define SETUP_SECTS 4
++/* Minimal number of setup sectors */
++#define SETUP_SECT_MIN 5
++#define SETUP_SECT_MAX 64
+ 
+-byte buf[1024];
+-int fd;
++/* This must be large enough to hold the entire setup */
++u8 buf[SETUP_SECT_MAX*512];
+ int is_big_kernel;
+ 
+-void die(const char * str, ...)
++static void die(const char * str, ...)
+ {
+ 	va_list args;
+ 	va_start(args, str);
+@@ -57,15 +59,9 @@ void die(const char * str, ...)
+ 	exit(1);
+ }
+ 
+-void file_open(const char *name)
++static void usage(void)
+ {
+-	if ((fd = open(name, O_RDONLY, 0)) < 0)
+-		die("Unable to open `%s': %m", name);
+-}
+-
+-void usage(void)
+-{
+-	die("Usage: build [-b] bootsect setup system [rootdev] [> image]");
++	die("Usage: build [-b] setup system [rootdev] [> image]");
+ }
+ 
+ int main(int argc, char ** argv)
+@@ -73,27 +69,30 @@ int main(int argc, char ** argv)
+ 	unsigned int i, sz, setup_sectors;
+ 	int c;
+ 	u32 sys_size;
+-	byte major_root, minor_root;
++	u8 major_root, minor_root;
+ 	struct stat sb;
++	FILE *file;
++	int fd;
++	void *kernel;
+ 
+ 	if (argc > 2 && !strcmp(argv[1], "-b"))
+ 	  {
+ 	    is_big_kernel = 1;
+ 	    argc--, argv++;
+ 	  }
+-	if ((argc < 4) || (argc > 5))
++	if ((argc < 3) || (argc > 4))
+ 		usage();
+-	if (argc > 4) {
+-		if (!strcmp(argv[4], "CURRENT")) {
++	if (argc > 3) {
++		if (!strcmp(argv[3], "CURRENT")) {
+ 			if (stat("/", &sb)) {
+ 				perror("/");
+ 				die("Couldn't stat /");
+ 			}
+ 			major_root = major(sb.st_dev);
+ 			minor_root = minor(sb.st_dev);
+-		} else if (strcmp(argv[4], "FLOPPY")) {
+-			if (stat(argv[4], &sb)) {
+-				perror(argv[4]);
++		} else if (strcmp(argv[3], "FLOPPY")) {
++			if (stat(argv[3], &sb)) {
++				perror(argv[3]);
+ 				die("Couldn't stat root device.");
+ 			}
+ 			major_root = major(sb.st_rdev);
+@@ -108,79 +107,62 @@ int main(int argc, char ** argv)
+ 	}
+ 	fprintf(stderr, "Root device is (%d, %d)\n", major_root, minor_root);
+ 
+-	file_open(argv[1]);
+-	i = read(fd, buf, sizeof(buf));
+-	fprintf(stderr,"Boot sector %d bytes.\n",i);
+-	if (i != 512)
+-		die("Boot block must be exactly 512 bytes");
++	/* Copy the setup code */
++	file = fopen(argv[1], "r");
++	if (!file)
++		die("Unable to open `%s': %m", argv[1]);
++	c = fread(buf, 1, sizeof(buf), file);
++	if (ferror(file))
++		die("read-error on `setup'");
++	if (c < 1024)
++		die("The setup must be at least 1024 bytes");
+ 	if (buf[510] != 0x55 || buf[511] != 0xaa)
+ 		die("Boot block hasn't got boot flag (0xAA55)");
++	fclose(file);
 +
-+		asm volatile("pushw %%es ; "
-+			     "pushw %%ds ; "
-+			     "movw %1,%%es ; "
-+			     "movw %2,%%ds ; "
-+			     "xorw %%di,%%di ; "
-+			     "xorw %%si,%%si ; "
-+			     "rep;movsl ; "
-+			     "popw %%ds ; "
-+			     "popw %%es"
-+			     : "+c" (dwords)
-+			     : "rm" (dst_seg), "rm" (src_seg)
-+			     : "esi", "edi");
++	/* Pad unused space with zeros */
++	setup_sectors = (c + 511) / 512;
++	if (setup_sectors < SETUP_SECT_MIN)
++		setup_sectors = SETUP_SECT_MIN;
++	i = setup_sectors*512;
++	memset(buf+c, 0, i-c);
 +
-+		syssize -= paras;
-+		dst_seg += paras;
-+		src_seg += paras;
-+	}
-+#endif
-+}
++	/* Set the default root device */
+ 	buf[508] = minor_root;
+ 	buf[509] = major_root;
+-	if (write(1, buf, 512) != 512)
+-		die("Write call failed");
+-	close (fd);
+-
+-	file_open(argv[2]);				    /* Copy the setup code */
+-	for (i=0 ; (c=read(fd, buf, sizeof(buf)))>0 ; i+=c )
+-		if (write(1, buf, c) != c)
+-			die("Write call failed");
+-	if (c != 0)
+-		die("read-error on `setup'");
+-	close (fd);
+-
+-	setup_sectors = (i + 511) / 512;	/* Pad unused space with zeros */
+-	/* for compatibility with ancient versions of LILO. */
+-	if (setup_sectors < SETUP_SECTS)
+-		setup_sectors = SETUP_SECTS;
+-	fprintf(stderr, "Setup is %d bytes.\n", i);
+-	memset(buf, 0, sizeof(buf));
+-	while (i < setup_sectors * 512) {
+-		c = setup_sectors * 512 - i;
+-		if (c > sizeof(buf))
+-			c = sizeof(buf);
+-		if (write(1, buf, c) != c)
+-			die("Write call failed");
+-		i += c;
+-	}
+ 
+-	file_open(argv[3]);
+-	if (fstat (fd, &sb))
+-		die("Unable to stat `%s': %m", argv[3]);
++	fprintf(stderr, "Setup is %d bytes (padded to %d bytes).\n", c, i);
 +
-+/*
-+ * Disable all interrupts at the legacy PIC.
-+ */
-+static void mask_all_interrupts(void)
-+{
-+	outb(0xff, 0xa1);	/* Mask all interrupts on the seconday PIC */
-+	io_delay();
-+	outb(0xfb, 0x21);	/* Mask all but cascade on the primary PIC */
-+	io_delay();
-+}
++	/* Open and stat the kernel file */
++	fd = open(argv[2], O_RDONLY);
++	if (fd < 0)
++		die("Unable to open `%s': %m", argv[2]);
++	if (fstat(fd, &sb))
++		die("Unable to stat `%s': %m", argv[2]);
+ 	sz = sb.st_size;
+-	fprintf (stderr, "System is %d kB\n", sz/1024);
++	fprintf (stderr, "System is %d kB\n", (sz+1023)/1024);
++	kernel = mmap(NULL, sz, PROT_READ, MAP_SHARED, fd, 0);
++	if (kernel == MAP_FAILED)
++		die("Unable to mmap '%s': %m", argv[2]);
+ 	sys_size = (sz + 15) / 16;
+ 	if (!is_big_kernel && sys_size > DEF_SYSSIZE)
+ 		die("System is too big. Try using bzImage or modules.");
+-	while (sz > 0) {
+-		int l, n;
+-
+-		l = (sz > sizeof(buf)) ? sizeof(buf) : sz;
+-		if ((n=read(fd, buf, l)) != l) {
+-			if (n < 0)
+-				die("Error reading %s: %m", argv[3]);
+-			else
+-				die("%s: Unexpected EOF", argv[3]);
+-		}
+-		if (write(1, buf, l) != l)
+-			die("Write failed");
+-		sz -= l;
+-	}
 +
-+/*
-+ * Reset IGNNE# if asserted in the FPU.
-+ */
-+static void reset_coprocessor(void)
-+{
-+	outb(0, 0xf0);
-+	io_delay();
-+	outb(0, 0xf1);
-+	io_delay();
-+}
++	/* Patch the setup code with the appropriate size parameters */
++	buf[0x1f1] = setup_sectors-1;
++	buf[0x1f4] = sys_size;
++	buf[0x1f5] = sys_size >> 8;
++	buf[0x1f6] = sys_size >> 16;
++	buf[0x1f7] = sys_size >> 24;
 +
-+/*
-+ * Set up the GDT
-+ */
-+#define GDT_ENTRY(flags,base,limit)		\
-+	(((u64)(base & 0xff000000) << 32) |	\
-+	 ((u64)flags << 40) |			\
-+	 ((u64)(limit & 0x00ff0000) << 32) |	\
-+	 ((u64)(base & 0x00ffff00) << 16) |	\
-+	 ((u64)(limit & 0x0000ffff)))
++	if (fwrite(buf, 1, i, stdout) != i)
++		die("Writing setup failed");
 +
-+struct gdt_ptr {
-+	u16 len;
-+	u32 ptr;
-+} __attribute__((packed));
-+
-+static void setup_gdt(void)
-+{
-+	/* There are machines which are known to not boot with the GDT
-+	   being 8-byte unaligned.  Intel recommends 16 byte alignment. */
-+	static const u64 boot_gdt[] __attribute__((aligned(16))) = {
-+		/* CS: code, read/execute, 4 GB, base 0 */
-+		[GDT_ENTRY_BOOT_CS] = GDT_ENTRY(0xc09b, 0, 0xfffff),
-+		/* DS: data, read/write, 4 GB, base 0 */
-+		[GDT_ENTRY_BOOT_DS] = GDT_ENTRY(0xc093, 0, 0xfffff),
-+	};
-+	struct gdt_ptr gdt;
-+
-+	gdt.len = sizeof(boot_gdt)-1;
-+	gdt.ptr = (u32)&boot_gdt + (ds() << 4);
-+
-+	asm volatile("lgdtl %0" : : "m" (gdt));
-+}
-+
-+/*
-+ * Set up the IDT
-+ */
-+static void setup_idt(void)
-+{
-+	static const struct gdt_ptr null_idt = {0, 0};
-+	asm volatile("lidtl %0" : : "m" (null_idt));
-+}
-+
-+/*
-+ * Actual invocation sequence
-+ */
-+void go_to_protected_mode(void)
-+{
-+	/* Hook before leaving real mode, also disables interrupts */
-+	realmode_switch_hook();
-+
-+	/* Move the kernel/setup to their final resting places */
-+	move_kernel_around();
-+
-+	/* Enable the A20 gate */
-+	if (enable_a20()) {
-+		puts("A20 gate not responding, unable to boot...\n");
-+		die();
-+	}
-+
-+	/* Reset coprocessor (IGNNE#) */
-+	reset_coprocessor();
-+
-+	/* Mask all interrupts in the PIC */
-+	mask_all_interrupts();
-+
-+	/* Actual transition to protected mode... */
-+	setup_idt();
-+	setup_gdt();
-+	protected_mode_jump(boot_params.hdr.code32_start,
-+			    (u32)&boot_params + (ds() << 4));
-+}
-diff --git a/arch/i386/boot/pmjump.S b/arch/i386/boot/pmjump.S
-new file mode 100644
-index 0000000..2e55923
---- /dev/null
-+++ b/arch/i386/boot/pmjump.S
-@@ -0,0 +1,54 @@
-+/* ----------------------------------------------------------------------- *
-+ *
-+ *   Copyright (C) 1991, 1992 Linus Torvalds
-+ *   Copyright 2007 rPath, Inc. - All Rights Reserved
-+ *
-+ *   This file is part of the Linux kernel, and is made available under
-+ *   the terms of the GNU General Public License version 2.
-+ *
-+ * ----------------------------------------------------------------------- */
-+
-+/*
-+ * arch/i386/boot/pmjump.S
-+ *
-+ * The actual transition into protected mode
-+ */
-+
-+#include <asm/boot.h>
-+#include <asm/segment.h>
-+
-+	.text
-+
-+	.globl	protected_mode_jump
-+	.type	protected_mode_jump, @function
-+
-+	.code16
-+
-+/*
-+ * void protected_mode_jump(u32 entrypoint, u32 bootparams);
-+ */
-+protected_mode_jump:
-+	xorl	%ebx, %ebx		# Flag to indicate this is a boot
-+	movl	%edx, %esi		# Pointer to boot_params table
-+	movl	%eax, 2f		# Patch ljmpl instruction
-+	jmp	1f			# Short jump to flush instruction q.
-+
-+1:
-+	movw	$__BOOT_DS, %cx
-+
-+	movl	%cr0, %edx
-+	orb	$1, %dl			# Protected mode (PE) bit
-+	movl	%edx, %cr0
-+
-+	movw	%cx, %ds
-+	movw	%cx, %es
-+	movw	%cx, %fs
-+	movw	%cx, %gs
-+	movw	%cx, %ss
-+
-+	# Jump to the 32-bit entrypoint
-+	.byte	0x66, 0xea		# ljmpl opcode
-+2:	.long	0			# offset
-+	.word	__BOOT_CS		# segment
-+
-+	.size	protected_mode_jump, .-protected_mode_jump
++	/* Copy the kernel code */
++	if (fwrite(kernel, 1, sz, stdout) != sz)
++		die("Writing kernel failed");
+ 	close(fd);
+ 
+-	if (lseek(1, 497, SEEK_SET) != 497)		    /* Write sizes to the bootsector */
+-		die("Output: seek failed");
+-	buf[0] = setup_sectors;
+-	if (write(1, buf, 1) != 1)
+-		die("Write of setup sector count failed");
+-	if (lseek(1, 500, SEEK_SET) != 500)
+-		die("Output: seek failed");
+-	buf[0] = (sys_size & 0xff);
+-	buf[1] = ((sys_size >> 8) & 0xff);
+-	buf[2] = ((sys_size >> 16) & 0xff);
+-	buf[3] = ((sys_size >> 24) & 0xff);
+-	if (write(1, buf, 4) != 4)
+-		die("Write of image length failed");
+-
+-	return 0;					    /* Everything is OK */
++	/* Everything is OK */
++	return 0;
+ }
 -- 
 1.5.2.2
 
