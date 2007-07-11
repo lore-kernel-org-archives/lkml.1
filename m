@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934133AbXGKXNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934632AbXGKXPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934133AbXGKXNe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763942AbXGKXN1
+	id S934632AbXGKXPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbXGKXPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:13:27 -0400
-Received: from [212.12.190.228] ([212.12.190.228]:33052 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763656AbXGKXN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:13:26 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Hibernation Redesign
-Date: Thu, 12 Jul 2007 02:12:24 +0300
-User-Agent: KMail/1.5
-Cc: Mark Lord <lkml@rtr.ca>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Miklos Szeredi <miklos@szeredi.hu>, jeremy@goop.org, pavel@ucw.cz,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200707081737.21932.a1426z@gawab.com> <200707120117.24549.a1426z@gawab.com> <200707120034.14201.rjw@sisk.pl>
-In-Reply-To: <200707120034.14201.rjw@sisk.pl>
+	Wed, 11 Jul 2007 19:15:34 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60516 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755896AbXGKXPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:15:33 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Jason Wessel <jason.wessel@windriver.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] Pass -g to assembler under CONFIG_DEBUG_INFO
+References: <46955BB1.20200@windriver.com>
+	<20070711224327.9B0ED4D0555@magilla.localdomain>
+	<20070711160335.8705f742.akpm@linux-foundation.org>
+X-Yow: A GRAM??  A BRAM...  A GROOM...  A BROOM...  Oh, Yeh!!  Wash the
+ ROOM!!
+Date: Thu, 12 Jul 2007 01:15:23 +0200
+In-Reply-To: <20070711160335.8705f742.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Wed\, 11 Jul 2007 16\:03\:35 -0700")
+Message-ID: <jeps2yjzw4.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707120212.24072.a1426z@gawab.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday, 12 July 2007 00:17, Al Boldi wrote:
-> > Mark Lord wrote:
-> > > Jeremy Maitin-Shepard wrote:
-> > > > I'll certainly admit the kexec idea is vaporware currently,
-> >
-> > Your idea is starting to become a reality with this thread:
-> > "[PATCH 0/2] Kexec jump: The first step to kexec base hibernation"
-> >
-> > > > but it does
-> > > > differ in a significant way from freezer-based approaches, such that
-> > > > I don't think it should be referred to as just another
-> > > > implementation of a freezer.  Specifically, it doesn't require that
-> > > > the "old kernel" be in a "consistent" state to a greater extent than
-> > > > suspend to ram; it is the case that all of the devices must be
-> > > > quiesced or shut down to some extent, but doing this without races
-> > > > and deadlocks (and without the freezer) is certainly very, very
-> > > > similar to what needs to be done for suspend to ram, which will need
-> > > > to be solved anyway.  Unlike the existing hibernate approaches,
-> > > > however, it will not be necessary to use any of the driver
-> > > > infrastructure once switched to the "save image" kernel, and thus it
-> > > > will not matter what locks are held, for instance.
-> > >
-> > > I really doubt that kexec(a special kernel) is going to solve anything
-> > > here. The new kernel will have to initialize, probe for devices, etc.
-> > > Which will take time.
-> > > Which will slow down hibernate to an unacceptable degree.
-> > > Right now, it (TuxOnIce) is *very* fast.
-> > > Adding 10 seconds or so for reprobing/resetting/reiniting devices
-> > > is not going to be useful.
-> > > And modifying all of the drivers to *not* do their usual probe
-> > > sequence sounds rather intrusive and is likely also a non-starter
-> > > here.
-> > >
-> > > Or is it?
-> >
-> > Well, it's definitely less intrusive than readying drivers for the
-> > freezer.
->
-> There's nothing like this!
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Are you sure?
+> diff -puN Makefile~pass-g-to-assembler-under-config_debug_info Makefile
+> --- a/Makefile~pass-g-to-assembler-under-config_debug_info
+> +++ a/Makefile
+> @@ -498,6 +498,7 @@ endif
+>  
+>  ifdef CONFIG_DEBUG_INFO
+>  CFLAGS		+= -g
+> +AFLAGS		+= $(call as-option, -gdwarf)
 
-# grep -i freeze drivers/*/* | wc -l
+The option is officially called -gdwarf-2, and -gdwarf2 is an alias for
+backward compatibility.  But -gdwarf is ambigous and will error out.
 
-gives:  297
+Andreas.
 
-Maybe you can clarify?
-
-
-Thanks!
-
---
-Al
-
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
