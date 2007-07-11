@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763641AbXGKAfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbXGKAg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763641AbXGKAfb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 20:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbXGKAfO
+	id S932213AbXGKAg6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 20:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758324AbXGKAgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 20:35:14 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:54321 "EHLO e5.ny.us.ibm.com"
+	Tue, 10 Jul 2007 20:36:50 -0400
+Received: from waste.org ([66.93.16.53]:46791 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751119AbXGKAfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 20:35:12 -0400
-Subject: Re: [EXT4 set 1][PATCH 2/2] Enable extents by default for ext4dev
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-In-Reply-To: <20070710163015.ab40ed2a.akpm@linux-foundation.org>
-References: <1183275361.4010.119.camel@localhost.localdomain>
-	 <20070710163015.ab40ed2a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 10 Jul 2007 17:35:13 -0400
-Message-Id: <1184103313.3759.44.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	id S1752607AbXGKAgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 20:36:49 -0400
+Date: Tue, 10 Jul 2007 19:36:12 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Thread Migration Preemption
+Message-ID: <20070711003611.GY11115@waste.org>
+References: <20070705215152.GA4865@Krystal> <468DDD3A.6010308@yahoo.com.au> <20070710233938.GT11166@waste.org> <46941E0F.3040209@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46941E0F.3040209@yahoo.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
-> On Sun, 01 Jul 2007 03:36:01 -0400
-> Mingming Cao <cmm@us.ibm.com> wrote:
+On Wed, Jul 11, 2007 at 10:02:23AM +1000, Nick Piggin wrote:
+> >I like this patch a lot. Even if we don't add the underlying mechanism
+> >right now, adding migration_disable as an alias for preempt_disable
+> >will much better document quite a number of the users.
 > 
-> > Turn on extents feature by default in ext4 filesystem. User could use
-> > -o noextents to turn it off.
-> > 
-> 
-> Oh, there you go.
-> 
-> > 
-> > Index: linux-2.6.22-rc4/fs/ext4/super.c
-> > ===================================================================
-> > --- linux-2.6.22-rc4.orig/fs/ext4/super.c	2007-06-11 17:02:22.000000000 -0700
-> > +++ linux-2.6.22-rc4/fs/ext4/super.c	2007-06-11 17:03:09.000000000 -0700
-> > @@ -1546,6 +1546,12 @@
-> >  
-> >  	set_opt(sbi->s_mount_opt, RESERVATION);
-> >  
-> > +	/*
-> > +	 * turn on extents feature by default in ext4 filesystem
-> > +	 * User -o noextents to turn it off
-> > +	 */
-> > +	set_opt (sbi->s_mount_opt, EXTENTS);
-> > +
-> 
-> Broken coding style.
-> 
-> Please feed all the ext4 patches through scripts/checkpatch.pl (preferably
-> version 0.07 - see Andy's patch on lkml) and then consider addressing the
-> (quite large) number of mistakes which are detected.
-> 
+> I'd have no problem with that, and it might make it easier in future to
+> justify a more complex scheme.
 
-Sorry about this. I was using version 0.04. The latest one I can find
-for now is 0.05(searching lkml), but it didn't catch this codling style
-bug either. I appreciate if anyone can point me the version 0.07, thanks
+What do you think, Mathieu?
 
-Mingming
+Also, small nit: it ought to be migrate_disable to match the form of
+preempt_disable.
+ 
+> >>The task struct is not something we should just be carefree putting crap
+> >>into because it is seemingly free :(
+> >
+> >Sadly, it is free at the moment. We can only fit 3 task_structs in an 
+> >order-1 SLAB,
+> >with lots of slop.
+> 
+> Well apart from more cacheline access, that's why I say seemingly free. But
+> actually it uses up space we may like for something else in future and/or
+> makes it harder to shrink down if any effort ever goes into that.
 
+Yes, I'm just trying to draw the sad state of task_struct to people's
+attention.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
