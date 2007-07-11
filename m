@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbXGKGe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbXGKGen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754AbXGKGe3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755606AbXGKGeM
+	id S1760476AbXGKGen (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbXGKGeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:34:12 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:51612 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754439AbXGKGeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:34:10 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Wed, 11 Jul 2007 11:54:17 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, Keiichi Kii <k-keiichi@bx.jp.nec.com>,
-       Netdev <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2 -mm 8/9] netconsole: Support multiple logging targets
-In-Reply-To: <20070711042948.GS1011@tasint.org>
-Message-ID: <Pine.LNX.4.64.0707111136280.10373@cselinux1.cse.iitk.ac.in>
-References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070710092001.23907.39876.sendpatchset@cselinux1.cse.iitk.ac.in>
- <e9e943910707100323o35cb0316i5d3f21584ad8e4ae@mail.gmail.com>
- <Pine.LNX.4.64.0707110340370.2445@cselinux1.cse.iitk.ac.in>
- <20070711042948.GS1011@tasint.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Jul 2007 02:34:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33261
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754813AbXGKGeL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 02:34:11 -0400
+Date: Tue, 10 Jul 2007 23:05:06 -0700 (PDT)
+Message-Id: <20070710.230506.111203158.davem@davemloft.net>
+To: micah.gruber@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, pekkas@netcore.fi
+Subject: Re: [PATCH] [2.6.22] Remove unneeded pointer idev from
+ addrconf_cleanup() in net/ipv6/addrconf.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <aaab98560707082030w6521f4e5qf17a01d83d20faf8@mail.gmail.com>
+References: <aaab98560707082030w6521f4e5qf17a01d83d20faf8@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joel,
+From: "Micah Gruber" <micah.gruber@gmail.com>
+Date: Mon, 9 Jul 2007 11:30:46 +0800
 
-On Tue, 10 Jul 2007, Joel Becker wrote:
-> On Wed, Jul 11, 2007 at 03:47:09AM +0530, Satyam Sharma wrote:
-> > Hmm, I put it in there because I expected that the user must have had
-> > at least one target configured (added to target_list) if he's got the
-> > module loaded/built-in (and netconsole registered), which is when this
-> > function would be triggered anyway.
+> This trivial patch removes the unneeded pointer idev returned from
+> __in6_dev_get(), which is never used. The check for NULL can be simply
+> done by if (__in6_dev_get(dev) == NULL).
 > 
-> 	Loading the module won't happen without a config,
+> Signed-off-by: Micah Gruber < micah.gruber@gmail.com>
 
-That's no longer the case (doesn't need to be enforced actually) now
-with being able to add logging targets _after_ the module has loaded
-and initialized / registered itself. It's plausible a user may simply
-want to load netconsole without any "netconsole=" option, and then
-specify/add targets later -- this wasn't possible previously, of course.
+Applied, but your patch was severely white-space damaged by your
+email client, please fix this up and test that the patches you
+email out can be applied by those receiving the posting in the
+future.
 
-> but there's no
-> requirement that a built-in netconsole has a kernel command-line
-> argument.
-
-The above is applicable for the built-in case too, with
-CONFIG_NETCONSOLE_DYNAMIC. So now built-in netconsole will initialize
-(configfs subsystem, etc) and register itself (register_console) even
-if no "netconsole=" was provided, again for the same reason.
-
-And I now notice that CONFIG_NETCONSOLE=y in the defconfig's of
-most arch's. So I think I did get the common case wrong there ...
-ok, I'll get rid of the unlikely() in that case.
-
-Satyam
+Thanks.
