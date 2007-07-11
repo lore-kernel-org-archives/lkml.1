@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762725AbXGKBTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbXGKBXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762725AbXGKBTe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 21:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXGKBT1
+	id S1756632AbXGKBXA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 21:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbXGKBWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 21:19:27 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2724 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753685AbXGKBT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 21:19:26 -0400
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
-Date: Wed, 11 Jul 2007 03:18:46 +0200
-User-Agent: KMail/1.9.7
-Cc: Rodolfo Giometti <giometti@enneenne.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1183031060.1170.145.camel@pmac.infradead.org> <20070701192441.GW13886@enneenne.com> <20070710160151.GB31195@csclub.uwaterloo.ca>
-In-Reply-To: <20070710160151.GB31195@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 10 Jul 2007 21:22:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49426 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751020AbXGKBWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 21:22:48 -0400
+Date: Tue, 10 Jul 2007 18:22:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cmm@us.ibm.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, nfsv4@linux-nfs.org
+Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
+Message-Id: <20070710182237.e2f88bf3.akpm@linux-foundation.org>
+In-Reply-To: <1184105380.3759.65.camel@localhost.localdomain>
+References: <1183275424.4010.126.camel@localhost.localdomain>
+	<20070710163038.ceb2ae94.akpm@linux-foundation.org>
+	<1184105380.3759.65.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707110318.49244.zippel@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 10 Jul 2007 18:09:40 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
 
-On Tuesday 10 July 2007, Lennart Sorensen wrote:
+> On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
+> > On Sun, 01 Jul 2007 03:37:04 -0400
+> > Mingming Cao <cmm@us.ibm.com> wrote:
+> > 
+> > > This patch converts the 32-bit i_version in the generic inode to a 64-bit
+> > > i_version field.
+> > > 
+> > 
+> > That's obvious from the patch.  But what was the reason for making this
+> > (unrelated to ext4) change?
+> > 
+> 
+> The need is came from NFSv4
+> 
+> On Fri, 2007-05-25 at 18:25 +0200, Jean noel Cordenner wrote: 
+> > Hi,
+> > 
+> > This is an update of the i_version patch.
+> > The i_version field is a 64bit counter that is set on every inode
+> > creation and that is incremented every time the inode data is modified
+> > (similarly to the "ctime" time-stamp).
+> > The aim is to fulfill a NFSv4 requirement for rfc3530:
+> > "5.5.  Mandatory Attributes - Definitions
+> > Name		#	DataType   Access   Description
+> > ___________________________________________________________________
+> > change		3	uint64       READ     A value created by the
+> > 		server that the client can use to determine if file
+> > 		data, directory contents or attributes of the object
+> > 		have been modified.  The servermay return the object's
+> > 		time_metadata attribute for this attribute's value but
+> > 		only if the filesystem object can not be updated more
+> > 		frequently than the resolution of time_metadata.
+> > "
+> > 
+> 
+> > Please update the changelog for this.
+> > 
+> 
+> Is above description clear to you?
+> 
 
-> On Sun, Jul 01, 2007 at 09:24:41PM +0200, Rodolfo Giometti wrote:
-> >     struct pps_timedata_s {
-> >        __32 sec;
-> >        __32 nsec;
-> >     }
-> >
-> > Ok? I think 32 bits are enought for keeping seconds... :)
->
-> You want to purposely define an API that will break in 23 years (or is
-> that 83 years since you made it unsigned potentially)?
+Yes, thanks.  It doesn't actually tell us why we want to implement
+this attribute and it doesn't tell us what the implications of failing
+to do so are, but I guess we can take that on trust from the NFS guys.
 
-This is really not an API that needs to deal with such large time range.
+But I suspect the ext4 implementation doesn't actually do this.  afaict we
+won't update i_version for file overwrites (especially if s_time_gran can
+indeed be 1,000,000,000) and of course for MAP_SHARED modifications.  What
+would be the implications of this?
 
-bye, Roman
+And how does the NFS server know that the filesystem implements i_version? 
+Will a zero-value of i_version have special significance, telling the
+server to not send this attribute, perhaps?
+
+
