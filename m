@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761245AbXGKFRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761422AbXGKFTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761245AbXGKFRr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 01:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758500AbXGKFRk
+	id S1761422AbXGKFTP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 01:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758679AbXGKFTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 01:17:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35239 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757577AbXGKFRj (ORCPT
+	Wed, 11 Jul 2007 01:19:04 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:28999 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757963AbXGKFTC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 01:17:39 -0400
-Date: Tue, 10 Jul 2007 22:17:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: cmm@us.ibm.com
-Cc: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       nfsv4@linux-nfs.org
-Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
-Message-Id: <20070710221721.23c46edf.akpm@linux-foundation.org>
-In-Reply-To: <1184119748.20193.37.camel@localhost.localdomain>
-References: <1183275424.4010.126.camel@localhost.localdomain>
-	<20070710163038.ceb2ae94.akpm@linux-foundation.org>
-	<1184105380.3759.65.camel@localhost.localdomain>
-	<20070710182237.e2f88bf3.akpm@linux-foundation.org>
-	<18068.19667.942363.686858@notabene.brown>
-	<1184119748.20193.37.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jul 2007 01:19:02 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=L/meW7EboFj0aYpyLFnqw6tDCb1yvqI5kKDtWHhOADzp2rjoAf7VQH2p6HPNO9ePYilPei2IMBcfbRYNkrvQGJcpSJcSISw+dyUEPolLl682mZXeR5Aa8339zxnioQCmgp0xUJm6FdAA3i8SLJEi9zfLvRikMqKJ0U2kPZqGCfU=  ;
+X-YMail-OSG: yoWo1foVM1mFy_ZD3w_juYUI1fz3r8a5P3i71fpcTv.G5wx.l0PimYkTW4oMB1ieh.WeAUfpSA--
+Message-ID: <4694683B.3060705@yahoo.com.au>
+Date: Wed, 11 Jul 2007 15:18:51 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Matthew Hawkins <darthmdh@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org>	 <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>	 <20070710181419.6d1b2f7e.akpm@linux-foundation.org> <b21f8390707101954s3ae69db8vc30287277941cb1f@mail.gmail.com>
+In-Reply-To: <b21f8390707101954s3ae69db8vc30287277941cb1f@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 22:09:08 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
+Matthew Hawkins wrote:
+> On 7/11/07, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> David Chinneer pointed that we need to journal the version number
-> updates together with the operations that causes the change of the inode
-> version number, in order to survive server crashes so clients won't see
-> the counter go backwards.
-> 
-> So increment i_version in fs code is probably the place to ensure the
-> inode version changes are stored to disk. It's seems update the ext4
-> inode version in every ext4_mark_inode_dirty() is the easiest way.
+> Anyhow with swap prefetch, applications that may have been sitting
+> there idle for a while become responsive in the single-digit seconds
+> rather than double-digit or worse.  The same goes for a morning wakeup
+> (ie after nightly cron jobs throw things out)
 
-That still makes us dependent upon _something_ changing the inode.  For
-overwrites the only something is mtime.
+OK that's a good data point. It would be really good to be able to
+do an analysis on your overnight IO patterns and the corresponding
+memory reclaim behaviour and see why things are getting evicted.
 
-If we don't want to have a peculiar dependency upon s_time_gran=1e9 (and
-I don't think we do) then I guess we'll need new code in or around
-file_update_time() to do this.
+Not that swap prefetching isn't a good solution for this situation,
+but the fact that things are getting swapped out for you also means
+that mapped files and possibly important pagecache and dentries are
+being flushed out, which we might be able to avoid.
+
+Thanks,
+Nick
+
+-- 
+SUSE Labs, Novell Inc.
