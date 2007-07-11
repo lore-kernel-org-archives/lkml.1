@@ -1,30 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934313AbXGKVF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934165AbXGKVGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934313AbXGKVF7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934097AbXGKVDq
+	id S934165AbXGKVGi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933077AbXGKVEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:03:46 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38706 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934078AbXGKVDp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:03:45 -0400
-Date: Wed, 11 Jul 2007 14:03:44 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Alasdair G Kergon <agk@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.23 PATCH 03/18] dm: use kmem_cache macro
-In-Reply-To: <20070711205734.GU24114@agk.fab.redhat.com>
-Message-ID: <Pine.LNX.4.64.0707111403360.19362@schroedinger.engr.sgi.com>
-References: <20070711205734.GU24114@agk.fab.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Jul 2007 17:04:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34314 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933654AbXGKVEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:04:11 -0400
+Date: Wed, 11 Jul 2007 22:03:16 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Jonathan Brassow <jbrassow@redhat.com>
+Subject: [2.6.23 PATCH 18/18] dm raid1: handle log failure
+Message-ID: <20070711210316.GJ24114@agk.fab.redhat.com>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Jonathan Brassow <jbrassow@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Christoph Lameter <clameter@sgi.com>
+From: Jonathan Brassow <jbrassow@redhat.com>
 
+When writing to a mirror, the log must be updated first.  Failure
+to update the log could result in the log not properly reflecting
+the state of the mirror if the machine should crash.
 
+We change the return type of the rh_flush function to give us
+the ability to check if a log write was successful.  If the
+log write was unsuccessful, we fail the writes to avoid the
+case where the log does not properly reflect the state of the
+mirror.
+
+A follow-up patch - which is dependent on the ability to
+requeue I/O's to core device-mapper - will requeue the I/O's
+for retry (allowing the mirror to be reconfigured.)
+
+Signed-off-by: Jonathan Brassow <jbrassow@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+
+---
+ drivers/md/dm-raid1.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
+
+Index: linux/drivers/md/dm-raid1.c
+===================================================================
+--- linux.orig/drivers/md/dm-raid1.c	2007-07-11 21:37:56.000000000 +0100
++++ linux/drivers/md/dm-raid1.c	2007-07-11 21:37:57.000000000 +0100
+@@ -134,6 +134,7 @@ struct mirror_set {
+ 	/* recovery */
+ 	region_t nr_regions;
+ 	int in_sync;
++	int log_failure;
+ 
+ 	struct mirror *default_mirror;	/* Default mirror */
+ 
+@@ -589,9 +590,9 @@ static void rh_recovery_end(struct regio
+ 	wake(rh->ms);
+ }
+ 
+-static void rh_flush(struct region_hash *rh)
++static int rh_flush(struct region_hash *rh)
+ {
+-	rh->log->type->flush(rh->log);
++	return rh->log->type->flush(rh->log);
+ }
+ 
+ static void rh_delay(struct region_hash *rh, struct bio *bio)
+@@ -892,12 +893,15 @@ static void do_writes(struct mirror_set 
+ 	 */
+ 	rh_inc_pending(&ms->rh, &sync);
+ 	rh_inc_pending(&ms->rh, &nosync);
+-	rh_flush(&ms->rh);
++	ms->log_failure = rh_flush(&ms->rh) ? 1 : 0;
+ 
+ 	/*
+ 	 * Dispatch io.
+ 	 */
+-	while ((bio = bio_list_pop(&sync)))
++	if (unlikely(ms->log_failure))
++		while ((bio = bio_list_pop(&sync)))
++			bio_endio(bio, bio->bi_size, -EIO);
++	else while ((bio = bio_list_pop(&sync)))
+ 		do_write(ms, bio);
+ 
+ 	while ((bio = bio_list_pop(&recover)))
