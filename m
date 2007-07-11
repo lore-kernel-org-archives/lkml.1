@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935575AbXGKXmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935717AbXGKXmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935575AbXGKXmH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935103AbXGKXeT
+	id S935717AbXGKXmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933308AbXGKXeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:34:19 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33778 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:34:25 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33796 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935095AbXGKXeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:34:18 -0400
+	id S934093AbXGKXeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:34:22 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 20/61] idr: separate out idr_mark_full()
-Date: Wed, 11 Jul 2007 16:31:39 -0700
-Message-Id: <11841968352439-git-send-email-gregkh@suse.de>
+Subject: [PATCH 21/61] ida: implement idr based id allocator
+Date: Wed, 11 Jul 2007 16:31:40 -0700
+Message-Id: <11841968392043-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841968303508-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841968352439-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -37,141 +37,323 @@ References: <20070711233021.GA5253@kroah.com>
  <11841968231043-git-send-email-gregkh@suse.de>
  <11841968271925-git-send-email-gregkh@suse.de>
  <11841968303508-git-send-email-gregkh@suse.de>
+ <11841968352439-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-Separate out idr_mark_full() from sub_alloc() and make marking the
-allocated slot full the responsibility of idr_get_new_above_int().
+Implement idr based id allocator.  ida is used the same way idr is
+used but lacks id -> ptr translation and thus consumes much less
+memory.  struct ida_bitmap is attached as leaf nodes to idr tree which
+is managed by the idr code.  Each ida_bitmap is 128bytes long and
+contains slightly less than a thousand slots.
 
-Allocation part of idr_get_new_above_int() is renamed to
-idr_get_empty_slot().  New idr_get_new_above_int() allocates a slot
-using the function, install the user pointer and marks it full using
-idr_mark_full().
-
-This change doesn't introduce any behavior change.  This will be
-used by ida.
+ida is more aggressive with releasing extra resources acquired using
+ida_pre_get().  After every successful id allocation, ida frees one
+reserved idr_layer if possible.  Reserved ida_bitmap is not freed
+automatically but only one ida_bitmap is reserved and it's almost
+always used right away.  Under most circumstances, ida won't hold on
+to memory for too long which isn't actively used.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/idr.c |   71 +++++++++++++++++++++++++++++++++++++++---------------------
- 1 files changed, 46 insertions(+), 25 deletions(-)
+ include/linux/idr.h |   29 ++++++
+ lib/idr.c           |  245 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 274 insertions(+), 0 deletions(-)
 
+diff --git a/include/linux/idr.h b/include/linux/idr.h
+index 8268034..915572f 100644
+--- a/include/linux/idr.h
++++ b/include/linux/idr.h
+@@ -83,4 +83,33 @@ void idr_remove(struct idr *idp, int id);
+ void idr_destroy(struct idr *idp);
+ void idr_init(struct idr *idp);
+ 
++
++/*
++ * IDA - IDR based id allocator, use when translation from id to
++ * pointer isn't necessary.
++ */
++#define IDA_CHUNK_SIZE		128	/* 128 bytes per chunk */
++#define IDA_BITMAP_LONGS	(128 / sizeof(long) - 1)
++#define IDA_BITMAP_BITS		(IDA_BITMAP_LONGS * sizeof(long) * 8)
++
++struct ida_bitmap {
++	long			nr_busy;
++	unsigned long		bitmap[IDA_BITMAP_LONGS];
++};
++
++struct ida {
++	struct idr		idr;
++	struct ida_bitmap	*free_bitmap;
++};
++
++#define IDA_INIT(name)		{ .idr = IDR_INIT(name), .free_bitmap = NULL, }
++#define DEFINE_IDA(name)	struct ida name = IDA_INIT(name)
++
++int ida_pre_get(struct ida *ida, gfp_t gfp_mask);
++int ida_get_new_above(struct ida *ida, int starting_id, int *p_id);
++int ida_get_new(struct ida *ida, int *p_id);
++void ida_remove(struct ida *ida, int id);
++void ida_destroy(struct ida *ida);
++void ida_init(struct ida *ida);
++
+ #endif /* __IDR_H__ */
 diff --git a/lib/idr.c b/lib/idr.c
-index 7b5a59c..30b33e2 100644
+index 30b33e2..b98f01a 100644
 --- a/lib/idr.c
 +++ b/lib/idr.c
-@@ -70,6 +70,26 @@ static void free_layer(struct idr *idp, struct idr_layer *p)
- 	spin_unlock_irqrestore(&idp->lock, flags);
+@@ -506,3 +506,248 @@ void idr_init(struct idr *idp)
+ 	spin_lock_init(&idp->lock);
  }
- 
-+static void idr_mark_full(struct idr_layer **pa, int id)
-+{
-+	struct idr_layer *p = pa[0];
-+	int l = 0;
+ EXPORT_SYMBOL(idr_init);
 +
-+	__set_bit(id & IDR_MASK, &p->bitmap);
-+	/*
-+	 * If this layer is full mark the bit in the layer above to
-+	 * show that this part of the radix tree is full.  This may
-+	 * complete the layer above and require walking up the radix
-+	 * tree.
-+	 */
-+	while (p->bitmap == IDR_FULL) {
-+		if (!(p = pa[++l]))
-+			break;
-+		id = id >> IDR_BITS;
-+		__set_bit((id & IDR_MASK), &p->bitmap);
++
++/*
++ * IDA - IDR based ID allocator
++ *
++ * this is id allocator without id -> pointer translation.  Memory
++ * usage is much lower than full blown idr because each id only
++ * occupies a bit.  ida uses a custom leaf node which contains
++ * IDA_BITMAP_BITS slots.
++ *
++ * 2007-04-25  written by Tejun Heo <htejun@gmail.com>
++ */
++
++static void free_bitmap(struct ida *ida, struct ida_bitmap *bitmap)
++{
++	unsigned long flags;
++
++	if (!ida->free_bitmap) {
++		spin_lock_irqsave(&ida->idr.lock, flags);
++		if (!ida->free_bitmap) {
++			ida->free_bitmap = bitmap;
++			bitmap = NULL;
++		}
++		spin_unlock_irqrestore(&ida->idr.lock, flags);
 +	}
++
++	kfree(bitmap);
 +}
 +
- /**
-  * idr_pre_get - reserver resources for idr allocation
-  * @idp:	idr handle
-@@ -95,11 +115,10 @@ int idr_pre_get(struct idr *idp, gfp_t gfp_mask)
- }
- EXPORT_SYMBOL(idr_pre_get);
- 
--static int sub_alloc(struct idr *idp, void *ptr, int *starting_id)
-+static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
- {
- 	int n, m, sh;
- 	struct idr_layer *p, *new;
--	struct idr_layer *pa[MAX_LEVEL];
- 	int l, id, oid;
- 	long bm;
- 
-@@ -156,30 +175,13 @@ static int sub_alloc(struct idr *idp, void *ptr, int *starting_id)
- 		pa[l--] = p;
- 		p = p->ary[m];
- 	}
--	/*
--	 * We have reached the leaf node, plant the
--	 * users pointer and return the raw id.
--	 */
--	p->ary[m] = (struct idr_layer *)ptr;
--	__set_bit(m, &p->bitmap);
--	p->count++;
--	/*
--	 * If this layer is full mark the bit in the layer above
--	 * to show that this part of the radix tree is full.
--	 * This may complete the layer above and require walking
--	 * up the radix tree.
--	 */
--	n = id;
--	while (p->bitmap == IDR_FULL) {
--		if (!(p = pa[++l]))
--			break;
--		n = n >> IDR_BITS;
--		__set_bit((n & IDR_MASK), &p->bitmap);
--	}
--	return(id);
++/**
++ * ida_pre_get - reserve resources for ida allocation
++ * @ida:	ida handle
++ * @gfp_mask:	memory allocation flag
++ *
++ * This function should be called prior to locking and calling the
++ * following function.  It preallocates enough memory to satisfy the
++ * worst possible allocation.
++ *
++ * If the system is REALLY out of memory this function returns 0,
++ * otherwise 1.
++ */
++int ida_pre_get(struct ida *ida, gfp_t gfp_mask)
++{
++	/* allocate idr_layers */
++	if (!idr_pre_get(&ida->idr, gfp_mask))
++		return 0;
 +
-+	pa[l] = p;
-+	return id;
- }
- 
--static int idr_get_new_above_int(struct idr *idp, void *ptr, int starting_id)
-+static int idr_get_empty_slot(struct idr *idp, int starting_id,
-+			      struct idr_layer **pa)
- {
- 	struct idr_layer *p, *new;
- 	int layers, v, id;
-@@ -225,12 +227,31 @@ build_up:
- 	}
- 	idp->top = p;
- 	idp->layers = layers;
--	v = sub_alloc(idp, ptr, &id);
-+	v = sub_alloc(idp, &id, pa);
- 	if (v == -2)
- 		goto build_up;
- 	return(v);
- }
- 
-+static int idr_get_new_above_int(struct idr *idp, void *ptr, int starting_id)
++	/* allocate free_bitmap */
++	if (!ida->free_bitmap) {
++		struct ida_bitmap *bitmap;
++
++		bitmap = kmalloc(sizeof(struct ida_bitmap), gfp_mask);
++		if (!bitmap)
++			return 0;
++
++		free_bitmap(ida, bitmap);
++	}
++
++	return 1;
++}
++EXPORT_SYMBOL(ida_pre_get);
++
++/**
++ * ida_get_new_above - allocate new ID above or equal to a start id
++ * @ida:	ida handle
++ * @staring_id:	id to start search at
++ * @p_id:	pointer to the allocated handle
++ *
++ * Allocate new ID above or equal to @ida.  It should be called with
++ * any required locks.
++ *
++ * If memory is required, it will return -EAGAIN, you should unlock
++ * and go back to the ida_pre_get() call.  If the ida is full, it will
++ * return -ENOSPC.
++ *
++ * @p_id returns a value in the range 0 ... 0x7fffffff.
++ */
++int ida_get_new_above(struct ida *ida, int starting_id, int *p_id)
 +{
 +	struct idr_layer *pa[MAX_LEVEL];
-+	int id;
++	struct ida_bitmap *bitmap;
++	unsigned long flags;
++	int idr_id = starting_id / IDA_BITMAP_BITS;
++	int offset = starting_id % IDA_BITMAP_BITS;
++	int t, id;
 +
-+	id = idr_get_empty_slot(idp, starting_id, pa);
-+	if (id >= 0) {
-+		/*
-+		 * Successfully found an empty slot.  Install the user
-+		 * pointer and mark the slot full.
-+		 */
-+		pa[0]->ary[id & IDR_MASK] = (struct idr_layer *)ptr;
-+		pa[0]->count++;
-+		idr_mark_full(pa, id);
++ restart:
++	/* get vacant slot */
++	t = idr_get_empty_slot(&ida->idr, idr_id, pa);
++	if (t < 0) {
++		if (t == -1)
++			return -EAGAIN;
++		else /* will be -3 */
++			return -ENOSPC;
 +	}
 +
-+	return id;
-+}
++	if (t * IDA_BITMAP_BITS >= MAX_ID_BIT)
++		return -ENOSPC;
 +
- /**
-  * idr_get_new_above - allocate new idr entry above or equal to a start id
-  * @idp: idr handle
++	if (t != idr_id)
++		offset = 0;
++	idr_id = t;
++
++	/* if bitmap isn't there, create a new one */
++	bitmap = (void *)pa[0]->ary[idr_id & IDR_MASK];
++	if (!bitmap) {
++		spin_lock_irqsave(&ida->idr.lock, flags);
++		bitmap = ida->free_bitmap;
++		ida->free_bitmap = NULL;
++		spin_unlock_irqrestore(&ida->idr.lock, flags);
++
++		if (!bitmap)
++			return -EAGAIN;
++
++		memset(bitmap, 0, sizeof(struct ida_bitmap));
++		pa[0]->ary[idr_id & IDR_MASK] = (void *)bitmap;
++		pa[0]->count++;
++	}
++
++	/* lookup for empty slot */
++	t = find_next_zero_bit(bitmap->bitmap, IDA_BITMAP_BITS, offset);
++	if (t == IDA_BITMAP_BITS) {
++		/* no empty slot after offset, continue to the next chunk */
++		idr_id++;
++		offset = 0;
++		goto restart;
++	}
++
++	id = idr_id * IDA_BITMAP_BITS + t;
++	if (id >= MAX_ID_BIT)
++		return -ENOSPC;
++
++	__set_bit(t, bitmap->bitmap);
++	if (++bitmap->nr_busy == IDA_BITMAP_BITS)
++		idr_mark_full(pa, idr_id);
++
++	*p_id = id;
++
++	/* Each leaf node can handle nearly a thousand slots and the
++	 * whole idea of ida is to have small memory foot print.
++	 * Throw away extra resources one by one after each successful
++	 * allocation.
++	 */
++	if (ida->idr.id_free_cnt || ida->free_bitmap) {
++		struct idr_layer *p = alloc_layer(&ida->idr);
++		if (p)
++			kmem_cache_free(idr_layer_cache, p);
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(ida_get_new_above);
++
++/**
++ * ida_get_new - allocate new ID
++ * @ida:	idr handle
++ * @p_id:	pointer to the allocated handle
++ *
++ * Allocate new ID.  It should be called with any required locks.
++ *
++ * If memory is required, it will return -EAGAIN, you should unlock
++ * and go back to the idr_pre_get() call.  If the idr is full, it will
++ * return -ENOSPC.
++ *
++ * @id returns a value in the range 0 ... 0x7fffffff.
++ */
++int ida_get_new(struct ida *ida, int *p_id)
++{
++	return ida_get_new_above(ida, 0, p_id);
++}
++EXPORT_SYMBOL(ida_get_new);
++
++/**
++ * ida_remove - remove the given ID
++ * @ida:	ida handle
++ * @id:		ID to free
++ */
++void ida_remove(struct ida *ida, int id)
++{
++	struct idr_layer *p = ida->idr.top;
++	int shift = (ida->idr.layers - 1) * IDR_BITS;
++	int idr_id = id / IDA_BITMAP_BITS;
++	int offset = id % IDA_BITMAP_BITS;
++	int n;
++	struct ida_bitmap *bitmap;
++
++	/* clear full bits while looking up the leaf idr_layer */
++	while ((shift > 0) && p) {
++		n = (idr_id >> shift) & IDR_MASK;
++		__clear_bit(n, &p->bitmap);
++		p = p->ary[n];
++		shift -= IDR_BITS;
++	}
++
++	if (p == NULL)
++		goto err;
++
++	n = idr_id & IDR_MASK;
++	__clear_bit(n, &p->bitmap);
++
++	bitmap = (void *)p->ary[n];
++	if (!test_bit(offset, bitmap->bitmap))
++		goto err;
++
++	/* update bitmap and remove it if empty */
++	__clear_bit(offset, bitmap->bitmap);
++	if (--bitmap->nr_busy == 0) {
++		__set_bit(n, &p->bitmap);	/* to please idr_remove() */
++		idr_remove(&ida->idr, idr_id);
++		free_bitmap(ida, bitmap);
++	}
++
++	return;
++
++ err:
++	printk(KERN_WARNING
++	       "ida_remove called for id=%d which is not allocated.\n", id);
++}
++EXPORT_SYMBOL(ida_remove);
++
++/**
++ * ida_destroy - release all cached layers within an ida tree
++ * ida:		ida handle
++ */
++void ida_destroy(struct ida *ida)
++{
++	idr_destroy(&ida->idr);
++	kfree(ida->free_bitmap);
++}
++EXPORT_SYMBOL(ida_destroy);
++
++/**
++ * ida_init - initialize ida handle
++ * @ida:	ida handle
++ *
++ * This function is use to set up the handle (@ida) that you will pass
++ * to the rest of the functions.
++ */
++void ida_init(struct ida *ida)
++{
++	memset(ida, 0, sizeof(struct ida));
++	idr_init(&ida->idr);
++
++}
++EXPORT_SYMBOL(ida_init);
 -- 
 1.5.2.2
 
