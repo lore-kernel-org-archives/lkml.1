@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbXGKILp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbXGKIMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759926AbXGKILp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 04:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756557AbXGKILa
+	id S1760691AbXGKIMH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 04:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbXGKILt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 04:11:30 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43472 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755731AbXGKIL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 04:11:28 -0400
-Date: Wed, 11 Jul 2007 13:41:41 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: [PATCH 2/7] fallocate() implementation in i386, x86_64 and powerpc
-Message-ID: <20070711081141.GA25383@amitarora.in.ibm.com>
-References: <20070710201200.GA10255@amitarora.in.ibm.com> <20070710202000.GB8797@amitarora.in.ibm.com> <20070711121034.a3b925b9.sfr@canb.auug.org.au>
+	Wed, 11 Jul 2007 04:11:49 -0400
+Received: from ns.oss.ntt.co.jp ([222.151.198.98]:60145 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759979AbXGKILr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 04:11:47 -0400
+X-Greylist: delayed 974 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 04:11:47 EDT
+Subject: [PATCH] UBI: cleanup usage of try_module_get
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: dedekind@infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1184140531.4608.16.camel@sebastian.kern.oss.ntt.co.jp>
+References: <1184140531.4608.16.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Wed, 11 Jul 2007 17:11:45 +0900
+Message-Id: <1184141505.4608.29.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070711121034.a3b925b9.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 12:10:34PM +1000, Stephen Rothwell wrote:
-> On Wed, 11 Jul 2007 01:50:00 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> >
-> > --- linux-2.6.22.orig/arch/x86_64/ia32/sys_ia32.c
-> > +++ linux-2.6.22/arch/x86_64/ia32/sys_ia32.c
-> > @@ -879,3 +879,11 @@ asmlinkage long sys32_fadvise64(int fd, 
-> >  	return sys_fadvise64_64(fd, ((u64)offset_hi << 32) | offset_lo,
-> >  				len, advice);
-> >  }
-> > +
-> > +asmlinkage long sys32_fallocate(int fd, int mode, unsigned offset_lo,
-> > +				unsigned offset_hi, unsigned len_lo,
-> > +				unsigned len_hi)
-> 
-> Please call this compat_sys_fallocate in line with the powerpc version -
-> it gives us a hint that maybe we should think about how to consolidate
-> them.  I know other stuff in that file is called sys32_ ... but it is time
-> for a change :-)
+The use of try_module_get(THIS_MODULE) in ubi_get_device_info does not
+offer real protection against unexpected driver unloads, since we could
+be preempted before try_modules_get gets executed. It is the caller who
+should manipulate the refcounts. Besides, ubi_get_device_info is an
+exported symbol which guarantees protection when accessed through
+symbol_get.
 
-I think this can be handled as a separate patch once this patchset
-is in mainline. Since, anyhow we will need to do this for other sys32_
-calls which are already there...
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
---
-Regards,
-Amit Arora
+diff -urNp linux-2.6.22-orig/drivers/mtd/ubi/kapi.c linux-2.6.22/drivers/mtd/ubi/kapi.c
+--- linux-2.6.22-orig/drivers/mtd/ubi/kapi.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/drivers/mtd/ubi/kapi.c	2007-07-11 16:34:10.000000000 +0900
+@@ -37,12 +37,8 @@ int ubi_get_device_info(int ubi_num, str
+ {
+ 	const struct ubi_device *ubi;
+ 
+-	if (!try_module_get(THIS_MODULE))
+-		return -ENODEV;
+-
+ 	if (ubi_num < 0 || ubi_num >= UBI_MAX_DEVICES ||
+ 	    !ubi_devices[ubi_num]) {
+-		module_put(THIS_MODULE);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -52,7 +48,6 @@ int ubi_get_device_info(int ubi_num, str
+ 	di->min_io_size = ubi->min_io_size;
+ 	di->ro_mode = ubi->ro_mode;
+ 	di->cdev = MKDEV(ubi->major, 0);
+-	module_put(THIS_MODULE);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(ubi_get_device_info);
 
 
