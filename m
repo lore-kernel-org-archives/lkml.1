@@ -1,36 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932547AbXGKMAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763532AbXGKMBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932547AbXGKMAv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758967AbXGKMAn
+	id S1763532AbXGKMBK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762301AbXGKMAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 11 Jul 2007 08:00:45 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:41371 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758386AbXGKMAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Jul 2007 08:00:43 -0400
-Received: from verein.lst.de ([213.95.11.210]:54440 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756698AbXGKMAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:00:42 -0400
-Date: Wed, 11 Jul 2007 14:00:37 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: fallocate, Re: -mm merge plans for 2.6.23
-Message-ID: <20070711120037.GE18665@lst.de>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.734 () BAYES_10
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Hibernation Redesign
+Date: Wed, 11 Jul 2007 22:00:42 +1000
+User-Agent: KMail/1.9.6
+Cc: rjw@sisk.pl, a1426z@gawab.com, jeremy@goop.org, jbms@cmu.edu, pavel@ucw.cz,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <200707081737.21932.a1426z@gawab.com> <200707111350.41806.rjw@sisk.pl> <E1I8amY-00009H-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I8amY-00009H-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2591624.7gdUpcTcKD";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707112200.43613.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> fallocate-implementation-on-i86-x86_64-and-powerpc.patch
-> fallocate-on-s390.patch
-> fallocate-on-ia64.patch
-> fallocate-on-ia64-fix.patch
-> 
->  Merge.
+--nextPart2591624.7gdUpcTcKD
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hopefull this will be done during the 2.6.23 merge window, but right now
-it's not (yet).
+Hi.
+
+On Wednesday 11 July 2007 21:54:58 Miklos Szeredi wrote:
+> Freezing of tasks is slowing down suspend.  Don't know how serious
+> this is, suspend is pretty fast, but could possibly be even faster.
+
+It's FUD. Freezing of tasks normally takes next to no time. I've never=20
+understood the rediculously long timeout it has. If freezing succeeds, all=
+=20
+processes are frozen within 1/2 a second tops. If it fails, nothing is goin=
+g=20
+to change in the following 19.5 seconds (or whatever it is if I don't=20
+remember the value properly).
+=20
+Regards,
+
+Nigel
+
+
+--nextPart2591624.7gdUpcTcKD
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGlMZrN0y+n1M3mo0RAnbiAKDGZzYn572tkG6q+lZMOP3Sv/yF5ACgwUR7
+dutSJpgEem0Hb8w0/uN4hFA=
+=GTi3
+-----END PGP SIGNATURE-----
+
+--nextPart2591624.7gdUpcTcKD--
