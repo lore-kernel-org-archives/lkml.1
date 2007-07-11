@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763095AbXGKAbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763914AbXGKAdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763095AbXGKAbo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 20:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXGKAbh
+	id S1763914AbXGKAdd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 20:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXGKAd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 20:31:37 -0400
-Received: from quark.didntduck.org ([69.55.226.66]:38308 "EHLO
-	quark.didntduck.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbXGKAbg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 20:31:36 -0400
-Message-ID: <46942496.2050205@didntduck.org>
-Date: Tue, 10 Jul 2007 20:30:14 -0400
-From: Brian Gerst <bgerst@didntduck.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [x86 setup 13/33] Header file to produce 16-bit code with gcc
-References: <11840359321823-git-send-email-hpa@zytor.com> <11840373002601-git-send-email-hpa@zytor.com> <108510B6-B9BE-49D4-BDCA-E25CA20CB29B@kernel.crashing.org> <200707101721.58937.ak@suse.de> <D6BECE27-25FA-4914-B293-4070392258D2@kernel.crashing.org> <4693EF48.1080209@zytor.com> <20070710214315.GD3492@stusta.de>
-In-Reply-To: <20070710214315.GD3492@stusta.de>
-Content-Type: text/plain; charset=utf-8
+	Tue, 10 Jul 2007 20:33:26 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49343 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbXGKAdZ (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 20:33:25 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+In-Reply-To: Your message of "Wed, 11 Jul 2007 01:12:53 +0200."
+             <46941275.20303@s5r6.in-berlin.de>
+From: Valdis.Kletnieks@vt.edu
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <25865.1184096391@turing-police.cc.vt.edu> <20070710222652.GE3492@stusta.de>
+            <46941275.20303@s5r6.in-berlin.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1184113932_3928P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 10 Jul 2007 20:32:12 -0400
+Message-ID: <7427.1184113932@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Jul 10, 2007 at 01:42:48PM -0700, H. Peter Anvin wrote:
->> Segher Boessenkool wrote:
->>> Well at least with -fno-toplevel-reorder it is guaranteed
->>> to work (not the same thing as "is working", heh, but fairly
->>> close).
->>>
->>> It seems to me GCC should grow an option to insert .code16gcc
->>> by itself (-m16 perhaps?)  Or GAS could get a flag to include
->>> a file as a prelude before the main thing.  Neither will help
->>> Linux right now of course.
->> -m16 is the right thing, and it also provides a proper hook for 
->> eventually having a real 16-bit backend (there are at least two 
->> projects for doing that.)
->>
->> For now, I have:
-> 
-> Can't you use the global CFLAGS and append your specific ones?
-> 
->> CFLAGS          := $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
-> 
-> -g ???
-> 
->>                    $(cflags-$(ARCH)) \
->>                    -Wall -Wstrict-prototypes \
->>                    -march=i386 -mregparm=3 \
-> 
-> Why -march=i386 ?
+--==_Exmh_1184113932_3928P
+Content-Type: text/plain; charset=us-ascii
 
-To prevent gcc from using instructions (particularly cmovxx) that not
-all processors will understand.
+On Wed, 11 Jul 2007 01:12:53 +0200, Stefan Richter said:
+> Adrian Bunk wrote:
+> > On Tue, Jul 10, 2007 at 03:39:51PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> >> What the Rest Of The World could probably use is if some kind soul were to go
+> >> through and build a .21->.22 document that lists all the *userspace visible*
+> >> changes
+> 
+> > Already available:
+> >   http://kernelnewbies.org/Linux_2_6_22
+> 
+> And of course there are several journalists who cover such matters.
 
---
-				Brian Gerst
+Most journalists tend to do a very good 5-6 paragraphs about the *big* new
+stuff - they'd probably quit after the first 20% (tops) of what Diego and
+friends have done.
+
+Definitely the resource I was looking for - thanks Diego and all.. :)
+
+--==_Exmh_1184113932_3928P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGlCUMcC3lWbTT17ARAvMTAKC4dq+d0ClIxkbK3WsEj49MkcnkwACffYUA
+TE8819W3i+UMFm5vXuhdGWk=
+=Tg5O
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1184113932_3928P--
