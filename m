@@ -1,137 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932103AbXGKQ0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762048AbXGKQ3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932103AbXGKQ0i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbXGKQ0b
+	id S1762048AbXGKQ3X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 12:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXGKQ3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:26:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:40419 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755158AbXGKQ0a (ORCPT
+	Wed, 11 Jul 2007 12:29:14 -0400
+Received: from smtp-9.smtp.ucla.edu ([169.232.48.138]:58912 "EHLO
+	smtp-9.smtp.ucla.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753747AbXGKQ3M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:26:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=oeNB5ypTh8r7LaoHjFFIjq/ooKljnu3H6hTavcz6NJGqopRLgjUkGU42mMsqOdTlH4MTEKMygdKFM1OJ6L99flTDXwmtLpxvwpdfqQ7MRojtqWqspsubASkS3iaYTZeXq0J5ecBmDu6mD69cIeoC2oCap4TwBkKJDpSCRKy7iIY=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix a potential NULL pointer deref in XFS on failed mount.
-Date: Wed, 11 Jul 2007 18:25:50 +0200
-User-Agent: KMail/1.9.7
-Cc: David Chinner <dgc@sgi.com>, xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Wed, 11 Jul 2007 12:29:12 -0400
+Date: Wed, 11 Jul 2007 09:28:59 -0700 (PDT)
+From: Chris Stromsoe <cbs@cts.ucla.edu>
+To: Jiri Kosina <jikos@jikos.cz>
+cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [git patches] net driver updates
+In-Reply-To: <Pine.LNX.4.64.0707111128330.31463@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.64.0707110920270.11697@potato.cts.ucla.edu>
+References: <20070710183953.GA8898@havoc.gtf.org> <Pine.LNX.4.64.0707111128330.31463@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707111825.51169.jesper.juhl@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Probable-Spam: no
+X-Spam-Report: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On Wed, 11 Jul 2007, Jiri Kosina wrote:
+> On Tue, 10 Jul 2007, Jeff Garzik wrote:
+>
+>> Various minor updates.  The only thing of note is sk98lin driver 
+>> removal. Please pull from 'upstream-linus' branch of 
+>> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git 
+>> upstream-linus
+>
+> This is probably going to cause a new entry in regressions list, as at 
+> least Chris Stromsoe has reported bonding-related problems with skge 
+> that don't happen with sklin - 
+> http://www.uwsg.indiana.edu/hypermail/linux/kernel/0707.1/1158.html
 
-Back in 2006 (2006-10-31 to be specific, reposted on 2006-11-16), I 
-submitted a patch to fix a potential NULL pointer deref in XFS on 
-failed mount.
+It's worse than just bonding related.  This also causes a reliable hard 
+lockup with skge:
 
-The patch drew some comments and it turned out that my initial 
-approach to a fix was wrong.
-David Chinner kindly offered some tips on how to implement a proper 
-fix, and on 2006-11-20 I submitted a revised fix.  This patch, 
-unfortunately, didn't draw any comments, nor did it ever get merged 
-anywhere.  
-I believe that now sufficient time has passed to warrent a repost ;-)
+fresno:~# modprobe skge
+fresno:~# ip li set eth2 up
+fresno:~# ip li set eth2 down
+fresno:~# ip li set eth3 up
 
+The server locks up there.  Nothing is printed to console and it takes a 
+power cycle to fix the problem.
 
+eth2 and eth3 are both ports on an SK-9844 dual-port card.  The test above 
+is with 2.6.22.  I've also had it fail with .21.*, .20.*, and several 
+other kernels.
 
-The Coverity checker spotted (as bug #346) a potential problem in XFS.
+fresno:~# uname -a
+Linux fresno 2.6.22 #4 SMP Tue Jul 10 11:38:19 PDT 2007 i686 GNU/Linux
 
-The problem is that if, in xfs_mount(), this code triggers:
+fresno:~# dmesg | grep skge
+skge 1.11 addr 0xfebfc000 irq 22 chip Genesis rev 0
+skge eth2: addr 00:00:5a:98:ac:8c
+skge eth3: addr 00:00:5a:98:ac:8d
 
-       ...
-       if (!mp->m_logdev_targp)
-               goto error0;
-       ...
-
-Then we'll end up calling xfs_unmountfs_close() with a NULL
-'mp->m_logdev_targp'.
-This in turn will result in a call to xfs_free_buftarg() with its 'btp'
-argument == NULL. xfs_free_buftarg() dereferences 'btp' leading to
-a NULL pointer dereference and crash.
-
-I think this can happen, since the fatal call to xfs_free_buftarg()
-happens when 'm_logdev_targp != m_ddev_targp' and due to a check of
-'m_ddev_targp' against NULL in xfs_mount() (and subsequent return if it is
-NULL) the two will never both be NULL when we hit the error0 label from
-the two lines cited above.
-
-This patch fixes the issue by checking mp->m_logdev_targp against NULL 
-in xfs_unmountfs_close() and doing the proper xfs_blkdev_put(logdev); 
-and xfs_blkdev_put(rtdev); on (!mp->m_rtdev_targp) in xfs_mount().
-
-Compile tested.
-
-Comments and feedback welcome.
-
-Please consider merging.
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
- fs/xfs/xfs_mount.c  |    2 +-
- fs/xfs/xfs_vfsops.c |   10 ++++++++--
- 2 files changed, 9 insertions(+), 3 deletions(-)
-
-diff --git a/fs/xfs/xfs_mount.c b/fs/xfs/xfs_mount.c
-index a96bde6..dfe45c3 100644
---- a/fs/xfs/xfs_mount.c
-+++ b/fs/xfs/xfs_mount.c
-@@ -1132,7 +1132,7 @@ xfs_unmountfs(xfs_mount_t *mp, struct cred *cr)
- void
- xfs_unmountfs_close(xfs_mount_t *mp, struct cred *cr)
- {
--	if (mp->m_logdev_targp != mp->m_ddev_targp)
-+	if (mp->m_logdev_targp && mp->m_logdev_targp != mp->m_ddev_targp)
- 		xfs_free_buftarg(mp->m_logdev_targp, 1);
- 	if (mp->m_rtdev_targp)
- 		xfs_free_buftarg(mp->m_rtdev_targp, 1);
-diff --git a/fs/xfs/xfs_vfsops.c b/fs/xfs/xfs_vfsops.c
-index 65c5612..92fd965 100644
---- a/fs/xfs/xfs_vfsops.c
-+++ b/fs/xfs/xfs_vfsops.c
-@@ -473,13 +473,19 @@ xfs_mount(
- 	}
- 	if (rtdev) {
- 		mp->m_rtdev_targp = xfs_alloc_buftarg(rtdev, 1);
--		if (!mp->m_rtdev_targp)
-+		if (!mp->m_rtdev_targp) {
-+			xfs_blkdev_put(logdev);
-+			xfs_blkdev_put(rtdev);
- 			goto error0;
-+		}
- 	}
- 	mp->m_logdev_targp = (logdev && logdev != ddev) ?
- 				xfs_alloc_buftarg(logdev, 1) : mp->m_ddev_targp;
--	if (!mp->m_logdev_targp)
-+	if (!mp->m_logdev_targp) {
-+		xfs_blkdev_put(logdev);
-+		xfs_blkdev_put(rtdev);
- 		goto error0;
-+	}
- 
- 	/*
- 	 * Setup flags based on mount(2) options and then the superblock
+fresno:~# lspci -v -s 02:01
+02:01.0 Ethernet controller: SysKonnect SK-9872 Gigabit Ethernet Server Adapter (SK-NET GE-ZX dual link) (rev 11)
+         Subsystem: SysKonnect SK-9844 Gigabit Ethernet Server Adapter (SK-NET GE-SX dual link)
+         Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 22
+         Memory at febfc000 (32-bit, non-prefetchable) [size=16K]
+         I/O ports at e800 [size=256]
+         Expansion ROM at febc0000 [disabled] [size=128K]
+         Capabilities: [48] Power Management version 1
+         Capabilities: [50] Vital Product Data
 
 
-
-(Please keep me on Cc when replying)
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
-
+-Chris
 
