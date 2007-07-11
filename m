@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935665AbXGLAHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935569AbXGLAHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935665AbXGLAHA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935874AbXGKXtZ
+	id S935569AbXGLAHj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936059AbXGKXuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:49:25 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52522 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936050AbXGKXtY (ORCPT
+	Wed, 11 Jul 2007 19:50:18 -0400
+Received: from yue.linux-ipv6.org ([203.178.140.15]:48012 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935532AbXGKXuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:49:24 -0400
-Date: Wed, 11 Jul 2007 17:49:22 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH 05/34] PCI: Use a weak symbol for the empty version of pcibios_add_platform_entries()
-Message-ID: <20070711234922.GW9704@parisc-linux.org>
-References: <20070711233037.GB5253@kroah.com> <11841967082916-git-send-email-gregkh@suse.de> <1184196712526-git-send-email-gregkh@suse.de> <11841967172946-git-send-email-gregkh@suse.de> <11841967322884-git-send-email-gregkh@suse.de> <11841967361726-git-send-email-gregkh@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11841967361726-git-send-email-gregkh@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 11 Jul 2007 19:50:15 -0400
+Date: Thu, 12 Jul 2007 08:50:47 +0900 (JST)
+Message-Id: <20070712.085047.37780825.yoshfuji@linux-ipv6.org>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, htejun@gmail.com, yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH 24/61] sysfs: make sysfs_put() ignore NULL sd
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <11841968512510-git-send-email-gregkh@suse.de>
+References: <11841968431153-git-send-email-gregkh@suse.de>
+	<11841968471598-git-send-email-gregkh@suse.de>
+	<11841968512510-git-send-email-gregkh@suse.de>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 04:31:19PM -0700, Greg Kroah-Hartman wrote:
-> I'm not sure if this is going to fly, weak symbols work on the compilers I'm
-> using, but whether they work for all of the affected architectures I can't say.
-> I've cc'ed as many arch maintainers/lists as I could find.
-> 
-> But assuming they do, we can use a weak empty definition of
-> pcibios_add_platform_entries() to avoid having an empty definition on every
-> arch.
+In article <11841968512510-git-send-email-gregkh@suse.de> (at Wed, 11 Jul 2007 16:31:43 -0700), Greg Kroah-Hartman <gregkh@suse.de> says:
 
-This seems like a regression.  We go from having an empty inline
-function that gets optimised away to 0 to having a function call to a
-trivial function.  And on any architecture that *does* define this,
-(unless I misunderstand the GCC manual), we still include the weak
-definition, thus wasting space.
+> Make sysfs_put() ignore NULL sd instead of oopsing.
 
-I don't think this is a good use of weak functions.  It's perfectly
-normal to have header files filled with empty functions.  They're even
-good documentation for what an architecture might want to fill in,
-rather than invent their own mechanism for doing something.
+I do not think this is a good idea; it is non-sense (and rather a bug)
+to call "put" with NULL argument in general.
 
--- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--yoshfuji
