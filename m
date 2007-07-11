@@ -1,122 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXGKTfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXGKTgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903AbXGKTfo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 15:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933275AbXGKTXt
+	id S1760091AbXGKTgO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 15:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933496AbXGKT1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 15:23:49 -0400
-Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:46047 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933210AbXGKTXq (ORCPT
+	Wed, 11 Jul 2007 15:27:31 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:58432 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933495AbXGKT1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 15:23:46 -0400
-Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
-	features in larger inode
-From: Kalpak Shah <kalpak@clusterfs.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andreas Dilger <adilger@clusterfs.com>, cmm@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <20070711103405.1656dd71.akpm@linux-foundation.org>
-References: <1183275482.4010.133.camel@localhost.localdomain>
-	 <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
-	 <20070711121056.GV6417@schatzie.adilger.int>
-	 <20070711103405.1656dd71.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 00:54:13 +0530
-Message-Id: <1184181856.3931.1.camel@garfield>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SystemSpamProbe: GOOD 0.0001064 c8f2e7ec9c90377872e6f2006a8e7987
+	Wed, 11 Jul 2007 15:27:30 -0400
+In-Reply-To: <1184097931.3020.73.camel@localhost.localdomain>
+Subject: Re: [PATCH] fix idr_get_new_above id alias bugs
+To: jim.houston@ccur.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linuxppc-dev-bounces+hnguyen=de.ibm.com@ozlabs.org,
+       openib-general@openib.org, Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF79FB2152.6DE55EBA-ONC1257315.006AAB0A-C1257315.006AE01D@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Wed, 11 Jul 2007 21:27:26 +0200
+X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 11/07/2007 21:27:27
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 10:34 -0700, Andrew Morton wrote:
-> On Wed, 11 Jul 2007 06:10:56 -0600 Andreas Dilger <adilger@clusterfs.com> wrote:
-> 
-> > On Jul 10, 2007  16:32 -0700, Andrew Morton wrote:
-> > > >  	err = ext4_reserve_inode_write(handle, inode, &iloc);
-> > > > +	if (EXT4_I(inode)->i_extra_isize <
-> > > > +	    EXT4_SB(inode->i_sb)->s_want_extra_isize &&
-> > > > +	    !(EXT4_I(inode)->i_state & EXT4_STATE_NO_EXPAND)) {
-> > > > +		/* We need extra buffer credits since we may write into EA block
-> > > > +		 * with this same handle */
-> > > > +		if ((jbd2_journal_extend(handle,
-> > > > +			     EXT4_DATA_TRANS_BLOCKS(inode->i_sb))) == 0) {
-> > > > +			ret = ext4_expand_extra_isize(inode,
-> > > > +				EXT4_SB(inode->i_sb)->s_want_extra_isize,
-> > > > +				iloc, handle);
-> > > > +			if (ret) {
-> > > > +				EXT4_I(inode)->i_state |= EXT4_STATE_NO_EXPAND;
-> > > > +				if (!expand_message) {
-> > > > +					ext4_warning(inode->i_sb, __FUNCTION__,
-> > > > +					"Unable to expand inode %lu. Delete"
-> > > > +					" some EAs or run e2fsck.",
-> > > > +					inode->i_ino);
-> > > > +					expand_message = 1;
-> > > > +				}
-> > > > +			}
-> > > > +		}
-> > > > +	}
-> > > 
-> > > Maybe that message should come out once per mount rather than once per boot
-> > > (or once per modprobe)?
-> > 
-> > Probably true.
-> > 
-> > > What are the consequences of a jbd2_journal_extend() failure in here?
-> > 
-> > Not fatal, just like every user of i_extra_isize.  If the inode isn't a
-> > large inode, or it can't be expanded then there will be a minor loss of
-> > functionality on that inode.  If the i_extra_isize is critical, then
-> > the sysadmin will have run e2fsck to force s_min_extra_isize large enough.
-> > 
-> > Note that this is only applicable for filesystems which are upgraded.  For
-> > new inodes (i.e. all inodes that exist in the filesystem if it was always
-> > run on a kernel with the currently understood extra fields) then this will
-> > never be invoked (until such a time new extra fields are added).
-> 
-> I'd suggest that we get a comment in the code explaining this: this
-> unchecked error does rather stand out.
-> 
-> > > > +	if (EXT4_I(inode)->i_file_acl) {
-> > > > +		bh = sb_bread(inode->i_sb, EXT4_I(inode)->i_file_acl);
-> > > > +		error = -EIO;
-> > > > +		if (!bh)
-> > > > +			goto cleanup;
-> > > > +		if (ext4_xattr_check_block(bh)) {
-> > > > +			ext4_error(inode->i_sb, __FUNCTION__,
-> > > > +				"inode %lu: bad block %llu", inode->i_ino,
-> > > > +				EXT4_I(inode)->i_file_acl);
-> > > > +			error = -EIO;
-> > > > +			goto cleanup;
-> > > > +		}
-> > > > +		base = BHDR(bh);
-> > > > +		first = BFIRST(bh);
-> > > > +		end = bh->b_data + bh->b_size;
-> > > > +		min_offs = end - base;
-> > > > +		free = ext4_xattr_free_space(first, &min_offs, base,
-> > > > +					     &total_blk);
-> > > > +		if (free < new_extra_isize) {
-> > > > +			if (!tried_min_extra_isize && s_min_extra_isize) {
-> > > > +				tried_min_extra_isize++;
-> > > > +				new_extra_isize = s_min_extra_isize;
-> > > 
-> > > Aren't we missing a brelse(bh) here?
-> > 
-> > Seems likely, yes.
-> 
-> OK - could we get a positive ack from someone indicating that this will get
-> looked at?  Because I am about to forget about it.
-
-I will send a patch to add the comments and make the suggested
-corrections.
-
-Thanks,
-Kalpak.
-
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> With this patch, idr.c should work as advertised allocating id
+> values in the range 0...0x7fffffff.  Andrew had speculated that
+> it should allow the full range 0...0xffffffff to be used.  I was
+> tempted to make changes to allow this, but it would require changes
+> to API, e.g. making the starting id value and the return value
+> unsigned.
+Hi Jim, thanks much for this patch. It should work fine as far
+as I can read. Will give it a try in next couple of days.
+Nam
 
