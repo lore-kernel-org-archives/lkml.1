@@ -1,131 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763854AbXGKNBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764223AbXGKNCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763854AbXGKNBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 09:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761578AbXGKNBM
+	id S1764223AbXGKNCy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 09:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758594AbXGKNCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 09:01:12 -0400
-Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:34572 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761219AbXGKNBL (ORCPT
+	Wed, 11 Jul 2007 09:02:46 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:48811 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757893AbXGKNCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 09:01:11 -0400
-Date: Wed, 11 Jul 2007 07:01:08 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Girish Shilamkar <girish@clusterfs.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [EXT4 set 8][PATCH 1/1]Add journal checksums
-Message-ID: <20070711130108.GB6417@schatzie.adilger.int>
-Mail-Followup-To: Girish Shilamkar <girish@clusterfs.com>,
-	Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org
-References: <1183275505.4010.136.camel@localhost.localdomain> <20070710231601.798304e0.akpm@linux-foundation.org> <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
+	Wed, 11 Jul 2007 09:02:46 -0400
+Date: Wed, 11 Jul 2007 17:02:45 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Bob Tracy <rct@gherkin.frus.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.22-rc6 bad page error
+Message-ID: <20070711170245.A1148@jurassic.park.msu.ru>
+References: <20070709185324.387ACDBA1@gherkin.frus.com> <Pine.LNX.4.64.0707102120550.7594@blonde.wat.veritas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+User-Agent: Mutt/1.2.5i
+In-Reply-To: <Pine.LNX.4.64.0707102120550.7594@blonde.wat.veritas.com>; from hugh@veritas.com on Tue, Jul 10, 2007 at 09:25:50PM +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 11, 2007  17:16 +0530, Girish Shilamkar wrote:
-> > > +	if (test_opt(sb, JOURNAL_ASYNC_COMMIT)) {
-> > > +		jbd2_journal_set_features(sbi->s_journal,
-> > > +				JBD2_FEATURE_COMPAT_CHECKSUM, 0,
-> > > +				JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT);
-> > > +	} else if (test_opt(sb, JOURNAL_CHECKSUM)) {
-> > > +		jbd2_journal_set_features(sbi->s_journal,
-> > > +				JBD2_FEATURE_COMPAT_CHECKSUM, 0, 0);
-> > > +		jbd2_journal_clear_features(sbi->s_journal, 0, 0,
-> > > +				JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT);
-> > > +	} else {
-> > > +		jbd2_journal_clear_features(sbi->s_journal,
-> > > +				JBD2_FEATURE_COMPAT_CHECKSUM, 0,
-> > > +				JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT);
-> > > +	}
-> > 
-> > Some discussion of the forward- and backward- compatibility design would be
-> > appropriate.  Also a description of whether and how fsck can be used to fix
-> > up these feature flags.
+On Tue, Jul 10, 2007 at 09:25:50PM +0100, Hugh Dickins wrote:
+> On Mon, 9 Jul 2007, Bob Tracy wrote:
+> > That seems to have done the trick.  Normally, I get the "bad page"
+> > errors on the second NX session, but I'm on the third session of the
+> > day (thus far), and everything seems to be ok as far as I can tell.
+> 
+> Thanks a lot for the feedback, that tells us we've made the right
+> guesses, and my __GFP_COMP patch should be a good bandaid for you;
+> but for the right patch, let's wait to hear from Ivan.
 
-It is forward & backward compatible to enable COMPAT_CHECKSUM.  That just
-means the commit blocks will have checksums in them, but older kernels
-will just ignore them.  Hmm, I suppose there might be an issue with "upgrade,
-downgrade, upgrade" in that the commit blocks would not have checksums
-even though the superblock says they will...
+Here it is. Bob, can you test this one?
 
-Does that mean we should accept a checksum == 0 as being valid (which
-is not very nice, given that 0 is an oft-hit bad value), or that we need
-a flag in every commit block which indicates if it actually has a checksum?
+---
 
-The INCOMPAT_ASYNC_COMMIT can't be handled safely by older kernels, since
-they would assume "commit block == complete transaction", which isn't
-true if the commit block didn't wait for the rest of the blocks to make
-it to the disk.
+Take care of DMA flags passed to dma_alloc_coherent().
+Particularly ALSA needs that.
 
-I don't think e2fsck can be used to individually clean up the feature flags,
-but it is always possible to remove and recreate the journal...
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
-> > > -	/* AKPM: buglet - add `i' to tmp! */
-> > 
-> > Damn.  After, what, seven years, someone actually fixed it?
-> > 
-> > >  	for (i = 0; i < bh->b_size; i += 512) {
-> > > -		journal_header_t *tmp = (journal_header_t*)bh->b_data;
-> > > +		struct commit_header *tmp =
-> > > +			(struct commit_header *)(bh->b_data + i);
-> > >  		tmp->h_magic = cpu_to_be32(JBD2_MAGIC_NUMBER);
-> > >  		tmp->h_blocktype = cpu_to_be32(JBD2_COMMIT_BLOCK);
-> > >  		tmp->h_sequence = cpu_to_be32(commit_transaction->t_tid);
-> > > +
-> > > +		if (JBD2_HAS_COMPAT_FEATURE(journal,
-> > > +					    JBD2_FEATURE_COMPAT_CHECKSUM)) {
-> > > +			tmp->h_chksum_type 	= JBD2_CRC32_CHKSUM;
-> > > +			tmp->h_chksum_size 	= JBD2_CRC32_CHKSUM_SIZE;
-> > > +			tmp->h_chksum[0] 	= cpu_to_be32(crc32_sum);
-> > > +		}
-> > >  	}
-> > 
-> > And in doing so, changed the on-disk format of the journal commit blocks.
-> > 
-> > Surely this was worth a mention in the changelog, if not a standalone patch?
-> > 
-> > I don't think this is worth doing, really.  Why not just leave the format
-> > as it was, take the loop out and run this code once rather than eight
-> > times?
+Ivan.
 
-Well, we aren't using the rest of the commit block in any case.  I think
-the original intention was that we'd get 8 copies of the commit block so
-we would be sure to get a good one.
-
-I don't know whether we'd rather have 8 copies of the commit block, or
-more potential to expand the commit block?  I don't personally have any
-preference, since the checksum should be a more robust way of checking
-validity than having multiple copies, so we may as well remove the loop
-and stick with a single copy for now.
-
-> > > @@ -328,6 +360,7 @@ static int do_one_pass(journal_t *journa
-> > >  	unsigned int		sequence;
-> > >  	int			blocktype;
-> > >  	int			tag_bytes = journal_tag_bytes(journal);
-> > > +	__u32			crc32_sum = ~0; /* Transactional Checksums */
-> > 
-> > We normally use __u32 for visible-to-userspace stuff.  Kernel code would
-> > use plain old u32.
-> Ok.
-
-Since the checksum is saved to disk, it seems more appropriate to use __u32
-or maybe even __be32, though I'm not sure if the crc32 functions do that
-correctly or not.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+--- 2.6.22/arch/alpha/kernel/pci_iommu.c	Mon Jul  9 03:32:17 2007
++++ linux/arch/alpha/kernel/pci_iommu.c	Wed Jul 11 14:40:37 2007
+@@ -398,11 +398,13 @@ EXPORT_SYMBOL(pci_unmap_page);
+    else DMA_ADDRP is undefined.  */
+ 
+ void *
+-pci_alloc_consistent(struct pci_dev *pdev, size_t size, dma_addr_t *dma_addrp)
++__pci_alloc_consistent(struct pci_dev *pdev, size_t size,
++		       dma_addr_t *dma_addrp, gfp_t gfp)
+ {
+ 	void *cpu_addr;
+ 	long order = get_order(size);
+-	gfp_t gfp = GFP_ATOMIC;
++
++	gfp &= ~GFP_DMA;
+ 
+ try_again:
+ 	cpu_addr = (void *)__get_free_pages(gfp, order);
+@@ -432,7 +434,7 @@ try_again:
+ 
+ 	return cpu_addr;
+ }
+-EXPORT_SYMBOL(pci_alloc_consistent);
++EXPORT_SYMBOL(__pci_alloc_consistent);
+ 
+ /* Free and unmap a consistent DMA buffer.  CPU_ADDR and DMA_ADDR must
+    be values that were returned from pci_alloc_consistent.  SIZE must
+--- 2.6.22/include/asm-alpha/pci.h	Mon Jul  9 03:32:17 2007
++++ linux/include/asm-alpha/pci.h	Wed Jul 11 14:40:37 2007
+@@ -75,7 +75,13 @@ extern inline void pcibios_penalize_isa_
+    successful and sets *DMA_ADDRP to the pci side dma address as well,
+    else DMA_ADDRP is undefined.  */
+ 
+-extern void *pci_alloc_consistent(struct pci_dev *, size_t, dma_addr_t *);
++extern void *__pci_alloc_consistent(struct pci_dev *, size_t,
++				    dma_addr_t *, gfp_t);
++static inline void *
++pci_alloc_consistent(struct pci_dev *dev, size_t size, dma_addr_t *dma)
++{
++	return __pci_alloc_consistent(dev, size, dma, GFP_ATOMIC);
++}
+ 
+ /* Free and unmap a consistent DMA buffer.  CPU_ADDR and DMA_ADDR must
+    be values that were returned from pci_alloc_consistent.  SIZE must
+--- 2.6.22/include/asm-alpha/dma-mapping.h	Mon Jul  9 03:32:17 2007
++++ linux/include/asm-alpha/dma-mapping.h	Wed Jul 11 14:40:37 2007
+@@ -11,7 +11,7 @@
+ #define dma_unmap_single(dev, addr, size, dir)		\
+ 		pci_unmap_single(alpha_gendev_to_pci(dev), addr, size, dir)
+ #define dma_alloc_coherent(dev, size, addr, gfp)	\
+-		pci_alloc_consistent(alpha_gendev_to_pci(dev), size, addr)
++	      __pci_alloc_consistent(alpha_gendev_to_pci(dev), size, addr, gfp)
+ #define dma_free_coherent(dev, size, va, addr)		\
+ 		pci_free_consistent(alpha_gendev_to_pci(dev), size, va, addr)
+ #define dma_map_page(dev, page, off, size, dir)		\
