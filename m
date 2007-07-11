@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935210AbXGKXwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936314AbXGKXws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935210AbXGKXwT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935234AbXGKXf6
+	id S936314AbXGKXws (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935235AbXGKXgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:35:58 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33406 "EHLO mx2.suse.de"
+	Wed, 11 Jul 2007 19:36:01 -0400
+Received: from ns.suse.de ([195.135.220.2]:33995 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935194AbXGKXf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:35:56 -0400
+	id S935233AbXGKXgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:36:00 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 41/61] sysfs: make sysfs_alloc_ino() static
-Date: Wed, 11 Jul 2007 16:32:00 -0700
-Message-Id: <11841969323515-git-send-email-gregkh@suse.de>
+Subject: [PATCH 42/61] sysfs: fix parent refcounting during rename and move
+Date: Wed, 11 Jul 2007 16:32:01 -0700
+Message-Id: <11841969361535-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <118419692665-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841969323515-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -58,33 +58,45 @@ References: <20070711233021.GA5253@kroah.com>
  <11841969142368-git-send-email-gregkh@suse.de>
  <11841969191116-git-send-email-gregkh@suse.de>
  <118419692665-git-send-email-gregkh@suse.de>
+ <11841969323515-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-sysfs_alloc_ino() isn't used out side of fs/sysfs/dir.c.  Make it
-static.
+Parent reference wasn't properly transferred during rename and move.
+Fix it.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/sysfs/dir.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index bc11a26..a63d12e 100644
+index a63d12e..a26e3db 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -20,7 +20,7 @@ spinlock_t kobj_sysfs_assoc_lock = SPIN_LOCK_UNLOCKED;
- static spinlock_t sysfs_ino_lock = SPIN_LOCK_UNLOCKED;
- static DEFINE_IDA(sysfs_ino_ida);
+@@ -497,6 +497,9 @@ int sysfs_rename_dir(struct kobject * kobj, struct dentry *new_parent,
+ 	d_move(kobj->dentry, new_dentry);
  
--int sysfs_alloc_ino(ino_t *pino)
-+static int sysfs_alloc_ino(ino_t *pino)
- {
- 	int ino, rc;
+ 	list_del_init(&sd->s_sibling);
++	sysfs_get(parent_sd);
++	sysfs_put(sd->s_parent);
++	sd->s_parent = parent_sd;
+ 	list_add(&sd->s_sibling, &parent_sd->s_children);
  
+ 	error = 0;
+@@ -550,6 +553,9 @@ again:
+ 
+ 	/* Remove from old parent's list and insert into new parent's list. */
+ 	list_del_init(&sd->s_sibling);
++	sysfs_get(new_parent_sd);
++	sysfs_put(sd->s_parent);
++	sd->s_parent = new_parent_sd;
+ 	list_add(&sd->s_sibling, &new_parent_sd->s_children);
+ 
+ out:
 -- 
 1.5.2.2
 
