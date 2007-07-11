@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbXGKUkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbXGKUl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932212AbXGKUkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 16:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758560AbXGKUkX
+	id S932712AbXGKUl6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 16:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbXGKUlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 16:40:23 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:54002 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759312AbXGKUkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 16:40:21 -0400
-Subject: [PATCH] relay: fix subbuf_splice_actor() comment
-From: Tom Zanussi <zanussi@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, jens.axboe@oracle.com, dwilder@us.ibm.com
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 15:36:29 -0500
-Message-Id: <1184186189.4517.35.camel@ubuntu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 16:41:50 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:65289 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757598AbXGKUlu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 16:41:50 -0400
+Date: Wed, 11 Jul 2007 13:45:04 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH] serial: do not add port that is not initialized
+In-reply-to: <20070711194050.GB28258@flint.arm.linux.org.uk>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <46954150.7050707@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+References: <200707101703.36173.yinghai.lu@sun.com>
+ <20070711071742.GA12952@flint.arm.linux.org.uk>
+ <200707111005.53836.bjorn.helgaas@hp.com>
+ <20070711194050.GB28258@flint.arm.linux.org.uk>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change comment from kerneldoc to normal.
+Russell King wrote:
+> On Wed, Jul 11, 2007 at 10:05:53AM -0600, Bjorn Helgaas wrote:
+>> On Wednesday 11 July 2007 01:17:42 am Russell King wrote:
+>>> On Tue, Jul 10, 2007 at 05:03:35PM -0700, Yinghai Lu wrote:
+>>>> [PATCH] serial: do not add port that is not initialized
+>>>>
+>>>> if the port is not initialized with correct iobase, and membase, we don't
+>>>> need to add that port.
+>>>> for x86, when pnpacpi is enabled, we will not get extra ttyS1/ttyS2/ttyS3 in
+>>>> /sys/devices/platform/serial8250/tty
+>>>>
+>>>> Sign-off-by: Yinghai Lu <yinghai.lu@sun.com>
+>>> What if someone wants to run setserial on /dev/ttyS1 to set it's base
+>>> address, irq and other parameters?  People still do this.
+>> I agree that people still use setserial that way, and we shouldn't
+>> make this change because it would break things.
+>>
+>> But I also agree with Yinghai that these extra phantom devices are
+>> just weird.  It would be a lot nicer if there were a way to say,
+>> "please, Mr. Serial Driver, create me a new ttyS device with these
+>> parameters."
+>>
+>> But no, I'm not volunteering to do that.
+> 
+> Indeed, and since distros still haven't picked up my setserial v3,
+> I see little chance of that ever being practical.  Not that I've
+> really tried very hard to get them to - no real idea who to contact
+> to make that happen, and of course I've no interest in making it
+> happen anymore.
 
-Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
+so remove these extra phantom devices, the kernel distros will use your setserial v3.
 
----
- relay.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+we can put some comments in code, so later they will find clue about your setserial v3.
 
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 7802697..a615a8f 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -1061,7 +1061,7 @@ static struct pipe_buf_operations relay_pipe_buf_ops = {
- 	.get = generic_pipe_buf_get,
- };
- 
--/**
-+/*
-  *	subbuf_splice_actor - splice up to one subbuf's worth of data
-  */
- static int subbuf_splice_actor(struct file *in,
-
-
-
+YH
