@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934557AbXGKVJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764781AbXGKVKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934557AbXGKVJo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934500AbXGKVJ0
+	id S1764781AbXGKVKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762307AbXGKVKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:09:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40340 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934492AbXGKVJZ (ORCPT
+	Wed, 11 Jul 2007 17:10:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53158 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762142AbXGKVKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:09:25 -0400
-Date: Wed, 11 Jul 2007 14:09:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [PATCH] Pass -g to assembler under CONFIG_DEBUG_INFO
-Message-Id: <20070711140911.707fcfaa.akpm@linux-foundation.org>
-In-Reply-To: <20070711185334.1B8894D0555@magilla.localdomain>
-References: <20070711185334.1B8894D0555@magilla.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 17:10:08 -0400
+Date: Wed, 11 Jul 2007 14:08:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, rientjes@google.com,
+       Christoph Lameter <clameter@sgi.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/5] try parent numa_node at first before using default
+Message-ID: <20070711210833.GA22745@kroah.com>
+References: <200707101641.17672.yinghai.lu@sun.com> <200707101652.31378.yinghai.lu@sun.com> <4694B702.2050507@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4694B702.2050507@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 11:53:34 -0700 (PDT)
-Roland McGrath <roland@redhat.com> wrote:
-
+On Wed, Jul 11, 2007 at 12:54:58PM +0200, Stefan Richter wrote:
+> Yinghai Lu wrote:
+> > --- a/drivers/base/core.c
+> > +++ b/drivers/base/core.c
+> > @@ -547,6 +547,8 @@ static void klist_children_put(struct klist_node *n)
+> >  
+> >  void device_initialize(struct device *dev)
+> >  {
+> > +	int node;
+> > +
+> >  	kobj_set_kset_s(dev, devices_subsys);
+> >  	kobject_init(&dev->kobj);
+> >  	klist_init(&dev->klist_children, klist_children_get,
+> > @@ -557,7 +559,9 @@ void device_initialize(struct device *dev)
+> >  	spin_lock_init(&dev->devres_lock);
+> >  	INIT_LIST_HEAD(&dev->devres_head);
+> >  	device_init_wakeup(dev, 0);
+> > -	set_dev_node(dev, -1);
+> > +
+> > +	node = dev->parent ? dev_to_node(dev->parent) : -1;
+> > +	set_dev_node(dev, node);
+> >  }
 > 
-> The assembler for a while now supports -g to generate source line info just
-> like the C compiler does.  Source-level assembly debugging sounds like an
-> oxymoron, but it is handy to be able to see the right source file and read
-> its comments rather than just the disassembly.  This patch enables -g for
-> assembly files when CONFIG_DEBUG_INFO=y and the assembler supports the option.
+> Two remarks:
 > 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
-> ---
->  Makefile |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index 8a3c271..88b2252 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -498,6 +498,7 @@ endif
->  
->  ifdef CONFIG_DEBUG_INFO
->  CFLAGS		+= -g
-> +AFLAGS		+= $(call as-option, -g)
->  endif
->  
->  # Force gcc to behave correct even for buggy distributions
+>   - device_add() is perhaps a better place to do this.  Otherwise you
+>     had to change code like drivers/input/gameport/gameport.c::
+>     gameport_init_port() which sets the parent device *after* the
+>     call to device_initialize().
 
-Jason's kgdb tree does
+I agree, lots of code sets up the parent pointer after initialize and
+before add.  One such example is the whole USB subsystem.
 
-AFLAGS		+= -gdwarf2
+Which makes me wonder how this code was really tested at all to show
+that it actually had an affect...
 
-(for all architectures!)  Which is better?
+So consider this patch series rejected from my side for now.
+
+thanks,
+
+greg k-h
