@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934501AbXGKVJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934557AbXGKVJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934501AbXGKVJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934444AbXGKVI7
+	id S934557AbXGKVJo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934500AbXGKVJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:08:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35665 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934441AbXGKVI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:08:57 -0400
-Date: Wed, 11 Jul 2007 22:02:21 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Mike Anderson <andmike@us.ibm.com>
-Subject: [2.6.23 PATCH 15/18] dm: netlink mpath
-Message-ID: <20070711210221.GG24114@agk.fab.redhat.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Mike Anderson <andmike@us.ibm.com>
+	Wed, 11 Jul 2007 17:09:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40340 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934492AbXGKVJZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:09:25 -0400
+Date: Wed, 11 Jul 2007 14:09:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [PATCH] Pass -g to assembler under CONFIG_DEBUG_INFO
+Message-Id: <20070711140911.707fcfaa.akpm@linux-foundation.org>
+In-Reply-To: <20070711185334.1B8894D0555@magilla.localdomain>
+References: <20070711185334.1B8894D0555@magilla.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Anderson <andmike@us.ibm.com>
+On Wed, 11 Jul 2007 11:53:34 -0700 (PDT)
+Roland McGrath <roland@redhat.com> wrote:
 
-This patch adds calls to dm_path_event for a failed path and a reinstated
-path.
+> 
+> The assembler for a while now supports -g to generate source line info just
+> like the C compiler does.  Source-level assembly debugging sounds like an
+> oxymoron, but it is handy to be able to see the right source file and read
+> its comments rather than just the disassembly.  This patch enables -g for
+> assembly files when CONFIG_DEBUG_INFO=y and the assembler supports the option.
+> 
+> Signed-off-by: Roland McGrath <roland@redhat.com>
+> ---
+>  Makefile |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index 8a3c271..88b2252 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -498,6 +498,7 @@ endif
+>  
+>  ifdef CONFIG_DEBUG_INFO
+>  CFLAGS		+= -g
+> +AFLAGS		+= $(call as-option, -g)
+>  endif
+>  
+>  # Force gcc to behave correct even for buggy distributions
 
-Signed-off-by: Mike Anderson <andmike@us.ibm.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
----
+Jason's kgdb tree does
 
- drivers/md/dm-mpath.c |    7 +++++++
- 1 files changed, 7 insertions(+)
+AFLAGS		+= -gdwarf2
 
-Index: linux/drivers/md/dm-mpath.c
-===================================================================
---- linux.orig/drivers/md/dm-mpath.c	2007-07-11 21:37:47.000000000 +0100
-+++ linux/drivers/md/dm-mpath.c	2007-07-11 21:37:53.000000000 +0100
-@@ -10,6 +10,7 @@
- #include "dm-hw-handler.h"
- #include "dm-bio-list.h"
- #include "dm-bio-record.h"
-+#include "dm-netlink.h"
- 
- #include <linux/ctype.h>
- #include <linux/init.h>
-@@ -834,6 +835,9 @@ static int fail_path(struct pgpath *pgpa
- 	if (pgpath == m->current_pgpath)
- 		m->current_pgpath = NULL;
- 
-+	dm_path_event(DM_EVENT_PATH_FAILED, m->ti->table,
-+		      pgpath->path.dev->name, m->nr_valid_paths);
-+
- 	queue_work(kmultipathd, &m->trigger_event);
- 
- out:
-@@ -873,6 +877,9 @@ static int reinstate_path(struct pgpath 
- 	if (!m->nr_valid_paths++ && m->queue_size)
- 		queue_work(kmultipathd, &m->process_queued_ios);
- 
-+	dm_path_event(DM_EVENT_PATH_REINSTATED, m->ti->table,
-+		      pgpath->path.dev->name, m->nr_valid_paths);
-+
- 	queue_work(kmultipathd, &m->trigger_event);
- 
- out:
+(for all architectures!)  Which is better?
