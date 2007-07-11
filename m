@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932775AbXGKUI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXGKUKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932775AbXGKUI0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 16:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbXGKUIT
+	id S933024AbXGKUKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 16:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763609AbXGKUKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 16:08:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45427 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757145AbXGKUIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 16:08:18 -0400
-Message-ID: <469538A9.4010202@garzik.org>
-Date: Wed, 11 Jul 2007 16:08:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Wed, 11 Jul 2007 16:10:10 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:57794 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760231AbXGKUKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 16:10:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EpMg+fl0IqmruDJW3KmzZb8KQfiXN7AqUlBDbHkDUAdkbWp99dcx+WWIWtwDbisNVImk3uSbxYuENKCioi4bET38PcvIEBk9amKZn4tbNbZap57IYq60cuYYRA3aOTU1acVPp0C0lQk/vTGqRtor8mzB6hKeqSGfIzKVo2o1t5s=
+Message-ID: <68676e00707111310v4862974am37dc7c723486b96c@mail.gmail.com>
+Date: Wed, 11 Jul 2007 22:10:07 +0200
+From: Luca <kronos.it@gmail.com>
+To: "Avi Kivity" <avi@qumranet.com>
+Subject: Re: [kvm-devel] [PATCH 2/2] KVM: Use the scheduler preemption hooks to make kvm preemptible
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1184169333786-git-send-email-avi@qumranet.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: torvalds@linux-foundation.org, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: x86 setup code rewrite in C - revised
-References: <1184181538674-git-send-email-hpa@zytor.com>
-In-Reply-To: <1184181538674-git-send-email-hpa@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <11841693332609-git-send-email-avi@qumranet.com>
+	 <1184169333786-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> This patch set replaces the x86 setup code, which is currently all in
-> assembly, with a version written in C, using the ".code16gcc" feature
-> of binutils (which has been present since at least 2001.)
-> 
-> The new code is vastly easier to read, and, I hope, debug.  It should
-> be noted that I found a fair number of minor bugs while going through
-> this code, and have attempted to correct them.
-> 
-> In the process of doing so, it introduces several cleanups, in
-> particular:
-> 
-> - Obsoletes the hd_info field in the boot_params structure; they are
->   only ever used for ST-506 (pre-IDE) drives and are pretty much
->   guaranteed to be wrong on current BIOSes;
-> - Unifies the CPU feature bits between i386 and x86-64.  In the
->   future, it should be possible to use arch/i386/boot/cpucheck.c to do
->   the post-invocation CPU check currently done in
->   arch/x86_64/kernel/trampoline.S, although this patch set doesn't
->   introduce that change.
-> - boot_params is now a proper structure.
-> 
-> This patchset incorporates all feedback received by 2007-07-11 12:00 PDT.
+On 7/11/07, Avi Kivity <avi@qumranet.com> wrote:
+> Current kvm disables preemption while the new virtualization registers are
+> in use.  This of course is not very good for latency sensitive workloads (one
+> use of virtualization is to offload user interface and other latency
+> insensitive stuff to a container, so that it is easier to analyze the
+> remaining workload).  This patch re-enables preemption for kvm; preemption
+> is now only disabled when switching the registers in and out, and during
+> the switch to guest mode and back.
+[...]
+> diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
+> index 33fa28a..92644b5 100644
+> --- a/drivers/kvm/Kconfig
+> +++ b/drivers/kvm/Kconfig
+> @@ -10,7 +10,7 @@ if VIRTUALIZATION
+>
+>  config KVM
+>         tristate "Kernel-based Virtual Machine (KVM) support"
+> -       depends on X86 && EXPERIMENTAL
+> +       depends on X86 && EXPERIMENTAL && PREEMPT_HOOKS
+>         depends on X86_CMPXCHG64 || 64BIT
 
-I'm sure you know what's changed since the last revision, but nobody 
-everybody does :)  It would be nice to know what's different from the 
-last posting.
+select PREEMPT_HOOKS maybe?
 
-	Jeff
-
-
-
+Luca
