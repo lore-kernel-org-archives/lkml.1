@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935224AbXGKXlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964827AbXGKXli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935224AbXGKXlM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935085AbXGKXeL
+	id S964827AbXGKXli (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935079AbXGKXeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:34:11 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33761 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:34:16 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33770 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934996AbXGKXeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:34:10 -0400
+	id S935089AbXGKXeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:34:14 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 18/61] Driver core: coding style cleanup
-Date: Wed, 11 Jul 2007 16:31:37 -0700
-Message-Id: <11841968271925-git-send-email-gregkh@suse.de>
+Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 19/61] idr: fix obscure bug in allocation path
+Date: Wed, 11 Jul 2007 16:31:38 -0700
+Message-Id: <11841968303508-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841968231043-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841968271925-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -37,74 +35,73 @@ References: <20070711233021.GA5253@kroah.com>
  <11841968151257-git-send-email-gregkh@suse.de>
  <1184196818497-git-send-email-gregkh@suse.de>
  <11841968231043-git-send-email-gregkh@suse.de>
+ <11841968271925-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Tejun Heo <htejun@gmail.com>
 
-This converts code of the form
+In sub_alloc(), when bitmap search fails, it goes up one level to
+continue search.  This is done by updating the id cursor and searching
+the upper level again.  If the cursor was at the end of the upper
+level, we need to go further than that.
 
-	if ((error = some_func()))
-		goto fixup;
-to
-	error = some_func();
-	if (error)
-		goto fixup;
+This wasn't implemented and when that happens the part of the cursor
+which indexes into the upper level wraps and sub_alloc() ends up
+searching the wrong bitmap.  It allocates id which doesn't match the
+actual slot.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+This patch fixes this by restarting from the top if the search needs
+to go higher than one level.
+
+Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/bus.c  |    6 ++++--
- drivers/base/core.c |    9 ++++++---
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ lib/idr.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 7ff5aaf..f299e0d 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -622,7 +622,8 @@ int bus_add_driver(struct device_driver *drv)
- 	if (error)
- 		goto out_put_bus;
- 	drv->kobj.kset = &bus->drivers;
--	if ((error = kobject_register(&drv->kobj)))
-+	error = kobject_register(&drv->kobj);
-+	if (error)
- 		goto out_put_bus;
+diff --git a/lib/idr.c b/lib/idr.c
+index 305117c..7b5a59c 100644
+--- a/lib/idr.c
++++ b/lib/idr.c
+@@ -100,10 +100,11 @@ static int sub_alloc(struct idr *idp, void *ptr, int *starting_id)
+ 	int n, m, sh;
+ 	struct idr_layer *p, *new;
+ 	struct idr_layer *pa[MAX_LEVEL];
+-	int l, id;
++	int l, id, oid;
+ 	long bm;
  
- 	if (drv->bus->drivers_autoprobe) {
-@@ -772,7 +773,8 @@ static int bus_add_attrs(struct bus_type * bus)
- 
- 	if (bus->bus_attrs) {
- 		for (i = 0; attr_name(bus->bus_attrs[i]); i++) {
--			if ((error = bus_create_file(bus,&bus->bus_attrs[i])))
-+			error = bus_create_file(bus,&bus->bus_attrs[i]);
-+			if (error)
- 				goto Err;
+ 	id = *starting_id;
++ restart:
+ 	p = idp->top;
+ 	l = idp->layers;
+ 	pa[l--] = NULL;
+@@ -117,12 +118,23 @@ static int sub_alloc(struct idr *idp, void *ptr, int *starting_id)
+ 		if (m == IDR_SIZE) {
+ 			/* no space available go back to previous layer. */
+ 			l++;
++			oid = id;
+ 			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
++
++			/* if already at the top layer, we need to grow */
+ 			if (!(p = pa[l])) {
+ 				*starting_id = id;
+ 				return -2;
+ 			}
+-			continue;
++
++			/* If we need to go up one layer, continue the
++			 * loop; otherwise, restart from the top.
++			 */
++			sh = IDR_BITS * (l + 1);
++			if (oid >> sh == id >> sh)
++				continue;
++			else
++				goto restart;
  		}
- 	}
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index dd40d78..cff4fbf 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -733,11 +733,14 @@ int device_add(struct device *dev)
- 		}
- 	}
- 
--	if ((error = device_add_attrs(dev)))
-+	error = device_add_attrs(dev);
-+	if (error)
- 		goto AttrsError;
--	if ((error = device_pm_add(dev)))
-+	error = device_pm_add(dev);
-+	if (error)
- 		goto PMError;
--	if ((error = bus_add_device(dev)))
-+	error = bus_add_device(dev);
-+	if (error)
- 		goto BusError;
- 	kobject_uevent(&dev->kobj, KOBJ_ADD);
- 	bus_attach_device(dev);
+ 		if (m != n) {
+ 			sh = IDR_BITS*l;
 -- 
 1.5.2.2
 
