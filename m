@@ -1,44 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763242AbXGKVlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763242AbXGKVnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763242AbXGKVlW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXGKVlP
+	id S1763242AbXGKVnj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXGKVnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:41:15 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38292 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752004AbXGKVlO (ORCPT
+	Wed, 11 Jul 2007 17:43:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38736 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752004AbXGKVna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:41:14 -0400
-Date: Wed, 11 Jul 2007 17:41:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-cc: Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [2.6.22-rc7] khubd NULL deref oops...
-In-Reply-To: <6278d2220707111151o2b5f8b23ha14bf77be71b8b61@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0707111734540.2718-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Jul 2007 17:43:30 -0400
+Date: Wed, 11 Jul 2007 14:43:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: [2.6.23 PATCH 16/18] dm mpath: rdac
+Message-Id: <20070711144303.9400acba.akpm@linux-foundation.org>
+In-Reply-To: <20070711210242.GH24114@agk.fab.redhat.com>
+References: <20070711210242.GH24114@agk.fab.redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007, Daniel J Blueman wrote:
+On Wed, 11 Jul 2007 22:02:42 +0100
+Alasdair G Kergon <agk@redhat.com> wrote:
 
-> > Try disabling CONFIG_USB_SUSPEND.  It makes lots of USB bugs go away
+> From: Mike Christie <michaelc@cs.wisc.edu>
 > 
-> I'll give it a shot. For the record, I wasn't trying to perform a
-> suspend at this time (or since booting).
+> This patch from Chandra Seetharaman and updated to upstream by me,
+> supports LSI/Engenio devices in RDAC mode. Like dm-emc
+> it requires userspace support. In your multipath.conf file you must have:
+> 
+> path_checker            rdac
+> hardware_handler        "1 rdac"
+> 
+> And you also then must have a updated multipath tools release which
+> has rdac support.
+> 
+> ...
+>
+> +static spinlock_t list_lock = SPIN_LOCK_UNLOCKED;
 
-I doubt that USB suspend has any connection with this problem.  It's
-clear that the problem occurs in the driver core when the SCSI core
-tries to unregister a device.  It's not directly related to USB at all.
+This defeats lockdep.  Please use DEFINE_SPINLOCK.
 
-In fact, it looks like the bug is connected with 
-CONFIG_SYSFS_DEPRECATED.  You can try to see what happens with that 
-switch disabled.
+> +#define submit_c9_inquiry(h) \
+> +	submit_inquiry(h, 0xC9, sizeof(struct c9_inquiry), c9_inquiry_endio)
+> +#define submit_c4_inquiry(h) \
+> +	submit_inquiry(h, 0xC4, sizeof(struct c4_inquiry), c4_inquiry_endio)
+> +#define submit_c8_inquiry(h) \
+> +	submit_inquiry(h, 0xC8, sizeof(struct c8_inquiry), c8_inquiry_endio)
+> +#define submit_c2_inquiry(h) \
+> +	submit_inquiry(h, 0xC2, sizeof(struct c2_inquiry), c2_inquiry_endio)
 
-Alan Stern
+These don't have to be implemented as macros.
+
+> +static struct request *get_rdac_req(struct rdac_handler *h,
+> +			void *buffer, unsigned buflen, int rw)
+> +{
+> +	struct request *rq;
+> +	struct request_queue *q = bdev_get_queue(h->path->dev->bdev);
+> +
+> +	rq = blk_get_request(q, rw, GFP_ATOMIC);
+
+GFP_ATOMIC is unreliable.  Is it really unavoidable?
+
+> +	if (!rq) {
+> +		DMINFO("get_rdac_req: blk_get_request failed");
+> +		return NULL;
+> +	}
+> +
+> +	if (buflen && blk_rq_map_kern(q, rq, buffer, buflen, GFP_ATOMIC)) {
+> +		blk_put_request(rq);
+> +		DMINFO("get_rdac_req: blk_rq_map_kern failed");
+> +		return NULL;
+> +	}
+> +
+> + 	memset(&rq->cmd, 0, BLK_MAX_CDB);
+> +	rq->sense = h->sense;
+> +	memset(rq->sense, 0, SCSI_SENSE_BUFFERSIZE);
+> +	rq->sense_len = 0;
+> +
+> +	rq->end_io_data = h;
+> +	rq->timeout = h->timeout;
+> +	rq->cmd_type = REQ_TYPE_BLOCK_PC;
+> +	rq->cmd_flags = REQ_FAILFAST | REQ_NOMERGE;
+> +	return rq;
+> +}
+> +
+>
+> ...
+>
+> +
+> +/* Acquires h->ctlr->lock */
+> +static void submit_mode_select(struct rdac_handler *h)
+> +{
+> +	struct request *rq;
+> +	struct request_queue *q = bdev_get_queue(h->path->dev->bdev);
+> +
+> +	spin_lock(&h->ctlr->lock);
+> +	if (h->ctlr->submitted) {
+> +		list_add(&h->entry, &h->ctlr->cmd_list);
+> +		goto drop_lock;
+> +	}
+> +
+> +	if (!q) {
+> +		DMINFO("submit_mode_select: no queue");
+> +		goto fail_path;
+> +	}
+> +
+> +	rq = rdac_failover_get(h);
+> +	if (!rq) {
+> +		DMERR("submit_mode_select: no rq");
+> +		goto fail_path;
+> +	}
+> +
+> +	DMINFO("queueing MODE_SELECT command on %s", h->path->dev->name);
+> +
+> +	blk_execute_rq_nowait(q, NULL, rq, 1, mode_select_endio);
+
+I suspect we could call this after dropping the lock?
+
+> +	h->ctlr->submitted = 1;
+> +	goto drop_lock;
+> +fail_path:
+> +	dm_pg_init_complete(h->path, MP_FAIL_PATH);
+> +drop_lock:
+> +	spin_unlock(&h->ctlr->lock);
+> +}
+> +
+>
+> ...
+>
+> +static void c2_inquiry_endio(struct request *req, int error)
+> +{
+> +	struct rdac_handler *h = req->end_io_data;
+> +	struct c2_inquiry *sp;
+> +
+> +	if (had_failures(req, error)) {
+> +		dm_pg_init_complete(h->path, MP_FAIL_PATH);
+> +		goto done;
+> +	}
+> +
+> +	sp = (struct c2_inquiry *)&h->inq;
+
+That's funny-looking and un-typesafe.  Why not do
+
+	sp = &h->inq.c2;
+
+?
+
+(Dittoes in various other places..)
+
+> +
+> +	/* If more than MODE6_MAX_LUN luns are supported, use mode select 10 */
+> +	if (sp->max_lun_supported >= MODE6_MAX_LUN)
+> +		h->ctlr->use_10_ms = 1;
+> +	else
+> +		h->ctlr->use_10_ms = 0;
+> +
+> +	h->cmd_to_send = SEND_MODE_SELECT;
+> +	queue_work(rdac_wkqd, &h->work);
+> +done:
+> +	__blk_put_request(req->q, req);
+> +}
+> +
+> +static void rdac_destroy(struct hw_handler *hwh)
+> +{
+> +	struct rdac_handler *h = (struct rdac_handler *) hwh->context;
+
+Unneeded (and undesirable) cast of void*.  Please check the whole
+patch(set) for this.
+
+> +	if (h->ctlr)
+> +		kref_put(&h->ctlr->kref, release_ctlr);
+> +	kfree(h);
+> +	hwh->context = NULL;
+> +}
+> +
 
