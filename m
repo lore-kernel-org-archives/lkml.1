@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763095AbXGKPsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764352AbXGKPtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763095AbXGKPsp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 11:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbXGKPsi
+	id S1764352AbXGKPtG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 11:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763530AbXGKPsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 11:48:38 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4139 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754987AbXGKPsg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 11:48:36 -0400
-Date: Wed, 11 Jul 2007 16:48:35 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Songmao Tian <tiansm@lemote.com>
-cc: LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: about cs5536 interrupt ack
-In-Reply-To: <4694F4EB.8040000@lemote.com>
-Message-ID: <Pine.LNX.4.64N.0707111634430.26459@blysk.ds.pg.gda.pl>
-References: <4694A495.1050006@lemote.com> <Pine.LNX.4.64N.0707111347360.26459@blysk.ds.pg.gda.pl>
- <4694F4EB.8040000@lemote.com>
+	Wed, 11 Jul 2007 11:48:51 -0400
+Received: from THUNK.ORG ([69.25.196.29]:40047 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761287AbXGKPss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 11:48:48 -0400
+Date: Wed, 11 Jul 2007 11:48:38 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 4][PATCH 5/5] i_version: noversion mount option to disable inode version updates
+Message-ID: <20070711154838.GB19456@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <1183275474.4010.132.camel@localhost.localdomain> <20070710163144.21b739f9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070710163144.21b739f9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007, Songmao Tian wrote:
-
-> > Huh?  Have you managed to find an 8259A clone *that* broken?  So what does
-> > it return if you write 0xc to the address 0x20 in the I/O port space and
-> > then read back from that location?  You should complain to the 
-> >   
+On Tue, Jul 10, 2007 at 04:31:44PM -0700, Andrew Morton wrote:
+> On Sun, 01 Jul 2007 03:37:53 -0400
+> Mingming Cao <cmm@us.ibm.com> wrote:
 > 
-> It's the value of IRR, so guess IRR. AMD has well documented cs5536, I
-> appreciate that.
+> > Add a "noversion" mount option to disable inode version updates.
+> 
+> Why is this option being offered to our users?  To reduce disk traffic,
+> like noatime?
+> 
+> If so, what are the implications of this?  What would the user lose?
 
- Indeed.  I am surprised they have decided to drop the poll command -- it 
-surely does not require much logic as it mostly reuses what's used to 
-produce the vector anyway and it is commonly used when 8259A 
-implementations are interfaced to non-i386 processors.  PPC is another 
-example.
+This has been removed in the latest patch set; it's needed only for
+Lustre, because they set the version field themselves.  Lustre needs
+the inode version to be globally monotonically increasing, so it can
+order updates between two different files, so it does this itself.
+NFSv4 only uses i_version to detect changes, and so there's no need to
+use a global atomic counter for i_version.  So the thinking was that
+there was no point doing the global atomic counter if it was not necessary.
 
-> > More or less -- 3-5 should probably be the outcome of a single read
-> > transaction from the north bridge.  I.e. you issue a read to a "magic"
-> > location, 3-5 happen, and the data value returned is the vector presented by
-> > the interrupt controller on the PCI bus.
-> >   
-> yeah, we can implement a register in north bridge.
+Since "noversion" is Lustre specific, we've dropped that from the list
+of patches that we'll push, and so the inode version will only have
+local per-inode significance, and not have any global ordering
+properties.  
 
- Strictly speaking it would not be a register, but a "PCI INTA address 
-space" much like PCI memory or I/O port address spaces.  Though as the 
-former ignores addresses driven on the bus, the space occupied does not 
-have to be extensive -- I would assume whatever slot size is available 
-with the address decoder you have implemented would do.
+We have not actually benchmarked whether or not doing the global
+ordering actually *matters* in terms of being actually noticeable.  If
+it isn't noticeable, I wouldn't mind changing things so that we always
+make i_version globally significant (without a mount option), and make
+life a bit easier for the Lustre folks.  Or if someone other
+distributed filesystem requests a globally significant i_version.  But
+we can cross that bridge when we get to it....
 
-> > You can still dispatch interrupts manually by examining the IRR register,
-> > but having a way to ask the 8259A's prioritiser would be nice.  Although
-> > given such a lethal erratum you report I would not count on the prioritiser
-> > to provide any useful flexibility...
-> >   
-> yeah, that's a straight thought, tried but failed:(, patch followed.
-
- You may have to modify other functions from arch/mips/kernel/i8259.c; 
-yes, this makes the whole experience not as pretty as one would hope...
-
-  Maciej
+						- Ted
