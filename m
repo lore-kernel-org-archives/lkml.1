@@ -1,84 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761756AbXGKAeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXGKAed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761756AbXGKAeK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 20:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbXGKAdn
+	id S932178AbXGKAed (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 20:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764338AbXGKAeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 20:33:43 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:38258 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759763AbXGKAdm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 20:33:42 -0400
-Date: Tue, 10 Jul 2007 12:49:04 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: stable@kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH] UML - exports for hostfs
-Message-ID: <20070710164904.GA7825@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Tue, 10 Jul 2007 20:34:12 -0400
+Received: from tur.go2.pl ([193.17.41.50]:42784 "EHLO tur.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761689AbXGKAeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 20:34:10 -0400
+Message-ID: <469424E4.2020204@tlen.pl>
+Date: Wed, 11 Jul 2007 02:31:32 +0200
+From: Piotr <kocur666@tlen.pl>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070616)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: ASUS P5B
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some exports for hostfs that are required after Alberto Bertogli's
-fixes for accessing unlinked host files.
+Hello i have a problem with my ASUS p5b mobo, i am a gentoo user and i'm
+getting this error while booting my system from newest gentoo-sources
+2.6.22 (this also happens on earlier ver. of kernel) i get this message:
 
-Also did some style cleanups while I was here.
+"PCI: BIOS Bug: MCFG area at f0000000 is not E820-reserved
+PCI: Not using MMCONFIG."
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/os-Linux/user_syms.c |   20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
-
-Index: linux-2.6.17/arch/um/os-Linux/user_syms.c
-===================================================================
---- linux-2.6.17.orig/arch/um/os-Linux/user_syms.c	2006-06-17 21:49:35.000000000 -0400
-+++ linux-2.6.17/arch/um/os-Linux/user_syms.c	2007-07-10 11:35:22.000000000 -0400
-@@ -5,7 +5,8 @@
-  * so I *must* declare good prototypes for them and then EXPORT them.
-  * The kernel code uses the macro defined by include/linux/string.h,
-  * so I undef macros; the userspace code does not include that and I
-- * add an EXPORT for the glibc one.*/
-+ * add an EXPORT for the glibc one.
-+ */
- 
- #undef strlen
- #undef strstr
-@@ -61,12 +62,18 @@ EXPORT_SYMBOL_PROTO(dup2);
- EXPORT_SYMBOL_PROTO(__xstat);
- EXPORT_SYMBOL_PROTO(__lxstat);
- EXPORT_SYMBOL_PROTO(__lxstat64);
-+EXPORT_SYMBOL_PROTO(__fxstat64);
- EXPORT_SYMBOL_PROTO(lseek);
- EXPORT_SYMBOL_PROTO(lseek64);
- EXPORT_SYMBOL_PROTO(chown);
-+EXPORT_SYMBOL_PROTO(fchown);
- EXPORT_SYMBOL_PROTO(truncate);
-+EXPORT_SYMBOL_PROTO(ftruncate64);
- EXPORT_SYMBOL_PROTO(utime);
-+EXPORT_SYMBOL_PROTO(utimes);
-+EXPORT_SYMBOL_PROTO(futimes);
- EXPORT_SYMBOL_PROTO(chmod);
-+EXPORT_SYMBOL_PROTO(fchmod);
- EXPORT_SYMBOL_PROTO(rename);
- EXPORT_SYMBOL_PROTO(__xmknod);
- 
-@@ -102,14 +109,3 @@ EXPORT_SYMBOL(__stack_smash_handler);
- 
- extern long __guard __attribute__((weak));
- EXPORT_SYMBOL(__guard);
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
+and i dunno how can this be fixed, i can start to boot my kernel with
+nommconf but i don' like to have problems like that, and maybe some of
+you ppl have a better solution for this problem?
