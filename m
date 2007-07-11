@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762163AbXGKJyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbXGKKBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762163AbXGKJyS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 05:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759077AbXGKJyF
+	id S1761559AbXGKKBF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbXGKKAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 05:54:05 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:42461 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756203AbXGKJyC (ORCPT
+	Wed, 11 Jul 2007 06:00:54 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:51949 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756690AbXGKKAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 05:54:02 -0400
-Date: Wed, 11 Jul 2007 15:33:23 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, menage@google.com,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: containers (was Re: -mm merge plans for 2.6.23)
-Message-ID: <20070711100323.GA23473@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070710105240.GA20914@linux.vnet.ibm.com> <6599ad830707101134k29951c45h4af0807603f52b76@mail.gmail.com> <20070710115319.0bdaff34.akpm@linux-foundation.org> <20070711045516.GH2927@linux.vnet.ibm.com> <20070710222942.382fc9ba.akpm@linux-foundation.org> <20070711090423.GA6758@elte.hu> <20070711022352.71604404.pj@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070711022352.71604404.pj@sgi.com>
-User-Agent: Mutt/1.5.11
+	Wed, 11 Jul 2007 06:00:53 -0400
+Message-ID: <4694AA52.6040207@anagramm.de>
+Date: Wed, 11 Jul 2007 12:00:50 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+MIME-Version: 1.0
+To: Manu Abraham <abraham.manu@gmail.com>
+CC: Nobin Mathew <nobin.mathew@gmail.com>,
+       "vraghavan3@mail.gatech.edu" <vraghavan3@mail.gatech.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Reading a physical memory location
+References: <1184010444.469290cce48df@webmail.mail.gatech.edu>	 <8d6898730707091539y14cf5afbsed7ed769526da0a1@mail.gmail.com>	 <1184091142.4693cc06850f7@webmail.mail.gatech.edu>	 <1a297b360707101502t2670f0d7g5197b9c32ecb967c@mail.gmail.com>	 <8d6898730707102243t60861fdar147f052501c31958@mail.gmail.com>	 <1a297b360707110111u25a786c5m4857673e3e1b90a1@mail.gmail.com>	 <8d6898730707110114p3c02e24as8ca8359731fdc320@mail.gmail.com> <1a297b360707110150x56e8ad6cu64ab768e7d3ce6ed@mail.gmail.com>
+In-Reply-To: <1a297b360707110150x56e8ad6cu64ab768e7d3ce6ed@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX1/pB/xxVBsJ2buvd8fMAQrjZJqcP5e0jowpMRv
+ 9ZZ+5SwFI9bHrRAlFHQ0yM7HsIn45DynQqc8iKSUawDVeS8EIY
+ Yr+ftYuPHt1FZkiGpaSaw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 02:23:52AM -0700, Paul Jackson wrote:
-> Ingo wrote:
-> > another option would be to trivially hook up CONFIG_FAIR_GROUP_SCHED 
-> > with cpusets, ...
+Manu Abraham schrieb:
+> On 7/11/07, Nobin Mathew <nobin.mathew@gmail.com> wrote:
+>> See this in the documentation
+>>
+>> The returned virtual address is a current CPU mapping for the memory
+>> address given. It is only valid to use this function on addresses that
+>> have a kernel mapping
+>>
+>> This function does not handle bus mappings for DMA transfers. In
+>> almost all conceivable cases a device driver should not be using this
+>> function
+>>
 > 
-> ah ... you triggered my procmail filter for 'cpuset' ... ;).
+> To get a better idea, look here
+> http://tldp.org/LDP/khg/HyperNews/get/devices/addrxlate.html
 
-:-)
+Very nice! I have two more questions:
 
-> What would it mean to hook up CFS with cpusets?
+1. Is the document up to date?
 
-CFS is the new cpu scheduler in Linus's tree (http://lwn.net/Articles/241085/).
-It has some group scheduling capabilities added i.e the core scheduler
-now recognizes the concept of a task-group and providing fair cpu time 
-to each task-group (in addition to providing fair time to each task in a
-group).
+2. Can anybody give an example how to "map" lots of pages (which
+got filled by i.e. a scatter gather DMA chain) from a driver
+(kernel space) to userspace?
 
-The core scheduler however is not concerned with how task groups are formed
-and/or how tasks migrate between groups. Thats where a patch like Paul Menage's 
-container infrastructure comes in hand - to provide a user-interface for 
-managing task-groups (create/delete task groups, migrate task from one
-group to another etc). Whatever the chosen user-interface is, cpu
-scheduler needs to know about such task-group creation/destruction,
-migration of tasks across groups etc.
-
-Unfortunately, the group-scheduler bits will be ready in 2.6.23 while
-Paul Menage's container patches aren't ready for 2.6.23 yet.
-
-So Ingo was proposing we use cpuset as that user interface to manage
-task-groups. This will be only for 2.6.23. In 2.6.24, when hopefully Paul
-Menage's container patches will be ready and will be merged, the group
-cpu scheduler will stop using cpuset as that interface and use the
-container infrastructure instead.
-
-If you recall, I have attempted to use cpuset for such an interface in
-the past (metered cpusets - see [1]). It brings in some semantic changes
-for cpusets, most notably:
-
-	- metered cpusets cannot have grand-children
-	- all cpusets under a metered cpuset need to share the same set
-	  of cpus.
-
-Is it fine if I introduce these semantic changes, only for 2.6.23 and
-only when CONFIG_FAIR_GROUP_SCHED is enabled? This will let the group
-cpu scheduler to receive some amount of testing.
-
-The other alternative is to hook up group scheduler with user-id's
-(again only for 2.6.23).
-
-> I've a pretty
-> good idea what a cpuset is, but don't know what kind of purpose
-> you have in mind for such a hook.  Could you say a few words to
-> that?  Thanks.
-
-Reference:
-
-1. http://marc.info/?l=linux-kernel&m=115946525811848&w=2
-
-
+Thanks
 -- 
-Regards,
-vatsa
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
