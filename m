@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932335AbXGKLy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763368AbXGKLzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932335AbXGKLy5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 07:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759000AbXGKLys
+	id S1763368AbXGKLzl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 07:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759000AbXGKLze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 07:54:48 -0400
-Received: from pat.uio.no ([129.240.10.15]:60062 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754555AbXGKLyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 07:54:46 -0400
-Subject: Re: [EXT4 set 4][PATCH 4/5] i_version:ext4 inode version update
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       nfsv4@linux-nfs.org
-In-Reply-To: <20070711084737.GA17675@infradead.org>
-References: <1183275465.4010.130.camel@localhost.localdomain>
-	 <20070711084737.GA17675@infradead.org>
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 07:54:37 -0400
-Message-Id: <1184154877.6462.6.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.125)
-X-UiO-Scanned: 38E87496EDAE2CF399F9599404A6AF0466E6892D
-X-UiO-Ratelimit-Test: Ratelimit
-X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1115 total 2804005 max/h 8345 blacklist 0 greylist 0 ratelimit 1
+	Wed, 11 Jul 2007 07:55:34 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:50821 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759241AbXGKLzd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 07:55:33 -0400
+To: rjw@sisk.pl
+CC: miklos@szeredi.hu, a1426z@gawab.com, jeremy@goop.org, jbms@cmu.edu,
+       pavel@ucw.cz, nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-reply-to: <200707111350.41806.rjw@sisk.pl>
+Subject: Re: Hibernation Redesign
+References: <200707081737.21932.a1426z@gawab.com> <200707111304.40504.rjw@sisk.pl> <E1I8a6Y-0008Sm-00@dorka.pomaz.szeredi.hu> <200707111350.41806.rjw@sisk.pl>
+Message-Id: <E1I8amY-00009H-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 11 Jul 2007 13:54:58 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 09:47 +0100, Christoph Hellwig wrote:
-> On Sun, Jul 01, 2007 at 03:37:45AM -0400, Mingming Cao wrote:
-> > This patch is on top of i_version_update_vfs.
-> > The i_version field of the inode is set on inode creation and incremented when
-> > the inode is being modified.
+> > > regarding the freezer, how it is bad and how we should drop it,
+> > > because it breaks things (which NB is not true, because it doesn't).
+> > 
+> > This thread started out from a bug, that seemed to be caused by the
+> > freezer (we still don't exactly know what it was caused by), and the
+> > discussion uncovered various problems _with_ the freezer, that up to
+> > now no other _proper_ solutions have been propsed than to remove the
+> > freezer.
 > 
-> Which is not what i_version is supposed to do.  It'll get you tons of misses
-> for NFSv3 filehandles that rely on the generation staying the same for the
-> same file.  Please add a new field for the NFSv4 sequence counter instead
-> of making i_version unuseable.
+> First, please list those problems for completness.  Moreover, I think they
+> should be documented if they haven't been yet.
 
-Aren't you confusing i_version and i_generation here? Those are two
-separate inode fields.
+Suspend failing due to ordering requirements from fuse, I think you
+documented this one.
 
-Cheers
-  Trond
+Suspend failing due to malicious/buggy fuse filesystem.
 
+Suspend failing if network filesystem is mounted, and network or
+server is down.  This is one of those "we can live with it" things
+that only happen rarely, and it's annoying then, but soon forgotten.
+
+Freezing of tasks is slowing down suspend.  Don't know how serious
+this is, suspend is pretty fast, but could possibly be even faster.
+
+Don't know what the OLPC guys do to make suspending extremely quick,
+are they freezing any tasks?
+
+> Second, there were many more problems with the freezer in the past and we
+> were able to eliminate them over time.  It sometimes is difficult to invent a
+> viable solution on demand ...
+
+OK, if you elimitate all of the above problems with the freezer, I'll
+say no more against it.
+
+Miklos
