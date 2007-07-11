@@ -1,281 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934098AbXGKVEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934188AbXGKVEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934098AbXGKVEP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbXGKVCZ
+	id S934188AbXGKVEi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933978AbXGKVCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:02:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33648 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933853AbXGKVCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:02:23 -0400
-Date: Wed, 11 Jul 2007 22:01:37 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Mike Anderson <andmike@us.ibm.com>
-Subject: [2.6.23 PATCH 13/18] dm: netlink
-Message-ID: <20070711210137.GE24114@agk.fab.redhat.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Mike Anderson <andmike@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+	Wed, 11 Jul 2007 17:02:40 -0400
+Received: from opinicus.com ([24.73.193.242]:46238 "EHLO thing2.opinicus.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933886AbXGKVCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:02:39 -0400
+X-Greylist: delayed 725 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 17:02:39 EDT
+Message-ID: <46954273.9090207@opinicus.com>
+Date: Wed, 11 Jul 2007 16:49:55 -0400
+From: William Montgomery <william@opinicus.com>
+User-Agent: Mozilla Thunderbird 1.0.6 (X11/20050716)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: e100 driver hard lockups with AEI-P430C 4 port card
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Anderson <andmike@us.ibm.com>
+Hello,
 
-This patch adds a dm-netlink skeleton support to the Makefile, and the dm
-directory.
+The AEI-P430C PCI 10/100 Quad Fast Ethernet card causes two computers to 
+lockup
+hard but runs OK on a third computer.  I have spent several days trying to
+determine the cause.  I have used the following OS/driver combos:
 
-Signed-off-by: Mike Anderson <andmike@us.ibm.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
----
+  Slackware 10.1 Linux kernel 2.6.17 / eepro100 / e100
+  Slackware 10.1 Linux kernel 2.6.13 / eepro100 / e100
+  Slackware 9.1 Linux kernel 2.4.22 / e100
 
- drivers/md/Kconfig      |    5 ++
- drivers/md/Makefile     |    4 +
- drivers/md/dm-netlink.c |  103 ++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/md/dm-netlink.h |   50 +++++++++++++++++++++++
- drivers/md/dm.c         |    3 +
- include/linux/netlink.h |    2 
- 6 files changed, 166 insertions(+), 1 deletion(-)
+The following computer hardware configurations were used:
 
-Index: linux/drivers/md/Kconfig
-===================================================================
---- linux.orig/drivers/md/Kconfig	2007-07-11 21:37:31.000000000 +0100
-+++ linux/drivers/md/Kconfig	2007-07-11 21:37:50.000000000 +0100
-@@ -271,6 +271,11 @@ config DM_DELAY
- 
- 	If unsure, say N.
- 
-+config DM_NETLINK
-+	bool "DM netlink events (EXPERIMENTAL)"
-+	depends on BLK_DEV_DM && EXPERIMENTAL
-+	---help---
-+	Generate netlink events for DM events.
- endmenu
- 
- endif
-Index: linux/drivers/md/Makefile
-===================================================================
---- linux.orig/drivers/md/Makefile	2007-07-11 21:37:31.000000000 +0100
-+++ linux/drivers/md/Makefile	2007-07-11 21:37:50.000000000 +0100
-@@ -46,6 +46,10 @@ ifeq ($(CONFIG_ALTIVEC),y)
- altivec_flags := -maltivec -mabi=altivec
- endif
- 
-+ifeq ($(CONFIG_DM_NETLINK),y)
-+dm-mod-objs			+= dm-netlink.o
-+endif
-+
- targets += raid6int1.c
- $(obj)/raid6int1.c:   UNROLL := 1
- $(obj)/raid6int1.c:   $(src)/raid6int.uc $(src)/unroll.pl FORCE
-Index: linux/drivers/md/dm-netlink.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/drivers/md/dm-netlink.c	2007-07-11 21:37:50.000000000 +0100
-@@ -0,0 +1,103 @@
-+/*
-+ * Device Mapper Netlink Support (dm-netlink)
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright IBM Corporation, 2005, 2006
-+ * 	Author: Mike Anderson <andmike@us.ibm.com>
-+ */
-+#include <linux/module.h>
-+#include <linux/mempool.h>
-+#include <linux/time.h>
-+#include <linux/jiffies.h>
-+#include <linux/security.h>
-+#include <net/sock.h>
-+#include <net/netlink.h>
-+
-+#include "dm.h"
-+#include "dm-netlink.h"
-+
-+#define DM_MSG_PREFIX "netlink"
-+
-+#define DM_EVENT_SKB_SIZE NLMSG_GOODSIZE
-+
-+struct dm_event_cache {
-+	struct kmem_cache *cache;
-+	unsigned skb_size;
-+};
-+
-+static struct dm_event_cache _dme_cache;
-+
-+static int dme_cache_init(struct dm_event_cache *dc, unsigned skb_size)
-+{
-+	dc->skb_size = skb_size;
-+
-+	dc->cache = KMEM_CACHE(dm_event, 0);
-+	if (!dc->cache)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+static void dme_cache_destroy(struct dm_event_cache *dc)
-+{
-+	kmem_cache_destroy(dc->cache);
-+}
-+
-+static void dme_cache_event_put(struct dm_event *evt)
-+{
-+	struct dm_event_cache *dc = evt->cdata;
-+
-+	kmem_cache_free(dc->cache, evt);
-+}
-+
-+static struct dm_event *dme_cache_event_get(struct dm_event_cache *dc,
-+					    struct mapped_device *md)
-+{
-+	struct dm_event *evt;
-+
-+	evt = kmem_cache_alloc(dc->cache, GFP_ATOMIC);
-+	if (!evt)
-+		return NULL;
-+
-+	INIT_LIST_HEAD(&evt->elist);
-+	evt->cdata = dc;
-+	evt->md = md;
-+	evt->skb = alloc_skb(dc->skb_size, GFP_ATOMIC);
-+	if (!evt->skb)
-+		goto cache_err;
-+
-+	return evt;
-+
-+cache_err:
-+	dme_cache_event_put(evt);
-+	return NULL;
-+}
-+
-+int __init dm_netlink_init(void)
-+{
-+	int r;
-+
-+	r = dme_cache_init(&_dme_cache, DM_EVENT_SKB_SIZE);
-+	if (!r)
-+		DMINFO("version 1.0.0 loaded");
-+
-+	return r;
-+}
-+
-+void dm_netlink_exit(void)
-+{
-+	dme_cache_destroy(&_dme_cache);
-+}
-Index: linux/drivers/md/dm-netlink.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/drivers/md/dm-netlink.h	2007-07-11 21:37:50.000000000 +0100
-@@ -0,0 +1,50 @@
-+/*
-+ * Device Mapper Netlink Support
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright IBM Corporation, 2005, 2006
-+ * 	Author: Mike Anderson <andmike@us.ibm.com>
-+ */
-+#ifndef DM_NETLINK_H
-+#define DM_NETLINK_H
-+
-+struct dm_event_cache;
-+struct mapped_device;
-+struct dm_event {
-+	struct dm_event_cache *cdata;
-+	struct mapped_device *md;
-+	struct sk_buff *skb;
-+	struct list_head elist;
-+};
-+
-+#ifdef CONFIG_DM_NETLINK
-+
-+int dm_netlink_init(void);
-+void dm_netlink_exit(void);
-+
-+#else	/* CONFIG_DM_NETLINK */
-+
-+static inline int __init dm_netlink_init(void)
-+{
-+	return 0;
-+}
-+static inline void dm_netlink_exit(void)
-+{
-+}
-+
-+#endif	/* CONFIG_DM_NETLINK */
-+
-+#endif	/* DM_NETLINK_H */
-Index: linux/drivers/md/dm.c
-===================================================================
---- linux.orig/drivers/md/dm.c	2007-07-11 21:37:47.000000000 +0100
-+++ linux/drivers/md/dm.c	2007-07-11 21:37:50.000000000 +0100
-@@ -7,6 +7,7 @@
- 
- #include "dm.h"
- #include "dm-bio-list.h"
-+#include "dm-netlink.h"
- 
- #include <linux/init.h>
- #include <linux/module.h>
-@@ -176,6 +177,7 @@ int (*_inits[])(void) __initdata = {
- 	dm_linear_init,
- 	dm_stripe_init,
- 	dm_interface_init,
-+	dm_netlink_init,
- };
- 
- void (*_exits[])(void) = {
-@@ -184,6 +186,7 @@ void (*_exits[])(void) = {
- 	dm_linear_exit,
- 	dm_stripe_exit,
- 	dm_interface_exit,
-+	dm_netlink_exit,
- };
- 
- static int __init dm_init(void)
-Index: linux/include/linux/netlink.h
-===================================================================
---- linux.orig/include/linux/netlink.h	2007-07-11 21:37:31.000000000 +0100
-+++ linux/include/linux/netlink.h	2007-07-11 21:37:50.000000000 +0100
-@@ -21,7 +21,7 @@
- #define NETLINK_DNRTMSG		14	/* DECnet routing messages */
- #define NETLINK_KOBJECT_UEVENT	15	/* Kernel messages to userspace */
- #define NETLINK_GENERIC		16
--/* leave room for NETLINK_DM (DM Events) */
-+#define NETLINK_DM		17	/* Device Mapper */
- #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
- #define NETLINK_ECRYPTFS	19
- 
+PC_1: Rackmount Industrial PC (Advantech 4U chassis)
+  12 slot PCI backplane (Advantech)
+  Pentium 4 2.80GHz, 512M Ram  PCMIG (Advantech)
+
+PC_2: Rackmount Industrial PC (Axiomtek 4U chassis)
+  12 slot PCI backplane (Axiomtek)
+  Pentium 4 3.00GHz, 512M Ram  PCMIG (Axiomtek)
+
+PC_3: Desktop (ShuttleX)
+  1 AGP, 1 PCI slot motherboard with Pentium 4 2.80GHz, 512M Ram
+
+The hard lockups occur on PC_1 and PC_2 but not on PC_3.  I have used 
+all three
+OS/driver combos on PC_1 and PC_2 to try to eliminate the OS/driver as the
+problem; in each case the lockup is repeatable within a few minutes of heavy
+traffic.  The test script uses the "iperf" utility which measures 
+bandwidth on
+an ethernet port by moving as much data as possible in 10 seconds then
+computing bandwidth.  The script runs iperf on 3 ports simultaneously and
+repeats until killed.  I have tested the AEI card by connecting to 3 
+separate
+Intel PRO/100 S cards and (in trying a different configuration) by 
+connecting
+it to a Routerboard RB44 (4 port card).
+
+I have tried the obvious methods to get an oops but no success so far.  
+I have
+enabled the Magic SysRq key and enabled the NMI watchdog.  The lockup is so
+hard that none of these works.  The only thing that brings the CPU out 
+of the
+lockup is the i810 watchdog but that causes a reset/reboot and no oops so I
+cant see any backtrace info.  Any suggestions would be welcome.
+
+Regards,
+William Montgomery
+
