@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbXGKUl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932849AbXGKUs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712AbXGKUl6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 16:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbXGKUlu
+	id S932849AbXGKUs2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 16:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbXGKUsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 16:41:50 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:65289 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757598AbXGKUlu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 16:41:50 -0400
-Date: Wed, 11 Jul 2007 13:45:04 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH] serial: do not add port that is not initialized
-In-reply-to: <20070711194050.GB28258@flint.arm.linux.org.uk>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <46954150.7050707@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <200707101703.36173.yinghai.lu@sun.com>
- <20070711071742.GA12952@flint.arm.linux.org.uk>
- <200707111005.53836.bjorn.helgaas@hp.com>
- <20070711194050.GB28258@flint.arm.linux.org.uk>
+	Wed, 11 Jul 2007 16:48:20 -0400
+Received: from rtr.ca ([64.26.128.89]:3803 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758156AbXGKUsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 16:48:19 -0400
+Message-ID: <46954212.7060105@rtr.ca>
+Date: Wed, 11 Jul 2007 16:48:18 -0400
+From: Mark Lord <lkml@rtr.ca>
 User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, a1426z@gawab.com,
+       jeremy@goop.org, pavel@ucw.cz, nickpiggin@yahoo.com.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Hibernation Redesign
+References: <200707081737.21932.a1426z@gawab.com>	<200707111304.40504.rjw@sisk.pl>	<E1I8a6Y-0008Sm-00@dorka.pomaz.szeredi.hu>	<200707112211.23420.nigel@nigel.suspend2.net> <87644rcc7a.fsf@jbms.ath.cx>
+In-Reply-To: <87644rcc7a.fsf@jbms.ath.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> On Wed, Jul 11, 2007 at 10:05:53AM -0600, Bjorn Helgaas wrote:
->> On Wednesday 11 July 2007 01:17:42 am Russell King wrote:
->>> On Tue, Jul 10, 2007 at 05:03:35PM -0700, Yinghai Lu wrote:
->>>> [PATCH] serial: do not add port that is not initialized
->>>>
->>>> if the port is not initialized with correct iobase, and membase, we don't
->>>> need to add that port.
->>>> for x86, when pnpacpi is enabled, we will not get extra ttyS1/ttyS2/ttyS3 in
->>>> /sys/devices/platform/serial8250/tty
->>>>
->>>> Sign-off-by: Yinghai Lu <yinghai.lu@sun.com>
->>> What if someone wants to run setserial on /dev/ttyS1 to set it's base
->>> address, irq and other parameters?  People still do this.
->> I agree that people still use setserial that way, and we shouldn't
->> make this change because it would break things.
+Jeremy Maitin-Shepard wrote:
 >>
->> But I also agree with Yinghai that these extra phantom devices are
->> just weird.  It would be a lot nicer if there were a way to say,
->> "please, Mr. Serial Driver, create me a new ttyS device with these
->> parameters."
->>
->> But no, I'm not volunteering to do that.
-> 
-> Indeed, and since distros still haven't picked up my setserial v3,
-> I see little chance of that ever being practical.  Not that I've
-> really tried very hard to get them to - no real idea who to contact
-> to make that happen, and of course I've no interest in making it
-> happen anymore.
+> I'll certainly admit the kexec idea is vaporware currently, but it does
+> differ in a significant way from freezer-based approaches, such that I
+> don't think it should be referred to as just another implementation of a
+> freezer.  Specifically, it doesn't require that the "old kernel" be in a
+> "consistent" state to a greater extent than suspend to ram; it is the
+> case that all of the devices must be quiesced or shut down to some
+> extent, but doing this without races and deadlocks (and without the
+> freezer) is certainly very, very similar to what needs to be done for
+> suspend to ram, which will need to be solved anyway.  Unlike the
+> existing hibernate approaches, however, it will not be necessary to use
+> any of the driver infrastructure once switched to the "save image"
+> kernel, and thus it will not matter what locks are held, for instance.
 
-so remove these extra phantom devices, the kernel distros will use your setserial v3.
+I really doubt that kexec(a special kernel) is going to solve anything here.
+The new kernel will have to initialize, probe for devices, etc.
+Which will take time.
+Which will slow down hibernate to an unacceptable degree.
+Right now, it (TuxOnIce) is *very* fast.
+Adding 10 seconds or so for reprobing/resetting/reiniting devices
+is not going to be useful.
+And modifying all of the drivers to *not* do their usual probe sequence
+sounds rather intrusive and is likely also a non-starter here.
 
-we can put some comments in code, so later they will find clue about your setserial v3.
+Or is it?
 
-YH
+Cheers
