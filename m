@@ -1,68 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbXGKK53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763088AbXGKK5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762734AbXGKK53 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759746AbXGKK5V
+	id S1763088AbXGKK5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761383AbXGKK5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:57:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49224 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758842AbXGKK5U convert rfc822-to-8bit (ORCPT
+	Wed, 11 Jul 2007 06:57:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:6316 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761224AbXGKK5X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:57:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Hibernation Redesign
-Date: Wed, 11 Jul 2007 13:04:39 +0200
-User-Agent: KMail/1.9.5
-Cc: a1426z@gawab.com, jeremy@goop.org, jbms@cmu.edu, pavel@ucw.cz,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200707081737.21932.a1426z@gawab.com> <200707111227.52609.rjw@sisk.pl> <E1I8Ze4-0008OM-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I8Ze4-0008OM-00@dorka.pomaz.szeredi.hu>
+	Wed, 11 Jul 2007 06:57:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Db1XKMNWnpN505MiTVJF/BzxlCSUvdLRBXPyD3gxnWo8ml29DEgSjlekSGAWR0QZV3UVLrag3Rmv5xt1ongw6bn8tqWtiSbCDYYtOqU9w4qdiMC0TpsFB/ZKm4pJttBrdyMu2vSfEv2J+frQKQsjPCFOcZU+JkP8gs/QTdn0WQU=
+Message-ID: <84144f020707110357w32a86672icef3374768537b5f@mail.gmail.com>
+Date: Wed, 11 Jul 2007 13:57:22 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: revoke (Was: -mm merge plans for 2.6.23)
+Cc: linux-kernel@vger.kernel.org, "Christoph Hellwig" <hch@lst.de>,
+       viro@zeniv.linux.org.uk, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <84144f020707110141pd8912aaw9df05d665a35d482@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707111304.40504.rjw@sisk.pl>
+References: <84144f020707110141pd8912aaw9df05d665a35d482@mail.gmail.com>
+X-Google-Sender-Auth: 78fcfb00e4d0cc8b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 11 July 2007 12:42, Miklos Szeredi wrote:
-> > > > Yes, I suppose.  You're certain the old kernel's devices are completely
-> > > > quiescent at that point?
-> > > 
-> > > That's exactly the problem; trying to save a state from within the
-> > > kernel would probably necessitate a freezer hack, which we are
-> > > trying so dearly to avoid.
-> > 
-> > Well, I don't think that avoiding the freezer whatever it takes
-> > would be a good idea.  There needs to be some balance. ;-)
-> 
-> Well, it takes some extra locking in the drivers.  Which is needed
-> _anyway_ if we want to have a working s2ram without the freezer.
-> 
-> With the kexec approach, I don't see any extra requirements from the
-> kernel to be able to drop the freezer.
+Hi Andrew,
 
-This is not my point.  I think that if what it takes to implement the kexec
-approach, as a complete working solution, is much more complicated than
-what we have now, then the current soultion is favorable.
+On 7/11/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Well, revoke is in limbo land waiting for the VFS maintainers to take
+> a look at it...
 
-Anyway, to implement the kexec approach we must separate the hibernation
-from the suspend at the drivers level, which I'm still going to do, but I need to
-take part in endless discussions regarding the freezer, how it is bad and
-how we should drop it, because it breaks things (which NB is not true, because
-it doesn't).
-
->From a practical point of view, the freezer is not the most problematic part
-of the infrastructure.  For example, none of the bug reports that we have
-registered in the bugzilla is related to the freezer.  Moreover, to drop it,
-we first need to redesign the other things.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Al took a peek at it and found holes. So no need to worry about merging yet :-)
