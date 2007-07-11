@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934856AbXGKXbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934913AbXGKXbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934856AbXGKXbX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932650AbXGKXbO
+	id S934913AbXGKXbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbXGKXbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:31:14 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:49792 "EHLO
+	Wed, 11 Jul 2007 19:31:18 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:49795 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932643AbXGKXbN (ORCPT
+	with ESMTP id S933031AbXGKXbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:31:13 -0400
-Date: Wed, 11 Jul 2007 16:30:21 -0700
+	Wed, 11 Jul 2007 19:31:16 -0400
+Date: Wed, 11 Jul 2007 16:30:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] sysfs and driver core patches for 2.6.22
-Message-ID: <20070711233021.GA5253@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: [GIT PATCH] PCI patches for 2.6.22
+Message-ID: <20070711233037.GB5253@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,210 +24,277 @@ User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some driver core and sysfs patches against your 2.6.22 git
+Here are a bunch of PCI and PCI hotplug patches against your 2.6.22 git
 tree.
 
-The majority of the work here is a sysfs rework from Tejun that splits
-the dependency between sysfs and kobjecs apart, fixing loads of
-reference counting issues all at once.  This rework is needed for his
-upcoming libata hotplug work.
+They contain:
+	- pci hotplug driver updates
+	- pci api cleanups and additions
+	- other bugfixes and minor features.
 
-DMI module autoloading is also added here, along with some power
-management core work.
+All of these have been in the -mm tree for a month or so.
 
-Also some documentation about the future of sysfs has been added.
-
-All of these patches have been in the -mm tree for a few months.
+Overall this patch series removes 600+ lines of code, which is always
+nice to see :)
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/pci-2.6.git/
 
-Patches will be sent as a follow-on to this message to lkml for people
-to see.
+The full patches will be sent to the linux-pci mailing list, if anyone
+wants to see it
 
 thanks,
 
 greg k-h
 
- .../firmware_sample_firmware_class.c               |    2 +
- Documentation/sysfs-rules.txt                      |  166 +++
- arch/arm/common/locomo.c                           |   11 +-
- arch/arm/common/sa1111.c                           |   13 +-
- arch/arm/mach-sa1100/neponset.c                    |   15 +-
- arch/ppc/syslib/mv64x60.c                          |    1 -
- arch/s390/kernel/ipl.c                             |    2 -
- drivers/base/attribute_container.c                 |    1 +
- drivers/base/base.h                                |    2 +-
- drivers/base/bus.c                                 |   24 +-
- drivers/base/class.c                               |   46 +-
- drivers/base/core.c                                |   58 +-
- drivers/base/dd.c                                  |   21 +-
- drivers/base/devres.c                              |    2 +
- drivers/base/firmware_class.c                      |    6 +-
- drivers/base/power/main.c                          |   44 +-
- drivers/base/power/power.h                         |    4 +-
- drivers/base/power/resume.c                        |   23 +-
- drivers/base/power/runtime.c                       |   12 +-
- drivers/base/power/suspend.c                       |   72 +-
- drivers/base/sys.c                                 |   24 +-
- drivers/block/pktcdvd.c                            |    3 +-
- drivers/char/ipmi/ipmi_msghandler.c                |   10 -
- drivers/cpufreq/cpufreq_stats.c                    |    3 +-
- drivers/cpufreq/cpufreq_userspace.c                |    2 +-
- drivers/cpufreq/freq_table.c                       |    1 -
- drivers/firmware/Kconfig                           |    9 +
- drivers/firmware/Makefile                          |    1 +
- drivers/firmware/dcdbas.c                          |   10 +-
- drivers/firmware/dcdbas.h                          |    3 +-
- drivers/firmware/dell_rbu.c                        |   31 +-
- drivers/firmware/dmi-id.c                          |  222 ++++
- drivers/firmware/dmi_scan.c                        |   73 +-
- drivers/firmware/edd.c                             |    2 +-
- drivers/firmware/efivars.c                         |    6 +-
- drivers/i2c/chips/eeprom.c                         |    4 +-
- drivers/i2c/chips/max6875.c                        |    6 +-
- drivers/infiniband/core/sysfs.c                    |    1 -
- drivers/input/mouse/psmouse.h                      |    1 -
- drivers/macintosh/windfarm_core.c                  |    2 -
- drivers/misc/asus-laptop.c                         |    3 +-
- drivers/misc/msi-laptop.c                          |   44 +-
- drivers/net/ibmveth.c                              |    2 +-
- drivers/parisc/pdc_stable.c                        |    4 +-
- drivers/pci/hotplug/acpiphp_ibm.c                  |    7 +-
- drivers/pci/pci-sysfs.c                            |   22 +-
- drivers/pci/probe.c                                |    2 -
- drivers/pcmcia/socket_sysfs.c                      |   10 +-
- drivers/rapidio/rio-sysfs.c                        |    7 +-
- drivers/rtc/rtc-ds1553.c                           |   11 +-
- drivers/rtc/rtc-ds1742.c                           |   11 +-
- drivers/s390/cio/chp.c                             |   12 +-
- drivers/s390/net/qeth_sys.c                        |    2 +-
- drivers/scsi/arcmsr/arcmsr_attr.c                  |   18 +-
- drivers/scsi/ipr.c                                 |   18 +-
- drivers/scsi/libsas/sas_expander.c                 |   17 +-
- drivers/scsi/lpfc/lpfc_attr.c                      |   14 +-
- drivers/scsi/qla2xxx/qla_attr.c                    |   56 +-
- drivers/spi/at25.c                                 |    7 +-
- drivers/usb/core/hub.c                             |    5 -
- drivers/video/aty/radeon_base.c                    |   10 +-
- drivers/video/backlight/backlight.c                |    2 +-
- drivers/video/backlight/lcd.c                      |    2 +-
- drivers/w1/slaves/w1_ds2433.c                      |   11 +-
- drivers/w1/slaves/w1_therm.c                       |    8 +-
- drivers/w1/w1.c                                    |   14 +-
- drivers/zorro/zorro-sysfs.c                        |    6 +-
- fs/debugfs/inode.c                                 |   63 +
- fs/ecryptfs/main.c                                 |    2 -
- fs/ocfs2/cluster/masklog.c                         |    1 -
- fs/partitions/check.c                              |    1 -
- fs/sysfs/bin.c                                     |  195 ++--
- fs/sysfs/dir.c                                     | 1297 ++++++++++++++------
- fs/sysfs/file.c                                    |  379 +++----
- fs/sysfs/group.c                                   |   55 +-
- fs/sysfs/inode.c                                   |  221 +---
- fs/sysfs/mount.c                                   |   36 +-
- fs/sysfs/symlink.c                                 |  150 ++--
- fs/sysfs/sysfs.h                                   |  169 ++--
- include/linux/debugfs.h                            |    9 +
- include/linux/device.h                             |    5 -
- include/linux/dmi.h                                |    8 +
- include/linux/idr.h                                |   29 +
- include/linux/kobject.h                            |    9 +-
- include/linux/pm.h                                 |    5 -
- include/linux/sysdev.h                             |    3 +-
- include/linux/sysfs.h                              |   43 +-
- kernel/module.c                                    |    9 +-
- kernel/params.c                                    |    1 -
- lib/idr.c                                          |  332 +++++-
- lib/kobject.c                                      |   19 +-
- net/bridge/br_sysfs_br.c                           |    8 +-
- net/bridge/br_sysfs_if.c                           |    3 +-
- 93 files changed, 2822 insertions(+), 1494 deletions(-)
- create mode 100644 Documentation/sysfs-rules.txt
- create mode 100644 drivers/firmware/dmi-id.c
+ Documentation/DMA-mapping.txt                  |  103 ------------
+ Documentation/pci.txt                          |    8 +-
+ Documentation/power/pci.txt                    |   37 -----
+ MAINTAINERS                                    |    5 -
+ arch/alpha/Kconfig                             |    3 +
+ arch/alpha/kernel/pci_iommu.c                  |   32 +----
+ arch/arm/Kconfig                               |    3 +
+ arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c |    6 +-
+ arch/i386/kernel/cpu/cpufreq/gx-suspmod.c      |    4 +-
+ arch/i386/kernel/cpu/cpufreq/speedstep-ich.c   |    4 +-
+ arch/i386/mach-visws/traps.c                   |    4 +-
+ arch/i386/pci/fixup.c                          |    9 +-
+ arch/ia64/Kconfig                              |    6 +-
+ arch/mips/pci/Makefile                         |    2 +-
+ arch/mips/pci/fixup-cobalt.c                   |   10 +-
+ arch/mips/pci/pci-dac.c                        |   79 ----------
+ arch/powerpc/Kconfig                           |    6 +-
+ arch/powerpc/kernel/pci_32.c                   |    4 +-
+ arch/powerpc/kernel/pci_64.c                   |    6 +-
+ arch/ppc/Kconfig                               |    6 +-
+ arch/ppc/kernel/pci.c                          |    6 -
+ arch/sparc/Kconfig                             |    3 +
+ arch/sparc64/Kconfig                           |    6 +-
+ arch/sparc64/kernel/pci.c                      |    1 +
+ arch/x86_64/kernel/pci-dma.c                   |    3 +-
+ drivers/acpi/processor_core.c                  |    7 +-
+ drivers/ata/ata_piix.c                         |    6 +-
+ drivers/ata/pata_ali.c                         |   34 ++---
+ drivers/ata/pata_amd.c                         |    4 +-
+ drivers/ata/pata_cs5530.c                      |    2 +-
+ drivers/ata/pata_it821x.c                      |    3 +-
+ drivers/ata/pata_serverworks.c                 |    5 +-
+ drivers/ata/pata_sis.c                         |    8 +-
+ drivers/ata/pata_sl82c105.c                    |    5 +-
+ drivers/ata/pata_via.c                         |    6 +-
+ drivers/ata/sata_mv.c                          |   20 +--
+ drivers/atm/eni.c                              |    9 +-
+ drivers/atm/idt77252.c                         |   13 +--
+ drivers/atm/iphase.c                           |   11 +-
+ drivers/atm/lanai.c                            |   27 +---
+ drivers/atm/zatm.c                             |    6 +-
+ drivers/char/agp/amd-k7-agp.c                  |    4 +-
+ drivers/char/agp/amd64-agp.c                   |    6 +-
+ drivers/clocksource/acpi_pm.c                  |    5 +-
+ drivers/i2c/busses/i2c-viapro.c                |    3 +-
+ drivers/ide/pci/alim15x3.c                     |    2 +-
+ drivers/ide/pci/amd74xx.c                      |    8 +-
+ drivers/ide/pci/cmd64x.c                       |    9 +-
+ drivers/ide/pci/cs5530.c                       |    2 +-
+ drivers/ide/pci/hpt366.c                       |   20 +--
+ drivers/ide/pci/piix.c                         |    6 +-
+ drivers/ide/pci/serverworks.c                  |   13 +--
+ drivers/ide/pci/sis5513.c                      |    8 +-
+ drivers/ide/pci/sl82c105.c                     |    4 +-
+ drivers/ide/pci/via82cxxx.c                    |    9 +-
+ drivers/infiniband/hw/ipath/ipath_driver.c     |    9 +-
+ drivers/isdn/hisax/bkm_a8.c                    |    4 +-
+ drivers/media/radio/radio-gemtek-pci.c         |    4 +-
+ drivers/media/video/meye.c                     |    4 +-
+ drivers/net/8139cp.c                           |    7 +-
+ drivers/net/8139too.c                          |    7 +-
+ drivers/net/atl1/atl1.h                        |    1 -
+ drivers/net/atl1/atl1_main.c                   |    4 -
+ drivers/net/bnx2.c                             |    5 +-
+ drivers/net/cassini.c                          |   12 +-
+ drivers/net/dl2k.c                             |    3 +-
+ drivers/net/dl2k.h                             |    1 -
+ drivers/net/e100.c                             |    8 +-
+ drivers/net/e1000/e1000_main.c                 |    3 +-
+ drivers/net/forcedeth.c                        |    4 +-
+ drivers/net/netxen/netxen_nic_main.c           |    7 +-
+ drivers/net/s2io.c                             |   25 +---
+ drivers/net/s2io.h                             |    1 -
+ drivers/net/starfire.c                         |    2 +-
+ drivers/net/sundance.c                         |    7 +-
+ drivers/net/sunhme.c                           |    8 +-
+ drivers/net/tg3.c                              |    6 +-
+ drivers/net/tlan.c                             |    5 +-
+ drivers/net/tulip/de4x5.c                      |    8 +-
+ drivers/net/tulip/dmfe.c                       |   26 ++--
+ drivers/net/tulip/tulip_core.c                 |   15 +--
+ drivers/net/tulip/xircom_cb.c                  |    5 +-
+ drivers/net/tulip/xircom_tulip_cb.c            |    4 +-
+ drivers/net/typhoon.c                          |    7 -
+ drivers/net/via-rhine.c                        |   13 +-
+ drivers/net/via-velocity.c                     |    3 +-
+ drivers/net/wan/pc300_drv.c                    |    4 +-
+ drivers/net/wan/pc300too.c                     |    2 -
+ drivers/net/wan/pci200syn.c                    |    2 -
+ drivers/net/wireless/bcm43xx/bcm43xx_main.c    |    6 +-
+ drivers/net/wireless/hostap/hostap_pci.c       |    2 -
+ drivers/net/wireless/hostap/hostap_plx.c       |    3 -
+ drivers/net/wireless/prism54/islpci_hotplug.c  |    4 +-
+ drivers/pci/Makefile                           |    4 +-
+ drivers/pci/hotplug/acpiphp.h                  |    1 +
+ drivers/pci/hotplug/acpiphp_core.c             |    6 +-
+ drivers/pci/hotplug/acpiphp_glue.c             |   53 ++++++-
+ drivers/pci/hotplug/cpci_hotplug_core.c        |   66 +++------
+ drivers/pci/hotplug/cpci_hotplug_pci.c         |    2 -
+ drivers/pci/hotplug/cpqphp_core.c              |   12 +-
+ drivers/pci/hotplug/pciehp.h                   |    1 +
+ drivers/pci/hotplug/pciehp_ctrl.c              |   12 ++
+ drivers/pci/hotplug/pciehp_hpc.c               |  191 ++++++++++++-----------
+ drivers/pci/pci-acpi.c                         |    8 +-
+ drivers/pci/pci-sysfs.c                        |   11 ++-
+ drivers/pci/pci.c                              |  200 ++++++++++++++++++++++--
+ drivers/pci/pcie/aer/Kconfig                   |    2 +-
+ drivers/pci/pcie/aer/Makefile                  |    3 +-
+ drivers/pci/pcie/aer/aerdrv.c                  |    2 +-
+ drivers/pci/pcie/aer/aerdrv.h                  |   14 +-
+ drivers/pci/pcie/aer/aerdrv_acpi.c             |   36 ++--
+ drivers/pci/pcie/aer/aerdrv_core.c             |   34 ++--
+ drivers/pci/probe.c                            |    3 +-
+ drivers/pci/proc.c                             |    1 -
+ drivers/pci/quirks.c                           |   30 +++--
+ drivers/pci/search.c                           |    7 +-
+ drivers/pci/setup-bus.c                        |    8 +-
+ drivers/pci/syscall.c                          |   20 ++-
+ drivers/scsi/aic94xx/aic94xx_init.c            |    9 +-
+ drivers/scsi/ipr.c                             |   22 +--
+ drivers/scsi/ips.c                             |    9 +-
+ drivers/scsi/lpfc/lpfc_init.c                  |    5 +-
+ drivers/scsi/nsp32.c                           |   10 --
+ drivers/scsi/qla2xxx/qla_init.c                |    2 +-
+ drivers/serial/jsm/jsm_driver.c                |    2 +-
+ drivers/usb/gadget/net2280.c                   |    2 +-
+ drivers/usb/host/ehci-pci.c                    |    3 +-
+ drivers/video/kyro/STG4000InitDevice.c         |    5 +-
+ drivers/video/matrox/matroxfb_base.c           |    4 +-
+ drivers/video/sis/sis_main.c                   |    2 +-
+ drivers/video/sstfb.c                          |    2 +-
+ drivers/video/tgafb.c                          |    3 +-
+ include/asm-alpha/pci.h                        |   29 ----
+ include/asm-arm/pci.h                          |    9 -
+ include/asm-cris/pci.h                         |   36 -----
+ include/asm-frv/pci.h                          |    7 -
+ include/asm-h8300/pci.h                        |    4 -
+ include/asm-i386/pci.h                         |   37 -----
+ include/asm-ia64/pci.h                         |   12 --
+ include/asm-m68k/pci.h                         |    4 -
+ include/asm-m68knommu/pci.h                    |   10 --
+ include/asm-mips/pci.h                         |   18 --
+ include/asm-parisc/pci.h                       |    7 -
+ include/asm-powerpc/dma-mapping.h              |    1 -
+ include/asm-powerpc/pci.h                      |   20 ---
+ include/asm-ppc/pci.h                          |    8 -
+ include/asm-sh/pci.h                           |    9 -
+ include/asm-sh64/pci.h                         |    9 -
+ include/asm-sparc/pci.h                        |    6 -
+ include/asm-sparc64/pci.h                      |   47 ------
+ include/asm-v850/pci.h                         |    4 -
+ include/asm-v850/rte_cb.h                      |    1 -
+ include/asm-x86_64/pci.h                       |   44 -----
+ include/asm-xtensa/pci.h                       |    7 -
+ include/linux/aer.h                            |   10 +-
+ include/linux/pci.h                            |   16 ++-
+ include/linux/pci_ids.h                        |   74 ++-------
+ sound/oss/emu10k1/main.c                       |    2 +-
+ sound/oss/es1371.c                             |    2 +-
+ sound/pci/ali5451/ali5451.c                    |    2 +-
+ sound/pci/atiixp.c                             |    6 +-
+ sound/pci/atiixp_modem.c                       |    5 +-
+ sound/pci/au88x0/au88x0.c                      |    6 +-
+ sound/pci/ca0106/ca0106.h                      |    1 -
+ sound/pci/ca0106/ca0106_main.c                 |    5 +-
+ sound/pci/emu10k1/emu10k1_main.c               |    4 +-
+ sound/pci/emu10k1/emu10k1x.c                   |    2 +-
+ sound/pci/ens1370.c                            |    4 +-
+ sound/pci/fm801.c                              |    4 +-
+ sound/pci/via82xx.c                            |   14 +-
+ sound/pci/via82xx_modem.c                      |    4 +-
+ sound/pci/ymfpci/ymfpci_main.c                 |    2 +-
+ 172 files changed, 760 insertions(+), 1401 deletions(-)
+ delete mode 100644 arch/mips/pci/pci-dac.c
 
 ---------------
 
 Adrian Bunk (1):
-      Driver core: fix devres_release_all() return value
+      PCI: unexport pci_proc_attach_device
 
-Cornelia Huck (1):
-      Driver core: coding style cleanup
+Alan Cox (2):
+      pci syscall.c: Switch to refcounting API
+      + pci_find_slot-mark-deprecated.patch added to -mm tree
 
-Jan Kara (1):
-      debugfs: add rename for debugfs files
+Andrew Lunn (1):
+      PCI: pci_set_power_state(): check for PM capabilities earlier
 
-Kay Sievers (2):
-      Rules on how to use sysfs in userspace programs
-      Driver core: add missing kset uevent
+Andrew Morton (1):
+      PCI: pci-x-pci-express-read-control-interfaces cleanups
 
-Lennart Poettering (1):
-      DMI-based module autoloading
+Auke Kok (2):
+      PCI: read revision ID by default
+      PCI: Change all drivers to use pci_device->revision
 
-Matthias Kaehlcke (2):
-      sysdev: use mutex instead of semaphore
-      Power Management: use mutexes instead of semaphores
+David Brownell (1):
+      PCI: remove useless pci driver method
 
-Michael S. Tsirkin (1):
-      Driver core: include linux/mutex.h from attribute_container.c
+Gary Hade (3):
+      PCI: hotplug: acpiphp: fix slot poweroff problem on systems without _PS3
+      PCI: hotplug: acpiphp: remove hot plug parameter write to PCI host bridge
+      PCI: hotplug: acpiphp: avoid acpiphp "cannot get bridge info" PCI hotplug failure
 
-Rafael J. Wysocki (8):
-      PM: Remove pm_parent from struct dev_pm_info
-      PM: Remove saved_state from struct dev_pm_info
-      PM: Simplify suspend_device
-      PM: Remove prev_state from struct dev_pm_info
-      PM: Remove power_state.event checks from suspend core code
-      PM: Do not check parent state in suspend and resume core code
-      PM: do not use saved_state from struct dev_pm_info on ARM
-      sysfs: Fix oops in sysfs_drop_dentry on x86_64
+Greg Kroah-Hartman (2):
+      PCI: remove cpqphp driver maintainer
+      PCI: point people to Bernhard instead of the linux-kernel list
 
-Stefan Richter (2):
-      driver core: properly get driver in device_release_driver
-      driver core: fix kernel doc of device_release_driver
+Jan Beulich (1):
+      PCI: remove pci_dac_dma_... APIs
 
-Tejun Heo (41):
-      idr: fix obscure bug in allocation path
-      idr: separate out idr_mark_full()
-      ida: implement idr based id allocator
-      sysfs: move release_sysfs_dirent() to dir.c
-      sysfs: allocate inode number using ida
-      sysfs: make sysfs_put() ignore NULL sd
-      sysfs: fix error handling in binattr write()
-      sysfs: flatten cleanup paths in sysfs_add_link() and create_dir()
-      sysfs: flatten and fix sysfs_rename_dir() error handling
-      sysfs: consolidate sysfs_dirent creation functions
-      sysfs: add sysfs_dirent->s_parent
-      sysfs: add sysfs_dirent->s_name
-      sysfs: make sysfs_dirent->s_element a union
-      sysfs: implement kobj_sysfs_assoc_lock
-      sysfs: reimplement symlink using sysfs_dirent tree
-      sysfs: implement bin_buffer
-      sysfs: implement sysfs_dirent active reference and immediate disconnect
-      sysfs: kill attribute file orphaning
-      sysfs: separate out sysfs_attach_dentry()
-      sysfs: reimplement sysfs_drop_dentry()
-      sysfs: kill unnecessary attribute->owner
-      driver-core: make devt_attr and uevent_attr static
-      sysfs: make sysfs_alloc_ino() static
-      sysfs: fix parent refcounting during rename and move
-      sysfs: reorganize sysfs_new_indoe() and sysfs_create()
-      sysfs: use iget_locked() instead of new_inode()
-      sysfs: fix root sysfs_dirent -> root dentry association
-      sysfs: move s_active functions to fs/sysfs/dir.c
-      sysfs: slim down sysfs_dirent->s_active
-      sysfs: use singly-linked list for sysfs_dirent tree
-      sysfs: make sysfs_drop_dentry() access inodes using ilookup()
-      sysfs: rename sysfs_dirent->s_type to s_flags and make room for flags
-      sysfs: implement SYSFS_FLAG_REMOVED flag
-      sysfs: implement sysfs_find_dirent() and sysfs_get_dirent()
-      sysfs: make kobj point to sysfs_dirent instead of dentry
-      sysfs: consolidate sysfs spinlocks
-      sysfs: use sysfs_mutex to protect the sysfs_dirent tree
-      sysfs: restructure add/remove paths and fix inode update
-      sysfs: move sysfs_drop_dentry() to dir.c and make it static
-      sysfs: implement sysfs_get_dentry()
-      sysfs: make directory dentries and inodes reclaimable
+Jiri Slaby (5):
+      PCI: ATM: lanai, change VENDOR to DEVICE
+      PCI: i386: traps, change VENDOR to DEVICE
+      PCI: pci_ids, reorder some entries
+      PCI: pci_ids, add atheros and 3com_2 vendors
+      PCI: pci_ids, remove double or more empty lines
 
-Zhang Rui (1):
-      sysfs: add parameter "struct bin_attribute *" in .read/.write methods for sysfs binary attributes
+Kenji Kaneshige (2):
+      PCI: hotplug: pciehp: Fix possible race condition in writing slot
+      PCI: hotplug: pciehp: wait for 1 second after power off slot
+
+Matthew Wilcox (1):
+      PCI: Only build PCI syscalls on architectures that want them
+
+Michael Ellerman (2):
+      PCI: Use a weak symbol for the empty version of pcibios_add_platform_entries()
+      PCI: Make pcibios_add_platform_entries() return errors
+
+Milind Arun Choudhary (2):
+      PCI: ROUND_UP macro cleanup in drivers/pci
+      PCI: pcie: remove SPIN_LOCK_UNLOCKED
+
+Peter Oruba (1):
+      PCI: add PCI-X/PCI-Express read control interfaces
+
+Randy Dunlap (2):
+      PCI: add pci_try_set_mwi
+      PCI: limit pci_get_bus_and_slot to domain 0
+
+Rolf Eike Beer (1):
+      PCI: Fix typo in include/linux/pci.h
+
+Scott Murray (1):
+      PCI: cpci_hotplug: Convert to use the kthread API
+
+Stephen Hemminger (2):
+      PCI aer: fix stub return values
+      PCI aer: add pci_cleanup_aer_correct_aer_status
+
+Zhang, Yanmin (1):
+      PCI: fix AER driver error information
 
