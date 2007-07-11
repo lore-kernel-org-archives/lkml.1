@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764789AbXGKTTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbXGKTTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764789AbXGKTTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 15:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbXGKTTK
+	id S1761193AbXGKTTk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 15:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761209AbXGKTTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 15:19:10 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:11110 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757209AbXGKTTJ (ORCPT
+	Wed, 11 Jul 2007 15:19:12 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38238 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760172AbXGKTTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 15:19:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=C7PXo4AG+JvtS7Gx5jZeGuvXFFKeK4RPSKLxQWOzvOZv86vSUFvd3WpbZKoyFXJiS
-	lA0+tQ/uoqQzyMm0DGjjw==
-Message-ID: <46952D0A.1090304@google.com>
-Date: Wed, 11 Jul 2007 12:18:34 -0700
-From: Ethan Solomita <solo@google.com>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@google.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-Subject: Re: [RFC 1/7] cpuset write dirty map
-References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com> <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com> <468023CA.2090401@google.com> <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 15:19:10 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: torvalds@linux-foundation.org, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Subject: [x86 setup 01/33] x86 setup: MAINTAINERS: formally take responsibility for the i386 boot code
+Date: Wed, 11 Jul 2007 12:18:26 -0700
+Message-Id: <118418153862-git-send-email-hpa@zytor.com>
+X-Mailer: git-send-email 1.5.2.2
+In-Reply-To: <1184181538674-git-send-email-hpa@zytor.com>
+References: <1184181538674-git-send-email-hpa@zytor.com>
+Message-Id: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Christoph -- I have a question about one part of the patches. In
-throttle_vm_writeout() you added a clause that checks for __GFP_FS |
-__GFP_IO and if they're not both set it calls blk_congestion_wait()
-immediately and then returns, no change for looping. Two questions:
+From: H. Peter Anvin <hpa@zytor.com>
 
-1. This seems like an unrelated bug fix. Should you submit it as a
-standalone patch?
+Change MAINTAINERS to formally take responsibility for the i386 boot code.
 
-2. You put this gfp check before the check for get_dirty_limits. It's
-possible that this will block even though without your change it would
-have returned straight away. Would it better, instead of adding the
-if-clause at the top of the function, to embed the gfp check at the end
-of the for-loop after calling blk_congestion_wait?
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ MAINTAINERS |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-	-- Ethan
+diff --git a/MAINTAINERS b/MAINTAINERS
+index df40a4e..7f92ce2 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1750,8 +1750,8 @@ T:	http://www.harbaum.org/till/i2c_tiny_usb
+ S:	Maintained
+ 
+ i386 BOOT CODE
+-P:	Riley H. Williams
+-M:	Riley@Williams.Name
++P:	H. Peter Anvin
++M:	hpa@zytor.com
+ L:	Linux-Kernel@vger.kernel.org
+ S:	Maintained
+ 
+-- 
+1.5.2.2
 
