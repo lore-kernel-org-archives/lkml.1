@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765003AbXGKSSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761655AbXGKSZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765003AbXGKSSW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758424AbXGKSSN
+	id S1761655AbXGKSZK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXGKSY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:18:13 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:43857 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758473AbXGKSSM (ORCPT
+	Wed, 11 Jul 2007 14:24:58 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54774 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755014AbXGKSY6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:18:12 -0400
-Date: Wed, 11 Jul 2007 11:17:58 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       olaf.kirch@oracle.com, johnpol@2ka.mipt.ru
-Subject: Re: [PATCH][RFC] network splice receive v3
-Message-ID: <20070711181758.GX1011@tasint.org>
-Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	olaf.kirch@oracle.com, johnpol@2ka.mipt.ru
-References: <20070711091927.GQ4587@kernel.dk>
+	Wed, 11 Jul 2007 14:24:58 -0400
+Date: Wed, 11 Jul 2007 19:24:13 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Jes Sorensen <jes@sgi.com>
+cc: Dmitry Monakhov <dmonakhov@sw.ru>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       holt@sgi.com
+Subject: Re: [patch] mm: recheck lock rlim after f_op->mmap() method
+In-Reply-To: <46949751.1060701@sgi.com>
+Message-ID: <Pine.LNX.4.64.0707111906180.22786@blonde.wat.veritas.com>
+References: <20070709184917.GA8720@dnb.sw.ru> <Pine.LNX.4.64.0707101813390.4717@blonde.wat.veritas.com>
+ <46949751.1060701@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070711091927.GQ4587@kernel.dk>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAZG1vbmFraG92QHN3LnJ1AGplc0BzZ2kuY29tAGhvbHRAc2dpLmNvbQBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAGhjaEBpbmZyYWRlYWQub3JnAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 11:19:27AM +0200, Jens Axboe wrote:
-> Subject: [PATCH] splice: don't assume regular pages in splice_to_pipe()
+On Wed, 11 Jul 2007, Jes Sorensen wrote:
+> Hugh Dickins wrote:
+> > 
+> > Or would this simpler patch be the right one?  I suspect the
+> > mspec driver only says VM_LOCKED because of a deep-seated but
+> > irrational fear that its pages might fall into reclaim.
 > 
-> Allow caller to pass in a release function, there might be
-> other resources that need releasing as well. Needed for
-> network receive.
-> 
-> diff --git a/fs/splice.c b/fs/splice.c
-> index 3160951..4b4b501 100644
-> --- a/fs/splice.c
-> +++ b/fs/splice.c
-> @@ -254,11 +254,16 @@ ssize_t splice_to_pipe(struct pipe_inode_info *pipe,
->  	}
->  
->  	while (page_nr < spd_pages)
-> -		page_cache_release(spd->pages[page_nr++]);
-> +		spd->spd_release(spd, page_nr++);
+> My mind is rusty on this one, so I checked with Robin Holt and his
+> is too .... most likely mspec has it for legacy problems, if your
+> change shows up to cause new problems, we'll fix them when they appear.
+> So from our side, it's fine to go ahead with this patch.
 
-	Rather than requiring the caller set this, shouldn't we just
-allow it?  Especially given there is only one non-page user?
+Thanks a lot, Jes: you're right, it probably did something useful
+(though incorrectly) in 2.4, but we'd better get rid of it now.
+I've Cc'ed Andrew, hoping he'll magically pick up the patch...
 
-  	while (page_nr < spd_pages)
- -		page_cache_release(spd->pages[page_nr++]);
- +		if (spd->spd_release)
- +			spd->spd_release(spd, page_nr++);
- +		else
- +			page_cache_release(spd->pages[page_nr++]);
 
-Joel
+[PATCH] mspec_mmap don't set VM_LOCKED
 
--- 
+mspec_mmap was setting VM_LOCKED (without adjusting locked_vm):
+don't do that, it serves no purpose in 2.6, other than to mess
+up the locked_vm accounting - mspec's pages won't get reclaimed
+anyway.  Thanks to Dmitry Monakhov for raising the issue.
 
-"Any man who is under 30, and is not a liberal, has not heart;
- and any man who is over 30, and is not a conservative, has no brains."
-         - Sir Winston Churchill 
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Acked-by: Jes Sorensen <jes@sgi.com>
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+--- 2.6.22/drivers/char/mspec.c	2007-04-26 04:08:32.000000000 +0100
++++ linux/drivers/char/mspec.c	2007-07-10 18:12:11.000000000 +0100
+@@ -265,7 +265,7 @@ mspec_mmap(struct file *file, struct vm_
+ 	vdata->refcnt = ATOMIC_INIT(1);
+ 	vma->vm_private_data = vdata;
+ 
+-	vma->vm_flags |= (VM_IO | VM_LOCKED | VM_RESERVED | VM_PFNMAP);
++	vma->vm_flags |= (VM_IO | VM_RESERVED | VM_PFNMAP);
+ 	if (vdata->type == MSPEC_FETCHOP || vdata->type == MSPEC_UNCACHED)
+ 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 	vma->vm_ops = &mspec_vm_ops;
