@@ -1,75 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763922AbXGKMpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764266AbXGKMqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763922AbXGKMpr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761622AbXGKMpi
+	id S1764266AbXGKMqA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764076AbXGKMpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:45:38 -0400
-Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:36509 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761426AbXGKMpg (ORCPT
+	Wed, 11 Jul 2007 08:45:50 -0400
+Received: from mercury.sygneca.com ([83.142.230.29]:54206 "EHLO
+	mx2.sygneca.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764045AbXGKMpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:45:36 -0400
-Date: Wed, 11 Jul 2007 06:45:34 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [EXT4 set 7][PATCH 1/1]Remove 32000 subdirs limit.
-Message-ID: <20070711124534.GA6417@schatzie.adilger.int>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-References: <1183275498.4010.135.camel@localhost.localdomain> <20070710224011.e60b9864.akpm@linux-foundation.org>
+	Wed, 11 Jul 2007 08:45:49 -0400
+X-Greylist: delayed 613 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 08:45:49 EDT
+Message-ID: <4694CE86.4040209@martinorr.name>
+Date: Wed, 11 Jul 2007 13:35:18 +0100
+From: Martin Orr <martin@martinorr.name>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070621)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710224011.e60b9864.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_tiberius-3605-1184157333-0001-2"
+To: Stefano Rivoir <s.rivoir@gts.it>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>	<4693327E.6000006@gts.it>	<alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>	<46947ADF.4080605@gts.it>
+In-Reply-To: <46947ADF.4080605@gts.it>
+X-Enigmail-Version: 0.95.0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 10, 2007  22:40 -0700, Andrew Morton wrote:
-> On Sun, 01 Jul 2007 03:38:18 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
-> > A EXT4_FEATURE_RO_COMPAT_DIR_NLINK flag has been added and it is set if
-> > the subdir count for any directory crosses 65000.
-> 
-> Would I be correct in assuming that a later fsck will clear
-> EXT4_FEATURE_RO_COMPAT_DIR_NLINK if there are no longer any >65000 subdir
-> directories?
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Correct.
+--=_tiberius-3605-1184157333-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-> If so, that is worth a mention in the changelog, perhaps?
-> 
-> Please remind us what is the behaviour of an RO_COMPAT flag?  It means that
-> old ext4, ext3 and ext2 can only mount this fs read-only, yes?
+On 11/07/07 06:38, Stefano Rivoir wrote:
+> Linus Torvalds wrote:
+> > On Tue, 10 Jul 2007, Stefano Rivoir wrote:
+> >> 2.6.22 hangs at boot on my box. Here attached a original dmesg from =
+2.6.21,
+> >> and a copy of it where it stops on 2.6.22 (I can't attach the origin=
+al 2.6.22
+> >> dmesg because it's not logged to disk yet); it actually stops right =
+after
+> >> 'init' launches.
+> Ok, the guilty bit is gcc: in my box, compiling kernel with gcc 4.2.x
+> (which is installed on my debian/sid) turns into a hang (in init,
+> seemingly, maybe not even in kernel itself), while gcc-4.1 is allright.=
 
-Also correct.  The COMPAT flag behaviour is described in detail in
-Documentation/filesystems/ext[234].txt
 
-> > +static inline void ext4_inc_count(handle_t *handle, struct inode *inode)
-> > +{
-> > +	inc_nlink(inode);
-> > +	if (is_dx(inode) && inode->i_nlink > 1) {
-> > +		/* limit is 16-bit i_links_count */
-> > +		if (inode->i_nlink >= EXT4_LINK_MAX || inode->i_nlink == 2) {
-> > +			inode->i_nlink = 1;
-> > +			EXT4_SET_RO_COMPAT_FEATURE(inode->i_sb,
-> > +					      EXT4_FEATURE_RO_COMPAT_DIR_NLINK);
-> > +		}
-> > +	}
-> > +}
-> 
-> Why do we set EXT4_FEATURE_RO_COMPAT_DIR_NLINK if i_nlink==2?
+I have the same problem, also on Debian sid on amd64.  I can report that =
+the
+Debian version 4.2-20070627-1 of gcc works, 4.2-20070707-1 does not.
 
-Because that means it was previously 1 (inc_nlink() was already called).
+Also the hang occurs in udevsettle; if you wait long enough (60 seconds?)=
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+then udevsettle times out and the boot continues (but doesn't get very fa=
+r
+with an almost empty /dev).
 
+For a few more data points, I tried building my kernel with the new compi=
+ler
+and s/=3Dm/=3Dy/ on the .config and then disabling modules.  This didn't =
+help.
+I have also tried mixing modules and vmlinuz from different gcc versions;=
+
+whether the hang occurs or not depends only on the version used to compil=
+e
+the vmlinuz.
+
+--=20
+Martin Orr
+
+
+--=_tiberius-3605-1184157333-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGlM6QZ6a/BjxtAMARAo1fAKDGkBTsIvE83Ui/gh5qYZEY4JyN7gCg4kbM
+tgyuvxzdEY6XArmnPAbjpOA=
+=goiO
+-----END PGP SIGNATURE-----
+
+--=_tiberius-3605-1184157333-0001-2--
