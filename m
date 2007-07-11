@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763354AbXGKMTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764048AbXGKMV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763354AbXGKMTw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762143AbXGKMTn
+	id S1764048AbXGKMV2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761440AbXGKMVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:19:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49839 "EHLO ogre.sisk.pl"
+	Wed, 11 Jul 2007 08:21:20 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:34214 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760739AbXGKMTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:19:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Hibernation Redesign
-Date: Wed, 11 Jul 2007 14:27:26 +0200
-User-Agent: KMail/1.9.5
-Cc: nigel@nigel.suspend2.net, a1426z@gawab.com, jeremy@goop.org, jbms@cmu.edu,
-       pavel@ucw.cz, nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200707081737.21932.a1426z@gawab.com> <200707112200.43613.nigel@nigel.suspend2.net> <E1I8b0l-0000DB-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I8b0l-0000DB-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1761393AbXGKMVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 08:21:19 -0400
+Date: Wed, 11 Jul 2007 18:00:48 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: containers@lists.osdl.org, menage@google.com, Paul Jackson <pj@sgi.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: containers (was Re: -mm merge plans for 2.6.23)
+Message-ID: <20070711123048.GA31130@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070710105240.GA20914@linux.vnet.ibm.com> <6599ad830707101134k29951c45h4af0807603f52b76@mail.gmail.com> <20070710115319.0bdaff34.akpm@linux-foundation.org> <20070711045516.GH2927@linux.vnet.ibm.com> <20070710222942.382fc9ba.akpm@linux-foundation.org> <20070711090423.GA6758@elte.hu> <20070711022352.71604404.pj@sgi.com> <20070711100323.GA23473@linux.vnet.ibm.com> <20070711101958.GA10095@elte.hu> <20070711113953.GB23473@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707111427.27598.rjw@sisk.pl>
+In-Reply-To: <20070711113953.GB23473@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 11 July 2007 14:09, Miklos Szeredi wrote:
-> > > Freezing of tasks is slowing down suspend.  Don't know how serious
-> > > this is, suspend is pretty fast, but could possibly be even faster.
-> > 
-> > It's FUD. Freezing of tasks normally takes next to no time. I've never 
-> > understood the rediculously long timeout it has. If freezing succeeds, all 
-> > processes are frozen within 1/2 a second tops. If it fails, nothing is going 
-> > to change in the following 19.5 seconds (or whatever it is if I don't 
-> > remember the value properly).
+On Wed, Jul 11, 2007 at 05:09:53PM +0530, Srivatsa Vaddagiri wrote:
+> > (btw., if this goes into 2.6.23 then we cannot possibly turn it off in 2.6.24,
 > 
-> Right.  The 20s timeout is again a sign of brokenness.
+> The fact that we will have two interface for group scheduler in 2.6.24
+> is what worries me a bit (one user-id based and other container based).
 
-Are you still serious?
+I know breaking user-interface is a bad thing across releases. But in
+this particular case, it's probably ok (since fair-group scheduling is a
+brand new feature in Linux)?
 
-> If we expect something to fail, it should fail immediately, without
-> waiting for arbitrary timeouts.
+If we have that option of breaking API between 2.6.23 and 2.6.24
+for fair-group scheduler, then we are in a much more flexible position.
 
-I don't agree.  If you think so, then please tell me what the softlockup
-infrastructure is for.
+For 2.6.23, I can send a user-id based interface for fair-group
+scheduler (with some /proc interface to tune group nice value).
 
-> And if we don't expect it to fail, why the timeout?
+For 2.6.24, this user-id interface will be removed and we will instead
+switch to container based interface. Fair-user scheduling will continue
+to work, its just that users will have to use a daemon (sources sent in
+previous mail) to enable it on top of container-based interface.
 
-We know that it can fail, so we use the timeout to detect failures.
- 
-> Of course we know it can fail (network problems, etc), so it's wrong
-> whatever way we look at it.
-
-Are you trying to say that whatever can fail is wrong?
-
-Greetings,
-Rafael
-
+Hmm..?
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Regards,
+vatsa
