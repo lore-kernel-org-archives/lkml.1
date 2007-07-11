@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937159AbXGLAEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937212AbXGLAEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937159AbXGLAEW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935753AbXGKXoQ
+	id S937212AbXGLAEo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935820AbXGKXqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:44:16 -0400
-Received: from mail.suse.de ([195.135.220.2]:34523 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935692AbXGKXoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:44:15 -0400
-Date: Wed, 11 Jul 2007 16:43:11 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 01/61] Rules on how to use sysfs in userspace programs
-Message-ID: <20070711234311.GA6437@suse.de>
-References: <20070711233021.GA5253@kroah.com> <11841967403365-git-send-email-gregkh@suse.de> <Pine.LNX.4.64.0707111937040.30342@localhost.localdomain>
+	Wed, 11 Jul 2007 19:46:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57802 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934456AbXGKXqF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:46:05 -0400
+Date: Wed, 11 Jul 2007 16:45:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+In-Reply-To: <20070711231912.GA32263@elte.hu>
+Message-ID: <alpine.LFD.0.999.0707111641320.20061@woody.linux-foundation.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+ <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+ <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
+ <20070711231912.GA32263@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707111937040.30342@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 07:38:59PM -0400, Robert P. J. Day wrote:
-> On Wed, 11 Jul 2007, Greg Kroah-Hartman wrote:
+
+
+On Thu, 12 Jul 2007, Ingo Molnar wrote:
 > 
-> > From: Kay Sievers <kay.sievers@vrfy.org>
-> >
-> > Here's a document to help clear things up.
-> >
-> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > ---
-> >  Documentation/sysfs-rules.txt |  166 +++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 166 insertions(+), 0 deletions(-)
-> >  create mode 100644 Documentation/sysfs-rules.txt
-> >
-> > diff --git a/Documentation/sysfs-rules.txt b/Documentation/sysfs-rules.txt
-> > new file mode 100644
-> > index 0000000..42861bb
-> > --- /dev/null
-> > +++ b/Documentation/sysfs-rules.txt
-> > @@ -0,0 +1,166 @@
-> > +Rules on how to access information in the Linux kernel sysfs
-> > +
-> > +The kernel exported sysfs exports internal kernel implementation-details
->        kernel-exported                               implementation details
-> > +and depends on internal kernel structures and layout. It is agreed upon
-> > +by the kernel developers that the Linux kernel does not provide a stable
-> > +internal API. As sysfs is a direct export of kernel internal
-> > +structures, the sysfs interface can not provide a stable interface eighter,
->                                                                       either
-> ...
-> 
-> you might want to hold off on that patch for a few minutes.  :-)
+> We also integrated _all_ feedback we got, and we had the capacity and 
+> capability to fix whatever other feedback comes back - it just never 
+> came ... until today.
 
-Patches for grammer are always accepted :)
+One thing I'll happily talk about is that while 2.6.21 was painful, you 
+and Thomas in particular were both very responsible about the thing, so 
+no, I'm not at all complaining or worried about it in that sense!
 
-Care to make up one against Linus's tree after this goes in?
+I just really _really_ wish we could have two fairly stable releases in a 
+row. I think 2.6.22 has the potential to be a pretty good setup, and I'd 
+really like to avoid having another 2.6.21 immediately afterwards.
 
-thanks,
+So I'm not worried about integration and getting fixes when things break 
+per se, but I *am* worried that this is an area where we've traditionally 
+had lots of unexpected problems.
 
-greg k-h
+And hey, maybe this time there will be none. I just still smart from the 
+last time, so I'd prefer it to go more smoothly this time around.
+
+		Linus
