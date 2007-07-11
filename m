@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932256AbXGKLmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbXGKLm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932256AbXGKLmA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 07:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761245AbXGKLlw
+	id S932303AbXGKLm5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 07:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760764AbXGKLmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 07:41:52 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:58002 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762105AbXGKLlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 07:41:51 -0400
-Date: Wed, 11 Jul 2007 13:41:47 +0200 (MEST)
-Message-Id: <200707111141.l6BBfllO003981@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: amaury.deganseman@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22 libata problem: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+	Wed, 11 Jul 2007 07:42:49 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40602 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755641AbXGKLms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 07:42:48 -0400
+Date: Wed, 11 Jul 2007 04:42:44 -0700
+From: Paul Jackson <pj@sgi.com>
+To: vatsa@linux.vnet.ibm.com
+Cc: mingo@elte.hu, containers@lists.osdl.org, menage@google.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: containers (was Re: -mm merge plans for 2.6.23)
+Message-Id: <20070711044244.c0916fe5.pj@sgi.com>
+In-Reply-To: <20070711113953.GB23473@linux.vnet.ibm.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<20070710105240.GA20914@linux.vnet.ibm.com>
+	<6599ad830707101134k29951c45h4af0807603f52b76@mail.gmail.com>
+	<20070710115319.0bdaff34.akpm@linux-foundation.org>
+	<20070711045516.GH2927@linux.vnet.ibm.com>
+	<20070710222942.382fc9ba.akpm@linux-foundation.org>
+	<20070711090423.GA6758@elte.hu>
+	<20070711022352.71604404.pj@sgi.com>
+	<20070711100323.GA23473@linux.vnet.ibm.com>
+	<20070711101958.GA10095@elte.hu>
+	<20070711113953.GB23473@linux.vnet.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 12:10:06 +0200, Amaury De Ganseman wrote:
-> I see this message in dmesg(full dmesg in attach):
-> 
-> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd ec/00:00:00:00:00/00:00:00:00:00/00 tag 0 cdb 0x0 data 512 in
->          res 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata1: soft resetting port
-> ata1.00: configured for UDMA/133
-> ata1: EH complete
-> sd 0:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-> support DPO or FUA
+Srivatsa wrote:
+> The fact that we will have two interface for group scheduler in 2.6.24
+> is what worries me a bit (one user-id based and other container based).
 
-Your dmesg.txt shows that your kernel is tainted by some nvidia binary crap:
+Yeah.
 
-<all fine to this point>
-nvidia: module license 'NVIDIA' taints kernel.
-ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 24 (level, low) -> IRQ 24
-PCI: Setting latency timer of device 0000:02:00.0 to 64
-NVRM: loading NVIDIA UNIX x86_64 Kernel Module  100.14.11  Wed Jun 13 16:33:22 PDT 2007
-<some reiserfs messages>
-eth0:  setting full-duplex.
-usb 2-2: usbfs: USBDEVFS_CONTROL failed cmd newhidups rqt 161 rq 1 len 2 ret -110
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata1.00: cmd ec/00:00:00:00:00/00:00:00:00:00/00 tag 0 cdb 0x0 data 512 in
-         res 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+One -could- take linear combinations, as Peter drew in his ascii art,
+but would one -want- to do that?
 
-Ask nvidia. We don't care as long as you load that nvidia module.
+I imagine some future time, when users of this wonder why the API is
+more complicated than seems necessary, with two factors determining
+task-groups where one seems sufficient, and the answer is "the other
+factor, user-id's, is just there because we needed it as an interim
+mechanism, and then had to keep it, to preserve ongoing compatibility.
+That's not a very persuasive justification.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
