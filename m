@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762093AbXGKKyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762730AbXGKKzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762093AbXGKKyW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbXGKKyP
+	id S1762730AbXGKKzd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760498AbXGKKzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:54:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58573 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755662AbXGKKyP (ORCPT
+	Wed, 11 Jul 2007 06:55:23 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49442 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758978AbXGKKzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:54:15 -0400
-Date: Wed, 11 Jul 2007 12:54:13 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Benjamin Budts <benjamin.budts@scarlet.be>
-Cc: kvm-devel@lists.sourceforge.net, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: gcc + kvm + 64 bit ? confused :-/
-Message-ID: <20070711105413.GA18767@one.firstfloor.org>
-References: <20070709071640.GB10864@one.firstfloor.org> <46920270.3080309@qumranet.com> <46921BE9.4040801@qumranet.com> <a781481a0707091224s3fb1a2acr6d3ccce091480f61@mail.gmail.com> <4693211D.4040406@qumranet.com> <a781481a0707100222k4f204ed8gfd4823bc21b7bf25@mail.gmail.com> <46936766.20900@qumranet.com> <a781481a0707101707w121da1b7hc82dc0e3638e4570@mail.gmail.com> <46948626.6050308@qumranet.com> <4694A63E.1050606@scarlet.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4694A63E.1050606@scarlet.be>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 11 Jul 2007 06:55:22 -0400
+Message-ID: <4694B702.2050507@s5r6.in-berlin.de>
+Date: Wed, 11 Jul 2007 12:54:58 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
+MIME-Version: 1.0
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Greg KH <greg@kroah.com>, rientjes@google.com,
+       Christoph Lameter <clameter@sgi.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/5] try parent numa_node at first before using default
+References: <200707101641.17672.yinghai.lu@sun.com> <200707101652.31378.yinghai.lu@sun.com>
+In-Reply-To: <200707101652.31378.yinghai.lu@sun.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 11:43:26AM +0200, Benjamin Budts wrote:
-> I'm a bit confused using the -march=xxx options for gcc when using a 
-> kernel virtual machine...
-> Getting errors on smp when using the -march=nocoma for gcc... possibly 
+Yinghai Lu wrote:
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -547,6 +547,8 @@ static void klist_children_put(struct klist_node *n)
+>  
+>  void device_initialize(struct device *dev)
+>  {
+> +	int node;
+> +
+>  	kobj_set_kset_s(dev, devices_subsys);
+>  	kobject_init(&dev->kobj);
+>  	klist_init(&dev->klist_children, klist_children_get,
+> @@ -557,7 +559,9 @@ void device_initialize(struct device *dev)
+>  	spin_lock_init(&dev->devres_lock);
+>  	INIT_LIST_HEAD(&dev->devres_head);
+>  	device_init_wakeup(dev, 0);
+> -	set_dev_node(dev, -1);
+> +
+> +	node = dev->parent ? dev_to_node(dev->parent) : -1;
+> +	set_dev_node(dev, node);
+>  }
 
+Two remarks:
 
-What errors? 
+  - device_add() is perhaps a better place to do this.  Otherwise you
+    had to change code like drivers/input/gameport/gameport.c::
+    gameport_init_port() which sets the parent device *after* the
+    call to device_initialize().
 
-> because smp is not fully supported yet I suppse.
-> 
-> I guess my question is, when installing kvm, is the virtual machine 64 
-> bit capable or should I install 32 bit OS ?
-> 
-> I installed an amd64 debian image and it seems to be running 
-> fine...except for the problem mentioned above.
-> 
-> And what type of architecture do i have to mention with gcc in a kvm ? 
-> march ... arch...
-
-The same as the host or generic cpu if you're not sure.
-
--Andi
+  - device_move() should update the device.node.
+-- 
+Stefan Richter
+-=====-=-=== -=== -=-==
+http://arcgraph.de/sr/
