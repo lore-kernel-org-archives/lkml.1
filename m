@@ -1,41 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762760AbXGKLE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762478AbXGKLGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762760AbXGKLE1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 07:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbXGKLEQ
+	id S1762478AbXGKLGj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 07:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757811AbXGKLGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 07:04:16 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49485 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755662AbXGKLEP (ORCPT
+	Wed, 11 Jul 2007 07:06:32 -0400
+Received: from tamriel.snowman.net ([72.66.115.51]:49850 "EHLO
+	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755641AbXGKLGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 07:04:15 -0400
-Message-ID: <4694B917.5040809@s5r6.in-berlin.de>
-Date: Wed, 11 Jul 2007 13:03:51 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
+	Wed, 11 Jul 2007 07:06:31 -0400
+X-Greylist: delayed 638 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 07:06:31 EDT
+Date: Wed, 11 Jul 2007 06:55:52 -0400
+From: Stephen Frost <sfrost@snowman.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stefano Rivoir <s.rivoir@gts.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+Message-ID: <20070711105552.GG4887@tamriel.snowman.net>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Stefano Rivoir <s.rivoir@gts.it>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org> <46947ADF.4080605@gts.it> <alpine.LFD.0.999.0707110002460.3412@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>, rientjes@google.com,
-       Christoph Lameter <clameter@sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/5] try parent numa_node at first before using default
-References: <200707101641.17672.yinghai.lu@sun.com> <200707101652.31378.yinghai.lu@sun.com> <4694B702.2050507@s5r6.in-berlin.de>
-In-Reply-To: <4694B702.2050507@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/aHqdxxe3Vo3WJ36"
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707110002460.3412@woody.linux-foundation.org>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snowman.net
+X-Operating-System: Linux/2.6.21-2-amd64 (x86_64)
+X-Uptime: 06:43:03 up 9 days, 20:08, 20 users,  load average: 0.02, 0.17,
+	0.25
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
->   - device_move() should update the device.node.
 
-device.numa_node of course.
--- 
-Stefan Richter
--=====-=-=== -=== -=-==
-http://arcgraph.de/sr/
+--/aHqdxxe3Vo3WJ36
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+* Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> I'm hoping your Debian/sid gcc version is some very experimental=20
+> known-buggy one, and not something that people _expect_ to be solid and=
+=20
+> work well?
+
+No such luck. :(  Debian's close to moving to gcc-4.2 as the default
+compiler in sid.  We've rebuilt the archive a number of times (both
+since the 4.2 release and during its development) using gcc-4.2 and
+thought we'd identified most of the issues with it.
+
+It clearly sounds like we need to open a high-severity bug on this issue
+and track it down before we move to it as the default compiler.  I'll
+start harassing the appropriate folks also.
+
+Stefano, can you file that bug, including the config, dmesg, and
+backtrace from gcc if you can get it?
+
+	Thanks,
+
+		Stephen
+
+--/aHqdxxe3Vo3WJ36
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGlLc4rzgMPqB3kigRAgsPAJ9TdhUmEw5qJ+epEiV/YU2Zu9yDfACfV8ji
+GH6PjNnpUyPeic54gQuaamM=
+=Y43K
+-----END PGP SIGNATURE-----
+
+--/aHqdxxe3Vo3WJ36--
