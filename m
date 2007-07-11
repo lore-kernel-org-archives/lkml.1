@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbXGKKFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761610AbXGKKJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762457AbXGKKFx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759207AbXGKKFq
+	id S1761610AbXGKKJw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbXGKKJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:05:46 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:46483 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757463AbXGKKFp (ORCPT
+	Wed, 11 Jul 2007 06:09:45 -0400
+Received: from foobar.is.scarlet.be ([195.95.3.133]:42359 "EHLO
+	foobar.in.scarlet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756690AbXGKKJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:05:45 -0400
-Date: Wed, 11 Jul 2007 11:05:41 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, Dave McCracken <dave.mccracken@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, kenchen@google.com,
-       jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       y-goto@jp.fujitsu.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans -- anti-fragmentation
-Message-ID: <20070711100540.GF7568@skynet.ie>
-References: <20070710102043.GA20303@skynet.ie> <200707100929.46153.dave.mccracken@oracle.com> <20070710152355.GI8779@wotan.suse.de> <Pine.LNX.4.64.0707101148161.11906@schroedinger.engr.sgi.com>
+	Wed, 11 Jul 2007 06:09:44 -0400
+X-Greylist: delayed 1633 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 06:09:44 EDT
+Message-ID: <4694A63E.1050606@scarlet.be>
+Date: Wed, 11 Jul 2007 11:43:26 +0200
+From: Benjamin Budts <benjamin.budts@scarlet.be>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707101148161.11906@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+To: kvm-devel@lists.sourceforge.net
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: gcc + kvm + 64 bit ? confused :-/
+References: <11838956891287-git-send-email-avi@qumranet.com>		<p73lkdqzpdm.fsf@bingen.suse.de> <4691D9C1.4050309@qumranet.com>		<20070709071640.GB10864@one.firstfloor.org>		<46920270.3080309@qumranet.com> <46921BE9.4040801@qumranet.com>		<a781481a0707091224s3fb1a2acr6d3ccce091480f61@mail.gmail.com>		<4693211D.4040406@qumranet.com>		<a781481a0707100222k4f204ed8gfd4823bc21b7bf25@mail.gmail.com>		<46936766.20900@qumranet.com>	<a781481a0707101707w121da1b7hc82dc0e3638e4570@mail.gmail.com> <46948626.6050308@qumranet.com>
+In-Reply-To: <46948626.6050308@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (10/07/07 11:50), Christoph Lameter didst pronounce:
-> On Tue, 10 Jul 2007, Nick Piggin wrote:
-> 
-> > > The sheer list of patches lined up behind this set is strong evidence that 
-> > > there are useful features which depend on a working order>0.  When you add in 
-> > > the existing code that has to struggle with allocation failures or resort to 
-> > > special pools (ie hugetlbfs), I see a clear vote for the need for this patch.
-> > 
-> > Really the only patches so far that I think have convincing reasons are
-> > memory unplug and hugepage, and both of those can get a long way by using
-> > a reserve zone (note it isn't entirely reserved, but still available for
-> > things like pagecache). Beyond that, is there a big demand, and do we
-> > want to make this fundamental change in direction in the kernel to
-> > satisfy that demand?
-> 
-> SLUB can use it to use large order pages which generate less lock 
-> contention which is important in SMP systems. Large pages also increase 
-> the object density in slabs.
-> 
 
-And this should be a measurable benefit at least.
 
-> > So small ones like order-1 and 2 seem reasonably good right now AFAIKS.
-> 
-> Sorry no. Without the antifrag patches I had failures even with order 1 
-> and 2 allocs from SLUB.
-> 
+Hi all,
 
-Which doesn't really suprise me. Order-1 and order-2 allocation succeed
-today because there are so few users of them. Order-1 is sometimes used
-for stacks and the occasional wireless driver instead of on a regular
-basis.
+question...
 
-We still need to revisit the watermark handling before pushing this
-aspect of SLUB forward but I'd like to see grouping pages by mobility go
-forward first so the work is not pie-in-the-sky. I'm sure it can be
-handled better than what we do in -mm today but it's good to know we
-have a comparison point. The first stab at watermark handling may not be
-the best approach but it's held up pretty well so far.
+I'm a bit confused using the -march=xxx options for gcc when using a 
+kernel virtual machine...
+Getting errors on smp when using the -march=nocoma for gcc... possibly 
+because smp is not fully supported yet I suppse.
 
-> > If you perhaps want to say start using order-4  pages for slab or
-> > some other kernel memory allocations, then you can run into the situation
-> > where memory gets fragmented such that you have one sixteenth of your
-> > memory actualy used but you can't allocate from any of your slabs because
-> > there are no order-4 pages left. I guess this is a big difference between
-> > order-low failures and order-high.
-> 
-> The order that is readily reclaimable should be configurable.
+I guess my question is, when installing kvm, is the virtual machine 64 
+bit capable or should I install 32 bit OS ?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+I installed an amd64 debian image and it seems to be running 
+fine...except for the problem mentioned above.
+
+And what type of architecture do i have to mention with gcc in a kvm ? 
+march ... arch...
+
+thx !
+
+karnak:/usr/local/src/sendmail-8.14.1# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 2
+model name      : QEMU Virtual CPU version 0.9.0
+stepping        : 3
+cpu MHz         : 1994.974
+cache size      : 128 KB
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+cmov pat pse36 clflush mmx fxsr sse sse2 syscall lm up pni
+bogomips        : 3929.02
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management:
+
