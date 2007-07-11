@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936087AbXGKXto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936080AbXGKXuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936087AbXGKXto (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935178AbXGKXfd
+	id S936080AbXGKXuU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935191AbXGKXfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:35:33 -0400
-Received: from ns.suse.de ([195.135.220.2]:33916 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:35:37 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33372 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934983AbXGKXf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:35:29 -0400
+	id S935187AbXGKXfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:35:33 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 36/61] sysfs: kill attribute file orphaning
-Date: Wed, 11 Jul 2007 16:31:55 -0700
-Message-Id: <1184196905515-git-send-email-gregkh@suse.de>
+Subject: [PATCH 37/61] sysfs: separate out sysfs_attach_dentry()
+Date: Wed, 11 Jul 2007 16:31:56 -0700
+Message-Id: <11841969101299-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841968992181-git-send-email-gregkh@suse.de>
+In-Reply-To: <1184196905515-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -53,269 +53,170 @@ References: <20070711233021.GA5253@kroah.com>
  <11841968903726-git-send-email-gregkh@suse.de>
  <11841968951572-git-send-email-gregkh@suse.de>
  <11841968992181-git-send-email-gregkh@suse.de>
+ <1184196905515-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-Now that sysfs_dirent can be disconnected from kobject on deletion,
-there is no need to orphan each attribute files.  All [bin_]attribute
-nodes are automatically orphaned when the parent node is deleted.
-Kill attribute file orphaning.
+Consolidate sd <-> dentry association into sysfs_attach_dentry() and
+call it after dentry and inode are properly set up.  This is in
+preparation of sysfs_drop_dentry() updates.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/file.c  |   65 ++++++++++-------------------------------------------
- fs/sysfs/inode.c |   25 --------------------
- fs/sysfs/mount.c |    8 ------
- fs/sysfs/sysfs.h |   16 -------------
- 4 files changed, 13 insertions(+), 101 deletions(-)
+ fs/sysfs/dir.c   |   59 +++++++++++++++++++++++------------------------------
+ fs/sysfs/inode.c |    4 +-
+ fs/sysfs/sysfs.h |    3 +-
+ 3 files changed, 30 insertions(+), 36 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 310430b..d673d9b 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -50,29 +50,15 @@ static struct sysfs_ops subsys_sysfs_ops = {
- 	.store	= subsys_attr_store,
- };
- 
--/**
-- *	add_to_collection - add buffer to a collection
-- *	@buffer:	buffer to be added
-- *	@node:		inode of set to add to
-- */
--
--static inline void
--add_to_collection(struct sysfs_buffer *buffer, struct inode *node)
--{
--	struct sysfs_buffer_collection *set = node->i_private;
--
--	mutex_lock(&node->i_mutex);
--	list_add(&buffer->associates, &set->associates);
--	mutex_unlock(&node->i_mutex);
--}
--
--static inline void
--remove_from_collection(struct sysfs_buffer *buffer, struct inode *node)
--{
--	mutex_lock(&node->i_mutex);
--	list_del(&buffer->associates);
--	mutex_unlock(&node->i_mutex);
--}
-+struct sysfs_buffer {
-+	size_t			count;
-+	loff_t			pos;
-+	char			* page;
-+	struct sysfs_ops	* ops;
-+	struct semaphore	sem;
-+	int			needs_read_fill;
-+	int			event;
-+};
- 
- /**
-  *	fill_read_buffer - allocate and fill buffer from object.
-@@ -144,10 +130,7 @@ sysfs_read_file(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 
- 	down(&buffer->sem);
- 	if (buffer->needs_read_fill) {
--		if (buffer->orphaned)
--			retval = -ENODEV;
--		else
--			retval = fill_read_buffer(file->f_path.dentry,buffer);
-+		retval = fill_read_buffer(file->f_path.dentry,buffer);
- 		if (retval)
- 			goto out;
- 	}
-@@ -246,16 +229,11 @@ sysfs_write_file(struct file *file, const char __user *buf, size_t count, loff_t
- 	ssize_t len;
- 
- 	down(&buffer->sem);
--	if (buffer->orphaned) {
--		len = -ENODEV;
--		goto out;
--	}
- 	len = fill_write_buffer(buffer, buf, count);
- 	if (len > 0)
- 		len = flush_write_buffer(file->f_path.dentry, buffer, len);
- 	if (len > 0)
- 		*ppos += len;
--out:
- 	up(&buffer->sem);
- 	return len;
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index e0d377a..01eeb4b 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -142,14 +142,24 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
+ 	return NULL;
  }
-@@ -265,7 +243,6 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct attribute *attr = attr_sd->s_elem.attr.attr;
- 	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
--	struct sysfs_buffer_collection *set;
- 	struct sysfs_buffer * buffer;
- 	struct sysfs_ops * ops = NULL;
- 	int error;
-@@ -289,26 +266,14 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	else
- 		ops = &subsys_sysfs_ops;
  
-+	error = -EACCES;
++static void sysfs_attach_dentry(struct sysfs_dirent *sd, struct dentry *dentry)
++{
++	dentry->d_op = &sysfs_dentry_ops;
++	dentry->d_fsdata = sysfs_get(sd);
 +
- 	/* No sysfs operations, either from having no subsystem,
- 	 * or the subsystem have no operations.
- 	 */
--	error = -EACCES;
- 	if (!ops)
- 		goto err_mput;
- 
--	/* make sure we have a collection to add our buffers to */
--	mutex_lock(&inode->i_mutex);
--	if (!(set = inode->i_private)) {
--		error = -ENOMEM;
--		if (!(set = inode->i_private = kmalloc(sizeof(struct sysfs_buffer_collection), GFP_KERNEL)))
--			goto err_mput;
--		else
--			INIT_LIST_HEAD(&set->associates);
--	}
--	mutex_unlock(&inode->i_mutex);
--
--	error = -EACCES;
--
- 	/* File needs write support.
- 	 * The inode's perms must say it's ok, 
- 	 * and we must have a store method.
-@@ -335,11 +300,9 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	if (!buffer)
- 		goto err_mput;
- 
--	INIT_LIST_HEAD(&buffer->associates);
- 	init_MUTEX(&buffer->sem);
- 	buffer->needs_read_fill = 1;
- 	buffer->ops = ops;
--	add_to_collection(buffer, inode);
- 	file->private_data = buffer;
- 
- 	/* open succeeded, put active references and pin attr_sd */
-@@ -358,10 +321,8 @@ static int sysfs_release(struct inode * inode, struct file * filp)
++	/* protect sd->s_dentry against sysfs_d_iput */
++	spin_lock(&sysfs_lock);
++	sd->s_dentry = dentry;
++	spin_unlock(&sysfs_lock);
++
++	d_rehash(dentry);
++}
++
+ void sysfs_attach_dirent(struct sysfs_dirent *sd,
+ 			 struct sysfs_dirent *parent_sd, struct dentry *dentry)
  {
- 	struct sysfs_dirent *attr_sd = filp->f_path.dentry->d_fsdata;
- 	struct attribute *attr = attr_sd->s_elem.attr.attr;
--	struct sysfs_buffer * buffer = filp->private_data;
-+	struct sysfs_buffer *buffer = filp->private_data;
+-	if (dentry) {
+-		sd->s_dentry = dentry;
+-		dentry->d_fsdata = sysfs_get(sd);
+-		dentry->d_op = &sysfs_dentry_ops;
+-	}
++	if (dentry)
++		sysfs_attach_dentry(sd, dentry);
  
--	if (buffer)
--		remove_from_collection(buffer, inode);
- 	sysfs_put(attr_sd);
- 	/* After this point, attr should not be accessed. */
- 	module_put(attr->owner);
+ 	if (parent_sd) {
+ 		sd->s_parent = sysfs_get(parent_sd);
+@@ -229,15 +239,13 @@ static int create_dir(struct kobject *kobj, struct dentry *parent,
+ 	if (!sd)
+ 		goto out_drop;
+ 	sd->s_elem.dir.kobj = kobj;
+-	sysfs_attach_dirent(sd, parent->d_fsdata, dentry);
+ 
+-	error = sysfs_create(dentry, mode, init_dir);
++	error = sysfs_create(sd, dentry, mode, init_dir);
+ 	if (error)
+ 		goto out_sput;
+ 
+ 	inc_nlink(parent->d_inode);
+-	dentry->d_op = &sysfs_dentry_ops;
+-	d_rehash(dentry);
++	sysfs_attach_dirent(sd, parent->d_fsdata, dentry);
+ 
+ 	*p_dentry = dentry;
+ 	error = 0;
+@@ -308,42 +316,28 @@ static int sysfs_attach_attr(struct sysfs_dirent * sd, struct dentry * dentry)
+                 init = init_file;
+         }
+ 
+-	dentry->d_fsdata = sysfs_get(sd);
+-	/* protect sd->s_dentry against sysfs_d_iput */
+-	spin_lock(&sysfs_lock);
+-	sd->s_dentry = dentry;
+-	spin_unlock(&sysfs_lock);
+-	error = sysfs_create(dentry, (attr->mode & S_IALLUGO) | S_IFREG, init);
+-	if (error) {
+-		sysfs_put(sd);
++	error = sysfs_create(sd, dentry,
++			     (attr->mode & S_IALLUGO) | S_IFREG, init);
++	if (error)
+ 		return error;
+-	}
+ 
+         if (bin_attr) {
+ 		dentry->d_inode->i_size = bin_attr->size;
+ 		dentry->d_inode->i_fop = &bin_fops;
+ 	}
+-	dentry->d_op = &sysfs_dentry_ops;
+-	d_rehash(dentry);
++
++	sysfs_attach_dentry(sd, dentry);
+ 
+ 	return 0;
+ }
+ 
+ static int sysfs_attach_link(struct sysfs_dirent * sd, struct dentry * dentry)
+ {
+-	int err = 0;
++	int err;
+ 
+-	dentry->d_fsdata = sysfs_get(sd);
+-	/* protect sd->s_dentry against sysfs_d_iput */
+-	spin_lock(&sysfs_lock);
+-	sd->s_dentry = dentry;
+-	spin_unlock(&sysfs_lock);
+-	err = sysfs_create(dentry, S_IFLNK|S_IRWXUGO, init_symlink);
+-	if (!err) {
+-		dentry->d_op = &sysfs_dentry_ops;
+-		d_rehash(dentry);
+-	} else
+-		sysfs_put(sd);
++	err = sysfs_create(sd, dentry, S_IFLNK|S_IRWXUGO, init_symlink);
++	if (!err)
++		sysfs_attach_dentry(sd, dentry);
+ 
+ 	return err;
+ }
+@@ -773,7 +767,6 @@ struct dentry *sysfs_create_shadow_dir(struct kobject *kobj)
+ 	d_instantiate(shadow, igrab(inode));
+ 	inc_nlink(inode);
+ 	inc_nlink(parent->d_inode);
+-	shadow->d_op = &sysfs_dentry_ops;
+ 
+ 	dget(shadow);		/* Extra count - pin the dentry in core */
+ 
 diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 7b9a8f1..d9ccc83 100644
+index d9ccc83..88857a3 100644
 --- a/fs/sysfs/inode.c
 +++ b/fs/sysfs/inode.c
-@@ -191,24 +191,6 @@ int sysfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *))
- 	return error;
+@@ -156,13 +156,13 @@ struct inode * sysfs_new_inode(mode_t mode, struct sysfs_dirent * sd)
+ 	return inode;
  }
  
--static inline void orphan_all_buffers(struct inode *node)
--{
--	struct sysfs_buffer_collection *set;
--	struct sysfs_buffer *buf;
--
--	mutex_lock_nested(&node->i_mutex, I_MUTEX_CHILD);
--	set = node->i_private;
--	if (set) {
--		list_for_each_entry(buf, &set->associates, associates) {
--			down(&buf->sem);
--			buf->orphaned = 1;
--			up(&buf->sem);
--		}
--	}
--	mutex_unlock(&node->i_mutex);
--}
--
--
- /*
-  * Unhashes the dentry corresponding to given sysfs_dirent
-  * Called with parent inode's i_mutex held.
-@@ -216,7 +198,6 @@ static inline void orphan_all_buffers(struct inode *node)
- void sysfs_drop_dentry(struct sysfs_dirent * sd, struct dentry * parent)
+-int sysfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *))
++int sysfs_create(struct sysfs_dirent *sd, struct dentry *dentry, int mode,
++		 int (*init)(struct inode *))
  {
- 	struct dentry *dentry = NULL;
--	struct inode *inode;
- 
- 	/* We're not holding a reference to ->s_dentry dentry but the
- 	 * field will stay valid as long as sysfs_lock is held.
-@@ -236,17 +217,11 @@ void sysfs_drop_dentry(struct sysfs_dirent * sd, struct dentry * parent)
- 		spin_lock(&dcache_lock);
- 		spin_lock(&dentry->d_lock);
- 		if (!d_unhashed(dentry) && dentry->d_inode) {
--			inode = dentry->d_inode;
--			spin_lock(&inode->i_lock);
--			__iget(inode);
--			spin_unlock(&inode->i_lock);
- 			dget_locked(dentry);
- 			__d_drop(dentry);
- 			spin_unlock(&dentry->d_lock);
- 			spin_unlock(&dcache_lock);
- 			simple_unlink(parent->d_inode, dentry);
--			orphan_all_buffers(inode);
--			iput(inode);
- 		} else {
- 			spin_unlock(&dentry->d_lock);
- 			spin_unlock(&dcache_lock);
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 8f6d8b1..37ff9ff 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -19,12 +19,9 @@ struct vfsmount *sysfs_mount;
- struct super_block * sysfs_sb = NULL;
- struct kmem_cache *sysfs_dir_cachep;
- 
--static void sysfs_clear_inode(struct inode *inode);
--
- static const struct super_operations sysfs_ops = {
- 	.statfs		= simple_statfs,
- 	.drop_inode	= sysfs_delete_inode,
--	.clear_inode	= sysfs_clear_inode,
- };
- 
- static struct sysfs_dirent sysfs_root = {
-@@ -36,11 +33,6 @@ static struct sysfs_dirent sysfs_root = {
- 	.s_ino		= 1,
- };
- 
--static void sysfs_clear_inode(struct inode *inode)
--{
--	kfree(inode->i_private);
--}
--
- static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
- {
- 	struct inode *inode;
+ 	int error = 0;
+ 	struct inode * inode = NULL;
+ 	if (dentry) {
+ 		if (!dentry->d_inode) {
+-			struct sysfs_dirent * sd = dentry->d_fsdata;
+ 			if ((inode = sysfs_new_inode(mode, sd))) {
+ 				if (dentry->d_parent && dentry->d_parent->d_inode) {
+ 					struct inode *p_inode = dentry->d_parent->d_inode;
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index d998e8e..8b09e9d 100644
+index 8b09e9d..9fa77d6 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -88,22 +88,6 @@ extern const struct file_operations bin_fops;
- extern const struct inode_operations sysfs_dir_inode_operations;
- extern const struct inode_operations sysfs_symlink_inode_operations;
+@@ -58,7 +58,8 @@ extern struct kmem_cache *sysfs_dir_cachep;
  
--struct sysfs_buffer {
--	struct list_head		associates;
--	size_t				count;
--	loff_t				pos;
--	char				* page;
--	struct sysfs_ops		* ops;
--	struct semaphore		sem;
--	int				orphaned;
--	int				needs_read_fill;
--	int				event;
--};
--
--struct sysfs_buffer_collection {
--	struct list_head	associates;
--};
--
- static inline struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
- {
- 	if (sd) {
+ extern void sysfs_delete_inode(struct inode *inode);
+ extern struct inode * sysfs_new_inode(mode_t mode, struct sysfs_dirent *);
+-extern int sysfs_create(struct dentry *, int mode, int (*init)(struct inode *));
++extern int sysfs_create(struct sysfs_dirent *sd, struct dentry *dentry,
++			int mode, int (*init)(struct inode *));
+ 
+ extern void release_sysfs_dirent(struct sysfs_dirent * sd);
+ extern int sysfs_dirent_exist(struct sysfs_dirent *, const unsigned char *);
 -- 
 1.5.2.2
 
