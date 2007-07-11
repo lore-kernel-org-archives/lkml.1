@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936515AbXGKX5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935412AbXGKX5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936515AbXGKX5J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935276AbXGKXgm
+	id S935412AbXGKX5d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935294AbXGKXgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:36:42 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34020 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:36:48 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33462 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935270AbXGKXgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:36:40 -0400
+	id S935288AbXGKXgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:36:46 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 50/61] sysfs: make sysfs_drop_dentry() access inodes using ilookup()
-Date: Wed, 11 Jul 2007 16:32:09 -0700
-Message-Id: <11841969771935-git-send-email-gregkh@suse.de>
+Subject: [PATCH 51/61] sysfs: rename sysfs_dirent->s_type to s_flags and make room for flags
+Date: Wed, 11 Jul 2007 16:32:10 -0700
+Message-Id: <11841969814023-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841969731234-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841969771935-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -67,123 +67,230 @@ References: <20070711233021.GA5253@kroah.com>
  <11841969641445-git-send-email-gregkh@suse.de>
  <1184196968712-git-send-email-gregkh@suse.de>
  <11841969731234-git-send-email-gregkh@suse.de>
+ <11841969771935-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-sysfs_drop_dentry() used to go through sd->s_dentry and
-sd->s_parent->s_dentry to access the inodes.  This is incorrect
-because inode can be cached without dentry.
-
-This patch makes sysfs_drop_dentry() access inodes using ilookup() on
-sd->s_ino.  This is both correct and simpler.
+Rename sysfs_dirent->s_type to s_flags, pack type into lower eight
+bits and reserve the rest for flags.  sysfs_type() can used to access
+the type.  All existing sd->s_type accesses are converted to use
+sysfs_type().  While at it, type test is changed to equality test
+instead of bit-and test where appropriate.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/inode.c |   63 ++++++++++++++++++++++++------------------------------
- 1 files changed, 28 insertions(+), 35 deletions(-)
+ fs/sysfs/dir.c        |   33 ++++++++++++++++++++-------------
+ fs/sysfs/inode.c      |    8 ++++----
+ fs/sysfs/mount.c      |    2 +-
+ fs/sysfs/sysfs.h      |    7 ++++++-
+ include/linux/sysfs.h |    3 +++
+ 5 files changed, 34 insertions(+), 19 deletions(-)
 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index ee31bf3..63daa06 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -219,9 +219,9 @@ void sysfs_instantiate(struct dentry *dentry, struct inode *inode)
-  */
- void sysfs_drop_dentry(struct sysfs_dirent *sd)
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index b4074ad..eb9bc0a 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -218,9 +218,9 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
+  repeat:
+ 	parent_sd = sd->s_parent;
+ 
+-	if (sd->s_type & SYSFS_KOBJ_LINK)
++	if (sysfs_type(sd) == SYSFS_KOBJ_LINK)
+ 		sysfs_put(sd->s_elem.symlink.target_sd);
+-	if (sd->s_type & SYSFS_COPY_NAME)
++	if (sysfs_type(sd) & SYSFS_COPY_NAME)
+ 		kfree(sd->s_name);
+ 	kfree(sd->s_iattr);
+ 	sysfs_free_ino(sd->s_ino);
+@@ -282,7 +282,7 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
+ 
+ 	sd->s_name = name;
+ 	sd->s_mode = mode;
+-	sd->s_type = type;
++	sd->s_flags = type;
+ 
+ 	return sd;
+ 
+@@ -330,7 +330,7 @@ int sysfs_dirent_exist(struct sysfs_dirent *parent_sd,
+ 	struct sysfs_dirent * sd;
+ 
+ 	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
+-		if (sd->s_type) {
++		if (sysfs_type(sd)) {
+ 			if (strcmp(sd->s_name, new))
+ 				continue;
+ 			else
+@@ -446,11 +446,12 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
  {
--	struct dentry *dentry = NULL, *parent = NULL;
--	struct inode *dir;
-+	struct dentry *dentry = NULL;
- 	struct timespec curtime;
-+	struct inode *inode;
+ 	struct sysfs_dirent * parent_sd = dentry->d_parent->d_fsdata;
+ 	struct sysfs_dirent * sd;
++	struct bin_attribute *bin_attr;
+ 	struct inode *inode;
+ 	int found = 0;
  
- 	/* We're not holding a reference to ->s_dentry dentry but the
- 	 * field will stay valid as long as sysfs_lock is held.
-@@ -229,19 +229,9 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
- 	spin_lock(&sysfs_lock);
- 	spin_lock(&dcache_lock);
+ 	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
+-		if ((sd->s_type & SYSFS_NOT_PINNED) &&
++		if ((sysfs_type(sd) & SYSFS_NOT_PINNED) &&
+ 		    !strcmp(sd->s_name, dentry->d_name.name)) {
+ 			found = 1;
+ 			break;
+@@ -468,16 +469,22 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
  
-+	/* drop dentry if it's there and dput() didn't kill it yet */
- 	if (sd->s_dentry && sd->s_dentry->d_inode) {
--		/* get dentry if it's there and dput() didn't kill it yet */
- 		dentry = dget_locked(sd->s_dentry);
--		parent = dentry->d_parent;
--	} else if (sd->s_parent->s_dentry->d_inode) {
--		/* We need to update the parent even if dentry for the
--		 * victim itself doesn't exist.
--		 */
--		parent = dget_locked(sd->s_parent->s_dentry);
--	}
--
--	/* drop */
--	if (dentry) {
- 		spin_lock(&dentry->d_lock);
- 		__d_drop(dentry);
- 		spin_unlock(&dentry->d_lock);
-@@ -250,36 +240,39 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
- 	spin_unlock(&dcache_lock);
- 	spin_unlock(&sysfs_lock);
- 
--	/* nothing to do if the parent isn't in dcache */
--	if (!parent)
--		return;
-+	dput(dentry);
-+	/* XXX: unpin if directory, this will go away soon */
-+	if (sd->s_type & SYSFS_DIR)
-+		dput(dentry);
- 
- 	/* adjust nlink and update timestamp */
--	dir = parent->d_inode;
--	mutex_lock(&dir->i_mutex);
--
- 	curtime = CURRENT_TIME;
- 
--	dir->i_ctime = dir->i_mtime = curtime;
-+	inode = ilookup(sysfs_sb, sd->s_ino);
-+	if (inode) {
-+		mutex_lock(&inode->i_mutex);
- 
--	if (dentry) {
--		dentry->d_inode->i_ctime = curtime;
--		drop_nlink(dentry->d_inode);
--		if (sd->s_type & SYSFS_DIR) {
--			drop_nlink(dentry->d_inode);
--			drop_nlink(dir);
--			/* XXX: unpin if directory, this will go away soon */
--			dput(dentry);
--		}
-+		inode->i_ctime = curtime;
-+		drop_nlink(inode);
-+		if (sd->s_type & SYSFS_DIR)
-+			drop_nlink(inode);
-+
-+		mutex_unlock(&inode->i_mutex);
-+		iput(inode);
+ 	if (inode->i_state & I_NEW) {
+ 		/* initialize inode according to type */
+-		if (sd->s_type & SYSFS_KOBJ_ATTR) {
++		switch (sysfs_type(sd)) {
++		case SYSFS_KOBJ_ATTR:
+ 			inode->i_size = PAGE_SIZE;
+ 			inode->i_fop = &sysfs_file_operations;
+-		} else if (sd->s_type & SYSFS_KOBJ_BIN_ATTR) {
+-			struct bin_attribute *bin_attr =
+-				sd->s_elem.bin_attr.bin_attr;
++			break;
++		case SYSFS_KOBJ_BIN_ATTR:
++			bin_attr = sd->s_elem.bin_attr.bin_attr;
+ 			inode->i_size = bin_attr->size;
+ 			inode->i_fop = &bin_fops;
+-		} else if (sd->s_type & SYSFS_KOBJ_LINK)
++			break;
++		case SYSFS_KOBJ_LINK:
+ 			inode->i_op = &sysfs_symlink_inode_operations;
++			break;
++		default:
++			BUG();
++		}
  	}
  
--	mutex_unlock(&dir->i_mutex);
-+	/* adjust nlink and udpate timestamp of the parent */
-+	inode = ilookup(sysfs_sb, sd->s_parent->s_ino);
-+	if (inode) {
-+		mutex_lock(&inode->i_mutex);
+ 	sysfs_instantiate(dentry, inode);
+@@ -532,7 +539,7 @@ static void __sysfs_remove_dir(struct dentry *dentry)
+ 	while (*pos) {
+ 		struct sysfs_dirent *sd = *pos;
  
--	/* bye bye */
--	if (dentry)
--		dput(dentry);
--	else
--		dput(parent);
-+		inode->i_ctime = inode->i_mtime = curtime;
-+		if (sd->s_type & SYSFS_DIR)
-+			drop_nlink(inode);
+-		if (sd->s_type && (sd->s_type & SYSFS_NOT_PINNED)) {
++		if (sysfs_type(sd) && (sysfs_type(sd) & SYSFS_NOT_PINNED)) {
+ 			*pos = sd->s_sibling;
+ 			sd->s_sibling = removed;
+ 			removed = sd;
+@@ -775,7 +782,7 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ 				const char * name;
+ 				int len;
+ 
+-				if (!next->s_type)
++				if (!sysfs_type(next))
+ 					continue;
+ 
+ 				name = next->s_name;
+@@ -824,7 +831,7 @@ static loff_t sysfs_dir_lseek(struct file * file, loff_t offset, int origin)
+ 			pos = &sd->s_children;
+ 			while (n && *pos) {
+ 				struct sysfs_dirent *next = *pos;
+-				if (next->s_type)
++				if (sysfs_type(next))
+ 					n--;
+ 				pos = &(*pos)->s_sibling;
+ 			}
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 63daa06..ee3a5d9 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -242,7 +242,7 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ 
+ 	dput(dentry);
+ 	/* XXX: unpin if directory, this will go away soon */
+-	if (sd->s_type & SYSFS_DIR)
++	if (sysfs_type(sd) == SYSFS_DIR)
+ 		dput(dentry);
+ 
+ 	/* adjust nlink and update timestamp */
+@@ -254,7 +254,7 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ 
+ 		inode->i_ctime = curtime;
+ 		drop_nlink(inode);
+-		if (sd->s_type & SYSFS_DIR)
++		if (sysfs_type(sd) == SYSFS_DIR)
+ 			drop_nlink(inode);
+ 
+ 		mutex_unlock(&inode->i_mutex);
+@@ -267,7 +267,7 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ 		mutex_lock(&inode->i_mutex);
+ 
+ 		inode->i_ctime = inode->i_mtime = curtime;
+-		if (sd->s_type & SYSFS_DIR)
++		if (sysfs_type(sd) == SYSFS_DIR)
+ 			drop_nlink(inode);
+ 
+ 		mutex_unlock(&inode->i_mutex);
+@@ -293,7 +293,7 @@ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+ 	for (pos = &parent_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
+ 		sd = *pos;
+ 
+-		if (!sd->s_type)
++		if (!sysfs_type(sd))
+ 			continue;
+ 		if (!strcmp(sd->s_name, name)) {
+ 			*pos = sd->s_sibling;
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 4be9593..078537e 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -26,7 +26,7 @@ static const struct super_operations sysfs_ops = {
+ 
+ static struct sysfs_dirent sysfs_root = {
+ 	.s_count	= ATOMIC_INIT(1),
+-	.s_type		= SYSFS_ROOT,
++	.s_flags	= SYSFS_ROOT,
+ 	.s_mode		= S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO,
+ 	.s_ino		= 1,
+ };
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 6f8aaf3..06b5085 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -34,7 +34,7 @@ struct sysfs_dirent {
+ 		struct sysfs_elem_bin_attr	bin_attr;
+ 	}			s_elem;
+ 
+-	int			s_type;
++	unsigned int		s_flags;
+ 	umode_t			s_mode;
+ 	ino_t			s_ino;
+ 	struct dentry		* s_dentry;
+@@ -86,6 +86,11 @@ extern const struct file_operations bin_fops;
+ extern const struct inode_operations sysfs_dir_inode_operations;
+ extern const struct inode_operations sysfs_symlink_inode_operations;
+ 
++static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
++{
++	return sd->s_flags & SYSFS_TYPE_MASK;
++}
 +
-+		mutex_unlock(&inode->i_mutex);
-+		iput(inode);
-+	}
- }
+ static inline struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
+ {
+ 	if (sd) {
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 161e19a..5813550 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -74,6 +74,7 @@ struct sysfs_ops {
+ 	ssize_t	(*store)(struct kobject *,struct attribute *,const char *, size_t);
+ };
  
- int sysfs_hash_and_remove(struct dentry * dir, const char * name)
++#define SYSFS_TYPE_MASK		0x00ff
+ #define SYSFS_ROOT		0x0001
+ #define SYSFS_DIR		0x0002
+ #define SYSFS_KOBJ_ATTR 	0x0004
+@@ -82,6 +83,8 @@ struct sysfs_ops {
+ #define SYSFS_NOT_PINNED	(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR | SYSFS_KOBJ_LINK)
+ #define SYSFS_COPY_NAME		(SYSFS_DIR | SYSFS_KOBJ_LINK)
+ 
++#define SYSFS_FLAG_MASK		~SYSFS_TYPE_MASK
++
+ #ifdef CONFIG_SYSFS
+ 
+ extern int sysfs_schedule_callback(struct kobject *kobj,
 -- 
 1.5.2.2
 
