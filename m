@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765904AbXGKRy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765892AbXGKRzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765904AbXGKRy1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 13:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759108AbXGKRyQ
+	id S1765892AbXGKRzr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 13:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbXGKRzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 13:54:16 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:32843 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758617AbXGKRyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 13:54:15 -0400
-Message-ID: <46951941.9080908@acm.org>
-Date: Wed, 11 Jul 2007 11:54:09 -0600
-From: Zan Lynx <zlynx@acm.org>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Wed, 11 Jul 2007 13:55:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41945 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758617AbXGKRzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 13:55:38 -0400
+Message-ID: <46951992.8040700@redhat.com>
+Date: Wed, 11 Jul 2007 13:55:30 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <200707111916.35036.jesper.juhl@gmail.com>
-In-Reply-To: <200707111916.35036.jesper.juhl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jan Kara <jack@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Kirill Korotaev <dev@openvz.org>, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Lost JBD fix
+References: <20070709181443.GF30433@duck.suse.cz>
+In-Reply-To: <20070709181443.GF30433@duck.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Envelope-From: zlynx@acm.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> Hi,
->
-> I'm wondering if it's time to make 4K stacks the default and to start 
-> considering removing the 8K stack option alltogether soon?
->
-> One of the big problem spots was XFS, but that got some stack usage 
-> fixes recently, and the 4K stack option has been around for quite a 
-> while now, so people really should have gotten around to fixing any 
-> code that can't handle it.   Are there still any big problem areas 
-> remaining?
->   
-Has anyone fixed the infrequent crashes with 4K stacks and ext3 -> LVM 
-snapshot -> LVM -> DM mirror -> libata?
+On 07/09/2007 02:14 PM, Jan Kara wrote:
+>   Hi Andrew,
+> 
+>   it seems we've accidentally lost one JBD fix (probably it was my mistake
+> when rediffing some checkpointing changes) as Kirill has noted. A transaction
+> can currently be released when there are still some buffers on one of its
+> checkpointing lists. Attached patch should fix it (it still seems to apply
+> fine). Please apply it. Thanks.
+> 
+> 								Honza
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> We have to check that also the second checkpoint list is non-empty before
+> dropping the transaction.
+> 
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> 
+> diff -rupX /home/jack/.kerndiffexclude linux-2.6.16-rc1/fs/jbd/commit.c linux-2.6.16-rc1-1-checkpoint-fix/fs/jbd/commit.c
+> --- linux-2.6.16-rc1/fs/jbd/commit.c	2006-01-15 00:20:12.000000000 +0100
+> +++ linux-2.6.16-rc1-1-checkpoint-fix/fs/jbd/commit.c	2006-01-17 23:35:19.000000000 +0100
+> @@ -829,7 +829,8 @@ restart_loop:
+>  	journal->j_committing_transaction = NULL;
+>  	spin_unlock(&journal->j_state_lock);
+>  
+> -	if (commit_transaction->t_checkpoint_list == NULL) {
+> +	if (commit_transaction->t_checkpoint_list == NULL &&
+> +	    commit_transaction->t_checkpoint_io_list == NULL) {
+>  		__journal_drop_transaction(journal, commit_transaction);
+>  	} else {
+>  		if (journal->j_checkpoint_transactions == NULL) {
 
-The latest (as of 150 days ago) Fedora 6 32-bit kernels crashed every 
-week or two, the 64-bit kernel, which I believe uses 8K stacks, has been 
-up 150 days.
+Critical bugfix -- 2.6.22-stable (no earlier versions) should get
+this too, right?
+
+If so, can we get this merged into 2.6.23-rc soon?
