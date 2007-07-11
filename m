@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760776AbXGKFE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbXGKFFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760776AbXGKFE6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 01:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbXGKFEu
+	id S1760887AbXGKFFq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 01:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757356AbXGKFFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 01:04:50 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:49372 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751762AbXGKFEt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 01:04:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=HLbF29mCG2uwfCVlEkpbQzSdviWlyZrdwayEvOkdCu+ubB0tFdXbwl0hfoeBKIlCAZ/gYiTE05XWXCaYXH5gIfCb770ru5DePSFhsnDJw5Wx6MP9iVARKmkXEHIBUP2S8fLDwVYBdax1rc5Lf4lN0oIBQxPgoNhl4axovmUprJg=
-Message-ID: <469464EC.7030502@gmail.com>
-Date: Wed, 11 Jul 2007 14:04:44 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 11 Jul 2007 01:05:36 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54214 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751762AbXGKFFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 01:05:35 -0400
+From: Neil Brown <neilb@suse.de>
+To: cmm@us.ibm.com
+Date: Wed, 11 Jul 2007 15:05:27 +1000
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Sysfs and suicidal attributes
-References: <Pine.LNX.4.44L0.0707101459580.2556-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707101459580.2556-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18068.25879.745638.343290@notabene.brown>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       nfsv4@linux-nfs.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
+In-Reply-To: message from Neil Brown on Wednesday July 11
+References: <1183275424.4010.126.camel@localhost.localdomain>
+	<20070710163038.ceb2ae94.akpm@linux-foundation.org>
+	<1184105380.3759.65.camel@localhost.localdomain>
+	<20070710182237.e2f88bf3.akpm@linux-foundation.org>
+	<18068.19667.942363.686858@notabene.brown>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
->> Please also note that currently dev->sem does not protect against adding
->> children.  It says it does in the comment on the definition of the field
->> but it's never acquired during device_add().
-> 
-> That's why we need the rwsem.
 
-Alright, there's our confusion.  I thought you were gonna use dev->sem
-to protect new device addition && driver binding.  We can use the same
-rwsem directly for binding protection too but I guess there's no big
-difference one way or the other.
+It just occurred to me:
 
->> Yeah, I'm all for centralizing things.  I just didn't see what could be
->> simplified in LLDs by freezing sysfs access.  Can you point me to any
->> example node which can benefit from such thing?
-> 
-> For USB devices, writes to the /sys/.../bConfigurationValue node will
-> call usb_set_configuration(), which registers child devices.  We don't
-> want these calls to fail because a suspend is underway, since suspends 
-> are supposed to be transparent to userspace.  So they need to block 
-> until the suspend is over.
-> 
-> Access (either read or write) to any sysfs node which actually touches 
-> the device hardware will fail while the device is suspended.  Again, 
-> for transparency such accesses should block.
+ If i_version is 64bit, then knfsd would need to be careful when
+ reading it on a 32bit host.  What are the locking rules?
 
-Thanks for enlightening me.  Probably what can be done is blocking
-regular file sysfs nodes automatically and make it optional (optionally
-enable or disable) for bin attrs.
+ Presumably it is only updated under i_mutex protection, but having to
+ get i_mutex to read it would seem a little heavy handed.
 
->>> Using a freezable workqueue for the callbacks would also localize the 
->>> suspend handling.
->> But the freezable workqueue thing isn't really necessary if any of the
->> discussed solutions is implemented, right?
-> 
-> It isn't necessary if the callbacks aren't needed (i.e., if we give
-> methods a way to unregister their attribute directly).  But if we do
-> keep the callbacks, then for safety's sake their workqueue should be
-> freezable.
+ Should it use a seqlock like i_size?
+ Could we use the same seqlock that i_size uses, or would we need a
+ separate one?
 
-I see.  Let's see how the direct suicide thing works out.
-
-Thanks.
-
--- 
-tejun
+NeilBrown
