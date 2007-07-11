@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764222AbXGKQDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764556AbXGKQFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764222AbXGKQDk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbXGKQDd
+	id S1764556AbXGKQFh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 12:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755311AbXGKQFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:03:33 -0400
-Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:51559 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754778AbXGKQDc (ORCPT
+	Wed, 11 Jul 2007 12:05:30 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1165 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754778AbXGKQF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:03:32 -0400
-Date: Wed, 11 Jul 2007 18:03:48 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] the scheduled i2c-rpx removal
-Message-ID: <20070711180348.02dfd257@hyperion.delvare>
-In-Reply-To: <20070709145724.GC3492@stusta.de>
-References: <20070709145724.GC3492@stusta.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 12:05:29 -0400
+Date: Wed, 11 Jul 2007 17:05:26 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+cc: Songmao Tian <tiansm@lemote.com>,
+       LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: about cs5536 interrupt ack
+In-Reply-To: <4694FA7B.6030409@ru.mvista.com>
+Message-ID: <Pine.LNX.4.64N.0707111653130.26459@blysk.ds.pg.gda.pl>
+References: <4694A495.1050006@lemote.com> <Pine.LNX.4.64N.0707111347360.26459@blysk.ds.pg.gda.pl>
+ <4694FA7B.6030409@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+Hi,
 
-On Mon, 9 Jul 2007 16:57:24 +0200, Adrian Bunk wrote:
-> This patch contains the scheduled removal of the i2c-rpx driver.
+> > does it return if you write 0xc to the address 0x20 in the I/O port space
+> > and then read back from that location?  You should complain to the
+> > manufacturer -- they may be able to fix the problem in a later revision.
 > 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>    Haha, here's an excerpt form CS5535 spec. update:
 > 
-> ---
+> 96. PIC does not support Polling mode
 > 
->  Documentation/feature-removal-schedule.txt |    8 -
->  Documentation/i2c/summary                  |    1 
->  drivers/i2c/algos/Kconfig                  |    4 
->  drivers/i2c/busses/Kconfig                 |    5 -
->  drivers/i2c/busses/Makefile                |    1 
->  drivers/i2c/busses/i2c-rpx.c               |  101 ---------------------
->  6 files changed, 120 deletions(-)
+> [...]
+> 
+> Implications: This mode is not normally used in x86 systems.
+> Resolution: None.
 
-I already have a patch doing this in my tree.
+ Yes, of course:
 
-Also note that the entry in feature-removal-schedule.txt never made it
-to mainline (it was in -mm only), so it can't be removed.
+$ grep OCW3 arch/i386/kernel/*.c
+arch/i386/kernel/time.c:		outb(0x0c, PIC_MASTER_OCW3);
 
-In theory there is a driver rewrite in progress, so my plan is to
-include this removal patch into -mm for now, and send it to Linus only
-for 2.6.24 if I don't receive an acceptable driver meanwhile.
+not at all, indeed!
 
-Thanks,
--- 
-Jean Delvare
+> > You can still dispatch interrupts manually by examining the IRR register,
+> > but having a way to ask the 8259A's prioritiser would be nice.  Although
+> > given such a lethal erratum you report I would not count on the prioritiser
+> > to provide any useful flexibility...
+> 
+>    Why not? AMD just decided not to implement poll mode, that's all.
+
+ If they have decided to skip such an "unimportant" bit of logic, they 
+could have skipped more, only providing support for the basic FNM 
+INT/INTA/EOI scheme -- the only one "architecturally" supported from the 
+original IBM PC on.  And indeed, a brief look at the datasheed reveals 
+they claim to have removed the SFNM too (which IMO provides a more 
+reasonable nesting resolution and should be the default for setups where 
+nesting is used, such as the environment as set up at the bootstrap by the 
+PC BIOS).
+
+  Maciej
