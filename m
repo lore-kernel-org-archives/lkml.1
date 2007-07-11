@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764781AbXGKVKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765524AbXGKVNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764781AbXGKVKk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762307AbXGKVKL
+	id S1765524AbXGKVNV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbXGKVNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:10:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53158 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762142AbXGKVKI (ORCPT
+	Wed, 11 Jul 2007 17:13:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44922 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755549AbXGKVNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:10:08 -0400
-Date: Wed, 11 Jul 2007 14:08:33 -0700
-From: Greg KH <greg@kroah.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, rientjes@google.com,
-       Christoph Lameter <clameter@sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/5] try parent numa_node at first before using default
-Message-ID: <20070711210833.GA22745@kroah.com>
-References: <200707101641.17672.yinghai.lu@sun.com> <200707101652.31378.yinghai.lu@sun.com> <4694B702.2050507@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4694B702.2050507@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Wed, 11 Jul 2007 17:13:08 -0400
+Date: Wed, 11 Jul 2007 14:12:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: [2.6.23 PATCH 01/18] dm: bio_list macro renaming
+Message-Id: <20070711141247.6b852dc9.akpm@linux-foundation.org>
+In-Reply-To: <20070711205635.GS24114@agk.fab.redhat.com>
+References: <20070711205635.GS24114@agk.fab.redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 12:54:58PM +0200, Stefan Richter wrote:
-> Yinghai Lu wrote:
-> > --- a/drivers/base/core.c
-> > +++ b/drivers/base/core.c
-> > @@ -547,6 +547,8 @@ static void klist_children_put(struct klist_node *n)
-> >  
-> >  void device_initialize(struct device *dev)
-> >  {
-> > +	int node;
-> > +
-> >  	kobj_set_kset_s(dev, devices_subsys);
-> >  	kobject_init(&dev->kobj);
-> >  	klist_init(&dev->klist_children, klist_children_get,
-> > @@ -557,7 +559,9 @@ void device_initialize(struct device *dev)
-> >  	spin_lock_init(&dev->devres_lock);
-> >  	INIT_LIST_HEAD(&dev->devres_head);
-> >  	device_init_wakeup(dev, 0);
-> > -	set_dev_node(dev, -1);
-> > +
-> > +	node = dev->parent ? dev_to_node(dev->parent) : -1;
-> > +	set_dev_node(dev, node);
-> >  }
+On Wed, 11 Jul 2007 21:56:35 +0100
+Alasdair G Kergon <agk@redhat.com> wrote:
+
+> From: Alasdair G Kergon <agk@redhat.com>
 > 
-> Two remarks:
+> Rename BIO_LIST() macro to DEFINE_BIO_LIST(), named similarly to
+> DEFINE_SPINLOCK().
 > 
->   - device_add() is perhaps a better place to do this.  Otherwise you
->     had to change code like drivers/input/gameport/gameport.c::
->     gameport_init_port() which sets the parent device *after* the
->     call to device_initialize().
+> Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>
+> Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+> 
+> ---
+>  drivers/md/dm-bio-list.h |    2 +-
+>  drivers/md/dm-delay.c    |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux/drivers/md/dm-bio-list.h
+> ===================================================================
+> --- linux.orig/drivers/md/dm-bio-list.h	2007-07-11 21:37:33.000000000 +0100
+> +++ linux/drivers/md/dm-bio-list.h	2007-07-11 21:37:36.000000000 +0100
+> @@ -22,7 +22,7 @@ static inline int bio_list_empty(const s
+>  
+>  #define BIO_LIST_INIT { .head = NULL, .tail = NULL }
+>  
+> -#define BIO_LIST(bl) \
+> +#define DEFINE_BIO_LIST(bl) \
+>  	struct bio_list bl = BIO_LIST_INIT
+>  
+>  static inline void bio_list_init(struct bio_list *bl)
+> Index: linux/drivers/md/dm-delay.c
+> ===================================================================
+> --- linux.orig/drivers/md/dm-delay.c	2007-07-11 21:37:33.000000000 +0100
+> +++ linux/drivers/md/dm-delay.c	2007-07-11 21:37:36.000000000 +0100
+> @@ -83,7 +83,7 @@ static struct bio *flush_delayed_bios(st
+>  	struct delay_info *delayed, *next;
+>  	unsigned long next_expires = 0;
+>  	int start_timer = 0;
+> -	BIO_LIST(flush_bios);
+> +	DEFINE_BIO_LIST(flush_bios);
+>  
+>  	mutex_lock(&delayed_bios_lock);
+>  	list_for_each_entry_safe(delayed, next, &dc->delayed_bios, list) {
 
-I agree, lots of code sets up the parent pointer after initialize and
-before add.  One such example is the whole USB subsystem.
+As there is only one caller, why not remove the unpleasant-looking
+BIO_LIST and DEFINE_BIO_LIST altogether and just do
 
-Which makes me wonder how this code was really tested at all to show
-that it actually had an affect...
+	struct bio_list flush_bios = { };
 
-So consider this patch series rejected from my side for now.
-
-thanks,
-
-greg k-h
+at that single callsite?
