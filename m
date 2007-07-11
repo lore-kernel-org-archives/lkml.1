@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932216AbXGKVAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933375AbXGKVBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932216AbXGKVAl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933614AbXGKU7Y
+	id S933375AbXGKVBG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933550AbXGKU7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 16:59:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60874 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933531AbXGKU7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 16:59:22 -0400
-Date: Wed, 11 Jul 2007 21:58:46 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: [2.6.23 PATCH 07/18] dm io: fix panic on large request
-Message-ID: <20070711205846.GY24114@agk.fab.redhat.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 11 Jul 2007 16:59:43 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:51517
+	"EHLO moonbase" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933673AbXGKU7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 16:59:41 -0400
+X-Greylist: delayed 3269 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 16:59:40 EDT
+From: Daniel Phillips <phillips@phunq.net>
+To: Zan Lynx <zlynx@acm.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+Date: Wed, 11 Jul 2007 13:05:08 -0700
+User-Agent: KMail/1.9.5
+Cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200707111916.35036.jesper.juhl@gmail.com> <46951941.9080908@acm.org>
+In-Reply-To: <46951941.9080908@acm.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Message-Id: <200707111305.08603.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+On Wednesday 11 July 2007 10:54, Zan Lynx wrote:
+> Jesper Juhl wrote:
+> > Hi,
+> >
+> > I'm wondering if it's time to make 4K stacks the default and to start
+> > considering removing the 8K stack option alltogether soon?
+> >
+> > One of the big problem spots was XFS, but that got some stack usage
+> > fixes recently, and the 4K stack option has been around for quite a
+> > while now, so people really should have gotten around to fixing any
+> > code that can't handle it.   Are there still any big problem areas
+> > remaining?
+>
+> Has anyone fixed the infrequent crashes with 4K stacks and ext3 -> LVM
+> snapshot -> LVM -> DM mirror -> libata?
 
-bio_alloc_bioset() will return NULL if 'num_vecs' is too large.
-Use bio_get_nr_vecs() to get estimation of maximum number.
+Ahem: ext3 -> LVM snapshot -> LVM -> DM mirror -> DM crypt -> md -> libata,
+or worse.
 
-Signed-off-by: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+No, it's not fixed.  The model is wrong.  Virtual block drivers should not
+be callling submit_bio.  The recursive IO submissions should be handled
+on a dedicated stack, most probably allocated as part of the request queue.
+This could be done easily in device mapper and md, or better, in
+submit_bio.
 
----
- drivers/md/dm-io.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletion(-)
+Regards,
 
-Index: linux/drivers/md/dm-io.c
-===================================================================
---- linux.orig/drivers/md/dm-io.c	2007-07-11 21:37:32.000000000 +0100
-+++ linux/drivers/md/dm-io.c	2007-07-11 21:37:43.000000000 +0100
-@@ -293,7 +293,10 @@ static void do_region(int rw, unsigned i
- 		 * bvec for bio_get/set_region() and decrement bi_max_vecs
- 		 * to hide it from bio_add_page().
- 		 */
--		num_bvecs = (remaining / (PAGE_SIZE >> SECTOR_SHIFT)) + 2;
-+		num_bvecs = dm_sector_div_up(remaining,
-+					     (PAGE_SIZE >> SECTOR_SHIFT));
-+		num_bvecs = 1 + min_t(int, bio_get_nr_vecs(where->bdev),
-+				      num_bvecs);
- 		bio = bio_alloc_bioset(GFP_NOIO, num_bvecs, io->client->bios);
- 		bio->bi_sector = where->sector + (where->count - remaining);
- 		bio->bi_bdev = where->bdev;
+Daniel
