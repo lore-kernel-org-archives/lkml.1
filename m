@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbXGKCHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbXGKCKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759496AbXGKCHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 22:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbXGKCHb
+	id S1758686AbXGKCKo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 22:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbXGKCKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 22:07:31 -0400
-Received: from waste.org ([66.93.16.53]:41108 "EHLO waste.org"
+	Tue, 10 Jul 2007 22:10:35 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38947 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754284AbXGKCHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 22:07:31 -0400
-Date: Tue, 10 Jul 2007 21:06:46 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
-       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Erik Andersen <andersen@codepoet.org>
-Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
-Message-ID: <20070711020646.GZ11115@waste.org>
-References: <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com> <20070709095116.c2ea700f.akpm@linux-foundation.org> <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com> <4692E44E.6000606@yahoo.com.au> <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com> <4692E8B5.3030404@yahoo.com.au> <Pine.LNX.4.64.0707091905480.3108@schroedinger.engr.sgi.com> <20070710083212.GG11115@waste.org> <Pine.LNX.4.64.0707101836280.7011@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707101836280.7011@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1753506AbXGKCKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 22:10:33 -0400
+Date: Wed, 11 Jul 2007 12:10:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: [PATCH 2/7] fallocate() implementation in i386, x86_64 and
+ powerpc
+Message-Id: <20070711121034.a3b925b9.sfr@canb.auug.org.au>
+In-Reply-To: <20070710202000.GB8797@amitarora.in.ibm.com>
+References: <20070710201200.GA10255@amitarora.in.ibm.com>
+	<20070710202000.GB8797@amitarora.in.ibm.com>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__11_Jul_2007_12_10_34_+1000_5U2tHjshZm6024bl"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 06:37:42PM -0700, Christoph Lameter wrote:
-> On Tue, 10 Jul 2007, Matt Mackall wrote:
-> 
-> > You're delusional.
-> 
-> Git log says otherwise:
-> 
->  git log --pretty=short mm/slob.c
+--Signature=_Wed__11_Jul_2007_12_10_34_+1000_5U2tHjshZm6024bl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-A dozen trivial cleanups do not make you maintainer. Otherwise we'd
-all be sending our patches to Adrian rather than Linus.
+On Wed, 11 Jul 2007 01:50:00 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.c=
+om> wrote:
+>
+> --- linux-2.6.22.orig/arch/x86_64/ia32/sys_ia32.c
+> +++ linux-2.6.22/arch/x86_64/ia32/sys_ia32.c
+> @@ -879,3 +879,11 @@ asmlinkage long sys32_fadvise64(int fd,=20
+>  	return sys_fadvise64_64(fd, ((u64)offset_hi << 32) | offset_lo,
+>  				len, advice);
+>  }
+> +
+> +asmlinkage long sys32_fallocate(int fd, int mode, unsigned offset_lo,
+> +				unsigned offset_hi, unsigned len_lo,
+> +				unsigned len_hi)
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Please call this compat_sys_fallocate in line with the powerpc version -
+it gives us a hint that maybe we should think about how to consolidate
+them.  I know other stuff in that file is called sys32_ ... but it is time
+for a change :-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__11_Jul_2007_12_10_34_+1000_5U2tHjshZm6024bl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGlDweTgG2atn1QN8RAsMWAJ0QGe/B34/KjrV593lYeDo/VsOYdQCfdMkc
+mHS8nJDyRZd1RWYTVZ+6888=
+=C6vS
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__11_Jul_2007_12_10_34_+1000_5U2tHjshZm6024bl--
