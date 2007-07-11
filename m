@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbXGKGjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759098AbXGKGmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758872AbXGKGjp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbXGKGji
+	id S1759098AbXGKGmN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXGKGl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:39:38 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:7777 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750708AbXGKGjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:39:37 -0400
-Message-ID: <46947B06.8030605@openvz.org>
-Date: Wed, 11 Jul 2007 10:39:02 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrew Morton <akpm@osdl.org>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 0/16] Pid namespaces
-References: <468DF6F7.1010906@openvz.org> <20070711011652.GV11166@waste.org>
-In-Reply-To: <20070711011652.GV11166@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 02:41:56 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:50896 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbXGKGlz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 02:41:55 -0400
+To: akpm@linux-foundation.org
+CC: davem@davemloft.net, miklos@szeredi.hu, netdev@vger.kernel.org,
+       ebiederm@xmission.com, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20070710222511.bcc87825.akpm@linux-foundation.org> (message from
+	Andrew Morton on Tue, 10 Jul 2007 22:25:11 -0700)
+Subject: Re: [PATCH resend] rewrite AF_UNIX garbage collector, fixes race
+References: <E1I61UT-0006Gk-00@dorka.pomaz.szeredi.hu>
+	<20070710.221224.48800386.davem@davemloft.net> <20070710222511.bcc87825.akpm@linux-foundation.org>
+Message-Id: <E1I8VtC-0007uM-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 11 Jul 2007 08:41:30 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Fri, Jul 06, 2007 at 12:01:59PM +0400, Pavel Emelianov wrote:
->> This is "submition for inclusion" of hierarchical, not kconfig
->> configurable, zero overheaded ;) pid namespaces.
+> > But myself, nor any other developers, are going to review your work
+> > any faster if you do things like try to slip things in behind the
+> > maintainer's back as you attempted to do yesterday by asking Andrew to
+> > put your AF_UNIX garbage collector rewrite directly into his -mm tree.
 > 
-> How big is it?
+> mmm...  I didn't see it as a slip-behind-the-back thing.  More a "park it
+> in -mm for a bit of concurrent testing and so it doesn't get lost and so I
+> don't have to worry about it any more" thing.  Plenty of that goes on.
 
-Summary: 50 files changed, 877 insertions, 241 deletions. Besides,
-each patch has a diffstat output in the letter.
+Exactly.  I have CC-ed everyone involved, and clearly stated that I do
+want it reviewed.  There wasn't any evil intention.
 
-> Do I want it on my cell phone or on my wireless router?
-> 
+I _am_ slightly pissed off by still not having this bug fixed after
+two months, and after spending considerable effort at hunting it down
+and finding a solution for it (actually three different solutions by
+now).
 
-I do not know, but those who do not need the namespaces at
-all won't even notice its presence. I tried to do such.
+This may seem low priority and irrelevant, but it _is_ a bug, and it's
+affecting a real world application.  So please take that into
+consideration.
 
-Pavel.
+Thanks,
+Miklos
