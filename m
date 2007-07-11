@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758508AbXGKFmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbXGKFn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758508AbXGKFmv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 01:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXGKFmm
+	id S1759976AbXGKFn3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 01:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbXGKFnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 01:42:42 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:47876 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752560AbXGKFml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 01:42:41 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Wed, 11 Jul 2007 11:35:03 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Jesper Juhl <jesper.juhl@gmail.com>, Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2 -mm 4/9] netconsole: Add some useful tips to documentation
-In-Reply-To: <20070711042036.GR1011@tasint.org>
-Message-ID: <Pine.LNX.4.64.0707111120120.10373@cselinux1.cse.iitk.ac.in>
-References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070710091941.23907.45658.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070710094142.GM11115@waste.org> <200707101434.39938.jesper.juhl@gmail.com>
- <Pine.LNX.4.64.0707110256220.2445@cselinux1.cse.iitk.ac.in>
- <20070711042036.GR1011@tasint.org>
+	Wed, 11 Jul 2007 01:43:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:19323 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755749AbXGKFnU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 01:43:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jjLLEfdwz0jYbOL27rirIjIDP2BV8OaHezAzxEjX4kcEze+zIKFhPRrur0rq/+8XJTvyDpXoPNU/VzP8WvZ2/rQYxS/ogP1A0T5yXwvRBl8qZ+MfxcdCxBOZgyfWIp8XZ9XQbvlLvu6K+a+kyuf/dAwm5mgTAoXcThlJ0+PxBz4=
+Message-ID: <8d6898730707102243t60861fdar147f052501c31958@mail.gmail.com>
+Date: Wed, 11 Jul 2007 11:13:20 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Subject: Re: Reading a physical memory location
+Cc: "vraghavan3@mail.gatech.edu" <vraghavan3@mail.gatech.edu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1a297b360707101502t2670f0d7g5197b9c32ecb967c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1184010444.469290cce48df@webmail.mail.gatech.edu>
+	 <8d6898730707091539y14cf5afbsed7ed769526da0a1@mail.gmail.com>
+	 <1184091142.4693cc06850f7@webmail.mail.gatech.edu>
+	 <1a297b360707101502t2670f0d7g5197b9c32ecb967c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Joel Becker wrote:
-> On Wed, Jul 11, 2007 at 03:40:22AM +0530, Satyam Sharma wrote:
-> > IMHO something that mentions /proc/sys/kernel/printk would be better.
-> > 
-> > You don't need to have built with SysRq support for that, it's clearly
-> > more flexible than the ignore_loglevel option and wouldn't require a
-> > reboot either. I'll send out an updated patch shortly.
-> 
-> 	Why not dmesg -n?  We've been using that for years.  Or is there
-> some extra change in /proc/sys/kernel/printk?
+Which is your platform ?
 
-Yes, "dmesg -n" sounds the most straightforward. There are multiple ways
-of course, for some reason I've always used /proc/sys/kernel/printk for
-this (which has the extra "feature" that it accepts values greater than
-8 too :-)
+Which processor?
 
-Satyam
+If you want to use physical address directly, then disable MMU. That
+is not possible in linux.
+
+Nobin
+
+On 7/11/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> On 7/10/07, vraghavan3@mail.gatech.edu <vraghavan3@mail.gatech.edu> wrote:
+> >
+> > Thanks for the quick reply. But I was wondering as to why I would have to map
+> > the physical address to the virtual address when I know that the string is
+> > permanently in the physical memory because its loaded into flash. Is there a way
+> > to directly read from the physical memory location? Also, do the functions
+> > ioremap() and readl(va) work when called from within a kernel module?
+> >
+>
+> Of course, if you look at almost any of the memory mapped device
+> drivers, you will find that ioremap/readl/writel is the backbone of
+> your infrastructure.
+>
+>
+> Manu
+>
