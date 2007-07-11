@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763764AbXGKMf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764178AbXGKMgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763764AbXGKMf7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758827AbXGKMfv
+	id S1764178AbXGKMgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763985AbXGKMgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:35:51 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:56032 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756028AbXGKMfu (ORCPT
+	Wed, 11 Jul 2007 08:36:05 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:37416 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763995AbXGKMgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:35:50 -0400
-Date: Wed, 11 Jul 2007 14:36:03 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Sysfs and suicidal attributes
-Message-ID: <20070711143603.1f474b39@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <469464EC.7030502@gmail.com>
-References: <Pine.LNX.4.44L0.0707101459580.2556-100000@iolanthe.rowland.org>
-	<469464EC.7030502@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jul 2007 08:36:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=E36Osx46I2SPYfx16buv+esNa63s9Ni5uDRm3fw2JLzkXglRMuH9uJMh+CT4H50HWPzNtvldKIBipOfyYvGkYELhgZpIbWHvFS0Lkkez3/nrL33gPzQKXD3AodVMO6YWzvhB222l/YKv7zv89fHNSCSV7VVW5nG02Al2wZIyd+g=
+Message-ID: <9a8748490707110536k1ec1465bl7497190f16c97af@mail.gmail.com>
+Date: Wed, 11 Jul 2007 14:36:01 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Kevin Winchester" <kjwinchester@gmail.com>
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matthew Hawkins" <darthmdh@gmail.com>,
+       "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070711092658.645023b9.kjwinchester@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <200707102015.44004.kernel@kolivas.org>
+	 <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>
+	 <20070710181419.6d1b2f7e.akpm@linux-foundation.org>
+	 <20070711092658.645023b9.kjwinchester@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 14:04:44 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+On 11/07/07, Kevin Winchester <kjwinchester@gmail.com> wrote:
+[snip]
+>
+> [1] Is there a graphical browser for linux that doesn't suck huge amounts of RAM?
+>
 
-> Thanks for enlightening me.  Probably what can be done is blocking
-> regular file sysfs nodes automatically and make it optional (optionally
-> enable or disable) for bin attrs.
+Dillo (http://www.dillo.org/) is really really tiny , a memory
+footprint somewhere in the hundreds of K area IIRC.
 
-Perhaps all files should block by default, but have a knob to disable
-blocking for special cases (or an attribute flag like ATTR_NOFREEZE?)
+links 2 (http://links.twibright.com/) has a graphical mode in addition
+to the traditional text only mode (links -g) and the memory footprint
+is really tiny.
 
-> >>> Using a freezable workqueue for the callbacks would also localize the 
-> >>> suspend handling.
-> >> But the freezable workqueue thing isn't really necessary if any of the
-> >> discussed solutions is implemented, right?
-> > 
-> > It isn't necessary if the callbacks aren't needed (i.e., if we give
-> > methods a way to unregister their attribute directly).  But if we do
-> > keep the callbacks, then for safety's sake their workqueue should be
-> > freezable.
-
-I agree.
-
-> I see.  Let's see how the direct suicide thing works out.
-
-If it can be done nicely, I'd prefer it over the workqueue solution -
-but not if we end up with hard-to-understand code.
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
