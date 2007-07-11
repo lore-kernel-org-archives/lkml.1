@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765540AbXGKRXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765631AbXGKRYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765540AbXGKRXg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 13:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXGKRX1
+	id S1765631AbXGKRYm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 13:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXGKRYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 13:23:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48068 "EHLO
+	Wed, 11 Jul 2007 13:24:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35689 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751052AbXGKRX0 (ORCPT
+	by vger.kernel.org with ESMTP id S1756734AbXGKRYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 13:23:26 -0400
-Date: Wed, 11 Jul 2007 10:22:35 -0700
+	Wed, 11 Jul 2007 13:24:32 -0400
+Date: Wed, 11 Jul 2007 10:23:32 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: scsi, was Re: -mm merge plans for 2.6.23
-Message-Id: <20070711102235.5a7ccaaa.akpm@linux-foundation.org>
-In-Reply-To: <20070711113718.GB18665@lst.de>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: buffered write patches, -mm merge plans for 2.6.23
+Message-Id: <20070711102332.d5ffd572.akpm@linux-foundation.org>
+In-Reply-To: <20070711113944.GC18665@lst.de>
 References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<20070711113718.GB18665@lst.de>
+	<20070711113944.GC18665@lst.de>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,35 +27,15 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 13:37:18 +0200 Christoph Hellwig <hch@lst.de> wrote:
+On Wed, 11 Jul 2007 13:39:44 +0200 Christoph Hellwig <hch@lst.de> wrote:
 
-> > restore-acpi-change-for-scsi.patch
-> > git-scsi-misc-vs-greg-sysfs-stuff.patch
-> > aacraid-rename-check_reset.patch
-> > scsi-dont-build-scsi_dma_mapunmap-for-has_dma.patch
-> > drivers-scsi-small-cleanups.patch
-> > sym53c8xx_2-claims-cpqarray-device.patch
-> > drivers-scsi-wd33c93c-cleanups.patch
-> > make-seagate_st0x_detect-static.patch
-> > pci-error-recovery-symbios-scsi-base-support.patch
-> > pci-error-recovery-symbios-scsi-first-failure.patch
-> > drivers-scsi-pcmcia-nsp_csc-remove-kernel-24-code.patch
-> > drivers-message-i2o-devicec-remove-redundant-gfp_atomic-from-kmalloc.patch
-> > drivers-scsi-aic7xxx_oldc-remove-redundant-gfp_atomic-from-kmalloc.patch
-> > use-menuconfig-objects-ii-scsi.patch
-> > remove-dead-references-to-module_parm-macro.patch
-> > ppa-coding-police-and-printk-levels.patch
-> > remove-the-dead-cyberstormiii_scsi-option.patch
-> > config_scsi_fd_8xx-no-longer-exists.patch
-> > use-mutex-instead-of-semaphore-in-megaraid-mailbox-driver.patch
-> > 
-> >  Sent to James.
+> >  pagefault-in-write deadlock fixes.  Will hold for 2.6.24.
 > 
-> Care to drop the patches James NACKed every single time?
+> Why that?
 
-I'm not aware of any which fit that description.
+At Nick's request.  More work is needed and the code hasn't had a lot of
+testing/thought/exposure/review.
 
-There may be a couple in there which fix real bugs in an unapproved way. 
-But I keep such patches as a matter of policy, so people keep on getting
-pestered about their bugs.
-
+>  This stuff has been in forever and is needed at various
+> levels.  We need this in for anything to move forward on the buffered
+> write front.
