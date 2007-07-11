@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936502AbXGLAKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936714AbXGLALE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936502AbXGLAKU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936776AbXGKX6j
+	id S936714AbXGLALE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936748AbXGKX7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:58:39 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49129 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936774AbXGKX6h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:58:37 -0400
-Date: Wed, 11 Jul 2007 16:57:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
-Subject: Re: generic clockevents/ (hr)time(r) patches was Re: -mm merge
- plans for 2.6.23
-Message-Id: <20070711165751.b703f003.akpm@linux-foundation.org>
-In-Reply-To: <1184195008.12353.182.camel@chaos>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<1184195008.12353.182.camel@chaos>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 19:59:09 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:58819
+	"EHLO vs166246.vserver.de" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S935770AbXGKX7H convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:59:07 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: tytso@mit.edu, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] rocket: Fix mutex locking compile warning
+Date: Thu, 12 Jul 2007 01:56:32 +0200
+User-Agent: KMail/1.9.6
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707120156.32795.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 01:03:28 +0200
-Thomas Gleixner <tglx@linutronix.de> wrote:
+This fixes
 
-> Andrew, Linus, 
-> 
-> On Tue, 2007-07-10 at 01:31 -0700, Andrew Morton wrote:
-> > When replying, please rewrite the subject suitably and try to Cc: the
-> > appropriate developer(s).
-> 
-> > i386-hpet-check-if-the-counter-works.patch
-> > nohz-fix-nohz-x86-dyntick-idle-handling.patch
-> > acpi-move-timer-broadcast-and-pmtimer-access-before-c3-arbiter-shutdown.patch
-> > clockevents-fix-typo-in-acpi_pmc.patch
-> > timekeeping-fixup-shadow-variable-argument.patch
-> > timerc-cleanup-recently-introduced-whitespace-damage.patch
-> > clockevents-remove-prototypes-of-removed-functions.patch
-> > clockevents-fix-resume-logic.patch
-> > clockevents-fix-device-replacement.patch
-> > tick-management-spread-timer-interrupt.patch
-> > highres-improve-debug-output.patch
-> > hrtimer-speedup-hrtimer_enqueue.patch
-> > pcspkr-use-the-global-pit-lock.patch
-> > ntp-move-the-cmos-update-code-into-ntpc.patch
-> > i386-pit-stop-only-when-in-periodic-or-oneshot-mode.patch
-> > i386-remove-volatile-in-apicc.patch
-> > i386-hpet-assumes-boot-cpu-is-0.patch
-> > i386-move-pit-function-declarations-and-constants-to-correct-header-file.patch
-> 
-> These got sent to Andi as well, but the patches are independent of the
-> x86_64 conversion.
-> 
-> These are bugfixes (nohz-fix-nohz-x86-dyntick-idle-handling.patch) and
-> general improvements of the core code and the existing i386 code.
-> 
-> Can we please merge the above now ?
-> 
-> I can resend them or setup a git repo if you want.
-> 
-> Andi, any objections against the above i386 fixlets ?
-> 
+drivers/char/rocket.c: In function ‘rp_write’:
+drivers/char/rocket.c:1705: warning: ignoring return value of ‘mutex_lock_interruptible’, declared with attribute warn_unused_result
 
-They all look pretty innocuous to me.
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-Could you please take a second look, decide if any of them should also be
-in 2.6.22.x and let me know?
+Index: bu3sch-wireless-dev/drivers/char/rocket.c
+===================================================================
+--- bu3sch-wireless-dev.orig/drivers/char/rocket.c	2007-05-18 18:09:48.000000000 +0200
++++ bu3sch-wireless-dev/drivers/char/rocket.c	2007-07-12 01:52:44.000000000 +0200
+@@ -1702,7 +1702,8 @@ static int rp_write(struct tty_struct *t
+ 	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+ 		return 0;
+ 
+-	mutex_lock_interruptible(&info->write_mtx);
++	if (mutex_lock_interruptible(&info->write_mtx))
++		return -ERESTARTSYS;
+ 
+ #ifdef ROCKET_DEBUG_WRITE
+ 	printk(KERN_INFO "rp_write %d chars...", count);
+
+-- 
+Greetings Michael.
