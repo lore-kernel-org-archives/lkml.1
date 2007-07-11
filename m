@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbXGKGih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbXGKGjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbXGKGih (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbXGKGib
+	id S1758872AbXGKGjp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbXGKGji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:38:31 -0400
-Received: from host28-104-static.26-213-b.business.telecomitalia.it ([213.26.104.28]:46779
-	"EHLO zeus.san-lorenzo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750708AbXGKGia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:38:30 -0400
-Message-ID: <46947ADF.4080605@gts.it>
-Date: Wed, 11 Jul 2007 08:38:23 +0200
-From: Stefano Rivoir <s.rivoir@gts.it>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Wed, 11 Jul 2007 02:39:38 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:7777 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750708AbXGKGjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 02:39:37 -0400
+Message-ID: <46947B06.8030605@openvz.org>
+Date: Wed, 11 Jul 2007 10:39:02 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@osdl.org>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 0/16] Pid namespaces
+References: <468DF6F7.1010906@openvz.org> <20070711011652.GV11166@waste.org>
+In-Reply-To: <20070711011652.GV11166@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Matt Mackall wrote:
+> On Fri, Jul 06, 2007 at 12:01:59PM +0400, Pavel Emelianov wrote:
+>> This is "submition for inclusion" of hierarchical, not kconfig
+>> configurable, zero overheaded ;) pid namespaces.
 > 
-> On Tue, 10 Jul 2007, Stefano Rivoir wrote:
->> 2.6.22 hangs at boot on my box. Here attached a original dmesg from 2.6.21,
->> and a copy of it where it stops on 2.6.22 (I can't attach the original 2.6.22
->> dmesg because it's not logged to disk yet); it actually stops right after
->> 'init' launches.
+> How big is it?
+
+Summary: 50 files changed, 877 insertions, 241 deletions. Besides,
+each patch has a diffstat output in the letter.
+
+> Do I want it on my cell phone or on my wireless router?
 > 
-> Ok, without any oops or hang in any really obvious place, that doesn't 
-> really tell anybody anything specific enough to even start trying to debug 
-> this, so you'd need to do one of two things:
 
-Hi,
+I do not know, but those who do not need the namespaces at
+all won't even notice its presence. I tried to do such.
 
-Ok, the guilty bit is gcc: in my box, compiling kernel with gcc 4.2.x 
-(which is installed on my debian/sid) turns into a hang (in init, 
-seemingly, maybe not even in kernel itself), while gcc-4.1 is allright.
-
-Probably it's something I had to know before... but the light lit when 
-gcc crashed when compiling 2.6.22-git1...
-
-Bye.
-
--- 
-Stefano RIVOIR
-
+Pavel.
