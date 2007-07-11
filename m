@@ -1,28 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765002AbXGKVn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764581AbXGKVqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765002AbXGKVn5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXGKVns
+	id S1764581AbXGKVqU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbXGKVqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:43:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35929 "EHLO
+	Wed, 11 Jul 2007 17:46:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54770 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756605AbXGKVnr (ORCPT
+	by vger.kernel.org with ESMTP id S1755676AbXGKVqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:43:47 -0400
-Date: Wed, 11 Jul 2007 14:42:53 -0700 (PDT)
+	Wed, 11 Jul 2007 17:46:06 -0400
+Date: Wed, 11 Jul 2007 14:45:51 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
-In-Reply-To: <20070711174252.GA16793@elte.hu>
-Message-ID: <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
- <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] Add /sys/kernel/notes
+In-Reply-To: <20070711205120.396CD4D0555@magilla.localdomain>
+Message-ID: <alpine.LFD.0.999.0707111443180.20061@woody.linux-foundation.org>
+References: <20070711205120.396CD4D0555@magilla.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,40 +25,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 11 Jul 2007, Ingo Molnar wrote:
+On Wed, 11 Jul 2007, Roland McGrath wrote:
 > 
-> What you just did here is a slap in the face to a lot of contributors 
-> who worked hard on this code :(
+> It hadn't really occurred to me that the kernel binary would be
+> deliberately hidden from the user.
 
-Ingo, I'm sorry to say so, but your answer just convinced me that you're 
-wrong, and we MUST NOT take that code.
+We don't want to have things like config info, or really preferably 
+anything that can be used to generate kernel addresses.
 
-That was *exactly* the same thing you talked about when I refused to take 
-the original timer changes into 2.6.20. You were talking about how lots of 
-people had worked really hard, and how it was really tested.
+Yeah, we've made that mistake before, and I'm not saying we are perfect 
+here, but if we make this world-readable, I think it needs to guarantee it 
+doesn't really give any rootkit people any new information.
 
-And it damn well was NOT really tested, and 2.6.21 ended up being a 
-horribly painful experience (one of the more painful kernel releases in 
-recent times), and we ended up havign to fix a *lot* of stuff.
+And yes, I do think normal people shouldn't be able to read the vmlinuz 
+binary, the same way they are generally not allowed to read /etc/grub.conf 
+etc.
 
-And you admitted you were wrong at the time.
-
-Now you do the *exact* same thing.
-
-Here's a big clue: it doesn't matter one _whit_ how much face-slapping you 
-get, or how much effort some programmers have put into the code. It's 
-untested. And no, we are *not* going to do another "rip everything out, 
-and replace it with new code" again.
-
-Over my dead body.
-
-We're going to do this thing gradually, or not at all.
-
-And if somebody feels slighted by the face-slap, and thinks he has already 
-done enough, and isn't interested in doing it gradually, then good 
-riddance. The "not at all" seems like a good idea, and maybe we can 
-re-visit this in a year or two.
-
-I'm not going to have another 2.6.21 on my hands.
-
-		Linus
+			Linus
