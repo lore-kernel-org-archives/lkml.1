@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbXGKW5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933549AbXGKW70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757172AbXGKW5B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 18:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762113AbXGKW4x
+	id S933549AbXGKW70 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 18:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761589AbXGKW7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 18:56:53 -0400
-Received: from depni.sinp.msu.ru ([213.131.7.21]:53936 "EHLO depni.sinp.msu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761589AbXGKW4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 18:56:52 -0400
-X-Greylist: delayed 1388 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 18:56:52 EDT
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Orr <martin@martinorr.name>, Stefano Rivoir <s.rivoir@gts.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matthias Klose <doko@debian.org>
-Subject: Re: Linux 2.6.22 released
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>
-	<4693327E.6000006@gts.it>
-	<alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>
-	<46947ADF.4080605@gts.it> <p73vecrxf0t.fsf@bingen.suse.de>
-	<46951892.20406@martinorr.name>
-	<alpine.LFD.0.999.0707111059200.3412@woody.linux-foundation.org>
-	<469544D3.90004@martinorr.name>
-	<alpine.LFD.0.999.0707111410430.20061@woody.linux-foundation.org>
-	<20070711221626.GA25510@one.firstfloor.org>
-From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Date: Thu, 12 Jul 2007 02:33:42 +0400
-In-Reply-To: <20070711221626.GA25510@one.firstfloor.org> (Andi Kleen's message of "Thu\, 12 Jul 2007 00\:16\:26 +0200")
-Message-ID: <87hcoa6055.fsf@depni.sinp.msu.ru>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
+	Wed, 11 Jul 2007 18:59:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59767 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757919AbXGKW7S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 18:59:18 -0400
+Date: Wed, 11 Jul 2007 15:58:23 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Chris Wright <chrisw@sous-sol.org>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+In-Reply-To: <20070711225139.GB4306@sequoia.sous-sol.org>
+Message-ID: <alpine.LFD.0.999.0707111557150.20061@woody.linux-foundation.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+ <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+ <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
+ <1184191488.12353.160.camel@chaos> <alpine.LFD.0.999.0707111518020.20061@woody.linux-foundation.org>
+ <20070711225139.GB4306@sequoia.sous-sol.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
 
->> I don't think this is worth even trying to fix. This is terminal compiler 
->> breakage. Make a bug-report to the gcc people, the inline asm stuff has 
->> been totally buggered by that compiler version.
->> 
->> If it mis-compiled that part, it probably miscompiled a lot of other 
->> things too.
->
-> I just checked with today's gcc 4.2 (070711) freshly compiled and from a quick inspection 
-> the code looks correct again. So perhaps it has been already fixed? 
 
-No, debian's 4.2-20070707-1 is made from another branch (branches/ubuntu/gcc-4_2-branch)
+On Wed, 11 Jul 2007, Chris Wright wrote:
+> 
+> That's not quite right.  Leaving the code unchanged caused breakage
+> already.  The PIT is damn stupid and can be sensitive to how quickly it's
+> programmed.  So code that enable/disable didn't change, but frequency
+> with which it is called did and broke some random boxes.
 
-CC'ing Debian GCC Maintainer, he will be interested.
+Sure. We cannot avoid *all* problems. Bugs happen. 
+
+But at least we could try to make sure that there aren't totally 
+unnecessary changes in that switch-over patch. Which there definitely 
+were, as far as I can tell.
+
+		Linus
