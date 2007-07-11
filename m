@@ -1,78 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937046AbXGLAJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936986AbXGLAJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937046AbXGLAJV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936632AbXGKX4g
+	id S936986AbXGLAJr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934765AbXGKX6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:56:36 -0400
-Received: from tamriel.snowman.net ([72.66.115.51]:43490 "EHLO
-	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936625AbXGKX4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:56:35 -0400
-Date: Wed, 11 Jul 2007 19:56:34 -0400
-From: Stephen Frost <sfrost@snowman.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Martin Orr <martin@martinorr.name>,
-       Stefano Rivoir <s.rivoir@gts.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-Message-ID: <20070711235634.GK4887@tamriel.snowman.net>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andi Kleen <andi@firstfloor.org>,
-	Martin Orr <martin@martinorr.name>,
-	Stefano Rivoir <s.rivoir@gts.it>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org> <46947ADF.4080605@gts.it> <p73vecrxf0t.fsf@bingen.suse.de> <46951892.20406@martinorr.name> <alpine.LFD.0.999.0707111059200.3412@woody.linux-foundation.org> <469544D3.90004@martinorr.name> <alpine.LFD.0.999.0707111410430.20061@woody.linux-foundation.org> <20070711221626.GA25510@one.firstfloor.org> <alpine.LFD.0.999.0707111534340.20061@woody.linux-foundation.org>
+	Wed, 11 Jul 2007 19:58:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:45275 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936693AbXGKX6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:58:21 -0400
+Message-ID: <46956E63.5090607@goop.org>
+Date: Wed, 11 Jul 2007 16:57:23 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rEhM+w5krfX9Wpv9"
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707111534340.20061@woody.linux-foundation.org>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snowman.net
-X-Operating-System: Linux/2.6.21-2-amd64 (x86_64)
-X-Uptime: 19:51:54 up 10 days,  9:16, 21 users,  load average: 0.11, 0.09,
-	0.09
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Roland McGrath <roland@frob.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] Add /sys/kernel/notes
+References: <20070711190434.D0F0C4D0555@magilla.localdomain>
+In-Reply-To: <20070711190434.D0F0C4D0555@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland McGrath wrote:
+> This patch adds the /sys/kernel/notes magic file.  Reading this delivers
+> the contents of the kernel's .notes section.  This lets userland easily
+> glean any detailed information about the running kernel's build that was
+> stored there at compile time.
+>   
 
---rEhM+w5krfX9Wpv9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Is .notes an allocated section?  I didn't think it necessarily appeared 
+in any of the PT_LOAD segments, because the linux/elfnote.h macros don't 
+necessarily set "a" on the section.
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> But yeah, if Debian/sid is just using random compiler snapshots of the=20
-> day, I htink we can just bury this as "pointless".
+I have a patch to always do this, and also convert all the note 
+generation to C code rather than asm.  If your patch works for you, 
+however, it should be completely orthogonal.
 
-Err, debian/sid *isn't* defaulting to gcc-4.2 yet, but it is made
-available to people who want to install it and play with it.
-
-Additionally, the kernel build is actually tied to a specific compiler
-(doesn't default to just using whatever the default compiler is) so even
-when gcc-4.2 is eventually made the default compiler the linux images
-built for Debian won't use it immediately.  That change will be made
-seperately and after additional testing to make sure it doesn't break
-the built kernel which is distributed.
-
-	Thanks,
-
-		Stephen
-
---rEhM+w5krfX9Wpv9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGlW4yrzgMPqB3kigRAgwCAJ92CnYyGcuwkDXPWwHtxJhg8ylIlgCffNx1
-KPj5MLSQVQPrmblLoBLALlA=
-=zo8g
------END PGP SIGNATURE-----
-
---rEhM+w5krfX9Wpv9--
+    J
