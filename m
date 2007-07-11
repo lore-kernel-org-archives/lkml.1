@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932384AbXGKLtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbXGKLud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932384AbXGKLtd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 07:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762354AbXGKLtZ
+	id S932446AbXGKLud (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 07:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760329AbXGKLuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 07:49:25 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:56931 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760329AbXGKLtX (ORCPT
+	Wed, 11 Jul 2007 07:50:23 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:51226 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759769AbXGKLuV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 07:49:23 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: utimes() with vfat is problematic
-To: Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       hirofumi@mail.parknet.co.jp, linux-fsdevel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Wed, 11 Jul 2007 13:49:03 +0200
-References: <8Fkwa-6BT-29@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1I8agq-0000cG-3k@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/QUWlrPKs6IOeXs5BvoeLjhfRrYystv38WLhp
- kQBIzJFG5D2ule4V+HFrWCe89D9JpcC7O+7gDcsvjYeDvo69u5
- VBD31rKj0gZunCsuOsBQQ==
+	Wed, 11 Jul 2007 07:50:21 -0400
+Date: Wed, 11 Jul 2007 05:50:13 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       nfsv4@linux-nfs.org
+Subject: Re: [EXT4 set 4][PATCH 3/5] i_version:ext4 inode version read/store
+Message-ID: <20070711115013.GS6417@schatzie.adilger.int>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	nfsv4@linux-nfs.org
+References: <1183275456.4010.129.camel@localhost.localdomain> <20070710163117.d14fce90.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070710163117.d14fce90.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@computergmbh.de> wrote:
+On Jul 10, 2007  16:31 -0700, Andrew Morton wrote:
+> > This patch adds 64-bit inode version support to ext4. The lower 32 bits
+> > are stored in the osd1.linux1.l_i_version field while the high 32 bits
+> > are stored in the i_version_hi field newly created in the ext4_inode.
+> 
+> So reading the code here does serve to answer the question I raised against
+> the earlier patch.  A bit.
+> 
+> I'd have thought that this patch and the one which adds i_version_hi should
+> be folded into a single diff?
 
-> vfat does not know about ownership, hence the files are always owned by the
-> vfat mounter (or whatever the uid= option specified). Which brings
-> a problem to userspace programs trying to utime() but which do not
-> run as the same user as the vfat mounter, because:
-> 
-> 
-> fs/attr.c:53
-> ret = -EPERM;
-> [...]
-> 
-> /* Check for setting the inode time. */
-> if (ia_valid & (ATTR_MTIME_SET | ATTR_ATIME_SET)) {
-> if (current->fsuid != inode->i_uid && !capable(CAP_FOWNER))
->                         goto error;
->         }
-> 
-> 
-> To trigger the problem:
-> # mount /somevfat -o umask=0,uid=root
-> $ touch -d "2005-05-05" /somevfat/myfile
-> 
-> I am not sure how this could be dealt with besides passing -o quiet to
-> mount.vfat. Any ideas?
+It could be - the original patch to reserve i_version_hi was submitted to
+before the patches were ready to avoid that space being used by something
+else.
 
-Would it be possible to allow any user to modify the fs by adding
-"&& current->fsuid != -1"? I think it's commonly the desired behaviour.
-Off cause the default behaviour should stay the same.
--- 
-Those who hesitate under fire usually do not end up KIA or WIA. 
+> > +	if (EXT4_INODE_SIZE(inode->i_sb) > EXT4_GOOD_OLD_INODE_SIZE) {
+> > +		if (EXT4_FITS_IN_INODE(raw_inode, ei, i_version_hi))
+> > +			inode->i_version |=
+> > +			(__u64)(le32_to_cpu(raw_inode->i_version_hi)) << 32;
+> 
+> <checks the precedence of "(type)" versus "<<">
+> 
+> <OK>
+> 
+> > +	}
+> 
+> I don't quite see how the above two tests are sufficient to unambiguously
+> determine that the i_version_hi field is present on-disk.
+> 
+> I guess we're implicitly assuming that if the on-disk inode is big enough
+> then it _must_ have i_version_hi in there?  If so, why is the comparison
+> with EXT4_GOOD_OLD_INODE_SIZE needed?
 
-Friß, Spammer: pof@7o.7eggert.dyndns.org jhojzbk@I.7eggert.dyndns.org
- ysoMi@qRIeghz.7eggert.dyndns.org a-r@s.7eggert.dyndns.org
+The GOOT_OLD_INODE_SIZE check is needed to know if i_extra_isize is even
+present or valid in the on-disk inode.
+
+> > @@ -2852,8 +2859,14 @@ static int ext4_do_update_inode(handle_t
+> > +	raw_inode->i_disk_version = cpu_to_le32(inode->i_version);
+> > +	if (ei->i_extra_isize) {
+> > +		if (EXT4_FITS_IN_INODE(raw_inode, ei, i_version_hi)) {
+> 
+> There's no comparison with EXT4_GOOD_OLD_INODE_SIZE here...
+
+Because this is the in-memory version and it is always valid (set to zero
+if there is extra space in the on-disk inode).
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
