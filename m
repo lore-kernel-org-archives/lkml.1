@@ -1,209 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934948AbXGKXdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934883AbXGKXdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934948AbXGKXdG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXGKXcy
+	id S934883AbXGKXdb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXGKXcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 11 Jul 2007 19:32:54 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33144 "EHLO mx2.suse.de"
+Received: from ns1.suse.de ([195.135.220.2]:33544 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932776AbXGKXcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932849AbXGKXcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Jul 2007 19:32:53 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 01/61] Rules on how to use sysfs in userspace programs
-Date: Wed, 11 Jul 2007 16:31:20 -0700
-Message-Id: <11841967403365-git-send-email-gregkh@suse.de>
+Cc: Jan Kara <jack@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 02/61] debugfs: add rename for debugfs files
+Date: Wed, 11 Jul 2007 16:31:21 -0700
+Message-Id: <11841967493890-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <20070711233021.GA5253@kroah.com>
+In-Reply-To: <11841967403365-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
+ <11841967403365-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Jan Kara <jack@suse.cz>
 
-Here's a document to help clear things up.
+Implement debugfs_rename() to allow renaming files/directories in debugfs.
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/sysfs-rules.txt |  166 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 166 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/sysfs-rules.txt
+ fs/debugfs/inode.c      |   63 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/debugfs.h |    9 ++++++
+ 2 files changed, 72 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/sysfs-rules.txt b/Documentation/sysfs-rules.txt
-new file mode 100644
-index 0000000..42861bb
---- /dev/null
-+++ b/Documentation/sysfs-rules.txt
-@@ -0,0 +1,166 @@
-+Rules on how to access information in the Linux kernel sysfs
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index ec8896b..1d533a2 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -368,6 +368,69 @@ void debugfs_remove(struct dentry *dentry)
+ }
+ EXPORT_SYMBOL_GPL(debugfs_remove);
+ 
++/**
++ * debugfs_rename - rename a file/directory in the debugfs filesystem
++ * @old_dir: a pointer to the parent dentry for the renamed object. This
++ *          should be a directory dentry.
++ * @old_dentry: dentry of an object to be renamed.
++ * @new_dir: a pointer to the parent dentry where the object should be
++ *          moved. This should be a directory dentry.
++ * @new_name: a pointer to a string containing the target name.
++ *
++ * This function renames a file/directory in debugfs.  The target must not
++ * exist for rename to succeed.
++ *
++ * This function will return a pointer to old_dentry (which is updated to
++ * reflect renaming) if it succeeds. If an error occurs, %NULL will be
++ * returned.
++ *
++ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
++ * returned.
++ */
++struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
++		struct dentry *new_dir, const char *new_name)
++{
++	int error;
++	struct dentry *dentry = NULL, *trap;
++	const char *old_name;
 +
-+The kernel exported sysfs exports internal kernel implementation-details
-+and depends on internal kernel structures and layout. It is agreed upon
-+by the kernel developers that the Linux kernel does not provide a stable
-+internal API. As sysfs is a direct export of kernel internal
-+structures, the sysfs interface can not provide a stable interface eighter,
-+it may always change along with internal kernel changes.
++	trap = lock_rename(new_dir, old_dir);
++	/* Source or destination directories don't exist? */
++	if (!old_dir->d_inode || !new_dir->d_inode)
++		goto exit;
++	/* Source does not exist, cyclic rename, or mountpoint? */
++	if (!old_dentry->d_inode || old_dentry == trap ||
++	    d_mountpoint(old_dentry))
++		goto exit;
++	dentry = lookup_one_len(new_name, new_dir, strlen(new_name));
++	/* Lookup failed, cyclic rename or target exists? */
++	if (IS_ERR(dentry) || dentry == trap || dentry->d_inode)
++		goto exit;
 +
-+To minimize the risk of breaking users of sysfs, which are in most cases
-+low-level userspace applications, with a new kernel release, the users
-+of sysfs must follow some rules to use an as abstract-as-possible way to
-+access this filesystem. The current udev and HAL programs already
-+implement this and users are encouraged to plug, if possible, into the
-+abstractions these programs provide instead of accessing sysfs
-+directly.
++	old_name = fsnotify_oldname_init(old_dentry->d_name.name);
 +
-+But if you really do want or need to access sysfs directly, please follow
-+the following rules and then your programs should work with future
-+versions of the sysfs interface.
++	error = simple_rename(old_dir->d_inode, old_dentry, new_dir->d_inode,
++		dentry);
++	if (error) {
++		fsnotify_oldname_free(old_name);
++		goto exit;
++	}
++	d_move(old_dentry, dentry);
++	fsnotify_move(old_dir->d_inode, new_dir->d_inode, old_name,
++		old_dentry->d_name.name, S_ISDIR(old_dentry->d_inode->i_mode),
++		NULL, old_dentry->d_inode);
++	fsnotify_oldname_free(old_name);
++	unlock_rename(new_dir, old_dir);
++	dput(dentry);
++	return old_dentry;
++exit:
++	if (dentry && !IS_ERR(dentry))
++		dput(dentry);
++	unlock_rename(new_dir, old_dir);
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(debugfs_rename);
 +
-+- Do not use libsysfs
-+  It makes assumptions about sysfs which are not true. Its API does not
-+  offer any abstraction, it exposes all the kernel driver-core
-+  implementation details in its own API. Therefore it is not better than
-+  reading directories and opening the files yourself.
-+  Also, it is not actively maintained, in the sense of reflecting the
-+  current kernel-development. The goal of providing a stable interface
-+  to sysfs has failed, it causes more problems, than it solves. It
-+  violates many of the rules in this document.
+ static decl_subsys(debug, NULL, NULL);
+ 
+ static int __init debugfs_init(void)
+diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
+index 5a9c495..104e51e 100644
+--- a/include/linux/debugfs.h
++++ b/include/linux/debugfs.h
+@@ -38,6 +38,9 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
+ 
+ void debugfs_remove(struct dentry *dentry);
+ 
++struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
++                struct dentry *new_dir, const char *new_name);
 +
-+- sysfs is always at /sys
-+  Parsing /proc/mounts is a waste of time. Other mount points are a
-+  system configuration bug you should not try to solve. For test cases,
-+  possibly support a SYSFS_PATH environment variable to overwrite the
-+  applications behavior, but never try to search for sysfs. Never try
-+  to mount it, if you are not an early boot script.
+ struct dentry *debugfs_create_u8(const char *name, mode_t mode,
+ 				 struct dentry *parent, u8 *value);
+ struct dentry *debugfs_create_u16(const char *name, mode_t mode,
+@@ -85,6 +88,12 @@ static inline struct dentry *debugfs_create_symlink(const char *name,
+ static inline void debugfs_remove(struct dentry *dentry)
+ { }
+ 
++static inline struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
++                struct dentry *new_dir, char *new_name)
++{
++	return ERR_PTR(-ENODEV);
++}
 +
-+- devices are only "devices"
-+  There is no such thing like class-, bus-, physical devices,
-+  interfaces, and such that you can rely on in userspace. Everything is
-+  just simply a "device". Class-, bus-, physical, ... types are just
-+  kernel implementation details, which should not be expected by
-+  applications that look for devices in sysfs.
-+
-+  The properties of a device are:
-+    o devpath (/devices/pci0000:00/0000:00:1d.1/usb2/2-2/2-2:1.0)
-+      - identical to the DEVPATH value in the event sent from the kernel
-+        at device creation and removal
-+      - the unique key to the device at that point in time
-+      - the kernels path to the device-directory without the leading
-+        /sys, and always starting with with a slash
-+      - all elements of a devpath must be real directories. Symlinks
-+        pointing to /sys/devices must always be resolved to their real
-+        target, and the target path must be used to access the device.
-+        That way the devpath to the device matches the devpath of the
-+        kernel used at event time.
-+      - using or exposing symlink values as elements in a devpath string
-+        is a bug in the application
-+
-+    o kernel name (sda, tty, 0000:00:1f.2, ...)
-+      - a directory name, identical to the last element of the devpath
-+      - applications need to handle spaces and characters like '!' in
-+        the name
-+
-+    o subsystem (block, tty, pci, ...)
-+      - simple string, never a path or a link
-+      - retrieved by reading the "subsystem"-link and using only the
-+        last element of the target path
-+
-+    o driver (tg3, ata_piix, uhci_hcd)
-+      - a simple string, which may contain spaces, never a path or a
-+        link
-+      - it is retrieved by reading the "driver"-link and using only the
-+        last element of the target path
-+      - devices which do not have "driver"-link, just do not have a
-+        driver; copying the driver value in a child device context, is a
-+        bug in the application
-+
-+    o attributes
-+      - the files in the device directory or files below a subdirectories
-+        of the same device directory
-+      - accessing attributes reached by a symlink pointing to another device,
-+        like the "device"-link, is a bug in the application
-+
-+  Everything else is just a kernel driver-core implementation detail,
-+  that should not be assumed to be stable across kernel releases.
-+
-+- Properties of parent devices never belong into a child device.
-+  Always look at the parent devices themselves for determining device
-+  context properties. If the device 'eth0' or 'sda' does not have a
-+  "driver"-link, then this device does not have a driver. Its value is empty.
-+  Never copy any property of the parent-device into a child-device. Parent
-+  device-properties may change dynamically without any notice to the
-+  child device.
-+
-+- Hierarchy in a single device-tree
-+  There is only one valid place in sysfs where hierarchy can be examined
-+  and this is below: /sys/devices.
-+  It is planned, that all device directories will end up in the tree
-+  below this directory.
-+
-+- Classification by subsystem
-+  There are currently three places for classification of devices:
-+  /sys/block, /sys/class and /sys/bus. It is planned that these will
-+  not contain any device-directories themselves, but only flat lists of
-+  symlinks pointing to the unified /sys/devices tree.
-+  All three places have completely different rules on how to access
-+  device information. It is planned to merge all three
-+  classification-directories into one place at /sys/subsystem,
-+  following the layout of the bus-directories. All buses and
-+  classes, including the converted block-subsystem, will show up
-+  there.
-+  The devices belonging to a subsystem will create a symlink in the
-+  "devices" directory at /sys/subsystem/<name>/devices.
-+
-+  If /sys/subsystem exists, /sys/bus, /sys/class and /sys/block can be
-+  ignored. If it does not exist, you have always to scan all three
-+  places, as the kernel is free to move a subsystem from one place to
-+  the other, as long as the devices are still reachable by the same
-+  subsystem name.
-+
-+  Assuming /sys/class/<subsystem> and /sys/bus/<subsystem>, or
-+  /sys/block and /sys/class/block are not interchangeable, is a bug in
-+  the application.
-+
-+- Block
-+  The converted block-subsystem at /sys/class/block, or
-+  /sys/subsystem/block will contain the links for disks and partitions
-+  at the same level, never in a hierarchy. Assuming the block-subsytem to
-+  contain only disks and not partition-devices in the same flat list is
-+  a bug in the application.
-+
-+- "device"-link and <subsystem>:<kernel name>-links
-+  Never depend on the "device"-link. The "device"-link is a workaround
-+  for the old layout, where class-devices are not created in
-+  /sys/devices/ like the bus-devices. If the link-resolving of a
-+  device-directory does not end in /sys/devices/, you can use the
-+  "device"-link to find the parent devices in /sys/devices/. That is the
-+  single valid use of the "device"-link, it must never appear in any
-+  path as an element. Assuming the existence of the "device"-link for
-+  a device in /sys/devices/ is a bug in the application.
-+  Accessing /sys/class/net/eth0/device is a bug in the application.
-+
-+  Never depend on the class-specific links back to the /sys/class
-+  directory.  These links are also a workaround for the design mistake
-+  that class-devices are not created in /sys/devices. If a device
-+  directory does not contain directories for child devices, these links
-+  may be used to find the child devices in /sys/class. That is the single
-+  valid use of these links, they must never appear in any path as an
-+  element. Assuming the existence of these links for devices which are
-+  real child device directories in the /sys/devices tree, is a bug in
-+  the application.
-+
-+  It is planned to remove all these links when when all class-device
-+  directories live in /sys/devices.
-+
-+- Position of devices along device chain can change.
-+  Never depend on a specific parent device position in the devpath,
-+  or the chain of parent devices. The kernel is free to insert devices into
-+  the chain. You must always request the parent device you are looking for
-+  by its subsystem value. You need to walk up the chain until you find
-+  the device that matches the expected subsystem. Depending on a specific
-+  position of a parent device, or exposing relative paths, using "../" to
-+  access the chain of parents, is a bug in the application.
-+
+ static inline struct dentry *debugfs_create_u8(const char *name, mode_t mode,
+ 					       struct dentry *parent,
+ 					       u8 *value)
 -- 
 1.5.2.2
 
