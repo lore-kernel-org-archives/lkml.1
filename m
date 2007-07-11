@@ -1,108 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764701AbXGKQz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765363AbXGKQ4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764701AbXGKQz2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbXGKQzV
+	id S1765363AbXGKQ4k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 12:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbXGKQ4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:55:21 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:1225 "EHLO
+	Wed, 11 Jul 2007 12:56:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:3046 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753954AbXGKQzU (ORCPT
+	with ESMTP id S1752068AbXGKQ4c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:55:20 -0400
+	Wed, 11 Jul 2007 12:56:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aHZWJZhjYJCH2grlT51lPfVVmUqgftSUFGNiN5LvRv+XSXDrCHbYz+FO5+bSqzSi9DVwgfu2wwWiL8d6HIT+cqvnPOzgbddSAVWReuaHWffcxSa1BMqb9Sl7viEmaWltpLQjktG18P5rDm/+KYRU1rBodpo6Q14vcSLmkqUVzFY=
-Message-ID: <ca35ce500707110955t44d9b998r769c02df3e29e00a@mail.gmail.com>
-Date: Wed, 11 Jul 2007 18:55:19 +0200
-From: mikie <mikie.pl@gmail.com>
-To: "Duncan Sands" <duncan.sands@math.u-psud.fr>
-Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
-Cc: "Indan Zupancic" <indan@nul.nu>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200707111507.11656.duncan.sands@math.u-psud.fr>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XSII5T28ZIn5YJjQf0j+s1K7YynxE08Fki1QQjm3+WfKhsjdJTrXEjDblJ+uPXEQ9dFoe/8GSrl8OHZ62mNKDNZke7xV7ctzKMJXpBF/78V5v1c/Jwb0JOfEtA5xIE5JVnS2l5dkswg7iCyqH4Me6Mw6NqWn0zMacwRt5Nc25K0=
+Message-ID: <e9c3a7c20707110956r5ea91fd1q1d0b33b9583fe91c@mail.gmail.com>
+Date: Wed, 11 Jul 2007 09:56:31 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+Subject: Re: [PATCH 3/4] Extend the DMA-engine API.
+Cc: akpm@linux-foundation.org, paulus@samba.org, galak@kernel.crashing.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       shannon.nelson@intel.com
+In-Reply-To: <46B96294322F7D458F9648B60E15112C6F3CED@zch01exm26.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
-	 <200707111433.33156.duncan.sands@math.u-psud.fr>
-	 <ca35ce500707110547h1eb9ad68i1f2fe74f46981366@mail.gmail.com>
-	 <200707111507.11656.duncan.sands@math.u-psud.fr>
+References: <11840607111926-git-send-email-wei.zhang@freescale.com>
+	 <e9c3a7c20707101141m17e313e2k99be5b7197edc910@mail.gmail.com>
+	 <46B96294322F7D458F9648B60E15112C6F3CED@zch01exm26.fsl.freescale.net>
+X-Google-Sender-Auth: 4ef018d36218ff11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/7/11, Duncan Sands <duncan.sands@math.u-psud.fr>:
-> Hi,
+On 7/11/07, Zhang Wei-r63237 <Wei.Zhang@freescale.com> wrote:
+> Hi, Dan,
 >
-> > Actually I had to mount it (I  hope that not having it mounted does
-> > not change a lot in this matter).
+> Do you mention here: http://marc.info/?l=linux-raid&m=118290909614463&w=2 ?
+> I see the async_tx is located at crypto/ of the above page, but my patch is for DMA engine in drivers/dma and for DMA engine driver.
 >
-> probably not.  Not having sysfs mounted can cause hotplug to fail,
-> but I think not having /proc/bus/usb mounted shouldn't cause any
-> trouble nowadays.
->
-> > I:* If#= 1 Alt= 3 #EPs= 3 Cls=ff(vend.) Sub=00 Prot=00 Driver=speedtch
-> > E:  Ad=06(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
-> > E:  Ad=07(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
-> > E:  Ad=87(I) Atr=01(Isoc) MxPS= 960 Ivl=1ms
->
-> The * means that this altsetting is being used - this is the altsetting
-> when using isochronous mode.  So it looks to me like isochronous mode is
-> being used.
->
-> > I have CONFIG_USB_DEBUG=y set in kernel. However I do not see any of
-> > the messages you are referring to. It does not say that it tried isoc
-> > and falls to bulk, nothing like that. Also nothing about "setting
-> > interface to ?? failed".
->
-> Most likely it is using isochronous transfer.  The question then is: why
-> is it slow?  I will look in my cupboard to see if I have the same modem,
-> and if so see what speed I can get out of it.
->
-> > Which debug option should I switch to see these?
->
-> Something like this IIRC:
->         echo 7 > /proc/sys/kernel/printk
-> Then it should turn up in dmesg.
->
+> Thanks!
+> Wei.
 
-I made a more advanced testing. I used one computer only to be
-absolutely sure that this is not a hardware issue. So I took a laptop
-(P4 1.8GHz, OHCI usb host), and booted into Knoppix LiveCD. It was
-running kernel 2.6.19 and the version of speedtch module was 1.10.
-First I did something like rmmod speedtch; rmmod ohci-hcd to be sure
-that I start with a fresh environment.
-I also did: echo 7 > /proc/sys/kernel/printk which caused the usual
-debug messages being printed directly in the console.
-Then I did modprobe ohci-hcd;modprobe speedtch enable_isoc=1
+Hi Wei,
 
-Certainly I've put the same firmware in the /lib/firmware so that udev
-found it correctly and loaded it up to the modem. The ADSL link went
-up with the same values (7456 downlink). PPPd started (I use
-pppoatm.so, if that is important). In this setup I achieved transfer
-rates of around 480...500 kbyte/s. Then I did the similar thing, but
-speedtch without enable_isoc, and the result was exactly the same.
-In both cases I still could not see the messages from the speedtch
-driver about enabling isochronous mode, or falling back to bulk,
-nothing like that.
+I was referring to:
+http://marc.info/?l=linux-raid&m=118290909528910&w=2
 
-Right after that, to minimize the risk of any outside network being
-overloaded (I doubt that anyway), I switched to Windows Xp. Transfers
-were up to 730 kbyte/s. So this proves definitely that it is not a
-hardware related issue.
-The transfers were so fast that the LED (marked usb led) on the modem,
-which usually blinks where any transfers are in process, it went
-completely off, and only blinked once a few seconds...
+async_tx is an api that exploits the raw capabilities of the new
+dmaengine interface.  For your case when the existing api calls do not
+provide the proper interface you can open code something like the
+following:
 
-So there is a small progress when compared to my server box (celeron
-633 to remind you), where I can get only 400kbyte/s (on this laptop it
-went 100kbyte/s faster).
+tx = dev->device_prep_dma_<operation>(chan, len, int_flag)
+tx->tx_set_src(dma_addr_t, tx, index /* for multi-source ops */)
+tx->tx_set_dest(dma_addr_t, tx, index)
+tx->tx_submit(tx)
 
-I still cannot get the full 6mbit/s that my ADSL service runs at on
-the linux system.
+The expectation is that the most common usages of dmaengines will use
+async_tx calls, or the 'dma_async_memcpy_foo_to_bar' helper routines.
 
--- 
-Regards,
-MK
+--
+Dan
