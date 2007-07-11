@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763088AbXGKK5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763020AbXGKK6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763088AbXGKK5m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761383AbXGKK5Y
+	id S1763020AbXGKK6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761159AbXGKK6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:57:24 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:6316 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761224AbXGKK5X (ORCPT
+	Wed, 11 Jul 2007 06:58:11 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49453 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760023AbXGKK6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:57:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Db1XKMNWnpN505MiTVJF/BzxlCSUvdLRBXPyD3gxnWo8ml29DEgSjlekSGAWR0QZV3UVLrag3Rmv5xt1ongw6bn8tqWtiSbCDYYtOqU9w4qdiMC0TpsFB/ZKm4pJttBrdyMu2vSfEv2J+frQKQsjPCFOcZU+JkP8gs/QTdn0WQU=
-Message-ID: <84144f020707110357w32a86672icef3374768537b5f@mail.gmail.com>
-Date: Wed, 11 Jul 2007 13:57:22 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: revoke (Was: -mm merge plans for 2.6.23)
-Cc: linux-kernel@vger.kernel.org, "Christoph Hellwig" <hch@lst.de>,
-       viro@zeniv.linux.org.uk, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <84144f020707110141pd8912aaw9df05d665a35d482@mail.gmail.com>
+	Wed, 11 Jul 2007 06:58:10 -0400
+Message-ID: <4694B7A9.7020405@s5r6.in-berlin.de>
+Date: Wed, 11 Jul 2007 12:57:45 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Adrian Bunk <bunk@stusta.de>
+CC: Valdis.Kletnieks@vt.edu, Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <25865.1184096391@turing-police.cc.vt.edu> <20070710222652.GE3492@stusta.de> <46941275.20303@s5r6.in-berlin.de> <20070711000004.GF3492@stusta.de>
+In-Reply-To: <20070711000004.GF3492@stusta.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <84144f020707110141pd8912aaw9df05d665a35d482@mail.gmail.com>
-X-Google-Sender-Auth: 78fcfb00e4d0cc8b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Adrian Bunk wrote:
+>> >   http://kernelnewbies.org/Linux_2_6_22
 
-On 7/11/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Well, revoke is in limbo land waiting for the VFS maintainers to take
-> a look at it...
+> But when you anyway publish release notes for your subsystem, also 
+> pasting them to the Wiki shouldn't be much extra work.
 
-Al took a peek at it and found holes. So no need to worry about merging yet :-)
+I will do so from now on.  Until now I was too lazy to create an account
+there.
+-- 
+Stefan Richter
+-=====-=-=== -=== -=-==
+http://arcgraph.de/sr/
