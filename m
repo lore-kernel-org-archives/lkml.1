@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765825AbXGKXDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934491AbXGKXET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765825AbXGKXDy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761990AbXGKXDo
+	id S934491AbXGKXET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXGKXDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:03:44 -0400
-Received: from www.osadl.org ([213.239.205.134]:58170 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757409AbXGKXDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:03:44 -0400
-Subject: generic clockevents/ (hr)time(r) patches was Re: -mm merge plans
-	for 2.6.23
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 01:03:28 +0200
-Message-Id: <1184195008.12353.182.camel@chaos>
+	Wed, 11 Jul 2007 19:03:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59430 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932782AbXGKXDt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:03:49 -0400
+Date: Wed, 11 Jul 2007 16:03:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] Pass -g to assembler under CONFIG_DEBUG_INFO
+Message-Id: <20070711160335.8705f742.akpm@linux-foundation.org>
+In-Reply-To: <20070711224327.9B0ED4D0555@magilla.localdomain>
+References: <46955BB1.20200@windriver.com>
+	<20070711224327.9B0ED4D0555@magilla.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, Linus, 
+On Wed, 11 Jul 2007 15:43:27 -0700 (PDT)
+Roland McGrath <roland@redhat.com> wrote:
 
-On Tue, 2007-07-10 at 01:31 -0700, Andrew Morton wrote:
-> When replying, please rewrite the subject suitably and try to Cc: the
-> appropriate developer(s).
+> > The -gdwarf2 had a specific reason. 
+> 
+> I have no objection to it.  
+> 
 
-> i386-hpet-check-if-the-counter-works.patch
-> nohz-fix-nohz-x86-dyntick-idle-handling.patch
-> acpi-move-timer-broadcast-and-pmtimer-access-before-c3-arbiter-shutdown.patch
-> clockevents-fix-typo-in-acpi_pmc.patch
-> timekeeping-fixup-shadow-variable-argument.patch
-> timerc-cleanup-recently-introduced-whitespace-damage.patch
-> clockevents-remove-prototypes-of-removed-functions.patch
-> clockevents-fix-resume-logic.patch
-> clockevents-fix-device-replacement.patch
-> tick-management-spread-timer-interrupt.patch
-> highres-improve-debug-output.patch
-> hrtimer-speedup-hrtimer_enqueue.patch
-> pcspkr-use-the-global-pit-lock.patch
-> ntp-move-the-cmos-update-code-into-ntpc.patch
-> i386-pit-stop-only-when-in-periodic-or-oneshot-mode.patch
-> i386-remove-volatile-in-apicc.patch
-> i386-hpet-assumes-boot-cpu-is-0.patch
-> i386-move-pit-function-declarations-and-constants-to-correct-header-file.patch
+OK, thanks.  So I ended up with the below as a probably-2.6.23 thing:
 
-These got sent to Andi as well, but the patches are independent of the
-x86_64 conversion.
 
-These are bugfixes (nohz-fix-nohz-x86-dyntick-idle-handling.patch) and
-general improvements of the core code and the existing i386 code.
+From: Roland McGrath <roland@redhat.com>
 
-Can we please merge the above now ?
+The assembler for a while now supports -gdwarf to generate source line info
+just like the C compiler does.  Source-level assembly debugging sounds like an
+oxymoron, but it is handy to be able to see the right source file and read its
+comments rather than just the disassembly.  This patch enables -gdwarf for
+assembly files when CONFIG_DEBUG_INFO=y and the assembler supports the option.
 
-I can resend them or setup a git repo if you want.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-Andi, any objections against the above i386 fixlets ?
+ Makefile |    1 +
+ 1 files changed, 1 insertion(+)
 
-Thanks,
+diff -puN Makefile~pass-g-to-assembler-under-config_debug_info Makefile
+--- a/Makefile~pass-g-to-assembler-under-config_debug_info
++++ a/Makefile
+@@ -498,6 +498,7 @@ endif
+ 
+ ifdef CONFIG_DEBUG_INFO
+ CFLAGS		+= -g
++AFLAGS		+= $(call as-option, -gdwarf)
+ endif
+ 
+ # Force gcc to behave correct even for buggy distributions
+_
 
-	tglx
 
+If there are problems it'll most likely be with oddball architectures
+running older compilers, I guess.  If something blows up we might need to
+make this an arch/foo/Makefile thing.
 
