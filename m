@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932196AbXGKTSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764789AbXGKTTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932196AbXGKTSR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 15:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbXGKTSG
+	id S1764789AbXGKTTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 15:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbXGKTTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 15:18:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48523 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757775AbXGKTSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 15:18:04 -0400
-Message-ID: <46952CC5.6050800@redhat.com>
-Date: Wed, 11 Jul 2007 15:17:25 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Wed, 11 Jul 2007 15:19:10 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:11110 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757209AbXGKTTJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 15:19:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=C7PXo4AG+JvtS7Gx5jZeGuvXFFKeK4RPSKLxQWOzvOZv86vSUFvd3WpbZKoyFXJiS
+	lA0+tQ/uoqQzyMm0DGjjw==
+Message-ID: <46952D0A.1090304@google.com>
+Date: Wed, 11 Jul 2007 12:18:34 -0700
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de, Tim Gardner <tim.gardner@canonical.com>
-Subject: Re: acpi regression on some laptops
-References: <20070710160056.443ae9ae@i1501.lan.towertech.it>
-In-Reply-To: <20070710160056.443ae9ae@i1501.lan.towertech.it>
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andrew Morton <akpm@google.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
+Subject: Re: [RFC 1/7] cpuset write dirty map
+References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com> <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com> <468023CA.2090401@google.com> <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/10/2007 10:00 AM, Alessandro Zummo wrote:
-> 
->  Hello,
-> 
->    with respect to commit e9e2cdb412412326c4827fc78ba27f410d837e6e 
->  and the thread at [1] I just wanted to let you all know that
->  the problem is still present :)
-> 
->  I tried several combo of options, but only acpi=off or acpi=ht
->  will let the PC boot.
-> 
->  I'm trying to debug it.. any help/pointers are appreciated. I dont't
->  have a deep knowledge of the subsystems involved.
+	Christoph -- I have a question about one part of the patches. In
+throttle_vm_writeout() you added a clause that checks for __GFP_FS |
+__GFP_IO and if they're not both set it calls blk_congestion_wait()
+immediately and then returns, no change for looping. Two questions:
 
-What options did you try?
+1. This seems like an unrelated bug fix. Should you submit it as a
+standalone patch?
 
-  nohpet
-  nohz=off
-  highres=off
+2. You put this gfp check before the check for get_dirty_limits. It's
+possible that this will block even though without your change it would
+have returned straight away. Would it better, instead of adding the
+if-clause at the top of the function, to embed the gfp check at the end
+of the for-loop after calling blk_congestion_wait?
 
-Should be tried in various combinations.
+	-- Ethan
+
