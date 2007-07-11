@@ -1,128 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762122AbXGKSAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764107AbXGKSCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762122AbXGKSAI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbXGKR75
+	id S1764107AbXGKSCJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbXGKSB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 13:59:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43908 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753552AbXGKR74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 13:59:56 -0400
-Message-ID: <46951A98.5060107@redhat.com>
-Date: Wed, 11 Jul 2007 19:59:52 +0200
-From: Michal Schmidt <mschmidt@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+	Wed, 11 Jul 2007 14:01:57 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:55179
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbXGKSB4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 14:01:56 -0400
+Date: Wed, 11 Jul 2007 10:55:40 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+cc: Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, a1426z@gawab.com,
+       jeremy@goop.org, jbms@cmu.edu, pavel@ucw.cz, nickpiggin@yahoo.com.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Hibernation Redesign
+In-Reply-To: <200707112211.23420.nigel@nigel.suspend2.net>
+Message-ID: <Pine.LNX.4.64.0707111052380.25614@asgard.lang.hm>
+References: <200707081737.21932.a1426z@gawab.com> <200707111304.40504.rjw@sisk.pl>
+ <E1I8a6Y-0008Sm-00@dorka.pomaz.szeredi.hu> <200707112211.23420.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: destroy_workqueue can livelock
-Content-Type: multipart/mixed;
- boundary="------------060303010607020402090906"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060303010607020402090906
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+On Wed, 11 Jul 2007, Nigel Cunningham wrote:
 
-Hi,
+> Hi.
+>
+> On Wednesday 11 July 2007 21:11:34 Miklos Szeredi wrote:
+>>> Anyway, to implement the kexec approach we must separate the
+>>> hibernation from the suspend at the drivers level, which I'm still
+>>> going to do, but I need to take part in endless discussions
+>>
+>> Discussions are good.  We understand the problem better.  Now I still
+>> think we don't understand every aspect completely, so continuing the
+>> discussion makes sense.
+>>
+>>> regarding the freezer, how it is bad and how we should drop it,
+>>> because it breaks things (which NB is not true, because it doesn't).
+>>
+>> This thread started out from a bug, that seemed to be caused by the
+>> freezer (we still don't exactly know what it was caused by), and the
+>> discussion uncovered various problems _with_ the freezer, that up to
+>> now no other _proper_ solutions have been propsed than to remove the
+>> freezer.
+>
+> No other _proper_ solutions have been proposed. Everyone who suggests removing
+> the freezer also suggests implementing it all over again. It might be sending
+> SIGSTOP to everything. It might be shifting the desk chairs around and
+> creating a completely new kernel context, but they always have the same
+> goal - stopping the existing activity, and they all come with their own
+> issues (even if they're not obvious yet because the alternatives are
+> currently vapourware to one extent or another).
 
-While using SystemTap I noticed an interesting situation. When my stap
-probe was exiting, there was a several seconds long delay, during which
-the CPU was 100% loaded. I narrowed the problem down to destroy_workqueue.
+I think the big problem with the existing freezer is that you want to stop 
+everything, except X, except Y, except Z.....
 
-The attached module is a minimized testcase. To reproduce it, load the
-module and then try to rmmod it from a higher priority process:
- nice -n -10 rmmod wqtest.ko  # that's how SystemTap's staprun behaves
-or:
- chrt -f  90 rmmod wqtest.ko  # this may be more reliably reproducible
+the advantage of the new approaches being proposed is that they don't 
+require _anything_ from the origional system continue to run so you avoid 
+all the exceptions.
 
-I tested it (with "nice") on Linux 2.6.22. The rmmod process took about
-55% CPU, the workqueue thread consumed the rest. This situation can last
-for minutes. As soon as the rmmod process is reniced to 0, the workqueue
-is destroyed successfully and the module is unloaded.
+freezing everything is easy, figuring out what you don't want to freeze is 
+where everyone is seeing problems.
 
-Here's what happens in detail:
+> IMHO, the real solution is to go back to the original issue and fix it
+> properly. Make fuse filesystems play nicely with the existing freezer. I've
+> just gone back and looked at the point where you started talking
+> about "malicious filesystems". You talk about fuse imposing certain ordering
+> in the userspace tasks being frozen. Please, say more. What ordering issues?
+> Why? How can such ordering be determined programmatically?
 
-When rmmod executes cancel_rearming_delayed_workqueue() ->
-wait_on_work() -> wait_on_cpu_work(), the work is the current_work on
-the workqueue (it's in ssleep(1)). So wait_on_cpu_work() inserts a
-wq_barrier on the workqueue and waits for the completion. As soon as
-wq_barrier_func signals the completion, it is most likely preempted by
-the rmmod process. At this moment, the worklist is already empty, but
-cwq->current_work still points to the barrier. run_workqueue() didn't
-get to reset it to NULL yet.
+I think most people just see this as a symptom of the problem, not the 
+core problem itself.
 
-Now rmmod calls destroy_workqueue() -> cleanup_workqueue_thread() ->
-flush_cpu_workqueue(). Because cwq->current_work!=NULL it decides to
-insert another wq_barrier and wait for it to complete. But
-cwq->current_work will never be reset to NULL, so
-cleanup_workqueue_thread() keeps trying flush_cpu_workqueue()
-indefinitely, inserting wq_barriers and waiting for them.
-
-If rmmod's priority is lowered, run_workqueue() will not be preempted by
-it and manages to reset cwq->current_work. This ends the livelock.
-
-Can this be fixed? Or is it just a case of "Don't do that then!"?
-("that" meaning destroying workqueues from negatively reniced processes)
-
-Michal
-
---------------060303010607020402090906
-Content-Type: text/x-csrc;
- name="wqtest.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="wqtest.c"
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/workqueue.h>
-#include <linux/delay.h>
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Michal Schmidt");
-
-static void wq_func(struct work_struct *w);
-static DECLARE_DELAYED_WORK(wq_work, wq_func);
-static struct workqueue_struct *wq;
-
-static DECLARE_WAIT_QUEUE_HEAD(ctl_wq);
-
-static void wq_func(struct work_struct *w)
-{
-	/*
-	 * So that this work is most likely cwq->current_work
-	 * when destroy_workqueue comes...
-	 */
-	ssleep(1);
-
-	queue_delayed_work(wq, &wq_work, HZ/100);
-}
-
-static int wqtest_start(void)
-{
-	wq = create_workqueue("wqtest");
-	if (!wq)
-		return -1;
-
-	queue_delayed_work(wq, &wq_work, HZ/100);
-
-	return 0;
-}
-
-static void wqtest_stop(void)
-{
-	printk(KERN_CRIT "wqtest: cancelling the work\n");
-	cancel_rearming_delayed_work(&wq_work);
-	printk(KERN_CRIT "wqtest: destroying the wq\n");
-	destroy_workqueue(wq);
-	printk(KERN_CRIT "wqtest: done\n");
-}
-
-module_init(wqtest_start);
-module_exit(wqtest_stop);
-
-
---------------060303010607020402090906--
+David Lang
