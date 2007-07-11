@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbXGKTaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933720AbXGKTbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbXGKTaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 15:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764778AbXGKTT5
+	id S933720AbXGKTbL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 15:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932672AbXGKTT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 15:19:57 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38285 "EHLO
+	Wed, 11 Jul 2007 15:19:58 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38286 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764789AbXGKTTi (ORCPT
+	with ESMTP id S932592AbXGKTTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Jul 2007 15:19:38 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: torvalds@linux-foundation.org, andi@firstfloor.org,
        linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>
-Subject: [x86 setup 23/33] EDD probing code for the new x86 setup code
-Date: Wed, 11 Jul 2007 12:18:48 -0700
-Message-Id: <11841815421819-git-send-email-hpa@zytor.com>
+Subject: [x86 setup 22/33] CPU features verification for the new x86 setup code
+Date: Wed, 11 Jul 2007 12:18:47 -0700
+Message-Id: <118418154292-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <118418154292-git-send-email-hpa@zytor.com>
+In-Reply-To: <11841815421028-git-send-email-hpa@zytor.com>
 References: <1184181538674-git-send-email-hpa@zytor.com>
  <118418153862-git-send-email-hpa@zytor.com>
  <11841815382283-git-send-email-hpa@zytor.com>
@@ -41,8 +41,7 @@ References: <1184181538674-git-send-email-hpa@zytor.com>
  <11841815412175-git-send-email-hpa@zytor.com>
  <1184181541492-git-send-email-hpa@zytor.com>
  <11841815421028-git-send-email-hpa@zytor.com>
- <118418154292-git-send-email-hpa@zytor.com>
-Message-Id: <099b1190b55993dc1ee0ac7bf4faa3bf55ce5223.1184181208.git.hpa@zytor.com>
+Message-Id: <39a01d42c01c5034adea3b442c6698983bd4d921.1184181208.git.hpa@zytor.com>
 In-Reply-To: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 References: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -50,21 +49,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: H. Peter Anvin <hpa@zytor.com>
 
-Probe EDD and MBR signatures, in order to make it easier to map
-physical hard drives to BIOS drives.
+Verify that the CPU has enough features to run the kernel.  This may
+entail enabling features on some CPUs.
+
+By doing this in the setup code we can be guaranteed to still be able to
+write to the console through the BIOS.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/i386/boot/edd.c |  196 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 196 insertions(+), 0 deletions(-)
- create mode 100644 arch/i386/boot/edd.c
+ arch/i386/boot/cpu.c      |   69 ++++++++++++
+ arch/i386/boot/cpucheck.c |  267 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 336 insertions(+), 0 deletions(-)
+ create mode 100644 arch/i386/boot/cpu.c
+ create mode 100644 arch/i386/boot/cpucheck.c
 
-diff --git a/arch/i386/boot/edd.c b/arch/i386/boot/edd.c
+diff --git a/arch/i386/boot/cpu.c b/arch/i386/boot/cpu.c
 new file mode 100644
-index 0000000..25a2824
+index 0000000..2a5c32d
 --- /dev/null
-+++ b/arch/i386/boot/edd.c
-@@ -0,0 +1,196 @@
++++ b/arch/i386/boot/cpu.c
+@@ -0,0 +1,69 @@
 +/* -*- linux-c -*- ------------------------------------------------------- *
 + *
 + *   Copyright (C) 1991, 1992 Linus Torvalds
@@ -76,191 +80,337 @@ index 0000000..25a2824
 + * ----------------------------------------------------------------------- */
 +
 +/*
-+ * arch/i386/boot/edd.c
++ * arch/i386/boot/cpu.c
 + *
-+ * Get EDD BIOS disk information
++ * Check for obligatory CPU features and abort if the features are not
++ * present.
 + */
 +
 +#include "boot.h"
-+#include <linux/edd.h>
++#include "bitops.h"
++#include <asm/cpufeature.h>
 +
-+#if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
++static char *cpu_name(int level)
++{
++	static char buf[6];
 +
-+struct edd_dapa {
-+	u8	pkt_size;
-+	u8	rsvd;
-+	u16	sector_cnt;
-+	u16	buf_off, buf_seg;
-+	u64	lba;
-+	u64	buf_lin_addr;
-+};
++	if (level == 64) {
++		return "x86-64";
++	} else {
++		sprintf(buf, "i%d86", level);
++		return buf;
++	}
++}
++
++int validate_cpu(void)
++{
++	u32 *err_flags;
++	int cpu_level, req_level;
++
++	check_cpu(&cpu_level, &req_level, &err_flags);
++
++	if (cpu_level < req_level) {
++		printf("This kernel requires an %s CPU, ",
++		       cpu_name(req_level));
++		printf("but only detected an %s CPU.\n",
++		       cpu_name(cpu_level));
++		return -1;
++	}
++
++	if (err_flags) {
++		int i, j;
++		puts("This kernel requires the following features "
++		     "not present on the CPU:\n");
++
++		for (i = 0; i < NCAPINTS; i++) {
++			u32 e = err_flags[i];
++
++			for (j = 0; j < 32; j++) {
++				if (e & 1)
++					printf("%d:%d ", i, j);
++
++				e >>= 1;
++			}
++		}
++		putchar('\n');
++		return -1;
++	} else {
++		return 0;
++	}
++}
+diff --git a/arch/i386/boot/cpucheck.c b/arch/i386/boot/cpucheck.c
+new file mode 100644
+index 0000000..8b0f447
+--- /dev/null
++++ b/arch/i386/boot/cpucheck.c
+@@ -0,0 +1,267 @@
++/* -*- linux-c -*- ------------------------------------------------------- *
++ *
++ *   Copyright (C) 1991, 1992 Linus Torvalds
++ *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *
++ *   This file is part of the Linux kernel, and is made available under
++ *   the terms of the GNU General Public License version 2.
++ *
++ * ----------------------------------------------------------------------- */
 +
 +/*
-+ * Read the MBR (first sector) from a specific device.
++ * arch/i386/boot/cpucheck.c
++ *
++ * Check for obligatory CPU features and abort if the features are not
++ * present.  This code should be compilable as 16-, 32- or 64-bit
++ * code, so be very careful with types and inline assembly.
++ *
++ * This code should not contain any messages; that requires an
++ * additional wrapper.
++ *
++ * As written, this code is not safe for inclusion into the kernel
++ * proper (after FPU initialization, in particular).
 + */
-+static int read_mbr(u8 devno, void *buf)
-+{
-+	struct edd_dapa dapa;
-+	u16 ax, bx, cx, dx, si;
 +
-+	memset(&dapa, 0, sizeof dapa);
-+	dapa.pkt_size = sizeof(dapa);
-+	dapa.sector_cnt = 1;
-+	dapa.buf_off = (size_t)buf;
-+	dapa.buf_seg = ds();
-+	/* dapa.lba = 0; */
-+
-+	ax = 0x4200;		/* Extended Read */
-+	si = (size_t)&dapa;
-+	dx = devno;
-+	asm("pushfl; stc; int $0x13; setc %%al; popfl"
-+	    : "+a" (ax), "+S" (si), "+d" (dx)
-+	    : "m" (dapa)
-+	    : "ebx", "ecx", "edi", "memory");
-+
-+	if (!(u8)ax)
-+		return 0;	/* OK */
-+
-+	ax = 0x0201;		/* Legacy Read, one sector */
-+	cx = 0x0001;		/* Sector 0-0-1 */
-+	dx = devno;
-+	bx = (size_t)buf;
-+	asm("pushfl; stc; int $0x13; setc %%al; popfl"
-+	    : "+a" (ax), "+c" (cx), "+d" (dx), "+b" (bx)
-+	    : : "esi", "edi", "memory");
-+
-+	return -(u8)ax;		/* 0 or -1 */
-+}
-+
-+static u32 read_mbr_sig(u8 devno, struct edd_info *ei)
-+{
-+	int sector_size;
-+	char *mbrbuf_ptr, *mbrbuf_end;
-+	u32 mbrsig;
-+	u32 buf_base, mbr_base;
-+	extern char _end[];
-+	static char mbr_buf[1024];
-+
-+	sector_size = ei->params.bytes_per_sector;
-+	if (!sector_size)
-+		sector_size = 512; /* Best available guess */
-+
-+	buf_base = (ds() << 4) + (u32)&_end;
-+	mbr_base = (buf_base+sector_size-1) & ~(sector_size-1);
-+	mbrbuf_ptr = mbr_buf + (mbr_base-buf_base);
-+	mbrbuf_end = mbrbuf_ptr + sector_size;
-+
-+	if (!(boot_params.hdr.loadflags & CAN_USE_HEAP))
-+		return 0;
-+	if (mbrbuf_end > (char *)(size_t)boot_params.hdr.heap_end_ptr)
-+		return 0;
-+
-+	if (read_mbr(devno, mbrbuf_ptr))
-+		return 0;
-+
-+	mbrsig = *(u32 *)&mbrbuf_ptr[EDD_MBR_SIG_OFFSET];
-+	return mbrsig;
-+}
-+
-+static int get_edd_info(u8 devno, struct edd_info *ei)
-+{
-+	u16 ax, bx, cx, dx, di;
-+
-+	memset(ei, 0, sizeof *ei);
-+
-+	/* Check Extensions Present */
-+
-+	ax = 0x4100;
-+	bx = EDDMAGIC1;
-+	dx = devno;
-+	asm("pushfl; stc; int $0x13; setc %%al; popfl"
-+	    : "+a" (ax), "+b" (bx), "=c" (cx), "+d" (dx)
-+	    : : "esi", "edi");
-+
-+	if ((u8)ax)
-+		return -1;	/* No extended information */
-+
-+	if (bx != EDDMAGIC2)
-+		return -1;
-+
-+	ei->device  = devno;
-+	ei->version = ax >> 8;	/* EDD version number */
-+	ei->interface_support = cx; /* EDD functionality subsets */
-+
-+	/* Extended Get Device Parameters */
-+
-+	ei->params.length = sizeof(ei->params);
-+	ax = 0x4800;
-+	dx = devno;
-+	asm("pushfl; int $0x13; popfl"
-+	    : "+a" (ax), "+d" (dx)
-+	    : "S" (&ei->params)
-+	    : "ebx", "ecx", "edi");
-+
-+	/* Get legacy CHS parameters */
-+
-+	/* Ralf Brown recommends setting ES:DI to 0:0 */
-+	ax = 0x0800;
-+	dx = devno;
-+	di = 0;
-+	asm("pushw %%es; "
-+	    "movw %%di,%%es; "
-+	    "pushfl; stc; int $0x13; setc %%al; popfl; "
-+	    "popw %%es"
-+	    : "+a" (ax), "=b" (bx), "=c" (cx), "+d" (dx), "+D" (di)
-+	    : : "esi");
-+
-+	if ((u8)ax == 0) {
-+		ei->legacy_max_cylinder = (cx >> 8) + ((cx & 0xc0) << 2);
-+		ei->legacy_max_head = dx >> 8;
-+		ei->legacy_sectors_per_track = cx & 0x3f;
-+	}
-+
-+	return 0;
-+}
-+
-+void query_edd(void)
-+{
-+	char eddarg[8];
-+	int do_mbr = 1;
-+	int do_edd = 1;
-+	int devno;
-+	struct edd_info ei, *edp;
-+
-+	if (cmdline_find_option("edd", eddarg, sizeof eddarg) > 0) {
-+		if (!strcmp(eddarg, "skipmbr") || !strcmp(eddarg, "skip"))
-+			do_mbr = 0;
-+		else if (!strcmp(eddarg, "off"))
-+			do_edd = 0;
-+	}
-+
-+	edp = (struct edd_info *)boot_params.eddbuf;
-+
-+	if (!do_edd)
-+		return;
-+
-+	for (devno = 0x80; devno < 0x80+EDD_MBR_SIG_MAX; devno++) {
-+		/*
-+		 * Scan the BIOS-supported hard disks and query EDD
-+		 * information...
-+		 */
-+		get_edd_info(devno, &ei);
-+
-+		if (boot_params.eddbuf_entries < EDDMAXNR) {
-+			memcpy(edp, &ei, sizeof ei);
-+			edp++;
-+			boot_params.eddbuf_entries++;
-+		}
-+
-+		if (do_mbr) {
-+			u32 mbr_sig;
-+			mbr_sig = read_mbr_sig(devno, &ei);
-+			boot_params.edd_mbr_sig_buffer[devno-0x80] = mbr_sig;
-+		}
-+	}
-+}
-+
++#ifdef _SETUP
++# include "boot.h"
++# include "bitops.h"
 +#endif
++#include <linux/types.h>
++#include <asm/cpufeature.h>
++#include <asm/processor-flags.h>
++#include <asm/required-features.h>
++#include <asm/msr-index.h>
++
++struct cpu_features {
++	int level;		/* Family, or 64 for x86-64 */
++	int model;
++	u32 flags[NCAPINTS];
++};
++
++static struct cpu_features cpu;
++static u32 cpu_vendor[3];
++static u32 err_flags[NCAPINTS];
++
++#ifdef CONFIG_X86_64
++static const int req_level = 64;
++#elif defined(CONFIG_X86_MINIMUM_CPU_FAMILY)
++static const int req_level = CONFIG_X86_MINIMUM_CPU_FAMILY;
++#else
++static const int req_level = 3;
++#endif
++
++static const u32 req_flags[NCAPINTS] =
++{
++	REQUIRED_MASK0,
++	REQUIRED_MASK1,
++	REQUIRED_MASK2,
++	REQUIRED_MASK3,
++	REQUIRED_MASK4,
++	REQUIRED_MASK5,
++	REQUIRED_MASK6,
++	REQUIRED_MASK7,
++};
++
++#define A32(a,b,c,d) (((d) << 24)+((c) << 16)+((b) << 8)+(a))
++
++static int is_amd(void)
++{
++	return cpu_vendor[0] == A32('A','u','t','h') &&
++	       cpu_vendor[1] == A32('e','n','t','i') &&
++	       cpu_vendor[2] == A32('c','A','M','D');
++}
++
++static int is_centaur(void)
++{
++	return cpu_vendor[0] == A32('C','e','n','t') &&
++	       cpu_vendor[1] == A32('a','u','r','H') &&
++	       cpu_vendor[2] == A32('a','u','l','s');
++}
++
++static int is_transmeta(void)
++{
++	return cpu_vendor[0] == A32('G','e','n','u') &&
++	       cpu_vendor[1] == A32('i','n','e','T') &&
++	       cpu_vendor[2] == A32('M','x','8','6');
++}
++
++static int has_fpu(void)
++{
++	u16 fcw = -1, fsw = -1;
++	u32 cr0;
++
++	asm("movl %%cr0,%0" : "=r" (cr0));
++	if (cr0 & (X86_CR0_EM|X86_CR0_TS)) {
++		cr0 &= ~(X86_CR0_EM|X86_CR0_TS);
++		asm volatile("movl %0,%%cr0" : : "r" (cr0));
++	}
++
++	asm("fninit ; fnstsw %0 ; fnstcw %1" : "+m" (fsw), "+m" (fcw));
++
++	return fsw == 0 && (fcw & 0x103f) == 0x003f;
++}
++
++static int has_eflag(u32 mask)
++{
++	u32 f0, f1;
++
++	asm("pushfl ; "
++	    "pushfl ; "
++	    "popl %0 ; "
++	    "movl %0,%1 ; "
++	    "xorl %2,%1 ; "
++	    "pushl %1 ; "
++	    "popfl ; "
++	    "pushfl ; "
++	    "popl %1 ; "
++	    "popfl"
++	    : "=r" (f0), "=r" (f1)
++	    : "g" (mask));
++
++	return !!((f0^f1) & mask);
++}
++
++static void get_flags(void)
++{
++	u32 max_intel_level, max_amd_level;
++	u32 tfms;
++
++	if (has_fpu())
++		set_bit(X86_FEATURE_FPU, cpu.flags);
++
++	if (has_eflag(X86_EFLAGS_ID)) {
++		asm("cpuid"
++		    : "=a" (max_intel_level),
++		      "=b" (cpu_vendor[0]),
++		      "=d" (cpu_vendor[1]),
++		      "=c" (cpu_vendor[2])
++		    : "a" (0));
++
++		if (max_intel_level >= 0x00000001 &&
++		    max_intel_level <= 0x0000ffff) {
++			asm("cpuid"
++			    : "=a" (tfms),
++			      "=c" (cpu.flags[4]),
++			      "=d" (cpu.flags[0])
++			    : "a" (0x00000001)
++			    : "ebx");
++			cpu.level = (tfms >> 8) & 15;
++			cpu.model = (tfms >> 4) & 15;
++			if (cpu.level >= 6)
++				cpu.model += ((tfms >> 16) & 0xf) << 4;
++		}
++
++		asm("cpuid"
++		    : "=a" (max_amd_level)
++		    : "a" (0x80000000)
++		    : "ebx", "ecx", "edx");
++
++		if (max_amd_level >= 0x80000001 &&
++		    max_amd_level <= 0x8000ffff) {
++			u32 eax = 0x80000001;
++			asm("cpuid"
++			    : "+a" (eax),
++			      "=c" (cpu.flags[6]),
++			      "=d" (cpu.flags[1])
++			    : : "ebx");
++		}
++	}
++}
++
++/* Returns a bitmask of which words we have error bits in */
++static int check_flags(void)
++{
++	u32 err;
++	int i;
++
++	err = 0;
++	for (i = 0; i < NCAPINTS; i++) {
++		err_flags[i] = req_flags[i] & ~cpu.flags[i];
++		if (err_flags[i])
++			err |= 1 << i;
++	}
++
++	return err;
++}
++
++/*
++ * Returns -1 on error.
++ *
++ * *cpu_level is set to the current CPU level; *req_level to the required
++ * level.  x86-64 is considered level 64 for this purpose.
++ *
++ * *err_flags_ptr is set to the flags error array if there are flags missing.
++ */
++int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
++{
++	int err;
++
++	memset(&cpu.flags, 0, sizeof cpu.flags);
++	cpu.level = 3;
++
++	if (has_eflag(X86_EFLAGS_AC))
++		cpu.level = 4;
++
++	get_flags();
++	err = check_flags();
++
++	if (test_bit(X86_FEATURE_LM, cpu.flags))
++		cpu.level = 64;
++
++	if (err == 0x01 &&
++	    !(err_flags[0] &
++	      ~((1 << X86_FEATURE_XMM)|(1 << X86_FEATURE_XMM2))) &&
++	    is_amd()) {
++		/* If this is an AMD and we're only missing SSE+SSE2, try to
++		   turn them on */
++
++		u32 ecx = MSR_K7_HWCR;
++		u32 eax, edx;
++
++		asm("rdmsr" : "=a" (eax), "=d" (edx) : "c" (ecx));
++		eax &= ~(1 << 15);
++		asm("wrmsr" : : "a" (eax), "d" (edx), "c" (ecx));
++
++		get_flags();	/* Make sure it really did something */
++		err = check_flags();
++	} else if (err == 0x01 &&
++		   !(err_flags[0] & ~(1 << X86_FEATURE_CX8)) &&
++		   is_centaur() && cpu.model >= 6) {
++		/* If this is a VIA C3, we might have to enable CX8
++		   explicitly */
++
++		u32 ecx = MSR_VIA_FCR;
++		u32 eax, edx;
++
++		asm("rdmsr" : "=a" (eax), "=d" (edx) : "c" (ecx));
++		eax |= (1<<1)|(1<<7);
++		asm("wrmsr" : : "a" (eax), "d" (edx), "c" (ecx));
++
++		set_bit(X86_FEATURE_CX8, cpu.flags);
++		err = check_flags();
++	} else if (err == 0x01 && is_transmeta()) {
++		/* Transmeta might have masked feature bits in word 0 */
++
++		u32 ecx = 0x80860004;
++		u32 eax, edx;
++		u32 level = 1;
++
++		asm("rdmsr" : "=a" (eax), "=d" (edx) : "c" (ecx));
++		asm("wrmsr" : : "a" (~0), "d" (edx), "c" (ecx));
++		asm("cpuid"
++		    : "+a" (level), "=d" (cpu.flags[0])
++		    : : "ecx", "ebx");
++		asm("wrmsr" : : "a" (eax), "d" (edx), "c" (ecx));
++
++		err = check_flags();
++	}
++
++	if (err_flags_ptr)
++		*err_flags_ptr = err ? err_flags : NULL;
++	if (cpu_level_ptr)
++		*cpu_level_ptr = cpu.level;
++	if (req_level_ptr)
++		*req_level_ptr = req_level;
++
++	return (cpu.level < req_level || err) ? -1 : 0;
++}
 -- 
 1.5.2.2
 
