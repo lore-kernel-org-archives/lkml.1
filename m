@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761300AbXGKI5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761414AbXGKI6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761300AbXGKI5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 04:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbXGKI5H
+	id S1761414AbXGKI6p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 04:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbXGKI6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 04:57:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:60094 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756734AbXGKI5F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 04:57:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RVWA5qVsjxzFO4hDAEdkr5x65TFkYizRd0UStaTUIaHvdsBPIWJKQlf7Y5Zykrz87yUF+OWocD9CZvh6eq3oxIvaILFhq/JJ7EgUASqmjiGmjsRZ7CofyIJS5Znb/ixnyotE10h+r2MW05ozm1QiKcxqdwJsmVLxDbThTbbo9Jw=
-Message-ID: <8d6898730707110157g7ddd7a27of0e0a02fe1afbdc4@mail.gmail.com>
-Date: Wed, 11 Jul 2007 14:27:05 +0530
-From: "Nobin Mathew" <nobin.mathew@gmail.com>
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Subject: Re: Reading a physical memory location
-Cc: "vraghavan3@mail.gatech.edu" <vraghavan3@mail.gatech.edu>,
+	Wed, 11 Jul 2007 04:58:38 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35896 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755939AbXGKI6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 04:58:36 -0400
+Date: Wed, 11 Jul 2007 10:58:10 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>
+Cc: Dan Aloni <da-x@monatomic.org>,
+       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
+       Neil Horman <nhorman@redhat.com>, kexec@lists.infradead.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <1a297b360707110150x56e8ad6cu64ab768e7d3ce6ed@mail.gmail.com>
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070711085810.GB23466@suse.de>
+Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
+	Dan Aloni <da-x@monatomic.org>,
+	Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>,
+	Neil Horman <nhorman@redhat.com>, kexec@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+References: <20070706132814.GA7079@suse.de> <20070706145804.GA31409@localdomain> <20070710064817.GC5471@in.ibm.com> <20070710120904.GB10121@hmsendeavour.rdu.redhat.com> <20070710165201.GA7984@localdomain> <20070711060726.GA5310@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1184010444.469290cce48df@webmail.mail.gatech.edu>
-	 <8d6898730707091539y14cf5afbsed7ed769526da0a1@mail.gmail.com>
-	 <1184091142.4693cc06850f7@webmail.mail.gatech.edu>
-	 <1a297b360707101502t2670f0d7g5197b9c32ecb967c@mail.gmail.com>
-	 <8d6898730707102243t60861fdar147f052501c31958@mail.gmail.com>
-	 <1a297b360707110111u25a786c5m4857673e3e1b90a1@mail.gmail.com>
-	 <8d6898730707110114p3c02e24as8ca8359731fdc320@mail.gmail.com>
-	 <1a297b360707110150x56e8ad6cu64ab768e7d3ce6ed@mail.gmail.com>
+In-Reply-To: <20070711060726.GA5310@in.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks
+* Vivek Goyal <vgoyal@in.ibm.com> [2007-07-11 08:07]:
+> On Tue, Jul 10, 2007 at 07:52:01PM +0300, Dan Aloni wrote:
+> > On Tue, Jul 10, 2007 at 08:09:04AM -0400, Neil Horman wrote:
+> > > On Tue, Jul 10, 2007 at 12:18:17PM +0530, Vivek Goyal wrote:
+> > > > On Fri, Jul 06, 2007 at 05:58:04PM +0300, Dan Aloni wrote:
+> > > > > On Fri, Jul 06, 2007 at 03:28:14PM +0200, Bernhard Walle wrote:
+> > > > > > Hello,
+> > [...]
+> > > > > It contains enough information in order to make a compact kernel
+> > > > > dump (makedumpinfo needs to go over the struct page arrays). As
+> > > > > you see, it also contains the kernel version.
+> > > > > 
+> > > > 
+> > > > But this will not solve Bernhard's problem where looking at a vmcore
+> > > > he wants to know which vmlinux (kernel version with time stamp) has
+> > > > generated this vmcore. So adding a ELF NOTE should help.
+> > > > 
+> > > I think an ELF note would be a fine idea.
+> > 
+> > Okay, so here's an implemenation.
+> > 
+> > See the attached proof-of-concept patches to the kernel-side kexec and 
+> > kexec-tools (might need some cleanup though). Next to follow, a patch 
+> > to makedumpfile. With these patches a new "LINUX" elf note generated 
+> > by the kernel in the format that makedumpfile expects and is being 
+> > passed on by the kexec util to the kdump kernel.
+> > 
+> > As a bonus, with this patch you don't even have to compile the kernel 
+> > with debug information in order for the filtering to work.
+> > 
+> 
+> This implementation looks interesting. No need of debug compiled
+> vmlinux for dump filtering purposes. No run time vmlinux binary modifications
+> as suggested by your previous mails. People can export kernel CONFIG info
+> like PAGESIZE etc with the help of this ELF note and any tool which is
+> processing kernel core file can benifit from this. No guesses required for
+> determining the page size of crashed kernel.
 
-On 7/11/07, Manu Abraham <abraham.manu@gmail.com> wrote:
-> On 7/11/07, Nobin Mathew <nobin.mathew@gmail.com> wrote:
-> > See this in the documentation
-> >
-> > The returned virtual address is a current CPU mapping for the memory
-> > address given. It is only valid to use this function on addresses that
-> > have a kernel mapping
-> >
-> > This function does not handle bus mappings for DMA transfers. In
-> > almost all conceivable cases a device driver should not be using this
-> > function
-> >
->
-> To get a better idea, look here
-> http://tldp.org/LDP/khg/HyperNews/get/devices/addrxlate.html
->
+I also like way of implementing it. :)
+
+
+Thanks,
+   Bernhard
