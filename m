@@ -1,86 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933767AbXGKVCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933988AbXGKVCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933767AbXGKVCR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933710AbXGKVAk
+	id S933988AbXGKVCl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:02:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933752AbXGKVAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:00:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33029 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933654AbXGKVAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:00:39 -0400
-Date: Wed, 11 Jul 2007 21:59:56 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Jonathan Brassow <jbrassow@redhat.com>
-Subject: [2.6.23 PATCH 10/18] dm raid1: clear region outside spinlock
-Message-ID: <20070711205956.GB24114@agk.fab.redhat.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Jonathan Brassow <jbrassow@redhat.com>
+	Wed, 11 Jul 2007 17:00:45 -0400
+Received: from mercury.sygneca.com ([83.142.230.29]:37025 "EHLO
+	mx2.sygneca.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933534AbXGKVAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:00:43 -0400
+Message-ID: <469544D3.90004@martinorr.name>
+Date: Wed, 11 Jul 2007 22:00:03 +0100
+From: Martin Orr <martin@martinorr.name>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070621)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_tiberius-4568-1184187635-0001-2"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>, Stefano Rivoir <s.rivoir@gts.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org> <46947ADF.4080605@gts.it> <p73vecrxf0t.fsf@bingen.suse.de> <46951892.20406@martinorr.name> <alpine.LFD.0.999.0707111059200.3412@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707111059200.3412@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jonathan Brassow <jbrassow@redhat.com>
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-A clear_region function is permitted to block (in practice, rare) but gets
-called in rh_update_states() with a spinlock held.
+--=_tiberius-4568-1184187635-0001-2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The bits being marked and cleared by the above functions are used
-to update the on-disk log, but are never read directly.  We can
-perform these operations outside the spinlock since the
-bits are only changed within one thread viz.
-   - mark_region in rh_inc()
-   - clear_region in rh_update_states().
+On 11/07/07 19:01, Linus Torvalds wrote:
+> Can you do
+>=20
+> 	make arch/x86_64/kernel/signal.s
+>=20
+> with both compilers, and post the results somewhere? It's probably goin=
+g=20
+> to be so large, and have so many trivial differences (register allocati=
+on=20
+> etc) that it will be hard-to-impossible to see the problem, but at leas=
+t=20
+> we can *try* to see if it might be obvious enough from comparing the=20
+> assembly..
 
-So, we grab the clean_regions list items via list_splice() within the
-spinlock and defer clear_region() until we iterate over the list for
-deletion - similar to how the recovered_regions list is already handled.
-We then move the flush() call down to ensure it encapsulates the changes
-which are done by the later calls to clear_region().
+OK, they are at:
+http://www.srcf.ucam.org/~mpo25/2007/linux-signal/
 
-Signed-off-by: Jonathan Brassow <jbrassow@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+--=20
+Martin Orr
 
----
- drivers/md/dm-raid1.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Index: linux/drivers/md/dm-raid1.c
-===================================================================
---- linux.orig/drivers/md/dm-raid1.c	2007-07-11 21:37:42.000000000 +0100
-+++ linux/drivers/md/dm-raid1.c	2007-07-11 21:37:46.000000000 +0100
-@@ -378,10 +378,8 @@ static void rh_update_states(struct regi
- 		list_splice(&rh->clean_regions, &clean);
- 		INIT_LIST_HEAD(&rh->clean_regions);
- 
--		list_for_each_entry (reg, &clean, list) {
--			rh->log->type->clear_region(rh->log, reg->key);
-+		list_for_each_entry(reg, &clean, list)
- 			list_del(&reg->hash_list);
--		}
- 	}
- 
- 	if (!list_empty(&rh->recovered_regions)) {
-@@ -405,10 +403,12 @@ static void rh_update_states(struct regi
- 		mempool_free(reg, rh->region_pool);
- 	}
- 
--	rh->log->type->flush(rh->log);
--
--	list_for_each_entry_safe (reg, next, &clean, list)
-+	list_for_each_entry_safe(reg, next, &clean, list) {
-+		rh->log->type->clear_region(rh->log, reg->key);
- 		mempool_free(reg, rh->region_pool);
-+	}
-+
-+	rh->log->type->flush(rh->log);
- }
- 
- static void rh_inc(struct region_hash *rh, region_t region)
+--=_tiberius-4568-1184187635-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGlUTZZ6a/BjxtAMARAqRlAJ9GCc8+GMIg9Ymu3PR5khwtSREKBACeNyQL
+W0k7sX9D2KsWHKnqYDbwdLo=
+=Yt5d
+-----END PGP SIGNATURE-----
+
+--=_tiberius-4568-1184187635-0001-2--
