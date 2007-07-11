@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763749AbXGKOry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbXGKOsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763749AbXGKOry (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 10:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763866AbXGKOrj
+	id S932238AbXGKOsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 10:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932098AbXGKOrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 10:47:39 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:20513 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764182AbXGKOr3 (ORCPT
+	Wed, 11 Jul 2007 10:47:47 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:65183 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765205AbXGKOro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 10:47:29 -0400
+	Wed, 11 Jul 2007 10:47:44 -0400
 From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [RFC 1/3] lro: Generic LRO for TCP traffic
-Date: Wed, 11 Jul 2007 16:21:34 +0200
+Subject: [RFC 3/3] lro: LRO support for eHEA
+Date: Wed, 11 Jul 2007 16:21:49 +0200
 User-Agent: KMail/1.8.2
 MIME-Version: 1.0
 Content-Disposition: inline
@@ -26,450 +26,265 @@ Cc: Christoph Raisch <raisch@de.ibm.com>,
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707111621.34376.ossthema@de.ibm.com>
+Message-Id: <200707111621.49848.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Large Receive Offload (tcp)
+LRO support for eHEA
 
 Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 ---
- include/linux/inet_lro.h |  107 ++++++++++++++++
- net/ipv4/inet_lro.c      |  311 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 418 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/inet_lro.h
- create mode 100644 net/ipv4/inet_lro.c
+ drivers/net/ehea/ehea.h      |    9 +++-
+ drivers/net/ehea/ehea_main.c |  102 +++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 104 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/inet_lro.h b/include/linux/inet_lro.h
-new file mode 100644
-index 0000000..6df444a
---- /dev/null
-+++ b/include/linux/inet_lro.h
-@@ -0,0 +1,107 @@
-+/*
-+ *  linux/include/linux/inet_lro.h
-+ *
-+ *  Large Receive Offload (ipv4 / tcp)
-+ *
-+ *  (C) Copyright IBM Corp. 2007
-+ *
-+ *  Authors:
-+ *       Jan-Bernd Themann <themann@de.ibm.com>
-+ *       Christoph Raisch <raisch@de.ibm.com>
-+ *
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef __INET_LRO_H_
-+#define __INET_LRO_H_
-+
-+#include <net/ip.h>
-+#include <net/tcp.h>
-+
-+/*
-+ * LRO descriptor for a tcp session
-+ */
-+struct net_lro_desc {
-+	struct sk_buff *parent;
-+	struct sk_buff *last_skb;
-+	struct iphdr *iph;
-+	struct tcphdr *tcph;
-+	struct vlan_group *vgrp;
-+	u32 tcp_rcv_tsecr;
-+	u32 tcp_rcv_tsval;
-+	u32 tcp_ack;
-+	u32 tcp_next_seq;
-+	u32 skb_tot_frags_len;
-+	u16 ip_tot_len;
-+	u16 tcp_saw_tstamp; 		/* timestamps enabled */
-+	u16 tcp_window;
-+	u16 vlan_tag;
-+	int skb_sg_cnt;			/* counts aggregated skbs */
-+	int vlan_packet;
-+	int active;
-+};
-+
-+/*
-+ * Large Receive Offload (LRO) Manager
-+ *
-+ * Fields must be set by driver
-+ */
-+
-+struct net_lro_mgr {
-+	int max_desc; /* Max number of LRO descriptors  */
-+	int max_aggr; /* Max number of LRO packets to be aggregated */
-+
-+	struct net_lro_desc *lro_arr; /* Array of LRO descriptors */
-+
-+	/*
-+	 * Optimized driver functions
-+	 *
-+	 * get_tcp_ip_hdr: returns tcp and ip header for packet in SKB
-+	 */
-+	int (*get_ip_tcp_hdr)(struct sk_buff *skb, struct iphdr **iphdr,
-+			      struct tcphdr **tcph, void *priv);
-+};
-+
-+/*
-+ * Processes a SKB
-+ *
-+ * @lro_mgr: LRO manager to use
-+ * @skb: SKB to aggregate
-+ * @priv: Private data that may be used by driver functions
-+ *        (for example get_tcp_ip_hdr)
-+ */
-+
-+void lro_receive_skb(struct net_lro_mgr *lro_mgr,
-+		     struct sk_buff *skb,
-+		     void *priv);
-+
-+/*
-+ * Processes a SKB with VLAN HW acceleration support
-+ */
-+
-+void lro_vlan_hwaccel_receive_skb(struct net_lro_mgr *lro_mgr,
-+				  struct sk_buff *skb,
-+				  struct vlan_group *vgrp,
-+				  u16 vlan_tag,
-+				  void *priv);
-+
-+/*
-+ * Forward all aggregated SKBs held by lro_mgr to network stack
-+ */
-+
-+void lro_flush_all(struct net_lro_mgr *lro_mgr);
-+
-+#endif
-diff --git a/net/ipv4/inet_lro.c b/net/ipv4/inet_lro.c
-new file mode 100644
-index 0000000..2b9d871
---- /dev/null
-+++ b/net/ipv4/inet_lro.c
-@@ -0,0 +1,311 @@
-+/*
-+ *  linux/net/ipv4/inet_lro.c
-+ *
-+ *  Large Receive Offload (ipv4 / tcp)
-+ *
-+ *  (C) Copyright IBM Corp. 2007
-+ *
-+ *  Authors:
-+ *       Jan-Bernd Themann <themann@de.ibm.com>
-+ *       Christoph Raisch <raisch@de.ibm.com>
-+ *
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/module.h>
-+#include <linux/if_vlan.h>
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index f03f070..c350cff 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -33,13 +33,14 @@
+ #include <linux/ethtool.h>
+ #include <linux/vmalloc.h>
+ #include <linux/if_vlan.h>
 +#include <linux/inet_lro.h>
+ 
+ #include <asm/ibmebus.h>
+ #include <asm/abs_addr.h>
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0067"
++#define DRV_VERSION	"EHEA_0069"
+ 
+ /* EHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+@@ -55,6 +56,7 @@
+ #define EHEA_MAX_ENTRIES_RQ3 16383
+ #define EHEA_MAX_ENTRIES_SQ  32767
+ #define EHEA_MIN_ENTRIES_QP  127
++#define EHEA_LRO_MAX_PKTS 60
+ 
+ #define EHEA_SMALL_QUEUES
+ #define EHEA_NUM_TX_QP 1
+@@ -84,6 +86,8 @@
+ #define EHEA_RQ2_PKT_SIZE       1522
+ #define EHEA_L_PKT_SIZE         256	/* low latency */
+ 
++#define MAX_LRO_DESCRIPTORS 8
 +
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Jan-Bernd Themann <themann@de.ibm.com>");
-+MODULE_DESCRIPTION("Large Receive Offload (ipv4 / tcp)");
-+
-+#define TCP_PAYLOAD_LENGTH(iph, tcph) \
-+(ntohs(iph->tot_len) - (iph->ihl << 2) - (tcph->doff << 2))
-+
-+#define IPH_LEN_WO_OPTIONS 5
-+#define TCPH_LEN_WO_OPTIONS 5
-+#define TCPH_LEN_W_TIMESTAMP 8
-+
-+/*
-+ * Basic tcp checks whether packet is suitable for LRO
-+ */
-+
-+static int lro_tcp_ip_check(struct sk_buff *skb, struct iphdr *iph,
-+			    struct tcphdr *tcph, struct net_lro_desc *lro_desc)
+ /* Send completion signaling */
+ 
+ /* Protection Domain Identifier */
+@@ -368,6 +372,8 @@ struct ehea_port_res {
+ 	u64 tx_packets;
+ 	u64 rx_packets;
+ 	u32 poll_counter;
++	struct net_lro_mgr lro_mgr;
++	struct net_lro_desc lro_desc[MAX_LRO_DESCRIPTORS];
+ };
+ 
+ 
+@@ -417,6 +423,7 @@ struct ehea_port {
+ 	u32 msg_enable;
+ 	u32 sig_comp_iv;
+ 	u32 state;
++	u32 lro_max_aggr;
+ 	u8 full_duplex;
+ 	u8 autoneg;
+ 	u8 num_def_qps;
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index 383144d..d1d09fb 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -34,6 +34,7 @@
+ #include <linux/list.h>
+ #include <linux/if_ether.h>
+ #include <net/ip.h>
++#include <net/tcp.h>
+ 
+ #include "ehea.h"
+ #include "ehea_qmr.h"
+@@ -52,6 +53,8 @@ static int rq2_entries = EHEA_DEF_ENTRIES_RQ2;
+ static int rq3_entries = EHEA_DEF_ENTRIES_RQ3;
+ static int sq_entries = EHEA_DEF_ENTRIES_SQ;
+ static int use_mcs = 0;
++static int use_lro = 0;
++static int lro_max_pkts = EHEA_LRO_MAX_PKTS;
+ static int num_tx_qps = EHEA_NUM_TX_QP;
+ 
+ module_param(msg_level, int, 0);
+@@ -60,6 +63,8 @@ module_param(rq2_entries, int, 0);
+ module_param(rq3_entries, int, 0);
+ module_param(sq_entries, int, 0);
+ module_param(use_mcs, int, 0);
++module_param(use_lro, int, 0);
++module_param(lro_max_pkts, int, 0);
+ module_param(num_tx_qps, int, 0);
+ 
+ MODULE_PARM_DESC(num_tx_qps, "Number of TX-QPS");
+@@ -77,6 +82,10 @@ MODULE_PARM_DESC(sq_entries, " Number of entries for the Send Queue  "
+ 		 "[2^x - 1], x = [6..14]. Default = "
+ 		 __MODULE_STRING(EHEA_DEF_ENTRIES_SQ) ")");
+ MODULE_PARM_DESC(use_mcs, " 0:NAPI, 1:Multiple receive queues, Default = 1 ");
++MODULE_PARM_DESC(lro_max_pkts, " LRO: Max packets to be aggregated. Default = "
++		 __MODULE_STRING(EHEA_LRO_MAX_PKTS));
++MODULE_PARM_DESC(use_lro, " Large Receive Offload, 1: enable, 0: disable, "
++		 "Default = 0");
+ 
+ static int port_name_cnt = 0;
+ 
+@@ -380,6 +389,60 @@ static int ehea_treat_poll_error(struct ehea_port_res *pr, int rq,
+ 	return 0;
+ }
+ 
++static int try_get_ip_tcp_hdr(struct sk_buff *skb,
++			      struct iphdr **iphdr,
++			      struct tcphdr **tcph,
++			      void *priv)
 +{
-+        /* check ip header: packet length */
-+        if (ntohs(iph->tot_len) > skb->len)
++	struct ehea_cqe *cqe = priv;
++	unsigned int ip_hdrlength;
++	struct iphdr *iph;
++
++	/* non tcp/udp packets */
++	if (!cqe->header_length)
 +		return -1;
 +
-+	if (TCP_PAYLOAD_LENGTH(iph, tcph) == 0)
++	/* non tcp packet */
++	skb_reset_network_header(skb);
++	iph = ip_hdr(skb);
++	if (iph->protocol != IPPROTO_TCP)
 +		return -1;
 +
-+	if (iph->ihl != IPH_LEN_WO_OPTIONS)
++	ip_hdrlength = ip_hdrlen(skb);
++	skb_set_transport_header(skb, ip_hdrlength);
++	*tcph = tcp_hdr(skb);
++
++	/* check if ip header and tcp header are complete */
++	if (iph->tot_len < ip_hdrlength + tcp_hdrlen(skb))
 +		return -1;
 +
-+	if (tcph->cwr || tcph->ece || tcph->urg || !tcph->ack || tcph->psh
-+	    || tcph->rst || tcph->syn || tcph->fin)
-+		return -1;
-+
-+	if (INET_ECN_is_ce(ipv4_get_dsfield(iph)))
-+		return -1;
-+
-+	if (tcph->doff != TCPH_LEN_WO_OPTIONS
-+	    && tcph->doff != TCPH_LEN_W_TIMESTAMP)
-+		return -1;
-+
-+	/* check tcp options (only timestamp allowed) */
-+	if (tcph->doff == TCPH_LEN_W_TIMESTAMP) {
-+		u32 *topt = (u32 *)(tcph + 1);
-+
-+		if (*topt != htonl((TCPOPT_NOP << 24) | (TCPOPT_NOP << 16)
-+				   | (TCPOPT_TIMESTAMP << 8)
-+				   | TCPOLEN_TIMESTAMP))
-+			return -1;
-+
-+		/* timestamp should be in right order */
-+		topt++;
-+		if (lro_desc && (ntohl(lro_desc->tcp_rcv_tsval) > ntohl(*topt)))
-+			return -1;
-+
-+		/* timestamp reply should not be zero */
-+		topt++;
-+		if (*topt == 0)
-+			return -1;
-+	}
-+
++	*iphdr = iph;
 +	return 0;
 +}
 +
-+static void lro_update_tcp_ip_header(struct net_lro_desc *lro_desc)
++static void ehea_proc_skb(struct ehea_port_res *pr, struct ehea_cqe *cqe,
++		     struct sk_buff *skb)
 +{
-+	struct iphdr *iph = lro_desc->iph;
-+	struct tcphdr *tcph = lro_desc->tcph;
-+	u32 *p;
++	int vlan_extracted = (cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
++		&& pr->port->vgrp;
 +
-+	tcph->ack_seq = lro_desc->tcp_ack;
-+	tcph->window = lro_desc->tcp_window;
-+
-+	if (lro_desc->tcp_saw_tstamp) {
-+		p = (u32 *)(tcph + 1);
-+		*(p+2) = lro_desc->tcp_rcv_tsecr;
++	if (use_lro) {
++		if (vlan_extracted)
++			lro_vlan_hwaccel_receive_skb(&pr->lro_mgr, skb,
++						     pr->port->vgrp,
++						     cqe->vlan_tag,
++						     cqe);
++		else
++			lro_receive_skb(&pr->lro_mgr, skb, cqe);
++	} else {
++		if (vlan_extracted)
++			vlan_hwaccel_receive_skb(skb, pr->port->vgrp,
++						 cqe->vlan_tag);
++		else
++			netif_receive_skb(skb);
 +	}
-+
-+	iph->tot_len = htons(lro_desc->ip_tot_len);
-+	iph->check = 0;
-+	iph->check = ip_fast_csum((u8 *)lro_desc->iph, iph->ihl);
 +}
 +
-+static void lro_init_desc(struct net_lro_desc *lro_desc, struct sk_buff *skb,
-+			  struct iphdr *iph, struct tcphdr *tcph,
-+			  u16 vlan_tag, struct vlan_group *vgrp)
-+{
-+	u32 *ptr;
-+	u32 tcp_data_len = TCP_PAYLOAD_LENGTH(iph, tcph);
+ static struct ehea_cqe *ehea_proc_rwqes(struct net_device *dev,
+ 					struct ehea_port_res *pr,
+ 					int *budget)
+@@ -426,6 +489,7 @@ static struct ehea_cqe *ehea_proc_rwqes(struct net_device *dev,
+ 					if (!skb)
+ 						break;
+ 				}
++				skb_reserve(skb, NET_IP_ALIGN);
+ 				skb_copy_to_linear_data(skb, ((char*)cqe) + 64,
+ 						 cqe->num_bytes_transfered - 4);
+ 				ehea_fill_skb(port->netdev, skb, cqe);
+@@ -451,12 +515,7 @@ static struct ehea_cqe *ehea_proc_rwqes(struct net_device *dev,
+ 				processed_rq3++;
+ 			}
+ 
+-			if ((cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
+-			    && port->vgrp)
+-				vlan_hwaccel_receive_skb(skb, port->vgrp,
+-							 cqe->vlan_tag);
+-			else
+-				netif_receive_skb(skb);
++			ehea_proc_skb(pr, cqe, skb);
+ 		} else {
+ 			pr->p_stats.poll_receive_errors++;
+ 			port_reset = ehea_treat_poll_error(pr, rq, cqe,
+@@ -468,6 +527,9 @@ static struct ehea_cqe *ehea_proc_rwqes(struct net_device *dev,
+ 		cqe = ehea_poll_rq1(qp, &wqe_index);
+ 	}
+ 
++	if (use_lro)
++		lro_flush_all(&pr->lro_mgr);
 +
-+	lro_desc->parent = skb;
-+	lro_desc->iph = iph;
-+	lro_desc->tcph = tcph;
-+	lro_desc->tcp_next_seq = ntohl(tcph->seq) + tcp_data_len;
-+	lro_desc->tcp_ack = ntohl(tcph->ack_seq);
+ 	pr->rx_packets += processed;
+ 	*budget -= processed;
+ 
+@@ -1205,6 +1267,11 @@ static int ehea_init_port_res(struct ehea_port *port, struct ehea_port_res *pr,
+ 	set_bit(__LINK_STATE_START, &pr->d_netdev->state);
+ 	strcpy(pr->d_netdev->name, port->netdev->name);
+ 
++	pr->lro_mgr.max_aggr = pr->port->lro_max_aggr;
++	pr->lro_mgr.max_desc = MAX_LRO_DESCRIPTORS;
++	pr->lro_mgr.lro_arr = pr->lro_desc;
++	pr->lro_mgr.get_ip_tcp_hdr = try_get_ip_tcp_hdr;
 +
-+	lro_desc->skb_sg_cnt = 1;
-+	lro_desc->ip_tot_len = ntohs(iph->tot_len);
-+
-+	if (tcph->doff == 8) {
-+		ptr = (u32 *)(tcph+1);
-+		lro_desc->tcp_saw_tstamp = 1;
-+		lro_desc->tcp_rcv_tsval = *(ptr+1);
-+		lro_desc->tcp_rcv_tsecr = *(ptr+2);
-+	}
-+
-+	lro_desc->vgrp = vgrp;
-+	lro_desc->vlan_tag = vlan_tag;
-+	lro_desc->active = 1;
-+}
-+
-+static inline void lro_clear_desc(struct net_lro_desc *lro_desc)
-+{
-+	memset(lro_desc, 0, sizeof(struct net_lro_desc));
-+}
-+
-+static void lro_add_packet(struct net_lro_desc *lro_desc, struct sk_buff *skb,
-+			   struct iphdr *iph, struct tcphdr *tcph)
-+{
-+	struct sk_buff *parent = lro_desc->parent;
-+	u32 *topt;
-+	u32 tcp_data_len = TCP_PAYLOAD_LENGTH(iph, tcph);
-+
-+	lro_desc->skb_sg_cnt++;
-+
-+	lro_desc->ip_tot_len += tcp_data_len;
-+	lro_desc->tcp_next_seq += tcp_data_len;
-+	lro_desc->tcp_window = lro_desc->tcph->window;
-+	lro_desc->tcp_ack = lro_desc->tcph->ack_seq;
-+
-+	/* don't update tcp_rcv_tsval, would not work with PAWS */
-+	if (lro_desc->tcp_saw_tstamp) {
-+		topt = (u32 *) (tcph + 1);
-+		lro_desc->tcp_rcv_tsecr = *(topt + 2);
-+	}
-+
-+	parent->len += tcp_data_len;
-+	parent->data_len += tcp_data_len;
-+
-+	skb_pull(skb, (skb->len - tcp_data_len));
-+	parent->truesize += skb->truesize;
-+
-+	if (lro_desc->last_skb)
-+		lro_desc->last_skb->next = skb;
-+	else
-+		skb_shinfo(parent)->frag_list = skb;
-+
-+	lro_desc->last_skb = skb;
-+
-+	return;
-+}
-+
-+static int lro_check_tcp_conn(struct net_lro_desc *lro_desc,
-+			      struct iphdr *iph,
-+			      struct tcphdr *tcph)
-+{
-+	if ((lro_desc->iph->saddr != iph->saddr)
-+	    || (lro_desc->iph->daddr != iph->daddr)
-+	    || (lro_desc->tcph->source != tcph->source)
-+	    || (lro_desc->tcph->dest != tcph->dest))
-+		return -1;
-+	return 0;
-+}
-+
-+static struct net_lro_desc *lro_get_desc(struct net_lro_mgr *mgr,
-+					 struct net_lro_desc *lro_arr,
-+					 struct iphdr *iph,
-+					 struct tcphdr *tcph)
-+{
-+	struct net_lro_desc *lro_desc = NULL;
-+	struct net_lro_desc *tmp;
-+	int max_desc = mgr->max_desc;
+ 	ret = 0;
+ 	goto out;
+ 
+@@ -1684,9 +1751,25 @@ out:
+ 
+ static int ehea_change_mtu(struct net_device *dev, int new_mtu)
+ {
++	struct ehea_port *port = netdev_priv(dev);
 +	int i;
++	int lro_aggr;
 +
-+	for (i = 0; i < max_desc; i++) {
-+		tmp = &lro_arr[i];
-+		if (tmp->active)
-+			if (!lro_check_tcp_conn(tmp, iph, tcph)) {
-+				lro_desc = tmp;
-+				goto out;
-+			}
+ 	if ((new_mtu < 68) || (new_mtu > EHEA_MAX_PACKET_SIZE))
+ 		return -EINVAL;
+ 	dev->mtu = new_mtu;
++
++	if (use_lro) {
++		port->lro_max_aggr = (0xFFFF / new_mtu);
++
++		lro_aggr = (0xFFFF / dev->mtu);
++		if (lro_aggr > lro_max_pkts)
++			lro_aggr = lro_max_pkts;
++
++		for (i = 0; i < port->num_def_qps; i++)
++			port->port_res[i].lro_mgr.max_aggr = lro_aggr;
 +	}
 +
-+	for (i = 0; i < max_desc; i++) {
-+		if(!lro_arr[i].active) {
-+			lro_desc = &lro_arr[i];
-+			goto out;
-+		}
-+	}
-+
-+out:
-+	return lro_desc;
-+}
-+
-+static void lro_flush(struct net_lro_desc *lro_desc)
-+{
-+	lro_update_tcp_ip_header(lro_desc);
-+
-+	if (lro_desc->vgrp)
-+		vlan_hwaccel_receive_skb(lro_desc->parent, lro_desc->vgrp,
-+					 lro_desc->vlan_tag);
+ 	return 0;
+ }
+ 
+@@ -2491,6 +2574,7 @@ struct ehea_port *ehea_setup_single_port(struct ehea_adapter *adapter,
+ 	struct ehea_port *port;
+ 	struct device *port_dev;
+ 	int jumbo;
++	int lro_pkts;
+ 
+ 	/* allocate memory for the port structures */
+ 	dev = alloc_etherdev(sizeof(struct ehea_port));
+@@ -2565,6 +2649,12 @@ struct ehea_port *ehea_setup_single_port(struct ehea_adapter *adapter,
+ 		goto out_unreg_port;
+ 	}
+ 
++	lro_pkts = (0xFFFF / dev->mtu);
++	if (lro_pkts < lro_max_pkts)
++		port->lro_max_aggr = lro_pkts;
 +	else
-+		netif_receive_skb(lro_desc->parent);
++		port->lro_max_aggr = lro_max_pkts;
 +
-+	lro_clear_desc(lro_desc);
-+}
-+
-+void lro_flush_all(struct net_lro_mgr *lro_mgr)
-+{
-+	int i;
-+	struct net_lro_desc *lro_desc = lro_mgr->lro_arr;
-+
-+	for (i = 0; i < lro_mgr->max_desc; i++) {
-+		if (lro_desc[i].active)
-+			lro_flush(&lro_desc[i]);
-+	}
-+}
-+EXPORT_SYMBOL(lro_flush_all);
-+
-+int __lro_proc_skb(struct net_lro_mgr *lro_mgr, struct sk_buff *skb,
-+		   struct vlan_group *vgrp, u16 vlan_tag, void *priv)
-+{
-+	struct net_lro_desc *lro_desc;
-+        struct iphdr *iph;
-+        struct tcphdr *tcph;
-+
-+	if (!lro_mgr->get_ip_tcp_hdr
-+	    || lro_mgr->get_ip_tcp_hdr(skb, &iph, &tcph, priv))
-+		goto out;
-+
-+	lro_desc = lro_get_desc(lro_mgr, lro_mgr->lro_arr, iph, tcph);
-+	if (!lro_desc)
-+		goto out;
-+
-+	if (!lro_desc->active) { /* start new lro session */
-+		if (lro_tcp_ip_check(skb, iph, tcph, NULL))
-+			goto out;
-+
-+		lro_init_desc(lro_desc, skb, iph, tcph, vlan_tag, vgrp);
-+		return 0;
-+	}
-+
-+	if (lro_desc->tcp_next_seq != ntohl(tcph->seq))
-+		goto out2;
-+
-+	if (lro_tcp_ip_check(skb, iph, tcph, lro_desc))
-+		goto out2;
-+
-+	lro_add_packet(lro_desc, skb, iph, tcph);
-+
-+	if (lro_desc->skb_sg_cnt >= lro_mgr->max_aggr)
-+		lro_flush(lro_desc);
-+
-+	return 0;
-+
-+out2: /* send aggregated SKBs to stack */
-+	lro_flush(lro_desc);
-+
-+out:  /* Original SKB has to be posted to stack */
-+	return 1;
-+}
-+
-+void lro_receive_skb(struct net_lro_mgr *lro_mgr,
-+		     struct sk_buff *skb,
-+		     void *priv)
-+{
-+	if (__lro_proc_skb(lro_mgr, skb, NULL, 0, priv))
-+		netif_receive_skb(skb);
-+}
-+EXPORT_SYMBOL(lro_receive_skb);
-+
-+void lro_vlan_hwaccel_receive_skb(struct net_lro_mgr *lro_mgr,
-+				  struct sk_buff *skb,
-+				  struct vlan_group *vgrp,
-+				  u16 vlan_tag,
-+				  void *priv)
-+{
-+	if (__lro_proc_skb(lro_mgr, skb, vgrp, vlan_tag, priv))
-+		vlan_hwaccel_receive_skb(skb, vgrp, vlan_tag);
-+}
-+EXPORT_SYMBOL(lro_vlan_hwaccel_receive_skb);
+ 	ret = ehea_get_jumboframe_status(port, &jumbo);
+ 	if (ret)
+ 		ehea_error("failed determining jumbo frame status for %s",
 -- 
 1.5.2
 
