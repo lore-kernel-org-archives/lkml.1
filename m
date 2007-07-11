@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbXGKAvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757747AbXGKAz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbXGKAvN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 20:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbXGKAu5
+	id S1757747AbXGKAz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 20:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbXGKAzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 20:50:57 -0400
-Received: from ozlabs.org ([203.10.76.45]:38962 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754326AbXGKAu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 20:50:56 -0400
-MIME-Version: 1.0
+	Tue, 10 Jul 2007 20:55:20 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:55500 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754477AbXGKAzS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 20:55:18 -0400
+Date: Tue, 10 Jul 2007 20:55:14 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Thread Migration Preemption
+Message-ID: <20070711005514.GA29071@Krystal>
+References: <20070705215152.GA4865@Krystal> <468DDD3A.6010308@yahoo.com.au> <20070710233938.GT11166@waste.org> <46941E0F.3040209@yahoo.com.au> <20070711003611.GY11115@waste.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18068.10601.792839.787025@cargo.ozlabs.ibm.com>
-Date: Wed, 11 Jul 2007 10:50:49 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Amit Arora <aarora@in.ibm.com>,
-       Andi Kleen <ak@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Arnd Bergmann <arnd@arndb.de>, "Luck, Tony" <tony.luck@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Mark Fasheh <mark.fasheh@oracle.com>, linux-arch@vger.kernel.org
-Subject: Re: fallocate-implementation-on-i86-x86_64-and-powerpc.patch
-In-Reply-To: <20070710171650.642881db.akpm@linux-foundation.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<20070710115251.GG2343@thunk.org>
-	<20070710101558.cea7aab1.akpm@linux-foundation.org>
-	<4693C580.2000506@garzik.org>
-	<18068.5612.100418.782729@cargo.ozlabs.ibm.com>
-	<20070710171650.642881db.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <20070711003611.GY11115@waste.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:43:17 up 3 days, 14:48,  2 users,  load average: 0.76, 0.74, 0.48
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
-
-> On Wed, 11 Jul 2007 09:27:40 +1000
-> Paul Mackerras <paulus@samba.org> wrote:
+* Matt Mackall (mpm@selenic.com) wrote:
+> On Wed, Jul 11, 2007 at 10:02:23AM +1000, Nick Piggin wrote:
+> > >I like this patch a lot. Even if we don't add the underlying mechanism
+> > >right now, adding migration_disable as an alias for preempt_disable
+> > >will much better document quite a number of the users.
+> > 
+> > I'd have no problem with that, and it might make it easier in future to
+> > justify a more complex scheme.
 > 
-> > We did come up with an order that worked for everybody, but that
-> > discussion seemed to get totally ignored by the ext4 developers.
+> What do you think, Mathieu?
 > 
-> It was a long discussion.
-> 
-> Can someone please remind us what the signature of the syscall
-> (and the compat handler) should be?
 
-long sys_fallocate(loff_t offset, loff_t len, int fd, int mode)
+That's an excellent idea. It should probably come with some
+documentation explaining what difference should be expected between
+preempt_disable and migrate_disable in the future so that people can
+choose the right alternative for their code.
 
-should work for everybody.  The compat handler would be
+> Also, small nit: it ought to be migrate_disable to match the form of
+> preempt_disable.
 
-long compat_sys_fallocate(u32 offset_hi, u32 offset_lo, u32 len_hi, u32 len_lo,
-			  int fd, int mode)
+Yes, that's fine with me. :)
 
-for big-endian, or swap hi/lo for little-endian.  (Actually it would
-be good to have an arch-dependent "stitch two args together" macro and
-call them offset_0, offset_1 etc.)
+I though a little more about this whole concept of migrate_disable, and
+I think it could be brought further. One of the main problems with per
+cpu variables is that this concept cannot be ported to this grey place
+called "user-space" because preemption cannot be disabled. The
+equivalent (kind of) is currently per thread variables, but it can
+consume a lot of space if many threads are running.
 
-Paul.
+However, it could be possible, if we implement a vsyscall based
+migration preemption counter accessible with read/write access from
+user-space, to tie a thread to a CPU during a user-space critical path.
+If we combine this with local atomic operations done in user-space, we
+could have highly scalable access to per cpu data structures reentrant
+with respect to signal handlers.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
