@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935681AbXGLAGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935665AbXGLAHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935681AbXGLAGf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935494AbXGKXsQ
+	id S935665AbXGLAHA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935874AbXGKXtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:48:16 -0400
-Received: from www.osadl.org ([213.239.205.134]:39826 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935254AbXGKXsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:48:14 -0400
-Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <20070711233618.GD25510@one.firstfloor.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
-	 <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
-	 <1184191488.12353.160.camel@chaos>
-	 <alpine.LFD.0.999.0707111518020.20061@woody.linux-foundation.org>
-	 <1184194219.12353.170.camel@chaos>
-	 <alpine.LFD.0.999.0707111558250.20061@woody.linux-foundation.org>
-	 <20070711233618.GD25510@one.firstfloor.org>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 01:48:12 +0200
-Message-Id: <1184197692.12353.197.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 19:49:25 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52522 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936050AbXGKXtY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:49:24 -0400
+Date: Wed, 11 Jul 2007 17:49:22 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz,
+       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 05/34] PCI: Use a weak symbol for the empty version of pcibios_add_platform_entries()
+Message-ID: <20070711234922.GW9704@parisc-linux.org>
+References: <20070711233037.GB5253@kroah.com> <11841967082916-git-send-email-gregkh@suse.de> <1184196712526-git-send-email-gregkh@suse.de> <11841967172946-git-send-email-gregkh@suse.de> <11841967322884-git-send-email-gregkh@suse.de> <11841967361726-git-send-email-gregkh@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11841967361726-git-send-email-gregkh@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
-
-On Thu, 2007-07-12 at 01:36 +0200, Andi Kleen wrote:
-> > The same is true of a lot of the APIC timer code. Sure, that patch has the 
-> > actual conversion in it, and you don't have the cross-architecture issues, 
-> > but more than 50% of the patch seems to be just cleanup that is 
-> > independent of the actual switch-over, no?
+On Wed, Jul 11, 2007 at 04:31:19PM -0700, Greg Kroah-Hartman wrote:
+> I'm not sure if this is going to fly, weak symbols work on the compilers I'm
+> using, but whether they work for all of the affected architectures I can't say.
+> I've cc'ed as many arch maintainers/lists as I could find.
 > 
-> I don't think it's that much cleanup. One of my goals for x86-64 was always
-> to have it support modern x86 only; this means in particularly most of the
-> old bug workaround removed. With the APIC timer merging a lot of that crap
-> gets back in.
-> 
-> I would prefer to keep APIC code separate.
+> But assuming they do, we can use a weak empty definition of
+> pcibios_add_platform_entries() to avoid having an empty definition on every
+> arch.
 
-Care to look at the patch ? It _IS_ seperate.
+This seems like a regression.  We go from having an empty inline
+function that gets optimised away to 0 to having a function call to a
+trivial function.  And on any architecture that *does* define this,
+(unless I misunderstand the GCC manual), we still include the weak
+definition, thus wasting space.
 
-Only HPET and PIT got shared.
+I don't think this is a good use of weak functions.  It's perfectly
+normal to have header files filled with empty functions.  They're even
+good documentation for what an architecture might want to fill in,
+rather than invent their own mechanism for doing something.
 
-	tglx
-
-
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
