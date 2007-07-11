@@ -1,161 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934975AbXGKXcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934948AbXGKXdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934975AbXGKXcA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbXGKXbq
+	id S934948AbXGKXdG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXGKXcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:31:46 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:48422 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934935AbXGKXbp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:31:45 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation Redesign
-Date: Thu, 12 Jul 2007 09:31:43 +1000
-User-Agent: KMail/1.9.6
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Mark Lord <lkml@rtr.ca>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Miklos Szeredi <miklos@szeredi.hu>, jeremy@goop.org, pavel@ucw.cz,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200707081737.21932.a1426z@gawab.com> <200707120034.14201.rjw@sisk.pl> <200707120212.24072.a1426z@gawab.com>
-In-Reply-To: <200707120212.24072.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart15381560.8zxUnzoBmH";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707120931.44456.nigel@nigel.suspend2.net>
+	Wed, 11 Jul 2007 19:32:54 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33144 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932776AbXGKXcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:32:53 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/61] Rules on how to use sysfs in userspace programs
+Date: Wed, 11 Jul 2007 16:31:20 -0700
+Message-Id: <11841967403365-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.2.2
+In-Reply-To: <20070711233021.GA5253@kroah.com>
+References: <20070711233021.GA5253@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart15381560.8zxUnzoBmH
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-Hi.
+Here's a document to help clear things up.
 
-On Thursday 12 July 2007 09:12:24 Al Boldi wrote:
-> Rafael J. Wysocki wrote:
-> > On Thursday, 12 July 2007 00:17, Al Boldi wrote:
-> > > Mark Lord wrote:
-> > > > Jeremy Maitin-Shepard wrote:
-> > > > > I'll certainly admit the kexec idea is vaporware currently,
-> > >
-> > > Your idea is starting to become a reality with this thread:
-> > > "[PATCH 0/2] Kexec jump: The first step to kexec base hibernation"
-> > >
-> > > > > but it does
-> > > > > differ in a significant way from freezer-based approaches, such t=
-hat
-> > > > > I don't think it should be referred to as just another
-> > > > > implementation of a freezer.  Specifically, it doesn't require th=
-at
-> > > > > the "old kernel" be in a "consistent" state to a greater extent t=
-han
-> > > > > suspend to ram; it is the case that all of the devices must be
-> > > > > quiesced or shut down to some extent, but doing this without races
-> > > > > and deadlocks (and without the freezer) is certainly very, very
-> > > > > similar to what needs to be done for suspend to ram, which will n=
-eed
-> > > > > to be solved anyway.  Unlike the existing hibernate approaches,
-> > > > > however, it will not be necessary to use any of the driver
-> > > > > infrastructure once switched to the "save image" kernel, and thus=
- it
-> > > > > will not matter what locks are held, for instance.
-> > > >
-> > > > I really doubt that kexec(a special kernel) is going to solve anyth=
-ing
-> > > > here. The new kernel will have to initialize, probe for devices, et=
-c.
-> > > > Which will take time.
-> > > > Which will slow down hibernate to an unacceptable degree.
-> > > > Right now, it (TuxOnIce) is *very* fast.
-> > > > Adding 10 seconds or so for reprobing/resetting/reiniting devices
-> > > > is not going to be useful.
-> > > > And modifying all of the drivers to *not* do their usual probe
-> > > > sequence sounds rather intrusive and is likely also a non-starter
-> > > > here.
-> > > >
-> > > > Or is it?
-> > >
-> > > Well, it's definitely less intrusive than readying drivers for the
-> > > freezer.
-> >
-> > There's nothing like this!
->=20
-> Are you sure?
->=20
-> # grep -i freeze drivers/*/* | wc -l
->=20
-> gives:  297
->=20
-> Maybe you can clarify?
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ Documentation/sysfs-rules.txt |  166 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 166 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/sysfs-rules.txt
 
-Rafael's probably just gone to sleep, so let me be so bold as to give an=20
-answer.
+diff --git a/Documentation/sysfs-rules.txt b/Documentation/sysfs-rules.txt
+new file mode 100644
+index 0000000..42861bb
+--- /dev/null
++++ b/Documentation/sysfs-rules.txt
+@@ -0,0 +1,166 @@
++Rules on how to access information in the Linux kernel sysfs
++
++The kernel exported sysfs exports internal kernel implementation-details
++and depends on internal kernel structures and layout. It is agreed upon
++by the kernel developers that the Linux kernel does not provide a stable
++internal API. As sysfs is a direct export of kernel internal
++structures, the sysfs interface can not provide a stable interface eighter,
++it may always change along with internal kernel changes.
++
++To minimize the risk of breaking users of sysfs, which are in most cases
++low-level userspace applications, with a new kernel release, the users
++of sysfs must follow some rules to use an as abstract-as-possible way to
++access this filesystem. The current udev and HAL programs already
++implement this and users are encouraged to plug, if possible, into the
++abstractions these programs provide instead of accessing sysfs
++directly.
++
++But if you really do want or need to access sysfs directly, please follow
++the following rules and then your programs should work with future
++versions of the sysfs interface.
++
++- Do not use libsysfs
++  It makes assumptions about sysfs which are not true. Its API does not
++  offer any abstraction, it exposes all the kernel driver-core
++  implementation details in its own API. Therefore it is not better than
++  reading directories and opening the files yourself.
++  Also, it is not actively maintained, in the sense of reflecting the
++  current kernel-development. The goal of providing a stable interface
++  to sysfs has failed, it causes more problems, than it solves. It
++  violates many of the rules in this document.
++
++- sysfs is always at /sys
++  Parsing /proc/mounts is a waste of time. Other mount points are a
++  system configuration bug you should not try to solve. For test cases,
++  possibly support a SYSFS_PATH environment variable to overwrite the
++  applications behavior, but never try to search for sysfs. Never try
++  to mount it, if you are not an early boot script.
++
++- devices are only "devices"
++  There is no such thing like class-, bus-, physical devices,
++  interfaces, and such that you can rely on in userspace. Everything is
++  just simply a "device". Class-, bus-, physical, ... types are just
++  kernel implementation details, which should not be expected by
++  applications that look for devices in sysfs.
++
++  The properties of a device are:
++    o devpath (/devices/pci0000:00/0000:00:1d.1/usb2/2-2/2-2:1.0)
++      - identical to the DEVPATH value in the event sent from the kernel
++        at device creation and removal
++      - the unique key to the device at that point in time
++      - the kernels path to the device-directory without the leading
++        /sys, and always starting with with a slash
++      - all elements of a devpath must be real directories. Symlinks
++        pointing to /sys/devices must always be resolved to their real
++        target, and the target path must be used to access the device.
++        That way the devpath to the device matches the devpath of the
++        kernel used at event time.
++      - using or exposing symlink values as elements in a devpath string
++        is a bug in the application
++
++    o kernel name (sda, tty, 0000:00:1f.2, ...)
++      - a directory name, identical to the last element of the devpath
++      - applications need to handle spaces and characters like '!' in
++        the name
++
++    o subsystem (block, tty, pci, ...)
++      - simple string, never a path or a link
++      - retrieved by reading the "subsystem"-link and using only the
++        last element of the target path
++
++    o driver (tg3, ata_piix, uhci_hcd)
++      - a simple string, which may contain spaces, never a path or a
++        link
++      - it is retrieved by reading the "driver"-link and using only the
++        last element of the target path
++      - devices which do not have "driver"-link, just do not have a
++        driver; copying the driver value in a child device context, is a
++        bug in the application
++
++    o attributes
++      - the files in the device directory or files below a subdirectories
++        of the same device directory
++      - accessing attributes reached by a symlink pointing to another device,
++        like the "device"-link, is a bug in the application
++
++  Everything else is just a kernel driver-core implementation detail,
++  that should not be assumed to be stable across kernel releases.
++
++- Properties of parent devices never belong into a child device.
++  Always look at the parent devices themselves for determining device
++  context properties. If the device 'eth0' or 'sda' does not have a
++  "driver"-link, then this device does not have a driver. Its value is empty.
++  Never copy any property of the parent-device into a child-device. Parent
++  device-properties may change dynamically without any notice to the
++  child device.
++
++- Hierarchy in a single device-tree
++  There is only one valid place in sysfs where hierarchy can be examined
++  and this is below: /sys/devices.
++  It is planned, that all device directories will end up in the tree
++  below this directory.
++
++- Classification by subsystem
++  There are currently three places for classification of devices:
++  /sys/block, /sys/class and /sys/bus. It is planned that these will
++  not contain any device-directories themselves, but only flat lists of
++  symlinks pointing to the unified /sys/devices tree.
++  All three places have completely different rules on how to access
++  device information. It is planned to merge all three
++  classification-directories into one place at /sys/subsystem,
++  following the layout of the bus-directories. All buses and
++  classes, including the converted block-subsystem, will show up
++  there.
++  The devices belonging to a subsystem will create a symlink in the
++  "devices" directory at /sys/subsystem/<name>/devices.
++
++  If /sys/subsystem exists, /sys/bus, /sys/class and /sys/block can be
++  ignored. If it does not exist, you have always to scan all three
++  places, as the kernel is free to move a subsystem from one place to
++  the other, as long as the devices are still reachable by the same
++  subsystem name.
++
++  Assuming /sys/class/<subsystem> and /sys/bus/<subsystem>, or
++  /sys/block and /sys/class/block are not interchangeable, is a bug in
++  the application.
++
++- Block
++  The converted block-subsystem at /sys/class/block, or
++  /sys/subsystem/block will contain the links for disks and partitions
++  at the same level, never in a hierarchy. Assuming the block-subsytem to
++  contain only disks and not partition-devices in the same flat list is
++  a bug in the application.
++
++- "device"-link and <subsystem>:<kernel name>-links
++  Never depend on the "device"-link. The "device"-link is a workaround
++  for the old layout, where class-devices are not created in
++  /sys/devices/ like the bus-devices. If the link-resolving of a
++  device-directory does not end in /sys/devices/, you can use the
++  "device"-link to find the parent devices in /sys/devices/. That is the
++  single valid use of the "device"-link, it must never appear in any
++  path as an element. Assuming the existence of the "device"-link for
++  a device in /sys/devices/ is a bug in the application.
++  Accessing /sys/class/net/eth0/device is a bug in the application.
++
++  Never depend on the class-specific links back to the /sys/class
++  directory.  These links are also a workaround for the design mistake
++  that class-devices are not created in /sys/devices. If a device
++  directory does not contain directories for child devices, these links
++  may be used to find the child devices in /sys/class. That is the single
++  valid use of these links, they must never appear in any path as an
++  element. Assuming the existence of these links for devices which are
++  real child device directories in the /sys/devices tree, is a bug in
++  the application.
++
++  It is planned to remove all these links when when all class-device
++  directories live in /sys/devices.
++
++- Position of devices along device chain can change.
++  Never depend on a specific parent device position in the devpath,
++  or the chain of parent devices. The kernel is free to insert devices into
++  the chain. You must always request the parent device you are looking for
++  by its subsystem value. You need to walk up the chain until you find
++  the device that matches the expected subsystem. Depending on a specific
++  position of a parent device, or exposing relative paths, using "../" to
++  access the chain of parents, is a bug in the application.
++
+-- 
+1.5.2.2
 
-=46irst, you need to understand that there is a difference between the proc=
-ess=20
-freezer and driver support for suspending and resuming. The two are=20
-completely unrelated. Process freezing happens at the start of a hibernatio=
-n=20
-cycle. Driver suspend and resume calls happen prior to and after an atomic=
-=20
-copy or restore. Process freezing stops processes. Driver suspend and resum=
-e=20
-calls tell drivers to save their state and possibly enter low power modes.=
-=20
-Process freezing isn't a necessary prerequisite for calling driver=20
-suspend/resume routines. (That has been the point to discussions about=20
-suspend to ram).
-
-Since this is the case, doing grep -i freeze drivers/*/* is a bogus test. I=
-f=20
-you want to look for drivers using the freezer, you need to grep for=20
-try_to_freeze and PF_NOFREEZE. PF_NOFREEZE says the related kernel thread=20
-shouldn't be frozen (11 hits in the source tree I'm looking at). Grepping f=
-or=20
-try_to_freeze gets 29. By the way, find drivers/ -name '*.[ch]' | xargs gre=
-p=20
-try_to_freeze (for example) is a better search - it isn't dependant upon th=
-e=20
-number of subdirectories.
-
-You'll see from the above numbers that the freezer is not nearly as intrusi=
-ve=20
-as you were thinking (~10% of what you wrote above). It is limited to code=
-=20
-related to kernel threads, and then to either setting a flag when the threa=
-d=20
-is started to say "I don't need to be frozen" or to the appropriate point a=
-t=20
-which to check whether to freeze.
-
-Hope that helps.
-
-Nigel
-=2D-=20
-Nigel Cunningham
-Christian Reformed Church of Cobden
-103 Curdie Street, Cobden 3266, Victoria, Australia
-Ph. +61 3 5595 1185 / +61 417 100 574
-Communal Worship: 11 am Sunday.
-
---nextPart15381560.8zxUnzoBmH
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGlWhgN0y+n1M3mo0RAsLXAKC4YQ/p0zUdVhDL+Ihc7FfoW9UDQACgq2G0
-oELvxfNKr4xWeD81SQi37zs=
-=XWgQ
------END PGP SIGNATURE-----
-
---nextPart15381560.8zxUnzoBmH--
