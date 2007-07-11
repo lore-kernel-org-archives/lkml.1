@@ -1,63 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbXGKFy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbXGKGLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759207AbXGKFy5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 01:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbXGKFyu
+	id S1757542AbXGKGLr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbXGKGLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 01:54:50 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:25532 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753145AbXGKFyu (ORCPT
+	Wed, 11 Jul 2007 02:11:32 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38348 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752433AbXGKGLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 01:54:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=q4XsBojOlkOgfNYSOzjAVmmYr+p1k5FkYnYj4XFkuVQUvfYoXjpd1Nyxe9PldiN7RAf7gW8OQU/0ZxcOXNXuV6UPlJ7zukVAbyieG0Hyfm9rkxQDjP1xRoPOacf/jeZP2RP3AWHpRhtxj2pcrumTnxvfXrnhCgpT2I3IA70FJRI=  ;
-X-YMail-OSG: o11AVRAVM1kFNvVGmE4zHhIIRIcy4xeWiAB0D7xYUlgiC1e5z73LWreyAtGQ08UW2NkWrvfFDw--
-Message-ID: <469470A3.5040606@yahoo.com.au>
-Date: Wed, 11 Jul 2007 15:54:43 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Matthew Hawkins <darthmdh@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org>	 <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>	 <20070710181419.6d1b2f7e.akpm@linux-foundation.org>	 <b21f8390707101954s3ae69db8vc30287277941cb1f@mail.gmail.com>	 <4694683B.3060705@yahoo.com.au> <2c0942db0707102247n3b6e5933i9803a2161d6c00b1@mail.gmail.com>
-In-Reply-To: <2c0942db0707102247n3b6e5933i9803a2161d6c00b1@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 11 Jul 2007 02:11:30 -0400
+Subject: Re: [EXT4 set 2][PATCH 5/5] cleanups: Export jbd2-debug via debugfs
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: "Jose R. Santos" <jrs@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <20070711003809.3ced667b@naruto>
+References: <1183275408.4010.124.camel@localhost.localdomain>
+	 <20070710163025.9db582f8.akpm@linux-foundation.org>
+	 <20070711003809.3ced667b@naruto>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Tue, 10 Jul 2007 23:10:29 -0400
+Message-Id: <1184123429.20193.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> On 7/10/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Wed, 2007-07-11 at 00:38 -0500, Jose R. Santos wrote:
+> On Tue, 10 Jul 2007 16:30:25 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
->> Matthew Hawkins wrote:
->> > On 7/11/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->>
->> > Anyhow with swap prefetch, applications that may have been sitting
->> > there idle for a while become responsive in the single-digit seconds
->> > rather than double-digit or worse.  The same goes for a morning wakeup
->> > (ie after nightly cron jobs throw things out)
->>
->> OK that's a good data point. It would be really good to be able to
->> do an analysis on your overnight IO patterns and the corresponding
->> memory reclaim behaviour and see why things are getting evicted.
+> > On Sun, 01 Jul 2007 03:36:48 -0400
+> > Mingming Cao <cmm@us.ibm.com> wrote:
+> > 
+> > > > On Jun 07, 2007  23:45 -0500, Jose R. Santos wrote:
+> > > > > The jbd2-debug file used to be located in /proc/sys/fs/jbd2-debug, but
+> > > > > create_proc_entry() does not do lookups on file names with more that one
+> > > > > directory deep.  This causes the entry creation to fail and hence, no proc
+> > > > > file is created.  This patch moves the file to /proc/jbd2-degug.
+> > > > > 
+> > > > > The file could be move to /proc/fs/jbd2/jbd2-debug, but it would require
+> > > > > some minor alterations to the jbd-stats patch.
+> > > > 
+> > > > I don't think we really want to be adding top-level files in /proc.
+> > > > What about using the "debugfs" filesystem (not to be confused with
+> > > > the e2fsprogs 'debugfs' command)?
+> > > 
+> > > How about this then?  Moved the file to use debugfs as well as having
+> > > the nice effect of removing more lines than what it adds.
+> > > 
+> > > Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+> > 
+> > Please clean up the changelog.
+> > 
+> > The changelog should include information about the location and the content
+> > of these debugfs files.  it should provide any instructions which users
+> > will need to be able to create and use those files.
 > 
+> Will fix.
 > 
-> Eviction can happen for multiple reasons, as I'm sure you're painfully
-> aware. It can happen because of poor balancing choices, or it can
+> > Alternatively (and preferably) do this via an update to
+> > Documentation/filesystems/ext4.txt.
+> 
+> Seems like I also need to update the doc on Kconfig as well.  Do you
+> prefer this in separate patches? (current patch, kconfig patch, ext4
+> doc update patch?
+> 
+> > >  fs/jbd2/journal.c    |   62    20 +    42 -    0 !
+> > >  include/linux/jbd2.h |    2    1 +     1 -     0 !
+> > >  2 files changed, 21 insertions(+), 43 deletions(-)
+> > 
+> > Again, this patch isn't in Ted's kernel.org directory and hasn't been in -mm.
+> > 
+> > Apart from the lack of testing and review which this causes, it means I
+> > can't just do `pushpatch name-of-this-patch' and look at it in tkdiff.  So
+> > I squint at the diff, but that's harder when the diff wasn't prepared with
+> > `diff -p'.  Oh well.
+> 
+> Will fix.
+> 
+> > 
+> > > Index: linux-2.6.22-rc4/fs/jbd2/journal.c
+> > > ===================================================================
+> > > --- linux-2.6.22-rc4.orig/fs/jbd2/journal.c	2007-06-11 16:16:18.000000000 -0700
+> > > +++ linux-2.6.22-rc4/fs/jbd2/journal.c	2007-06-11 16:36:10.000000000 -0700
+> > > @@ -35,6 +35,7 @@
+> > >  #include <linux/kthread.h>
+> > >  #include <linux/poison.h>
+> > >  #include <linux/proc_fs.h>
+> > > +#include <linux/debugfs.h>
+> > >  
+> > >  #include <asm/uaccess.h>
+> > >  #include <asm/page.h>
+> > > @@ -1954,60 +1955,37 @@
+> > >   * /proc tunables
+> > >   */
+> > >  #if defined(CONFIG_JBD2_DEBUG)
+> > > -int jbd2_journal_enable_debug;
+> > > +u16 jbd2_journal_enable_debug;
+> > >  EXPORT_SYMBOL(jbd2_journal_enable_debug);
+> > >  #endif
+> > >  
+> > > -#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_PROC_FS)
+> > > +#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_DEBUG_FS)
+> > 
+> > Has this been compile-tested with CONFIG_DEBUGFS=n?
+> 
+> I think I did, but honestly don't remember.  Will check with the new
+> patch. :) 
+> 
 
-s/balancing/reclaim, yes. And for the nightly cron job case, this is
-could quite possibly be the cause. At least updatedb should be fairly
-easy to apply use-once heuristics for, so if they're not working then
-we should hopefully be able to improve it.
+Yes, I remember I did, that discovered some inconsistency in ext4 code,
+which has already been fixed.
 
--- 
-SUSE Labs, Novell Inc.
+> > >  
+> > > -#define create_jbd_proc_entry() do {} while (0)
+> > > -#define jbd2_remove_jbd_proc_entry() do {} while (0)
+> > > +#define jbd2_create_debugfs_entry() do {} while (0)
+> > > +#define jbd2_remove_debugfs_entry() do {} while (0)
+> > 
+> > I suggest that these be converted to (preferable) inline functions while
+> > you're there.
+> 
+> OK.
+> 
+> > >  #endif
+> > >  
+> > > @@ -2067,7 +2045,7 @@
+> > >  	ret = journal_init_caches();
+> > >  	if (ret != 0)
+> > >  		jbd2_journal_destroy_caches();
+> > > -	create_jbd_proc_entry();
+> > > +	jbd2_create_debugfs_entry();
+> > >  	return ret;
+> > >  }
+> > >  
+> > > @@ -2078,7 +2056,7 @@
+> > >  	if (n)
+> > >  		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
+> > >  #endif
+> > > -	jbd2_remove_jbd_proc_entry();
+> > > +	jbd2_remove_debugfs_entry();
+> > >  	jbd2_journal_destroy_caches();
+> > >  }
+> > >  
+> > > Index: linux-2.6.22-rc4/include/linux/jbd2.h
+> > > ===================================================================
+> > > --- linux-2.6.22-rc4.orig/include/linux/jbd2.h	2007-06-11 16:16:18.000000000 -0700
+> > > +++ linux-2.6.22-rc4/include/linux/jbd2.h	2007-06-11 16:35:25.000000000 -0700
+> > > @@ -57,7 +57,7 @@
+> > >   * CONFIG_JBD2_DEBUG is on.
+> > >   */
+> > >  #define JBD_EXPENSIVE_CHECKING
+> > 
+> > JBD2?
+> >
+> > > -extern int jbd2_journal_enable_debug;
+> > > +extern u16 jbd2_journal_enable_debug;
+> > 
+> > Why was this made 16-bit?  To save 2 bytes?  Could have saved 3 if we're
+> > going to do that.
+> 
+> OK.
+> 
+> > Shoudln't all this debug info be a per-superblock thing rather than
+> > kernel-wide?
+> 
+> I don't think it is worth pursuing this feature since this seems to
+> have been broken for a while now (its been there since the first git
+> revission in ext3) and nobody has noticed it until now.  It could be
+> address on a later patch though, since the initial purpose of the patch
+> was to fix the broken JBD2_DEBUG option. Of course, this may not be
+> clearly express in the changelog. :)
+> 
+> -JRS
+
