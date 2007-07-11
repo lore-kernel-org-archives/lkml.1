@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763506AbXGKNpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764475AbXGKNwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763506AbXGKNpz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 09:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763636AbXGKNpW
+	id S1764475AbXGKNwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 09:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbXGKNwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 09:45:22 -0400
-Received: from sccrmhc11.comcast.net ([63.240.77.81]:46950 "EHLO
-	sccrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763369AbXGKNpU (ORCPT
+	Wed, 11 Jul 2007 09:52:09 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:25505 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759978AbXGKNwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 09:45:20 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: linux-kernel@vger.kernel.org
-Subject: Re: sysrq-t dumps of s2ram/fuse deadlock
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031456.36027.rjw@sisk.pl> <20070709132905.GA5212@ucw.cz>
-	<20070711132819.GA5753@srcf.ucam.org>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Wed, 11 Jul 2007 09:45:19 -0400
-In-Reply-To: <20070711132819.GA5753@srcf.ucam.org> (Matthew Garrett's message
-	of "Wed\, 11 Jul 2007 14\:28\:20 +0100")
-Message-ID: <871wffcavk.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
+	Wed, 11 Jul 2007 09:52:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LoJaxgmNZa2aKvHBu3wJdtgNSq1xEidT11mWgD0VkezlsC303MXceLtgmj4G374iFhm7xmLFl7WN+4a7AFlPGXS5r9lQePXgsgSZPl2DjyGHpB3nwSlkBiix9X20Id+OEf7Ek51/cQz82QJ6WdVpQHP2HPkgRsAz/TC0NtuE/N4=
+Message-ID: <75b57c110707110652h24166093ra063731f0c2a90a2@mail.gmail.com>
+Date: Wed, 11 Jul 2007 09:52:07 -0400
+From: "Gerb Stralko" <gerb.stralko@gmail.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: Gmail and flowed text (was Re: Correction to LZO1X)
+Cc: "Nitin Gupta" <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <9a8748490707110641y1796d5dy42d4f744f131fbc9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com>
+	 <9a8748490707110641y1796d5dy42d4f744f131fbc9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett <mjg59@srcf.ucam.org> writes:
+> 2) If you have a box available at home (or elsewhere), use that to
+> relay mail through.
+>
+read linux mail from you gmail account. When you need to send a patch,
+send it from a linux box using pine, but change the From to your gmail
+account.   Like Jesper suggested works great!  Best of both worlds.
 
-> On Mon, Jul 09, 2007 at 01:29:05PM +0000, Pavel Machek wrote:
->> Hi!
->> 
->> Can we get them? They are neccessary for debugging 'what in suspend
->> calls fuse' problem. And yes, that problem is there even when you
->> remove freezer.
+This link will help:
+http://www.ii.com/internet/messaging/pine/pc/#gmail
 
-> I can produce them, but haven't managed to do that in any way that lets 
-> me get them off the system yet.
+Scroll down untill you see a yellow box section that say:
+Gmail Tips 	    	
+    * If you want to use the Gmail SMTP server for your outgoing
+messages, I recommend that you create a Pine Role that includes these
+ACTIONS:
 
-If you can see them, then perhaps you could use a digital camera or just
-copy the text manually.
+> 3) Use attachments for patches (sucks, but you may have to).
+>
+Yes attachments suck, no one will read them and hence no will merge
+them upstream for you.
 
-[snip]
 
+let me know if you have any question.
 
--- 
-Jeremy Maitin-Shepard
+-Jerry
