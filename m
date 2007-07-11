@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765118AbXGKO2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765036AbXGKOaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765118AbXGKO2u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 10:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762554AbXGKO2m
+	id S1765036AbXGKOaR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 10:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762554AbXGKOaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 10:28:42 -0400
-Received: from host28-104-static.26-213-b.business.telecomitalia.it ([213.26.104.28]:58644
-	"EHLO zeus.san-lorenzo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760692AbXGKO2l (ORCPT
+	Wed, 11 Jul 2007 10:30:05 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55445 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761962AbXGKOaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 10:28:41 -0400
-Message-ID: <4694E915.10607@gts.it>
-Date: Wed, 11 Jul 2007 16:28:37 +0200
-From: Stefano Rivoir <s.rivoir@gts.it>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Wed, 11 Jul 2007 10:30:04 -0400
+Message-ID: <4694E966.9040607@sgi.com>
+Date: Wed, 11 Jul 2007 16:29:58 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060527)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stefano Rivoir <s.rivoir@gts.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org> <46947ADF.4080605@gts.it> <alpine.LFD.0.999.0707110002460.3412@woody.linux-foundation.org> <20070711105552.GG4887@tamriel.snowman.net>
-In-Reply-To: <20070711105552.GG4887@tamriel.snowman.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: akpm@linux-foundation.org
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org
+Subject: [patch] sn_console section mismatch warning
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------000608060107030400030100"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Frost wrote:
-> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
->> I'm hoping your Debian/sid gcc version is some very experimental 
->> known-buggy one, and not something that people _expect_ to be solid and 
->> work well?
-> 
-> No such luck. :(  Debian's close to moving to gcc-4.2 as the default
-> compiler in sid.  We've rebuilt the archive a number of times (both
-> since the 4.2 release and during its development) using gcc-4.2 and
-> thought we'd identified most of the issues with it.
-> 
-> It clearly sounds like we need to open a high-severity bug on this issue
-> and track it down before we move to it as the default compiler.  I'll
-> start harassing the appropriate folks also.
-> 
-> Stefano, can you file that bug, including the config, dmesg, and
-> backtrace from gcc if you can get it?
+This is a multi-part message in MIME format.
+--------------000608060107030400030100
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Yes, I'll file a bug (here and on b.d.o) tonight, when I'll be on the 
-box again.
+Hi,
 
-Bye.
+This one eliminates a link-time warning for the sn_console driver.
 
--- 
-Stefano RIVOIR
+Cheers,
+Jes
 
+
+--------------000608060107030400030100
+Content-Type: text/plain;
+ name="sn_console-link-warn.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sn_console-link-warn.diff"
+
+Do not mark sn_sal_console_setup as __init since it's referenced from
+non init data structures.
+
+Signed-off-by: Jes Sorensen <jes@sgi.com>
+
+---
+ drivers/serial/sn_console.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/drivers/serial/sn_console.c
+===================================================================
+--- linux-2.6.orig/drivers/serial/sn_console.c
++++ linux-2.6/drivers/serial/sn_console.c
+@@ -759,7 +759,7 @@ static void __init sn_sal_switch_to_inte
+  */
+ 
+ static void sn_sal_console_write(struct console *, const char *, unsigned);
+-static int __init sn_sal_console_setup(struct console *, char *);
++static int sn_sal_console_setup(struct console *, char *);
+ static struct uart_driver sal_console_uart;
+ extern struct tty_driver *uart_console_device(struct console *, int *);
+ 
+@@ -1006,7 +1006,7 @@ sn_sal_console_write(struct console *co,
+  * here so providing it is easier.
+  *
+  */
+-static int __init sn_sal_console_setup(struct console *co, char *options)
++static int sn_sal_console_setup(struct console *co, char *options)
+ {
+ 	return 0;
+ }
+
+--------------000608060107030400030100--
