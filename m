@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759786AbXGKGgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbXGKGih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759786AbXGKGgA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbXGKGfv
+	id S1757302AbXGKGih (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbXGKGib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:35:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37211 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751943AbXGKGft (ORCPT
+	Wed, 11 Jul 2007 02:38:31 -0400
+Received: from host28-104-static.26-213-b.business.telecomitalia.it ([213.26.104.28]:46779
+	"EHLO zeus.san-lorenzo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbXGKGia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:35:49 -0400
-Date: Tue, 10 Jul 2007 23:35:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: cmm@us.ibm.com
-Cc: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       nfsv4@linux-nfs.org
-Subject: Re: [EXT4 set 4][PATCH 1/5] i_version:64 bit inode version
-Message-Id: <20070710233529.7d8bfe9a.akpm@linux-foundation.org>
-In-Reply-To: <1184123930.20193.61.camel@localhost.localdomain>
-References: <1183275424.4010.126.camel@localhost.localdomain>
-	<20070710163038.ceb2ae94.akpm@linux-foundation.org>
-	<1184105380.3759.65.camel@localhost.localdomain>
-	<20070710182237.e2f88bf3.akpm@linux-foundation.org>
-	<18068.19667.942363.686858@notabene.brown>
-	<1184119748.20193.37.camel@localhost.localdomain>
-	<20070710221721.23c46edf.akpm@linux-foundation.org>
-	<1184123930.20193.61.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jul 2007 02:38:30 -0400
+Message-ID: <46947ADF.4080605@gts.it>
+Date: Wed, 11 Jul 2007 08:38:23 +0200
+From: Stefano Rivoir <s.rivoir@gts.it>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22 released
+References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org> <4693327E.6000006@gts.it> <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 23:18:50 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
-
-> On Tue, 2007-07-10 at 22:17 -0700, Andrew Morton wrote:
-> > On Tue, 10 Jul 2007 22:09:08 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
-> > 
-> > > David Chinneer pointed that we need to journal the version number
-> > > updates together with the operations that causes the change of the inode
-> > > version number, in order to survive server crashes so clients won't see
-> > > the counter go backwards.
-> > > 
-> > > So increment i_version in fs code is probably the place to ensure the
-> > > inode version changes are stored to disk. It's seems update the ext4
-> > > inode version in every ext4_mark_inode_dirty() is the easiest way.
-> > 
-> > That still makes us dependent upon _something_ changing the inode.  For
-> > overwrites the only something is mtime.
-> > 
-> > If we don't want to have a peculiar dependency upon s_time_gran=1e9 (and
-> > I don't think we do) then I guess we'll need new code in or around
-> > file_update_time() to do this.
+Linus Torvalds wrote:
 > 
-> do you mean mark inode dirty all the times in file_update_time()? Not
-> sure about the overhead for ext3/4.
+> On Tue, 10 Jul 2007, Stefano Rivoir wrote:
+>> 2.6.22 hangs at boot on my box. Here attached a original dmesg from 2.6.21,
+>> and a copy of it where it stops on 2.6.22 (I can't attach the original 2.6.22
+>> dmesg because it's not logged to disk yet); it actually stops right after
+>> 'init' launches.
 > 
+> Ok, without any oops or hang in any really obvious place, that doesn't 
+> really tell anybody anything specific enough to even start trying to debug 
+> this, so you'd need to do one of two things:
 
-hm, I hadn't thought about it in any detail.
+Hi,
 
-Maybe something like
+Ok, the guilty bit is gcc: in my box, compiling kernel with gcc 4.2.x 
+(which is installed on my debian/sid) turns into a hang (in init, 
+seemingly, maybe not even in kernel itself), while gcc-4.1 is allright.
 
---- a/fs/inode.c~a
-+++ a/fs/inode.c
-@@ -1238,6 +1238,11 @@ void file_update_time(struct file *file)
- 		sync_it = 1;
- 	}
- 
-+	if (IS_I_VERSION_64(inode)) {
-+		inode_inc_iversion(inode);	/* Takes i_lock on 32-bit */
-+		sync_it = 1;
-+	}
-+
- 	if (sync_it)
- 		mark_inode_dirty_sync(inode);
- }
-_
+Probably it's something I had to know before... but the light lit when 
+gcc crashed when compiling 2.6.22-git1...
 
-?
+Bye.
+
+-- 
+Stefano RIVOIR
+
