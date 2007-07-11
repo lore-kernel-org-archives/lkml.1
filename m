@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964827AbXGKXli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935575AbXGKXmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964827AbXGKXli (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935079AbXGKXeQ
+	id S935575AbXGKXmH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935103AbXGKXeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:34:16 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33770 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:34:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33778 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935089AbXGKXeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:34:14 -0400
+	id S935095AbXGKXeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:34:18 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 19/61] idr: fix obscure bug in allocation path
-Date: Wed, 11 Jul 2007 16:31:38 -0700
-Message-Id: <11841968303508-git-send-email-gregkh@suse.de>
+Subject: [PATCH 20/61] idr: separate out idr_mark_full()
+Date: Wed, 11 Jul 2007 16:31:39 -0700
+Message-Id: <11841968352439-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841968271925-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841968303508-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -36,72 +36,142 @@ References: <20070711233021.GA5253@kroah.com>
  <1184196818497-git-send-email-gregkh@suse.de>
  <11841968231043-git-send-email-gregkh@suse.de>
  <11841968271925-git-send-email-gregkh@suse.de>
+ <11841968303508-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-In sub_alloc(), when bitmap search fails, it goes up one level to
-continue search.  This is done by updating the id cursor and searching
-the upper level again.  If the cursor was at the end of the upper
-level, we need to go further than that.
+Separate out idr_mark_full() from sub_alloc() and make marking the
+allocated slot full the responsibility of idr_get_new_above_int().
 
-This wasn't implemented and when that happens the part of the cursor
-which indexes into the upper level wraps and sub_alloc() ends up
-searching the wrong bitmap.  It allocates id which doesn't match the
-actual slot.
+Allocation part of idr_get_new_above_int() is renamed to
+idr_get_empty_slot().  New idr_get_new_above_int() allocates a slot
+using the function, install the user pointer and marks it full using
+idr_mark_full().
 
-This patch fixes this by restarting from the top if the search needs
-to go higher than one level.
+This change doesn't introduce any behavior change.  This will be
+used by ida.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/idr.c |   16 ++++++++++++++--
- 1 files changed, 14 insertions(+), 2 deletions(-)
+ lib/idr.c |   71 +++++++++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 46 insertions(+), 25 deletions(-)
 
 diff --git a/lib/idr.c b/lib/idr.c
-index 305117c..7b5a59c 100644
+index 7b5a59c..30b33e2 100644
 --- a/lib/idr.c
 +++ b/lib/idr.c
-@@ -100,10 +100,11 @@ static int sub_alloc(struct idr *idp, void *ptr, int *starting_id)
+@@ -70,6 +70,26 @@ static void free_layer(struct idr *idp, struct idr_layer *p)
+ 	spin_unlock_irqrestore(&idp->lock, flags);
+ }
+ 
++static void idr_mark_full(struct idr_layer **pa, int id)
++{
++	struct idr_layer *p = pa[0];
++	int l = 0;
++
++	__set_bit(id & IDR_MASK, &p->bitmap);
++	/*
++	 * If this layer is full mark the bit in the layer above to
++	 * show that this part of the radix tree is full.  This may
++	 * complete the layer above and require walking up the radix
++	 * tree.
++	 */
++	while (p->bitmap == IDR_FULL) {
++		if (!(p = pa[++l]))
++			break;
++		id = id >> IDR_BITS;
++		__set_bit((id & IDR_MASK), &p->bitmap);
++	}
++}
++
+ /**
+  * idr_pre_get - reserver resources for idr allocation
+  * @idp:	idr handle
+@@ -95,11 +115,10 @@ int idr_pre_get(struct idr *idp, gfp_t gfp_mask)
+ }
+ EXPORT_SYMBOL(idr_pre_get);
+ 
+-static int sub_alloc(struct idr *idp, void *ptr, int *starting_id)
++static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
+ {
  	int n, m, sh;
  	struct idr_layer *p, *new;
- 	struct idr_layer *pa[MAX_LEVEL];
--	int l, id;
-+	int l, id, oid;
+-	struct idr_layer *pa[MAX_LEVEL];
+ 	int l, id, oid;
  	long bm;
  
- 	id = *starting_id;
-+ restart:
- 	p = idp->top;
- 	l = idp->layers;
- 	pa[l--] = NULL;
-@@ -117,12 +118,23 @@ static int sub_alloc(struct idr *idp, void *ptr, int *starting_id)
- 		if (m == IDR_SIZE) {
- 			/* no space available go back to previous layer. */
- 			l++;
-+			oid = id;
- 			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
+@@ -156,30 +175,13 @@ static int sub_alloc(struct idr *idp, void *ptr, int *starting_id)
+ 		pa[l--] = p;
+ 		p = p->ary[m];
+ 	}
+-	/*
+-	 * We have reached the leaf node, plant the
+-	 * users pointer and return the raw id.
+-	 */
+-	p->ary[m] = (struct idr_layer *)ptr;
+-	__set_bit(m, &p->bitmap);
+-	p->count++;
+-	/*
+-	 * If this layer is full mark the bit in the layer above
+-	 * to show that this part of the radix tree is full.
+-	 * This may complete the layer above and require walking
+-	 * up the radix tree.
+-	 */
+-	n = id;
+-	while (p->bitmap == IDR_FULL) {
+-		if (!(p = pa[++l]))
+-			break;
+-		n = n >> IDR_BITS;
+-		__set_bit((n & IDR_MASK), &p->bitmap);
+-	}
+-	return(id);
 +
-+			/* if already at the top layer, we need to grow */
- 			if (!(p = pa[l])) {
- 				*starting_id = id;
- 				return -2;
- 			}
--			continue;
++	pa[l] = p;
++	return id;
+ }
+ 
+-static int idr_get_new_above_int(struct idr *idp, void *ptr, int starting_id)
++static int idr_get_empty_slot(struct idr *idp, int starting_id,
++			      struct idr_layer **pa)
+ {
+ 	struct idr_layer *p, *new;
+ 	int layers, v, id;
+@@ -225,12 +227,31 @@ build_up:
+ 	}
+ 	idp->top = p;
+ 	idp->layers = layers;
+-	v = sub_alloc(idp, ptr, &id);
++	v = sub_alloc(idp, &id, pa);
+ 	if (v == -2)
+ 		goto build_up;
+ 	return(v);
+ }
+ 
++static int idr_get_new_above_int(struct idr *idp, void *ptr, int starting_id)
++{
++	struct idr_layer *pa[MAX_LEVEL];
++	int id;
 +
-+			/* If we need to go up one layer, continue the
-+			 * loop; otherwise, restart from the top.
-+			 */
-+			sh = IDR_BITS * (l + 1);
-+			if (oid >> sh == id >> sh)
-+				continue;
-+			else
-+				goto restart;
- 		}
- 		if (m != n) {
- 			sh = IDR_BITS*l;
++	id = idr_get_empty_slot(idp, starting_id, pa);
++	if (id >= 0) {
++		/*
++		 * Successfully found an empty slot.  Install the user
++		 * pointer and mark the slot full.
++		 */
++		pa[0]->ary[id & IDR_MASK] = (struct idr_layer *)ptr;
++		pa[0]->count++;
++		idr_mark_full(pa, id);
++	}
++
++	return id;
++}
++
+ /**
+  * idr_get_new_above - allocate new idr entry above or equal to a start id
+  * @idp: idr handle
 -- 
 1.5.2.2
 
