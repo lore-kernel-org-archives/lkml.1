@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763670AbXGKN3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763790AbXGKNeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763670AbXGKN3u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 09:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbXGKN3m
+	id S1763790AbXGKNeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 09:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762180AbXGKNeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 09:29:42 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:43953 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756121AbXGKN3l (ORCPT
+	Wed, 11 Jul 2007 09:34:06 -0400
+Received: from c-69-242-210-120.hsd1.mi.comcast.net ([69.242.210.120]:34358
+	"EHLO heimdal.trondhjem.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761713AbXGKNeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 09:29:41 -0400
-Date: Wed, 11 Jul 2007 14:28:20 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Message-ID: <20070711132819.GA5753@srcf.ucam.org>
-References: <20070703042916.GA17240@srcf.ucam.org> <200707031456.36027.rjw@sisk.pl> <20070709132905.GA5212@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070709132905.GA5212@ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: sysrq-t dumps of s2ram/fuse deadlock (was Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Wed, 11 Jul 2007 09:34:05 -0400
+X-Greylist: delayed 1194 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 09:34:05 EDT
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [PATCH] locks: kill redundant local variable
+Date: Wed, 11 Jul 2007 09:14:05 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       nfsv4@linux-nfs.org
+Message-Id: <20070711131405.14746.99176.stgit@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 01:29:05PM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> Can we get them? They are neccessary for debugging 'what in suspend
-> calls fuse' problem. And yes, that problem is there even when you
-> remove freezer.
+From: \"J. Bruce Fields\" <bfields@fieldses.org>
 
-I can produce them, but haven't managed to do that in any way that lets 
-me get them off the system yet.
+There's no need for another variable local to this loop; we can use the
+variable (of the same name!) already declared at the top of the function,
+and not used till later (at which point it's initialized, so this is safe).
 
-> Matthew, you seem to be the only one able to produce them...
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-sys_sync may not do anything on a fuse filesystem, but if you've 
-loopback-mounted an ext3 filesystem from that fuse filesystem then it's 
-going to result in writes to it and deadlock.
+ fs/locks.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+diff --git a/fs/locks.c b/fs/locks.c
+index 431a8b8..2e8f21b 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -823,7 +823,7 @@ static int __posix_lock_file(struct inode *inode, struct file_lock *request, str
+ 	lock_kernel();
+ 	if (request->fl_type != F_UNLCK) {
+ 		for_each_lock(inode, before) {
+-			struct file_lock *fl = *before;
++			fl = *before;
+ 			if (!IS_POSIX(fl))
+ 				continue;
+ 			if (!posix_locks_conflict(request, fl))
