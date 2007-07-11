@@ -1,109 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbXGKBey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbXGKBhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757756AbXGKBey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 21:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXGKBep
+	id S1758110AbXGKBhw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 21:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbXGKBhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 21:34:45 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60679 "EHLO
+	Tue, 10 Jul 2007 21:37:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60827 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750743AbXGKBeo (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 21:34:44 -0400
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 1/7] manpage for fallocate
-From: "Barry Naujok" <bnaujok@sgi.com>
-Organization: SGI
-Cc: xfs@oss.sgi.com
-Content-Type: multipart/mixed; boundary=----------WTbI0GSzrQq8swZHzkUhcQ
+	with ESMTP id S1754816AbXGKBho (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 21:37:44 -0400
+Date: Tue, 10 Jul 2007 18:37:42 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+In-Reply-To: <20070710083212.GG11115@waste.org>
+Message-ID: <Pine.LNX.4.64.0707101836280.7011@schroedinger.engr.sgi.com>
+References: <20070708075119.GA16631@elte.hu> <20070708110224.9cd9df5b.akpm@linux-foundation.org>
+ <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
+ <20070709095116.c2ea700f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
+ <4692E44E.6000606@yahoo.com.au> <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com>
+ <4692E8B5.3030404@yahoo.com.au> <Pine.LNX.4.64.0707091905480.3108@schroedinger.engr.sgi.com>
+ <20070710083212.GG11115@waste.org>
 MIME-Version: 1.0
-References: <20070710201200.GA10255@amitarora.in.ibm.com> <20070710201820.GA8797@amitarora.in.ibm.com>
-Date: Wed, 11 Jul 2007 11:37:45 +1000
-Message-ID: <op.tu91g7bh3jf8g2@pc-bnaujok.melbourne.sgi.com>
-In-Reply-To: <20070710201820.GA8797@amitarora.in.ibm.com>
-User-Agent: Opera Mail/9.10 (Win32)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-2034308388-1184117862=:7011"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------------WTbI0GSzrQq8swZHzkUhcQ
-Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Wed, 11 Jul 2007 06:18:20 +1000, Amit K. Arora  
-<aarora@linux.vnet.ibm.com> wrote:
+---1700579579-2034308388-1184117862=:7011
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-> Following is the modified version of the manpage originally submitted by
-> David Chinner. Please use `nroff -man fallocate.2 | less` to view.
+On Tue, 10 Jul 2007, Matt Mackall wrote:
 
-A few more touch-ups attached.
+> You're delusional.
 
-Regards,
-Barry.
-------------WTbI0GSzrQq8swZHzkUhcQ
-Content-Disposition: attachment; filename=fallocate.2
-Content-Type: application/octet-stream; name=fallocate.2
-Content-Transfer-Encoding: Base64
 
-LlRIIGZhbGxvY2F0ZSAyCi5TSCBOQU1FCmZhbGxvY2F0ZSBcLSBhbGxvY2F0ZSBv
-ciByZW1vdmUgZmlsZSBzcGFjZQouU0ggU1lOT1BTSVMKLkIgI2luY2x1ZGUgPHN5
-cy9zeXNjYWxsLmg+Ci5QUAouQkkgImludCBzeXNjYWxsKGludCwgaW50ICIgZmQg
-IiwgaW50ICIgbW9kZSAiLCBsb2ZmX3QgIiBvZmZzZXQgIiwgbG9mZl90ICIgbGVu
-ICk7Ci5TSCBERVNDUklQVElPTgpUaGUKLkIgZmFsbG9jYXRlCnN5c2NhbGwgYWxs
-b3dzIGEgdXNlciB0byBkaXJlY3RseSBtYW5pcHVsYXRlIHRoZSBhbGxvY2F0ZWQg
-ZGlzayBzcGFjZQpmb3IgdGhlIGZpbGUgcmVmZXJyZWQgdG8gYnkKLkkgZmQKZm9y
-IHRoZSBieXRlIHJhbmdlIHN0YXJ0aW5nIGF0Ci5JIG9mZnNldAphbmQgY29udGlu
-dWluZyBmb3IKLkkgbGVuCmJ5dGVzLgpUaGUKLkkgbW9kZQpwYXJhbWV0ZXIgZGV0
-ZXJtaW5lcyB0aGUgb3BlcmF0aW9uIHRvIGJlIHBlcmZvcm1lZCBvbiB0aGUgZ2l2
-ZW4gcmFuZ2UuCkN1cnJlbnRseSB0aGVyZSBhcmUgZm91ciBtb2RlczoKLlRQCi5C
-IEZBTExPQ19BTExPQ0FURQphbGxvY2F0ZXMgYW5kIGluaXRpYWxpc2VzIHRvIHpl
-cm8gdGhlIGRpc2sgc3BhY2Ugd2l0aGluIHRoZSBnaXZlbiByYW5nZS4KQWZ0ZXIg
-YSBzdWNjZXNzZnVsIGNhbGwsIHN1YnNlcXVlbnQgd3JpdGVzIGFyZSBndWFyYW50
-ZWVkIG5vdCB0byBmYWlsIGJlY2F1c2UKb2YgbGFjayBvZiBkaXNrIHNwYWNlLiAg
-SWYgdGhlIHNpemUgb2YgdGhlIGZpbGUgaXMgbGVzcyB0aGFuCi5JUiBvZmZzZXQg
-KyBsZW4gLAp0aGVuIHRoZSBmaWxlIGlzIGluY3JlYXNlZCB0byB0aGlzIHNpemU7
-IG90aGVyd2lzZSB0aGUgZmlsZSBzaXplIGlzIGxlZnQKdW5jaGFuZ2VkLgouQiBG
-QUxMT0NfQUxMT0NBVEUKY2xvc2VseSByZXNlbWJsZXMKLkJSIHBvc2l4X2ZhbGxv
-Y2F0ZSAoMykKYW5kIGlzIGludGVuZGVkIGFzIGEgbWV0aG9kIG9mIG9wdGltYWxs
-eSBpbXBsZW1lbnRpbmcgdGhpcyBmdW5jdGlvbi4KLkIgRkFMTE9DX0FMTE9DQVRF
-Cm1heSBhbGxvY2F0ZSBhIGxhcmdlciByYW5nZSB0aGF0IHdhcyBzcGVjaWZpZWQu
-Ci5UUAouQiBGQUxMT0NfUkVTVl9TUEFDRQpwcm92aWRlcyB0aGUgc2FtZSBmdW5j
-dGlvbmFsaXR5IGFzCi5CIEZBTExPQ19BTExPQ0FURQpleGNlcHQgaXQgZG9lcyBu
-b3QgZXZlciBjaGFuZ2UgdGhlIGZpbGUgc2l6ZS4gVGhpcyBhbGxvd3MgYWxsb2Nh
-dGlvbgpvZiB6ZXJvIGJsb2NrcyBiZXlvbmQgdGhlIGVuZCBvZiBmaWxlIGFuZCBp
-cyB1c2VmdWwgZm9yIG9wdGltaXNpbmcKYXBwZW5kIHdvcmtsb2Fkcy4KLlRQCi5C
-IEZBTExPQ19ERUFMTE9DQVRFCnJlbW92ZXMgYW55IHByZWFsbG9jYXRlZCBzcGFj
-ZSB3aXRoaW4gdGhlIGdpdmVuIHJhbmdlLiBUaGUgZmlsZSBzaXplCm1heSBjaGFu
-Z2UgaWYgZGVhbGxvY2F0aW9uIGlzIHRvd2FyZHMgdGhlIGVuZCBvZiB0aGUgZmls
-ZS4KLlRQCi5CIEZBTExPQ19VTlJFU1ZfU1BBQ0UKcmVtb3ZlcyB0aGUgdW5kZXJs
-eWluZyBkaXNrIHNwYWNlIHdpdGhpbiB0aGUgZ2l2ZW4gcmFuZ2UuIFRoZSBkaXNr
-IHNwYWNlCnNoYWxsIGJlIHJlbW92ZWQgcmVnYXJkbGVzcyBvZiBpdCdzIGNvbnRl
-bnRzIHNvIGJvdGggYWxsb2NhdGVkIHNwYWNlCmZyb20KLkIgRkFMTE9DX0FMTE9D
-QVRFCmFuZAouQiBGQUxMT0NfUkVTVl9TUEFDRQphcyB3ZWxsIGFzIGZyb20KLkJS
-IHdyaXRlICgzKQp3aWxsIGJlIHJlbW92ZWQuCi5CIEZBTExPQ19VTlJFU1ZfU1BB
-Q0UKc2hhbGwgbmV2ZXIgcmVtb3ZlIGRpc2sgYmxvY2tzIG91dHNpZGUgdGhlIHJh
-bmdlIHNwZWNpZmllZC4KLkIgRkFMTE9DX1VOUkVTVl9TUEFDRQpzaGFsbCBuZXZl
-ciBjaGFuZ2UgdGhlIGZpbGUgc2l6ZS4gSWYgY2hhbmdpbmcgdGhlIGZpbGUgc2l6
-ZQppcyByZXF1aXJlZCB3aGVuIGRlYWxsb2NhdGluZyBibG9ja3MgZnJvbSBhbiBv
-ZmZzZXQgdG8gZW5kCm9mIGZpbGUgKG9yIGJleW9uZCBlbmQgb2YgZmlsZSkgaXMg
-cmVxdWlyZWQsCi5CUiBmdHVuY2F0ZTY0ICgzKQpvcgouQiBGQUxMT0NfREVBTExP
-Q0FURQpzaG91bGQgYmUgdXNlZC4KCi5TSCBSRVRVUk4gVkFMVUUKLkIgZmFsbG9j
-YXRlCnJldHVybnMgemVybyBvbiBzdWNjZXNzLCBvciBhbiBlcnJvciBudW1iZXIg
-b24gZmFpbHVyZS4KTm90ZSB0aGF0Ci5JIGVycm5vCmlzIG5vdCBzZXQuCi5TSCBF
-UlJPUlMKLlRQCi5CIEVCQURGCi5JIGZkCmlzIG5vdCBhIHZhbGlkIGZpbGUgZGVz
-Y3JpcHRvciwgb3IgaXMgbm90IG9wZW5lZCBmb3Igd3JpdGluZy4KLlRQCi5CIEVG
-QklHCi5JUiBvZmZzZXQgKyBsZW4KZXhjZWVkcyB0aGUgbWF4aW11bSBmaWxlIHNp
-emUuCi5UUAouQiBFSU5WQUwKLkkgb2Zmc2V0Cm9yCi5JIGxlbgp3YXMgbGVzcyB0
-aGFuIDAuCi5UUAouQiBFTk9ERVYKLkkgZmQKZG9lcyBub3QgcmVmZXIgdG8gYSBy
-ZWd1bGFyIGZpbGUgb3IgYSBkaXJlY3RvcnkuCi5UUAouQiBFTk9TUEMKVGhlcmUg
-aXMgbm90IGVub3VnaCBzcGFjZSBsZWZ0IG9uIHRoZSBkZXZpY2UgY29udGFpbmlu
-ZyB0aGUgZmlsZQpyZWZlcnJlZCB0byBieQouSVIgZmQgLgouVFAKLkIgRVNQSVBF
-Ci5JIGZkCnJlZmVycyB0byBhIHBpcGUgb2YgZmlsZSBkZXNjcmlwdG9yLgouVFAK
-LkIgRU5PU1lTClRoZSBmaWxlc3lzdGVtIHVuZGVybHlpbmcgdGhlIGZpbGUgZGVz
-Y3JpcHRvciBkb2VzIG5vdCBzdXBwb3J0IHRoaXMKb3BlcmF0aW9uLgouU0ggQVZB
-SUxBQklMSVRZClRoZQouQiBmYWxsb2NhdGUKc3lzdGVtIGNhbGwgaXMgYXZhaWxh
-YmxlIHNpbmNlIDIuNi5YWAouU0ggU0VFIEFMU08KLkJSIHN5c2NhbGwgKDIpLAou
-QlIgcG9zaXhfZmFkdmlzZSAoMyksCi5CUiBmdHJ1bmNhdGUgKDMpLgo=
+Git log says otherwise:
 
-------------WTbI0GSzrQq8swZHzkUhcQ--
+ git log --pretty=3Dshort mm/slob.c
 
+Author: Christoph Lameter <clameter@sgi.com>
+    Remove SLAB_CTOR_CONSTRUCTOR
+Author: Christoph Lameter <clameter@sgi.com>
+    Slab allocators: Drop support for destructors
+Author: Nick Piggin <nickpiggin@yahoo.com.au>
+    slob: implement RCU freeing
+Author: Akinobu Mita <akinobu.mita@gmail.com>
+    slob: fix page order calculation on not 4KB page
+Author: Christoph Lameter <clameter@sgi.com>
+    slab allocators: Remove obsolete SLAB_MUST_HWCACHE_ALIGN
+Author: Akinobu Mita <akinobu.mita@gmail.com>
+    slob: handle SLAB_PANIC flag
+Author: Pekka Enberg <penberg@cs.helsinki.fi>
+    slab: introduce krealloc
+Author: Dimitri Gorokhovik <dimitri.gorokhovik@free.fr>
+    [PATCH] MM: SLOB is broken by recent cleanup of slab.h
+Author: Christoph Lameter <clameter@sgi.com>
+    [PATCH] More slab.h cleanups
+Author: Christoph Lameter <clameter@sgi.com>
+    [PATCH] Cleanup slab headers / API to allow easy addition of new slab a=
+llocators
+Author: Alexey Dobriyan <adobriyan@gmail.com>
+    [PATCH] Make kmem_cache_destroy() return void
+Author: Christoph Lameter <clameter@sgi.com>
+    [PATCH] ZVC: Support NR_SLAB_RECLAIMABLE / NR_SLAB_UNRECLAIMABLE
+Author: Christoph Lameter <clameter@sgi.com>
+    [PATCH] Extract the allocpercpu functions from the slab allocator
+Author: J=C3=B6rn Engel <joern@wohnheim.fh-wedel.de>
+    Remove obsolete #include <linux/config.h>
+Author: John Hawkes <hawkes@sgi.com>
+    [PATCH] mm/slob.c: for_each_possible_cpu(), not NR_CPUS
+Author: Pekka Enberg <penberg@cs.helsinki.fi>
+    [PATCH] slab: introduce kmem_cache_zalloc allocator
+Author: Ingo Molnar <mingo@elte.hu>
+    [PATCH] SLOB=3Dy && SMP=3Dy fix
+Author: Matt Mackall <mpm@selenic.com>
+    [PATCH] slob: introduce the SLOB allocator
+
+---1700579579-2034308388-1184117862=:7011--
