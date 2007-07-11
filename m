@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXGKWEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXGKWFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933299AbXGKWEh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 18:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761799AbXGKWEa
+	id S933299AbXGKWFF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 18:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763928AbXGKWEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 18:04:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55181 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759171AbXGKWE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 18:04:29 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
+	Wed, 11 Jul 2007 18:04:53 -0400
+Received: from www.osadl.org ([213.239.205.134]:51124 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763750AbXGKWEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 18:04:51 -0400
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+From: Thomas Gleixner <tglx@linutronix.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/7] Add /sys/kernel/notes
-In-Reply-To: Linus Torvalds's message of  Wednesday, 11 July 2007 14:45:51 -0700 <alpine.LFD.0.999.0707111443180.20061@woody.linux-foundation.org>
-X-Fcc: ~/Mail/linus
-X-Windows: even not doing anything would have been better than nothing.
-Message-Id: <20070711220423.98F324D0555@magilla.localdomain>
-Date: Wed, 11 Jul 2007 15:04:23 -0700 (PDT)
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+	 <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 00:04:48 +0200
+Message-Id: <1184191488.12353.160.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yeah, we've made that mistake before, and I'm not saying we are perfect 
-> here, but if we make this world-readable, I think it needs to guarantee it 
-> doesn't really give any rootkit people any new information.
+Linus,
 
-It will give them at least as reliable an identification of the kernel
-binary as the "uname -rv" info if they have access to a set of candidate
-known binaries to select from.  It's of no direct help at all in getting
-anything like kernel addresses.  In practice, it is probably no easier for
-a rootkit to use than "uname -rv" to pick an exploit for a particular known
-distro kernel binary, just easier for legitimate debugging tools.  I think
-it's not only more harmless than what you might call "past mistakes", but
-is actually just plain harmless.  But I'm not really one to talk a man out
-of his paranoia.
+On Wed, 2007-07-11 at 14:42 -0700, Linus Torvalds wrote: 
+> Here's a big clue: it doesn't matter one _whit_ how much face-slapping you 
+> get, or how much effort some programmers have put into the code. It's 
+> untested. And no, we are *not* going to do another "rip everything out, 
+> and replace it with new code" again.
+> 
+> Over my dead body.
+>
+> We're going to do this thing gradually, or not at all.
 
-> And yes, I do think normal people shouldn't be able to read the vmlinuz 
-> binary, the same way they are generally not allowed to read /etc/grub.conf 
-> etc.
+Can you please shed some light on me, how exactly you switch an
+architecture gradually to clock events.
 
-I have no special opinions about that, but I haven't seen an install where
-the /boot files were not readable anyway.  But certainly in a chroot or
-such, you won't have /boot at all but might have /proc and /sys.
+You simply can not convert PIT today and the HPET next week followed by
+the local APIC in three month. 
 
-All in all, this seems like a question of local policy.  Ideally the modes
-would be flexibly chosen by admins, or else constrained more precisely by
-SELinux policy or suchlike.  But I have no axe to grind on the subject with
-this particular change.  I care more that the feature gets in and at least
-root can use it, than about the permissions question.
+At least not to my knowledge.
+
+> And if somebody feels slighted by the face-slap, and thinks he has already 
+> done enough, and isn't interested in doing it gradually, then good 
+> riddance. The "not at all" seems like a good idea, and maybe we can 
+> re-visit this in a year or two.
+
+I have no problem to brew this for some more time. I got not repulsed by
+the 2.6.20 decision, but I have no clue how to communicate with a black
+hole.
+
+	tglx
 
 
-Thanks,
-Roland
