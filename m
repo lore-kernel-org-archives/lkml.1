@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXGKWFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933813AbXGKWG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933299AbXGKWFF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 18:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763928AbXGKWEx
+	id S933813AbXGKWG3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 18:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763923AbXGKWGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 18:04:53 -0400
-Received: from www.osadl.org ([213.239.205.134]:51124 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763750AbXGKWEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 18:04:51 -0400
-Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
-	 <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 00:04:48 +0200
-Message-Id: <1184191488.12353.160.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Wed, 11 Jul 2007 18:06:18 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:58003 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761957AbXGKWGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 18:06:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Fi80TY9ZIJXahTrJAP7wT9niXSpfEZ+lSl00+G6Y2kTFWzq9WQ0chwcxzfEVS2mMsSEB3WFowTSldJfsgDurgDuiJk7vwkrG+dIE2evRYsAe2svDkks0fH0GVqlEk0dSPhtRlKRH2iL0HV0nFmq2gYhvW5cH6jS/VVOcCSGNkBw=
+Message-ID: <86802c440707111506q522f3f1dra242c8fa6a8f8b2d@mail.gmail.com>
+Date: Wed, 11 Jul 2007 15:06:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Christoph Hellwig" <hch@infradead.org>, "Yinghai Lu" <Yinghai.Lu@sun.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
+       "Greg KH" <greg@kroah.com>, rientjes@google.com,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "David Miller" <davem@davemloft.net>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 0/5] more about numa_node with struct device
+In-Reply-To: <20070711094034.GC19061@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707101652.20613.yinghai.lu@sun.com>
+	 <20070711094034.GC19061@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
-
-On Wed, 2007-07-11 at 14:42 -0700, Linus Torvalds wrote: 
-> Here's a big clue: it doesn't matter one _whit_ how much face-slapping you 
-> get, or how much effort some programmers have put into the code. It's 
-> untested. And no, we are *not* going to do another "rip everything out, 
-> and replace it with new code" again.
-> 
-> Over my dead body.
+On 7/11/07, Christoph Hellwig <hch@infradead.org> wrote:
+> On Tue, Jul 10, 2007 at 04:52:19PM -0700, Yinghai Lu wrote:
+> > these are revised or new patch with numa_node in struct device in addition to
 >
-> We're going to do this thing gradually, or not at all.
+> Do you have a pointer to a background posting why you want all this?
 
-Can you please shed some light on me, how exactly you switch an
-architecture gradually to clock events.
-
-You simply can not convert PIT today and the HPET next week followed by
-the local APIC in three month. 
-
-At least not to my knowledge.
-
-> And if somebody feels slighted by the face-slap, and thinks he has already 
-> done enough, and isn't interested in doing it gradually, then good 
-> riddance. The "not at all" seems like a good idea, and maybe we can 
-> re-visit this in a year or two.
-
-I have no problem to brew this for some more time. I got not repulsed by
-the 2.6.20 decision, but I have no clue how to communicate with a black
-hole.
-
-	tglx
-
-
+http://lkml.org/lkml/2007/6/29/246
+http://lkml.org/lkml/2007/7/10/492
