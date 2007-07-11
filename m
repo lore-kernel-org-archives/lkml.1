@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759685AbXGKGL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbXGKGPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759685AbXGKGL7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbXGKGLo
+	id S1758224AbXGKGPe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXGKGPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:11:44 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:14737 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755262AbXGKGLi (ORCPT
+	Wed, 11 Jul 2007 02:15:25 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:39900 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145AbXGKGPX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=sS3CJFp5VlzQvIL787/JyRORmOWeM8K/j8Mq0JJSQ63mfL56lt1ylM0BCa/18SWI/bd+89QMI3TEjkguqS2z8lEeueUgl12caMm5qGHX4qsg1hcxLrmVD/rGMq9Cwk6Q+ujhOr0+aByuWiUh68osp9VYTzJgC2plgXT32u8dTzo=
-Message-ID: <2c0942db0707102304s3f666eceib454043c716e2178@mail.gmail.com>
-Date: Tue, 10 Jul 2007 23:04:59 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-Cc: "Matthew Hawkins" <darthmdh@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <469470A3.5040606@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 11 Jul 2007 02:15:23 -0400
+Subject: Re: [EXT4 set 1][PATCH 2/2] Enable extents by default for ext4dev
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Dave Jones <davej@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+In-Reply-To: <20070711033553.GA27564@redhat.com>
+References: <1183275361.4010.119.camel@localhost.localdomain>
+	 <20070710163015.ab40ed2a.akpm@linux-foundation.org>
+	 <1184103313.3759.44.camel@localhost.localdomain>
+	 <20070711033553.GA27564@redhat.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Tue, 10 Jul 2007 23:15:24 -0400
+Message-Id: <1184123724.20193.58.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <200707102015.44004.kernel@kolivas.org>
-	 <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>
-	 <20070710181419.6d1b2f7e.akpm@linux-foundation.org>
-	 <b21f8390707101954s3ae69db8vc30287277941cb1f@mail.gmail.com>
-	 <4694683B.3060705@yahoo.com.au>
-	 <2c0942db0707102247n3b6e5933i9803a2161d6c00b1@mail.gmail.com>
-	 <469470A3.5040606@yahoo.com.au>
-X-Google-Sender-Auth: 5ce3b8f35d482a46
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/10/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> >> OK that's a good data point. It would be really good to be able to
-> >> do an analysis on your overnight IO patterns and the corresponding
-> >> memory reclaim behaviour and see why things are getting evicted.
-> >
-> > Eviction can happen for multiple reasons, as I'm sure you're painfully
-> > aware. It can happen because of poor balancing choices, or it can
->
-> s/balancing/reclaim, yes. And for the nightly cron job case, this is
-> could quite possibly be the cause. At least updatedb should be fairly
-> easy to apply use-once heuristics for, so if they're not working then
-> we should hopefully be able to improve it.
+On Tue, 2007-07-10 at 23:35 -0400, Dave Jones wrote:
+> On Tue, Jul 10, 2007 at 05:35:13PM -0400, Mingming Cao wrote:
+>  > 
+>  > Sorry about this. I was using version 0.04. The latest one I can find
+>  > for now is 0.05(searching lkml), but it didn't catch this codling style
+>  > bug either. I appreciate if anyone can point me the version 0.07, thanks
+> 
+> It's now in-tree in scripts/checkpatch.pl
+> (linus' tree is still at 0.06 though, I suspect Andrew has something
+>  newer in -mm)
+> 
 
-<nod> Sorry, I'm not so clear on the terminology, am I.
+Thanks, Andy has uploaded the 0.07 version at
+http://www.shadowen.org/~apw/public/checkpatch/checkpatch.pl-0.07
 
-So, that's one part of it: one could argue that for that bit swap
-prefetch is a bit of a band-aid over the issue. A useful band-aid,
-that works today, isn't invasive, and can be ripped out at some future
-time if the underlying issue is eventually solved by a proper use-once
-aging mechanism, but nevertheless a band-aid.
 
-The other part is when I've got evolution and a few other things open,
-then I run gimp on a raw photo and do some work on it, quit out of
-gimp, do a couple of things in a shell to upload the photo to my
-server, then switch back to evolution. Hang, waiting on swap in. Well,
-the kernel had some free time there to repopulate evolution's working
-set, and swap prefetch would help that, while better (or perfect!)
-heuristics in the reclaim *won't*.
+Mingming
 
-That's the real issue here.
