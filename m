@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936950AbXGLABA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936923AbXGLABa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936950AbXGLABA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935217AbXGKXhX
+	id S936923AbXGLABa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935336AbXGKXh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:37:23 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33529 "EHLO mx2.suse.de"
+	Wed, 11 Jul 2007 19:37:28 -0400
+Received: from mail.suse.de ([195.135.220.2]:34070 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935282AbXGKXhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:37:20 -0400
+	id S935281AbXGKXhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:37:25 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 58/61] sysfs: move sysfs_drop_dentry() to dir.c and make it static
-Date: Wed, 11 Jul 2007 16:32:17 -0700
-Message-Id: <11841970162061-git-send-email-gregkh@suse.de>
+Subject: [PATCH 59/61] sysfs: implement sysfs_get_dentry()
+Date: Wed, 11 Jul 2007 16:32:18 -0700
+Message-Id: <11841970211456-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841970112965-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841970162061-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -75,169 +75,150 @@ References: <20070711233021.GA5253@kroah.com>
  <11841970013184-git-send-email-gregkh@suse.de>
  <11841970052991-git-send-email-gregkh@suse.de>
  <11841970112965-git-send-email-gregkh@suse.de>
+ <11841970162061-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-After add/remove path restructuring, the only user of
-sysfs_drop_dentry() is sysfs_addrm_finish().  Move sysfs_drop_dentry()
-to dir.c and make it static.
+Some sysfs operations require dentry and inode.  sysfs_get_dentry()
+looks up and gets dentry for the specified sysfs_dirent.  It finds the
+first ancestor with dentry attached and starts looking up dentries
+from there.
+
+Looking up from the nearest ancestor is necessary to support shadowed
+directories because we can't reliably lookup dentry for one of the
+shadows.  Dentries for each shadow will be pinned in memory such that
+they can serve as the starting point for dentry lookup.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c   |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/sysfs/inode.c |   56 ------------------------------------------------------
- fs/sysfs/sysfs.h |    1 -
- 3 files changed, 56 insertions(+), 57 deletions(-)
+ fs/sysfs/dir.c   |   98 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/sysfs/sysfs.h |    1 +
+ 2 files changed, 99 insertions(+), 0 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index edb3062..c6f3b69 100644
+index c6f3b69..9872112 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -435,6 +435,62 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+@@ -63,6 +63,104 @@ void sysfs_unlink_sibling(struct sysfs_dirent *sd)
  }
  
  /**
-+ *	sysfs_drop_dentry - drop dentry for the specified sysfs_dirent
-+ *	@sd: target sysfs_dirent
++ *	sysfs_get_dentry - get dentry for the given sysfs_dirent
++ *	@sd: sysfs_dirent of interest
 + *
-+ *	Drop dentry for @sd.  @sd must have been unlinked from its
-+ *	parent on entry to this function such that it can't be looked
-+ *	up anymore.
++ *	Get dentry for @sd.  Dentry is looked up if currently not
++ *	present.  This function climbs sysfs_dirent tree till it
++ *	reaches a sysfs_dirent with valid dentry attached and descends
++ *	down from there looking up dentry for each step.
 + *
-+ *	@sd->s_dentry which is protected with sysfs_assoc_lock points
-+ *	to the currently associated dentry but we're not holding a
-+ *	reference to it and racing with dput().  Grab dcache_lock and
-+ *	verify dentry before dropping it.  If @sd->s_dentry is NULL or
-+ *	dput() beats us, no need to bother.
++ *	LOCKING:
++ *	Kernel thread context (may sleep)
++ *
++ *	RETURNS:
++ *	Pointer to found dentry on success, ERR_PTR() value on error.
 + */
-+static void sysfs_drop_dentry(struct sysfs_dirent *sd)
++struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
 +{
-+	struct dentry *dentry = NULL;
-+	struct inode *inode;
++	struct sysfs_dirent *cur;
++	struct dentry *parent_dentry, *dentry;
++	int i, depth;
 +
-+	/* We're not holding a reference to ->s_dentry dentry but the
-+	 * field will stay valid as long as sysfs_assoc_lock is held.
++	/* Find the first parent which has valid s_dentry and get the
++	 * dentry.
 +	 */
++	mutex_lock(&sysfs_mutex);
++ restart0:
 +	spin_lock(&sysfs_assoc_lock);
++ restart1:
 +	spin_lock(&dcache_lock);
 +
-+	/* drop dentry if it's there and dput() didn't kill it yet */
-+	if (sd->s_dentry && sd->s_dentry->d_inode) {
-+		dentry = dget_locked(sd->s_dentry);
-+		spin_lock(&dentry->d_lock);
-+		__d_drop(dentry);
-+		spin_unlock(&dentry->d_lock);
++	dentry = NULL;
++	depth = 0;
++	cur = sd;
++	while (!cur->s_dentry || !cur->s_dentry->d_inode) {
++		if (cur->s_flags & SYSFS_FLAG_REMOVED) {
++			dentry = ERR_PTR(-ENOENT);
++			depth = 0;
++			break;
++		}
++		cur = cur->s_parent;
++		depth++;
 +	}
++	if (!IS_ERR(dentry))
++		dentry = dget_locked(cur->s_dentry);
 +
 +	spin_unlock(&dcache_lock);
 +	spin_unlock(&sysfs_assoc_lock);
 +
-+	dput(dentry);
-+	/* XXX: unpin if directory, this will go away soon */
-+	if (sysfs_type(sd) == SYSFS_DIR)
-+		dput(dentry);
++	/* from the found dentry, look up depth times */
++	while (depth--) {
++		/* find and get depth'th ancestor */
++		for (cur = sd, i = 0; cur && i < depth; i++)
++			cur = cur->s_parent;
 +
-+	/* adjust nlink and update timestamp */
-+	inode = ilookup(sysfs_sb, sd->s_ino);
-+	if (inode) {
-+		mutex_lock(&inode->i_mutex);
++		/* This can happen if tree structure was modified due
++		 * to move/rename.  Restart.
++		 */
++		if (i != depth) {
++			dput(dentry);
++			goto restart0;
++		}
 +
-+		inode->i_ctime = CURRENT_TIME;
-+		drop_nlink(inode);
-+		if (sysfs_type(sd) == SYSFS_DIR)
-+			drop_nlink(inode);
++		sysfs_get(cur);
 +
-+		mutex_unlock(&inode->i_mutex);
-+		iput(inode);
++		mutex_unlock(&sysfs_mutex);
++
++		/* look it up */
++		parent_dentry = dentry;
++		dentry = lookup_one_len_kern(cur->s_name, parent_dentry,
++					     strlen(cur->s_name));
++		dput(parent_dentry);
++
++		if (IS_ERR(dentry)) {
++			sysfs_put(cur);
++			return dentry;
++		}
++
++		mutex_lock(&sysfs_mutex);
++		spin_lock(&sysfs_assoc_lock);
++
++		/* This, again, can happen if tree structure has
++		 * changed and we looked up the wrong thing.  Restart.
++		 */
++		if (cur->s_dentry != dentry) {
++			dput(dentry);
++			sysfs_put(cur);
++			goto restart1;
++		}
++
++		spin_unlock(&sysfs_assoc_lock);
++
++		sysfs_put(cur);
 +	}
++
++	mutex_unlock(&sysfs_mutex);
++	return dentry;
 +}
 +
 +/**
-  *	sysfs_addrm_finish - finish up sysfs_dirent add/remove
-  *	@acxt: addrm context to finish up
+  *	sysfs_get_active - get an active reference to sysfs_dirent
+  *	@sd: sysfs_dirent to get an active reference to
   *
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index f959668..3756e15 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -197,62 +197,6 @@ void sysfs_instantiate(struct dentry *dentry, struct inode *inode)
- 	d_instantiate(dentry, inode);
- }
- 
--/**
-- *	sysfs_drop_dentry - drop dentry for the specified sysfs_dirent
-- *	@sd: target sysfs_dirent
-- *
-- *	Drop dentry for @sd.  @sd must have been unlinked from its
-- *	parent on entry to this function such that it can't be looked
-- *	up anymore.
-- *
-- *	@sd->s_dentry which is protected with sysfs_assoc_lock points
-- *	to the currently associated dentry but we're not holding a
-- *	reference to it and racing with dput().  Grab dcache_lock and
-- *	verify dentry before dropping it.  If @sd->s_dentry is NULL or
-- *	dput() beats us, no need to bother.
-- */
--void sysfs_drop_dentry(struct sysfs_dirent *sd)
--{
--	struct dentry *dentry = NULL;
--	struct inode *inode;
--
--	/* We're not holding a reference to ->s_dentry dentry but the
--	 * field will stay valid as long as sysfs_assoc_lock is held.
--	 */
--	spin_lock(&sysfs_assoc_lock);
--	spin_lock(&dcache_lock);
--
--	/* drop dentry if it's there and dput() didn't kill it yet */
--	if (sd->s_dentry && sd->s_dentry->d_inode) {
--		dentry = dget_locked(sd->s_dentry);
--		spin_lock(&dentry->d_lock);
--		__d_drop(dentry);
--		spin_unlock(&dentry->d_lock);
--	}
--
--	spin_unlock(&dcache_lock);
--	spin_unlock(&sysfs_assoc_lock);
--
--	dput(dentry);
--	/* XXX: unpin if directory, this will go away soon */
--	if (sysfs_type(sd) == SYSFS_DIR)
--		dput(dentry);
--
--	/* adjust nlink and update timestamp */
--	inode = ilookup(sysfs_sb, sd->s_ino);
--	if (inode) {
--		mutex_lock(&inode->i_mutex);
--
--		inode->i_ctime = CURRENT_TIME;
--		drop_nlink(inode);
--		if (sysfs_type(sd) == SYSFS_DIR)
--			drop_nlink(inode);
--
--		mutex_unlock(&inode->i_mutex);
--		iput(inode);
--	}
--}
--
- int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
- {
- 	struct sysfs_addrm_cxt acxt;
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 3e9a5ee..92fe1e5 100644
+index 92fe1e5..72530dc 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -90,7 +90,6 @@ extern int sysfs_create_subdir(struct kobject *kobj, const char *name,
- 			       struct sysfs_dirent **p_sd);
- extern void sysfs_remove_subdir(struct sysfs_dirent *sd);
+@@ -54,6 +54,7 @@ struct sysfs_addrm_cxt {
+ extern struct vfsmount * sysfs_mount;
+ extern struct kmem_cache *sysfs_dir_cachep;
  
--extern void sysfs_drop_dentry(struct sysfs_dirent *sd);
- extern int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
- 
- extern spinlock_t sysfs_assoc_lock;
++extern struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
+ extern void sysfs_link_sibling(struct sysfs_dirent *sd);
+ extern void sysfs_unlink_sibling(struct sysfs_dirent *sd);
+ extern struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd);
 -- 
 1.5.2.2
 
