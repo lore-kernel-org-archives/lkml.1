@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763330AbXGKLfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763457AbXGKLgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763330AbXGKLfY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 07:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXGKLfM
+	id S1763457AbXGKLgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 07:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759605AbXGKLgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 07:35:12 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:27090 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754555AbXGKLfK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 07:35:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IEZn2sl/O/FWSuItlnhJRqucmgHZLsFzolw7fXBYx0PgJOPaQqPBRcfWVE1WwdbC+9McrW1Nn0LRr9VOx1iosNfamjhiNl4GPRFUD8xiy8spsozit+87O4Pr0cKWcRud43ISATUeor5+vJpaNCpORn2YucarNUVoy/LQ2DoXQ6I=
-Message-ID: <9b53a56d0707110435y5320f060nf1d0e8cb0782a848@mail.gmail.com>
-Date: Wed, 11 Jul 2007 07:35:09 -0400
-From: "Chris Smith" <smitty1elkml@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86 setup code rewrite in C
-Cc: "Randy Dunlap" <rdunlap@xenotime.net>, "Al Boldi" <a1426z@gawab.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4693FC4E.507@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 07:36:01 -0400
+Received: from verein.lst.de ([213.95.11.210]:53900 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754555AbXGKLgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 07:36:00 -0400
+Date: Wed, 11 Jul 2007 13:35:53 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+Message-ID: <20070711113553.GA18665@lst.de>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200707102032.29124.a1426z@gawab.com> <4693F08B.5060904@zytor.com>
-	 <200707110007.09728.a1426z@gawab.com> <4693F68E.1070309@zytor.com>
-	 <20070710143343.1fb2d76b.rdunlap@xenotime.net>
-	 <4693FC4E.507@zytor.com>
+In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/10/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> So far our effort at getting paid staff seems to have fallen through :(
->
->        -hpa
+On Tue, Jul 10, 2007 at 01:31:52AM -0700, Andrew Morton wrote:
+> romfs-printk-format-warnings.patch
 
-Presumably the 501c status hasn't changed since OLS?
-If a paid position isn't forthcoming, perhaps there can be a bounty
-system for people to contribute $ towards desired functionality.
--- 
-Christopher Smith
+NACK on this one.  This bloats romfs by almost half of it's previous
+size to add mtd support to it.  Given that romfs is a compltely
+trivial filesystem it's much better to have a separate filesystem
+driver handling the format on mtd instead of adding all these
+indirections.  In addition to that argument the switch on the
+underlying subsystem is done horrible.  There's lots of ifdefs instead
+of proper functions pointers, there's one file containing both block
+and mtd code instead of seaparate files, etc.
+
+And the get_unmapped_area method in a bare filesystem needs a _lot_
+of explanation.
+
