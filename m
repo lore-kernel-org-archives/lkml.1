@@ -1,109 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765882AbXGKSix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbXGKSjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765882AbXGKSix (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXGKSiq
+	id S1756767AbXGKSjQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761582AbXGKSiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:38:46 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3050 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755632AbXGKSip (ORCPT
+	Wed, 11 Jul 2007 14:38:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:16624 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760389AbXGKSit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:38:45 -0400
-Message-ID: <469523AF.6050207@shadowen.org>
-Date: Wed, 11 Jul 2007 19:38:39 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Wed, 11 Jul 2007 14:38:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=CScp3ExTVTT+baaYzevflAuL01vh1fpSpLnKwce8Fxc3lzz56oUs5aKvZLeW+ZWcBKcqQKhhPSo/UU41qDdUbObB+q1vGVYqrCyerDmcxT8036mzaZa80ebC4yrvb65+ludN2aB4rTZRqf95zRs4b2TdJdYkETQ7SCtO9eStqgM=
+Date: Wed, 11 Jul 2007 22:38:41 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] Sky Cpu and Nexus: get rid of useless NULL init
+Message-ID: <20070711183841.GA7157@cvg>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: -mm merge plans -- lumpy reclaim
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	<46937DA2.4040302@shadowen.org>	<4694A427.7070708@shadowen.org> <20070711094600.b2a525d5.akpm@linux-foundation.org>
-In-Reply-To: <20070711094600.b2a525d5.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+This patch removes useless structure items init accroding to C99.
 
->>>> lumpy-reclaim-v4.patch
->>>> have-kswapd-keep-a-minimum-order-free-other-than-order-0.patch
->>>> only-check-absolute-watermarks-for-alloc_high-and-alloc_harder-allocations.patch
->>>>
->>>>  Lumpy reclaim.  In a similar situation to Mel's patches.  Stuck due to
->>>>  general lack or interest and effort.
->>> The lumpy reclaim patches originally came out of work to support Mel's
->>> anti-fragmentation work.  As such I think they have become somewhat
->>> attached to those patches.  Whilst lumpy is most effective where
->>> placement controls are in place as offered by Mel's work, we see benefit
->>> from reduction in the "blunderbuss" effect when we reclaim at higher
->>> orders.  While placement control is pretty much required for the very
->>> highest orders such as huge page size, lower order allocations are
->>> benefited in terms of lower collateral damage.
->>>
->>> There are now a few areas other than huge page allocations which can
->>> benefit.  Stacks are still order 1.  Jumbo frames want higher order
->>> contiguous pages for there incoming hardware buffers.  SLUB is showing
->>> performance benefits from moving to a higher allocation order.  All of
->>> these should benefit from more aggressive targeted reclaim, indeed I
->>> have been surprised just how often my test workloads trigger lumpy at
->>> order 1 to get new stacks.
->>>
->>> Truly representative work loads are hard to generate for some of these.
->>>  Though we have heard some encouraging noises from those who can
->>> reproduce these problems.
-> 
-> I'd expect that the main application for lumpy-reclaim is in keeping a pool
-> of order-2 (say) pages in reserve for GFP_ATOMIC allocators.  ie: jumbo
-> frames.
-> 
-> At present this relies upon the wakeup_kswapd(..., order) mechanism.
-> 
-> How effective is this at solving the jumbo frame problem?
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-The tie in between allocator and kswapd is essentially unchanged,
-so if allocators are dropping below the watermarks at the specified
-order, reclaim will be triggered at that order.  Reclaim continues
-until we return above the high watermarks, at the order at which
-we are reclaiming.
+ drivers/misc/hdpuftrs/hdpu_cpustate.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-What lumpy brings is a greater targetting of effort to get the pages.
-kswapd now uses the desired allocator order when applying reclaim.
-This leads to pressure being applied to contigious areas at the
-required order, and so a higher chance of that order becoming
-available.  Traditional reclaim could end up applying pressure to
-a number of pages, but not all pages in any area at the required
-order, leading to a very low chance of success.  By targetting
-areas at the required order we significantly increase the chances
-of success for any given amount of reclaim.  As we will reclaim
-until we have the desired number of free pages, we will have to
-reclaim less to achieve this compared to random reclaim.
-
-This certainly is appealing intuitivly, and our testing at higher
-orders shows that the cost of each reclaimed page is lower and more
-importantly the time to reclaim each page is reduced.  So for a
-'continuing' consumer like an incoming packet stream, we should
-have to do much less work and thus disrupt the system as a whole
-much less to get its pages.
-
-Where demand for atomic higher order pages is not heavy we would
-expect kswapd to maintain free levels pages more readily and so
-under higher demand.  Though it should be stressed without placement
-control success rates drop off significantly at higher orders as
-the probabality of reclaim succeeding on all pages in the area
-tends to zero.
-
-> (And do we still have a jumbo frame problem?  Reports seems to have
-subsided)
-
-It is not in the least bit clear if the problem is resolved or if the
-reporters have simply gone quiet.
-
-Overall the approach taken in lumpy reclaim seems to be a logical
-extension of the regular reclaim algorithm, leading to more
-efficient reclaim.
-
--apw
+diff --git a/drivers/misc/hdpuftrs/hdpu_cpustate.c b/drivers/misc/hdpuftrs/hdpu_cpustate.c
+index cc33f24..427e357 100644
+--- a/drivers/misc/hdpuftrs/hdpu_cpustate.c
++++ b/drivers/misc/hdpuftrs/hdpu_cpustate.c
+@@ -176,9 +176,6 @@ static const struct file_operations cpustate_fops = {
+       .release	= cpustate_release,
+       .read	= cpustate_read,
+       .write	= cpustate_write,
+-      .fasync	= NULL,
+-      .poll	= NULL,
+-      .ioctl	= NULL,
+       .llseek	= no_llseek,
+ };
+ 
