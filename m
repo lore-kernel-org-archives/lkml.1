@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbXGKRwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765904AbXGKRy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758424AbXGKRwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 13:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759959AbXGKRvz
+	id S1765904AbXGKRy1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 13:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759108AbXGKRyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 13:51:55 -0400
-Received: from mercury.sygneca.com ([83.142.230.29]:47802 "EHLO
-	mx2.sygneca.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759414AbXGKRvy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 13:51:54 -0400
-Message-ID: <46951892.20406@martinorr.name>
-Date: Wed, 11 Jul 2007 18:51:14 +0100
-From: Martin Orr <martin@martinorr.name>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070621)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_tiberius-6120-1184176306-0001-2"
-To: Andi Kleen <andi@firstfloor.org>
-CC: Stefano Rivoir <s.rivoir@gts.it>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22 released
-References: <alpine.LFD.0.999.0707081639370.31544@woody.linux-foundation.org>	<4693327E.6000006@gts.it>	<alpine.LFD.0.999.0707100824170.3412@woody.linux-foundation.org>	<46947ADF.4080605@gts.it> <p73vecrxf0t.fsf@bingen.suse.de>
-In-Reply-To: <p73vecrxf0t.fsf@bingen.suse.de>
-X-Enigmail-Version: 0.95.0
+	Wed, 11 Jul 2007 13:54:16 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:32843 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758617AbXGKRyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 13:54:15 -0400
+Message-ID: <46951941.9080908@acm.org>
+Date: Wed, 11 Jul 2007 11:54:09 -0600
+From: Zan Lynx <zlynx@acm.org>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+MIME-Version: 1.0
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+References: <200707111916.35036.jesper.juhl@gmail.com>
+In-Reply-To: <200707111916.35036.jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Envelope-From: zlynx@acm.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Jesper Juhl wrote:
+> Hi,
+>
+> I'm wondering if it's time to make 4K stacks the default and to start 
+> considering removing the 8K stack option alltogether soon?
+>
+> One of the big problem spots was XFS, but that got some stack usage 
+> fixes recently, and the 4K stack option has been around for quite a 
+> while now, so people really should have gotten around to fixing any 
+> code that can't handle it.   Are there still any big problem areas 
+> remaining?
+>   
+Has anyone fixed the infrequent crashes with 4K stacks and ext3 -> LVM 
+snapshot -> LVM -> DM mirror -> libata?
 
---=_tiberius-6120-1184176306-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-
-O#n 11/07/07 14:10, Andi Kleen wrote:
-> Stefano Rivoir <s.rivoir@gts.it> writes:
->> Linus Torvalds wrote:
->>> On Tue, 10 Jul 2007, Stefano Rivoir wrote:
->> Ok, the guilty bit is gcc: in my box, compiling kernel with gcc 4.2.x
->> (which is installed on my debian/sid) turns into a hang (in init,
->> seemingly, maybe not even in kernel itself), while gcc-4.1 is allright=
-=2E
->=20
-> The standard way to track this down is to compile different directories=
-
-> of the kernel with different gcc versions. Then when you find the direc=
-tory
-> go down to files. Then you could eventually go down to functions, altho=
-ugh
-> that tends to involve quite some editing work. But already knowing
-> the file would be useful.
-
-I have done this.  The file is arch/x86_64/kernel/signal.c: if I compile
-this with gcc 20070627 then everything works, if I compile it with gcc
-20070707 then udevsettle hangs.  This is independent of the gcc version u=
-sed
-to compile the rest of the kernel.  (The dates refer to versions of the
-Debian gcc-4.2 package and its dependencies.)
-
-
---=20
-Martin Orr
-
-
---=_tiberius-6120-1184176306-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGlRijZ6a/BjxtAMARAp9VAJ9e8jy1uiK8Re69sKG0BGr9eZIWBgCg+LoE
-ARaZj/Vs/SUulNR4JYu7b5A=
-=dBFe
------END PGP SIGNATURE-----
-
---=_tiberius-6120-1184176306-0001-2--
+The latest (as of 150 days ago) Fedora 6 32-bit kernels crashed every 
+week or two, the 64-bit kernel, which I believe uses 8K stacks, has been 
+up 150 days.
