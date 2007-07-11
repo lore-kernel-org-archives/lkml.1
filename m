@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765802AbXGKVPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766001AbXGKVQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765802AbXGKVPa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbXGKVPU
+	id S1766001AbXGKVQu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbXGKVQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:15:20 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:49551 "EHLO atlrel8.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752159AbXGKVPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:15:18 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Luca <kronos.it@gmail.com>
-Subject: Re: [PATCH] Enable legacy support for serial ports when SERIAL_8250_PNP is disabled
-Date: Wed, 11 Jul 2007 15:07:25 -0600
-User-Agent: KMail/1.9.6
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070707233300.GA3267@dreamland.darkstar.lan> <200707091230.01556.bjorn.helgaas@hp.com> <68676e00707111240v28263cc7i13c033c8be1339b9@mail.gmail.com>
-In-Reply-To: <68676e00707111240v28263cc7i13c033c8be1339b9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 17:16:41 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42105 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbXGKVQk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:16:40 -0400
+Date: Wed, 11 Jul 2007 23:16:38 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+Message-ID: <20070711211638.GE18767@one.firstfloor.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707111507.25412.bjorn.helgaas@hp.com>
+In-Reply-To: <20070711174252.GA16793@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 July 2007 01:40:07 pm Luca wrote:
-> On 7/9/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Monday 09 July 2007 11:30:59 am Luca wrote:
-> > > On 7/9/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > > > If you turn off
-> > > > PNP completely, you will have "pnp_platform_devices == 0", and the
-> > > > existing code will do what you need.
-> > >
-> > > Well for me it's a non-issue, I'm able to "work-around" it in many
-> > > ways. My point is that a configuration that used to work and is still
-> > > valid suddenly doesn't work anymore.
-> >
-> > You're right about that, and it is a legitimate issue.  But given the
-> > fact that (PNP && !SERIAL_8250_PNP) should be relatively unusual, my
-> > opinion is that it's not worth extra ifdefs in legacy_serial.c.
-> >
-> > If you have to use any workarounds like "legacy_serial.force", I think
-> > that's a bug, and I'll fix it.
-> 
-> Ok, I double-checked: the serial port is usable during boot with PNP
-> enabled, so no problem with dropping my patch.
 
-Thanks a lot for checking!
+Well I spent a lot of time making the x86-64 timing code work
+well on a variety of machines; working around a wide variety
+of hardware and platform bugs. I obviously don't agree on your description
+of its maintenance state. 
 
-Bjorn
+> What contribution do we have from you instead? A week before the .23 
+
+I told him my objections privately earlier. Basically i would
+like to see an actually debuggable step-by-step change, not a rip everything 
+out.
+
+If that isn't possible it needs very careful review which just hasn't
+happened yet. But I'm not convinced even step by step is not possible
+here.
+
+I thought it was clear that rip everything out is rarely a good idea
+in Linux land?  That's really not something I should need to harp on 
+repeatedly.
+
+-Andi
+
