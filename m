@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764961AbXGKPCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765255AbXGKPEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764961AbXGKPCV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 11:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761197AbXGKPCO
+	id S1765255AbXGKPEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 11:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759723AbXGKPE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 11:02:14 -0400
-Received: from mba.ocn.ne.jp ([122.1.175.29]:63191 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759723AbXGKPCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 11:02:13 -0400
-Date: Thu, 12 Jul 2007 00:03:05 +0900 (JST)
-Message-Id: <20070712.000305.115642664.anemo@mba.ocn.ne.jp>
-To: a.zummo@towertech.it
-Cc: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-Subject: [PATCH] rtc: Do not return void value.
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 11:04:27 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:52448 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758342AbXGKPE1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 11:04:27 -0400
+Date: Wed, 11 Jul 2007 11:04:24 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <htejun@gmail.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Sysfs and suicidal attributes
+In-Reply-To: <469464EC.7030502@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0707111100060.4705-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes these sparse warnings:
+On Wed, 11 Jul 2007, Tejun Heo wrote:
 
-drivers/rtc/rtc-ds1742.c:265:2: warning: returning void-valued expression
-drivers/rtc/rtc-ds1553.c:409:2: warning: returning void-valued expression
+> Alright, there's our confusion.  I thought you were gonna use dev->sem
+> to protect new device addition && driver binding.  We can use the same
+> rwsem directly for binding protection too but I guess there's no big
+> difference one way or the other.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
-index afa64c7..b9ba29a 100644
---- a/drivers/rtc/rtc-ds1553.c
-+++ b/drivers/rtc/rtc-ds1553.c
-@@ -406,7 +406,7 @@ static __init int ds1553_init(void)
- 
- static __exit void ds1553_exit(void)
- {
--	return platform_driver_unregister(&ds1553_rtc_driver);
-+	platform_driver_unregister(&ds1553_rtc_driver);
- }
- 
- module_init(ds1553_init);
-diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
-index d68288b..f578ed1 100644
---- a/drivers/rtc/rtc-ds1742.c
-+++ b/drivers/rtc/rtc-ds1742.c
-@@ -262,7 +262,7 @@ static __init int ds1742_init(void)
- 
- static __exit void ds1742_exit(void)
- {
--	return platform_driver_unregister(&ds1742_rtc_driver);
-+	platform_driver_unregister(&ds1742_rtc_driver);
- }
- 
- module_init(ds1742_init);
+The rwsem should not be used for binding protection.  If we did trylock
+then binding at the wrong time would fail, which would be bad.  If we
+did down_read then we would probably block while holding a device
+semaphore, which also would be bad.
+
+> Thanks for enlightening me.  Probably what can be done is blocking
+> regular file sysfs nodes automatically and make it optional (optionally
+> enable or disable) for bin attrs.
+
+Maybe.  At the moment I don't see any reason to treat binary attributes 
+different from text.
+
+It would also be good to find out whether there are any long-running 
+sysfs callbacks.
+
+Alan Stern
+
