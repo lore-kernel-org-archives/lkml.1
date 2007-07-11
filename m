@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbXGKENT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbXGKEV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbXGKENT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 00:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXGKENK
+	id S1756667AbXGKEV0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 00:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXGKEVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 00:13:10 -0400
-Received: from [212.12.190.99] ([212.12.190.99]:32826 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751598AbXGKENJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 00:13:09 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: Hibernation Redesign
-Date: Wed, 11 Jul 2007 07:11:26 +0300
-User-Agent: KMail/1.5
-Cc: Pavel Machek <pavel@ucw.cz>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <200707081737.21932.a1426z@gawab.com> <871wfguq5g.fsf@jbms.ath.cx> <46940F45.3090005@goop.org>
-In-Reply-To: <46940F45.3090005@goop.org>
+	Wed, 11 Jul 2007 00:21:16 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:17422 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751598AbXGKEVP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 00:21:15 -0400
+Date: Tue, 10 Jul 2007 21:20:37 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v2 -mm 4/9] netconsole: Add some useful tips to documentation
+Message-ID: <20070711042036.GR1011@tasint.org>
+Mail-Followup-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+	Jesper Juhl <jesper.juhl@gmail.com>, Matt Mackall <mpm@selenic.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Keiichi Kii <k-keiichi@bx.jp.nec.com>,
+	Netdev <netdev@vger.kernel.org>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>
+References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in> <20070710091941.23907.45658.sendpatchset@cselinux1.cse.iitk.ac.in> <20070710094142.GM11115@waste.org> <200707101434.39938.jesper.juhl@gmail.com> <Pine.LNX.4.64.0707110256220.2445@cselinux1.cse.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707110711.26767.a1426z@gawab.com>
+In-Reply-To: <Pine.LNX.4.64.0707110256220.2445@cselinux1.cse.iitk.ac.in>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Jeremy Maitin-Shepard wrote:
-> >   In
-> > addition, I recall that the Linux boot procedure on x86 and on some
-> > other platforms necessarily uses certain low-address memory, like the
-> > first 640K, which must be backed up regardless.
->
-> Well, the traditional framebuffer/ISA space between 640k and 1M probably
-> needs to be identity mapped, but I don't think there's anything in there
-> which specifically needs to be save/restored (except framebuffer
-> contents, maybe?).
->
-> > For these reasons, it seems that it would be easiest to simply backup
-> > the first e.g. 16 or 64 MB of memory, and not have to worry about
-> > loading the kernel at a non-standard address and specifying a
-> > complicated exact memmap.  Someone might prove me wrong, though.
->
-> Yes, I suppose.  You're certain the old kernel's devices are completely
-> quiescent at that point?
+On Wed, Jul 11, 2007 at 03:40:22AM +0530, Satyam Sharma wrote:
+> IMHO something that mentions /proc/sys/kernel/printk would be better.
+> 
+> You don't need to have built with SysRq support for that, it's clearly
+> more flexible than the ignore_loglevel option and wouldn't require a
+> reboot either. I'll send out an updated patch shortly.
 
-That's exactly the problem; trying to save a state from within the kernel 
-would probably necessitate a freezer hack, which we are trying so dearly to 
-avoid.
+	Why not dmesg -n?  We've been using that for years.  Or is there
+some extra change in /proc/sys/kernel/printk?
 
-The only way the kexec approach may be successful, is by completely relying 
-on the kexec'd hibernate-mode kernel to save state, otherwise we would be 
-back to square one.  And if that required a special boot procedure for the 
-kexec'd hibernate-mode kernel, then why not?
+Joel
 
+-- 
 
-Thanks!
+"Against stupidity the Gods themselves contend in vain."
+	- Friedrich von Schiller
 
---
-Al
-
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
