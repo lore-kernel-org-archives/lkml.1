@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbXGKI4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761300AbXGKI5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbXGKI4b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 04:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbXGKI4Y
+	id S1761300AbXGKI5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 04:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbXGKI5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 04:56:24 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55175 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754453AbXGKI4X (ORCPT
+	Wed, 11 Jul 2007 04:57:07 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:60094 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756734AbXGKI5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 04:56:23 -0400
-Date: Wed, 11 Jul 2007 09:55:39 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave McCracken <dave.mccracken@oracle.com>
-Cc: Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@skynet.ie>,
-       Andrew Morton <akpm@linux-foundation.org>, kenchen@google.com,
-       jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       y-goto@jp.fujitsu.com, clameter@sgi.com, linux-mm@kvack.org,
+	Wed, 11 Jul 2007 04:57:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RVWA5qVsjxzFO4hDAEdkr5x65TFkYizRd0UStaTUIaHvdsBPIWJKQlf7Y5Zykrz87yUF+OWocD9CZvh6eq3oxIvaILFhq/JJ7EgUASqmjiGmjsRZ7CofyIJS5Znb/ixnyotE10h+r2MW05ozm1QiKcxqdwJsmVLxDbThTbbo9Jw=
+Message-ID: <8d6898730707110157g7ddd7a27of0e0a02fe1afbdc4@mail.gmail.com>
+Date: Wed, 11 Jul 2007 14:27:05 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Subject: Re: Reading a physical memory location
+Cc: "vraghavan3@mail.gatech.edu" <vraghavan3@mail.gatech.edu>,
        linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans -- anti-fragmentation
-Message-ID: <20070711085539.GA18038@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Dave McCracken <dave.mccracken@oracle.com>,
-	Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@skynet.ie>,
-	Andrew Morton <akpm@linux-foundation.org>, kenchen@google.com,
-	jschopp@austin.ibm.com, apw@shadowen.org,
-	kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-	y-goto@jp.fujitsu.com, clameter@sgi.com, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-References: <20070710102043.GA20303@skynet.ie> <200707100929.46153.dave.mccracken@oracle.com> <20070710152355.GI8779@wotan.suse.de> <200707101211.46003.dave.mccracken@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1a297b360707110150x56e8ad6cu64ab768e7d3ce6ed@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707101211.46003.dave.mccracken@oracle.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <1184010444.469290cce48df@webmail.mail.gatech.edu>
+	 <8d6898730707091539y14cf5afbsed7ed769526da0a1@mail.gmail.com>
+	 <1184091142.4693cc06850f7@webmail.mail.gatech.edu>
+	 <1a297b360707101502t2670f0d7g5197b9c32ecb967c@mail.gmail.com>
+	 <8d6898730707102243t60861fdar147f052501c31958@mail.gmail.com>
+	 <1a297b360707110111u25a786c5m4857673e3e1b90a1@mail.gmail.com>
+	 <8d6898730707110114p3c02e24as8ca8359731fdc320@mail.gmail.com>
+	 <1a297b360707110150x56e8ad6cu64ab768e7d3ce6ed@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 12:11:45PM -0500, Dave McCracken wrote:
-> Ok, maybe disaster is too strong a word.  But any kind of order>0 allocation 
-> still has to be approached with fear and caution, with a well tested fallback 
-> in the case of the inevitable failures.  How many driver writers would have 
-> benefited from using order>0 pages, but turned aside to other less optimal 
-> solutions due to their unreliability?  We don't know, and probably never 
-> will.  Those people have moved on and won't revisit that design decision.
+Thanks
 
-If you look at almost any other OS they use high-order pages quite a lot.
-At least Solaris, IRIX and UnixWare do.
-
-Also not that once we have a high-order pagecache it gives a nice way
-to simply reclaim a high-order page directly :)
-
+On 7/11/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> On 7/11/07, Nobin Mathew <nobin.mathew@gmail.com> wrote:
+> > See this in the documentation
+> >
+> > The returned virtual address is a current CPU mapping for the memory
+> > address given. It is only valid to use this function on addresses that
+> > have a kernel mapping
+> >
+> > This function does not handle bus mappings for DMA transfers. In
+> > almost all conceivable cases a device driver should not be using this
+> > function
+> >
+>
+> To get a better idea, look here
+> http://tldp.org/LDP/khg/HyperNews/get/devices/addrxlate.html
+>
