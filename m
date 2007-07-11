@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbXGKIZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbXGKIjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbXGKIZp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 04:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbXGKIZi
+	id S1758382AbXGKIjQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 04:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbXGKIjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 04:25:38 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:40281 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbXGKIZh (ORCPT
+	Wed, 11 Jul 2007 04:39:00 -0400
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:40441 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754308AbXGKIi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 04:25:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GyoAVPjcDDatqlO9j+1dXvfxbDFoWcj3PbTpztOGbpCtYHsTSweMKh29w+wBg++lslBl8dOHxhwEZ6tQfbXzSPjVLWFSjjW8tt5aLJUsAXCqU8zIZ8D1PnpucN+6VFZuDoWcL1hQIkyHMIQxxjt/tfTj3dLGCnBJCAxNJnD/GWo=
-Message-ID: <1a297b360707110111u25a786c5m4857673e3e1b90a1@mail.gmail.com>
-Date: Wed, 11 Jul 2007 12:11:38 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Nobin Mathew" <nobin.mathew@gmail.com>
-Subject: Re: Reading a physical memory location
-Cc: "vraghavan3@mail.gatech.edu" <vraghavan3@mail.gatech.edu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <8d6898730707102243t60861fdar147f052501c31958@mail.gmail.com>
+	Wed, 11 Jul 2007 04:38:59 -0400
+Message-ID: <46949541.4040206@itg.hitachi.co.jp>
+Date: Wed, 11 Jul 2007 17:30:57 +0900
+From: Piotr Muszynski <piotr@itg.hitachi.co.jp>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: REQUEST_SENSE and ide-cd.c
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1184010444.469290cce48df@webmail.mail.gatech.edu>
-	 <8d6898730707091539y14cf5afbsed7ed769526da0a1@mail.gmail.com>
-	 <1184091142.4693cc06850f7@webmail.mail.gatech.edu>
-	 <1a297b360707101502t2670f0d7g5197b9c32ecb967c@mail.gmail.com>
-	 <8d6898730707102243t60861fdar147f052501c31958@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/11/07, Nobin Mathew <nobin.mathew@gmail.com> wrote:
-> Which is your platform ?
->
-> Which processor?
->
-> If you want to use physical address directly, then disable MMU. That
-> is not possible in linux.
+I am adding transparent ATAPI capability to USB gadget Mass Storage 
+driver. The idea is to pass USB traffic to block device queue as packet 
+requests. At the end of the queue, the requests are handled by ide-cd.c 
+driver.
 
-ioremap does map io memory using phys_to_virt
-I thought phys_to_virt was enough to remap physical memory to virtual
-http://mirror.linux.org.au/linux.conf.au/2005/cdrom-beta-1/linux-mandocs-2.6.12.6/phys_to_virt.html
+It breaks when the ide-cd.c driver unconditionally generates 
+REQUEST_SENSE for requests that ended in unit attention condition.
 
+By clearing the drive's unit attention condition, this additional 
+REQUEST_SENSE confuses the host, which fires it's own REQUEST_SENSE 
+packet, to which the drive replies with NO SENSE.
 
+I can see three solutions:
 
->
-> Nobin
->
-> On 7/11/07, Manu Abraham <abraham.manu@gmail.com> wrote:
-> > On 7/10/07, vraghavan3@mail.gatech.edu <vraghavan3@mail.gatech.edu> wrote:
-> > >
-> > > Thanks for the quick reply. But I was wondering as to why I would have to map
-> > > the physical address to the virtual address when I know that the string is
-> > > permanently in the physical memory because its loaded into flash. Is there a way
-> > > to directly read from the physical memory location? Also, do the functions
-> > > ioremap() and readl(va) work when called from within a kernel module?
-> > >
-> >
-> > Of course, if you look at almost any of the memory mapped device
-> > drivers, you will find that ioremap/readl/writel is the backbone of
-> > your infrastructure.
-> >
-> >
-> > Manu
-> >
->
+1. Intercept the sense data returned by ide-cd.c and emulate unit 
+attention condition in file_storage.c driver;
+
+2. Introduce a new request flag causing ide-cd.c to skip calling 
+cdrom_queue_request_sense() for flagged requests, like below:
+
+     cdrom_decode_status() 2.6.12:
+     -    if (stat & ERR_STAT) {
+     +    if (stat & ERR_STAT && !(rq->flags & REQ_NO_AUTOSENSE)) {
+              spin_lock_irqsave(&ide_lock, flags);
+              blkdev_dequeue_request(rq);
+              HWGROUP(drive)->rq = NULL;
+              spin_unlock_irqrestore(&ide_lock, flags);
+              cdrom_queue_request_sense(drive, rq->sense, rq);
+          } else
+              cdrom_end_request(drive, 0);
+
+3. Acknowledge that ide-cd.c was not meant to work as in (2) and search 
+for another mechanism. Where?
+
+(1) would unnecessarily duplicate the drive's state. I'd rather do (3).
+
+So far, the (2) works well, but how bad is it?
+I'd greatly appreciate any critical feedback.
+
+TIA,
+Piotr Muszynski
+
