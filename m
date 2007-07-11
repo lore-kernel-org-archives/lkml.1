@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762383AbXGKJml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbXGKJnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762383AbXGKJml (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 05:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758539AbXGKJmc
+	id S1761935AbXGKJnU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 05:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759310AbXGKJnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 05:42:32 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:37524 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758142AbXGKJmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 05:42:31 -0400
-Date: Wed, 11 Jul 2007 10:42:29 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-Message-ID: <20070711094229.GC7568@skynet.ie>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <Pine.LNX.4.64.0707101303450.22199@schroedinger.engr.sgi.com>
+	Wed, 11 Jul 2007 05:43:08 -0400
+Received: from [222.92.8.141] ([222.92.8.141]:35495 "HELO lemote.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1759070AbXGKJnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 05:43:06 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 05:43:06 EDT
+Message-ID: <4694A495.1050006@lemote.com>
+Date: Wed, 11 Jul 2007 17:36:21 +0800
+From: Songmao Tian <tiansm@lemote.com>
+User-Agent: Icedove 1.5.0.8 (X11/20061116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707101303450.22199@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+To: LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Subject: about cs5536 interrupt ack
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (10/07/07 13:09), Christoph Lameter didst pronounce:
-> On Tue, 10 Jul 2007, Andrew Morton wrote:
-> 
-> > slub-exploit-page-mobility-to-increase-allocation-order.patch
-> > slub-reduce-antifrag-max-order.patch
-> > 
-> >  These are slub changes which are dependent on Mel's stuff, and I have a note
-> >  here that there were reports of page allocation failures with these.  What's
-> >  up with that?
-> 
-> Those were fixed and all has been well since as far as I know.
-> 
+Hi,
+    I am trying to use a mips cpu the cs5536. I have some problem with 
+the 8259 of cs5536.  The  databook said,
 
-SLUB using high orders without page allocation failures do depend on
-two very questionable patches that I brought to attention in my inital
-merge mail. If grouping pages by mobility goes through, I'll be revisiting
-that properly to make sure it can work without deadlocking ever under any
-circumstances. Right now, it theoritically could livelock although I've
-never been able to reproduce it.
+"Control Logic
+The INT output goes directly to the CPU interrupt input.
+When an INT signal is activated, the CPU responds with an
+Interrupt Acknowledge access that is translated to two
+pulses on the INTA input of the PIC. At the first INTA pulse,
+the highest priority IRR bit is loaded into the corresponding
+ISR bit, and that IRR bit is reset. The second INTA pulse
+instructs the PIC to present the 8-bit vector of the interrupt
+handler onto the data bus."
 
-The patches as they are will work for high-order allocations if you are
-willing to wait and reclaim memory. The more stressful users need more
-effort but it's already been shown that it can be made work with one
-approach as the last few months in -mm have shown.
+Is it the responsibility of north bridge to reponse to intr with a PCI 
+Interrupt Ack cycle?
+it's a problem that my northbridge didn't implement that! Fortunately we 
+use a fpga as a northbridge.
 
-> >  Maybe I should just drop the 100-odd marginal-looking MM patches?  We're
-> >  simply not showing compelling reasons for merging them and quite a lot of them
-> >  are stuck in a 90% complete state.
-> 
-> As far as I can tell the antifrag patches are stable and are significantly 
-> enhancing various aspects of the VM and also make it more reliable. SLUB 
-> can use it to increase scalability. MM has been using order 3 allocs via 
-> SLUB for months now without a problem. Without the antifrag patches order 
-> 1 allocs could cause OOMs.
-> 
-> It opens the door for functionality that we wanted for a long time such a 
-> memory unplug etc.
+it seem it's no way to fix this by software, for OCW3 didn't implemnt 
+Poll command:(
 
-And I want to avoid a catch-22 here where the features that depend on
-grouping pages by mobility have to exist before grouping pages by
-mobility is pushed through.
+so I guess the the process is:
+1) 8259 receive a int, a bit irr got set.
+2) 8259 assert intr.
+3) northbrige generate a int ack cycle.
+4) cs5536 translate the ack into two INTA pulse, and the reponse 
+northbridge with a interrupt vector.
+5) then my program can get the vector from northbridge?
 
-I would like the patches to go through on the grounds that higher order
-allocations can succeed. However, I am also happy to say that order-0
-pages should be used as much as possible, that case should always be
-made as fast as possible and the world must not end if a high-order
-allocation fails.
+Is that right?
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Without int ack, generic linux-mips 8259 code can't work.
+
+Greetings,
+Tian
+
+
+
