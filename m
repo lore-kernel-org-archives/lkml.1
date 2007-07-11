@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbXGKSrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765651AbXGKSsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762983AbXGKSrU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbXGKSrJ
+	id S1765651AbXGKSsP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbXGKSsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:47:09 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:13151 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755945AbXGKSrH (ORCPT
+	Wed, 11 Jul 2007 14:48:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49435 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756371AbXGKSsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:47:07 -0400
-Date: Wed, 11 Jul 2007 20:47:01 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Theodore Tso <tytso@mit.edu>, Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Amit Arora <aarora@in.ibm.com>, Andi Kleen <ak@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Arnd Bergmann <arnd@arndb.de>, "Luck, Tony" <tony.luck@intel.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Mark Fasheh <mark.fasheh@oracle.com>, linux-arch@vger.kernel.org
-Subject: Re: fallocate-implementation-on-i86-x86_64-and-powerpc.patch
-Message-ID: <20070711184701.GA9035@osiris.ibm.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070710115251.GG2343@thunk.org> <20070710101558.cea7aab1.akpm@linux-foundation.org> <4693C580.2000506@garzik.org> <18068.5612.100418.782729@cargo.ozlabs.ibm.com> <20070710171650.642881db.akpm@linux-foundation.org> <18068.10601.792839.787025@cargo.ozlabs.ibm.com> <20070711153939.GA19456@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070711153939.GA19456@thunk.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+	Wed, 11 Jul 2007 14:48:06 -0400
+Subject: Re: containers (was Re: -mm merge plans for 2.6.23)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul Jackson <pj@sgi.com>
+Cc: vatsa@linux.vnet.ibm.com, mingo@elte.hu, containers@lists.osdl.org,
+       menage@google.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070711100331.47ca379d.pj@sgi.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <20070710105240.GA20914@linux.vnet.ibm.com>
+	 <6599ad830707101134k29951c45h4af0807603f52b76@mail.gmail.com>
+	 <20070710115319.0bdaff34.akpm@linux-foundation.org>
+	 <20070711045516.GH2927@linux.vnet.ibm.com>
+	 <20070710222942.382fc9ba.akpm@linux-foundation.org>
+	 <20070711090423.GA6758@elte.hu> <20070711022352.71604404.pj@sgi.com>
+	 <20070711100323.GA23473@linux.vnet.ibm.com>
+	 <20070711101958.GA10095@elte.hu>
+	 <20070711113953.GB23473@linux.vnet.ibm.com>
+	 <20070711044244.c0916fe5.pj@sgi.com> <1184155593.20032.29.camel@twins>
+	 <20070711100331.47ca379d.pj@sgi.com>
+Content-Type: text/plain
+Date: Wed, 11 Jul 2007 20:47:48 +0200
+Message-Id: <1184179668.5281.35.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 11:39:39AM -0400, Theodore Tso wrote:
-> On Wed, Jul 11, 2007 at 10:50:49AM +1000, Paul Mackerras wrote:
-> > > On Wed, 11 Jul 2007 09:27:40 +1000
-> > > Paul Mackerras <paulus@samba.org> wrote:
-> > > 
-> > > > We did come up with an order that worked for everybody, but that
-> > > > discussion seemed to get totally ignored by the ext4 developers.
+On Wed, 2007-07-11 at 10:03 -0700, Paul Jackson wrote:
+> Peter wrote:
+> > I'd very much like to have it, but that is just me.
 > 
-> Well, in the end it was a toss-up between
-> 
-> asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
-> 
-> and 
-> 
-> asmlinkage long sys_fallocate(loff_t offset, loff_t len, int fd, int mode)
-> 
-> There were a number of folks who preferred having int fd first, and I
-> *thought* Amit had gotten agreement from either Martin or Heiko that
-> it was ok to do this as an exception, even though it was extra work
-> for that arch.  But if not, we can try going back the second
-> alternative, or even the 6 32-bits args (off_high, off_low, len_high,
-> len_low) approach, but I think that drew even more fire. 
+> Why? [linear combinations of uid, container, pid, pgrp weighting]
 
-The second approach would work for all architectures..  but some people
-didn't like (no technical reason) not having fd as first argument.
+Good question, and I really have no other answer than that it seems
+usefull and not impossible (or even hard) to implement :-/
 
-Just go ahead with the current approach. s390 seems to be the only
-architecture which suffers from this and I wouldn't like to start this
-discussion again.
+I'm not even that interested in using it, it just seems like a nice
+idea.
+
+
