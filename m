@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932338AbXGKSFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765632AbXGKSHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932338AbXGKSFd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757729AbXGKSFV
+	id S1765632AbXGKSHR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758224AbXGKSHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:05:21 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59710 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759057AbXGKSFT (ORCPT
+	Wed, 11 Jul 2007 14:07:04 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46503 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754040AbXGKSHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:05:19 -0400
-Date: Wed, 11 Jul 2007 11:04:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, linux-mm@kvack.org
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-Message-Id: <20070711110453.c4020526.akpm@linux-foundation.org>
-In-Reply-To: <20070711122324.GA21714@lst.de>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<20070711122324.GA21714@lst.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 14:07:03 -0400
+Date: Wed, 11 Jul 2007 11:06:59 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       suresh.b.siddha@intel.com, corey.d.gough@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Erik Andersen <andersen@codepoet.org>
+Subject: Re: [patch 09/10] Remove the SLOB allocator for 2.6.23
+In-Reply-To: <20070711020646.GZ11115@waste.org>
+Message-ID: <Pine.LNX.4.64.0707111104370.14730@schroedinger.engr.sgi.com>
+References: <4691A415.6040208@yahoo.com.au> <Pine.LNX.4.64.0707090901410.13970@schroedinger.engr.sgi.com>
+ <20070709095116.c2ea700f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0707091017210.15962@schroedinger.engr.sgi.com>
+ <4692E44E.6000606@yahoo.com.au> <Pine.LNX.4.64.0707091852030.2860@schroedinger.engr.sgi.com>
+ <4692E8B5.3030404@yahoo.com.au> <Pine.LNX.4.64.0707091905480.3108@schroedinger.engr.sgi.com>
+ <20070710083212.GG11115@waste.org> <Pine.LNX.4.64.0707101836280.7011@schroedinger.engr.sgi.com>
+ <20070711020646.GZ11115@waste.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 14:23:24 +0200
-Christoph Hellwig <hch@lst.de> wrote:
+On Tue, 10 Jul 2007, Matt Mackall wrote:
 
-> > lguest-export-symbols-for-lguest-as-a-module.patch
+> >  git log --pretty=short mm/slob.c
 > 
-> __put_task_struct is one of those no way in hell should this be exported
-> things because we don't want modules messing with task lifetimes.
-> 
-> Fortunately I can't find anything actually using this in lguest, so
-> it looks the issue has been solved in the meantime.
-> 
+> A dozen trivial cleanups do not make you maintainer. Otherwise we'd
+> all be sending our patches to Adrian rather than Linus.
 
-Ther are a couple of calls to put_task_struct() in there, and that needs
-__put_task_struct() exported.
+Of course you are the maintainer but you only authored a single patch 
+which was the original submission in all the time that SLOB was in the 
+tree. I keep having to clean up the allocator that has--according to 
+Pekka--more memory requirements than SLUB. There is no point in keeping it 
+around anymore it seems.
 
-> 
-> I also have a rather bad feeling about exporting access_process_vm.
-> This is the proverbial sledge hammer for access to user vm addresses
-> and I'd rather keep it away from module programmers with "if all
-> you have is a hammer ..." in mind.
 
-hm, well, access_process_vm() is a convenience wrapper around
-get_user_pages(), whcih is exported.
 
-> In lguest this is used by send_dma which from my short reading of the
-> code seems to be the central IPC mechanism.  The double copy here
-> doesn't look very efficient to me either.  Maybe some VM folks could
-> look into a better way to archive this that might be both more
-> efficient and not require the export.
-> 
-> 
-> > lguest-the-guest-code.patch
-> > lguest-the-host-code.patch
-> > lguest-the-host-code-lguest-vs-clockevents-fix-resume-logic.patch
-> > lguest-the-asm-offsets.patch
-> > lguest-the-makefile-and-kconfig.patch
-> > lguest-the-console-driver.patch
-> > lguest-the-net-driver.patch
-> > lguest-the-block-driver.patch
-> > lguest-the-documentation-example-launcher.patch
-> 
-> Just started to reading this (again) so no useful comment here, but it
-> would be nice if the code could follow CodingStyle and place the || and
-> && at the end of the line in multiline conditionals instead of at the
-> beginning of the new one.
+
+
