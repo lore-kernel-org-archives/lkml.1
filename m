@@ -1,137 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935979AbXGLAC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937095AbXGLADb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935979AbXGLAC4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934947AbXGKXiF
+	id S937095AbXGLADb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935594AbXGKXkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:38:05 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:58641 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935397AbXGKXiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:38:01 -0400
-Date: Wed, 11 Jul 2007 16:37:36 -0700
-From: Mike Anderson <andmike@us.ibm.com>
+	Wed, 11 Jul 2007 19:40:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54045 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935518AbXGKXko (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:40:44 -0400
+Date: Wed, 11 Jul 2007 16:40:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [2.6.23 PATCH 13/18] dm: netlink
-Message-ID: <20070711233736.GA29241@us.ibm.com>
-References: <20070711210137.GE24114@agk.fab.redhat.com> <20070711142712.e646995b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070711142712.e646995b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+cc: Roland McGrath <roland@redhat.com>,
+       Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] Pass -g to assembler under CONFIG_DEBUG_INFO
+In-Reply-To: <20070711160335.8705f742.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0707111640030.20061@woody.linux-foundation.org>
+References: <46955BB1.20200@windriver.com> <20070711224327.9B0ED4D0555@magilla.localdomain>
+ <20070711160335.8705f742.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 11 Jul 2007 22:01:37 +0100
-> Alasdair G Kergon <agk@redhat.com> wrote:
-> 
-> > From: Mike Anderson <andmike@us.ibm.com>
-> > 
-> > This patch adds a dm-netlink skeleton support to the Makefile, and the dm
-> > directory.
-> > 
-> > ...
-> >  
-> > +config DM_NETLINK
-> > +	bool "DM netlink events (EXPERIMENTAL)"
-> > +	depends on BLK_DEV_DM && EXPERIMENTAL
-> > +	---help---
-> > +	Generate netlink events for DM events.
-> 
-> Need a dependency on NET there?
-> 
-
-Yes.
-
-> > ...
-> >
-> > +#ifdef CONFIG_DM_NETLINK
-> > +
-> > +int dm_netlink_init(void);
-> > +void dm_netlink_exit(void);
-> > +
-> > +#else	/* CONFIG_DM_NETLINK */
-> > +
-> > +static inline int __init dm_netlink_init(void)
-> 
-> The __init here isn't needed (doesn't make sense, is missing the required
-> #include anyway)
-> 
-> > +{
-> > +	return 0;
-> > +}
-> > +static inline void dm_netlink_exit(void)
-> > +{
-> > +}
-> > +
-> > +#endif	/* CONFIG_DM_NETLINK */
-> > +
-> > +#endif	/* DM_NETLINK_H */
-> > Index: linux/drivers/md/dm.c
-> > ===================================================================
-> > --- linux.orig/drivers/md/dm.c	2007-07-11 21:37:47.000000000 +0100
-> > +++ linux/drivers/md/dm.c	2007-07-11 21:37:50.000000000 +0100
-> > @@ -7,6 +7,7 @@
-> >  
-> >  #include "dm.h"
-> >  #include "dm-bio-list.h"
-> > +#include "dm-netlink.h"
-> >  
-> >  #include <linux/init.h>
-> >  #include <linux/module.h>
-> > @@ -176,6 +177,7 @@ int (*_inits[])(void) __initdata = {
-> >  	dm_linear_init,
-> >  	dm_stripe_init,
-> >  	dm_interface_init,
-> > +	dm_netlink_init,
-> >  };
-> >  
-> >  void (*_exits[])(void) = {
-> > @@ -184,6 +186,7 @@ void (*_exits[])(void) = {
-> >  	dm_linear_exit,
-> >  	dm_stripe_exit,
-> >  	dm_interface_exit,
-> > +	dm_netlink_exit,
-> >  };
-> 
-> hm, so if CONFIG_DM_NETLINK=n we end up taking the address of an inlined
-> function.  So the __init above _did_ make sense, in a peculiar way.  I
-> don't know that gcc will actually put that converted-to-non-inline function
-> into the desired section though.
-> 
-> There's no way in which those inlined functions will ever get inlined.
-> Perhaps all this would be better if there was no implementation of
-> dm_netlink_init() and dm_netlink_exit() if CONFIG_DM_NETLINK=n and you just
-> whack the requisite ifdefs into these tables here?
-> 
-
-ok, I will switch to the ifdef CONFIG_DM_NETLINK in the tables.
 
 
-> >  static int __init dm_init(void)
-> > Index: linux/include/linux/netlink.h
-> > ===================================================================
-> > --- linux.orig/include/linux/netlink.h	2007-07-11 21:37:31.000000000 +0100
-> > +++ linux/include/linux/netlink.h	2007-07-11 21:37:50.000000000 +0100
-> > @@ -21,7 +21,7 @@
-> >  #define NETLINK_DNRTMSG		14	/* DECnet routing messages */
-> >  #define NETLINK_KOBJECT_UEVENT	15	/* Kernel messages to userspace */
-> >  #define NETLINK_GENERIC		16
-> > -/* leave room for NETLINK_DM (DM Events) */
-> > +#define NETLINK_DM		17	/* Device Mapper */
-> >  #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
-> >  #define NETLINK_ECRYPTFS	19
-> 
-> Have the net guys checked this?  
+On Wed, 11 Jul 2007, Andrew Morton wrote:
+>
+> OK, thanks.  So I ended up with the below as a probably-2.6.23 thing:
+> ...
+> +AFLAGS		+= $(call as-option, -gdwarf)
 
-No. The support is a derivative of the netlink support in
-scsi_transport_iscsi.c.
+"-gdwarf2?"
 
--andmike
---
-Michael Anderson
-andmike@us.ibm.com
+		Linus
