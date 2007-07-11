@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbXGKGPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbXGKGQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbXGKGPe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXGKGPZ
+	id S1758945AbXGKGQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbXGKGQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:15:25 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:39900 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753145AbXGKGPX (ORCPT
+	Wed, 11 Jul 2007 02:16:14 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:48414 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755143AbXGKGQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:15:23 -0400
-Subject: Re: [EXT4 set 1][PATCH 2/2] Enable extents by default for ext4dev
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Dave Jones <davej@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-In-Reply-To: <20070711033553.GA27564@redhat.com>
-References: <1183275361.4010.119.camel@localhost.localdomain>
-	 <20070710163015.ab40ed2a.akpm@linux-foundation.org>
-	 <1184103313.3759.44.camel@localhost.localdomain>
-	 <20070711033553.GA27564@redhat.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 10 Jul 2007 23:15:24 -0400
-Message-Id: <1184123724.20193.58.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Wed, 11 Jul 2007 02:16:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hcFqL+zBOL+XIGVrSlKihSR5NUgKBEJm2Wcn2Q9124vLoyJMjVPLcE+RO5g0Q0lZVpXX3OQoVLU6YtUKURO95T9pIbPmAFWw165ZmK5OLXbEs2EFLMu+8gKYF/gBkEcuGQcYo5X7DjsKNtiKpovstY7yi+scvHvSPkbZ8K8p5r0=
+Message-ID: <2c0942db0707102247n3b6e5933i9803a2161d6c00b1@mail.gmail.com>
+Date: Tue, 10 Jul 2007 22:47:04 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+Cc: "Matthew Hawkins" <darthmdh@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4694683B.3060705@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <200707102015.44004.kernel@kolivas.org>
+	 <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>
+	 <20070710181419.6d1b2f7e.akpm@linux-foundation.org>
+	 <b21f8390707101954s3ae69db8vc30287277941cb1f@mail.gmail.com>
+	 <4694683B.3060705@yahoo.com.au>
+X-Google-Sender-Auth: 4c07636ee3d74d83
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-10 at 23:35 -0400, Dave Jones wrote:
-> On Tue, Jul 10, 2007 at 05:35:13PM -0400, Mingming Cao wrote:
->  > 
->  > Sorry about this. I was using version 0.04. The latest one I can find
->  > for now is 0.05(searching lkml), but it didn't catch this codling style
->  > bug either. I appreciate if anyone can point me the version 0.07, thanks
-> 
-> It's now in-tree in scripts/checkpatch.pl
-> (linus' tree is still at 0.06 though, I suspect Andrew has something
->  newer in -mm)
-> 
+On 7/10/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> Matthew Hawkins wrote:
+> > On 7/11/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> > Anyhow with swap prefetch, applications that may have been sitting
+> > there idle for a while become responsive in the single-digit seconds
+> > rather than double-digit or worse.  The same goes for a morning wakeup
+> > (ie after nightly cron jobs throw things out)
+>
+> OK that's a good data point. It would be really good to be able to
+> do an analysis on your overnight IO patterns and the corresponding
+> memory reclaim behaviour and see why things are getting evicted.
 
-Thanks, Andy has uploaded the 0.07 version at
-http://www.shadowen.org/~apw/public/checkpatch/checkpatch.pl-0.07
+Eviction can happen for multiple reasons, as I'm sure you're painfully
+aware. It can happen because of poor balancing choices, or it can
+happen because the system is just short of RAM for the workload. As
+for the former, you're absolutely right, it would be good to know
+where those come from and see if they can be addressed.
 
+However, it's the latter that swap prefetch can help and no amount of
+fiddling with the aging code can address.
 
-Mingming
+As an honest question, what's it going to take here? If I were to
+write something that watched the task stats at process exit (cool
+feature, that), and recorded the IO wait time or some such, and showed
+it was lower with a kernel with the prefetch, would *that* get us some
+forward motion on this?
 
+I mean, from my point of view, it's a simple mental proof to show that
+if you're out of RAM for your working set, things that you'll
+eventually need again will get kicked out, and prefetch will bring
+those back in before normal access patterns would fault them back in
+under today's behavior. That seems like an obvious win. Where's the
+corresponding obvious loss that makes this a questionable addition to
+the kernel?
+
+Ray
