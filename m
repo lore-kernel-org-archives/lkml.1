@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbXGKBoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbXGKBxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758662AbXGKBoI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 21:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXGKBn5
+	id S1757436AbXGKBxi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 21:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbXGKBx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 21:43:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46115 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751049AbXGKBn4 (ORCPT
+	Tue, 10 Jul 2007 21:53:29 -0400
+Received: from ik-out-1112.google.com ([66.249.90.182]:20671 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754762AbXGKBx2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 21:43:56 -0400
-Date: Tue, 10 Jul 2007 18:43:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: shmem: convert to using splice instead of sendfile()
-Message-Id: <20070710184347.037b6b3e.akpm@linux-foundation.org>
-In-Reply-To: <200707102300.l6AN0xM4026841@hera.kernel.org>
-References: <200707102300.l6AN0xM4026841@hera.kernel.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jul 2007 21:53:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=g2d7Lrgwa/hc0ZrU6uFvbU25NZJf2eQY8T0lts8THaT1Szv/qjQsuyrtC9ydh5fsJYH7c5r9QTD+H+TCh4FZ1ybIgvnH50ll/XHWhf2azw3iHO9SppZeenXCbJs9jj0o7tNWhoOzvrqhSs7cVRYDToS8MB9qwXTd68eHH6c9XxI=
+Message-ID: <b8bf37780707101853v58ed213bp5b65cd829e020169@mail.gmail.com>
+Date: Tue, 10 Jul 2007 22:53:26 -0300
+From: "=?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?=" <andre.goddard@gmail.com>
+To: "linux list" <linux-kernel@vger.kernel.org>
+Subject: Fwd: [ck] Re: -mm merge plans for 2.6.23
+In-Reply-To: <b8bf37780707101852g25d835b4ubbf8da5383755d4b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <200707102015.44004.kernel@kolivas.org>
+	 <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>
+	 <20070710181419.6d1b2f7e.akpm@linux-foundation.org>
+	 <b8bf37780707101852g25d835b4ubbf8da5383755d4b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 23:00:59 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+On 7/10/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>  On Wed, 11 Jul 2007 11:02:56 +1000 "Matthew Hawkins" <darthmdh@gmail.com> wrote:
+>
+> > We all know swap prefetch has been tested out the wazoo since Moses was a
+> > little boy, is compile-time and runtime selectable, and gives an important
+> > and quantifiable performance increase to desktop systems.
+>
+> Always interested.  Please provide us more details on your usage and
+> testing of that code.  Amount of memory, workload, observed results,
+> etc?
+>
+>
 
-> +static int shmem_readpage(struct file *file, struct page *page)
-> +{
-> +	struct inode *inode = page->mapping->host;
-> +	int error = shmem_getpage(inode, page->index, &page, SGP_CACHE, NULL);
-> +	unlock_page(page);
-> +	return error;
-> +}
+It keeps my machine responsive after some time of inactivity,
+i.e.  when I try to use firefox in the morning after leaving it running
+overnight with multiple tabs open. I have 1Gb of memory in this machine.
 
-Worried.  shmem_getpage() does
-
-done:
-	if (*pagep != filepage) {
-		unlock_page(filepage);
-		*pagep = filepage;
-	}
-	return 0;
-
-so we end up unlocking an unlocked page?
+With regards,
+-- 
+[]s,
+André Goddard
