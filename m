@@ -1,85 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbXGKGU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759763AbXGKGYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760972AbXGKGU6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757960AbXGKGUs
+	id S1759763AbXGKGYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbXGKGYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:20:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33153 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755729AbXGKGUq (ORCPT
+	Wed, 11 Jul 2007 02:24:12 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:23186 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755093AbXGKGYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:20:46 -0400
-Date: Tue, 10 Jul 2007 23:20:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: cmm@us.ibm.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [EXT4 set 9][PATCH 5/5]Extent micro cleanups
-Message-Id: <20070710232008.599b25aa.akpm@linux-foundation.org>
-In-Reply-To: <1183275539.4010.141.camel@localhost.localdomain>
-References: <1183275539.4010.141.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jul 2007 02:24:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=ND1dEgRyCyxSXmANhpL07VwEP0lJgyCJ/munWUz/QfZ9ThhPlWjebcED7q82rbEJPZ11xY2rEgT7TQ99KVxxgfN/DdcMR4B7avJK8cVq+rbhGv6YsrOp3yTKazngjr3rFt8Eug06htP8vZ8Sj9F5cN5TNGq41RTCjIB/mlEJ014=  ;
+X-YMail-OSG: c9Pe_ogVM1l_XeCicIBnM4GL2KxHF3hK3pUIU4v3ukUYOa5xGObttDQe3xLw1bcRWwO61VxKUg--
+Message-ID: <46947784.6050100@yahoo.com.au>
+Date: Wed, 11 Jul 2007 16:24:04 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Ray Lee <ray-lk@madrabbit.org>
+CC: Matthew Hawkins <darthmdh@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org>	 <b21f8390707101802o2d546477n2a18c1c3547c3d7a@mail.gmail.com>	 <20070710181419.6d1b2f7e.akpm@linux-foundation.org>	 <b21f8390707101954s3ae69db8vc30287277941cb1f@mail.gmail.com>	 <4694683B.3060705@yahoo.com.au>	 <2c0942db0707102247n3b6e5933i9803a2161d6c00b1@mail.gmail.com>	 <469470A3.5040606@yahoo.com.au> <2c0942db0707102304s3f666eceib454043c716e2178@mail.gmail.com>
+In-Reply-To: <2c0942db0707102304s3f666eceib454043c716e2178@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 01 Jul 2007 03:38:59 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
-
-> From: Dmitry Monakhov <dmonakhov@sw.ru>
-> Subject: ext4: extent macros cleanup
+Ray Lee wrote:
+> On 7/10/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-> - Replace math equation to it's macro equivalent
-
-s/it's/its/;)
-
-> - make ext4_ext_grow_indepth() indexes/leaf correct
-
-hm, what was wrong with it?
-
-> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-> Acked-by: Alex Tomas <alex@clusterfs.com>
-> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> ---
->  fs/ext4/extents.c |   11 +++++++----
->  1 files changed, 7 insertions(+), 4 deletions(-)
+>> >> OK that's a good data point. It would be really good to be able to
+>> >> do an analysis on your overnight IO patterns and the corresponding
+>> >> memory reclaim behaviour and see why things are getting evicted.
+>> >
+>> > Eviction can happen for multiple reasons, as I'm sure you're painfully
+>> > aware. It can happen because of poor balancing choices, or it can
+>>
+>> s/balancing/reclaim, yes. And for the nightly cron job case, this is
+>> could quite possibly be the cause. At least updatedb should be fairly
+>> easy to apply use-once heuristics for, so if they're not working then
+>> we should hopefully be able to improve it.
 > 
-> diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-> index 12fe3d7..1fd00ac 100644
-> --- a/fs/ext4/extents.c
-> +++ b/fs/ext4/extents.c
-> @@ -375,7 +375,7 @@ ext4_ext_binsearch_idx(struct inode *inode, struct ext4_ext_path *path, int bloc
->  	ext_debug("binsearch for %d(idx):  ", block);
 > 
->  	l = EXT_FIRST_INDEX(eh) + 1;
-> -	r = EXT_FIRST_INDEX(eh) + le16_to_cpu(eh->eh_entries) - 1;
-> +	r = EXT_LAST_INDEX(eh);
->  	while (l <= r) {
->  		m = l + (r - l) / 2;
->  		if (block < le32_to_cpu(m->ei_block))
-> @@ -440,7 +440,7 @@ ext4_ext_binsearch(struct inode *inode, struct ext4_ext_path *path, int block)
->  	ext_debug("binsearch for %d:  ", block);
+> <nod> Sorry, I'm not so clear on the terminology, am I.
 > 
->  	l = EXT_FIRST_EXTENT(eh) + 1;
-> -	r = EXT_FIRST_EXTENT(eh) + le16_to_cpu(eh->eh_entries) - 1;
-> +	r = EXT_LAST_EXTENT(eh);
-> 
->  	while (l <= r) {
->  		m = l + (r - l) / 2;
-> @@ -922,8 +922,11 @@ static int ext4_ext_grow_indepth(handle_t *handle, struct inode *inode,
->  	curp->p_hdr->eh_max = cpu_to_le16(ext4_ext_space_root_idx(inode));
->  	curp->p_hdr->eh_entries = cpu_to_le16(1);
->  	curp->p_idx = EXT_FIRST_INDEX(curp->p_hdr);
-> -	/* FIXME: it works, but actually path[0] can be index */
-> -	curp->p_idx->ei_block = EXT_FIRST_EXTENT(path[0].p_hdr)->ee_block;
-> +	
-> +	if (path[0].p_hdr->eh_depth)
-> +	  curp->p_idx->ei_block = EXT_FIRST_INDEX(path[0].p_hdr)->ei_block;
-> +	else
-> +	  curp->p_idx->ei_block = EXT_FIRST_EXTENT(path[0].p_hdr)->ee_block;
+> So, that's one part of it: one could argue that for that bit swap
+> prefetch is a bit of a band-aid over the issue. A useful band-aid,
+> that works today, isn't invasive, and can be ripped out at some future
+> time if the underlying issue is eventually solved by a proper use-once
+> aging mechanism, but nevertheless a band-aid.
 
-whitespace bustage there.
+I think for some workloads it is probably a bandaid, and for others
+the concept of prefetching likely to be used again data back in is
+undeniably going to be a win for others.
+
+A lot of postitive reports I have seen about this say that desktop
+the next morning is more responsive. So I kind of want to know what's
+happening here -- as far as I can tell, swap prefetching shouldn't
+help a huge amount to recover from a simple updatedb alone --
+although if other cron stuff happened that used a bit more memory
+afterwards and pushing out some of updatedb's cache, perhaps that's
+when swap prefetching finds its niche. I don't know.
+
+However, I don't like the fact that there is _any_ swap happening
+on 1GB desktops after a single updatedb run. Is something else
+running that hogs a huge amount of memory? Maybe that explains it,
+but I don't know. I do know that we probably don't do very good
+use-once algorithms on the dentry and inode caches, so updatedb
+might cause them to push swap out. We could test that by winding
+the vfs reclaim right up.
 
 
+> The other part is when I've got evolution and a few other things open,
+> then I run gimp on a raw photo and do some work on it, quit out of
+> gimp, do a couple of things in a shell to upload the photo to my
+> server, then switch back to evolution. Hang, waiting on swap in. Well,
+> the kernel had some free time there to repopulate evolution's working
+> set, and swap prefetch would help that, while better (or perfect!)
+> heuristics in the reclaim *won't*.
+> 
+> That's the real issue here.
+
+Yeah that's an issue, and swap prefetching has the potential to
+help there no doubt at all. How much is the saving? I don't think
+it will be like an order of magnitude because unfortunately we
+also get mapped pagecache being thrown out as well as swap, so
+for example all your evolution mailbox, libraries, executable,
+etc. is still going to have to be paged back in.
+
+Regarding swap prefetching. I'm not going to argue for or against
+it anymore because I have really stopped following where it is
+up to, for now. If the code and the results meet the standard that
+Andrew wants then I don't particularly mind if he merges it.
+
+It would be nice if some of you guys would still report and test
+problems with reclaim when prefetching is turned off -- I have
+never encountered the morning after sluggishness (although I don't
+doubt for a minute that it is a problem for some).
+
+-- 
+SUSE Labs, Novell Inc.
