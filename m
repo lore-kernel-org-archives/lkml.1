@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXGKTUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbXGKTUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244AbXGKTUf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 15:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762295AbXGKTTO
+	id S932805AbXGKTUw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 15:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762670AbXGKTTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 15:19:14 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38240 "EHLO
+	Wed, 11 Jul 2007 15:19:15 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38242 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760338AbXGKTTL (ORCPT
+	with ESMTP id S1760614AbXGKTTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Jul 2007 15:19:11 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: torvalds@linux-foundation.org, andi@firstfloor.org,
        linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>
-Subject: [x86 setup 02/33] hd.c: remove BIOS/CMOS queries
-Date: Wed, 11 Jul 2007 12:18:27 -0700
-Message-Id: <11841815382283-git-send-email-hpa@zytor.com>
+Subject: [x86 setup 05/33] Change CONFIG_X86_MINIMUM_CPU_MODEL to CONFIG_X86_MINIMUM_CPU_FAMILY
+Date: Wed, 11 Jul 2007 12:18:30 -0700
+Message-Id: <11841815393014-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <118418153862-git-send-email-hpa@zytor.com>
+In-Reply-To: <11841815393975-git-send-email-hpa@zytor.com>
 References: <1184181538674-git-send-email-hpa@zytor.com>
  <118418153862-git-send-email-hpa@zytor.com>
-Message-Id: <e2ef08d659e025247a9de7e16784d695161c317e.1184181208.git.hpa@zytor.com>
+ <11841815382283-git-send-email-hpa@zytor.com>
+ <11841815392122-git-send-email-hpa@zytor.com>
+ <11841815393975-git-send-email-hpa@zytor.com>
+Message-Id: <6ca6bf20ba1c8bef47e0042657fd9dccad3404b8.1184181208.git.hpa@zytor.com>
 In-Reply-To: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 References: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,108 +32,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: H. Peter Anvin <hpa@zytor.com>
 
-An ST-506 disk these days is pretty much someone trying to pull ancient
-data using an auxilliary controller.  Pulling data from the BIOS or CMOS
-is just plain wrong, since it's likely to be the primary OS disk... and
-would be user-entered data anyway.  Instead, require the user enters it
-on the command line.
+CONFIG_X86_MINIMUM_CPU_MODEL, so change it to
+CONFIG_X86_MINIMUM_CPU_FAMILY.  Also, the default minimum should be
+3, not 0.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- drivers/ide/legacy/hd.c |   73 ++++++++---------------------------------------
- 1 files changed, 12 insertions(+), 61 deletions(-)
+ arch/i386/Kconfig.cpu         |    6 +++---
+ arch/i386/kernel/verify_cpu.S |    4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/ide/legacy/hd.c b/drivers/ide/legacy/hd.c
-index 45ed035..9d7d8aa 100644
---- a/drivers/ide/legacy/hd.c
-+++ b/drivers/ide/legacy/hd.c
-@@ -718,74 +718,25 @@ static int __init hd_init(void)
- 	device_timer.function = hd_times_out;
- 	blk_queue_hardsect_size(hd_queue, 512);
+diff --git a/arch/i386/Kconfig.cpu b/arch/i386/Kconfig.cpu
+index 5c95ceb..9cbe76c 100644
+--- a/arch/i386/Kconfig.cpu
++++ b/arch/i386/Kconfig.cpu
+@@ -344,8 +344,8 @@ config X86_CMOV
+ 	depends on (MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7)
+ 	default y
  
--#ifdef __i386__
- 	if (!NR_HD) {
--		extern struct drive_info drive_info;
--		unsigned char *BIOS = (unsigned char *) &drive_info;
--		unsigned long flags;
--		int cmos_disks;
--
--		for (drive=0 ; drive<2 ; drive++) {
--			hd_info[drive].cyl = *(unsigned short *) BIOS;
--			hd_info[drive].head = *(2+BIOS);
--			hd_info[drive].wpcom = *(unsigned short *) (5+BIOS);
--			hd_info[drive].ctl = *(8+BIOS);
--			hd_info[drive].lzone = *(unsigned short *) (12+BIOS);
--			hd_info[drive].sect = *(14+BIOS);
--#ifdef does_not_work_for_everybody_with_scsi_but_helps_ibm_vp
--			if (hd_info[drive].cyl && NR_HD == drive)
--				NR_HD++;
--#endif
--			BIOS += 16;
--		}
--
--	/*
--		We query CMOS about hard disks : it could be that 
--		we have a SCSI/ESDI/etc controller that is BIOS
--		compatible with ST-506, and thus showing up in our
--		BIOS table, but not register compatible, and therefore
--		not present in CMOS.
--
--		Furthermore, we will assume that our ST-506 drives
--		<if any> are the primary drives in the system, and 
--		the ones reflected as drive 1 or 2.
--
--		The first drive is stored in the high nibble of CMOS
--		byte 0x12, the second in the low nibble.  This will be
--		either a 4 bit drive type or 0xf indicating use byte 0x19 
--		for an 8 bit type, drive 1, 0x1a for drive 2 in CMOS.
--
--		Needless to say, a non-zero value means we have 
--		an AT controller hard disk for that drive.
--
--		Currently the rtc_lock is a bit academic since this
--		driver is non-modular, but someday... ?         Paul G.
--	*/
--
--		spin_lock_irqsave(&rtc_lock, flags);
--		cmos_disks = CMOS_READ(0x12);
--		spin_unlock_irqrestore(&rtc_lock, flags);
--
--		if (cmos_disks & 0xf0) {
--			if (cmos_disks & 0x0f)
--				NR_HD = 2;
--			else
--				NR_HD = 1;
--		}
--	}
--#endif /* __i386__ */
--#ifdef __arm__
--	if (!NR_HD) {
--		/* We don't know anything about the drive.  This means
-+		/*
-+		 * We don't know anything about the drive.  This means
- 		 * that you *MUST* specify the drive parameters to the
- 		 * kernel yourself.
-+		 *
-+		 * If we were on an i386, we used to read this info from
-+		 * the BIOS or CMOS.  This doesn't work all that well,
-+		 * since this assumes that this is a primary or secondary
-+		 * drive, and if we're using this legacy driver, it's
-+		 * probably an auxilliary controller added to recover
-+		 * legacy data off an ST-506 drive.  Either way, it's
-+		 * definitely safest to have the user explicitly specify
-+		 * the information.
- 		 */
- 		printk("hd: no drives specified - use hd=cyl,head,sectors"
- 			" on kernel command line\n");
--	}
--#endif
--	if (!NR_HD)
- 		goto out;
-+	}
+-config X86_MINIMUM_CPU_MODEL
++config X86_MINIMUM_CPU_FAMILY
+ 	int
+-	default "4" if X86_XADD || X86_CMPXCHG || X86_BSWAP
+-	default "0"
++	default "4" if X86_XADD || X86_CMPXCHG || X86_BSWAP || X86_WP_WORKS_OK
++	default "3"
  
- 	for (drive=0 ; drive < NR_HD ; drive++) {
- 		struct gendisk *disk = alloc_disk(64);
+diff --git a/arch/i386/kernel/verify_cpu.S b/arch/i386/kernel/verify_cpu.S
+index 3efc5c1..fff4aa6 100644
+--- a/arch/i386/kernel/verify_cpu.S
++++ b/arch/i386/kernel/verify_cpu.S
+@@ -9,7 +9,7 @@ verify_cpu:
+ 	pushl	$0			# Kill any dangerous flags
+ 	popfl
+ 
+-#if CONFIG_X86_MINIMUM_CPU_MODEL >= 4
++#if CONFIG_X86_MINIMUM_CPU_FAMILY >= 4
+ 	pushfl
+ 	pop	%eax
+ 	orl	$(1<<18),%eax		# try setting AC
+@@ -75,7 +75,7 @@ verify_cpu:
+ 	movl    $0x1,%eax		# Does the cpu have what it takes
+ 	cpuid
+ 
+-#if CONFIG_X86_MINIMUM_CPU_MODEL > 4
++#if CONFIG_X86_MINIMUM_CPU_FAMILY > 4
+ #error	add proper model checking here
+ #endif
+ 
 -- 
 1.5.2.2
 
