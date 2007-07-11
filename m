@@ -1,52 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764436AbXGKM43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763854AbXGKNBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764436AbXGKM43 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbXGKM4W
+	id S1763854AbXGKNBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 09:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761578AbXGKNBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:56:22 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:33046 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756642AbXGKM4W (ORCPT
+	Wed, 11 Jul 2007 09:01:12 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:34572 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761219AbXGKNBL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:56:22 -0400
-To: nigel@suspend2.net
-CC: miklos@szeredi.hu, rjw@sisk.pl, a1426z@gawab.com, jeremy@goop.org,
-       jbms@cmu.edu, pavel@ucw.cz, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-reply-to: <200707112246.54510.nigel@nigel.suspend2.net> (message from Nigel
-	Cunningham on Wed, 11 Jul 2007 22:46:50 +1000)
-Subject: Re: Hibernation Redesign
-References: <200707081737.21932.a1426z@gawab.com> <200707112211.23420.nigel@nigel.suspend2.net> <E1I8bEi-0000HF-00@dorka.pomaz.szeredi.hu> <200707112246.54510.nigel@nigel.suspend2.net>
-Message-Id: <E1I8bjM-0000NS-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 11 Jul 2007 14:55:44 +0200
+	Wed, 11 Jul 2007 09:01:11 -0400
+Date: Wed, 11 Jul 2007 07:01:08 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Girish Shilamkar <girish@clusterfs.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 8][PATCH 1/1]Add journal checksums
+Message-ID: <20070711130108.GB6417@schatzie.adilger.int>
+Mail-Followup-To: Girish Shilamkar <girish@clusterfs.com>,
+	Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <1183275505.4010.136.camel@localhost.localdomain> <20070710231601.798304e0.akpm@linux-foundation.org> <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The point to freezing tasks isn't just to stop drivers doing work. It's also 
-> to stop userspace doing work and thereby increase reliability. The more work 
-> that is occuring while we're trying to write a hibernation image, the less 
-> reliable the hibernation will be (competing for memory and so on) and the 
-> slower it will be (competing for cycles etc).
-
-We are talking about a kexec based hibernate.  All of the above just
-doesn't apply in that case.
-
-I'm not contending, that the current hibernation (epecially Pavel's
-new userspace based one) needs a frozen userland.
-
-> > > Why? How can such ordering be determined programmatically?
+On Jul 11, 2007  17:16 +0530, Girish Shilamkar wrote:
+> > > +	if (test_opt(sb, JOURNAL_ASYNC_COMMIT)) {
+> > > +		jbd2_journal_set_features(sbi->s_journal,
+> > > +				JBD2_FEATURE_COMPAT_CHECKSUM, 0,
+> > > +				JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT);
+> > > +	} else if (test_opt(sb, JOURNAL_CHECKSUM)) {
+> > > +		jbd2_journal_set_features(sbi->s_journal,
+> > > +				JBD2_FEATURE_COMPAT_CHECKSUM, 0, 0);
+> > > +		jbd2_journal_clear_features(sbi->s_journal, 0, 0,
+> > > +				JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT);
+> > > +	} else {
+> > > +		jbd2_journal_clear_features(sbi->s_journal,
+> > > +				JBD2_FEATURE_COMPAT_CHECKSUM, 0,
+> > > +				JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT);
+> > > +	}
 > > 
-> > It can't.  If you are interested, please read through that thread.  If
-> > something's still not clear, let's discuss it further.
-> 
-> You can say it "imposes certain ordering" but you can say what that ordering 
-> is?! How about mount order? That must be a good start.
+> > Some discussion of the forward- and backward- compatibility design would be
+> > appropriate.  Also a description of whether and how fsck can be used to fix
+> > up these feature flags.
 
-The order in which tasks are relying on each other to be able to
-finish a syscall.
+It is forward & backward compatible to enable COMPAT_CHECKSUM.  That just
+means the commit blocks will have checksums in them, but older kernels
+will just ignore them.  Hmm, I suppose there might be an issue with "upgrade,
+downgrade, upgrade" in that the commit blocks would not have checksums
+even though the superblock says they will...
 
-Mount order says _nothing_ about tasks.
+Does that mean we should accept a checksum == 0 as being valid (which
+is not very nice, given that 0 is an oft-hit bad value), or that we need
+a flag in every commit block which indicates if it actually has a checksum?
 
-Miklos
+The INCOMPAT_ASYNC_COMMIT can't be handled safely by older kernels, since
+they would assume "commit block == complete transaction", which isn't
+true if the commit block didn't wait for the rest of the blocks to make
+it to the disk.
+
+I don't think e2fsck can be used to individually clean up the feature flags,
+but it is always possible to remove and recreate the journal...
+
+> > > -	/* AKPM: buglet - add `i' to tmp! */
+> > 
+> > Damn.  After, what, seven years, someone actually fixed it?
+> > 
+> > >  	for (i = 0; i < bh->b_size; i += 512) {
+> > > -		journal_header_t *tmp = (journal_header_t*)bh->b_data;
+> > > +		struct commit_header *tmp =
+> > > +			(struct commit_header *)(bh->b_data + i);
+> > >  		tmp->h_magic = cpu_to_be32(JBD2_MAGIC_NUMBER);
+> > >  		tmp->h_blocktype = cpu_to_be32(JBD2_COMMIT_BLOCK);
+> > >  		tmp->h_sequence = cpu_to_be32(commit_transaction->t_tid);
+> > > +
+> > > +		if (JBD2_HAS_COMPAT_FEATURE(journal,
+> > > +					    JBD2_FEATURE_COMPAT_CHECKSUM)) {
+> > > +			tmp->h_chksum_type 	= JBD2_CRC32_CHKSUM;
+> > > +			tmp->h_chksum_size 	= JBD2_CRC32_CHKSUM_SIZE;
+> > > +			tmp->h_chksum[0] 	= cpu_to_be32(crc32_sum);
+> > > +		}
+> > >  	}
+> > 
+> > And in doing so, changed the on-disk format of the journal commit blocks.
+> > 
+> > Surely this was worth a mention in the changelog, if not a standalone patch?
+> > 
+> > I don't think this is worth doing, really.  Why not just leave the format
+> > as it was, take the loop out and run this code once rather than eight
+> > times?
+
+Well, we aren't using the rest of the commit block in any case.  I think
+the original intention was that we'd get 8 copies of the commit block so
+we would be sure to get a good one.
+
+I don't know whether we'd rather have 8 copies of the commit block, or
+more potential to expand the commit block?  I don't personally have any
+preference, since the checksum should be a more robust way of checking
+validity than having multiple copies, so we may as well remove the loop
+and stick with a single copy for now.
+
+> > > @@ -328,6 +360,7 @@ static int do_one_pass(journal_t *journa
+> > >  	unsigned int		sequence;
+> > >  	int			blocktype;
+> > >  	int			tag_bytes = journal_tag_bytes(journal);
+> > > +	__u32			crc32_sum = ~0; /* Transactional Checksums */
+> > 
+> > We normally use __u32 for visible-to-userspace stuff.  Kernel code would
+> > use plain old u32.
+> Ok.
+
+Since the checksum is saved to disk, it seems more appropriate to use __u32
+or maybe even __be32, though I'm not sure if the crc32 functions do that
+correctly or not.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
