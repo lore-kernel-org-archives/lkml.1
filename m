@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbXGKMYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbXGKMZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763606AbXGKMYS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759415AbXGKMYJ
+	id S932332AbXGKMZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757621AbXGKMZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:24:09 -0400
-Received: from verein.lst.de ([213.95.11.210]:55027 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757621AbXGKMYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:24:08 -0400
-Date: Wed, 11 Jul 2007 14:23:24 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, linux-mm@kvack.org
-Subject: lguest, Re: -mm merge plans for 2.6.23
-Message-ID: <20070711122324.GA21714@lst.de>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	Wed, 11 Jul 2007 08:25:19 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:59861 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757677AbXGKMZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 08:25:18 -0400
+To: nigel@nigel.suspend2.net
+CC: miklos@szeredi.hu, rjw@sisk.pl, a1426z@gawab.com, jeremy@goop.org,
+       jbms@cmu.edu, pavel@ucw.cz, nickpiggin@yahoo.com.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <200707112211.23420.nigel@nigel.suspend2.net> (message from Nigel
+	Cunningham on Wed, 11 Jul 2007 22:11:22 +1000)
+Subject: Re: Hibernation Redesign
+References: <200707081737.21932.a1426z@gawab.com> <200707111304.40504.rjw@sisk.pl> <E1I8a6Y-0008Sm-00@dorka.pomaz.szeredi.hu> <200707112211.23420.nigel@nigel.suspend2.net>
+Message-Id: <E1I8bEi-0000HF-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 11 Jul 2007 14:24:04 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> lguest-export-symbols-for-lguest-as-a-module.patch
+> No other _proper_ solutions have been proposed. Everyone who suggests removing 
+> the freezer also suggests implementing it all over again. It might be sending 
+> SIGSTOP to everything. It might be shifting the desk chairs around and 
+> creating a completely new kernel context, but they always have the same 
+> goal - stopping the existing activity, and they all come with their own 
+> issues (even if they're not obvious yet because the alternatives are 
+> currently vapourware to one extent or another).
 
-__put_task_struct is one of those no way in hell should this be exported
-things because we don't want modules messing with task lifetimes.
+Hey, I know precious little about drivers and power management, but I
+can clarly see, that
 
-Fortunately I can't find anything actually using this in lguest, so
-it looks the issue has been solved in the meantime.
+ a) stopping all tasks and requiring them to finish any syscall they
+ are in
 
+ b) stopping tasks _in the driver_ that are trying to access the
+ harware during/after suspend
 
-I also have a rather bad feeling about exporting access_process_vm.
-This is the proverbial sledge hammer for access to user vm addresses
-and I'd rather keep it away from module programmers with "if all
-you have is a hammer ..." in mind.
+are completely different solutions, the later being much more fine
+grained and not having all of the mentioned problems that the former
+exhibits.
 
-In lguest this is used by send_dma which from my short reading of the
-code seems to be the central IPC mechanism.  The double copy here
-doesn't look very efficient to me either.  Maybe some VM folks could
-look into a better way to archive this that might be both more
-efficient and not require the export.
+> IMHO, the real solution is to go back to the original issue and fix it 
+> properly. Make fuse filesystems play nicely with the existing freezer. I've 
+> just gone back and looked at the point where you started talking 
+> about "malicious filesystems". You talk about fuse imposing certain ordering 
+> in the userspace tasks being frozen. Please, say more. What ordering issues? 
+> Why? How can such ordering be determined programmatically?
 
+It can't.  If you are interested, please read through that thread.  If
+something's still not clear, let's discuss it further.
 
-> lguest-the-guest-code.patch
-> lguest-the-host-code.patch
-> lguest-the-host-code-lguest-vs-clockevents-fix-resume-logic.patch
-> lguest-the-asm-offsets.patch
-> lguest-the-makefile-and-kconfig.patch
-> lguest-the-console-driver.patch
-> lguest-the-net-driver.patch
-> lguest-the-block-driver.patch
-> lguest-the-documentation-example-launcher.patch
-
-Just started to reading this (again) so no useful comment here, but it
-would be nice if the code could follow CodingStyle and place the || and
-&& at the end of the line in multiline conditionals instead of at the
-beginning of the new one.
+Miklos
