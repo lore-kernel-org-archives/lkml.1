@@ -1,37 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760955AbXGKPuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763936AbXGKPzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760955AbXGKPuA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 11:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763914AbXGKPtu
+	id S1763936AbXGKPzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 11:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbXGKPz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 11:49:50 -0400
-Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:56277 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764912AbXGKPts (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 11:49:48 -0400
-Date: Wed, 11 Jul 2007 17:50:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i2c: adds support for i2c bus on 8xx
-Message-ID: <20070711175001.291f2aea@hyperion.delvare>
-In-Reply-To: <20070511101231.241e3a30@hyperion.delvare>
-References: <20070508063131.19179.47548.stgit@localhost.localdomain>
-	<20070510112835.60fb1c2a@hyperion.delvare>
-	<20070510143554.16c5df6a@localhost.localdomain>
-	<20070511101231.241e3a30@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 11:55:27 -0400
+Received: from il.qumranet.com ([82.166.9.18]:48393 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755999AbXGKPz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 11:55:26 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       shaohua.li@intel.com, rusty@rustcorp.com.au
+Subject: [PATCH 0/2][RFC] Scheduler preemption hooks, #2
+Date: Wed, 11 Jul 2007 18:55:31 +0300
+Message-Id: <11841693332609-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vitaly,
+I redid the the scheduler preemption patches based on Rusty's feedback.
+Things do look much cleaner this time around.
 
-What's the status of this patch? I didn't see any update since my
-review on May 10th. It's too late for 2.6.23 already.
+Changes:
+- split into core and kvm parts
+- incorporated Shaohua Li's fix
+- each task now has a list of independently managed preemption hooks
+- move preempt hook pointer to a hot cache line within task_struct
 
--- 
-Jean Delvare
+I haven't made kernel_fpu_begin()/kernel_fpu_end() preemptible as promised,
+because (a) we need to find a place to put the fpu state, and (b) we should
+get better performance by reusing cr0.ts anyway.
+
