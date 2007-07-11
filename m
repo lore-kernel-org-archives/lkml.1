@@ -1,208 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765581AbXGKShp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765882AbXGKSix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765581AbXGKShp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 14:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbXGKShf
+	id S1765882AbXGKSix (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 14:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXGKSiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 14:37:35 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:52314 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbXGKShd (ORCPT
+	Wed, 11 Jul 2007 14:38:46 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3050 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755632AbXGKSip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 14:37:33 -0400
-Date: Wed, 11 Jul 2007 13:22:40 -0500
-From: "Jose R. Santos" <jrs@us.ibm.com>
+	Wed, 11 Jul 2007 14:38:45 -0400
+Message-ID: <469523AF.6050207@shadowen.org>
+Date: Wed, 11 Jul 2007 19:38:39 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [EXT4 set 2][PATCH 5/5] cleanups: Export jbd2-debug via debugfs
-Message-ID: <20070711132240.2073da56@rx8>
-In-Reply-To: <20070710232509.4838644e.akpm@linux-foundation.org>
-References: <1183275408.4010.124.camel@localhost.localdomain>
-	<20070710163025.9db582f8.akpm@linux-foundation.org>
-	<20070711003809.3ced667b@naruto>
-	<20070710232509.4838644e.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: -mm merge plans -- lumpy reclaim
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	<46937DA2.4040302@shadowen.org>	<4694A427.7070708@shadowen.org> <20070711094600.b2a525d5.akpm@linux-foundation.org>
+In-Reply-To: <20070711094600.b2a525d5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The jbd2-debug file used to be located in /proc/sys/fs/jbd2-debug, but
-create_proc_entry() does not do lookups on file names that are more that one
-directory deep.  This causes the entry creation to fail and hence, no proc
-file is created.
+Andrew Morton wrote:
 
-Instead of fixing this on procfs might as well move the jbd2-debug file to
-debugfs which would be the preferred location for this kind of tunable.  The
-new location is now /sys/kernel/debug/jbd2/jbd2-debug.
+>>>> lumpy-reclaim-v4.patch
+>>>> have-kswapd-keep-a-minimum-order-free-other-than-order-0.patch
+>>>> only-check-absolute-watermarks-for-alloc_high-and-alloc_harder-allocations.patch
+>>>>
+>>>>  Lumpy reclaim.  In a similar situation to Mel's patches.  Stuck due to
+>>>>  general lack or interest and effort.
+>>> The lumpy reclaim patches originally came out of work to support Mel's
+>>> anti-fragmentation work.  As such I think they have become somewhat
+>>> attached to those patches.  Whilst lumpy is most effective where
+>>> placement controls are in place as offered by Mel's work, we see benefit
+>>> from reduction in the "blunderbuss" effect when we reclaim at higher
+>>> orders.  While placement control is pretty much required for the very
+>>> highest orders such as huge page size, lower order allocations are
+>>> benefited in terms of lower collateral damage.
+>>>
+>>> There are now a few areas other than huge page allocations which can
+>>> benefit.  Stacks are still order 1.  Jumbo frames want higher order
+>>> contiguous pages for there incoming hardware buffers.  SLUB is showing
+>>> performance benefits from moving to a higher allocation order.  All of
+>>> these should benefit from more aggressive targeted reclaim, indeed I
+>>> have been surprised just how often my test workloads trigger lumpy at
+>>> order 1 to get new stacks.
+>>>
+>>> Truly representative work loads are hard to generate for some of these.
+>>>  Though we have heard some encouraging noises from those who can
+>>> reproduce these problems.
+> 
+> I'd expect that the main application for lumpy-reclaim is in keeping a pool
+> of order-2 (say) pages in reserve for GFP_ATOMIC allocators.  ie: jumbo
+> frames.
+> 
+> At present this relies upon the wakeup_kswapd(..., order) mechanism.
+> 
+> How effective is this at solving the jumbo frame problem?
 
+The tie in between allocator and kswapd is essentially unchanged,
+so if allocators are dropping below the watermarks at the specified
+order, reclaim will be triggered at that order.  Reclaim continues
+until we return above the high watermarks, at the order at which
+we are reclaiming.
 
-Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
----
- fs/Kconfig           |   10 	5 +	5 -	0 !
- fs/jbd2/journal.c    |   67 	27 +	40 -	0 !
- include/linux/jbd2.h |    2 	1 +	1 -	0 !
- 3 files changed, 33 insertions(+), 46 deletions(-)
+What lumpy brings is a greater targetting of effort to get the pages.
+kswapd now uses the desired allocator order when applying reclaim.
+This leads to pressure being applied to contigious areas at the
+required order, and so a higher chance of that order becoming
+available.  Traditional reclaim could end up applying pressure to
+a number of pages, but not all pages in any area at the required
+order, leading to a very low chance of success.  By targetting
+areas at the required order we significantly increase the chances
+of success for any given amount of reclaim.  As we will reclaim
+until we have the desired number of free pages, we will have to
+reclaim less to achieve this compared to random reclaim.
 
-Index: linux-2.6/fs/jbd2/journal.c
-===================================================================
---- linux-2.6.orig/fs/jbd2/journal.c	2007-07-11 09:46:25.000000000 -0500
-+++ linux-2.6/fs/jbd2/journal.c	2007-07-11 11:31:30.000000000 -0500
-@@ -35,6 +35,7 @@
- #include <linux/kthread.h>
- #include <linux/poison.h>
- #include <linux/proc_fs.h>
-+#include <linux/debugfs.h>
- 
- #include <asm/uaccess.h>
- #include <asm/page.h>
-@@ -1951,64 +1952,50 @@ void jbd2_journal_put_journal_head(struc
- }
- 
- /*
-- * /proc tunables
-+ * debugfs tunables
-  */
- #if defined(CONFIG_JBD2_DEBUG)
--int jbd2_journal_enable_debug;
-+u8 jbd2_journal_enable_debug;
- EXPORT_SYMBOL(jbd2_journal_enable_debug);
- #endif
- 
--#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_PROC_FS)
-+#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_DEBUG_FS)
- 
--static struct proc_dir_entry *proc_jbd_debug;
-+#define JBD2_DEBUG_NAME "jbd2-debug"
- 
--static int read_jbd_debug(char *page, char **start, off_t off,
--			  int count, int *eof, void *data)
--{
--	int ret;
-+struct dentry *jbd2_debugfs_dir, *jbd2_debug;
- 
--	ret = sprintf(page + off, "%d\n", jbd2_journal_enable_debug);
--	*eof = 1;
--	return ret;
-+static void __init jbd2_create_debugfs_entry(void)
-+{
-+	jbd2_debugfs_dir = debugfs_create_dir("jbd2", NULL);
-+	if (jbd2_debugfs_dir)
-+		jbd2_debug = debugfs_create_u8(JBD2_DEBUG_NAME, S_IRUGO,
-+					       jbd2_debugfs_dir,
-+					       &jbd2_journal_enable_debug);
- }
- 
--static int write_jbd_debug(struct file *file, const char __user *buffer,
--			   unsigned long count, void *data)
-+static void __exit jbd2_remove_debugfs_entry(void)
- {
--	char buf[32];
--
--	if (count > ARRAY_SIZE(buf) - 1)
--		count = ARRAY_SIZE(buf) - 1;
--	if (copy_from_user(buf, buffer, count))
--		return -EFAULT;
--	buf[ARRAY_SIZE(buf) - 1] = '\0';
--	jbd2_journal_enable_debug = simple_strtoul(buf, NULL, 10);
--	return count;
-+	if (jbd2_debug)
-+		debugfs_remove(jbd2_debug);
-+	if (jbd2_debugfs_dir)
-+		debugfs_remove(jbd2_debugfs_dir);
- }
- 
--#define JBD_PROC_NAME "sys/fs/jbd2-debug"
-+#else
- 
--static void __init create_jbd_proc_entry(void)
-+static void __init jbd2_create_debugfs_entry(void)
- {
--	proc_jbd_debug = create_proc_entry(JBD_PROC_NAME, 0644, NULL);
--	if (proc_jbd_debug) {
--		/* Why is this so hard? */
--		proc_jbd_debug->read_proc = read_jbd_debug;
--		proc_jbd_debug->write_proc = write_jbd_debug;
--	}
-+	do {
-+	} while (0);
- }
- 
--static void __exit jbd2_remove_jbd_proc_entry(void)
-+static void __exit jbd2_remove_debugfs_entry(void)
- {
--	if (proc_jbd_debug)
--		remove_proc_entry(JBD_PROC_NAME, NULL);
-+	do {
-+	} while (0);
- }
- 
--#else
--
--#define create_jbd_proc_entry() do {} while (0)
--#define jbd2_remove_jbd_proc_entry() do {} while (0)
--
- #endif
- 
- struct kmem_cache *jbd2_handle_cache;
-@@ -2067,7 +2054,7 @@ static int __init journal_init(void)
- 	ret = journal_init_caches();
- 	if (ret != 0)
- 		jbd2_journal_destroy_caches();
--	create_jbd_proc_entry();
-+	jbd2_create_debugfs_entry();
- 	return ret;
- }
- 
-@@ -2078,7 +2065,7 @@ static void __exit journal_exit(void)
- 	if (n)
- 		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
- #endif
--	jbd2_remove_jbd_proc_entry();
-+	jbd2_remove_debugfs_entry();
- 	jbd2_journal_destroy_caches();
- }
- 
-Index: linux-2.6/include/linux/jbd2.h
-===================================================================
---- linux-2.6.orig/include/linux/jbd2.h	2007-07-11 09:46:25.000000000 -0500
-+++ linux-2.6/include/linux/jbd2.h	2007-07-11 10:37:06.000000000 -0500
-@@ -57,7 +57,7 @@
-  * CONFIG_JBD2_DEBUG is on.
-  */
- #define JBD_EXPENSIVE_CHECKING
--extern int jbd2_journal_enable_debug;
-+extern u8 jbd2_journal_enable_debug;
- 
- #define jbd_debug(n, f, a...)						\
- 	do {								\
-Index: linux-2.6/fs/Kconfig
-===================================================================
---- linux-2.6.orig/fs/Kconfig	2007-06-22 09:45:51.000000000 -0500
-+++ linux-2.6/fs/Kconfig	2007-07-11 12:23:04.000000000 -0500
-@@ -251,7 +251,7 @@ config JBD2
- 
- config JBD2_DEBUG
- 	bool "JBD2 (ext4dev/ext4) debugging support"
--	depends on JBD2
-+	depends on JBD2 && DEBUG_FS
- 	help
- 	  If you are using the ext4dev/ext4 journaled file system (or
- 	  potentially any other filesystem/device using JBD2), this option
-@@ -260,10 +260,10 @@ config JBD2_DEBUG
- 	  By default, the debugging output will be turned off.
- 
- 	  If you select Y here, then you will be able to turn on debugging
--	  with "echo N > /proc/sys/fs/jbd2-debug", where N is a number between
--	  1 and 5. The higher the number, the more debugging output is
--	  generated.  To turn debugging off again, do
--	  "echo 0 > /proc/sys/fs/jbd2-debug".
-+	  with "echo N > /sys/kernel/debug/jbd2/jbd2-debug", where N is a
-+	  number between 1 and 5. The higher the number, the more debugging
-+	  output is generated.  To turn debugging off again, do
-+	  "echo 0 > /sys/kernel/debug/jbd2/jbd2-debug".
- 
- config FS_MBCACHE
- # Meta block cache for Extended Attributes (ext2/ext3/ext4)
+This certainly is appealing intuitivly, and our testing at higher
+orders shows that the cost of each reclaimed page is lower and more
+importantly the time to reclaim each page is reduced.  So for a
+'continuing' consumer like an incoming packet stream, we should
+have to do much less work and thus disrupt the system as a whole
+much less to get its pages.
+
+Where demand for atomic higher order pages is not heavy we would
+expect kswapd to maintain free levels pages more readily and so
+under higher demand.  Though it should be stressed without placement
+control success rates drop off significantly at higher orders as
+the probabality of reclaim succeeding on all pages in the area
+tends to zero.
+
+> (And do we still have a jumbo frame problem?  Reports seems to have
+subsided)
+
+It is not in the least bit clear if the problem is resolved or if the
+reporters have simply gone quiet.
+
+Overall the approach taken in lumpy reclaim seems to be a logical
+extension of the regular reclaim algorithm, leading to more
+efficient reclaim.
+
+-apw
