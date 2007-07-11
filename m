@@ -1,52 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbXGKGU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbXGKGU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760839AbXGKGU0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 02:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbXGKGUP
+	id S1760972AbXGKGU6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 02:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757960AbXGKGUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 02:20:15 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:14896 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755151AbXGKGUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 02:20:14 -0400
-Date: Wed, 11 Jul 2007 08:20:22 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, hugh@veritas.com
-Subject: Re: shmem: convert to using splice instead of sendfile()
-Message-ID: <20070711062021.GF4587@kernel.dk>
-References: <200707102300.l6AN0xM4026841@hera.kernel.org> <20070710184347.037b6b3e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710184347.037b6b3e.akpm@linux-foundation.org>
+	Wed, 11 Jul 2007 02:20:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33153 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755729AbXGKGUq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 02:20:46 -0400
+Date: Tue, 10 Jul 2007 23:20:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cmm@us.ibm.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 9][PATCH 5/5]Extent micro cleanups
+Message-Id: <20070710232008.599b25aa.akpm@linux-foundation.org>
+In-Reply-To: <1183275539.4010.141.camel@localhost.localdomain>
+References: <1183275539.4010.141.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10 2007, Andrew Morton wrote:
-> On Tue, 10 Jul 2007 23:00:59 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
-> 
-> > +static int shmem_readpage(struct file *file, struct page *page)
-> > +{
-> > +	struct inode *inode = page->mapping->host;
-> > +	int error = shmem_getpage(inode, page->index, &page, SGP_CACHE, NULL);
-> > +	unlock_page(page);
-> > +	return error;
-> > +}
-> 
-> Worried.  shmem_getpage() does
-> 
-> done:
-> 	if (*pagep != filepage) {
-> 		unlock_page(filepage);
-> 		*pagep = filepage;
-> 	}
-> 	return 0;
-> 
-> so we end up unlocking an unlocked page?
+On Sun, 01 Jul 2007 03:38:59 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
 
-It certainly looks like it - Hugh?
+> From: Dmitry Monakhov <dmonakhov@sw.ru>
+> Subject: ext4: extent macros cleanup
+> 
+> - Replace math equation to it's macro equivalent
 
--- 
-Jens Axboe
+s/it's/its/;)
+
+> - make ext4_ext_grow_indepth() indexes/leaf correct
+
+hm, what was wrong with it?
+
+> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+> Acked-by: Alex Tomas <alex@clusterfs.com>
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> ---
+>  fs/ext4/extents.c |   11 +++++++----
+>  1 files changed, 7 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+> index 12fe3d7..1fd00ac 100644
+> --- a/fs/ext4/extents.c
+> +++ b/fs/ext4/extents.c
+> @@ -375,7 +375,7 @@ ext4_ext_binsearch_idx(struct inode *inode, struct ext4_ext_path *path, int bloc
+>  	ext_debug("binsearch for %d(idx):  ", block);
+> 
+>  	l = EXT_FIRST_INDEX(eh) + 1;
+> -	r = EXT_FIRST_INDEX(eh) + le16_to_cpu(eh->eh_entries) - 1;
+> +	r = EXT_LAST_INDEX(eh);
+>  	while (l <= r) {
+>  		m = l + (r - l) / 2;
+>  		if (block < le32_to_cpu(m->ei_block))
+> @@ -440,7 +440,7 @@ ext4_ext_binsearch(struct inode *inode, struct ext4_ext_path *path, int block)
+>  	ext_debug("binsearch for %d:  ", block);
+> 
+>  	l = EXT_FIRST_EXTENT(eh) + 1;
+> -	r = EXT_FIRST_EXTENT(eh) + le16_to_cpu(eh->eh_entries) - 1;
+> +	r = EXT_LAST_EXTENT(eh);
+> 
+>  	while (l <= r) {
+>  		m = l + (r - l) / 2;
+> @@ -922,8 +922,11 @@ static int ext4_ext_grow_indepth(handle_t *handle, struct inode *inode,
+>  	curp->p_hdr->eh_max = cpu_to_le16(ext4_ext_space_root_idx(inode));
+>  	curp->p_hdr->eh_entries = cpu_to_le16(1);
+>  	curp->p_idx = EXT_FIRST_INDEX(curp->p_hdr);
+> -	/* FIXME: it works, but actually path[0] can be index */
+> -	curp->p_idx->ei_block = EXT_FIRST_EXTENT(path[0].p_hdr)->ee_block;
+> +	
+> +	if (path[0].p_hdr->eh_depth)
+> +	  curp->p_idx->ei_block = EXT_FIRST_INDEX(path[0].p_hdr)->ei_block;
+> +	else
+> +	  curp->p_idx->ei_block = EXT_FIRST_EXTENT(path[0].p_hdr)->ee_block;
+
+whitespace bustage there.
+
 
