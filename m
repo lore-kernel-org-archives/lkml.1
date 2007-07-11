@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933278AbXGKVNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765802AbXGKVPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933278AbXGKVNk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762295AbXGKVNO
+	id S1765802AbXGKVPa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbXGKVPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:13:14 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:26674 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761097AbXGKVNN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:13:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=JnuqVTGBfS6ZauDjyHSMaERgGrS4NLE//mG/h1NKclSX3eDfNOCtEyTaDLimHV6/6y4bRKILyxF6pKGPl5PZLRN0FgVni7P/yk48NFeMP9G3w/dy4Z7Hvz/VX9X3ENuBEYOyC/jqFnYZsibUyZ4urej/3/P/yFmOkyTLD9i/3g0=
-Message-ID: <d3dac270707111413j42ac7a0eif032636a9018df66@mail.gmail.com>
-Date: Wed, 11 Jul 2007 14:13:12 -0700
-From: "Max Alekseyev" <maxale@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.22 booting hangs after "INIT: version 2.86 booting"
+	Wed, 11 Jul 2007 17:15:20 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:49551 "EHLO atlrel8.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752159AbXGKVPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:15:18 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Luca <kronos.it@gmail.com>
+Subject: Re: [PATCH] Enable legacy support for serial ports when SERIAL_8250_PNP is disabled
+Date: Wed, 11 Jul 2007 15:07:25 -0600
+User-Agent: KMail/1.9.6
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070707233300.GA3267@dreamland.darkstar.lan> <200707091230.01556.bjorn.helgaas@hp.com> <68676e00707111240v28263cc7i13c033c8be1339b9@mail.gmail.com>
+In-Reply-To: <68676e00707111240v28263cc7i13c033c8be1339b9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200707111507.25412.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Wednesday 11 July 2007 01:40:07 pm Luca wrote:
+> On 7/9/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > On Monday 09 July 2007 11:30:59 am Luca wrote:
+> > > On 7/9/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > > > If you turn off
+> > > > PNP completely, you will have "pnp_platform_devices == 0", and the
+> > > > existing code will do what you need.
+> > >
+> > > Well for me it's a non-issue, I'm able to "work-around" it in many
+> > > ways. My point is that a configuration that used to work and is still
+> > > valid suddenly doesn't work anymore.
+> >
+> > You're right about that, and it is a legitimate issue.  But given the
+> > fact that (PNP && !SERIAL_8250_PNP) should be relatively unusual, my
+> > opinion is that it's not worth extra ifdefs in legacy_serial.c.
+> >
+> > If you have to use any workarounds like "legacy_serial.force", I think
+> > that's a bug, and I'll fix it.
+> 
+> Ok, I double-checked: the serial port is usable during boot with PNP
+> enabled, so no problem with dropping my patch.
 
-I have trouble with booting linux kernel 2.6.22 from kernel.org on my
-AMD dual-Opteron 250 system.
-The booting stops right after printing line "INIT: version 2.86
-booting". Nothing happens after that, but it is not a hardware hang as
-keyboard leds respond to pressing Caps/Num lock keys.
+Thanks a lot for checking!
 
-If I boot with init=/bin/sh parameter I successfully get into the
-shell but attempts to run scripts from /etc/rcS.d/ all end up with
-Segmentation faults, e.g.:
-
-# sh -x /etc/rcS.d/S01glibc.sh
-++ uname -s
-Segmentation fault
-
-I am not sure where these segfaults happen as running programs like
-'uname' directly from the shell works OK.
-
-The 2.6.22 configuration is derived from the working 2.6.21 one. The
-kernel 2.6.21 boots on the very same system without any problems.
-Any suggestions?
-
-Thanks,
-Max
+Bjorn
