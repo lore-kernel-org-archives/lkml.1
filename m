@@ -1,154 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbXGKMLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932544AbXGKMLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932293AbXGKMLS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758967AbXGKMLA
+	id S932544AbXGKMLb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761881AbXGKMLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:11:00 -0400
-Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:43446 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756698AbXGKMK6 (ORCPT
+	Wed, 11 Jul 2007 08:11:06 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:45990 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761605AbXGKMLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:10:58 -0400
-Date: Wed, 11 Jul 2007 06:10:56 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support features in larger inode
-Message-ID: <20070711121056.GV6417@schatzie.adilger.int>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	Andy Whitcroft <apw@shadowen.org>
-References: <1183275482.4010.133.camel@localhost.localdomain> <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+	Wed, 11 Jul 2007 08:11:05 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Hibernation Redesign
+Date: Wed, 11 Jul 2007 22:11:22 +1000
+User-Agent: KMail/1.9.6
+Cc: rjw@sisk.pl, a1426z@gawab.com, jeremy@goop.org, jbms@cmu.edu, pavel@ucw.cz,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <200707081737.21932.a1426z@gawab.com> <200707111304.40504.rjw@sisk.pl> <E1I8a6Y-0008Sm-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1I8a6Y-0008Sm-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1311607.KNoiKArrxj";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707112211.23420.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 10, 2007  16:32 -0700, Andrew Morton wrote:
-> >  	err = ext4_reserve_inode_write(handle, inode, &iloc);
-> > +	if (EXT4_I(inode)->i_extra_isize <
-> > +	    EXT4_SB(inode->i_sb)->s_want_extra_isize &&
-> > +	    !(EXT4_I(inode)->i_state & EXT4_STATE_NO_EXPAND)) {
-> > +		/* We need extra buffer credits since we may write into EA block
-> > +		 * with this same handle */
-> > +		if ((jbd2_journal_extend(handle,
-> > +			     EXT4_DATA_TRANS_BLOCKS(inode->i_sb))) == 0) {
-> > +			ret = ext4_expand_extra_isize(inode,
-> > +				EXT4_SB(inode->i_sb)->s_want_extra_isize,
-> > +				iloc, handle);
-> > +			if (ret) {
-> > +				EXT4_I(inode)->i_state |= EXT4_STATE_NO_EXPAND;
-> > +				if (!expand_message) {
-> > +					ext4_warning(inode->i_sb, __FUNCTION__,
-> > +					"Unable to expand inode %lu. Delete"
-> > +					" some EAs or run e2fsck.",
-> > +					inode->i_ino);
-> > +					expand_message = 1;
-> > +				}
-> > +			}
-> > +		}
-> > +	}
-> 
-> Maybe that message should come out once per mount rather than once per boot
-> (or once per modprobe)?
+--nextPart1311607.KNoiKArrxj
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Probably true.
+Hi.
 
-> What are the consequences of a jbd2_journal_extend() failure in here?
+On Wednesday 11 July 2007 21:11:34 Miklos Szeredi wrote:
+> > Anyway, to implement the kexec approach we must separate the
+> > hibernation from the suspend at the drivers level, which I'm still
+> > going to do, but I need to take part in endless discussions
+>=20
+> Discussions are good.  We understand the problem better.  Now I still
+> think we don't understand every aspect completely, so continuing the
+> discussion makes sense.
+>=20
+> > regarding the freezer, how it is bad and how we should drop it,
+> > because it breaks things (which NB is not true, because it doesn't).
+>=20
+> This thread started out from a bug, that seemed to be caused by the
+> freezer (we still don't exactly know what it was caused by), and the
+> discussion uncovered various problems _with_ the freezer, that up to
+> now no other _proper_ solutions have been propsed than to remove the
+> freezer.
 
-Not fatal, just like every user of i_extra_isize.  If the inode isn't a
-large inode, or it can't be expanded then there will be a minor loss of
-functionality on that inode.  If the i_extra_isize is critical, then
-the sysadmin will have run e2fsck to force s_min_extra_isize large enough.
+No other _proper_ solutions have been proposed. Everyone who suggests remov=
+ing=20
+the freezer also suggests implementing it all over again. It might be sendi=
+ng=20
+SIGSTOP to everything. It might be shifting the desk chairs around and=20
+creating a completely new kernel context, but they always have the same=20
+goal - stopping the existing activity, and they all come with their own=20
+issues (even if they're not obvious yet because the alternatives are=20
+currently vapourware to one extent or another).
 
-Note that this is only applicable for filesystems which are upgraded.  For
-new inodes (i.e. all inodes that exist in the filesystem if it was always
-run on a kernel with the currently understood extra fields) then this will
-never be invoked (until such a time new extra fields are added).
+IMHO, the real solution is to go back to the original issue and fix it=20
+properly. Make fuse filesystems play nicely with the existing freezer. I've=
+=20
+just gone back and looked at the point where you started talking=20
+about "malicious filesystems". You talk about fuse imposing certain orderin=
+g=20
+in the userspace tasks being frozen. Please, say more. What ordering issues=
+?=20
+Why? How can such ordering be determined programmatically?
+=20
+Regards,
 
-> > +static void ext4_xattr_shift_entries(struct ext4_xattr_entry *entry,
-> > +				     int value_offs_shift, void *to,
-> > +				     void *from, size_t n, int blocksize)
-> > +{
-> > +	/* Adjust the value offsets of the entries */
-> > +	for (; !IS_LAST_ENTRY(last); last = EXT4_XATTR_NEXT(last)) {
-> > +		if (!last->e_value_block && last->e_value_size) {
-> > +			new_offs = le16_to_cpu(last->e_value_offs) +
-> > +							value_offs_shift;
-> > +			BUG_ON(new_offs + le32_to_cpu(last->e_value_size)
-> > +				 > blocksize);
-> > +			last->e_value_offs = cpu_to_le16(new_offs);
-> > +		}
-> > +	}
-> > +	/* Shift the entries by n bytes */
-> > +	memmove(to, from, n);
-> > +}
-> 
-> Under what circumstances will that new BUG_ON trigger?  Can it be triggered
-> via incorrect disk contents?  If so, it should not be there.
+Nigel
 
-Only under code defect or memory corruption.  The needed extra space was
-already checked in ext4_expand_extra_isize_ea(), but I asked for this
-BUG_ON() because it would otherwise seem that there was a chance from
-reading just the above code that the shifted EA might overflow the buffer.
+--nextPart1311607.KNoiKArrxj
+Content-Type: application/pgp-signature
 
-> > +int ext4_expand_extra_isize_ea(struct inode *inode, int new_extra_isize,
-> > +			    struct ext4_inode *raw_inode, handle_t *handle)
-> > +{
-> > +	down_write(&EXT4_I(inode)->xattr_sem);
-> > +retry:
-> > +	if (EXT4_I(inode)->i_extra_isize >= new_extra_isize) {
-> > +		up_write(&EXT4_I(inode)->xattr_sem);
-> > +		return 0;
-> > +	}
-> 
-> So..  xattr_sem is a lock which protects i_extra_isize?  That seems a bit
-> strange to me - I'd have expected i_mutex.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Well, since this is the only code that ever changes i_extra_isize, and it
-also needs to move the EAs around, it makes sense to use the EA lock for it.
-This is also a relatively low-contention lock, and it needs to be held to
-access any of the EAs (which are the only things beyond i_extra_isize).
+iD8DBQBGlMjrN0y+n1M3mo0RAhYrAKDdG1mkuibD1lDx/uZWgggjI62fdwCgk/gu
+rXBK2yBy6rj+6deHM8RiDCo=
+=UZsw
+-----END PGP SIGNATURE-----
 
-> > +	if (EXT4_I(inode)->i_file_acl) {
-> > +		bh = sb_bread(inode->i_sb, EXT4_I(inode)->i_file_acl);
-> > +		error = -EIO;
-> > +		if (!bh)
-> > +			goto cleanup;
-> > +		if (ext4_xattr_check_block(bh)) {
-> > +			ext4_error(inode->i_sb, __FUNCTION__,
-> > +				"inode %lu: bad block %llu", inode->i_ino,
-> > +				EXT4_I(inode)->i_file_acl);
-> > +			error = -EIO;
-> > +			goto cleanup;
-> > +		}
-> > +		base = BHDR(bh);
-> > +		first = BFIRST(bh);
-> > +		end = bh->b_data + bh->b_size;
-> > +		min_offs = end - base;
-> > +		free = ext4_xattr_free_space(first, &min_offs, base,
-> > +					     &total_blk);
-> > +		if (free < new_extra_isize) {
-> > +			if (!tried_min_extra_isize && s_min_extra_isize) {
-> > +				tried_min_extra_isize++;
-> > +				new_extra_isize = s_min_extra_isize;
-> 
-> Aren't we missing a brelse(bh) here?
-
-Seems likely, yes.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+--nextPart1311607.KNoiKArrxj--
