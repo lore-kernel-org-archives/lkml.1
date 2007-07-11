@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762591AbXGKKCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762863AbXGKKCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762591AbXGKKCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbXGKKCW
+	id S1762863AbXGKKCv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760728AbXGKKCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:02:22 -0400
-Received: from smtp.nokia.com ([131.228.20.172]:25948 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759889AbXGKKCW convert rfc822-to-8bit (ORCPT
+	Wed, 11 Jul 2007 06:02:40 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57494 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762716AbXGKKCi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:02:22 -0400
-Subject: Re: [PATCH RFC] try_module_get usage
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Fernando Luis V?zquez Cao <fernando@oss.ntt.co.jp>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070711094149.GD19061@infradead.org>
-References: <1184140531.4608.16.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20070711094149.GD19061@infradead.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 11 Jul 2007 13:01:52 +0300
-Message-Id: <1184148112.3531.97.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 11 Jul 2007 10:01:52.0791 (UTC) FILETIME=[817CDA70:01C7C3A2]
-X-Nokia-AV: Clean
+	Wed, 11 Jul 2007 06:02:38 -0400
+Message-ID: <4694AA04.1000202@bx.jp.nec.com>
+Date: Wed, 11 Jul 2007 18:59:32 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC][PATCH v2 -mm 0/9] netconsole: Multiple targets and dynamic
+ reconfigurability
+References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 10:41 +0100, Christoph Hellwig wrote:
-> On Wed, Jul 11, 2007 at 04:55:31PM +0900, Fernando Luis V?zquez Cao
-> wrote:
-> > I keep seeing uses of try_module_get(THIS_MODULE) which seem to
-> mimic
-> > the behavior of the former MOD_INC_USE_COUNT. The UBI driver is one
-> > example:
+Hi Satyam,
+
+I'm going to test/review these patches and report the result of tests 
+on IA64/x86 until this Friday.
+
+> [0/9] netconsole: Multiple targets and dynamic reconfigurability
 > 
-> It's of course buggy as hell.  But UBI folks prefer not to listen to
-> advice and keep their bugs.
+> This patchset is a rework of the original idea and patches posted by
+> Keiichi Kii and Takayoshi Kochi at: http://lkml.org/lkml/2007/6/13/72
+> 
+> This is v2 of the patchset, the previous version is available at:
+> http://lkml.org/lkml/2007/7/4/107
+> 
+> This is diffed against 2.6.22-rc6-mm1 + the earlier netpoll fixlet and the
+> configfs cleanup patches (those are already merged in -mm AFAIK, and hence
+> not reproduced here).
+> 
+> [1/9] netconsole: Cleanups, codingstyle, prettyfication
+> [2/9] netconsole: Remove bogus check
+> [3/9] netconsole: Simplify boot/module option setup logic
+> [4/9] netconsole: Add some useful tips to documentation
+> [5/9] netconsole: Introduce netconsole_target
+> [6/9] netconsole: Introduce netconsole_netdev_notifier
+> [7/9] netconsole: Use netif_running() in write_msg()
+> [8/9] netconsole: Support multiple logging targets
+> [9/9] netconsole: Support dynamic reconfiguration using configfs
 
-Christoph, stop this please, point the bugs we do not listen about. Your
-patches sit in the UBI git and wait for the merge window:
-
-http://git.infradead.org/?p=ubi-2.6.git;a=summary
-
-I plan to let dwmw2 pull them and send to Linus together with other
-MTD/JFFS2 patches. If you have specific requests - go ahead.
-
+Thanks
 -- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+Keiichi KII
+NEC Corporation OSS Platform Development Division
+E-mail: k-keiichi@bx.jp.nec.com
