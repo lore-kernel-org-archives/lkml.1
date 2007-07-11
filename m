@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXGKVtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbXGKVxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933299AbXGKVtq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbXGKVtj
+	id S932701AbXGKVxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760585AbXGKVx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:49:39 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:46551 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756895AbXGKVti (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:49:38 -0400
-Date: Wed, 11 Jul 2007 22:48:42 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial: do not add port that is not initialized
-Message-ID: <20070711214842.GE2301@flint.arm.linux.org.uk>
-References: <200707101703.36173.yinghai.lu@sun.com> <20070711071742.GA12952@flint.arm.linux.org.uk> <200707111005.53836.bjorn.helgaas@hp.com> <20070711194050.GB28258@flint.arm.linux.org.uk> <46954150.7050707@sun.com>
-Mime-Version: 1.0
+	Wed, 11 Jul 2007 17:53:27 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:32897 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756506AbXGKVx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:53:27 -0400
+Date: Wed, 11 Jul 2007 14:52:19 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+Message-ID: <20070711215219.GY4306@sequoia.sous-sol.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu> <20070711211638.GE18767@one.firstfloor.org> <1184190401.12353.152.camel@chaos>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46954150.7050707@sun.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1184190401.12353.152.camel@chaos>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 01:45:04PM -0700, Yinghai Lu wrote:
-> Russell King wrote:
-> >Indeed, and since distros still haven't picked up my setserial v3,
-> >I see little chance of that ever being practical.  Not that I've
-> >really tried very hard to get them to - no real idea who to contact
-> >to make that happen, and of course I've no interest in making it
-> >happen anymore.
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> > If that isn't possible it needs very careful review which just hasn't
+> > happened yet. But I'm not convinced even step by step is not possible
+> > here.
 > 
-> so remove these extra phantom devices, the kernel distros will use your 
-> setserial v3.
+> There is no step by step thing. You convert an arch to clock events or
+> you convert it not.
 
-You made a connection which wasn't there - setserial v3 doesn't allow
-this either, but it is a cleaner and slightly more extensible
-implementation of setserial v2.
+Indeed, about the only thing can be done is to take a slower approach
+to converging the arch specific implementations (hpet, pit, etc).
 
-It does, however, drop support for the things which 2.6 kernels don't
-support, such as the setting of the multiport addresses and masks.  So
-it wouldn't be suitable for shipping as-is with (eg) 2.4 kernels.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+thanks,
+-chris
