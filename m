@@ -1,75 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762758AbXGKLZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762337AbXGKL3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762758AbXGKLZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 07:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbXGKLZM
+	id S1762337AbXGKL3N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 07:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758424AbXGKL24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 07:25:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60940 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754781AbXGKLZK (ORCPT
+	Wed, 11 Jul 2007 07:28:56 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:36028 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754555AbXGKL2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 07:25:10 -0400
-Subject: Re: containers (was Re: -mm merge plans for 2.6.23)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: vatsa@linux.vnet.ibm.com, mingo@elte.hu, akpm@linux-foundation.org,
-       menage@google.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-In-Reply-To: <20070711041007.10ad759c.pj@sgi.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <20070710105240.GA20914@linux.vnet.ibm.com>
-	 <6599ad830707101134k29951c45h4af0807603f52b76@mail.gmail.com>
-	 <20070710115319.0bdaff34.akpm@linux-foundation.org>
-	 <20070711045516.GH2927@linux.vnet.ibm.com>
-	 <20070710222942.382fc9ba.akpm@linux-foundation.org>
-	 <20070711090423.GA6758@elte.hu> <20070711022352.71604404.pj@sgi.com>
-	 <20070711100323.GA23473@linux.vnet.ibm.com>
-	 <20070711041007.10ad759c.pj@sgi.com>
-Content-Type: text/plain
-Date: Wed, 11 Jul 2007 13:24:47 +0200
-Message-Id: <1184153087.20032.8.camel@twins>
+	Wed, 11 Jul 2007 07:28:54 -0400
+Date: Wed, 11 Jul 2007 05:28:46 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 3][PATCH 1/1] ext4 nanosecond timestamp
+Message-ID: <20070711112846.GP6417@schatzie.adilger.int>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <1183275416.4010.125.camel@localhost.localdomain> <20070710163027.1bf7e94e.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070710163027.1bf7e94e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 04:10 -0700, Paul Jackson wrote:
-> Srivatsa wrote:
-> > So Ingo was proposing we use cpuset as that user interface to manage
-> > task-groups. This will be only for 2.6.23.
+On Jul 10, 2007  16:30 -0700, Andrew Morton wrote:
+> > +#define EXT4_FITS_IN_INODE(ext4_inode, einode, field)	\
+> > +	((offsetof(typeof(*ext4_inode), field) +	\
+> > +	  sizeof((ext4_inode)->field))			\
+> > +	<= (EXT4_GOOD_OLD_INODE_SIZE +			\
+> > +	    (einode)->i_extra_isize))			\
 > 
-> Good explanation - thanks.
+> Please add explanatory commentary to EXT4_FITS_IN_INODE(): tell readers
+> under what circumstances something will not fit in an inode and what the
+> consequences of this are.
+
+/* Extended fields will fit into an inode if the filesystem was formatted
+ * with large inodes (-I 256 or larger) and there are not currently EAs
+ * consuming all of the available space.  For new inodes we always reserve
+ * enough space for the kernel's known extended fields, but for inodes
+ * created with an old kernel this might not have been the case.  None of
+ * the extended inode fields is critical for correct filesystem operation.
+ */
+
+> > +#define EXT4_INODE_GET_XTIME(xtime, inode, raw_inode)			       \
+> > +do {									       \
+> > +	(inode)->xtime.tv_sec = le32_to_cpu((raw_inode)->xtime);	       \
+> > +	if (EXT4_FITS_IN_INODE(raw_inode, EXT4_I(inode), xtime ## _extra))     \
+> > +		ext4_decode_extra_time(&(inode)->xtime,			       \
+> > +				       raw_inode->xtime ## _extra);	       \
+> > +} while (0)
 > 
-> In short, the proposal was to use the task partition defined by cpusets
-> to define CFS task-groups, until the real process containers are
-> available.
+> Ugly.  I expect these could be implemented as plain old C functions. 
+> Caller could pass in the address of the ext4_inode field which the function
+> is to operate upon.
+
+We thought about that also, but then the caller needs to do all of the
+pointer gymnastics themselves like:
+
+     ext4_inode_get_xtime(&inode->i_ctime, &inode->i_ctime_extra,
+                         &raw_inode->i_ctime, &raw_inode->i_ctime_extra)
+
+instead of the current:
+
+     EXT4_INODE_GET_XTIME(ctime, inode, raw_inode);
+
+IMHO it is preferrable to make the multiple callsites more readable than
+the macros.
+
+> >  #if defined(__KERNEL__) || defined(__linux__)
 > 
-> Or, I see in the next message, Ingo responding favorably to your
-> alternative, using task uid's to partition the tasks into CFS
-> task-groups.
+> (What's the __linux__ for?)
 > 
-> Yeah, Ingo's preference for using uid's (or gid's ??) sounds right to
-> me - a sustainable API.
+> >  #define i_reserved1	osd1.linux1.l_i_reserved1
+> >  #define i_frag		osd2.linux2.l_i_frag
+
+This is actually unrelated to the current patch, just part of the context.
+AFAIK, this is historical, so that the kernel and e2fsprogs can use the
+same ext2_fs.h header.  I don't think it is really needed, but such cleanup
+shouldn't be a part of this patch either.
+
+> > +static inline struct timespec ext4_current_time(struct inode *inode)
+> > +{
+> > +	return (inode->i_sb->s_time_gran < NSEC_PER_SEC) ?
+> > +		current_fs_time(inode->i_sb) : CURRENT_TIME_SEC;
+> > +}
 > 
-> Wouldn't want to be adding a cpuset API for a single 2.6.N release.
+> Now, I've forgotten how this works.  Remind me, please.  Can ext4
+> filesystems ever have one-second timestamp granularity?  If so, how does
+> one cause that to come about?
+
+Yes, this is possible if an ext2/3/4 filesystem is formatted with 128-byte
+inodes (which is the default for all but ext4) and this fs is mounted as
+ext4dev.  The inodes can never hold the extra time information (FITS_IN_INODE
+check above) so the superblock limits the timestamp resolution to 1s in that
+case.
+
+> > @@ -153,6 +153,7 @@
+> >  
+> >  	unsigned long i_ext_generation;
+> >  	struct ext4_ext_cache i_cached_extent;
+> > +	struct timespec i_crtime;
+> >  };
 > 
-> .... gid's -- why not?
+> It is unobvious what this field does.  Please prefer to add commentary to
+> _all_ struct fields - it really helps.
 
+It is the inode creation time.  This is useful for debug/forensic purposes,
+and at some point there will be an API so that Samba can use it also.
 
-Or process or process groups, or all of the above :-)
+> >  #endif	/* _LINUX_EXT4_FS_I */
+> > Index: linux-2.6.22-rc4/include/linux/ext4_fs_sb.h
+> > ===================================================================
+> > --- linux-2.6.22-rc4.orig/include/linux/ext4_fs_sb.h	2007-06-11 17:28:15.000000000 -0700
+> > +++ linux-2.6.22-rc4/include/linux/ext4_fs_sb.h	2007-06-11 17:39:05.000000000 -0700
+> > @@ -79,6 +79,7 @@
+> >  	char *s_qf_names[MAXQUOTAS];		/* Names of quota files with journalled quota */
+> >  	int s_jquota_fmt;			/* Format of quota to use */
+> >  #endif
+> > +	unsigned int s_want_extra_isize; /* New inodes should reserve # bytes */
+> 
+> OK, I can kind-of see how this is working, but some overall description of
+> how the inode sizing design operates would be helpful.  It would certainly
+> make reviewing of this proposed change more fruitful.  Perhaps that new
+> comment over EXT4_FITS_IN_INODE() would be a suitable place.
 
-One thing to think on though, we cannot have per process,uid,gid,pgrp
-scheduling for one release only. So we'd have to manage interaction with
-process containers. It might be that a simple weight multiplication
-scheme is good enough:
+Hmm, I'm sure there were emails on the topic, but they aren't attached to
+the patch.  s_want_extra_isize is just an override for sizeof(ext4_inode)
+in case the sysadmin wants to reserve more fields in new inodes.  There is
+also s_min_extra_isize which is what the kernel and e2fsck guarantee that
+will be available in all in-use inodes, if RO_COMPAT_EXTRA_ISIZE is set
+(ro-compat so that older kernels can't create inodes with a smaller
+extra_isize).  That feature is only enabled if requested by the sysadmin.
 
-  weight = uid_weight * pgrp_weight * container_weight
-
-Of course, if we'd only have a single level group scheduler (as was
-proposed IIRC) it'd have to create intersection sets (as there might be
-non trivial overlaps) based on these various weights and schedule these
-resulting sets instead of the initial groupings.
-
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
