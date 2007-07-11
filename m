@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbXGKMDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932338AbXGKMEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932555AbXGKMDA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbXGKMCv
+	id S932338AbXGKMEA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbXGKMDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:02:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45956 "EHLO
+	Wed, 11 Jul 2007 08:03:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45968 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756698AbXGKMCt (ORCPT
+	with ESMTP id S1758594AbXGKMDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:02:49 -0400
-Date: Wed, 11 Jul 2007 13:02:47 +0100
+	Wed, 11 Jul 2007 08:03:49 -0400
+Date: Wed, 11 Jul 2007 13:03:46 +0100
 From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>, Mingming Cao <cmm@us.ibm.com>,
+To: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, nfsv4@linux-nfs.org
-Subject: Re: [EXT4 set 4][PATCH 4/5] i_version:ext4 inode version update
-Message-ID: <20070711120247.GA26370@infradead.org>
+       linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 4][PATCH 5/5] i_version: noversion mount option to disable inode version updates
+Message-ID: <20070711120346.GB26370@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	nfsv4@linux-nfs.org
-References: <1183275465.4010.130.camel@localhost.localdomain> <20070711084737.GA17675@infradead.org> <20070711115224.GT6417@schatzie.adilger.int>
+	Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <1183275474.4010.132.camel@localhost.localdomain> <20070710163144.21b739f9.akpm@linux-foundation.org> <20070711115716.GU6417@schatzie.adilger.int>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070711115224.GT6417@schatzie.adilger.int>
+In-Reply-To: <20070711115716.GU6417@schatzie.adilger.int>
 User-Agent: Mutt/1.4.2.3i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 05:52:24AM -0600, Andreas Dilger wrote:
-> On Jul 11, 2007  09:47 +0100, Christoph Hellwig wrote:
-> > On Sun, Jul 01, 2007 at 03:37:45AM -0400, Mingming Cao wrote:
-> > > This patch is on top of i_version_update_vfs.
-> > > The i_version field of the inode is set on inode creation and incremented
-> > > when the inode is being modified.
-> > 
-> > Which is not what i_version is supposed to do.  It'll get you tons of misses
-> > for NFSv3 filehandles that rely on the generation staying the same for the
-> > same file.  Please add a new field for the NFSv4 sequence counter instead
-> > of making i_version unuseable.
-> 
-> You are confusing i_generation (the instance of this inode number) with
-> i_version (whether this file has been modified)?
+On Wed, Jul 11, 2007 at 05:57:17AM -0600, Andreas Dilger wrote:
+> Ah, this is the patch to disable i_version updates for Lustre.  I don't
+> think any normal user would use this mount option, so I don't know if
+> there is a need to document it.
 
-Yes, sorry.  Objection dropped.
+This is a reason to not merge it at all.  If the only user of this is
+the out of tree lustre code there is no need to put this in.  I should
+rather stay in clusterfs' patchkit.
+
