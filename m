@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbXGKIK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbXGKILp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758817AbXGKIK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 04:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbXGKIKM
+	id S1759926AbXGKILp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 04:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756557AbXGKILa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 04:10:12 -0400
-Received: from main.gmane.org ([80.91.229.2]:38283 "EHLO ciao.gmane.org"
+	Wed, 11 Jul 2007 04:11:30 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:43472 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755731AbXGKIKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 04:10:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Matthieu CASTET <matthieu.castet@parrot.com>
-Subject: Re: [PATCH] signals: real-time signals delivery order
-Date: Wed, 11 Jul 2007 07:34:14 +0000 (UTC)
-Message-ID: <loom.20070711T092936-151@post.gmane.org>
-References: <1184116335.19893.12.camel@localhost>
+	id S1755731AbXGKIL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 04:11:28 -0400
+Date: Wed, 11 Jul 2007 13:41:41 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: [PATCH 2/7] fallocate() implementation in i386, x86_64 and powerpc
+Message-ID: <20070711081141.GA25383@amitarora.in.ibm.com>
+References: <20070710201200.GA10255@amitarora.in.ibm.com> <20070710202000.GB8797@amitarora.in.ibm.com> <20070711121034.a3b925b9.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 90.2.116.194 (Mozilla/5.0 (X11; U; Linux i686; fr; rv:1.8.1.4) Gecko/20070508 Iceweasel/2.0.0.4 (Debian-2.0.0.4-1))
+Content-Disposition: inline
+In-Reply-To: <20070711121034.a3b925b9.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Salikhmetov <salikhmetov <at> gmail.com> writes:
-
+On Wed, Jul 11, 2007 at 12:10:34PM +1000, Stephen Rothwell wrote:
+> On Wed, 11 Jul 2007 01:50:00 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+> >
+> > --- linux-2.6.22.orig/arch/x86_64/ia32/sys_ia32.c
+> > +++ linux-2.6.22/arch/x86_64/ia32/sys_ia32.c
+> > @@ -879,3 +879,11 @@ asmlinkage long sys32_fadvise64(int fd, 
+> >  	return sys_fadvise64_64(fd, ((u64)offset_hi << 32) | offset_lo,
+> >  				len, advice);
+> >  }
+> > +
+> > +asmlinkage long sys32_fallocate(int fd, int mode, unsigned offset_lo,
+> > +				unsigned offset_hi, unsigned len_lo,
+> > +				unsigned len_hi)
 > 
-> From: Anton Salikhmetov <salikhmetov <at> gmail.com>
-> 
-> According to the POSIX standard, multiple real-time signals
-> pending to a process should be delivered in a strict order.
-> Specifically, the lowest-numbered signal should be delivered
-> first and multiple occurrences of signals with the same number
-> should be delivered in FIFO order.
-> 
-> Current Linux kernel delivers the highest-numbered signals
-> pending to a process first, not the lowest-numbered ones. This
-> contradicts to the requirement explained above. The problem can
-> be demonstrated by the following test program:
-I believe you should check that you mask or signal in your signal handler.
-If you don't the high-prio handler will be prempted by low-prio, and they will
-be executed in the reverse order.
+> Please call this compat_sys_fallocate in line with the powerpc version -
+> it gives us a hint that maybe we should think about how to consolidate
+> them.  I know other stuff in that file is called sys32_ ... but it is time
+> for a change :-)
 
+I think this can be handled as a separate patch once this patchset
+is in mainline. Since, anyhow we will need to do this for other sys32_
+calls which are already there...
 
-Matthieu 
+--
+Regards,
+Amit Arora
+
 
