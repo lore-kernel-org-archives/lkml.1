@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936936AbXGLAB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937034AbXGLACa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936936AbXGLAB6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935013AbXGKXhg
+	id S937034AbXGLACa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935333AbXGKXhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:37:36 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33540 "EHLO mx2.suse.de"
+	Wed, 11 Jul 2007 19:37:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33547 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935283AbXGKXhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:37:32 -0400
+	id S934326AbXGKXhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:37:39 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 60/61] sysfs: make directory dentries and inodes reclaimable
-Date: Wed, 11 Jul 2007 16:32:19 -0700
-Message-Id: <1184197026634-git-send-email-gregkh@suse.de>
+Cc: Zhang Rui <rui.zhang@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 61/61] sysfs: add parameter "struct bin_attribute *" in .read/.write methods for sysfs binary attributes
+Date: Wed, 11 Jul 2007 16:32:20 -0700
+Message-Id: <1184197032676-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841970211456-git-send-email-gregkh@suse.de>
+In-Reply-To: <1184197026634-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
@@ -77,624 +77,987 @@ References: <20070711233021.GA5253@kroah.com>
  <11841970112965-git-send-email-gregkh@suse.de>
  <11841970162061-git-send-email-gregkh@suse.de>
  <11841970211456-git-send-email-gregkh@suse.de>
+ <1184197026634-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tejun Heo <htejun@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
 
-This patch makes dentries and inodes for sysfs directories
-reclaimable.
+Well, first of all, I don't want to change so many files either.
 
-* sysfs_notify() is modified to walk sysfs_dirent tree instead of
-  dentry tree.
+What I do:
+Adding a new parameter "struct bin_attribute *" in the
+.read/.write methods for the sysfs binary attributes.
 
-* sysfs_update_file() and sysfs_chmod_file() use sysfs_get_dentry() to
-  grab the victim dentry.
+In fact, only the four lines change in fs/sysfs/bin.c and
+include/linux/sysfs.h do the real work.
+But I have to update all the files that use binary attributes
+to make them compatible with the new .read and .write methods.
+I'm not sure if I missed any. :(
 
-* sysfs_rename_dir() and sysfs_move_dir() grab all dentries using
-  sysfs_get_dentry() on startup.
+Why I do this:
+For a sysfs attribute, we can get a pointer pointing to the
+struct attribute in the .show/.store method,
+while we can't do this for the binary attributes.
+I don't know why this is different, but this does make it not
+so handy to use the binary attributes as the regular ones.
+So I think this patch is reasonable. :)
 
-* Dentries for all shadowed directories are pinned in memory to serve
-  as lookup start point.
+Who benefits from it:
+The patch that exposes ACPI tables in sysfs
+requires such an improvement.
+All the table binary attributes share the same .read method.
+Parameter "struct bin_attribute *" is used to get
+the table signature and instance number which are used to
+distinguish different ACPI table binary attributes.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
+Without this parameter, we need to offer different .read methods
+for different ACPI table binary attributes.
+This is impossible as there are various ACPI tables on different
+platforms, and we don't know what they are until they are loaded.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c        |  231 +++++++++++++++++++++++++++----------------------
- fs/sysfs/file.c       |  134 +++++++++++++----------------
- fs/sysfs/mount.c      |    2 +-
- fs/sysfs/sysfs.h      |    1 +
- include/linux/sysfs.h |    1 -
- 5 files changed, 187 insertions(+), 182 deletions(-)
+ .../firmware_sample_firmware_class.c               |    2 +
+ drivers/base/firmware_class.c                      |    4 +-
+ drivers/firmware/dcdbas.c                          |   10 ++--
+ drivers/firmware/dell_rbu.c                        |   25 ++++++----
+ drivers/i2c/chips/eeprom.c                         |    3 +-
+ drivers/i2c/chips/max6875.c                        |    5 +-
+ drivers/pci/hotplug/acpiphp_ibm.c                  |    6 ++-
+ drivers/pci/pci-sysfs.c                            |   18 +++++--
+ drivers/pcmcia/socket_sysfs.c                      |    8 ++-
+ drivers/rapidio/rio-sysfs.c                        |    6 ++-
+ drivers/rtc/rtc-ds1553.c                           |   10 ++--
+ drivers/rtc/rtc-ds1742.c                           |   10 ++--
+ drivers/s390/cio/chp.c                             |   10 ++--
+ drivers/scsi/arcmsr/arcmsr_attr.c                  |   15 ++++--
+ drivers/scsi/ipr.c                                 |   18 +++++--
+ drivers/scsi/libsas/sas_expander.c                 |   16 ++++--
+ drivers/scsi/lpfc/lpfc_attr.c                      |   12 +++--
+ drivers/scsi/qla2xxx/qla_attr.c                    |   50 ++++++++++++--------
+ drivers/spi/at25.c                                 |    6 ++-
+ drivers/video/aty/radeon_base.c                    |    8 ++-
+ drivers/w1/slaves/w1_ds2433.c                      |   10 ++--
+ drivers/w1/slaves/w1_therm.c                       |    7 ++-
+ drivers/w1/w1.c                                    |   12 ++++-
+ drivers/zorro/zorro-sysfs.c                        |    5 +-
+ fs/sysfs/bin.c                                     |    4 +-
+ include/linux/sysfs.h                              |    6 ++-
+ net/bridge/br_sysfs_br.c                           |    5 +-
+ 27 files changed, 185 insertions(+), 106 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 9872112..aee966c 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -568,10 +568,10 @@ static void sysfs_drop_dentry(struct sysfs_dirent *sd)
- 	spin_unlock(&dcache_lock);
- 	spin_unlock(&sysfs_assoc_lock);
+diff --git a/Documentation/firmware_class/firmware_sample_firmware_class.c b/Documentation/firmware_class/firmware_sample_firmware_class.c
+index 4994f1f..fba943a 100644
+--- a/Documentation/firmware_class/firmware_sample_firmware_class.c
++++ b/Documentation/firmware_class/firmware_sample_firmware_class.c
+@@ -78,6 +78,7 @@ static CLASS_DEVICE_ATTR(loading, 0644,
+ 			 firmware_loading_show, firmware_loading_store);
  
--	dput(dentry);
--	/* XXX: unpin if directory, this will go away soon */
--	if (sysfs_type(sd) == SYSFS_DIR)
-+	/* dentries for shadowed inodes are pinned, unpin */
-+	if (dentry && sysfs_is_shadowed_inode(dentry->d_inode))
- 		dput(dentry);
-+	dput(dentry);
- 
- 	/* adjust nlink and update timestamp */
- 	inode = ilookup(sysfs_sb, sd->s_ino);
-@@ -686,69 +686,29 @@ struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
- static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
- 		      const char *name, struct sysfs_dirent **p_sd)
+ static ssize_t firmware_data_read(struct kobject *kobj,
++				  struct bin_attribute *bin_attr,
+ 				  char *buffer, loff_t offset, size_t count)
  {
--	struct dentry *parent = parent_sd->s_dentry;
--	struct sysfs_addrm_cxt acxt;
--	int error;
- 	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;
--	struct dentry *dentry;
--	struct inode *inode;
-+	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
+ 	struct class_device *class_dev = to_class_dev(kobj);
+@@ -88,6 +89,7 @@ static ssize_t firmware_data_read(struct kobject *kobj,
+ 	return count;
+ }
+ static ssize_t firmware_data_write(struct kobject *kobj,
++				   struct bin_attribute *bin_attr,
+ 				   char *buffer, loff_t offset, size_t count)
+ {
+ 	struct class_device *class_dev = to_class_dev(kobj);
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index 0e51148..53f0ee6 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -175,7 +175,7 @@ static ssize_t firmware_loading_store(struct device *dev,
+ static DEVICE_ATTR(loading, 0644, firmware_loading_show, firmware_loading_store);
  
--	sysfs_addrm_start(&acxt, parent_sd);
--
- 	/* allocate */
--	dentry = lookup_one_len(name, parent, strlen(name));
--	if (IS_ERR(dentry)) {
--		error = PTR_ERR(dentry);
--		goto out_finish;
--	}
--
--	error = -EEXIST;
--	if (dentry->d_inode)
--		goto out_dput;
--
--	error = -ENOMEM;
- 	sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
- 	if (!sd)
--		goto out_drop;
-+		return -ENOMEM;
- 	sd->s_elem.dir.kobj = kobj;
- 
--	inode = sysfs_get_inode(sd);
--	if (!inode)
--		goto out_sput;
--
--	if (inode->i_state & I_NEW) {
--		inode->i_op = &sysfs_dir_inode_operations;
--		inode->i_fop = &sysfs_dir_operations;
--		/* directory inodes start off with i_nlink == 2 (for ".") */
--		inc_nlink(inode);
--	}
--
- 	/* link in */
--	error = -EEXIST;
--	if (sysfs_find_dirent(parent_sd, name))
--		goto out_iput;
--
--	sysfs_add_one(&acxt, sd);
--	sysfs_link_sibling(sd);
--	sysfs_instantiate(dentry, inode);
--	sysfs_attach_dentry(sd, dentry);
--
--	*p_sd = sd;
--	error = 0;
--	goto out_finish;	/* pin directory dentry in core */
-+	sysfs_addrm_start(&acxt, parent_sd);
-+	if (!sysfs_find_dirent(parent_sd, name)) {
-+		sysfs_add_one(&acxt, sd);
-+		sysfs_link_sibling(sd);
-+	}
-+	if (sysfs_addrm_finish(&acxt)) {
-+		*p_sd = sd;
-+		return 0;
-+	}
- 
-- out_iput:
--	iput(inode);
-- out_sput:
- 	sysfs_put(sd);
-- out_drop:
--	d_drop(dentry);
-- out_dput:
--	dput(dentry);
-- out_finish:
--	sysfs_addrm_finish(&acxt);
--	return error;
-+	return -EEXIST;
+ static ssize_t
+-firmware_data_read(struct kobject *kobj,
++firmware_data_read(struct kobject *kobj, struct bin_attribute *bin_attr,
+ 		   char *buffer, loff_t offset, size_t count)
+ {
+ 	struct device *dev = to_dev(kobj);
+@@ -240,7 +240,7 @@ fw_realloc_buffer(struct firmware_priv *fw_priv, int min_size)
+  *	the driver as a firmware image.
+  **/
+ static ssize_t
+-firmware_data_write(struct kobject *kobj,
++firmware_data_write(struct kobject *kobj, struct bin_attribute *bin_attr,
+ 		    char *buffer, loff_t offset, size_t count)
+ {
+ 	struct device *dev = to_dev(kobj);
+diff --git a/drivers/firmware/dcdbas.c b/drivers/firmware/dcdbas.c
+index 1865b56..18cdcb3 100644
+--- a/drivers/firmware/dcdbas.c
++++ b/drivers/firmware/dcdbas.c
+@@ -149,8 +149,9 @@ static ssize_t smi_data_buf_size_store(struct device *dev,
+ 	return count;
  }
  
- int sysfs_create_subdir(struct kobject *kobj, const char *name,
-@@ -785,6 +745,17 @@ int sysfs_create_dir(struct kobject *kobj,
- 	return error;
+-static ssize_t smi_data_read(struct kobject *kobj, char *buf, loff_t pos,
+-			     size_t count)
++static ssize_t smi_data_read(struct kobject *kobj,
++			     struct bin_attribute *bin_attr,
++			     char *buf, loff_t pos, size_t count)
+ {
+ 	size_t max_read;
+ 	ssize_t ret;
+@@ -170,8 +171,9 @@ out:
+ 	return ret;
  }
  
-+static int sysfs_count_nlink(struct sysfs_dirent *sd)
-+{
-+	struct sysfs_dirent *child;
-+	int nr = 0;
-+
-+	for (child = sd->s_children; child; child = child->s_sibling)
-+		if (sysfs_type(child) == SYSFS_DIR)
-+			nr++;
-+	return nr + 2;
-+}
-+
- static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 				struct nameidata *nd)
+-static ssize_t smi_data_write(struct kobject *kobj, char *buf, loff_t pos,
+-			      size_t count)
++static ssize_t smi_data_write(struct kobject *kobj,
++			      struct bin_attribute *bin_attr,
++			      char *buf, loff_t pos, size_t count)
  {
-@@ -795,7 +766,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 	int found = 0;
+ 	ssize_t ret;
  
- 	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
--		if ((sysfs_type(sd) & SYSFS_NOT_PINNED) &&
-+		if (sysfs_type(sd) &&
- 		    !strcmp(sd->s_name, dentry->d_name.name)) {
- 			found = 1;
- 			break;
-@@ -816,6 +787,11 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 	if (inode->i_state & I_NEW) {
- 		/* initialize inode according to type */
- 		switch (sysfs_type(sd)) {
-+		case SYSFS_DIR:
-+			inode->i_op = &sysfs_dir_inode_operations;
-+			inode->i_fop = &sysfs_dir_operations;
-+			inode->i_nlink = sysfs_count_nlink(sd);
-+			break;
- 		case SYSFS_KOBJ_ATTR:
- 			inode->i_size = PAGE_SIZE;
- 			inode->i_fop = &sysfs_file_operations;
-@@ -876,7 +852,7 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
- 	while (*pos) {
- 		struct sysfs_dirent *sd = *pos;
- 
--		if (sysfs_type(sd) && (sysfs_type(sd) & SYSFS_NOT_PINNED)) {
-+		if (sysfs_type(sd) && sysfs_type(sd) != SYSFS_DIR) {
- 			*pos = sd->s_sibling;
- 			sd->s_sibling = NULL;
- 			sysfs_remove_one(&acxt, sd);
-@@ -912,14 +888,25 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 		     const char *new_name)
- {
- 	struct sysfs_dirent *sd = kobj->sd;
--	struct dentry *new_parent = new_parent_sd->s_dentry;
--	struct dentry *new_dentry;
--	char *dup_name;
-+	struct dentry *new_parent = NULL;
-+	struct dentry *old_dentry = NULL, *new_dentry = NULL;
-+	const char *dup_name = NULL;
- 	int error;
- 
--	if (!new_parent_sd)
--		return -EFAULT;
-+	/* get dentries */
-+	old_dentry = sysfs_get_dentry(sd);
-+	if (IS_ERR(old_dentry)) {
-+		error = PTR_ERR(old_dentry);
-+		goto out_dput;
-+	}
-+
-+	new_parent = sysfs_get_dentry(new_parent_sd);
-+	if (IS_ERR(new_parent)) {
-+		error = PTR_ERR(new_parent);
-+		goto out_dput;
-+	}
- 
-+	/* lock new_parent and get dentry for new name */
- 	mutex_lock(&new_parent->d_inode->i_mutex);
- 
- 	new_dentry = lookup_one_len(new_name, new_parent, strlen(new_name));
-@@ -933,14 +920,14 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 	 * shadows of the same directory
- 	 */
- 	error = -EINVAL;
--	if (sd->s_parent->s_dentry->d_inode != new_parent->d_inode ||
-+	if (old_dentry->d_parent->d_inode != new_parent->d_inode ||
- 	    new_dentry->d_parent->d_inode != new_parent->d_inode ||
--	    new_dentry == sd->s_dentry)
--		goto out_dput;
-+	    old_dentry == new_dentry)
-+		goto out_unlock;
- 
- 	error = -EEXIST;
- 	if (new_dentry->d_inode)
--		goto out_dput;
-+		goto out_unlock;
- 
- 	/* rename kobject and sysfs_dirent */
- 	error = -ENOMEM;
-@@ -950,9 +937,9 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 
- 	error = kobject_set_name(kobj, "%s", new_name);
- 	if (error)
--		goto out_free;
-+		goto out_drop;
- 
--	kfree(sd->s_name);
-+	dup_name = sd->s_name;
- 	sd->s_name = new_name;
- 
- 	/* move under the new parent */
-@@ -972,45 +959,58 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 	error = 0;
- 	goto out_unlock;
- 
-- out_free:
--	kfree(dup_name);
-  out_drop:
- 	d_drop(new_dentry);
-- out_dput:
--	dput(new_dentry);
-  out_unlock:
- 	mutex_unlock(&new_parent->d_inode->i_mutex);
-+ out_dput:
-+	kfree(dup_name);
-+	dput(new_parent);
-+	dput(old_dentry);
-+	dput(new_dentry);
- 	return error;
+diff --git a/drivers/firmware/dell_rbu.c b/drivers/firmware/dell_rbu.c
+index f8afecb..477a3d0 100644
+--- a/drivers/firmware/dell_rbu.c
++++ b/drivers/firmware/dell_rbu.c
+@@ -543,8 +543,9 @@ static ssize_t read_rbu_mono_data(char *buffer, loff_t pos, size_t count)
+ 	return ret_count;
  }
  
--int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent)
-+int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
+-static ssize_t read_rbu_data(struct kobject *kobj, char *buffer,
+-	loff_t pos, size_t count)
++static ssize_t read_rbu_data(struct kobject *kobj,
++			     struct bin_attribute *bin_attr,
++			     char *buffer, loff_t pos, size_t count)
  {
--	struct dentry *old_parent_dentry, *new_parent_dentry, *new_dentry;
--	struct sysfs_dirent *new_parent_sd, *sd;
-+	struct sysfs_dirent *sd = kobj->sd;
-+	struct sysfs_dirent *new_parent_sd;
-+	struct dentry *old_parent, *new_parent = NULL;
-+	struct dentry *old_dentry = NULL, *new_dentry = NULL;
- 	int error;
+ 	ssize_t ret_count = 0;
  
--	old_parent_dentry = kobj->parent ?
--		kobj->parent->sd->s_dentry : sysfs_mount->mnt_sb->s_root;
--	new_parent_dentry = new_parent ?
--		new_parent->sd->s_dentry : sysfs_mount->mnt_sb->s_root;
-+	BUG_ON(!sd->s_parent);
-+	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
-+
-+	/* get dentries */
-+	old_dentry = sysfs_get_dentry(sd);
-+	if (IS_ERR(old_dentry)) {
-+		error = PTR_ERR(old_dentry);
-+		goto out_dput;
-+	}
-+	old_parent = sd->s_parent->s_dentry;
-+
-+	new_parent = sysfs_get_dentry(new_parent_sd);
-+	if (IS_ERR(new_parent)) {
-+		error = PTR_ERR(new_parent);
-+		goto out_dput;
-+	}
- 
--	if (old_parent_dentry->d_inode == new_parent_dentry->d_inode)
--		return 0;	/* nothing to move */
-+	if (old_parent->d_inode == new_parent->d_inode) {
-+		error = 0;
-+		goto out_dput;	/* nothing to move */
-+	}
- again:
--	mutex_lock(&old_parent_dentry->d_inode->i_mutex);
--	if (!mutex_trylock(&new_parent_dentry->d_inode->i_mutex)) {
--		mutex_unlock(&old_parent_dentry->d_inode->i_mutex);
-+	mutex_lock(&old_parent->d_inode->i_mutex);
-+	if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
-+		mutex_unlock(&old_parent->d_inode->i_mutex);
- 		goto again;
- 	}
- 
--	new_parent_sd = new_parent_dentry->d_fsdata;
--	sd = kobj->sd;
--
--	new_dentry = lookup_one_len(kobj->name, new_parent_dentry,
--				    strlen(kobj->name));
-+	new_dentry = lookup_one_len(kobj->name, new_parent, strlen(kobj->name));
- 	if (IS_ERR(new_dentry)) {
- 		error = PTR_ERR(new_dentry);
--		goto out;
-+		goto out_unlock;
- 	} else
- 		error = 0;
- 	d_add(new_dentry, NULL);
-@@ -1027,10 +1027,14 @@ again:
- 	sysfs_link_sibling(sd);
- 
- 	mutex_unlock(&sysfs_mutex);
--out:
--	mutex_unlock(&new_parent_dentry->d_inode->i_mutex);
--	mutex_unlock(&old_parent_dentry->d_inode->i_mutex);
- 
-+ out_unlock:
-+	mutex_unlock(&new_parent->d_inode->i_mutex);
-+	mutex_unlock(&old_parent->d_inode->i_mutex);
-+ out_dput:
-+	dput(new_parent);
-+	dput(old_dentry);
-+	dput(new_dentry);
- 	return error;
+@@ -591,8 +592,9 @@ static void callbackfn_rbu(const struct firmware *fw, void *context)
+ 	spin_unlock(&rbu_data.lock);
  }
  
-@@ -1191,12 +1195,20 @@ static loff_t sysfs_dir_lseek(struct file * file, loff_t offset, int origin)
- int sysfs_make_shadowed_dir(struct kobject *kobj,
- 	void * (*follow_link)(struct dentry *, struct nameidata *))
+-static ssize_t read_rbu_image_type(struct kobject *kobj, char *buffer,
+-	loff_t pos, size_t count)
++static ssize_t read_rbu_image_type(struct kobject *kobj,
++				   struct bin_attribute *bin_attr,
++				   char *buffer, loff_t pos, size_t count)
  {
-+	struct dentry *dentry;
- 	struct inode *inode;
- 	struct inode_operations *i_op;
- 
--	inode = kobj->sd->s_dentry->d_inode;
--	if (inode->i_op != &sysfs_dir_inode_operations)
-+	/* get dentry for @kobj->sd, dentry of a shadowed dir is pinned */
-+	dentry = sysfs_get_dentry(kobj->sd);
-+	if (IS_ERR(dentry))
-+		return PTR_ERR(dentry);
-+
-+	inode = dentry->d_inode;
-+	if (inode->i_op != &sysfs_dir_inode_operations) {
-+		dput(dentry);
- 		return -EINVAL;
-+	}
- 
- 	i_op = kmalloc(sizeof(*i_op), GFP_KERNEL);
- 	if (!i_op)
-@@ -1223,17 +1235,23 @@ int sysfs_make_shadowed_dir(struct kobject *kobj,
- 
- struct sysfs_dirent *sysfs_create_shadow_dir(struct kobject *kobj)
- {
--	struct dentry *dir = kobj->sd->s_dentry;
--	struct inode *inode = dir->d_inode;
--	struct dentry *parent = dir->d_parent;
--	struct sysfs_dirent *parent_sd = parent->d_fsdata;
--	struct dentry *shadow;
-+	struct sysfs_dirent *parent_sd = kobj->sd->s_parent;
-+	struct dentry *dir, *parent, *shadow;
-+	struct inode *inode;
- 	struct sysfs_dirent *sd;
- 	struct sysfs_addrm_cxt acxt;
- 
-+	dir = sysfs_get_dentry(kobj->sd);
-+	if (IS_ERR(dir)) {
-+		sd = (void *)dir;
-+		goto out;
-+	}
-+	parent = dir->d_parent;
-+
-+	inode = dir->d_inode;
- 	sd = ERR_PTR(-EINVAL);
- 	if (!sysfs_is_shadowed_inode(inode))
--		goto out;
-+		goto out_dput;
- 
- 	shadow = d_alloc(parent, &dir->d_name);
- 	if (!shadow)
-@@ -1258,12 +1276,15 @@ struct sysfs_dirent *sysfs_create_shadow_dir(struct kobject *kobj)
- 
- 	dget(shadow);		/* Extra count - pin the dentry in core */
- 
--out:
--	return sd;
--nomem:
-+	goto out_dput;
-+
-+ nomem:
- 	dput(shadow);
- 	sd = ERR_PTR(-ENOMEM);
--	goto out;
-+ out_dput:
-+	dput(dir);
-+ out:
-+	return sd;
+ 	int size = 0;
+ 	if (!pos)
+@@ -600,8 +602,9 @@ static ssize_t read_rbu_image_type(struct kobject *kobj, char *buffer,
+ 	return size;
  }
  
+-static ssize_t write_rbu_image_type(struct kobject *kobj, char *buffer,
+-	loff_t pos, size_t count)
++static ssize_t write_rbu_image_type(struct kobject *kobj,
++				    struct bin_attribute *bin_attr,
++				    char *buffer, loff_t pos, size_t count)
+ {
+ 	int rc = count;
+ 	int req_firm_rc = 0;
+@@ -660,8 +663,9 @@ static ssize_t write_rbu_image_type(struct kobject *kobj, char *buffer,
+ 	return rc;
+ }
+ 
+-static ssize_t read_rbu_packet_size(struct kobject *kobj, char *buffer,
+-	loff_t pos, size_t count)
++static ssize_t read_rbu_packet_size(struct kobject *kobj,
++				    struct bin_attribute *bin_attr,
++				    char *buffer, loff_t pos, size_t count)
+ {
+ 	int size = 0;
+ 	if (!pos) {
+@@ -672,8 +676,9 @@ static ssize_t read_rbu_packet_size(struct kobject *kobj, char *buffer,
+ 	return size;
+ }
+ 
+-static ssize_t write_rbu_packet_size(struct kobject *kobj, char *buffer,
+-	loff_t pos, size_t count)
++static ssize_t write_rbu_packet_size(struct kobject *kobj,
++				     struct bin_attribute *bin_attr,
++				     char *buffer, loff_t pos, size_t count)
+ {
+ 	unsigned long temp;
+ 	spin_lock(&rbu_data.lock);
+diff --git a/drivers/i2c/chips/eeprom.c b/drivers/i2c/chips/eeprom.c
+index 5990dd5..3328164 100644
+--- a/drivers/i2c/chips/eeprom.c
++++ b/drivers/i2c/chips/eeprom.c
+@@ -110,7 +110,8 @@ exit:
+ 	mutex_unlock(&data->update_lock);
+ }
+ 
+-static ssize_t eeprom_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t eeprom_read(struct kobject *kobj, struct bin_attribute *bin_attr,
++			   char *buf, loff_t off, size_t count)
+ {
+ 	struct i2c_client *client = to_i2c_client(container_of(kobj, struct device, kobj));
+ 	struct eeprom_data *data = i2c_get_clientdata(client);
+diff --git a/drivers/i2c/chips/max6875.c b/drivers/i2c/chips/max6875.c
+index 1405ce5..4e238c0 100644
+--- a/drivers/i2c/chips/max6875.c
++++ b/drivers/i2c/chips/max6875.c
+@@ -125,8 +125,9 @@ exit_up:
+ 	mutex_unlock(&data->update_lock);
+ }
+ 
+-static ssize_t max6875_read(struct kobject *kobj, char *buf, loff_t off,
+-			    size_t count)
++static ssize_t max6875_read(struct kobject *kobj,
++			    struct bin_attribute *bin_attr,
++			    char *buf, loff_t off, size_t count)
+ {
+ 	struct i2c_client *client = kobj_to_i2c_client(kobj);
+ 	struct max6875_data *data = i2c_get_clientdata(client);
+diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
+index 74556ec..70db38c 100644
+--- a/drivers/pci/hotplug/acpiphp_ibm.c
++++ b/drivers/pci/hotplug/acpiphp_ibm.c
+@@ -106,7 +106,8 @@ static int ibm_get_attention_status(struct hotplug_slot *slot, u8 *status);
+ static void ibm_handle_events(acpi_handle handle, u32 event, void *context);
+ static int ibm_get_table_from_acpi(char **bufp);
+ static ssize_t ibm_read_apci_table(struct kobject *kobj,
+-		char *buffer, loff_t pos, size_t size);
++				   struct bin_attribute *bin_attr,
++				   char *buffer, loff_t pos, size_t size);
+ static acpi_status __init ibm_find_acpi_device(acpi_handle handle,
+ 		u32 lvl, void *context, void **rv);
+ static int __init ibm_acpiphp_init(void);
+@@ -357,7 +358,8 @@ read_table_done:
+  * our solution is to only allow reading the table in all at once
+  **/
+ static ssize_t ibm_read_apci_table(struct kobject *kobj,
+-		char *buffer, loff_t pos, size_t size)
++				   struct bin_attribute *bin_attr,
++				   char *buffer, loff_t pos, size_t size)
+ {
+ 	int bytes_read = -EINVAL;
+ 	char *table = NULL;
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index d448f8d..6543cbe 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -213,7 +213,8 @@ struct device_attribute pci_dev_attrs[] = {
+ };
+ 
+ static ssize_t
+-pci_read_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
++pci_read_config(struct kobject *kobj, struct bin_attribute *bin_attr,
++		char *buf, loff_t off, size_t count)
+ {
+ 	struct pci_dev *dev = to_pci_dev(container_of(kobj,struct device,kobj));
+ 	unsigned int size = 64;
+@@ -285,7 +286,8 @@ pci_read_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
+ }
+ 
+ static ssize_t
+-pci_write_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
++pci_write_config(struct kobject *kobj, struct bin_attribute *bin_attr,
++		 char *buf, loff_t off, size_t count)
+ {
+ 	struct pci_dev *dev = to_pci_dev(container_of(kobj,struct device,kobj));
+ 	unsigned int size = count;
+@@ -352,7 +354,8 @@ pci_write_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
+  * callback routine (pci_legacy_read).
+  */
+ ssize_t
+-pci_read_legacy_io(struct kobject *kobj, char *buf, loff_t off, size_t count)
++pci_read_legacy_io(struct kobject *kobj, struct bin_attribute *bin_attr,
++		   char *buf, loff_t off, size_t count)
+ {
+         struct pci_bus *bus = to_pci_bus(container_of(kobj,
+                                                       struct class_device,
+@@ -376,7 +379,8 @@ pci_read_legacy_io(struct kobject *kobj, char *buf, loff_t off, size_t count)
+  * callback routine (pci_legacy_write).
+  */
+ ssize_t
+-pci_write_legacy_io(struct kobject *kobj, char *buf, loff_t off, size_t count)
++pci_write_legacy_io(struct kobject *kobj, struct bin_attribute *bin_attr,
++		    char *buf, loff_t off, size_t count)
+ {
+         struct pci_bus *bus = to_pci_bus(container_of(kobj,
+ 						      struct class_device,
+@@ -528,7 +532,8 @@ static inline void pci_remove_resource_files(struct pci_dev *dev) { return; }
+  * writing anything except 0 enables it
+  */
+ static ssize_t
+-pci_write_rom(struct kobject *kobj, char *buf, loff_t off, size_t count)
++pci_write_rom(struct kobject *kobj, struct bin_attribute *bin_attr,
++	      char *buf, loff_t off, size_t count)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(container_of(kobj, struct device, kobj));
+ 
+@@ -551,7 +556,8 @@ pci_write_rom(struct kobject *kobj, char *buf, loff_t off, size_t count)
+  * device corresponding to @kobj.
+  */
+ static ssize_t
+-pci_read_rom(struct kobject *kobj, char *buf, loff_t off, size_t count)
++pci_read_rom(struct kobject *kobj, struct bin_attribute *bin_attr,
++	     char *buf, loff_t off, size_t count)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(container_of(kobj, struct device, kobj));
+ 	void __iomem *rom;
+diff --git a/drivers/pcmcia/socket_sysfs.c b/drivers/pcmcia/socket_sysfs.c
+index dbfbe65..b440900 100644
+--- a/drivers/pcmcia/socket_sysfs.c
++++ b/drivers/pcmcia/socket_sysfs.c
+@@ -283,7 +283,9 @@ static ssize_t pccard_extract_cis(struct pcmcia_socket *s, char *buf, loff_t off
+ 	return (ret);
+ }
+ 
+-static ssize_t pccard_show_cis(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t pccard_show_cis(struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t off, size_t count)
+ {
+ 	unsigned int size = 0x200;
+ 
+@@ -311,7 +313,9 @@ static ssize_t pccard_show_cis(struct kobject *kobj, char *buf, loff_t off, size
+ 	return (count);
+ }
+ 
+-static ssize_t pccard_store_cis(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t pccard_store_cis(struct kobject *kobj,
++				struct bin_attribute *bin_attr,
++				char *buf, loff_t off, size_t count)
+ {
+ 	struct pcmcia_socket *s = to_socket(container_of(kobj, struct device, kobj));
+ 	cisdump_t *cis;
+diff --git a/drivers/rapidio/rio-sysfs.c b/drivers/rapidio/rio-sysfs.c
+index a3972b9..659e311 100644
+--- a/drivers/rapidio/rio-sysfs.c
++++ b/drivers/rapidio/rio-sysfs.c
+@@ -67,7 +67,8 @@ struct device_attribute rio_dev_attrs[] = {
+ };
+ 
+ static ssize_t
+-rio_read_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
++rio_read_config(struct kobject *kobj, struct bin_attribute *bin_attr,
++		char *buf, loff_t off, size_t count)
+ {
+ 	struct rio_dev *dev =
+ 	    to_rio_dev(container_of(kobj, struct device, kobj));
+@@ -137,7 +138,8 @@ rio_read_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
+ }
+ 
+ static ssize_t
+-rio_write_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
++rio_write_config(struct kobject *kobj, struct bin_attribute *bin_attr,
++		 char *buf, loff_t off, size_t count)
+ {
+ 	struct rio_dev *dev =
+ 	    to_rio_dev(container_of(kobj, struct device, kobj));
+diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
+index b024cfb..f98a83a 100644
+--- a/drivers/rtc/rtc-ds1553.c
++++ b/drivers/rtc/rtc-ds1553.c
+@@ -258,8 +258,9 @@ static const struct rtc_class_ops ds1553_rtc_ops = {
+ 	.ioctl		= ds1553_rtc_ioctl,
+ };
+ 
+-static ssize_t ds1553_nvram_read(struct kobject *kobj, char *buf,
+-				 loff_t pos, size_t size)
++static ssize_t ds1553_nvram_read(struct kobject *kobj,
++				 struct bin_attribute *bin_attr,
++				 char *buf, loff_t pos, size_t size)
+ {
+ 	struct platform_device *pdev =
+ 		to_platform_device(container_of(kobj, struct device, kobj));
+@@ -272,8 +273,9 @@ static ssize_t ds1553_nvram_read(struct kobject *kobj, char *buf,
+ 	return count;
+ }
+ 
+-static ssize_t ds1553_nvram_write(struct kobject *kobj, char *buf,
+-				  loff_t pos, size_t size)
++static ssize_t ds1553_nvram_write(struct kobject *kobj,
++				  struct bin_attribute *bin_attr,
++				  char *buf, loff_t pos, size_t size)
+ {
+ 	struct platform_device *pdev =
+ 		to_platform_device(container_of(kobj, struct device, kobj));
+diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
+index 1638acd..d1778ae 100644
+--- a/drivers/rtc/rtc-ds1742.c
++++ b/drivers/rtc/rtc-ds1742.c
+@@ -127,8 +127,9 @@ static const struct rtc_class_ops ds1742_rtc_ops = {
+ 	.set_time	= ds1742_rtc_set_time,
+ };
+ 
+-static ssize_t ds1742_nvram_read(struct kobject *kobj, char *buf,
+-				 loff_t pos, size_t size)
++static ssize_t ds1742_nvram_read(struct kobject *kobj,
++				 struct bin_attribute *bin_attr,
++				 char *buf, loff_t pos, size_t size)
+ {
+ 	struct platform_device *pdev =
+ 		to_platform_device(container_of(kobj, struct device, kobj));
+@@ -141,8 +142,9 @@ static ssize_t ds1742_nvram_read(struct kobject *kobj, char *buf,
+ 	return count;
+ }
+ 
+-static ssize_t ds1742_nvram_write(struct kobject *kobj, char *buf,
+-				  loff_t pos, size_t size)
++static ssize_t ds1742_nvram_write(struct kobject *kobj,
++				  struct bin_attribute *bin_attr,
++				  char *buf, loff_t pos, size_t size)
+ {
+ 	struct platform_device *pdev =
+ 		to_platform_device(container_of(kobj, struct device, kobj));
+diff --git a/drivers/s390/cio/chp.c b/drivers/s390/cio/chp.c
+index 96a8a72..b57d93d 100644
+--- a/drivers/s390/cio/chp.c
++++ b/drivers/s390/cio/chp.c
+@@ -141,8 +141,9 @@ static int s390_vary_chpid(struct chp_id chpid, int on)
+ /*
+  * Channel measurement related functions
+  */
+-static ssize_t chp_measurement_chars_read(struct kobject *kobj, char *buf,
+-					  loff_t off, size_t count)
++static ssize_t chp_measurement_chars_read(struct kobject *kobj,
++					  struct bin_attribute *bin_attr,
++					  char *buf, loff_t off, size_t count)
+ {
+ 	struct channel_path *chp;
+ 	unsigned int size;
+@@ -192,8 +193,9 @@ static void chp_measurement_copy_block(struct cmg_entry *buf,
+ 	} while (reference_buf.values[0] != buf->values[0]);
+ }
+ 
+-static ssize_t chp_measurement_read(struct kobject *kobj, char *buf,
+-				    loff_t off, size_t count)
++static ssize_t chp_measurement_read(struct kobject *kobj,
++				    struct bin_attribute *bin_attr,
++				    char *buf, loff_t off, size_t count)
+ {
+ 	struct channel_path *chp;
+ 	struct channel_subsystem *css;
+diff --git a/drivers/scsi/arcmsr/arcmsr_attr.c b/drivers/scsi/arcmsr/arcmsr_attr.c
+index 8908228..06c0dce 100644
+--- a/drivers/scsi/arcmsr/arcmsr_attr.c
++++ b/drivers/scsi/arcmsr/arcmsr_attr.c
+@@ -59,8 +59,9 @@
+ struct class_device_attribute *arcmsr_host_attrs[];
+ 
+ static ssize_t
+-arcmsr_sysfs_iop_message_read(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++arcmsr_sysfs_iop_message_read(struct kobject *kobj,
++			      struct bin_attribute *bin_attr,
++			      char *buf, loff_t off, size_t count)
+ {
+ 	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+ 	struct Scsi_Host *host = class_to_shost(cdev);
+@@ -105,8 +106,9 @@ arcmsr_sysfs_iop_message_read(struct kobject *kobj, char *buf, loff_t off,
+ }
+ 
+ static ssize_t
+-arcmsr_sysfs_iop_message_write(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++arcmsr_sysfs_iop_message_write(struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t off, size_t count)
+ {
+ 	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+ 	struct Scsi_Host *host = class_to_shost(cdev);
+@@ -152,8 +154,9 @@ arcmsr_sysfs_iop_message_write(struct kobject *kobj, char *buf, loff_t off,
+ }
+ 
+ static ssize_t
+-arcmsr_sysfs_iop_message_clear(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++arcmsr_sysfs_iop_message_clear(struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t off, size_t count)
+ {
+ 	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+ 	struct Scsi_Host *host = class_to_shost(cdev);
+diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
+index fa6ff29..4a3083e 100644
+--- a/drivers/scsi/ipr.c
++++ b/drivers/scsi/ipr.c
+@@ -2465,6 +2465,7 @@ restart:
  /**
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 69bacf1..cc49799 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -362,43 +362,22 @@ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
- 	return POLLERR|POLLPRI;
- }
- 
--
--static struct dentry *step_down(struct dentry *dir, const char * name)
-+void sysfs_notify(struct kobject *k, char *dir, char *attr)
+  * ipr_read_trace - Dump the adapter trace
+  * @kobj:		kobject struct
++ * @bin_attr:		bin_attribute struct
+  * @buf:		buffer
+  * @off:		offset
+  * @count:		buffer size
+@@ -2472,8 +2473,9 @@ restart:
+  * Return value:
+  *	number of bytes printed to buffer
+  **/
+-static ssize_t ipr_read_trace(struct kobject *kobj, char *buf,
+-			      loff_t off, size_t count)
++static ssize_t ipr_read_trace(struct kobject *kobj,
++			      struct bin_attribute *bin_attr,
++			      char *buf, loff_t off, size_t count)
  {
--	struct dentry * de;
--
--	if (dir == NULL || dir->d_inode == NULL)
--		return NULL;
--
--	mutex_lock(&dir->d_inode->i_mutex);
--	de = lookup_one_len(name, dir, strlen(name));
--	mutex_unlock(&dir->d_inode->i_mutex);
--	dput(dir);
--	if (IS_ERR(de))
--		return NULL;
--	if (de->d_inode == NULL) {
--		dput(de);
--		return NULL;
--	}
--	return de;
--}
-+	struct sysfs_dirent *sd = k->sd;
- 
--void sysfs_notify(struct kobject * k, char *dir, char *attr)
--{
--	struct dentry *de = k->sd->s_dentry;
--	if (de)
--		dget(de);
--	if (de && dir)
--		de = step_down(de, dir);
--	if (de && attr)
--		de = step_down(de, attr);
--	if (de) {
--		struct sysfs_dirent * sd = de->d_fsdata;
--		if (sd)
--			atomic_inc(&sd->s_event);
-+	mutex_lock(&sysfs_mutex);
-+
-+	if (sd && dir)
-+		sd = sysfs_find_dirent(sd, dir);
-+	if (sd && attr)
-+		sd = sysfs_find_dirent(sd, attr);
-+	if (sd) {
-+		atomic_inc(&sd->s_event);
- 		wake_up_interruptible(&k->poll);
--		dput(de);
- 	}
-+
-+	mutex_unlock(&sysfs_mutex);
- }
- EXPORT_SYMBOL_GPL(sysfs_notify);
- 
-@@ -485,30 +464,31 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_group);
-  */
- int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
+ 	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+ 	struct Scsi_Host *shost = class_to_shost(cdev);
+@@ -3166,6 +3168,7 @@ static struct class_device_attribute *ipr_ioa_attrs[] = {
+ /**
+  * ipr_read_dump - Dump the adapter
+  * @kobj:		kobject struct
++ * @bin_attr:		bin_attribute struct
+  * @buf:		buffer
+  * @off:		offset
+  * @count:		buffer size
+@@ -3173,8 +3176,9 @@ static struct class_device_attribute *ipr_ioa_attrs[] = {
+  * Return value:
+  *	number of bytes printed to buffer
+  **/
+-static ssize_t ipr_read_dump(struct kobject *kobj, char *buf,
+-			      loff_t off, size_t count)
++static ssize_t ipr_read_dump(struct kobject *kobj,
++			     struct bin_attribute *bin_attr,
++			     char *buf, loff_t off, size_t count)
  {
--	struct dentry *dir = kobj->sd->s_dentry;
--	struct dentry * victim;
--	int res = -ENOENT;
--
--	mutex_lock(&dir->d_inode->i_mutex);
--	victim = lookup_one_len(attr->name, dir, strlen(attr->name));
--	if (!IS_ERR(victim)) {
--		/* make sure dentry is really there */
--		if (victim->d_inode && 
--		    (victim->d_parent->d_inode == dir->d_inode)) {
--			victim->d_inode->i_mtime = CURRENT_TIME;
--			fsnotify_modify(victim);
--			res = 0;
--		} else
--			d_drop(victim);
--		
--		/**
--		 * Drop the reference acquired from lookup_one_len() above.
--		 */
--		dput(victim);
-+	struct sysfs_dirent *victim_sd = NULL;
-+	struct dentry *victim = NULL;
-+	int rc;
-+
-+	rc = -ENOENT;
-+	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
-+	if (!victim_sd)
-+		goto out;
-+
-+	victim = sysfs_get_dentry(victim_sd);
-+	if (IS_ERR(victim)) {
-+		rc = PTR_ERR(victim);
-+		victim = NULL;
-+		goto out;
- 	}
--	mutex_unlock(&dir->d_inode->i_mutex);
- 
--	return res;
-+	mutex_lock(&victim->d_inode->i_mutex);
-+	victim->d_inode->i_mtime = CURRENT_TIME;
-+	fsnotify_modify(victim);
-+	mutex_unlock(&victim->d_inode->i_mutex);
-+	rc = 0;
-+ out:
-+	dput(victim);
-+	sysfs_put(victim_sd);
-+	return rc;
- }
- 
- 
-@@ -521,30 +501,34 @@ int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
-  */
- int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
+ 	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+ 	struct Scsi_Host *shost = class_to_shost(cdev);
+@@ -3327,6 +3331,7 @@ static int ipr_free_dump(struct ipr_ioa_cfg *ioa_cfg)
+ /**
+  * ipr_write_dump - Setup dump state of adapter
+  * @kobj:		kobject struct
++ * @bin_attr:		bin_attribute struct
+  * @buf:		buffer
+  * @off:		offset
+  * @count:		buffer size
+@@ -3334,8 +3339,9 @@ static int ipr_free_dump(struct ipr_ioa_cfg *ioa_cfg)
+  * Return value:
+  *	number of bytes printed to buffer
+  **/
+-static ssize_t ipr_write_dump(struct kobject *kobj, char *buf,
+-			      loff_t off, size_t count)
++static ssize_t ipr_write_dump(struct kobject *kobj,
++			      struct bin_attribute *bin_attr,
++			      char *buf, loff_t off, size_t count)
  {
--	struct dentry *dir = kobj->sd->s_dentry;
--	struct dentry *victim;
-+	struct sysfs_dirent *victim_sd = NULL;
-+	struct dentry *victim = NULL;
- 	struct inode * inode;
- 	struct iattr newattrs;
--	int res = -ENOENT;
--
--	mutex_lock(&dir->d_inode->i_mutex);
--	victim = lookup_one_len(attr->name, dir, strlen(attr->name));
--	if (!IS_ERR(victim)) {
--		if (victim->d_inode &&
--		    (victim->d_parent->d_inode == dir->d_inode)) {
--			inode = victim->d_inode;
--			mutex_lock(&inode->i_mutex);
--			newattrs.ia_mode = (mode & S_IALLUGO) |
--						(inode->i_mode & ~S_IALLUGO);
--			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
--			res = notify_change(victim, &newattrs);
--			mutex_unlock(&inode->i_mutex);
--		}
--		dput(victim);
-+	int rc;
-+
-+	rc = -ENOENT;
-+	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
-+	if (!victim_sd)
-+		goto out;
-+
-+	victim = sysfs_get_dentry(victim_sd);
-+	if (IS_ERR(victim)) {
-+		rc = PTR_ERR(victim);
-+		victim = NULL;
-+		goto out;
- 	}
--	mutex_unlock(&dir->d_inode->i_mutex);
+ 	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+ 	struct Scsi_Host *shost = class_to_shost(cdev);
+diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
+index 578ed79..23e90c5 100644
+--- a/drivers/scsi/libsas/sas_expander.c
++++ b/drivers/scsi/libsas/sas_expander.c
+@@ -38,8 +38,10 @@ static int sas_disable_routing(struct domain_device *dev,  u8 *sas_addr);
  
--	return res;
-+	inode = victim->d_inode;
-+	mutex_lock(&inode->i_mutex);
-+	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-+	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-+	rc = notify_change(victim, &newattrs);
-+	mutex_unlock(&inode->i_mutex);
-+ out:
-+	dput(victim);
-+	sysfs_put(victim_sd);
-+	return rc;
+ #if 0
+ /* FIXME: smp needs to migrate into the sas class */
+-static ssize_t smp_portal_read(struct kobject *, char *, loff_t, size_t);
+-static ssize_t smp_portal_write(struct kobject *, char *, loff_t, size_t);
++static ssize_t smp_portal_read(struct kobject *, struct bin_attribute *,
++			       char *, loff_t, size_t);
++static ssize_t smp_portal_write(struct kobject *, struct bin_attribute *,
++				char *, loff_t, size_t);
+ #endif
+ 
+ /* ---------- SMP task management ---------- */
+@@ -1845,8 +1847,9 @@ out:
+ #if 0
+ /* ---------- SMP portal ---------- */
+ 
+-static ssize_t smp_portal_write(struct kobject *kobj, char *buf, loff_t offs,
+-				size_t size)
++static ssize_t smp_portal_write(struct kobject *kobj,
++				struct bin_attribute *bin_attr,
++				char *buf, loff_t offs, size_t size)
+ {
+ 	struct domain_device *dev = to_dom_device(kobj);
+ 	struct expander_device *ex = &dev->ex_dev;
+@@ -1872,8 +1875,9 @@ static ssize_t smp_portal_write(struct kobject *kobj, char *buf, loff_t offs,
+ 	return size;
  }
- EXPORT_SYMBOL_GPL(sysfs_chmod_file);
  
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 078537e..402cc35 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -24,7 +24,7 @@ static const struct super_operations sysfs_ops = {
- 	.drop_inode	= sysfs_delete_inode,
+-static ssize_t smp_portal_read(struct kobject *kobj, char *buf, loff_t offs,
+-			       size_t size)
++static ssize_t smp_portal_read(struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t offs, size_t size)
+ {
+ 	struct domain_device *dev = to_dom_device(kobj);
+ 	struct expander_device *ex = &dev->ex_dev;
+diff --git a/drivers/scsi/lpfc/lpfc_attr.c b/drivers/scsi/lpfc/lpfc_attr.c
+index f81fe50..5dfda97 100644
+--- a/drivers/scsi/lpfc/lpfc_attr.c
++++ b/drivers/scsi/lpfc/lpfc_attr.c
+@@ -1133,7 +1133,8 @@ struct class_device_attribute *lpfc_host_attrs[] = {
  };
  
--static struct sysfs_dirent sysfs_root = {
-+struct sysfs_dirent sysfs_root = {
- 	.s_count	= ATOMIC_INIT(1),
- 	.s_flags	= SYSFS_ROOT,
- 	.s_mode		= S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO,
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 72530dc..6a37f23 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -52,6 +52,7 @@ struct sysfs_addrm_cxt {
+ static ssize_t
+-sysfs_ctlreg_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
++sysfs_ctlreg_write(struct kobject *kobj, struct bin_attribute *bin_attr,
++		   char *buf, loff_t off, size_t count)
+ {
+ 	size_t buf_off;
+ 	struct Scsi_Host *host = class_to_shost(container_of(kobj,
+@@ -1165,7 +1166,8 @@ sysfs_ctlreg_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
+ }
+ 
+ static ssize_t
+-sysfs_ctlreg_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
++sysfs_ctlreg_read(struct kobject *kobj, struct bin_attribute *bin_attr,
++		  char *buf, loff_t off, size_t count)
+ {
+ 	size_t buf_off;
+ 	uint32_t * tmp_ptr;
+@@ -1221,7 +1223,8 @@ sysfs_mbox_idle (struct lpfc_hba * phba)
+ }
+ 
+ static ssize_t
+-sysfs_mbox_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
++sysfs_mbox_write(struct kobject *kobj, struct bin_attribute *bin_attr,
++		 char *buf, loff_t off, size_t count)
+ {
+ 	struct Scsi_Host * host =
+ 		class_to_shost(container_of(kobj, struct class_device, kobj));
+@@ -1273,7 +1276,8 @@ sysfs_mbox_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
+ }
+ 
+ static ssize_t
+-sysfs_mbox_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
++sysfs_mbox_read(struct kobject *kobj, struct bin_attribute *bin_attr,
++		char *buf, loff_t off, size_t count)
+ {
+ 	struct Scsi_Host *host =
+ 		class_to_shost(container_of(kobj, struct class_device,
+diff --git a/drivers/scsi/qla2xxx/qla_attr.c b/drivers/scsi/qla2xxx/qla_attr.c
+index 9658725..942db9d 100644
+--- a/drivers/scsi/qla2xxx/qla_attr.c
++++ b/drivers/scsi/qla2xxx/qla_attr.c
+@@ -11,8 +11,9 @@
+ /* SYSFS attributes --------------------------------------------------------- */
+ 
+ static ssize_t
+-qla2x00_sysfs_read_fw_dump(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_read_fw_dump(struct kobject *kobj,
++			   struct bin_attribute *bin_attr,
++			   char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -31,8 +32,9 @@ qla2x00_sysfs_read_fw_dump(struct kobject *kobj, char *buf, loff_t off,
+ }
+ 
+ static ssize_t
+-qla2x00_sysfs_write_fw_dump(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_write_fw_dump(struct kobject *kobj,
++			    struct bin_attribute *bin_attr,
++			    char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -80,8 +82,9 @@ static struct bin_attribute sysfs_fw_dump_attr = {
  };
  
- extern struct vfsmount * sysfs_mount;
-+extern struct sysfs_dirent sysfs_root;
- extern struct kmem_cache *sysfs_dir_cachep;
+ static ssize_t
+-qla2x00_sysfs_read_nvram(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_read_nvram(struct kobject *kobj,
++			 struct bin_attribute *bin_attr,
++			 char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -100,8 +103,9 @@ qla2x00_sysfs_read_nvram(struct kobject *kobj, char *buf, loff_t off,
+ }
  
- extern struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
+ static ssize_t
+-qla2x00_sysfs_write_nvram(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_write_nvram(struct kobject *kobj,
++			  struct bin_attribute *bin_attr,
++			  char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -155,8 +159,9 @@ static struct bin_attribute sysfs_nvram_attr = {
+ };
+ 
+ static ssize_t
+-qla2x00_sysfs_read_optrom(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_read_optrom(struct kobject *kobj,
++			  struct bin_attribute *bin_attr,
++			  char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -174,8 +179,9 @@ qla2x00_sysfs_read_optrom(struct kobject *kobj, char *buf, loff_t off,
+ }
+ 
+ static ssize_t
+-qla2x00_sysfs_write_optrom(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_write_optrom(struct kobject *kobj,
++			   struct bin_attribute *bin_attr,
++			   char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -203,8 +209,9 @@ static struct bin_attribute sysfs_optrom_attr = {
+ };
+ 
+ static ssize_t
+-qla2x00_sysfs_write_optrom_ctl(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_write_optrom_ctl(struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -282,8 +289,9 @@ static struct bin_attribute sysfs_optrom_ctl_attr = {
+ };
+ 
+ static ssize_t
+-qla2x00_sysfs_read_vpd(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_read_vpd(struct kobject *kobj,
++		       struct bin_attribute *bin_attr,
++		       char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -301,8 +309,9 @@ qla2x00_sysfs_read_vpd(struct kobject *kobj, char *buf, loff_t off,
+ }
+ 
+ static ssize_t
+-qla2x00_sysfs_write_vpd(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_write_vpd(struct kobject *kobj,
++			struct bin_attribute *bin_attr,
++			char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -330,8 +339,9 @@ static struct bin_attribute sysfs_vpd_attr = {
+ };
+ 
+ static ssize_t
+-qla2x00_sysfs_read_sfp(struct kobject *kobj, char *buf, loff_t off,
+-    size_t count)
++qla2x00_sysfs_read_sfp(struct kobject *kobj,
++		       struct bin_attribute *bin_attr,
++		       char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+diff --git a/drivers/spi/at25.c b/drivers/spi/at25.c
+index fde1ded..e007833 100644
+--- a/drivers/spi/at25.c
++++ b/drivers/spi/at25.c
+@@ -111,7 +111,8 @@ at25_ee_read(
+ }
+ 
+ static ssize_t
+-at25_bin_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
++at25_bin_read(struct kobject *kobj, struct bin_attribute *bin_attr,
++	      char *buf, loff_t off, size_t count)
+ {
+ 	struct device		*dev;
+ 	struct at25_data	*at25;
+@@ -236,7 +237,8 @@ at25_ee_write(struct at25_data *at25, char *buf, loff_t off, size_t count)
+ }
+ 
+ static ssize_t
+-at25_bin_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
++at25_bin_write(struct kobject *kobj, struct bin_attribute *bin_attr,
++	       char *buf, loff_t off, size_t count)
+ {
+ 	struct device		*dev;
+ 	struct at25_data	*at25;
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+index 3b3c657..2349e71 100644
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -2102,7 +2102,9 @@ static ssize_t radeon_show_one_edid(char *buf, loff_t off, size_t count, const u
+ }
+ 
+ 
+-static ssize_t radeon_show_edid1(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t radeon_show_edid1(struct kobject *kobj,
++				 struct bin_attribute *bin_attr,
++				 char *buf, loff_t off, size_t count)
+ {
+ 	struct device *dev = container_of(kobj, struct device, kobj);
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+@@ -2113,7 +2115,9 @@ static ssize_t radeon_show_edid1(struct kobject *kobj, char *buf, loff_t off, si
+ }
+ 
+ 
+-static ssize_t radeon_show_edid2(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t radeon_show_edid2(struct kobject *kobj,
++				 struct bin_attribute *bin_attr,
++				 char *buf, loff_t off, size_t count)
+ {
+ 	struct device *dev = container_of(kobj, struct device, kobj);
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+diff --git a/drivers/w1/slaves/w1_ds2433.c b/drivers/w1/slaves/w1_ds2433.c
+index 4e13aa7..cab5600 100644
+--- a/drivers/w1/slaves/w1_ds2433.c
++++ b/drivers/w1/slaves/w1_ds2433.c
+@@ -91,8 +91,9 @@ static int w1_f23_refresh_block(struct w1_slave *sl, struct w1_f23_data *data,
+ }
+ #endif	/* CONFIG_W1_SLAVE_DS2433_CRC */
+ 
+-static ssize_t w1_f23_read_bin(struct kobject *kobj, char *buf, loff_t off,
+-			       size_t count)
++static ssize_t w1_f23_read_bin(struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t off, size_t count)
+ {
+ 	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+ #ifdef CONFIG_W1_SLAVE_DS2433_CRC
+@@ -199,8 +200,9 @@ static int w1_f23_write(struct w1_slave *sl, int addr, int len, const u8 *data)
+ 	return 0;
+ }
+ 
+-static ssize_t w1_f23_write_bin(struct kobject *kobj, char *buf, loff_t off,
+-				size_t count)
++static ssize_t w1_f23_write_bin(struct kobject *kobj,
++				struct bin_attribute *bin_attr,
++				char *buf, loff_t off, size_t count)
+ {
+ 	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+ 	int addr, len, idx;
+diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
+index 8ba4e57..4318935 100644
+--- a/drivers/w1/slaves/w1_therm.c
++++ b/drivers/w1/slaves/w1_therm.c
+@@ -42,7 +42,8 @@ static u8 bad_roms[][9] = {
+ 				{}
+ 			};
+ 
+-static ssize_t w1_therm_read_bin(struct kobject *, char *, loff_t, size_t);
++static ssize_t w1_therm_read_bin(struct kobject *, struct bin_attribute *,
++				 char *, loff_t, size_t);
+ 
+ static struct bin_attribute w1_therm_bin_attr = {
+ 	.attr = {
+@@ -158,7 +159,9 @@ static int w1_therm_check_rom(u8 rom[9])
+ 	return 0;
+ }
+ 
+-static ssize_t w1_therm_read_bin(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t w1_therm_read_bin(struct kobject *kobj,
++				 struct bin_attribute *bin_attr,
++				 char *buf, loff_t off, size_t count)
+ {
+ 	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+ 	struct w1_master *dev = sl->master;
+diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
+index 1838cb2..f5c5b76 100644
+--- a/drivers/w1/w1.c
++++ b/drivers/w1/w1.c
+@@ -105,7 +105,9 @@ static ssize_t w1_slave_read_name(struct device *dev, struct device_attribute *a
+ 	return sprintf(buf, "%s\n", sl->name);
+ }
+ 
+-static ssize_t w1_slave_read_id(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t w1_slave_read_id(struct kobject *kobj,
++				struct bin_attribute *bin_attr,
++				char *buf, loff_t off, size_t count)
+ {
+ 	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+ 
+@@ -135,7 +137,9 @@ static struct bin_attribute w1_slave_attr_bin_id = {
+ 
+ /* Default family */
+ 
+-static ssize_t w1_default_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t w1_default_write(struct kobject *kobj,
++				struct bin_attribute *bin_attr,
++				char *buf, loff_t off, size_t count)
+ {
+ 	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+ 
+@@ -152,7 +156,9 @@ out_up:
+ 	return count;
+ }
+ 
+-static ssize_t w1_default_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
++static ssize_t w1_default_read(struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t off, size_t count)
+ {
+ 	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+ 
+diff --git a/drivers/zorro/zorro-sysfs.c b/drivers/zorro/zorro-sysfs.c
+index 7e03cc6..9130f1c 100644
+--- a/drivers/zorro/zorro-sysfs.c
++++ b/drivers/zorro/zorro-sysfs.c
+@@ -49,8 +49,9 @@ static ssize_t zorro_show_resource(struct device *dev, struct device_attribute *
+ 
+ static DEVICE_ATTR(resource, S_IRUGO, zorro_show_resource, NULL);
+ 
+-static ssize_t zorro_read_config(struct kobject *kobj, char *buf, loff_t off,
+-				 size_t count)
++static ssize_t zorro_read_config(struct kobject *kobj,
++				 struct bin_attribute *bin_attr,
++				 char *buf, loff_t off, size_t count)
+ {
+ 	struct zorro_dev *z = to_zorro_dev(container_of(kobj, struct device,
+ 					   kobj));
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index 55796bd..135353f 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -40,7 +40,7 @@ fill_read(struct dentry *dentry, char *buffer, loff_t off, size_t count)
+ 
+ 	rc = -EIO;
+ 	if (attr->read)
+-		rc = attr->read(kobj, buffer, off, count);
++		rc = attr->read(kobj, attr, buffer, off, count);
+ 
+ 	sysfs_put_active_two(attr_sd);
+ 
+@@ -97,7 +97,7 @@ flush_write(struct dentry *dentry, char *buffer, loff_t offset, size_t count)
+ 
+ 	rc = -EIO;
+ 	if (attr->write)
+-		rc = attr->write(kobj, buffer, offset, count);
++		rc = attr->write(kobj, attr, buffer, offset, count);
+ 
+ 	sysfs_put_active_two(attr_sd);
+ 
 diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 4c43030..2f58ca1 100644
+index 2f58ca1..be8228e 100644
 --- a/include/linux/sysfs.h
 +++ b/include/linux/sysfs.h
-@@ -81,7 +81,6 @@ struct sysfs_ops {
- #define SYSFS_KOBJ_ATTR 	0x0004
- #define SYSFS_KOBJ_BIN_ATTR	0x0008
- #define SYSFS_KOBJ_LINK 	0x0020
--#define SYSFS_NOT_PINNED	(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR | SYSFS_KOBJ_LINK)
- #define SYSFS_COPY_NAME		(SYSFS_DIR | SYSFS_KOBJ_LINK)
- 
- #define SYSFS_FLAG_MASK		~SYSFS_TYPE_MASK
+@@ -64,8 +64,10 @@ struct bin_attribute {
+ 	struct attribute	attr;
+ 	size_t			size;
+ 	void			*private;
+-	ssize_t (*read)(struct kobject *, char *, loff_t, size_t);
+-	ssize_t (*write)(struct kobject *, char *, loff_t, size_t);
++	ssize_t (*read)(struct kobject *, struct bin_attribute *,
++			char *, loff_t, size_t);
++	ssize_t (*write)(struct kobject *, struct bin_attribute *,
++			 char *, loff_t, size_t);
+ 	int (*mmap)(struct kobject *, struct bin_attribute *attr,
+ 		    struct vm_area_struct *vma);
+ };
+diff --git a/net/bridge/br_sysfs_br.c b/net/bridge/br_sysfs_br.c
+index 31ace23..4f42263 100644
+--- a/net/bridge/br_sysfs_br.c
++++ b/net/bridge/br_sysfs_br.c
+@@ -360,8 +360,9 @@ static struct attribute_group bridge_group = {
+  *
+  * Returns the number of bytes read.
+  */
+-static ssize_t brforward_read(struct kobject *kobj, char *buf,
+-			   loff_t off, size_t count)
++static ssize_t brforward_read(struct kobject *kobj,
++			      struct bin_attribute *bin_attr,
++			      char *buf, loff_t off, size_t count)
+ {
+ 	struct device *dev = to_dev(kobj);
+ 	struct net_bridge *br = to_bridge(dev);
 -- 
 1.5.2.2
 
