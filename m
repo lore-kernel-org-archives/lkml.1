@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764812AbXGKT1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933562AbXGKT14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764812AbXGKT1e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 15:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763273AbXGKTTq
+	id S933562AbXGKT14 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 15:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761209AbXGKTTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 15:19:46 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38274 "EHLO
+	Wed, 11 Jul 2007 15:19:48 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38273 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761629AbXGKTTf (ORCPT
+	with ESMTP id S932548AbXGKTTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Jul 2007 15:19:35 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: torvalds@linux-foundation.org, andi@firstfloor.org,
        linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>
-Subject: [x86 setup 29/33] Assembly header and main routine for new x86 setup code
-Date: Wed, 11 Jul 2007 12:18:54 -0700
-Message-Id: <1184181543792-git-send-email-hpa@zytor.com>
+Subject: [x86 setup 27/33] Video mode probing support for the new x86 setup code
+Date: Wed, 11 Jul 2007 12:18:52 -0700
+Message-Id: <1184181543569-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841815433948-git-send-email-hpa@zytor.com>
+In-Reply-To: <11841815423976-git-send-email-hpa@zytor.com>
 References: <1184181538674-git-send-email-hpa@zytor.com>
  <118418153862-git-send-email-hpa@zytor.com>
  <11841815382283-git-send-email-hpa@zytor.com>
@@ -46,9 +46,7 @@ References: <1184181538674-git-send-email-hpa@zytor.com>
  <11841815423652-git-send-email-hpa@zytor.com>
  <11841815422973-git-send-email-hpa@zytor.com>
  <11841815423976-git-send-email-hpa@zytor.com>
- <1184181543569-git-send-email-hpa@zytor.com>
- <11841815433948-git-send-email-hpa@zytor.com>
-Message-Id: <1a615a45477fc9b51fcb45279215881cc92dd794.1184181208.git.hpa@zytor.com>
+Message-Id: <509992ad2f618e07db2c72a96f8f5d708bfc6991.1184181208.git.hpa@zytor.com>
 In-Reply-To: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 References: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -56,312 +54,124 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: H. Peter Anvin <hpa@zytor.com>
 
-The assembly header and initialization code, and the main() routine.
-main.c also contains some miscellaneous very short routines.
+Video mode probing for the new x86 setup code.  This code breaks down
+different drivers into modules.  This code deliberately drops support
+for a lot of the vendor-specific mode probing present in the assembly
+version, since a lot of those probes have been found to be stale in
+current versions of those chips -- frequently, support for those modes
+have been dropped from recent video BIOSes due to space constraints,
+but the video BIOS signatures are still the same.
+
+However, additional drivers should be extremely straightforward to plug
+in, if desirable.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/i386/boot/header.S |  283 +++++++++++++++++++++++++++++++++++++++++++++++
- arch/i386/boot/main.c   |  161 +++++++++++++++++++++++++++
- 2 files changed, 444 insertions(+), 0 deletions(-)
- create mode 100644 arch/i386/boot/header.S
- create mode 100644 arch/i386/boot/main.c
+ arch/i386/boot/vesa.h       |   79 ++++++++
+ arch/i386/boot/video-bios.c |  125 ++++++++++++
+ arch/i386/boot/video-vesa.c |  284 +++++++++++++++++++++++++++
+ arch/i386/boot/video-vga.c  |  260 ++++++++++++++++++++++++
+ arch/i386/boot/video.c      |  456 +++++++++++++++++++++++++++++++++++++++++++
+ arch/i386/boot/video.h      |  145 ++++++++++++++
+ 6 files changed, 1349 insertions(+), 0 deletions(-)
+ create mode 100644 arch/i386/boot/vesa.h
+ create mode 100644 arch/i386/boot/video-bios.c
+ create mode 100644 arch/i386/boot/video-vesa.c
+ create mode 100644 arch/i386/boot/video-vga.c
+ create mode 100644 arch/i386/boot/video.c
+ create mode 100644 arch/i386/boot/video.h
 
-diff --git a/arch/i386/boot/header.S b/arch/i386/boot/header.S
+diff --git a/arch/i386/boot/vesa.h b/arch/i386/boot/vesa.h
 new file mode 100644
-index 0000000..6b9923f
+index 0000000..ff5b73c
 --- /dev/null
-+++ b/arch/i386/boot/header.S
-@@ -0,0 +1,283 @@
-+/*
-+ *	header.S
++++ b/arch/i386/boot/vesa.h
+@@ -0,0 +1,79 @@
++/* ----------------------------------------------------------------------- *
 + *
-+ *	Copyright (C) 1991, 1992 Linus Torvalds
++ *   Copyright 1999-2007 H. Peter Anvin - All Rights Reserved
 + *
-+ *	Based on bootsect.S and setup.S
-+ *	modified by more people than can be counted
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation, Inc., 53 Temple Place Ste 330,
++ *   Boston MA 02111-1307, USA; either version 2 of the License, or
++ *   (at your option) any later version; incorporated herein by reference.
 + *
-+ *	Rewritten as a common file by H. Peter Anvin (Apr 2007)
-+ *
-+ * BIG FAT NOTE: We're in real mode using 64k segments.  Therefore segment
-+ * addresses must be multiplied by 16 to obtain their respective linear
-+ * addresses. To avoid confusion, linear addresses are written using leading
-+ * hex while segment addresses are written as segment:offset.
-+ *
-+ */
++ * ----------------------------------------------------------------------- */
 +
-+#include <asm/segment.h>
-+#include <linux/utsrelease.h>
-+#include <asm/boot.h>
-+#include <asm/e820.h>
-+#include <asm/page.h>
-+#include <asm/setup.h>
-+#include "boot.h"
++#ifndef BOOT_VESA_H
++#define BOOT_VESA_H
 +
-+SETUPSECTS	= 4			/* default nr of setup-sectors */
-+BOOTSEG		= 0x07C0		/* original address of boot-sector */
-+SYSSEG		= DEF_SYSSEG		/* system loaded at 0x10000 (65536) */
-+SYSSIZE		= DEF_SYSSIZE		/* system size: # of 16-byte clicks */
-+					/* to be loaded */
-+ROOT_DEV	= 0			/* ROOT_DEV is now written by "build" */
-+SWAP_DEV	= 0			/* SWAP_DEV is now written by "build" */
++typedef struct {
++	u16 off, seg;
++} far_ptr;
 +
-+#ifndef SVGA_MODE
-+#define SVGA_MODE ASK_VGA
-+#endif
++/* VESA General Information table */
++struct vesa_general_info {
++	u32 signature;		/* 0 Magic number = "VESA" */
++	u16 version;		/* 4 */
++	far_ptr vendor_string;	/* 6 */
++	u32 capabilities;	/* 10 */
++	far_ptr video_mode_ptr;	/* 14 */
++	u16 total_memory;	/* 18 */
 +
-+#ifndef RAMDISK
-+#define RAMDISK 0
-+#endif
++	u16 oem_software_rev;	/* 20 */
++	far_ptr oem_vendor_name_ptr;	/* 22 */
++	far_ptr oem_product_name_ptr;	/* 26 */
++	far_ptr oem_product_rev_ptr;	/* 30 */
 +
-+#ifndef ROOT_RDONLY
-+#define ROOT_RDONLY 1
-+#endif
++	u8 reserved[222];	/* 34 */
++	u8 oem_data[256];	/* 256 */
++} __attribute__ ((packed));
 +
-+	.code16
-+	.section ".bstext", "ax"
++#define VESA_MAGIC ('V' + ('E' << 8) + ('S' << 16) + ('A' << 24))
++#define VBE2_MAGIC ('V' + ('B' << 8) + ('E' << 16) + ('2' << 24))
 +
-+	.global bootsect_start
-+bootsect_start:
++struct vesa_mode_info {
++	u16 mode_attr;		/* 0 */
++	u8 win_attr[2];		/* 2 */
++	u16 win_grain;		/* 4 */
++	u16 win_size;		/* 6 */
++	u16 win_seg[2];		/* 8 */
++	far_ptr win_scheme;	/* 12 */
++	u16 logical_scan;	/* 16 */
 +
-+	# Normalize the start address
-+	ljmp	$BOOTSEG, $start2
++	u16 h_res;		/* 18 */
++	u16 v_res;		/* 20 */
++	u8 char_width;		/* 22 */
++	u8 char_height;		/* 23 */
++	u8 memory_planes;	/* 24 */
++	u8 bpp;			/* 25 */
++	u8 banks;		/* 26 */
++	u8 memory_layout;	/* 27 */
++	u8 bank_size;		/* 28 */
++	u8 image_planes;	/* 29 */
++	u8 page_function;	/* 30 */
 +
-+start2:
-+	movw	%cs, %ax
-+	movw	%ax, %ds
-+	movw	%ax, %es
-+	movw	%ax, %ss
-+	xorw	%sp, %sp
-+	sti
-+	cld
++	u8 rmask;		/* 31 */
++	u8 rpos;		/* 32 */
++	u8 gmask;		/* 33 */
++	u8 gpos;		/* 34 */
++	u8 bmask;		/* 35 */
++	u8 bpos;		/* 36 */
++	u8 resv_mask;		/* 37 */
++	u8 resv_pos;		/* 38 */
++	u8 dcm_info;		/* 39 */
 +
-+	movw	$bugger_off_msg, %si
++	u32 lfb_ptr;		/* 40 Linear frame buffer address */
++	u32 offscreen_ptr;	/* 44 Offscreen memory address */
++	u16 offscreen_size;	/* 48 */
 +
-+msg_loop:
-+	lodsb
-+	andb	%al, %al
-+	jz	bs_die
-+	movb	$0xe, %ah
-+	movw	$7, %bx
-+	int	$0x10
-+	jmp	msg_loop
++	u8 reserved[206];	/* 50 */
++} __attribute__ ((packed));
 +
-+bs_die:
-+	# Allow the user to press a key, then reboot
-+	xorw	%ax, %ax
-+	int	$0x16
-+	int	$0x19
-+
-+	# int 0x19 should never return.  In case it does anyway,
-+	# invoke the BIOS reset code...
-+	ljmp	$0xf000,$0xfff0
-+
-+	.section ".bsdata", "a"
-+bugger_off_msg:
-+	.ascii	"Direct booting from floppy is no longer supported.\r\n"
-+	.ascii	"Please use a boot loader program instead.\r\n"
-+	.ascii	"\n"
-+	.ascii	"Remove disk and press any key to reboot . . .\r\n"
-+	.byte	0
-+
-+
-+	# Kernel attributes; used by setup.  This is part 1 of the
-+	# header, from the old boot sector.
-+
-+	.section ".header", "a"
-+	.globl	hdr
-+hdr:
-+setup_sects:	.byte SETUPSECTS
-+root_flags:	.word ROOT_RDONLY
-+syssize:	.long SYSSIZE
-+ram_size:	.word RAMDISK
-+vid_mode:	.word SVGA_MODE
-+root_dev:	.word ROOT_DEV
-+boot_flag:	.word 0xAA55
-+
-+	# offset 512, entry point
-+
-+	.globl	_start
-+_start:
-+		# Explicitly enter this as bytes, or the assembler
-+		# tries to generate a 3-byte jump here, which causes
-+		# everything else to push off to the wrong offset.
-+		.byte	0xeb		# short (2-byte) jump
-+		.byte	start_of_setup-1f
-+1:
-+
-+	# Part 2 of the header, from the old setup.S
-+
-+		.ascii	"HdrS"		# header signature
-+		.word	0x0206		# header version number (>= 0x0105)
-+					# or else old loadlin-1.5 will fail)
-+		.globl realmode_swtch
-+realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
-+start_sys_seg:	.word	SYSSEG
-+		.word	kernel_version-512 # pointing to kernel version string
-+					# above section of header is compatible
-+					# with loadlin-1.5 (header v1.5). Don't
-+					# change it.
-+
-+type_of_loader:	.byte	0		# = 0, old one (LILO, Loadlin,
-+					#      Bootlin, SYSLX, bootsect...)
-+					# See Documentation/i386/boot.txt for
-+					# assigned ids
-+
-+# flags, unused bits must be zero (RFU) bit within loadflags
-+loadflags:
-+LOADED_HIGH	= 1			# If set, the kernel is loaded high
-+CAN_USE_HEAP	= 0x80			# If set, the loader also has set
-+					# heap_end_ptr to tell how much
-+					# space behind setup.S can be used for
-+					# heap purposes.
-+					# Only the loader knows what is free
-+#ifndef __BIG_KERNEL__
-+		.byte	0
-+#else
-+		.byte	LOADED_HIGH
-+#endif
-+
-+setup_move_size: .word  0x8000		# size to move, when setup is not
-+					# loaded at 0x90000. We will move setup
-+					# to 0x90000 then just before jumping
-+					# into the kernel. However, only the
-+					# loader knows how much data behind
-+					# us also needs to be loaded.
-+
-+code32_start:				# here loaders can put a different
-+					# start address for 32-bit code.
-+#ifndef __BIG_KERNEL__
-+		.long	0x1000		#   0x1000 = default for zImage
-+#else
-+		.long	0x100000	# 0x100000 = default for big kernel
-+#endif
-+
-+ramdisk_image:	.long	0		# address of loaded ramdisk image
-+					# Here the loader puts the 32-bit
-+					# address where it loaded the image.
-+					# This only will be read by the kernel.
-+
-+ramdisk_size:	.long	0		# its size in bytes
-+
-+bootsect_kludge:
-+		.long	0		# obsolete
-+
-+heap_end_ptr:	.word	_end+1024	# (Header version 0x0201 or later)
-+					# space from here (exclusive) down to
-+					# end of setup code can be used by setup
-+					# for local heap purposes.
-+
-+pad1:		.word	0
-+cmd_line_ptr:	.long	0		# (Header version 0x0202 or later)
-+					# If nonzero, a 32-bit pointer
-+					# to the kernel command line.
-+					# The command line should be
-+					# located between the start of
-+					# setup and the end of low
-+					# memory (0xa0000), or it may
-+					# get overwritten before it
-+					# gets read.  If this field is
-+					# used, there is no longer
-+					# anything magical about the
-+					# 0x90000 segment; the setup
-+					# can be located anywhere in
-+					# low memory 0x10000 or higher.
-+
-+ramdisk_max:	.long (-__PAGE_OFFSET-(512 << 20)-1) & 0x7fffffff
-+					# (Header version 0x0203 or later)
-+					# The highest safe address for
-+					# the contents of an initrd
-+
-+kernel_alignment:  .long CONFIG_PHYSICAL_ALIGN	#physical addr alignment
-+						#required for protected mode
-+						#kernel
-+#ifdef CONFIG_RELOCATABLE
-+relocatable_kernel:    .byte 1
-+#else
-+relocatable_kernel:    .byte 0
-+#endif
-+pad2:			.byte 0
-+pad3:			.word 0
-+
-+cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
-+                                                #added with boot protocol
-+                                                #version 2.06
-+
-+# End of setup header #####################################################
-+
-+	.section ".inittext", "ax"
-+start_of_setup:
-+#ifdef SAFE_RESET_DISK_CONTROLLER
-+# Reset the disk controller.
-+	movw	$0x0000, %ax		# Reset disk controller
-+	movb	$0x80, %dl		# All disks
-+	int	$0x13
-+#endif
-+
-+# We will have entired with %cs = %ds+0x20, normalize %cs so
-+# it is on par with the other segments.
-+	pushw	%ds
-+	pushw	$setup2
-+	lretw
-+
-+setup2:
-+# Force %es = %ds
-+	movw	%ds, %ax
-+	movw	%ax, %es
-+	cld
-+
-+# Stack paranoia: align the stack and make sure it is good
-+# for both 16- and 32-bit references.  In particular, if we
-+# were meant to have been using the full 16-bit segment, the
-+# caller might have set %sp to zero, which breaks %esp-based
-+# references.
-+	andw	$~3, %sp	# dword align (might as well...)
-+	jnz	1f
-+	movw	$0xfffc, %sp	# Make sure we're not zero
-+1:	movzwl	%sp, %esp	# Clear upper half of %esp
-+	sti
-+
-+# Check signature at end of setup
-+	cmpl	$0x5a5aaa55, setup_sig
-+	jne	setup_bad
-+
-+# Zero the bss
-+	movw	$__bss_start, %di
-+	movw	$_end+3, %cx
-+	xorl	%eax, %eax
-+	subw	%di, %cx
-+	shrw	$2, %cx
-+	rep; stosl
-+
-+# Jump to C code (should not return)
-+	calll	main
-+
-+# Setup corrupt somehow...
-+setup_bad:
-+	movl	$setup_corrupt, %eax
-+	calll	puts
-+	# Fall through...
-+
-+	.globl	die
-+	.type	die, @function
-+die:
-+	hlt
-+	jmp	die
-+
-+	.size	die, .-due
-+
-+	.section ".initdata", "a"
-+setup_corrupt:
-+	.byte	7
-+	.string	"No setup signature found..."
-diff --git a/arch/i386/boot/main.c b/arch/i386/boot/main.c
++#endif				/* LIB_SYS_VESA_H */
+diff --git a/arch/i386/boot/video-bios.c b/arch/i386/boot/video-bios.c
 new file mode 100644
-index 0000000..7f01f96
+index 0000000..afea46c
 --- /dev/null
-+++ b/arch/i386/boot/main.c
-@@ -0,0 +1,161 @@
++++ b/arch/i386/boot/video-bios.c
+@@ -0,0 +1,125 @@
 +/* -*- linux-c -*- ------------------------------------------------------- *
 + *
 + *   Copyright (C) 1991, 1992 Linus Torvalds
@@ -373,156 +183,1289 @@ index 0000000..7f01f96
 + * ----------------------------------------------------------------------- */
 +
 +/*
-+ * arch/i386/boot/main.c
++ * arch/i386/boot/video-bios.c
 + *
-+ * Main module for the real-mode kernel code
++ * Standard video BIOS modes
++ *
++ * We have two options for this; silent and scanned.
 + */
 +
 +#include "boot.h"
++#include "video.h"
 +
-+struct boot_params boot_params __attribute__((aligned(16)));
++__videocard video_bios;
 +
-+char *HEAP = _end;
-+char *heap_end = _end;		/* Default end of heap = no heap */
++/* Set a conventional BIOS mode */
++static int set_bios_mode(u8 mode);
 +
-+/*
-+ * Copy the header into the boot parameter block.  Since this
-+ * screws up the old-style command line protocol, adjust by
-+ * filling in the new-style command line pointer instead.
-+ */
-+#define OLD_CL_MAGIC	0xA33F
-+#define OLD_CL_ADDRESS	0x20
-+
-+static void copy_boot_params(void)
++static int bios_set_mode(struct mode_info *mi)
 +{
-+	struct old_cmdline {
-+		u16 cl_magic;
-+		u16 cl_offset;
-+	};
-+	const struct old_cmdline * const oldcmd =
-+		(const struct old_cmdline *)OLD_CL_ADDRESS;
++	return set_bios_mode(mi->mode - VIDEO_FIRST_BIOS);
++}
 +
-+	BUILD_BUG_ON(sizeof boot_params != 4096);
-+	memcpy(&boot_params.hdr, &hdr, sizeof hdr);
++static int set_bios_mode(u8 mode)
++{
++	u16 ax;
++	u8 new_mode;
 +
-+	if (!boot_params.hdr.cmd_line_ptr &&
-+	    oldcmd->cl_magic == OLD_CL_MAGIC) {
-+		/* Old-style command line protocol. */
-+		u16 cmdline_seg;
++	ax = mode;		/* AH=0x00 Set Video Mode */
++	asm volatile(INT10
++		     : "+a" (ax)
++		     : : "ebx", "ecx", "edx", "esi", "edi");
 +
-+		/* Figure out if the command line falls in the region
-+		   of memory that an old kernel would have copied up
-+		   to 0x90000... */
-+		if (oldcmd->cl_offset < boot_params.hdr.setup_move_size)
-+			cmdline_seg = ds();
-+		else
-+			cmdline_seg = 0x9000;
++	ax = 0x0f00;		/* Get Current Video Mode */
++	asm volatile(INT10
++		     : "+a" (ax)
++		     : : "ebx", "ecx", "edx", "esi", "edi");
 +
-+		boot_params.hdr.cmd_line_ptr =
-+			(cmdline_seg << 4) + oldcmd->cl_offset;
++	do_restore = 1;		/* Assume video contents was lost */
++	new_mode = ax & 0x7f;	/* Not all BIOSes are clean with the top bit */
++
++	if (new_mode == mode)
++		return 0;	/* Mode change OK */
++
++	if (new_mode != boot_params.screen_info.orig_video_mode) {
++		/* Mode setting failed, but we didn't end up where we
++		   started.  That's bad.  Try to revert to the original
++		   video mode. */
++		ax = boot_params.screen_info.orig_video_mode;
++		asm volatile(INT10
++			     : "+a" (ax)
++			     : : "ebx", "ecx", "edx", "esi", "edi");
 +	}
++	return -1;
 +}
 +
-+/*
-+ * Set the keyboard repeat rate to maximum.  Unclear why this
-+ * is done here; this might be possible to kill off as stale code.
-+ */
-+static void keyboard_set_repeat(void)
++static int bios_probe(void)
 +{
-+	u16 ax = 0x0305;
-+	u16 bx = 0;
-+	asm volatile("int $0x16"
-+		     : "+a" (ax), "+b" (bx)
-+		     : : "ecx", "edx", "esi", "edi");
++	u8 mode;
++	u8 saved_mode = boot_params.screen_info.orig_video_mode;
++	u16 crtc;
++	struct mode_info *mi;
++	int nmodes = 0;
++
++	if (adapter != ADAPTER_EGA && adapter != ADAPTER_VGA)
++		return 0;
++
++	set_fs(0);
++	crtc = vga_crtc();
++
++	video_bios.modes = GET_HEAP(struct mode_info, 0);
++
++	for (mode = 0x14; mode <= 0x7f; mode++) {
++		if (heap_free() < sizeof(struct mode_info))
++			break;
++
++		if (mode_defined(VIDEO_FIRST_BIOS+mode))
++			continue;
++
++		if (set_bios_mode(mode))
++			continue;
++
++		/* Try to verify that it's a text mode. */
++
++		/* Attribute Controller: make graphics controller disabled */
++		if (in_idx(0x3c0, 0x10) & 0x01)
++			continue;
++
++		/* Graphics Controller: verify Alpha addressing enabled */
++		if (in_idx(0x3ce, 0x06) & 0x01)
++			continue;
++
++		/* CRTC cursor location low should be zero(?) */
++		if (in_idx(crtc, 0x0f))
++			continue;
++
++		mi = GET_HEAP(struct mode_info, 1);
++		mi->mode = VIDEO_FIRST_BIOS+mode;
++		mi->x = rdfs16(0x44a);
++		mi->y = rdfs8(0x484)+1;
++		nmodes++;
++	}
++
++	set_bios_mode(saved_mode);
++
++	return nmodes;
 +}
 +
-+/*
-+ * Get Intel SpeedStep IST information.
-+ */
-+static void query_speedstep_ist(void)
++__videocard video_bios =
 +{
-+	asm("int $0x15"
-+	    : "=a" (boot_params.speedstep_info[0]),
-+	      "=b" (boot_params.speedstep_info[1]),
-+	      "=c" (boot_params.speedstep_info[2]),
-+	      "=d" (boot_params.speedstep_info[3])
-+	    : "a" (0x0000e980),	 /* IST Support */
-+	      "d" (0x47534943)); /* Request value */
-+}
++	.card_name	= "BIOS (scanned)",
++	.probe		= bios_probe,
++	.set_mode	= bios_set_mode,
++	.unsafe		= 1,
++	.xmode_first	= VIDEO_FIRST_BIOS,
++	.xmode_n	= 0x80,
++};
+diff --git a/arch/i386/boot/video-vesa.c b/arch/i386/boot/video-vesa.c
+new file mode 100644
+index 0000000..e6aa9eb
+--- /dev/null
++++ b/arch/i386/boot/video-vesa.c
+@@ -0,0 +1,284 @@
++/* -*- linux-c -*- ------------------------------------------------------- *
++ *
++ *   Copyright (C) 1991, 1992 Linus Torvalds
++ *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *
++ *   This file is part of the Linux kernel, and is made available under
++ *   the terms of the GNU General Public License version 2.
++ *
++ * ----------------------------------------------------------------------- */
 +
 +/*
-+ * Tell the BIOS what CPU mode we intend to run in.
++ * arch/i386/boot/video-vesa.c
++ *
++ * VESA text modes
 + */
-+static void set_bios_mode(void)
-+{
-+#ifdef CONFIG_X86_64
-+	u32 eax, ebx;
 +
-+	eax = 0xec00;
-+	ebx = 2;
-+	asm volatile("int $0x15"
-+		     : "+a" (eax), "+b" (ebx)
-+		     : : "ecx", "edx", "esi", "edi");
++#include "boot.h"
++#include "video.h"
++#include "vesa.h"
++
++/* VESA information */
++static struct vesa_general_info vginfo;
++static struct vesa_mode_info vminfo;
++
++__videocard video_vesa;
++
++static void vesa_store_mode_params_graphics(void);
++
++static int vesa_probe(void)
++{
++#if defined(CONFIG_VIDEO_VESA) || defined(CONFIG_FIRMWARE_EDID)
++	u16 ax;
++	u16 mode;
++	addr_t mode_ptr;
++	struct mode_info *mi;
++	int nmodes = 0;
++
++	video_vesa.modes = GET_HEAP(struct mode_info, 0);
++
++	vginfo.signature = VBE2_MAGIC;
++
++	/* Optimistically assume a VESA BIOS is register-clean... */
++	ax = 0x4f00;
++	asm("int $0x10" : "+a" (ax), "=m" (vginfo) : "D" (&vginfo));
++
++	if (ax != 0x004f ||
++	    vginfo.signature != VESA_MAGIC ||
++	    vginfo.version < 0x0102)
++		return 0;	/* Not present */
++#endif /* CONFIG_VIDEO_VESA || CONFIG_FIRMWARE_EDID */
++#ifdef CONFIG_VIDEO_VESA
++	set_fs(vginfo.video_mode_ptr.seg);
++	mode_ptr = vginfo.video_mode_ptr.off;
++
++	while ((mode = rdfs16(mode_ptr)) != 0xffff) {
++		mode_ptr += 2;
++
++		if (heap_free() < sizeof(struct mode_info))
++			break;	/* Heap full, can't save mode info */
++
++		if (mode & ~0x1ff)
++			continue;
++
++		memset(&vminfo, 0, sizeof vminfo); /* Just in case... */
++
++		ax = 0x4f01;
++		asm("int $0x10"
++		    : "+a" (ax), "=m" (vminfo)
++		    : "c" (mode), "D" (&vminfo));
++
++		if (ax != 0x004f)
++			continue;
++
++		if ((vminfo.mode_attr & 0x15) == 0x05) {
++			/* Text Mode, TTY BIOS supported,
++			   supported by hardware */
++			mi = GET_HEAP(struct mode_info, 1);
++			mi->mode = mode + VIDEO_FIRST_VESA;
++			mi->x    = vminfo.h_res;
++			mi->y    = vminfo.v_res;
++			nmodes++;
++		} else if ((vminfo.mode_attr & 0x99) == 0x99) {
++#ifdef CONFIG_FB
++			/* Graphics mode, color, linear frame buffer
++			   supported -- register the mode but hide from
++			   the menu.  Only do this if framebuffer is
++			   configured, however, otherwise the user will
++			   be left without a screen. */
++			mi = GET_HEAP(struct mode_info, 1);
++			mi->mode = mode + VIDEO_FIRST_VESA;
++			mi->x = mi->y = 0;
++			nmodes++;
 +#endif
++		}
++	}
++
++	return nmodes;
++#else
++	return 0;
++#endif /* CONFIG_VIDEO_VESA */
 +}
 +
-+void main(void)
++static int vesa_set_mode(struct mode_info *mode)
 +{
-+	/* First, copy the boot header into the "zeropage" */
-+	copy_boot_params();
++	u16 ax;
++	int is_graphic;
++	u16 vesa_mode = mode->mode - VIDEO_FIRST_VESA;
 +
-+	/* End of heap check */
-+	if (boot_params.hdr.loadflags & CAN_USE_HEAP) {
-+		heap_end = (char *)(boot_params.hdr.heap_end_ptr
-+				    +0x200-STACK_SIZE);
++	memset(&vminfo, 0, sizeof vminfo); /* Just in case... */
++
++	ax = 0x4f01;
++	asm("int $0x10"
++	    : "+a" (ax), "=m" (vminfo)
++	    : "c" (vesa_mode), "D" (&vminfo));
++
++	if (ax != 0x004f)
++		return -1;
++
++	if ((vminfo.mode_attr & 0x15) == 0x05) {
++		/* It's a supported text mode */
++		is_graphic = 0;
++	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
++		/* It's a graphics mode with linear frame buffer */
++		is_graphic = 1;
++		vesa_mode |= 0x4000; /* Request linear frame buffer */
 +	} else {
-+		/* Boot protocol 2.00 only, no heap available */
-+		puts("WARNING: Ancient bootloader, some functionality "
-+		     "may be limited!\n");
++		return -1;	/* Invalid mode */
 +	}
 +
-+	/* Make sure we have all the proper CPU support */
-+	if (validate_cpu()) {
-+		puts("Unable to boot - please use a kernel appropriate "
-+		     "for your CPU.\n");
-+		die();
++
++	ax = 0x4f02;
++	asm volatile("int $0x10"
++		     : "+a" (ax)
++		     : "b" (vesa_mode), "D" (0));
++
++	if (ax != 0x004f)
++		return -1;
++
++	graphic_mode = is_graphic;
++	if (!is_graphic) {
++		/* Text mode */
++		force_x = mode->x;
++		force_y = mode->y;
++		do_restore = 1;
++	} else {
++		/* Graphics mode */
++		vesa_store_mode_params_graphics();
 +	}
 +
-+	/* Tell the BIOS what CPU mode we intend to run in. */
-+	set_bios_mode();
-+
-+	/* Detect memory layout */
-+	detect_memory();
-+
-+	/* Set keyboard repeat rate (why?) */
-+	keyboard_set_repeat();
-+
-+	/* Set the video mode */
-+	set_video();
-+
-+	/* Query MCA information */
-+	query_mca();
-+
-+	/* Voyager */
-+#ifdef CONFIG_X86_VOYAGER
-+	query_voyager();
-+#endif
-+
-+	/* Query SpeedStep IST information */
-+	query_speedstep_ist();
-+
-+	/* Query APM information */
-+#if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
-+	query_apm_bios();
-+#endif
-+
-+	/* Query EDD information */
-+#if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
-+	query_edd();
-+#endif
-+	/* Do the last things and invoke protected mode */
-+	go_to_protected_mode();
++	return 0;
 +}
++
++
++/* Switch DAC to 8-bit mode */
++static void vesa_dac_set_8bits(void)
++{
++	u8 dac_size = 6;
++
++	/* If possible, switch the DAC to 8-bit mode */
++	if (vginfo.capabilities & 1) {
++		u16 ax, bx;
++
++		ax = 0x4f08;
++		bx = 0x0800;
++		asm volatile(INT10
++			     : "+a" (ax), "+b" (bx)
++			     : : "ecx", "edx", "esi", "edi");
++
++		if (ax == 0x004f)
++			dac_size = bx >> 8;
++	}
++
++	/* Set the color sizes to the DAC size, and offsets to 0 */
++	boot_params.screen_info.red_size = dac_size;
++	boot_params.screen_info.green_size = dac_size;
++	boot_params.screen_info.blue_size = dac_size;
++	boot_params.screen_info.rsvd_size = dac_size;
++
++	boot_params.screen_info.red_pos = 0;
++	boot_params.screen_info.green_pos = 0;
++	boot_params.screen_info.blue_pos = 0;
++	boot_params.screen_info.rsvd_pos = 0;
++}
++
++/* Save the VESA protected mode info */
++static void vesa_store_pm_info(void)
++{
++	u16 ax, bx, di, es;
++
++	ax = 0x4f0a;
++	bx = di = 0;
++	asm("pushw %%es; "INT10"; movw %%es,%0; popw %%es"
++	    : "=d" (es), "+a" (ax), "+b" (bx), "+D" (di)
++	    : : "ecx", "esi");
++
++	if (ax != 0x004f)
++		return;
++
++	boot_params.screen_info.vesapm_seg = es;
++	boot_params.screen_info.vesapm_off = di;
++}
++
++/*
++ * Save video mode parameters for graphics mode
++ */
++static void vesa_store_mode_params_graphics(void)
++{
++	/* Tell the kernel we're in VESA graphics mode */
++	boot_params.screen_info.orig_video_isVGA = 0x23;
++
++	/* Mode parameters */
++	boot_params.screen_info.vesa_attributes = vminfo.mode_attr;
++	boot_params.screen_info.lfb_linelength = vminfo.logical_scan;
++	boot_params.screen_info.lfb_width = vminfo.h_res;
++	boot_params.screen_info.lfb_height = vminfo.v_res;
++	boot_params.screen_info.lfb_depth = vminfo.bpp;
++	boot_params.screen_info.pages = vminfo.image_planes;
++	boot_params.screen_info.lfb_base = vminfo.lfb_ptr;
++	memcpy(&boot_params.screen_info.red_size,
++	       &vminfo.rmask, 8);
++
++	/* General parameters */
++	boot_params.screen_info.lfb_size = vginfo.total_memory;
++
++	if (vminfo.bpp <= 8)
++		vesa_dac_set_8bits();
++
++	vesa_store_pm_info();
++}
++
++/*
++ * Save EDID information for the kernel; this is invoked, separately,
++ * after mode-setting.
++ */
++void vesa_store_edid(void)
++{
++#ifdef CONFIG_FIRMWARE_EDID
++	u16 ax, bx, cx, dx, di;
++
++	/* Apparently used as a nonsense token... */
++	memset(&boot_params.edid_info, 0x13, sizeof boot_params.edid_info);
++
++	if (vginfo.version < 0x0200)
++		return;		/* EDID requires VBE 2.0+ */
++
++	ax = 0x4f15;		/* VBE DDC */
++	bx = 0x0000;		/* Report DDC capabilities */
++	cx = 0;			/* Controller 0 */
++	di = 0;			/* ES:DI must be 0 by spec */
++
++	/* Note: The VBE DDC spec is different from the main VESA spec;
++	   we genuinely have to assume all registers are destroyed here. */
++
++	asm("pushw %%es; movw %2,%%es; "INT10"; popw %%es"
++	    : "+a" (ax), "+b" (bx)
++	    :  "c" (cx), "D" (di)
++	    : "esi");
++
++	if (ax != 0x004f)
++		return;		/* No EDID */
++
++	/* BH = time in seconds to transfer EDD information */
++	/* BL = DDC level supported */
++
++	ax = 0x4f15;		/* VBE DDC */
++	bx = 0x0001;		/* Read EDID */
++	cx = 0;			/* Controller 0 */
++	dx = 0;			/* EDID block number */
++	di =(size_t) &boot_params.edid_info; /* (ES:)Pointer to block */
++	asm(INT10
++	    : "+a" (ax), "+b" (bx), "+d" (dx)
++	    : "c" (cx), "D" (di)
++	    : "esi");
++#endif /* CONFIG_FIRMWARE_EDID */
++}
++
++__videocard video_vesa =
++{
++	.card_name	= "VESA",
++	.probe		= vesa_probe,
++	.set_mode	= vesa_set_mode,
++	.xmode_first	= VIDEO_FIRST_VESA,
++	.xmode_n	= 0x200,
++};
+diff --git a/arch/i386/boot/video-vga.c b/arch/i386/boot/video-vga.c
+new file mode 100644
+index 0000000..700d09a
+--- /dev/null
++++ b/arch/i386/boot/video-vga.c
+@@ -0,0 +1,260 @@
++/* -*- linux-c -*- ------------------------------------------------------- *
++ *
++ *   Copyright (C) 1991, 1992 Linus Torvalds
++ *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *
++ *   This file is part of the Linux kernel, and is made available under
++ *   the terms of the GNU General Public License version 2.
++ *
++ * ----------------------------------------------------------------------- */
++
++/*
++ * arch/i386/boot/video-vga.c
++ *
++ * Common all-VGA modes
++ */
++
++#include "boot.h"
++#include "video.h"
++
++static struct mode_info vga_modes[] = {
++	{ VIDEO_80x25,  80, 25 },
++	{ VIDEO_8POINT, 80, 50 },
++	{ VIDEO_80x43,  80, 43 },
++	{ VIDEO_80x28,  80, 28 },
++	{ VIDEO_80x30,  80, 30 },
++	{ VIDEO_80x34,  80, 34 },
++	{ VIDEO_80x60,  80, 60 },
++};
++
++static struct mode_info ega_modes[] = {
++	{ VIDEO_80x25,  80, 25 },
++	{ VIDEO_8POINT, 80, 43 },
++};
++
++static struct mode_info cga_modes[] = {
++	{ VIDEO_80x25,  80, 25 },
++};
++
++__videocard video_vga;
++
++/* Set basic 80x25 mode */
++static u8 vga_set_basic_mode(void)
++{
++	u16 ax;
++	u8 rows;
++	u8 mode;
++
++#ifdef CONFIG_VIDEO_400_HACK
++	if (adapter >= ADAPTER_VGA) {
++		asm(INT10
++		    : : "a" (0x1202), "b" (0x0030)
++		    : "ecx", "edx", "esi", "edi");
++	}
++#endif
++
++	ax = 0x0f00;
++	asm(INT10
++	    : "+a" (ax)
++	    : : "ebx", "ecx", "edx", "esi", "edi");
++
++	mode = (u8)ax;
++
++	set_fs(0);
++	rows = rdfs8(0x484);	/* rows minus one */
++
++#ifndef CONFIG_VIDEO_400_HACK
++	if ((ax == 0x5003 || ax == 0x5007) &&
++	    (rows == 0 || rows == 24))
++		return mode;
++#endif
++
++	if (mode != 3 && mode != 7)
++		mode = 3;
++
++	/* Set the mode */
++	asm volatile(INT10
++		     : : "a" (mode)
++		     : "ebx", "ecx", "edx", "esi", "edi");
++	do_restore = 1;
++	return mode;
++}
++
++static void vga_set_8font(void)
++{
++	/* Set 8x8 font - 80x43 on EGA, 80x50 on VGA */
++
++	/* Set 8x8 font */
++	asm volatile(INT10 : : "a" (0x1112), "b" (0));
++
++	/* Use alternate print screen */
++	asm volatile(INT10 : : "a" (0x1200), "b" (0x20));
++
++	/* Turn off cursor emulation */
++	asm volatile(INT10 : : "a" (0x1201), "b" (0x34));
++
++	/* Cursor is scan lines 6-7 */
++	asm volatile(INT10 : : "a" (0x0100), "c" (0x0607));
++}
++
++static void vga_set_14font(void)
++{
++	/* Set 9x14 font - 80x28 on VGA */
++
++	/* Set 9x14 font */
++	asm volatile(INT10 : : "a" (0x1111), "b" (0));
++
++	/* Turn off cursor emulation */
++	asm volatile(INT10 : : "a" (0x1201), "b" (0x34));
++
++	/* Cursor is scan lines 11-12 */
++	asm volatile(INT10 : : "a" (0x0100), "c" (0x0b0c));
++}
++
++static void vga_set_80x43(void)
++{
++	/* Set 80x43 mode on VGA (not EGA) */
++
++	/* Set 350 scans */
++	asm volatile(INT10 : : "a" (0x1201), "b" (0x30));
++
++	/* Reset video mode */
++	asm volatile(INT10 : : "a" (0x0003));
++
++	vga_set_8font();
++}
++
++/* I/O address of the VGA CRTC */
++u16 vga_crtc(void)
++{
++	return (inb(0x3cc) & 1) ? 0x3d4 : 0x3b4;
++}
++
++static void vga_set_480_scanlines(int end)
++{
++	u16 crtc;
++	u8  csel;
++
++	crtc = vga_crtc();
++
++	out_idx(0x0c, crtc, 0x11); /* Vertical sync end, unlock CR0-7 */
++	out_idx(0x0b, crtc, 0x06); /* Vertical total */
++	out_idx(0x3e, crtc, 0x07); /* Vertical overflow */
++	out_idx(0xea, crtc, 0x10); /* Vertical sync start */
++	out_idx(end, crtc, 0x12); /* Vertical display end */
++	out_idx(0xe7, crtc, 0x15); /* Vertical blank start */
++	out_idx(0x04, crtc, 0x16); /* Vertical blank end */
++	csel = inb(0x3cc);
++	csel &= 0x0d;
++	csel |= 0xe2;
++	outb(csel, 0x3cc);
++}
++
++static void vga_set_80x30(void)
++{
++	vga_set_480_scanlines(0xdf);
++}
++
++static void vga_set_80x34(void)
++{
++	vga_set_14font();
++	vga_set_480_scanlines(0xdb);
++}
++
++static void vga_set_80x60(void)
++{
++	vga_set_8font();
++	vga_set_480_scanlines(0xdf);
++}
++
++static int vga_set_mode(struct mode_info *mode)
++{
++	/* Set the basic mode */
++	vga_set_basic_mode();
++
++	/* Override a possibly broken BIOS */
++	force_x = mode->x;
++	force_y = mode->y;
++
++	switch (mode->mode) {
++	case VIDEO_80x25:
++		break;
++	case VIDEO_8POINT:
++		vga_set_8font();
++		break;
++	case VIDEO_80x43:
++		vga_set_80x43();
++		break;
++	case VIDEO_80x28:
++		vga_set_14font();
++		break;
++	case VIDEO_80x30:
++		vga_set_80x30();
++		break;
++	case VIDEO_80x34:
++		vga_set_80x34();
++		break;
++	case VIDEO_80x60:
++		vga_set_80x60();
++		break;
++	}
++
++	return 0;
++}
++
++/*
++ * Note: this probe includes basic information required by all
++ * systems.  It should be executed first, by making sure
++ * video-vga.c is listed first in the Makefile.
++ */
++static int vga_probe(void)
++{
++	static const char *card_name[] = {
++		"CGA/MDA/HGC", "EGA", "VGA"
++	};
++	static struct mode_info *mode_lists[] = {
++		cga_modes,
++		ega_modes,
++		vga_modes,
++	};
++	static int mode_count[] = {
++		sizeof(cga_modes)/sizeof(struct mode_info),
++		sizeof(ega_modes)/sizeof(struct mode_info),
++		sizeof(vga_modes)/sizeof(struct mode_info),
++	};
++	u8 vga_flag;
++
++	asm(INT10
++	    : "=b" (boot_params.screen_info.orig_video_ega_bx)
++	    : "a" (0x1200), "b" (0x10) /* Check EGA/VGA */
++	    : "ecx", "edx", "esi", "edi");
++
++	/* If we have MDA/CGA/HGC then BL will be unchanged at 0x10 */
++	if ((u8)boot_params.screen_info.orig_video_ega_bx != 0x10) {
++		/* EGA/VGA */
++		asm(INT10
++		    : "=a" (vga_flag)
++		    : "a" (0x1a00)
++		    : "ebx", "ecx", "edx", "esi", "edi");
++
++		if (vga_flag == 0x1a) {
++			adapter = ADAPTER_VGA;
++			boot_params.screen_info.orig_video_isVGA = 1;
++		} else {
++			adapter = ADAPTER_EGA;
++		}
++	} else {
++		adapter = ADAPTER_CGA;
++	}
++
++	video_vga.modes = mode_lists[adapter];
++	video_vga.card_name = card_name[adapter];
++	return mode_count[adapter];
++}
++
++__videocard video_vga =
++{
++	.card_name	= "VGA",
++	.probe		= vga_probe,
++	.set_mode	= vga_set_mode,
++};
+diff --git a/arch/i386/boot/video.c b/arch/i386/boot/video.c
+new file mode 100644
+index 0000000..3bb3573
+--- /dev/null
++++ b/arch/i386/boot/video.c
+@@ -0,0 +1,456 @@
++/* -*- linux-c -*- ------------------------------------------------------- *
++ *
++ *   Copyright (C) 1991, 1992 Linus Torvalds
++ *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *
++ *   This file is part of the Linux kernel, and is made available under
++ *   the terms of the GNU General Public License version 2.
++ *
++ * ----------------------------------------------------------------------- */
++
++/*
++ * arch/i386/boot/video.c
++ *
++ * Select video mode
++ */
++
++#include "boot.h"
++#include "video.h"
++#include "vesa.h"
++
++/*
++ * Mode list variables
++ */
++static struct card_info cards[];    /* List of cards to probe for */
++
++/*
++ * Common variables
++ */
++int adapter;			/* 0=CGA/MDA/HGC, 1=EGA, 2=VGA+ */
++u16 video_segment;
++int force_x, force_y;	/* Don't query the BIOS for cols/rows */
++
++int do_restore = 0;	/* Screen contents changed during mode flip */
++int graphic_mode;	/* Graphic mode with linear frame buffer */
++
++static void store_cursor_position(void)
++{
++	u16 curpos;
++	u16 ax, bx;
++
++	ax = 0x0300;
++	bx = 0;
++	asm(INT10
++	    : "=d" (curpos), "+a" (ax), "+b" (bx)
++	    : : "ecx", "esi", "edi");
++
++	boot_params.screen_info.orig_x = curpos;
++	boot_params.screen_info.orig_y = curpos >> 8;
++}
++
++static void store_video_mode(void)
++{
++	u16 ax, page;
++
++	/* N.B.: the saving of the video page here is a bit silly,
++	   since we pretty much assume page 0 everywhere. */
++	ax = 0x0f00;
++	asm(INT10
++	    : "+a" (ax), "=b" (page)
++	    : : "ecx", "edx", "esi", "edi");
++
++	/* Not all BIOSes are clean with respect to the top bit */
++	boot_params.screen_info.orig_video_mode = ax & 0x7f;
++	boot_params.screen_info.orig_video_page = page;
++}
++
++/*
++ * Store the video mode parameters for later usage by the kernel.
++ * This is done by asking the BIOS except for the rows/columns
++ * parameters in the default 80x25 mode -- these are set directly,
++ * because some very obscure BIOSes supply insane values.
++ */
++static void store_mode_params(void)
++{
++	u16 font_size;
++	int x, y;
++
++	/* For graphics mode, it is up to the mode-setting driver
++	   (currently only video-vesa.c) to store the parameters */
++	if (graphic_mode)
++		return;
++
++	store_cursor_position();
++	store_video_mode();
++
++	if (boot_params.screen_info.orig_video_mode == 0x07) {
++		/* MDA, HGC, or VGA in monochrome mode */
++		video_segment = 0xb000;
++	} else {
++		/* CGA, EGA, VGA and so forth */
++		video_segment = 0xb800;
++	}
++
++	set_fs(0);
++	font_size = rdfs16(0x485); /* Font size, BIOS area */
++	boot_params.screen_info.orig_video_points = font_size;
++
++	x = rdfs16(0x44a);
++	y = (adapter == ADAPTER_CGA) ? 25 : rdfs8(0x484)+1;
++
++	if (force_x)
++		x = force_x;
++	if (force_y)
++		y = force_y;
++
++	boot_params.screen_info.orig_video_cols  = x;
++	boot_params.screen_info.orig_video_lines = y;
++}
++
++/* Probe the video drivers and have them generate their mode lists. */
++static void probe_cards(int unsafe)
++{
++	struct card_info *card;
++	static u8 probed[2];
++
++	if (probed[unsafe])
++		return;
++
++	probed[unsafe] = 1;
++
++	for (card = video_cards; card < video_cards_end; card++) {
++		if (card->unsafe == unsafe) {
++			if (card->probe)
++				card->nmodes = card->probe();
++			else
++				card->nmodes = 0;
++		}
++	}
++}
++
++/* Test if a mode is defined */
++int mode_defined(u16 mode)
++{
++	struct card_info *card;
++	struct mode_info *mi;
++	int i;
++
++	for (card = video_cards; card < video_cards_end; card++) {
++		mi = card->modes;
++		for (i = 0; i < card->nmodes; i++, mi++) {
++			if (mi->mode == mode)
++				return 1;
++		}
++	}
++
++	return 0;
++}
++
++/* Set mode (without recalc) */
++static int raw_set_mode(u16 mode)
++{
++	int nmode, i;
++	struct card_info *card;
++	struct mode_info *mi;
++
++	/* Drop the recalc bit if set */
++	mode &= ~VIDEO_RECALC;
++
++	/* Scan for mode based on fixed ID, position, or resolution */
++	nmode = 0;
++	for (card = video_cards; card < video_cards_end; card++) {
++		mi = card->modes;
++		for (i = 0; i < card->nmodes; i++, mi++) {
++			int visible = mi->x || mi->y;
++
++			if ((mode == nmode && visible) ||
++			    mode == mi->mode ||
++			    mode == (mi->y << 8)+mi->x)
++				return card->set_mode(mi);
++
++			if (visible)
++				nmode++;
++		}
++	}
++
++	/* Nothing found?  Is it an "exceptional" (unprobed) mode? */
++	for (card = video_cards; card < video_cards_end; card++) {
++		if (mode >= card->xmode_first &&
++		    mode < card->xmode_first+card->xmode_n) {
++			struct mode_info mix;
++			mix.mode = mode;
++			mix.x = mix.y = 0;
++			return card->set_mode(&mix);
++		}
++	}
++
++	/* Otherwise, failure... */
++	return -1;
++}
++
++/*
++ * Recalculate the vertical video cutoff (hack!)
++ */
++static void vga_recalc_vertical(void)
++{
++	unsigned int font_size, rows;
++	u16 crtc;
++	u8 ov;
++
++	set_fs(0);
++	font_size = rdfs8(0x485); /* BIOS: font size (pixels) */
++	rows = force_y ? force_y : rdfs8(0x484)+1; /* Text rows */
++
++	rows *= font_size;	/* Visible scan lines */
++	rows--;			/* ... minus one */
++
++	crtc = vga_crtc();
++
++	out_idx((u8)rows, crtc, 0x12); /* Lower height register */
++	ov = in_idx(crtc, 0x07); /* Overflow register */
++	ov &= 0xbd;
++	ov |= (rows >> (8-1)) & 0x02;
++	ov |= (rows >> (9-6)) & 0x40;
++	out_idx(ov, crtc, 0x07);
++}
++
++/* Set mode (with recalc if specified) */
++static int set_mode(u16 mode)
++{
++	int rv;
++
++	/* Very special mode numbers... */
++	if (mode == VIDEO_CURRENT_MODE)
++		return 0;	/* Nothing to do... */
++	else if (mode == NORMAL_VGA)
++		mode = VIDEO_80x25;
++	else if (mode == EXTENDED_VGA)
++		mode = VIDEO_8POINT;
++
++	rv = raw_set_mode(mode);
++	if (rv)
++		return rv;
++
++	if (mode & VIDEO_RECALC)
++		vga_recalc_vertical();
++
++	return 0;
++}
++
++static unsigned int get_entry(void)
++{
++	char entry_buf[4];
++	int i, len = 0;
++	int key;
++	unsigned int v;
++
++	do {
++		key = getchar();
++
++		if (key == '\b') {
++			if (len > 0) {
++				puts("\b \b");
++				len--;
++			}
++		} else if ((key >= '0' && key <= '9') ||
++			   (key >= 'A' && key <= 'Z') ||
++			   (key >= 'a' && key <= 'z')) {
++			if (len < sizeof entry_buf) {
++				entry_buf[len++] = key;
++				putchar(key);
++			}
++		}
++	} while (key != '\r');
++	putchar('\n');
++
++	if (len == 0)
++		return VIDEO_CURRENT_MODE; /* Default */
++
++	v = 0;
++	for (i = 0; i < len; i++) {
++		v <<= 4;
++		key = entry_buf[i] | 0x20;
++		v += (key > '9') ? key-'a'+10 : key-'0';
++	}
++
++	return v;
++}
++
++static void display_menu(void)
++{
++	struct card_info *card;
++	struct mode_info *mi;
++	char ch;
++	int i;
++
++	puts("Mode:    COLSxROWS:\n");
++
++	ch = '0';
++	for (card = video_cards; card < video_cards_end; card++) {
++		mi = card->modes;
++		for (i = 0; i < card->nmodes; i++, mi++) {
++			int visible = mi->x && mi->y;
++			u16 mode_id = mi->mode ? mi->mode :
++				(mi->y << 8)+mi->x;
++
++			if (!visible)
++				continue; /* Hidden mode */
++
++			printf("%c  %04X  %3dx%-3d  %s\n",
++			       ch, mode_id, mi->x, mi->y, card->card_name);
++
++			if (ch == '9')
++				ch = 'a';
++			else if (ch == 'z' || ch == ' ')
++				ch = ' '; /* Out of keys... */
++			else
++				ch++;
++		}
++	}
++}
++
++#define H(x)	((x)-'a'+10)
++#define SCAN	((H('s')<<12)+(H('c')<<8)+(H('a')<<4)+H('n'))
++
++static unsigned int mode_menu(void)
++{
++	int key;
++	unsigned int sel;
++
++	puts("Press <ENTER> to see video modes available, "
++	     "<SPACE> to continue, or wait 30 sec\n");
++
++	kbd_flush();
++	while (1) {
++		key = getchar_timeout();
++		if (key == ' ' || key == 0)
++			return VIDEO_CURRENT_MODE; /* Default */
++		if (key == '\r')
++			break;
++		putchar('\a');	/* Beep! */
++	}
++
++
++	for (;;) {
++		display_menu();
++
++		puts("Enter a video mode or \"scan\" to scan for "
++		     "additional modes: ");
++		sel = get_entry();
++		if (sel != SCAN)
++			return sel;
++
++		probe_cards(1);
++	}
++}
++
++#ifdef CONFIG_VIDEO_RETAIN
++/* Save screen content to the heap */
++struct saved_screen {
++	int x, y;
++	int curx, cury;
++	u16 *data;
++} saved;
++
++static void save_screen(void)
++{
++	/* Should be called after store_mode_params() */
++	saved.x = boot_params.screen_info.orig_video_cols;
++	saved.y = boot_params.screen_info.orig_video_lines;
++	saved.curx = boot_params.screen_info.orig_x;
++	saved.cury = boot_params.screen_info.orig_y;
++
++	if (heap_free() < saved.x*saved.y*sizeof(u16)+512)
++		return;		/* Not enough heap to save the screen */
++
++	saved.data = GET_HEAP(u16, saved.x*saved.y);
++
++	set_fs(video_segment);
++	copy_from_fs(saved.data, 0, saved.x*saved.y*sizeof(u16));
++}
++
++static void restore_screen(void)
++{
++	/* Should be called after store_mode_params() */
++	int xs = boot_params.screen_info.orig_video_cols;
++	int ys = boot_params.screen_info.orig_video_lines;
++	int y;
++	addr_t dst = 0;
++	u16 *src = saved.data;
++	u16 ax, bx, dx;
++
++	if (graphic_mode)
++		return;		/* Can't restore onto a graphic mode */
++
++	if (!src)
++		return;		/* No saved screen contents */
++
++	/* Restore screen contents */
++
++	set_fs(video_segment);
++	for (y = 0; y < ys; y++) {
++		int npad;
++
++		if (y < saved.y) {
++			int copy = (xs < saved.x) ? xs : saved.x;
++			copy_to_fs(dst, src, copy*sizeof(u16));
++			dst += copy*sizeof(u16);
++			src += saved.x;
++			npad = (xs < saved.x) ? 0 : xs-saved.x;
++		} else {
++			npad = xs;
++		}
++
++		/* Writes "npad" blank characters to
++		   video_segment:dst and advances dst */
++		asm volatile("pushw %%es ; "
++			     "movw %2,%%es ; "
++			     "shrw %%cx ; "
++			     "jnc 1f ; "
++			     "stosw \n\t"
++			     "1: rep;stosl ; "
++			     "popw %%es"
++			     : "+D" (dst), "+c" (npad)
++			     : "bdSm" (video_segment),
++			       "a" (0x07200720));
++	}
++
++	/* Restore cursor position */
++	ax = 0x0200;		/* Set cursor position */
++	bx = 0;			/* Page number (<< 8) */
++	dx = (saved.cury << 8)+saved.curx;
++	asm volatile(INT10
++		     : "+a" (ax), "+b" (bx), "+d" (dx)
++		     : : "ecx", "esi", "edi");
++}
++#else
++#define save_screen()		((void)0)
++#define restore_screen()	((void)0)
++#endif
++
++void set_video(void)
++{
++	u16 mode = boot_params.hdr.vid_mode;
++
++	RESET_HEAP();
++
++	store_mode_params();
++	save_screen();
++	probe_cards(0);
++
++	for (;;) {
++		if (mode == ASK_VGA)
++			mode = mode_menu();
++
++		if (!set_mode(mode))
++			break;
++
++		printf("Undefined video mode number: %x\n", mode);
++		mode = ASK_VGA;
++	}
++	vesa_store_edid();
++	store_mode_params();
++
++	if (do_restore)
++		restore_screen();
++}
+diff --git a/arch/i386/boot/video.h b/arch/i386/boot/video.h
+new file mode 100644
+index 0000000..29eca17
+--- /dev/null
++++ b/arch/i386/boot/video.h
+@@ -0,0 +1,145 @@
++/* -*- linux-c -*- ------------------------------------------------------- *
++ *
++ *   Copyright (C) 1991, 1992 Linus Torvalds
++ *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *
++ *   This file is part of the Linux kernel, and is made available under
++ *   the terms of the GNU General Public License version 2.
++ *
++ * ----------------------------------------------------------------------- */
++
++/*
++ * arch/i386/boot/video.h
++ *
++ * Header file for the real-mode video probing code
++ */
++
++#ifndef BOOT_VIDEO_H
++#define BOOT_VIDEO_H
++
++#include <linux/types.h>
++
++/* Enable autodetection of SVGA adapters and modes. */
++#undef CONFIG_VIDEO_SVGA
++
++/* Enable autodetection of VESA modes */
++#define CONFIG_VIDEO_VESA
++
++/* Retain screen contents when switching modes */
++#define CONFIG_VIDEO_RETAIN
++
++/* Force 400 scan lines for standard modes (hack to fix bad BIOS behaviour */
++#undef CONFIG_VIDEO_400_HACK
++
++/* This code uses an extended set of video mode numbers. These include:
++ * Aliases for standard modes
++ *      NORMAL_VGA (-1)
++ *      EXTENDED_VGA (-2)
++ *      ASK_VGA (-3)
++ * Video modes numbered by menu position -- NOT RECOMMENDED because of lack
++ * of compatibility when extending the table. These are between 0x00 and 0xff.
++ */
++#define VIDEO_FIRST_MENU 0x0000
++
++/* Standard BIOS video modes (BIOS number + 0x0100) */
++#define VIDEO_FIRST_BIOS 0x0100
++
++/* VESA BIOS video modes (VESA number + 0x0200) */
++#define VIDEO_FIRST_VESA 0x0200
++
++/* Video7 special modes (BIOS number + 0x0900) */
++#define VIDEO_FIRST_V7 0x0900
++
++/* Special video modes */
++#define VIDEO_FIRST_SPECIAL 0x0f00
++#define VIDEO_80x25 0x0f00
++#define VIDEO_8POINT 0x0f01
++#define VIDEO_80x43 0x0f02
++#define VIDEO_80x28 0x0f03
++#define VIDEO_CURRENT_MODE 0x0f04
++#define VIDEO_80x30 0x0f05
++#define VIDEO_80x34 0x0f06
++#define VIDEO_80x60 0x0f07
++#define VIDEO_GFX_HACK 0x0f08
++#define VIDEO_LAST_SPECIAL 0x0f09
++
++/* Video modes given by resolution */
++#define VIDEO_FIRST_RESOLUTION 0x1000
++
++/* The "recalculate timings" flag */
++#define VIDEO_RECALC 0x8000
++
++/* Define DO_STORE according to CONFIG_VIDEO_RETAIN */
++#ifdef CONFIG_VIDEO_RETAIN
++void store_screen(void);
++#define DO_STORE() store_screen()
++#else
++#define DO_STORE() ((void)0)
++#endif /* CONFIG_VIDEO_RETAIN */
++
++/*
++ * Mode table structures
++ */
++
++struct mode_info {
++	u16 mode;		/* Mode number (vga= style) */
++	u8  x, y;		/* Width, height */
++};
++
++struct card_info {
++	const char *card_name;
++	int (*set_mode)(struct mode_info *mode);
++	int (*probe)(void);
++	struct mode_info *modes;
++	int nmodes;		/* Number of probed modes so far */
++	int unsafe;		/* Probing is unsafe, only do after "scan" */
++	u16 xmode_first;	/* Unprobed modes to try to call anyway */
++	u16 xmode_n;		/* Size of unprobed mode range */
++};
++
++#define __videocard struct card_info __attribute__((section(".videocards")))
++extern struct card_info video_cards[], video_cards_end[];
++
++int mode_defined(u16 mode);	/* video.c */
++
++/* Basic video information */
++#define ADAPTER_CGA	0	/* CGA/MDA/HGC */
++#define ADAPTER_EGA	1
++#define ADAPTER_VGA	2
++
++extern int adapter;
++extern u16 video_segment;
++extern int force_x, force_y;	/* Don't query the BIOS for cols/rows */
++extern int do_restore;		/* Restore screen contents */
++extern int graphic_mode;	/* Graphics mode with linear frame buffer */
++
++/*
++ * int $0x10 is notorious for touching registers it shouldn't.
++ * gcc doesn't like %ebp being clobbered, so define it as a push/pop
++ * sequence here.
++ */
++#define INT10 "pushl %%ebp; int $0x10; popl %%ebp"
++
++/* Accessing VGA indexed registers */
++static inline u8 in_idx(u16 port, u8 index)
++{
++	outb(index, port);
++	return inb(port+1);
++}
++
++static inline void out_idx(u8 v, u16 port, u8 index)
++{
++	outw(index+(v << 8), port);
++}
++
++/* Writes a value to an indexed port and then reads the port again */
++static inline u8 tst_idx(u8 v, u16 port, u8 index)
++{
++	out_idx(port, index, v);
++	return in_idx(port, index);
++}
++
++/* Get the I/O port of the VGA CRTC */
++u16 vga_crtc(void);		/* video-vga.c */
++
++#endif /* BOOT_VIDEO_H */
 -- 
 1.5.2.2
 
