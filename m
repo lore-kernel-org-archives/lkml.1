@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbXGKCKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbXGKC0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758686AbXGKCKo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jul 2007 22:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbXGKCKf
+	id S1756833AbXGKC0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jul 2007 22:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbXGKC0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jul 2007 22:10:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38947 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753506AbXGKCKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jul 2007 22:10:33 -0400
-Date: Wed, 11 Jul 2007 12:10:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: [PATCH 2/7] fallocate() implementation in i386, x86_64 and
- powerpc
-Message-Id: <20070711121034.a3b925b9.sfr@canb.auug.org.au>
-In-Reply-To: <20070710202000.GB8797@amitarora.in.ibm.com>
-References: <20070710201200.GA10255@amitarora.in.ibm.com>
-	<20070710202000.GB8797@amitarora.in.ibm.com>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__11_Jul_2007_12_10_34_+1000_5U2tHjshZm6024bl"
+	Tue, 10 Jul 2007 22:26:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34389 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750992AbXGKC0L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jul 2007 22:26:11 -0400
+Date: Tue, 10 Jul 2007 19:26:10 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: queued spinlock code and results
+In-Reply-To: <20070711020638.GB27475@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0707101924030.7089@schroedinger.engr.sgi.com>
+References: <20070708043228.GB22397@wotan.suse.de> <p733azz16vh.fsf@bingen.suse.de>
+ <Pine.LNX.4.64.0707101348020.3055@schroedinger.engr.sgi.com>
+ <20070711020638.GB27475@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__11_Jul_2007_12_10_34_+1000_5U2tHjshZm6024bl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 11 Jul 2007, Nick Piggin wrote:
 
-On Wed, 11 Jul 2007 01:50:00 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.c=
-om> wrote:
->
-> --- linux-2.6.22.orig/arch/x86_64/ia32/sys_ia32.c
-> +++ linux-2.6.22/arch/x86_64/ia32/sys_ia32.c
-> @@ -879,3 +879,11 @@ asmlinkage long sys32_fadvise64(int fd,=20
->  	return sys_fadvise64_64(fd, ((u64)offset_hi << 32) | offset_lo,
->  				len, advice);
->  }
-> +
-> +asmlinkage long sys32_fallocate(int fd, int mode, unsigned offset_lo,
-> +				unsigned offset_hi, unsigned len_lo,
-> +				unsigned len_hi)
+> BTW. some advanced congestion algorithms like HBO may find these ticket
+> locks useful because you can see immediately how many CPUs are contending
+> the lock, and spinners know how many CPUs are in front of them. That info
+> could be fed into the spin backoff scheme.
 
-Please call this compat_sys_fallocate in line with the powerpc version -
-it gives us a hint that maybe we should think about how to consolidate
-them.  I know other stuff in that file is called sys32_ ... but it is time
-for a change :-)
+That would mean having to keep a lot of status information for a spinlock. 
+Gets pretty complicated.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__11_Jul_2007_12_10_34_+1000_5U2tHjshZm6024bl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGlDweTgG2atn1QN8RAsMWAJ0QGe/B34/KjrV593lYeDo/VsOYdQCfdMkc
-mHS8nJDyRZd1RWYTVZ+6888=
-=C6vS
------END PGP SIGNATURE-----
-
---Signature=_Wed__11_Jul_2007_12_10_34_+1000_5U2tHjshZm6024bl--
+The RT tree already converts spinlocks to sleeping locks? If we want to be 
+that complicated then maybe going with one sophisticated lock type for all 
+would be the solution.
