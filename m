@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764581AbXGKVqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765582AbXGKVqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764581AbXGKVqU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbXGKVqH
+	id S1765582AbXGKVqz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbXGKVqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:46:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54770 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755676AbXGKVqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:46:06 -0400
-Date: Wed, 11 Jul 2007 14:45:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/7] Add /sys/kernel/notes
-In-Reply-To: <20070711205120.396CD4D0555@magilla.localdomain>
-Message-ID: <alpine.LFD.0.999.0707111443180.20061@woody.linux-foundation.org>
-References: <20070711205120.396CD4D0555@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 11 Jul 2007 17:46:47 -0400
+Received: from www.osadl.org ([213.239.205.134]:59419 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751772AbXGKVqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:46:46 -0400
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <20070711211638.GE18767@one.firstfloor.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+	 <20070711211638.GE18767@one.firstfloor.org>
+Content-Type: text/plain
+Date: Wed, 11 Jul 2007 23:46:41 +0200
+Message-Id: <1184190401.12353.152.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi,
 
-
-On Wed, 11 Jul 2007, Roland McGrath wrote:
+On Wed, 2007-07-11 at 23:16 +0200, Andi Kleen wrote: 
+> > What contribution do we have from you instead? A week before the .23 
 > 
-> It hadn't really occurred to me that the kernel binary would be
-> deliberately hidden from the user.
+> I told him my objections privately earlier. Basically i would
+> like to see an actually debuggable step-by-step change, not a rip everything 
+> out.
 
-We don't want to have things like config info, or really preferably 
-anything that can be used to generate kernel addresses.
+You promised privately to do a thorough review as well, which I'm still
+waiting for since months.
 
-Yeah, we've made that mistake before, and I'm not saying we are perfect 
-here, but if we make this world-readable, I think it needs to guarantee it 
-doesn't really give any rootkit people any new information.
+> If that isn't possible it needs very careful review which just hasn't
+> happened yet. But I'm not convinced even step by step is not possible
+> here.
 
-And yes, I do think normal people shouldn't be able to read the vmlinuz 
-binary, the same way they are generally not allowed to read /etc/grub.conf 
-etc.
+There is no step by step thing. You convert an arch to clock events or
+you convert it not.
 
-			Linus
+> I thought it was clear that rip everything out is rarely a good idea
+> in Linux land?  That's really not something I should need to harp on 
+> repeatedly.
+
+If you have technical objections, put them on the table. Point by point.
+
+All I heard so far from you are platitudes, which are not worth the
+electrons to transport them.
+
+	tglx
+
+
