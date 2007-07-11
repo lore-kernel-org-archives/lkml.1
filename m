@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764332AbXGKQeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764701AbXGKQef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764332AbXGKQeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 12:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXGKQeO
+	id S1764701AbXGKQef (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 12:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764464AbXGKQeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 12:34:14 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42208 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbXGKQeO (ORCPT
+	Wed, 11 Jul 2007 12:34:23 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38811 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763635AbXGKQeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 12:34:14 -0400
-Date: Wed, 11 Jul 2007 17:33:29 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: shmem: convert to using splice instead of sendfile()
-In-Reply-To: <20070711062021.GF4587@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0707111710110.22786@blonde.wat.veritas.com>
-References: <200707102300.l6AN0xM4026841@hera.kernel.org>
- <20070710184347.037b6b3e.akpm@linux-foundation.org> <20070711062021.GF4587@kernel.dk>
+	Wed, 11 Jul 2007 12:34:21 -0400
+Date: Wed, 11 Jul 2007 18:35:24 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Roman Zippel <zippel@linux-m68k.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070711163524.GE16703@enneenne.com>
+References: <1183031060.1170.145.camel@pmac.infradead.org> <20070701192441.GW13886@enneenne.com> <20070710160151.GB31195@csclub.uwaterloo.ca> <200707110318.49244.zippel@linux-m68k.org> <20070711152455.GK31193@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAA2luYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAamVucy5heGJvZUBvcmFjbGUuY29tAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcA
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070711152455.GK31193@csclub.uwaterloo.ca>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API) - new version
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007, Jens Axboe wrote:
-> On Tue, Jul 10 2007, Andrew Morton wrote:
-> > On Tue, 10 Jul 2007 23:00:59 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
-> > 
-> > > +static int shmem_readpage(struct file *file, struct page *page)
-> > > +{
-> > > +	struct inode *inode = page->mapping->host;
-> > > +	int error = shmem_getpage(inode, page->index, &page, SGP_CACHE, NULL);
-> > > +	unlock_page(page);
-> > > +	return error;
-> > > +}
-> > 
-> > Worried.  shmem_getpage() does
-> > 
-> > done:
-> > 	if (*pagep != filepage) {
-> > 		unlock_page(filepage);
-> > 		*pagep = filepage;
-> > 	}
-> > 	return 0;
-> > 
-> > so we end up unlocking an unlocked page?
-> 
-> It certainly looks like it - Hugh?
+On Wed, Jul 11, 2007 at 11:24:55AM -0400, Lennart Sorensen wrote:
 
-No, it's fine.  The relevant comment is up at the entry to shmem_getpage:
-	struct page *filepage = *pagep;  /* (moved down, I'm cheating!) */
-	/*
-	 * Normally, filepage is NULL on entry, and either found
-	 * uptodate immediately, or allocated and zeroed, or read
-	 * in under swappage, which is then assigned to filepage.
-	 * But shmem_readpage and shmem_prepare_write pass in a locked
-	 * filepage, which may be found not uptodate by other callers
-	 * too, and may need to be copied from the swappage read in.
-	 */
-So down at the exit from shmem_getpage, in the shmem_readpage case,
-filepage _is_ *pagep, and so it skips that unlock_page - the caller
-passed in a locked page, it's up to the caller to unlock it; but
-the general ->readpage interface then demands that shmem_readpage
-unlock the page which was passed in to it with lock held.  
+> For some reason I thought this was for passing the current time of a
+> stamp.
 
-(The *pagep != filepage test is also trying to skip the unlock_page
-in the case when shmem_getpage needed to allocate the page itself,
-but couldn't: both *pagep and filepage NULL.)
+And you was right. :)
 
-Ironically, the need for shmem_getpage to handle the case of a page
-passed into it almost vanished - Nick's upcoming aops ->write_begin
-abolishes the shmem_prepare_write case - but now it is needed for
-readpage for splice: but I'm hoping perhaps we'll devise a readpage
-replacement more like write_begin/write_end, then can eliminate it.
+Rodolfo
 
-Hugh
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
