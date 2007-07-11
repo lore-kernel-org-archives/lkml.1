@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934165AbXGKVGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934051AbXGKVHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934165AbXGKVGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933077AbXGKVEN
+	id S934051AbXGKVHD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934152AbXGKVEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:04:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34314 "EHLO mx1.redhat.com"
+	Wed, 11 Jul 2007 17:04:50 -0400
+Received: from main.gmane.org ([80.91.229.2]:50508 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933654AbXGKVEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:04:11 -0400
-Date: Wed, 11 Jul 2007 22:03:16 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Jonathan Brassow <jbrassow@redhat.com>
-Subject: [2.6.23 PATCH 18/18] dm raid1: handle log failure
-Message-ID: <20070711210316.GJ24114@agk.fab.redhat.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Jonathan Brassow <jbrassow@redhat.com>
+	id S934113AbXGKVEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 17:04:48 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Edouard Gomez <ed.gomez@free.fr>
+Subject: Re: 2.6.22-ck1
+Date: Wed, 11 Jul 2007 21:04:30 +0000 (UTC)
+Message-ID: <pan.2007.07.11.21.04.30@free.fr>
+References: <200707092006.49316.kernel@kolivas.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: edgomez.kicks-ass.org
+User-Agent: Pan/0.129 (Benson & Hedges Moscow Gold)
+Cc: ck@vds.kolivas.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jonathan Brassow <jbrassow@redhat.com>
+On Mon, 09 Jul 2007 20:06:49 +1000, Con Kolivas wrote:
+> 2.6.22-ck1 is the last ever -ck release.
+> 
+> So long, and thanks for all the fish
 
-When writing to a mirror, the log must be updated first.  Failure
-to update the log could result in the log not properly reflecting
-the state of the mirror if the machine should crash.
+changeset:   73:75c3084835f6
+tag:         tip
+user:        Edouard Gomez <ed.gomez@free.fr>
+date:        Wed Jul 11 22:54:15 2007 +0200
+summary:     Updated to 2.6.22-ck1 - the last ck ever :-(
 
-We change the return type of the rh_flush function to give us
-the ability to check if a log write was successful.  If the
-log write was unsuccessful, we fail the writes to avoid the
-case where the log does not properly reflect the state of the
-mirror.
+So for me, it's been at least 73 patches i kept track of in a mercurial 
+repo, and at least one ck for each 2.6.x kernel (x<=15), and a few 2.4 
+kernels.
 
-A follow-up patch - which is dependent on the ability to
-requeue I/O's to core device-mapper - will requeue the I/O's
-for retry (allowing the mirror to be reconfigured.)
+So i'd like to thank you a last time for all the work you accomplished 
+these years.
 
-Signed-off-by: Jonathan Brassow <jbrassow@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+PS: at least swap prefetch made it to the merge plan... eventually.
+    Cheers Con.
 
----
- drivers/md/dm-raid1.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+-- 
+Edouard Gomez （我不会说日文，但是我可以用中文感谢你）
 
-Index: linux/drivers/md/dm-raid1.c
-===================================================================
---- linux.orig/drivers/md/dm-raid1.c	2007-07-11 21:37:56.000000000 +0100
-+++ linux/drivers/md/dm-raid1.c	2007-07-11 21:37:57.000000000 +0100
-@@ -134,6 +134,7 @@ struct mirror_set {
- 	/* recovery */
- 	region_t nr_regions;
- 	int in_sync;
-+	int log_failure;
- 
- 	struct mirror *default_mirror;	/* Default mirror */
- 
-@@ -589,9 +590,9 @@ static void rh_recovery_end(struct regio
- 	wake(rh->ms);
- }
- 
--static void rh_flush(struct region_hash *rh)
-+static int rh_flush(struct region_hash *rh)
- {
--	rh->log->type->flush(rh->log);
-+	return rh->log->type->flush(rh->log);
- }
- 
- static void rh_delay(struct region_hash *rh, struct bio *bio)
-@@ -892,12 +893,15 @@ static void do_writes(struct mirror_set 
- 	 */
- 	rh_inc_pending(&ms->rh, &sync);
- 	rh_inc_pending(&ms->rh, &nosync);
--	rh_flush(&ms->rh);
-+	ms->log_failure = rh_flush(&ms->rh) ? 1 : 0;
- 
- 	/*
- 	 * Dispatch io.
- 	 */
--	while ((bio = bio_list_pop(&sync)))
-+	if (unlikely(ms->log_failure))
-+		while ((bio = bio_list_pop(&sync)))
-+			bio_endio(bio, bio->bi_size, -EIO);
-+	else while ((bio = bio_list_pop(&sync)))
- 		do_write(ms, bio);
- 
- 	while ((bio = bio_list_pop(&recover)))
