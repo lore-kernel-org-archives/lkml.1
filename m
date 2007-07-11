@@ -1,257 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935131AbXGKXfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935221AbXGKXfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935131AbXGKXfV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 19:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933910AbXGKXdM
+	id S935221AbXGKXfw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 19:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934840AbXGKXdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 19:33:12 -0400
-Received: from mail.suse.de ([195.135.220.2]:33569 "EHLO mx1.suse.de"
+	Wed, 11 Jul 2007 19:33:21 -0400
+Received: from mail.suse.de ([195.135.220.2]:33579 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933920AbXGKXdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 19:33:10 -0400
+	id S934600AbXGKXdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 19:33:19 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 06/61] Power Management: use mutexes instead of semaphores
-Date: Wed, 11 Jul 2007 16:31:25 -0700
-Message-Id: <11841967674155-git-send-email-gregkh@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 07/61] PM: Remove pm_parent from struct dev_pm_info
+Date: Wed, 11 Jul 2007 16:31:26 -0700
+Message-Id: <11841967711788-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11841967633087-git-send-email-gregkh@suse.de>
+In-Reply-To: <11841967674155-git-send-email-gregkh@suse.de>
 References: <20070711233021.GA5253@kroah.com>
  <11841967403365-git-send-email-gregkh@suse.de>
  <11841967493890-git-send-email-gregkh@suse.de>
  <1184196753488-git-send-email-gregkh@suse.de>
  <1184196759393-git-send-email-gregkh@suse.de>
  <11841967633087-git-send-email-gregkh@suse.de>
+ <11841967674155-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The Power Management code uses semaphores as mutexes.  Use the mutex API
-instead of the (binary) semaphores.
+The pm_parent member of struct dev_pm_info (defined in include/linux/pm.h) is
+only used to check if the device's parent is in the right state while the
+device is being suspended or resumed.  However, this can be done just as well
+with the help of the parent pointer in struct device, so pm_parent can be
+removed along with some code that handles it.
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/power/main.c    |   14 ++++++++------
- drivers/base/power/power.h   |    4 ++--
- drivers/base/power/resume.c  |   12 ++++++------
- drivers/base/power/runtime.c |   12 ++++++------
- drivers/base/power/suspend.c |   14 +++++++-------
- 5 files changed, 29 insertions(+), 27 deletions(-)
+ drivers/base/power/main.c    |   30 ++++--------------------------
+ drivers/base/power/resume.c  |    7 +++----
+ drivers/base/power/suspend.c |    7 +++----
+ include/linux/pm.h           |    3 ---
+ 4 files changed, 10 insertions(+), 37 deletions(-)
 
 diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 05dc876..7b3cc3c 100644
+index 7b3cc3c..eb9f38d 100644
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
-@@ -20,14 +20,16 @@
-  */
- 
- #include <linux/device.h>
-+#include <linux/mutex.h>
-+
- #include "power.h"
- 
- LIST_HEAD(dpm_active);
- LIST_HEAD(dpm_off);
- LIST_HEAD(dpm_off_irq);
- 
--DECLARE_MUTEX(dpm_sem);
--DECLARE_MUTEX(dpm_list_sem);
-+DEFINE_MUTEX(dpm_mtx);
-+DEFINE_MUTEX(dpm_list_mtx);
+@@ -33,28 +33,7 @@ DEFINE_MUTEX(dpm_list_mtx);
  
  int (*platform_enable_wakeup)(struct device *dev, int is_on);
  
-@@ -59,12 +61,12 @@ int device_pm_add(struct device * dev)
- 	pr_debug("PM: Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
+-
+-/**
+- *	device_pm_set_parent - Specify power dependency.
+- *	@dev:		Device who needs power.
+- *	@parent:	Device that supplies power.
+- *
+- *	This function is used to manually describe a power-dependency
+- *	relationship. It may be used to specify a transversal relationship
+- *	(where the power supplier is not the physical (or electrical)
+- *	ancestor of a specific device.
+- *	The effect of this is that the supplier will not be powered down
+- *	before the power dependent.
+- */
+-
+-void device_pm_set_parent(struct device * dev, struct device * parent)
+-{
+-	put_device(dev->power.pm_parent);
+-	dev->power.pm_parent = get_device(parent);
+-}
+-EXPORT_SYMBOL_GPL(device_pm_set_parent);
+-
+-int device_pm_add(struct device * dev)
++int device_pm_add(struct device *dev)
+ {
+ 	int error;
+ 
+@@ -63,21 +42,20 @@ int device_pm_add(struct device * dev)
  		 kobject_name(&dev->kobj));
--	down(&dpm_list_sem);
-+	mutex_lock(&dpm_list_mtx);
+ 	mutex_lock(&dpm_list_mtx);
  	list_add_tail(&dev->power.entry, &dpm_active);
- 	device_pm_set_parent(dev, dev->parent);
- 	if ((error = dpm_sysfs_add(dev)))
+-	device_pm_set_parent(dev, dev->parent);
+-	if ((error = dpm_sysfs_add(dev)))
++	error = dpm_sysfs_add(dev);
++	if (error)
  		list_del(&dev->power.entry);
--	up(&dpm_list_sem);
-+	mutex_unlock(&dpm_list_mtx);
+ 	mutex_unlock(&dpm_list_mtx);
  	return error;
  }
  
-@@ -73,11 +75,11 @@ void device_pm_remove(struct device * dev)
+-void device_pm_remove(struct device * dev)
++void device_pm_remove(struct device *dev)
+ {
  	pr_debug("PM: Removing info for %s:%s\n",
  		 dev->bus ? dev->bus->name : "No Bus",
  		 kobject_name(&dev->kobj));
--	down(&dpm_list_sem);
-+	mutex_lock(&dpm_list_mtx);
+ 	mutex_lock(&dpm_list_mtx);
  	dpm_sysfs_remove(dev);
- 	put_device(dev->power.pm_parent);
+-	put_device(dev->power.pm_parent);
  	list_del_init(&dev->power.entry);
--	up(&dpm_list_sem);
-+	mutex_unlock(&dpm_list_mtx);
+ 	mutex_unlock(&dpm_list_mtx);
  }
- 
- 
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index fb3d35a..2760f25 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -14,12 +14,12 @@ extern void device_shutdown(void);
- /*
-  * Used to synchronize global power management operations.
-  */
--extern struct semaphore dpm_sem;
-+extern struct mutex dpm_mtx;
- 
- /*
-  * Used to serialize changes to the dpm_* lists.
-  */
--extern struct semaphore dpm_list_sem;
-+extern struct mutex dpm_list_mtx;
- 
- /*
-  * The PM lists.
 diff --git a/drivers/base/power/resume.c b/drivers/base/power/resume.c
-index a2c6418..f6cfea4 100644
+index f6cfea4..99679e7 100644
 --- a/drivers/base/power/resume.c
 +++ b/drivers/base/power/resume.c
-@@ -80,7 +80,7 @@ static int resume_device_early(struct device * dev)
-  */
- void dpm_resume(void)
- {
--	down(&dpm_list_sem);
-+	mutex_lock(&dpm_list_mtx);
- 	while(!list_empty(&dpm_off)) {
- 		struct list_head * entry = dpm_off.next;
- 		struct device * dev = to_device(entry);
-@@ -88,13 +88,13 @@ void dpm_resume(void)
- 		get_device(dev);
- 		list_move_tail(entry, &dpm_active);
+@@ -29,12 +29,11 @@ int resume_device(struct device * dev)
  
--		up(&dpm_list_sem);
-+		mutex_unlock(&dpm_list_mtx);
- 		if (!dev->power.prev_state.event)
- 			resume_device(dev);
--		down(&dpm_list_sem);
-+		mutex_lock(&dpm_list_mtx);
- 		put_device(dev);
+ 	down(&dev->sem);
+ 
+-	if (dev->power.pm_parent
+-			&& dev->power.pm_parent->power.power_state.event) {
++	if (dev->parent && dev->parent->power.power_state.event) {
+ 		dev_err(dev, "PM: resume from %d, parent %s still %d\n",
+ 			dev->power.power_state.event,
+-			dev->power.pm_parent->bus_id,
+-			dev->power.pm_parent->power.power_state.event);
++			dev->parent->bus_id,
++			dev->parent->power.power_state.event);
  	}
--	up(&dpm_list_sem);
-+	mutex_unlock(&dpm_list_mtx);
- }
  
- 
-@@ -108,9 +108,9 @@ void dpm_resume(void)
- void device_resume(void)
- {
- 	might_sleep();
--	down(&dpm_sem);
-+	mutex_lock(&dpm_mtx);
- 	dpm_resume();
--	up(&dpm_sem);
-+	mutex_unlock(&dpm_mtx);
- }
- 
- EXPORT_SYMBOL_GPL(device_resume);
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 96370ec..df6174d 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -32,9 +32,9 @@ static void runtime_resume(struct device * dev)
- 
- void dpm_runtime_resume(struct device * dev)
- {
--	down(&dpm_sem);
-+	mutex_lock(&dpm_mtx);
- 	runtime_resume(dev);
--	up(&dpm_sem);
-+	mutex_unlock(&dpm_mtx);
- }
- EXPORT_SYMBOL(dpm_runtime_resume);
- 
-@@ -49,7 +49,7 @@ int dpm_runtime_suspend(struct device * dev, pm_message_t state)
- {
- 	int error = 0;
- 
--	down(&dpm_sem);
-+	mutex_lock(&dpm_mtx);
- 	if (dev->power.power_state.event == state.event)
- 		goto Done;
- 
-@@ -59,7 +59,7 @@ int dpm_runtime_suspend(struct device * dev, pm_message_t state)
- 	if (!(error = suspend_device(dev, state)))
- 		dev->power.power_state = state;
-  Done:
--	up(&dpm_sem);
-+	mutex_unlock(&dpm_mtx);
- 	return error;
- }
- EXPORT_SYMBOL(dpm_runtime_suspend);
-@@ -78,8 +78,8 @@ EXPORT_SYMBOL(dpm_runtime_suspend);
-  */
- void dpm_set_power_state(struct device * dev, pm_message_t state)
- {
--	down(&dpm_sem);
-+	mutex_lock(&dpm_mtx);
- 	dev->power.power_state = state;
--	up(&dpm_sem);
-+	mutex_unlock(&dpm_mtx);
- }
- #endif  /*  0  */
+ 	if (dev->bus && dev->bus->resume) {
 diff --git a/drivers/base/power/suspend.c b/drivers/base/power/suspend.c
-index 42d2b86..9d6701c 100644
+index 9d6701c..19fae88 100644
 --- a/drivers/base/power/suspend.c
 +++ b/drivers/base/power/suspend.c
-@@ -108,7 +108,7 @@ int suspend_device(struct device * dev, pm_message_t state)
- 
- /*
-  * This is called with interrupts off, only a single CPU
-- * running. We can't do down() on a semaphore (and we don't
-+ * running. We can't acquire a mutex or semaphore (and we don't
-  * need the protection)
-  */
- static int suspend_device_late(struct device *dev, pm_message_t state)
-@@ -153,18 +153,18 @@ int device_suspend(pm_message_t state)
- 	int error = 0;
- 
- 	might_sleep();
--	down(&dpm_sem);
--	down(&dpm_list_sem);
-+	mutex_lock(&dpm_mtx);
-+	mutex_lock(&dpm_list_mtx);
- 	while (!list_empty(&dpm_active) && error == 0) {
- 		struct list_head * entry = dpm_active.prev;
- 		struct device * dev = to_device(entry);
- 
- 		get_device(dev);
--		up(&dpm_list_sem);
-+		mutex_unlock(&dpm_list_mtx);
- 
- 		error = suspend_device(dev, state);
- 
--		down(&dpm_list_sem);
-+		mutex_lock(&dpm_list_mtx);
- 
- 		/* Check if the device got removed */
- 		if (!list_empty(&dev->power.entry)) {
-@@ -179,11 +179,11 @@ int device_suspend(pm_message_t state)
- 				error == -EAGAIN ? " (please convert to suspend_late)" : "");
- 		put_device(dev);
+@@ -55,13 +55,12 @@ int suspend_device(struct device * dev, pm_message_t state)
+ 		dev_dbg(dev, "PM: suspend %d-->%d\n",
+ 			dev->power.power_state.event, state.event);
  	}
--	up(&dpm_list_sem);
-+	mutex_unlock(&dpm_list_mtx);
- 	if (error)
- 		dpm_resume();
+-	if (dev->power.pm_parent
+-			&& dev->power.pm_parent->power.power_state.event) {
++	if (dev->parent && dev->parent->power.power_state.event) {
+ 		dev_err(dev,
+ 			"PM: suspend %d->%d, parent %s already %d\n",
+ 			dev->power.power_state.event, state.event,
+-			dev->power.pm_parent->bus_id,
+-			dev->power.pm_parent->power.power_state.event);
++			dev->parent->bus_id,
++			dev->parent->power.power_state.event);
+ 	}
  
--	up(&dpm_sem);
-+	mutex_unlock(&dpm_mtx);
- 	return error;
- }
+ 	dev->power.prev_state = dev->power.power_state;
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index b2c4fde..3fd65ad 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -269,13 +269,10 @@ struct dev_pm_info {
+ 	unsigned		should_wakeup:1;
+ 	pm_message_t		prev_state;
+ 	void			* saved_state;
+-	struct device		* pm_parent;
+ 	struct list_head	entry;
+ #endif
+ };
  
+-extern void device_pm_set_parent(struct device * dev, struct device * parent);
+-
+ extern int device_power_down(pm_message_t state);
+ extern void device_power_up(void);
+ extern void device_resume(void);
 -- 
 1.5.2.2
 
