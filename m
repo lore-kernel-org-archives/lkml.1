@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765420AbXGKPmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762350AbXGKPpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765420AbXGKPmS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 11:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbXGKPmI
+	id S1762350AbXGKPpt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 11:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbXGKPpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 11:42:08 -0400
-Received: from xenotime.net ([66.160.160.81]:52313 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751601AbXGKPmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 11:42:07 -0400
-Date: Wed, 11 Jul 2007 08:45:49 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, linux-mm@kvack.org
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-Message-Id: <20070711084549.93bb433e.rdunlap@xenotime.net>
-In-Reply-To: <20070711122324.GA21714@lst.de>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<20070711122324.GA21714@lst.de>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 11 Jul 2007 11:45:41 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:38059 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755194AbXGKPpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 11:45:39 -0400
+Subject: Re: [RFC PATCH 1/1] VFS: Augment /proc/mount with subroot and
+	shared-subtree
+From: Ram Pai <linuxram@us.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+In-Reply-To: <20070711102449.GA22185@infradead.org>
+References: <1182442837.3342.13.camel@ram.us.ibm.com>
+	 <467AB5EE.3030909@zytor.com> <1182494654.2812.22.camel@ram.us.ibm.com>
+	 <467B7509.8010106@zytor.com> <1182497690.2812.54.camel@ram.us.ibm.com>
+	 <467B7F6F.4030007@zytor.com> <20070625214640.GC29058@ram.us.ibm.com>
+	 <1182808816.2816.7.camel@ram.us.ibm.com>
+	 <20070630094446.GB22889@infradead.org> <468652E2.4050901@zytor.com>
+	 <20070711102449.GA22185@infradead.org>
+Content-Type: text/plain
+Date: Wed, 11 Jul 2007 08:42:21 -0700
+Message-Id: <1184168542.2844.13.camel@ram.us.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 14:23:24 +0200 Christoph Hellwig wrote:
-
-...
-
-> > lguest-the-guest-code.patch
-> > lguest-the-host-code.patch
-> > lguest-the-host-code-lguest-vs-clockevents-fix-resume-logic.patch
-> > lguest-the-asm-offsets.patch
-> > lguest-the-makefile-and-kconfig.patch
-> > lguest-the-console-driver.patch
-> > lguest-the-net-driver.patch
-> > lguest-the-block-driver.patch
-> > lguest-the-documentation-example-launcher.patch
+On Wed, 2007-07-11 at 11:24 +0100, Christoph Hellwig wrote:
+> On Sat, Jun 30, 2007 at 08:56:02AM -0400, H. Peter Anvin wrote:
+> > Is that conjecture, or do you have evidence to that effect?  Most users 
+> > of this file are using it via the glibc interfaces, and there probably 
+> > aren't all that many users of it in the first place.
 > 
-> Just started to reading this (again) so no useful comment here, but it
-> would be nice if the code could follow CodingStyle and place the || and
-> && at the end of the line in multiline conditionals instead of at the
-> beginning of the new one.
+> I have written parsers for personal projects that might not have been
+> happy to deal with additional fields myself for example..
 
-I prefer them at the ends of lines also, but that's not in CodingStyle,
-it's just how we do it most of the time (so "coding style", without
-caps).
+I modified the patch to add fields towards the end of each line.
+i.e after 'freq, passno' fields. And symlinked /etc/mtab
+to /proc/mounts.
+mount,df  and friends were all perfectly happy.  
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+I imagine your script may also be happy with the additional fields
+**towards the end**. I would like to avoid one more mount interface if
+we can help it.
+
+RP
+
+
+
