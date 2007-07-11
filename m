@@ -1,184 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763242AbXGKVnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765002AbXGKVn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763242AbXGKVnj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 17:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXGKVnb
+	id S1765002AbXGKVn5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 17:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXGKVns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 17:43:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38736 "EHLO
+	Wed, 11 Jul 2007 17:43:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35929 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752004AbXGKVna (ORCPT
+	by vger.kernel.org with ESMTP id S1756605AbXGKVnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 17:43:30 -0400
-Date: Wed, 11 Jul 2007 14:43:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alasdair G Kergon <agk@redhat.com>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Mike Christie <michaelc@cs.wisc.edu>
-Subject: Re: [2.6.23 PATCH 16/18] dm mpath: rdac
-Message-Id: <20070711144303.9400acba.akpm@linux-foundation.org>
-In-Reply-To: <20070711210242.GH24114@agk.fab.redhat.com>
-References: <20070711210242.GH24114@agk.fab.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 17:43:47 -0400
+Date: Wed, 11 Jul 2007 14:42:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+In-Reply-To: <20070711174252.GA16793@elte.hu>
+Message-ID: <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+ <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 22:02:42 +0100
-Alasdair G Kergon <agk@redhat.com> wrote:
 
-> From: Mike Christie <michaelc@cs.wisc.edu>
+
+On Wed, 11 Jul 2007, Ingo Molnar wrote:
 > 
-> This patch from Chandra Seetharaman and updated to upstream by me,
-> supports LSI/Engenio devices in RDAC mode. Like dm-emc
-> it requires userspace support. In your multipath.conf file you must have:
-> 
-> path_checker            rdac
-> hardware_handler        "1 rdac"
-> 
-> And you also then must have a updated multipath tools release which
-> has rdac support.
-> 
-> ...
->
-> +static spinlock_t list_lock = SPIN_LOCK_UNLOCKED;
+> What you just did here is a slap in the face to a lot of contributors 
+> who worked hard on this code :(
 
-This defeats lockdep.  Please use DEFINE_SPINLOCK.
+Ingo, I'm sorry to say so, but your answer just convinced me that you're 
+wrong, and we MUST NOT take that code.
 
-> +#define submit_c9_inquiry(h) \
-> +	submit_inquiry(h, 0xC9, sizeof(struct c9_inquiry), c9_inquiry_endio)
-> +#define submit_c4_inquiry(h) \
-> +	submit_inquiry(h, 0xC4, sizeof(struct c4_inquiry), c4_inquiry_endio)
-> +#define submit_c8_inquiry(h) \
-> +	submit_inquiry(h, 0xC8, sizeof(struct c8_inquiry), c8_inquiry_endio)
-> +#define submit_c2_inquiry(h) \
-> +	submit_inquiry(h, 0xC2, sizeof(struct c2_inquiry), c2_inquiry_endio)
+That was *exactly* the same thing you talked about when I refused to take 
+the original timer changes into 2.6.20. You were talking about how lots of 
+people had worked really hard, and how it was really tested.
 
-These don't have to be implemented as macros.
+And it damn well was NOT really tested, and 2.6.21 ended up being a 
+horribly painful experience (one of the more painful kernel releases in 
+recent times), and we ended up havign to fix a *lot* of stuff.
 
-> +static struct request *get_rdac_req(struct rdac_handler *h,
-> +			void *buffer, unsigned buflen, int rw)
-> +{
-> +	struct request *rq;
-> +	struct request_queue *q = bdev_get_queue(h->path->dev->bdev);
-> +
-> +	rq = blk_get_request(q, rw, GFP_ATOMIC);
+And you admitted you were wrong at the time.
 
-GFP_ATOMIC is unreliable.  Is it really unavoidable?
+Now you do the *exact* same thing.
 
-> +	if (!rq) {
-> +		DMINFO("get_rdac_req: blk_get_request failed");
-> +		return NULL;
-> +	}
-> +
-> +	if (buflen && blk_rq_map_kern(q, rq, buffer, buflen, GFP_ATOMIC)) {
-> +		blk_put_request(rq);
-> +		DMINFO("get_rdac_req: blk_rq_map_kern failed");
-> +		return NULL;
-> +	}
-> +
-> + 	memset(&rq->cmd, 0, BLK_MAX_CDB);
-> +	rq->sense = h->sense;
-> +	memset(rq->sense, 0, SCSI_SENSE_BUFFERSIZE);
-> +	rq->sense_len = 0;
-> +
-> +	rq->end_io_data = h;
-> +	rq->timeout = h->timeout;
-> +	rq->cmd_type = REQ_TYPE_BLOCK_PC;
-> +	rq->cmd_flags = REQ_FAILFAST | REQ_NOMERGE;
-> +	return rq;
-> +}
-> +
->
-> ...
->
-> +
-> +/* Acquires h->ctlr->lock */
-> +static void submit_mode_select(struct rdac_handler *h)
-> +{
-> +	struct request *rq;
-> +	struct request_queue *q = bdev_get_queue(h->path->dev->bdev);
-> +
-> +	spin_lock(&h->ctlr->lock);
-> +	if (h->ctlr->submitted) {
-> +		list_add(&h->entry, &h->ctlr->cmd_list);
-> +		goto drop_lock;
-> +	}
-> +
-> +	if (!q) {
-> +		DMINFO("submit_mode_select: no queue");
-> +		goto fail_path;
-> +	}
-> +
-> +	rq = rdac_failover_get(h);
-> +	if (!rq) {
-> +		DMERR("submit_mode_select: no rq");
-> +		goto fail_path;
-> +	}
-> +
-> +	DMINFO("queueing MODE_SELECT command on %s", h->path->dev->name);
-> +
-> +	blk_execute_rq_nowait(q, NULL, rq, 1, mode_select_endio);
+Here's a big clue: it doesn't matter one _whit_ how much face-slapping you 
+get, or how much effort some programmers have put into the code. It's 
+untested. And no, we are *not* going to do another "rip everything out, 
+and replace it with new code" again.
 
-I suspect we could call this after dropping the lock?
+Over my dead body.
 
-> +	h->ctlr->submitted = 1;
-> +	goto drop_lock;
-> +fail_path:
-> +	dm_pg_init_complete(h->path, MP_FAIL_PATH);
-> +drop_lock:
-> +	spin_unlock(&h->ctlr->lock);
-> +}
-> +
->
-> ...
->
-> +static void c2_inquiry_endio(struct request *req, int error)
-> +{
-> +	struct rdac_handler *h = req->end_io_data;
-> +	struct c2_inquiry *sp;
-> +
-> +	if (had_failures(req, error)) {
-> +		dm_pg_init_complete(h->path, MP_FAIL_PATH);
-> +		goto done;
-> +	}
-> +
-> +	sp = (struct c2_inquiry *)&h->inq;
+We're going to do this thing gradually, or not at all.
 
-That's funny-looking and un-typesafe.  Why not do
+And if somebody feels slighted by the face-slap, and thinks he has already 
+done enough, and isn't interested in doing it gradually, then good 
+riddance. The "not at all" seems like a good idea, and maybe we can 
+re-visit this in a year or two.
 
-	sp = &h->inq.c2;
+I'm not going to have another 2.6.21 on my hands.
 
-?
-
-(Dittoes in various other places..)
-
-> +
-> +	/* If more than MODE6_MAX_LUN luns are supported, use mode select 10 */
-> +	if (sp->max_lun_supported >= MODE6_MAX_LUN)
-> +		h->ctlr->use_10_ms = 1;
-> +	else
-> +		h->ctlr->use_10_ms = 0;
-> +
-> +	h->cmd_to_send = SEND_MODE_SELECT;
-> +	queue_work(rdac_wkqd, &h->work);
-> +done:
-> +	__blk_put_request(req->q, req);
-> +}
-> +
-> +static void rdac_destroy(struct hw_handler *hwh)
-> +{
-> +	struct rdac_handler *h = (struct rdac_handler *) hwh->context;
-
-Unneeded (and undesirable) cast of void*.  Please check the whole
-patch(set) for this.
-
-> +	if (h->ctlr)
-> +		kref_put(&h->ctlr->kref, release_ctlr);
-> +	kfree(h);
-> +	hwh->context = NULL;
-> +}
-> +
-
+		Linus
