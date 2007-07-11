@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763532AbXGKMBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbXGKMDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763532AbXGKMBK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 08:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762301AbXGKMAp
+	id S932555AbXGKMDA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 08:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbXGKMCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 08:00:45 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:41371 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758386AbXGKMAn (ORCPT
+	Wed, 11 Jul 2007 08:02:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45956 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756698AbXGKMCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 08:00:43 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Hibernation Redesign
-Date: Wed, 11 Jul 2007 22:00:42 +1000
-User-Agent: KMail/1.9.6
-Cc: rjw@sisk.pl, a1426z@gawab.com, jeremy@goop.org, jbms@cmu.edu, pavel@ucw.cz,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200707081737.21932.a1426z@gawab.com> <200707111350.41806.rjw@sisk.pl> <E1I8amY-00009H-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1I8amY-00009H-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2591624.7gdUpcTcKD";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707112200.43613.nigel@nigel.suspend2.net>
+	Wed, 11 Jul 2007 08:02:49 -0400
+Date: Wed, 11 Jul 2007 13:02:47 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>, Mingming Cao <cmm@us.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, nfsv4@linux-nfs.org
+Subject: Re: [EXT4 set 4][PATCH 4/5] i_version:ext4 inode version update
+Message-ID: <20070711120247.GA26370@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	nfsv4@linux-nfs.org
+References: <1183275465.4010.130.camel@localhost.localdomain> <20070711084737.GA17675@infradead.org> <20070711115224.GT6417@schatzie.adilger.int>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070711115224.GT6417@schatzie.adilger.int>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2591624.7gdUpcTcKD
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, Jul 11, 2007 at 05:52:24AM -0600, Andreas Dilger wrote:
+> On Jul 11, 2007  09:47 +0100, Christoph Hellwig wrote:
+> > On Sun, Jul 01, 2007 at 03:37:45AM -0400, Mingming Cao wrote:
+> > > This patch is on top of i_version_update_vfs.
+> > > The i_version field of the inode is set on inode creation and incremented
+> > > when the inode is being modified.
+> > 
+> > Which is not what i_version is supposed to do.  It'll get you tons of misses
+> > for NFSv3 filehandles that rely on the generation staying the same for the
+> > same file.  Please add a new field for the NFSv4 sequence counter instead
+> > of making i_version unuseable.
+> 
+> You are confusing i_generation (the instance of this inode number) with
+> i_version (whether this file has been modified)?
 
-Hi.
-
-On Wednesday 11 July 2007 21:54:58 Miklos Szeredi wrote:
-> Freezing of tasks is slowing down suspend.  Don't know how serious
-> this is, suspend is pretty fast, but could possibly be even faster.
-
-It's FUD. Freezing of tasks normally takes next to no time. I've never=20
-understood the rediculously long timeout it has. If freezing succeeds, all=
-=20
-processes are frozen within 1/2 a second tops. If it fails, nothing is goin=
-g=20
-to change in the following 19.5 seconds (or whatever it is if I don't=20
-remember the value properly).
-=20
-Regards,
-
-Nigel
-
-
---nextPart2591624.7gdUpcTcKD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGlMZrN0y+n1M3mo0RAnbiAKDGZzYn572tkG6q+lZMOP3Sv/yF5ACgwUR7
-dutSJpgEem0Hb8w0/uN4hFA=
-=GTi3
------END PGP SIGNATURE-----
-
---nextPart2591624.7gdUpcTcKD--
+Yes, sorry.  Objection dropped.
