@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbXGKJnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762560AbXGKJoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761935AbXGKJnU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 05:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759310AbXGKJnI
+	id S1762560AbXGKJoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 05:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758566AbXGKJoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 05:43:08 -0400
-Received: from [222.92.8.141] ([222.92.8.141]:35495 "HELO lemote.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1759070AbXGKJnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 05:43:06 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 05:43:06 EDT
-Message-ID: <4694A495.1050006@lemote.com>
-Date: Wed, 11 Jul 2007 17:36:21 +0800
-From: Songmao Tian <tiansm@lemote.com>
-User-Agent: Icedove 1.5.0.8 (X11/20061116)
+	Wed, 11 Jul 2007 05:44:12 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:21667 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758436AbXGKJoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 05:44:11 -0400
+Date: Wed, 11 Jul 2007 11:44:10 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: avoiding rejects
+In-Reply-To: <20070710124422.a52b0458.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707111141330.11053@fbirervta.pbzchgretzou.qr>
+References: <20070710124422.a52b0458.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: about cs5536 interrupt ack
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-    I am trying to use a mips cpu the cs5536. I have some problem with 
-the 8259 of cs5536.  The  databook said,
 
-"Control Logic
-The INT output goes directly to the CPU interrupt input.
-When an INT signal is activated, the CPU responds with an
-Interrupt Acknowledge access that is translated to two
-pulses on the INTA input of the PIC. At the first INTA pulse,
-the highest priority IRR bit is loaded into the corresponding
-ISR bit, and that IRR bit is reset. The second INTA pulse
-instructs the PIC to present the 8-bit vector of the interrupt
-handler onto the data bus."
+On Jul 10 2007 12:44, Andrew Morton wrote:
+>
+>There are many situations where patching the kernel involves adding a new
+>item to a list, such as:
+>
+>- adding a makefile line
+>- adding a new #include
+>- adding a new Kconfig entry
+>- adding a new PCI ID
+>- adding a record to feature-removal.txt
+>- adding a new sysctl table entry
+>- etc
+>
+>Of course, everyone just sticks the new entry at the end of the existing
+>entries.  This strategy carefully maximises the opportunity for patch
+>rejects and leads to unhappiness.
+>
+>Most of these lists are unordered anyway, so inserting the new item at a
+>randomly-chosen position is a better approach than just appending it.
 
-Is it the responsibility of north bridge to reponse to intr with a PCI 
-Interrupt Ack cycle?
-it's a problem that my northbridge didn't implement that! Fortunately we 
-use a fpga as a northbridge.
-
-it seem it's no way to fix this by software, for OCW3 didn't implemnt 
-Poll command:(
-
-so I guess the the process is:
-1) 8259 receive a int, a bit irr got set.
-2) 8259 assert intr.
-3) northbrige generate a int ack cycle.
-4) cs5536 translate the ack into two INTA pulse, and the reponse 
-northbridge with a interrupt vector.
-5) then my program can get the vector from northbridge?
-
-Is that right?
-
-Without int ack, generic linux-mips 8259 code can't work.
-
-Greetings,
-Tian
+As for Makefiles: Sort the list lexicographically. Let the submitter put
+it into the right spot.
+Example: net/netfilter/Makefile.
+There are lots of obj-$(CONFIG_NETFILTER_XT_MATCH_xyz) += xt_xyz.o for example,
+which can be sorted without disturbing required linking order or whatnot
+(for some directories this seems important).
+Benefit: Less rejects of course (not as much as a truly random insert,
+but still less than appending) _and_ a sorted list.
 
 
-
+	Jan
+-- 
