@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762870AbXGKKty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762093AbXGKKyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762870AbXGKKty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 06:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760044AbXGKKtp
+	id S1762093AbXGKKyW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 06:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbXGKKyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 06:49:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:50133 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758597AbXGKKto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 06:49:44 -0400
-Date: Tue, 10 Jul 2007 14:52:56 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Wed, 11 Jul 2007 06:54:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58573 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755662AbXGKKyP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 06:54:15 -0400
+Date: Wed, 11 Jul 2007 12:54:13 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Benjamin Budts <benjamin.budts@scarlet.be>
+Cc: kvm-devel@lists.sourceforge.net, Andi Kleen <andi@firstfloor.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] [POWERPC] mmio ide support for mpc8349-itx target
-Message-ID: <20070710145256.6ac64e11@localhost.localdomain>
-In-Reply-To: <468FC376.2040405@ru.mvista.com>
-References: <20070707094852.9473.21013.stgit@localhost.localdomain>
-	<20070707094900.9473.48577.stgit@localhost.localdomain>
-	<468FC376.2040405@ru.mvista.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
+Subject: Re: gcc + kvm + 64 bit ? confused :-/
+Message-ID: <20070711105413.GA18767@one.firstfloor.org>
+References: <20070709071640.GB10864@one.firstfloor.org> <46920270.3080309@qumranet.com> <46921BE9.4040801@qumranet.com> <a781481a0707091224s3fb1a2acr6d3ccce091480f61@mail.gmail.com> <4693211D.4040406@qumranet.com> <a781481a0707100222k4f204ed8gfd4823bc21b7bf25@mail.gmail.com> <46936766.20900@qumranet.com> <a781481a0707101707w121da1b7hc82dc0e3638e4570@mail.gmail.com> <46948626.6050308@qumranet.com> <4694A63E.1050606@scarlet.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4694A63E.1050606@scarlet.be>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 07 Jul 2007 20:46:46 +0400
-Sergei Shtylyov wrote:
+On Wed, Jul 11, 2007 at 11:43:26AM +0200, Benjamin Budts wrote:
+> I'm a bit confused using the -march=xxx options for gcc when using a 
+> kernel virtual machine...
+> Getting errors on smp when using the -march=nocoma for gcc... possibly 
 
-> > +
-> > +#ifdef CONFIG_MPC834x_ITX  
+
+What errors? 
+
+> because smp is not fully supported yet I suppse.
 > 
->     Erm, isn't this stuff misplaced? Is this really SoC device? I
-> remember seeng this in the arch/ppc/ platform code before (in the
-> internal tree)...
+> I guess my question is, when installing kvm, is the virtual machine 64 
+> bit capable or should I install 32 bit OS ?
+> 
+> I installed an amd64 debian image and it seems to be running 
+> fine...except for the problem mentioned above.
+> 
+> And what type of architecture do i have to mention with gcc in a kvm ? 
+> march ... arch...
 
-The point is to declare methods bsp, as mmio access may effectively vary (having bugs or intentionally) from platform to platform. All-in-one driver approach is nice but might be an issue to handle/maintain.
+The same as the host or generic cpu if you're not sure.
 
-Thanks for looking at it, other notes make sense.
-
--- 
-Sincerely, Vitaly
+-Andi
