@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934295AbXGLNOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934305AbXGLNP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934295AbXGLNOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 09:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932452AbXGLNOI
+	id S934305AbXGLNP6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 09:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763984AbXGLNPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 09:14:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39574 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932396AbXGLNOF (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 09:14:05 -0400
-Date: Thu, 12 Jul 2007 23:13:34 +1000
-From: David Chinner <dgc@sgi.com>
-To: Suparna Bhattacharya <suparna@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, adilger@clusterfs.com,
-       David Chinner <dgc@sgi.com>, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070712131334.GY31489@sgi.com>
-References: <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070630165246.GA5159@schatzie.adilger.int> <20070703100848.GA14936@amitarora.in.ibm.com> <20070703103107.GA29763@infradead.org> <20070703114650.GB14936@amitarora.in.ibm.com> <20070711090312.GA18301@infradead.org> <20070712072813.GA31260@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070712072813.GA31260@in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 12 Jul 2007 09:15:49 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:60221 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761182AbXGLNPs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 09:15:48 -0400
+Date: Thu, 12 Jul 2007 09:15:44 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: David Patrick Quigley <dpquigl@tycho.nsa.gov>
+cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, eparis@redhat.com, sds@tycho.nsa.gov
+Subject: Re: [PATCH 2/7] fallocate() implementation in i386, x86_64 and
+ powerpc
+In-Reply-To: <1184244990.18175.6.camel@moss-terrapins.epoch.ncsc.mil>
+Message-ID: <Line.LNX.4.64.0707120914370.1473@d.namei>
+References: <20070710201200.GA10255@amitarora.in.ibm.com> 
+ <20070710202000.GB8797@amitarora.in.ibm.com> <1184244990.18175.6.camel@moss-terrapins.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 12:58:13PM +0530, Suparna Bhattacharya wrote:
-> 
-> Why don't we just merge the interface for preallocation (essentially
-> enough to satisfy posix_fallocate() and the simple XFS requirement for 
-> space reservation without changing file size), which there is clear agreement
-> on (I hope :)).  After all, this was all that we set out to do when we
-> started.
-> 
-> And leave all the dealloc/punch/hsm type features for separate future patches/
-> debates, those really shouldn't hold up the basic fallocate interface.
-> I agree with Christoph that we are just diverging too much in trying to
-> club those decisions here.
-> 
-> Dave, Andreas, Ted ?
+On Thu, 12 Jul 2007, David Patrick Quigley wrote:
 
-Sure. I'll just make XFS work with whatever it is that gets merged.
+> From: David P. Quigley <dpquigl@tycho.nsa.gov>
+> 
+> Revalidate the write permissions for fallocate(2), in case security policy has
+> changed since the files were opened.
+> 
+> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 
-Cheers,
+Acked-by: James Morris <jmorris@namei.org>
 
-Dave.
+
+(Will need to check it's ok again after final merge).
+
+
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+James Morris
+<jmorris@namei.org>
