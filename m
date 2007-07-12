@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763411AbXGLBBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935861AbXGLBBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763411AbXGLBBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 21:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761779AbXGLBBD
+	id S935861AbXGLBBy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 21:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761823AbXGLBBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 21:01:03 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:41772 "EHLO e6.ny.us.ibm.com"
+	Wed, 11 Jul 2007 21:01:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51877 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761186AbXGLBBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 21:01:01 -0400
-Date: Wed, 11 Jul 2007 18:00:58 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, dipankar@in.ibm.com, josht@linux.vnet.ibm.com,
-       akpm@linux-foundation.org
-Subject: [PATCH] Immunize rcu_dereference() against crazy compiler writers
-Message-ID: <20070712010058.GA30869@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1761779AbXGLBBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 21:01:45 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove CHILD_MAX
+Message-Id: <20070712010110.120F14D0555@magilla.localdomain>
+Date: Wed, 11 Jul 2007 18:01:10 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turns out that compiler writers are a bit more aggressive about optimizing
-than one might expect.  This patch prevents a number of such optimizations
-from messing up rcu_deference().  This is not merely a theoretical
-problem, as evidenced by the rmb() in mce_log().
+The CHILD_MAX macro in limits.h should not be there.  It claims to be the
+limit on processes a user can own, but its value is wrong for that.
+There is no constant value, but a variable resource limit (RLIMIT_NPROC).
+Nothing in the kernel uses CHILD_MAX.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+The proper thing to do according to POSIX is not to define CHILD_MAX at all.
+The sysconf (_SC_CHILD_MAX) implementation works by calling getrlimit.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
+ include/linux/limits.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
- rcupdate.h |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-diff -urpNa -X dontdiff linux-2.6.22/include/linux/rcupdate.h linux-2.6.22-volrcud/include/linux/rcupdate.h
---- linux-2.6.22/include/linux/rcupdate.h	2007-07-08 16:32:17.000000000 -0700
-+++ linux-2.6.22-volrcud/include/linux/rcupdate.h	2007-07-11 17:21:09.000000000 -0700
-@@ -217,6 +217,18 @@ extern int rcu_needs_cpu(int cpu);
- 		local_bh_enable(); \
- 	} while(0)
+diff --git a/include/linux/limits.h b/include/linux/limits.h
+index c4b4e57..2d0f941 100644
+--- a/include/linux/limits.h
++++ b/include/linux/limits.h
+@@ -5,7 +5,6 @@
  
-+/*
-+ * Prevent the compiler from merging or refetching accesses.  The compiler
-+ * is also forbidden from reordering successive instances of ACCESS_ONCE(),
-+ * but only when the compiler is aware of some particular ordering.  One way
-+ * to make the compiler aware of ordering is to put the two invocations of 
-+ * ACCESS_ONCE() in different C statements.
-+ *
-+ * This macro does absolutely -nothing- to prevent the CPU from reordering,
-+ * merging, or refetching absolutely anything at any time.
-+ */
-+#define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
-+
- /**
-  * rcu_dereference - fetch an RCU-protected pointer in an
-  * RCU read-side critical section.  This pointer may later
-@@ -228,7 +240,7 @@ extern int rcu_needs_cpu(int cpu);
-  */
- 
- #define rcu_dereference(p)     ({ \
--				typeof(p) _________p1 = p; \
-+				typeof(p) _________p1 = ACCESS_ONCE(p); \
- 				smp_read_barrier_depends(); \
- 				(_________p1); \
- 				})
+ #define NGROUPS_MAX    65536	/* supplemental group IDs are available */
+ #define ARG_MAX       131072	/* # bytes of args + environ for exec() */
+-#define CHILD_MAX        999    /* no limit :-) */
+ #define LINK_MAX         127	/* # links a file may have */
+ #define MAX_CANON        255	/* size of the canonical input queue */
+ #define MAX_INPUT        255	/* size of the type-ahead buffer */
