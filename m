@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbXGLFfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbXGLFkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757741AbXGLFfr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 01:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXGLFfk
+	id S1755496AbXGLFkZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 01:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXGLFkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 01:35:40 -0400
-Received: from il.qumranet.com ([82.166.9.18]:37199 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526AbXGLFfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 01:35:39 -0400
-Message-ID: <4695BDA9.7070104@qumranet.com>
-Date: Thu, 12 Jul 2007 08:35:37 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] KVM Updates for 2.6.23-rc1
-References: <11841377191653-git-send-email-avi@qumranet.com> <46955465.8080207@redhat.com>
-In-Reply-To: <46955465.8080207@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Thu, 12 Jul 2007 08:35:37 +0300 (IDT)
+	Thu, 12 Jul 2007 01:40:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43317 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750971AbXGLFkI (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 01:40:08 -0400
+Date: Thu, 12 Jul 2007 15:39:56 +1000
+From: David Chinner <dgc@sgi.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs-oss <xfs@oss.sgi.com>
+Subject: [PATCH, RESEND] Teach do_mpage_readpage() about unwritten buffers
+Message-ID: <20070712053956.GT31489@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 07/11/2007 03:08 AM, Avi Kivity wrote:
->   
->> Linus, please do your usual thing from the repository and branch at
->>
->>  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
->>
->> This contains kvm updates for the 2.6.23 merge window, including
->>
->>  - performance improvements
->>  - suspend/resume fixes
->>  - guest smp
->>  - random fixes and cleanups
->>
->>     
->
-> What version of KVM does this update contain? I can't find any place
-> in the code with version number.
->   
+Teach do_mpage_readpage() about unwritten extents so we can
+always map them in get_blocks rather than they are are holes on
+read. Allows setup_swap_extents() to use preallocated files on XFS
+filesystems for swap files without ever needing to convert them.
 
-There is an ABI version number (now at 12) in include/linux/kvm.h.  That
-means any version of kvm userspace from kvm-22  upwards can be used. 
-Since the ABI will not change anymore except in a backward compatible
-manner, the old concerns of matching userspace to kernel are gone.
+Signed-Off-By: Dave Chinner <dgc@sgi.com>
 
-In terms of parity with the external kernel module, 2.6.23-rc1 will be
-very similar to kvm-29.
+---
+ fs/mpage.c                  |    5 +++--
+ fs/xfs/linux-2.6/xfs_aops.c |   13 +++----------
+ 2 files changed, 6 insertions(+), 12 deletions(-)
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Index: 2.6.x-xfs-new/fs/mpage.c
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/mpage.c	2007-05-29 16:17:59.000000000 +1000
++++ 2.6.x-xfs-new/fs/mpage.c	2007-06-27 22:39:35.568852270 +1000
+@@ -207,7 +207,8 @@ do_mpage_readpage(struct bio *bio, struc
+ 	 * Map blocks using the result from the previous get_blocks call first.
+ 	 */
+ 	nblocks = map_bh->b_size >> blkbits;
+-	if (buffer_mapped(map_bh) && block_in_file > *first_logical_block &&
++	if (buffer_mapped(map_bh) && !buffer_unwritten(map_bh) &&
++			block_in_file > *first_logical_block &&
+ 			block_in_file < (*first_logical_block + nblocks)) {
+ 		unsigned map_offset = block_in_file - *first_logical_block;
+ 		unsigned last = nblocks - map_offset;
+@@ -242,7 +243,7 @@ do_mpage_readpage(struct bio *bio, struc
+ 			*first_logical_block = block_in_file;
+ 		}
+ 
+-		if (!buffer_mapped(map_bh)) {
++		if (!buffer_mapped(map_bh) || buffer_unwritten(map_bh)) {
+ 			fully_mapped = 0;
+ 			if (first_hole == blocks_per_page)
+ 				first_hole = page_block;
+Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_aops.c
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_aops.c	2007-06-05 22:14:39.000000000 +1000
++++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_aops.c	2007-06-27 22:39:29.545636749 +1000
+@@ -1340,16 +1340,9 @@ __xfs_get_blocks(
+ 		return 0;
+ 
+ 	if (iomap.iomap_bn != IOMAP_DADDR_NULL) {
+-		/*
+-		 * For unwritten extents do not report a disk address on
+-		 * the read case (treat as if we're reading into a hole).
+-		 */
+-		if (create || !(iomap.iomap_flags & IOMAP_UNWRITTEN)) {
+-			xfs_map_buffer(bh_result, &iomap, offset,
+-				       inode->i_blkbits);
+-		}
+-		if (create && (iomap.iomap_flags & IOMAP_UNWRITTEN)) {
+-			if (direct)
++		xfs_map_buffer(bh_result, &iomap, offset, inode->i_blkbits);
++		if (iomap.iomap_flags & IOMAP_UNWRITTEN) {
++			if (create && direct)
+ 				bh_result->b_private = inode;
+ 			set_buffer_unwritten(bh_result);
+ 		}
