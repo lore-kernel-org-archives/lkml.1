@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936412AbXGLDPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936676AbXGLDQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936412AbXGLDPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 23:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbXGLDPh
+	id S936676AbXGLDQU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 23:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbXGLDQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 23:15:37 -0400
-Received: from ozlabs.org ([203.10.76.45]:57793 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758660AbXGLDPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 23:15:37 -0400
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David Miller <davem@davemloft.net>
-Cc: hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20070711.195126.02300228.davem@davemloft.net>
-References: <1184203311.6005.664.camel@localhost.localdomain>
-	 <20070711.192829.08323972.davem@davemloft.net>
-	 <1184208521.6005.695.camel@localhost.localdomain>
-	 <20070711.195126.02300228.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 13:15:18 +1000
-Message-Id: <1184210118.6005.719.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 11 Jul 2007 23:16:00 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:58165
+	"EHLO moonbase" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765462AbXGLDP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 23:15:59 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+Date: Wed, 11 Jul 2007 20:15:53 -0700
+User-Agent: KMail/1.9.5
+Cc: Zan Lynx <zlynx@acm.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200707111916.35036.jesper.juhl@gmail.com> <200707111305.08603.phillips@phunq.net> <18069.21771.945367.815193@notabene.brown>
+In-Reply-To: <18069.21771.945367.815193@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707112015.53434.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 19:51 -0700, David Miller wrote:
-> From: Rusty Russell <rusty@rustcorp.com.au>
-> Date: Thu, 12 Jul 2007 12:48:41 +1000
-> 
-> > We drop the lock after I/O, and then do this wakeup.  Meanwhile the
-> > other task might have exited.
-> 
-> I already understand what you're doing.
-> 
-> Is it possible to use exit notifiers to handle this case?
-> That's what I'm trying to suggest. :)
+On Wednesday 11 July 2007 15:09, Neil Brown wrote:
+> > > Has anyone fixed the infrequent crashes with 4K stacks and ext3
+> > > -> LVM snapshot -> LVM -> DM mirror -> libata?
+> >
+> > Ahem: ext3 -> LVM snapshot -> LVM -> DM mirror -> DM crypt -> md ->
+> > libata, or worse.
+> >
+> > No, it's not fixed.  The model is wrong.  Virtual block drivers
+> > should not be callling submit_bio.  The recursive IO submissions
+> > should be handled on a dedicated stack, most probably allocated as
+> > part of the request queue. This could be done easily in device
+> > mapper and md, or better, in submit_bio.
+>
+> Maybe you should read that latest kernel source code.  Particularly
+> generic_make_request in block/ll_rw_blk.c.
 
-Sure, the process has /dev/lguest open, so I can do something in the
-close routine.  Instead of keeping a reference to the tsk, I can keep a
-reference to the struct lguest (currently it doesn't have or need a
-refcnt).  Then I need another lock, to protect lg->tsk.
+And plus you've had that one sitting around since 2005, hats off for
+nailing the issue from way out.  Sorry for missing the action, I was 
+elsewhere.  Niggles begin here.
 
-This seems like a lot of dancing to avoid one export.  If it's that
-important I'd far rather drop the code and do a normal wakeup under the
-big lguest lock for 2.6.23.
+I'm not sure I like the additional task_struct encumbrance when the
+functions themselves could sort it out, albeit with an API change
+affecting a gaggle of md and dm drivers.
 
-Cheers,
-Rusty.
+Hopefully there are other users of the bio list fields, otherwise I
+would point out that a per-queue stack is less memory than two
+per-bio fields.  I didn't go delving that far.
 
+The pointer to the description of the barrier deadlock is not right, it
+points to the problem report when it really out to point to the
+definitive analysis and include a subject line, because list archives
+come and go:
 
+   [PATCH] block: always requeue !fs requests at the front
+   http://thread.gmane.org/gmane.linux.kernel/537473
+
+Is there a good reason why we should not just put the whole
+analysis from Tejun Heo in as a comment?  It is terse enough.
+
+In other words, looks good to me :)
+
+Regards,
+
+Daniel
