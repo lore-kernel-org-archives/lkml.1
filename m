@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbXGLGJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbXGLGNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758514AbXGLGJk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 02:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXGLGJd
+	id S1758666AbXGLGNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 02:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXGLGNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 02:09:33 -0400
-Received: from gw.goop.org ([64.81.55.164]:44292 "EHLO mail.goop.org"
+	Thu, 12 Jul 2007 02:13:09 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:23539 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbXGLGJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 02:09:33 -0400
-Message-ID: <4695C564.5060500@goop.org>
-Date: Wed, 11 Jul 2007 23:08:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	id S1751787AbXGLGNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 02:13:09 -0400
+Date: Thu, 12 Jul 2007 08:13:06 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: James Morris <jmorris@namei.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/11] security: revalidate rw permissions for
+	sys_splice  and sys_vmsplice
+Message-ID: <20070712061306.GK4587@kernel.dk>
+References: <Line.LNX.4.64.0707082253040.12256@d.namei> <Line.LNX.4.64.0707082257390.12256@d.namei> <Line.LNX.4.64.0707112202120.29292@d.namei>
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <200707111916.35036.jesper.juhl@gmail.com>
-In-Reply-To: <200707111916.35036.jesper.juhl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Line.LNX.4.64.0707112202120.29292@d.namei>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> One of the big problem spots was XFS, but that got some stack usage 
-> fixes recently, and the 4K stack option has been around for quite a 
-> while now, so people really should have gotten around to fixing any 
-> code that can't handle it.   Are there still any big problem areas 
-> remaining?
->   
+On Wed, Jul 11 2007, James Morris wrote:
+> On Sun, 8 Jul 2007, James Morris wrote:
+> 
+> > Revalidate read/write permissions for splice(2) and vmslice(2), in case 
+> > security policy has changed since the files were opened.
+> 
+> This patch clashes with changes which came in via Jens (who I'll submit 
+> the patch via once it's fixed).
+> 
+> I'll send an updated pull request with this patch removed from the branch.
 
-I get frequent crashes when I use 4k stacks with XFS+lvm, using recent 
-kernels.  When did XFS stack use reductions go in?
+Just send me the vmsplice/splice patch, and I'll review and integrate
+it.
 
-    J
+-- 
+Jens Axboe
+
