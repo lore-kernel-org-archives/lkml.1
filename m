@@ -1,101 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbXGLI1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbXGLIa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760691AbXGLI1I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 04:27:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbXGLI0v
+	id S1760315AbXGLIa3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 04:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXGLIaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 04:26:51 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60942 "EHLO e6.ny.us.ibm.com"
+	Thu, 12 Jul 2007 04:30:15 -0400
+Received: from mga01.intel.com ([192.55.52.88]:3773 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751692AbXGLI0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 04:26:49 -0400
-Date: Thu, 12 Jul 2007 13:56:50 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Suparna Bhattacharya <suparna@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       adilger@clusterfs.com, David Chinner <dgc@sgi.com>, cmm@us.ibm.com,
-       xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070712082650.GB12817@amitarora.in.ibm.com>
-References: <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070630165246.GA5159@schatzie.adilger.int> <20070703100848.GA14936@amitarora.in.ibm.com> <20070703103107.GA29763@infradead.org> <20070703114650.GB14936@amitarora.in.ibm.com> <20070711090312.GA18301@infradead.org> <20070712072813.GA31260@in.ibm.com>
+	id S1751569AbXGLIaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 04:30:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,531,1175497200"; 
+   d="scan'208";a="267351555"
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
+	hibernation
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <20070711111350.GI7091@elf.ucw.cz>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	 <20070711111350.GI7091@elf.ucw.cz>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 12 Jul 2007 16:28:54 +0000
+Message-Id: <1184257734.9346.76.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070712072813.GA31260@in.ibm.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 12 Jul 2007 08:29:40.0096 (UTC) FILETIME=[CA285800:01C7C45E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 12:58:13PM +0530, Suparna Bhattacharya wrote:
-> On Wed, Jul 11, 2007 at 10:03:12AM +0100, Christoph Hellwig wrote:
-> > On Tue, Jul 03, 2007 at 05:16:50PM +0530, Amit K. Arora wrote:
-> > > Well, if you see the modes proposed using above flags :
-> > > 
-> > > #define FA_ALLOCATE	0
-> > > #define FA_DEALLOCATE	FA_FL_DEALLOC
-> > > #define FA_RESV_SPACE	FA_FL_KEEP_SIZE
-> > > #define FA_UNRESV_SPACE	(FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA)
-> > > 
-> > > FA_FL_DEL_DATA is _not_ being used for preallocation. We have two modes
-> > > for preallocation FA_ALLOCATE and FA_RESV_SPACE, which do not use this
-> > > flag. Hence prealloction will never delete data.
-> > > This mode is required only for FA_UNRESV_SPACE, which is a deallocation
-> > > mode, to support any existing XFS aware applications/usage-scenarios.
-> > 
-> > Sorry, but this doesn't make any sense.  There is no need to put every
-> > feature in the XFS ioctls in the syscalls.  The XFS ioctls will need to
-> > be supported forever anyway - as I suggested before they really should
-> > be moved to generic code.
-> > 
-> > What needs to be supported is what makes sense as an interface.
-> > A punch a hole interface does make sense, but trying to hack this into
-> > a preallocation system call is just madness.  We're not IRIX or windows
-> > that fit things into random subcall just because there was some space
-> > left to squeeze them in.
-> > 
-> > > > > > FA_FL_NO_MTIME	0x10 /* keep same mtime (default change on size, data change) */
-> > > > > > FA_FL_NO_CTIME	0x20 /* keep same ctime (default change on size, data change) */
-> > > > 
-> > > > NACK to these aswell.  If i_size changes c/mtime need updates, if the size
-> > > > doesn't chamge they don't.  No need to add more flags for this.
-> > > 
-> > > This requirement was from the point of view of HSM applications. Hope
-> > > you saw Andreas previous post and are keeping that in mind.
-> > 
-> > HSMs needs this basically for every system call, which screams for an
-> > open flag like O_INVISIBLE anyway.  Adding this in a generic way is
-> > a good idea, but hacking bits and pieces that won't fit into the global
-> > design is completely wrong.
+On Wed, 2007-07-11 at 13:13 +0200, Pavel Machek wrote:
+> Hi!
 > 
-> Why don't we just merge the interface for preallocation (essentially
-> enough to satisfy posix_fallocate() and the simple XFS requirement for 
-> space reservation without changing file size), which there is clear agreement
-> on (I hope :)).  After all, this was all that we set out to do when we
-> started.
-
-As you suggest, let us just have two modes for the time being:
-
-#define FALLOC_ALLOCATE			0x1
-#define FALLOC_ALLOCATE_KEEP_SIZE	0x2
-
-As the name suggests, when FALLOC_ALLOCATE_KEEP_SIZE mode is passed it
-will result in file size not being changed even if the preallocation is
-beyond EOF.
-
-> And leave all the dealloc/punch/hsm type features for separate future patches/
-> debates, those really shouldn't hold up the basic fallocate interface.
-
-I agree.
-
-> I agree with Christoph that we are just diverging too much in trying to
-> club those decisions here.
+> Looks interesting... but I was feeling strange dejavu reading
+> this... and that's because you pasted the changelog twice :-).
 > 
-> Dave, Andreas, Ted ?
-> 
-> Regards
-> Suparna
 
---
-Regards,
-Amit Arora
+Sorry, I should have re-checked the mail before sending out.
+
+> How fast can kexec boot secondary kernel?
+
+I measure it on my IBM T42 with CONFIG_PRINTK_TIME=y. The boot-up time
+is about 4.35s from kexec is issued to root mounted in kexec kernel.
+
+I think it is possible to optimize. Maybe the kexec kernel can
+be hibernate/resume by the normal kernel too. This way, a real
+kexec/boot-up is only needed for the first time.
+
+> > 2. Compile the kexec-tools with kdump and kjump patches added, the
+> >    kdump patch can be found at:
+> > 
+> > http://lse.sourceforge.net/kdump/patches/kexec-tools-1.101-dkump10.patch
+> 
+> I got 404 error :-(.
+
+Sorry, typo problem. The URL should be:
+http://lse.sourceforge.net/kdump/patches/kexec-tools-1.101-kdump10.patch
+
+> > 3. Boot compiled kernel, the reserved crash kernel memory region must
+> >    be added to kernel command line as following:
+> > 
+> >    crashkernel=<XX>M@<XX>M
+> > 
+> >    Where, <XX> should be replaced by the real memory size and position.
+> 
+> How much memory do you suggest to reserve? 64M? 
+
+I reserved 16M RAM. I think this is sufficient for a simple disk based
+hibernation.
+
+> > 7. In the kexec booted kernel, trigger the jumping back with following
+> >    shell command.
+> > 
+> >    echo <a>:<b> > /sys/power/resume
+> > 
+> >    Where <a> and <b> is non-negative integer, at least one of them must
+> >    be non-zero.
+> 
+> What does a and b mean?
+> 
+
+a and b has no meaning. They are only used to trigger the resume
+process. This will be fixed in the future version.
+
+> > +/* Adds the kexec_backup= command line parameter to command line. */
+> > +static int cmdline_add_backup(char *cmdline, unsigned long addr)
+> > +{
+> > +	int cmdlen, len, align = 1024;
+> > +	char str[30], *ptr;
+> > +
+> > +	/* Passing in kexec_backup=xxxK format. Saves space required in cmdline.
+> > +	 * Ensure 1K alignment*/
+> > +	if (addr%align)
+> > +		return -1;
+> > +	addr = addr/align;
+> > +	ptr = str;
+> > +	strcpy(str, " kexec_backup=");
+> > +	ptr += strlen(str);
+> > +	ultoa(addr, ptr);
+> > +	strcat(str, "K");
+> > +	len = strlen(str);
+> > +	cmdlen = strlen(cmdline) + len;
+> > +	if (cmdlen > (COMMAND_LINE_SIZE - 1))
+> > +		die("Command line overflow\n");
+> > +	strcat(cmdline, str);
+> > +#if 0
+> > +		printf("Command line after adding backup\n");
+> > +		printf("%s\n", cmdline);
+> > +#endif
+> > +	return 0;
+> > +}
+> 
+> printf()? ...and please remove out commented code.
+
+This is patch against kexec-tools, which is a userspace tool. So printf
+is used. The commented code is just as other cmdline_add_xxx functions
+of kexec-tools. But it is useless, and should be removed.
+
+Best Regards,
+Huang Ying
