@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762368AbXGLR6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761716AbXGLR7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762368AbXGLR6x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbXGLR6c
+	id S1761716AbXGLR7P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbXGLR6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:58:32 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:40565 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755499AbXGLR6a (ORCPT
+	Thu, 12 Jul 2007 13:58:33 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33023
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755718AbXGLR6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:58:30 -0400
-Date: Thu, 12 Jul 2007 18:43:20 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mark Mason <mason@broadcom.com>,
-       Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-mips@linux-mips.org,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sb1250-duart.c: SB1250 DUART serial support
-Message-ID: <20070712174320.GA22332@linux-mips.org>
-References: <Pine.LNX.4.64N.0707121745010.3029@blysk.ds.pg.gda.pl>
+	Thu, 12 Jul 2007 13:58:31 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: Documentation of kernel messages (Summary)
+Date: Thu, 12 Jul 2007 12:56:24 -0400
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com> <200707111413.03513.rob@landley.net> <28606.1184190834@turing-police.cc.vt.edu>
+In-Reply-To: <28606.1184190834@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64N.0707121745010.3029@blysk.ds.pg.gda.pl>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200707121256.24708.rob@landley.net>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 06:39:00PM +0100, Maciej W. Rozycki wrote:
+On Wednesday 11 July 2007 5:53:54 pm Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 11 Jul 2007 14:13:02 EDT, Rob Landley said:
+> > I wouldn't discourage a translator into Klingon if they were willing to
+> > keep their translation up to date and/or it actually resulted in patches.
+>
+> The guys at the Klingon Language Institute are going to have a fit - what's
+> the Klingon word for 'freezer' as used in our suspend code? :)
 
->  This is a driver for the SB1250 DUART, a dual serial port implementation 
-> included in the Broadcom family of SOCs descending from the SiByte SB1250 
-> MIPS64 chip multiprocessor.  It is a new implementation replacing the 
-> old-fashioned driver currently present in the linux-mips.org tree.  It 
-> supports all the usual features one would expect from a(n asynchronous) 
-> serial driver, including modem line control (as far as hardware supports 
-> it -- there is edge detection logic missing from the DCD and RI lines and 
-> the driver does not implement polling of these lines at the moment), the 
-> serial console, BREAK transmission and reception, including the magic 
-> SysRq.  The receive FIFO threshold is not maintained though.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+Considering that Klingon didn't have "to be" before Star Trek 6 needed hamlet, 
+I suspect they'll manage somehow.
 
-I'm all in favor of this patch sine the old drivers/char/ serial driver
-has been slowly decaying while the kernel around it is changing.  It would
-also make the kernel.org kernel finally usable for the Sibyte machines, so
-it's an improvment even if it doesn't have half a decade of testing under
-the belt, thus ACK.
-
-  Ralf
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
