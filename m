@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764845AbXGLRbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbXGLRei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764845AbXGLRbx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbXGLRbp
+	id S932102AbXGLRei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbXGLRe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:31:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45611 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751644AbXGLRbo (ORCPT
+	Thu, 12 Jul 2007 13:34:28 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:53329 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751644AbXGLRe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:31:44 -0400
-Date: Thu, 12 Jul 2007 10:30:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 setup code rewrite in C - revised
-Message-Id: <20070712103056.52126a96.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707121016210.20061@woody.linux-foundation.org>
-References: <1184181538674-git-send-email-hpa@zytor.com>
-	<alpine.LFD.0.999.0707121016210.20061@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 12 Jul 2007 13:34:27 -0400
+Date: Thu, 12 Jul 2007 10:34:10 -0700
+From: Mike Anderson <andmike@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [2.6.23 PATCH 14/18] dm: netlink add to core
+Message-ID: <20070712173410.GA2505@us.ibm.com>
+References: <20070711210159.GF24114@agk.fab.redhat.com> <20070711143423.36722a41.akpm@linux-foundation.org> <m1bqehfyp0.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1bqehfyp0.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 10:24:48 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+Eric W. Biederman <ebiederm@xmission.com> wrote:
+> I may be a little off but looking at the events types defined.
+> device down, device up.  Defining a completely new interface for this
+> looks absolutely absurd.
 > 
 > 
-> On Wed, 11 Jul 2007, H. Peter Anvin wrote:
-> >
-> > This patch set replaces the x86 setup code, which is currently all in
-> > assembly, with a version written in C, using the ".code16gcc" feature
-> > of binutils (which has been present since at least 2001.)
-> >
-> >  76 files changed, 4606 insertions(+), 5209 deletions(-)
-> 
-> I can't really argue against this on any sane grounds - not only is it 
-> removing more lines than it adds, but moving from mostly unreadable 
-> assembly to C seems a good idea.
-> 
-> How does this impact the size of that code? Do we even care?
-> 
-> But as to how to integrate it, I'm not sure I really want to just merge 
-> it. I suspect we would want to have it in some public tree that people 
-> actually test at least to some degree first, and the -mm tree seems to 
-> make most sense.
-> 
-> I didn't see anything objectionable in the series, although I do think the 
-> explanations need to be re-done for a number of them. You seem to have 
-> violated the "a single line to explain the patch at the top" rule, and as 
-> a result they make no sense for some of them (the explanation for patch 
-> 05/33 doesn't parse for me and 07/33 seems to have the single-line 
-> problem)
-> 
-> So let's just get this merged. But the question is, do we put it in 
-> 2.6.23-rc1, or do we put it in -mm for a few weeks, which would imply 
-> waiting for the next merge window? Andrew?
+> This is device hotplug isn't it?   As such we should be using the
+> hotplug infrastructure and not reinventing the wheel here.
 > 
 
-This code has been in -mm since 11 May, as git-newsetup.patch.  It has
-caused (for what it is) astonishingly few problems.  Maybe a couple of
-build glitches and one runtime failure, all quickly fixed.
+I assume device hotplug means kobject_uevent and KOBJ_* events. The
+original intent was to have a little more structure in the data format the
+env strings. I also wanted to reduce the number of allocations that where
+happening with GFP_KERNEL to send an event. 
 
-I'd say it's ready.
+Currently the patch is only supporting a couple of events with the intent of
+adding more over time. I see that I could map most events to KOBJ_CHANGE,
+previously it did not seem like the correct fit.  
+
+> If it isn't hotplug it looks like something that inotify should
+> handle.
+> 
+> If that isn't the case I am fairly certain that md already has a
+> mechanism to handle this, and those two should stay in sync
+> if at all possible on this kind of thing.
+> 
+
+Device mapper does have a "event happened" interface today, but post the
+event the user must determine the context of the event (dm also sends a
+kobject_uevent KOBJ_CHANGE only for a resume event). This patch was only
+effecting dm, but I know the md has similar infrastructure. This patch
+was passing out the event context through netlink that already existed but
+was lost through the current generic event interface.
+
+The existing event interfaces was left in place to not effect existing users
+allowing migration over to a netlink interface over time.
+
+> So this appears to be a gratuitous user interface addition.
+> Why do we need a new user interface for this?
+
+While I understand Evgeniy and Davids comment about utilizing the
+genetlink interface, I guess I am not seeing that utilizing a netlink
+channel for a subsystem as a gratuitous user interface addition vs.
+running everything through kobject_uevent.
+
+Thanks,
+
+-andmike
+--
+Michael Anderson
+andmike@us.ibm.com
