@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbXGLEZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbXGLE1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753257AbXGLEZu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 00:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbXGLEZk
+	id S1754093AbXGLE1a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 00:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXGLE1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 00:25:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54893 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751245AbXGLEZk (ORCPT
+	Thu, 12 Jul 2007 00:27:23 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32809 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751236AbXGLE1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 00:25:40 -0400
-Date: Wed, 11 Jul 2007 21:24:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: David Miller <davem@davemloft.net>, hch@lst.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-Message-Id: <20070711212435.abd33524.akpm@linux-foundation.org>
-In-Reply-To: <1184208521.6005.695.camel@localhost.localdomain>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<20070711122324.GA21714@lst.de>
-	<1184203311.6005.664.camel@localhost.localdomain>
-	<20070711.192829.08323972.davem@davemloft.net>
-	<1184208521.6005.695.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 12 Jul 2007 00:27:22 -0400
+Date: Thu, 12 Jul 2007 14:27:13 +1000
+From: David Chinner <dgc@sgi.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: xfs-oss <xfs@oss.sgi.com>
+Subject: [PATCH, RESEND] Export radix_tree_preload()
+Message-ID: <20070712042713.GP31489@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 12:48:41 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> On Wed, 2007-07-11 at 19:28 -0700, David Miller wrote:
-> > From: Rusty Russell <rusty@rustcorp.com.au>
-> > Date: Thu, 12 Jul 2007 11:21:51 +1000
-> > 
-> > > To do inter-guest (ie. inter-process) I/O you really have to make sure
-> > > the other side doesn't go away.
-> > 
-> > You should just let it exit and when it does you receive some kind of
-> > exit notification that resets your virtual device channel.
-> > 
-> > I think the reference counting approach is error and deadlock prone.
-> > Be more loose and let the events reset the virtual devices when
-> > guests go splat.
-> 
-> There are two places where we grab task refcnt.  One might be avoidable
-> (will test and get back) but the deferred wakeup isn't really:
-> 
->         /* We cache one process to wakeup: helps for batching & wakes outside locks. */
->         void set_wakeup_process(struct lguest *lg, struct task_struct *p)
->         {
->         	if (p == lg->wake)
->         		return;
->         
->         	if (lg->wake) {
->         		wake_up_process(lg->wake);
->         		put_task_struct(lg->wake);
->         	}
->         	lg->wake = p;
->         	if (lg->wake)
->         		get_task_struct(lg->wake);
->         }
+Upcoming XFS functionality [1] we plan to merge in 2.6.23-rc1 uses
+radix trees and uses the preload functions. XFS can be built as a
+module and hence we need radix_tree_preload() exported.
+radix_tree_preload_end() is a static inline, so it doesn't need
+exporting.
 
-<handwaving>
+[1] http://oss.sgi.com/archives/xfs/2007-07/msg00029.html
 
-We seem to be taking the reference against the wrong thing here.  It should
-be against the mm, not against a task_struct?
+Signed-Off-By: Dave Chinner <dgc@sgi.com>
+---
+ lib/radix-tree.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: 2.6.x-xfs-new/lib/radix-tree.c
+===================================================================
+--- 2.6.x-xfs-new.orig/lib/radix-tree.c	2007-03-29 19:00:53.802804161 +1000
++++ 2.6.x-xfs-new/lib/radix-tree.c	2007-03-29 19:07:10.297495640 +1000
+@@ -151,6 +151,7 @@ int radix_tree_preload(gfp_t gfp_mask)
+ out:
+ 	return ret;
+ }
++EXPORT_SYMBOL(radix_tree_preload);
+ 
+ static inline void tag_set(struct radix_tree_node *node, unsigned int tag,
+ 		int offset)
