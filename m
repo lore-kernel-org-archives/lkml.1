@@ -1,53 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761117AbXGLJ7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763571AbXGLKIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761117AbXGLJ7x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 05:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbXGLJ7m
+	id S1763571AbXGLKIW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 06:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbXGLKII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 05:59:42 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:32883 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758595AbXGLJ7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 05:59:41 -0400
-Date: Thu, 12 Jul 2007 12:10:29 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Mike Anderson <andmike@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [2.6.23 PATCH 13/18] dm: netlink
-Message-ID: <20070712081028.GB25699@2ka.mipt.ru>
-References: <20070711210137.GE24114@agk.fab.redhat.com> <20070711142712.e646995b.akpm@linux-foundation.org> <20070711233736.GA29241@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070711233736.GA29241@us.ibm.com>
-User-Agent: Mutt/1.5.9i
+	Thu, 12 Jul 2007 06:08:08 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39529 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758983AbXGLKIG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 06:08:06 -0400
+Message-ID: <4695FCB8.8090102@bx.jp.nec.com>
+Date: Thu, 12 Jul 2007 19:04:40 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v2 -mm 9/9] netconsole: Support dynamic reconfiguration
+ using configfs
+References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in> <20070710092006.23907.33652.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070710092006.23907.33652.sendpatchset@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 04:37:36PM -0700, Mike Anderson (andmike@us.ibm.com) wrote:
-> > > --- linux.orig/include/linux/netlink.h	2007-07-11 21:37:31.000000000 +0100
-> > > +++ linux/include/linux/netlink.h	2007-07-11 21:37:50.000000000 +0100
-> > > @@ -21,7 +21,7 @@
-> > >  #define NETLINK_DNRTMSG		14	/* DECnet routing messages */
-> > >  #define NETLINK_KOBJECT_UEVENT	15	/* Kernel messages to userspace */
-> > >  #define NETLINK_GENERIC		16
-> > > -/* leave room for NETLINK_DM (DM Events) */
-> > > +#define NETLINK_DM		17	/* Device Mapper */
-> > >  #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
-> > >  #define NETLINK_ECRYPTFS	19
-> > 
-> > Have the net guys checked this?  
-> 
-> No. The support is a derivative of the netlink support in
-> scsi_transport_iscsi.c.
+Hi Satyam,
 
-I'm not sure about all net guys, but the first question rised after
-reading this - why do you want special netlink family and do not want to
-use interfaces created on top of - like connector and genetlink?
+>  struct netconsole_target {
+>  	struct list_head	list;
+> +#ifdef	CONFIG_NETCONSOLE_DYNAMIC
+> +	struct config_item	item;
+> +	int			enabled;
+> +#endif
+>  	struct netpoll		np;
+>  };
 
-> -andmike
+If CONFIG_NETCONSOLE_DYNAMIC is unset, we can't access to the "enabled" member.
+So, the compile errors occur because the following functions make use of 
+the above one.
 
+> +/* Allocate new target (from boot/module param) and setup netpoll for it */
+> +static struct netconsole_target *alloc_param_target(char *target_config)
+>  {
+>  	int err = -ENOMEM;
+>  	struct netconsole_target *nt;
+>  
+> -	/* Allocate and initialize with defaults */
+> +	/*
+> +	 * Allocate and initialize with defaults.
+> +	 * Note that these targets get their config_item fields zeroed-out.
+> +	 */
+>  	nt = kzalloc(sizeof(*nt), GFP_KERNEL);
+>  	if (!nt) {
+>  		printk(KERN_ERR "netconsole: failed to allocate memory\n");
+> @@ -106,6 +188,8 @@ static struct netconsole_target *alloc_t
+>  	if (err)
+>  		goto fail;
+>  
+> +	nt->enabled = 1;
+> +
+>  	return nt;
+>  
+>  fail:
+> @@ -113,13 +197,469 @@ fail:
+>  	return ERR_PTR(err);
+>  }
+
+
+> @@ -169,7 +711,8 @@ static void write_msg(struct console *co
+>  
+>  	spin_lock_irqsave(&target_list_lock, flags);
+>  	list_for_each_entry(nt, &target_list, list) {
+> -		if (netif_running(nt->np.dev)) {
+> +		netconsole_target_get(nt);
+> +		if (nt->enabled && netif_running(nt->np.dev)) {
+>  			/*
+>  			 * We nest this inside the for-each-target loop above
+>  			 * so that we're able to get as much logging out to
+> @@ -184,6 +727,7 @@ static void write_msg(struct console *co
+>  				left -= frag;
+>  			}
+>  		}
+> +		netconsole_target_put(nt);
+>  	}
+>  	spin_unlock_irqrestore(&target_list_lock, flags);
+>  }
+
+I created the following patch for performing some tests.
+If there is nothing wrong with the patch, I'm going to continue to test.
+
+Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+
+Index: mm/drivers/net/netconsole.c
+===================================================================
+--- mm.orig/drivers/net/netconsole.c
++++ mm/drivers/net/netconsole.c
+@@ -94,8 +94,8 @@ struct netconsole_target {
+        struct list_head        list;
+ #ifdef CONFIG_NETCONSOLE_DYNAMIC
+        struct config_item      item;
+-       int                     enabled;
+ #endif
++       int                     enabled;
+        struct netpoll          np;
+ };
+
+
+Thanks
 -- 
-	Evgeniy Polyakov
+Keiichi KII
+NEC Corporation OSS Platform Development Division
+E-mail: k-keiichi@bx.jp.nec.com
