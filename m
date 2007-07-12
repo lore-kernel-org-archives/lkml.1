@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932120AbXGLK1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764947AbXGLK23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932120AbXGLK1j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 06:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760341AbXGLK13
+	id S1764947AbXGLK23 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 06:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764254AbXGLK2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 06:27:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48648
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760131AbXGLK13 (ORCPT
+	Thu, 12 Jul 2007 06:28:14 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:57165 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764108AbXGLK2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 06:27:29 -0400
-Date: Thu, 12 Jul 2007 03:27:27 -0700 (PDT)
-Message-Id: <20070712.032727.07453420.davem@davemloft.net>
-To: johnpol@2ka.mipt.ru
-Cc: andmike@us.ibm.com, akpm@linux-foundation.org, agk@redhat.com,
-       dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [2.6.23 PATCH 13/18] dm: netlink
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070712081028.GB25699@2ka.mipt.ru>
-References: <20070711142712.e646995b.akpm@linux-foundation.org>
-	<20070711233736.GA29241@us.ibm.com>
-	<20070712081028.GB25699@2ka.mipt.ru>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 12 Jul 2007 06:28:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=MAHiBmKoQmp4zeQQ1XLxafEbxS2HlQMlTbDLGrZIANnRmplgbBUGkTVFIzCkp7exP7s5IaFP0soWWGeW8hjlK5NPAyO85Gbi5gddypbl+ahOi8hXLoJEhKsBhUQ48DRl4VmZ44rfizbTvUjOXxLDADtBBMonvc3pH+kaQ+S2zUs=
+Message-ID: <46960225.1030102@gmail.com>
+Date: Thu, 12 Jul 2007 12:27:49 +0200
+From: Adel Gadllah <adel.gadllah@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix sparse problems with ARRAY_SIZE
+References: <4693AE32.7030403@gmail.com> <4693AF4C.8010005@gmail.com> <20070710194033.GB5751@martell.zuzino.mipt.ru> <20070710205817.GR21668@ftp.linux.org.uk> <20070710224059.GS21668@ftp.linux.org.uk>
+In-Reply-To: <20070710224059.GS21668@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Date: Thu, 12 Jul 2007 12:10:29 +0400
-
-> On Wed, Jul 11, 2007 at 04:37:36PM -0700, Mike Anderson (andmike@us.ibm.com) wrote:
-> > > > --- linux.orig/include/linux/netlink.h	2007-07-11 21:37:31.000000000 +0100
-> > > > +++ linux/include/linux/netlink.h	2007-07-11 21:37:50.000000000 +0100
-> > > > @@ -21,7 +21,7 @@
-> > > >  #define NETLINK_DNRTMSG		14	/* DECnet routing messages */
-> > > >  #define NETLINK_KOBJECT_UEVENT	15	/* Kernel messages to userspace */
-> > > >  #define NETLINK_GENERIC		16
-> > > > -/* leave room for NETLINK_DM (DM Events) */
-> > > > +#define NETLINK_DM		17	/* Device Mapper */
-> > > >  #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
-> > > >  #define NETLINK_ECRYPTFS	19
-> > > 
-> > > Have the net guys checked this?  
-> > 
-> > No. The support is a derivative of the netlink support in
-> > scsi_transport_iscsi.c.
-> 
-> I'm not sure about all net guys, but the first question rised after
-> reading this - why do you want special netlink family and do not want to
-> use interfaces created on top of - like connector and genetlink?
-
-I agree, there is really no reason to not at least use
-genetlink.
+Al Viro wrote:
+> On Tue, Jul 10, 2007 at 09:58:18PM +0100, Al Viro wrote:
+>   
+>> On Tue, Jul 10, 2007 at 11:40:33PM +0400, Alexey Dobriyan wrote:
+>>     
+>>> On Tue, Jul 10, 2007 at 06:09:48PM +0200, Adel Gadllah wrote:
+>>>       
+>>>> --- linux-2.6.orig/include/linux/kernel.h
+>>>> +++ linux-2.6/include/linux/kernel.h
+>>>> @@ -35,7 +35,11 @@ extern const char linux_proc_banner[];
+>>>>  #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+>>>>  #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
+>>>>  
+>>>> +#ifdef __CHECKER_
+>>>> +#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+>>>> +#else
+>>>>  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+>>>> +#endif
+>>>>         
+>>> Al Viro recently gave a hint that he have patches for sparse to not give
+>>> spurious ARRAY_SIZE warnings.
+>>>       
+>> I do.  Right now it's either 2 or 4 patches away from mainline sparse,
+>> depending on reordering...  I'm splitting the last patch in series,
+>> hopefully will reorder and send tonight.
+>>
+>> Basically, it's a matter of getting __builtin_compatible_types_p()
+>> implementation (really - evaluate.c:type_difference()) somewhere sane.
+>>     
+>
+> Try git://git.kernel.org/pub/scm/linux/kernel/git/viro/sparse.git/,
+> the branch is type_difference
+>
+>   
+ok a proper fix is always better than a workaround ;)
+it seems that ARRAY_SIZE is defined multiple times....
+seem wrong... shouldn't all users include linux/kernel.h and use that one?
