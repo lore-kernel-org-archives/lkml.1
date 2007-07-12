@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934309AbXGLAzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937040AbXGLA5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934309AbXGLAzu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936214AbXGLAzL
+	id S937040AbXGLA5L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXGLA45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:55:11 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:24655 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S935674AbXGLAzD (ORCPT
+	Wed, 11 Jul 2007 20:56:57 -0400
+Received: from gatekeeper.greshamstorage.com ([216.143.252.225]:26729 "EHLO
+	AUSEXCH1.greshamstorage.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751569AbXGLA44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:55:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=o7U/SSZFx5sWts01AOqrwubC+pttnPE0OJ8uXGoJALotRT1BeBY8BkCdwe764cG5/Y5AoFhNB1dtI2J2B3dL7wwZ30KZj0Lu2g2GB+XrclG/qZ4xldgBmp0aMPIDDFRggq3vOJJ/5PQXuw+Q4G6NfrpgT+5V1Zb9Z5Qc8FwvCWE=  ;
-X-YMail-OSG: 1YySoaYVM1lzYDiSaRTyEdjdvfGPVb0Amm5XHhQY8rP1ct67BGZZd7TjUGg_ttQrBiSTWZcLkg--
-Message-ID: <46957BE1.1010104@yahoo.com.au>
-Date: Thu, 12 Jul 2007 10:54:57 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 11 Jul 2007 20:56:56 -0400
+X-Greylist: delayed 891 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 20:56:56 EDT
+Message-ID: <46957820.9090008@greshamstorage.com>
+Date: Wed, 11 Jul 2007 19:38:56 -0500
+From: Jeremy Linton <jli@greshamstorage.com>
+Organization: Gresham Enterprise Storage
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Linux Memory Management <linux-mm@kvack.org>
-Subject: fault vs invalidate race (Re: -mm merge plans for 2.6.23)
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: James Bottomley <James.Bottomley@SteelEye.com>,
+       Linux Scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][BUG] Incorrect SCSI transfer length computation from odd
+ sized scsi_execute_async() transfers.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Jul 2007 00:40:24.0933 (UTC) FILETIME=[3C5F6950:01C7C41D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+Any function which use scsi_execute_async() and transfers "odd" sized 
+data that doesn't align correctly with the segment sizes may have its 
+transfer length padded out to the closest segment size.
 
-> mm-fix-fault-vs-invalidate-race-for-linear-mappings.patch
-> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
-> mm-merge-nopfn-into-fault.patch
-> convert-hugetlbfs-to-use-vm_ops-fault.patch
-> mm-remove-legacy-cruft.patch
-> mm-debug-check-for-the-fault-vs-invalidate-race.patch
-> mm-fix-clear_page_dirty_for_io-vs-fault-race.patch
-> invalidate_mapping_pages-add-cond_resched.patch
-> ocfs2-release-page-lock-before-calling-page_mkwrite.patch
-> document-page_mkwrite-locking.patch
-> 
->  The fault-vs-invalidate race fix.  I have belatedly learned that these need
->  more work, so their state is uncertain.
+For writes, this results in unnecessary data being transfered to the 
+SCSI target. For reads, it affects the residual data length being 
+returned to the application since the residual length will be based on 
+the padded transfer size rather than the actual request size.
 
-The more work may turn out being too much for you (although it is nothing
-exactly tricky that would introduce subtle bugs, it is a fair amont of churn).
+The easiest way to see this is by trying to read using the SG_IO ioctl a 
+large (>32k) buffer size from a tape device that only has a few bytes of 
+data stored for the current block. The resulting resid will generally be 
+incorrect.
 
-However, in that case we can still merge these two:
+I've fixed this simply by changing scsi_req_map_sg() so that it places 
+the requested transfer length in rq->data_len rather than the sum of all 
+the sg segments.
 
-mm-fix-fault-vs-invalidate-race-for-linear-mappings.patch
-mm-fix-clear_page_dirty_for_io-vs-fault-race.patch
+This patch applies against scsi_lib.c in 2.6.22.
 
-Which fix real bugs that need fixing (and will at least help to get some of
-my patches off your hands).
+Signed-off-by: Jeremy Linton <jli@greshamstorage.com>
 
--- 
-SUSE Labs, Novell Inc.
+
+--- linux-2.6.22/drivers/scsi/scsi_lib.c.orig   2007-07-11 
+19:07:06.000000000 -0500
++++ linux-2.6.22/drivers/scsi/scsi_lib.c        2007-07-11 
+18:43:36.000000000 -0500
+@@ -350,7 +350,7 @@ static int scsi_req_map_sg(struct reques
+         }
+
+         rq->buffer = rq->data = NULL;
+-       rq->data_len = data_len;
++       rq->data_len = bufflen;
+         return 0;
+
+  free_bios:
+
+
+
