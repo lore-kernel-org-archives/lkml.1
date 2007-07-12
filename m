@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937212AbXGLA6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937392AbXGLA7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937212AbXGLA6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762356AbXGLA60
+	id S937392AbXGLA7U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbXGLA7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:58:26 -0400
-Received: from sd-green-bigip-83.dreamhost.com ([208.97.132.83]:58462 "EHLO
-	randymail-a2.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757756AbXGLA6Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:58:25 -0400
-X-Greylist: delayed 7518 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jul 2007 20:58:25 EDT
-Message-ID: <46957CAC.8060308@monkeh.net>
-Date: Thu, 12 Jul 2007 00:58:20 +0000
-From: Alex Maclean <monkeh@monkeh.net>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070616)
-MIME-Version: 1.0
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de, Tim Gardner <tim.gardner@canonical.com>
-Subject: Re: acpi regression on some laptops
-References: <20070710160056.443ae9ae@i1501.lan.towertech.it>	<46952CC5.6050800@redhat.com>	<20070712000124.22d0c3a7@i1501.lan.towertech.it>	<46955F4D.3090206@monkeh.net> <20070712020944.446f3828@i1501.lan.towertech.it>
-In-Reply-To: <20070712020944.446f3828@i1501.lan.towertech.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 20:59:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50924 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757576AbXGLA7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 20:59:02 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] avoid OPEN_MAX in SCM_MAX_FD
+X-Shopping-List: (1) Diplomatic hydrants
+   (2) Apocalyptic sycophant secretions
+   (3) Dormant caves
+   (4) Intolerant polemical furniture
+Message-Id: <20070712005825.EC42A4D0555@magilla.localdomain>
+Date: Wed, 11 Jul 2007 17:58:25 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alessandro Zummo wrote:
-> On Wed, 11 Jul 2007 22:53:01 +0000
-> Alex Maclean <monkeh@monkeh.net> wrote:
-> 
->> I'm unsure just what hardware you're working with, but try using the 
->> option nolapic_timer.
-> 
->  it worked, thanks!
-> 
->  hw is a Dell Inspiron 1501, AMD Turion TL52 based.
->  drop me a note if you need dmesg or other info.
-> 
-> vendor_id       : AuthenticAMD
-> cpu family      : 15
-> model           : 72
-> model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
-> stepping        : 2
-> 
->  eax in    eax      ebx      ecx      edx
-> 00000000 00000001 68747541 444d4163 69746e65
-> 00000001 00040f82 01020800 00002001 178bfbff
-> 
 
-What chipset is it? I'm going to guess at nVidia MCP51, in which case.. 
-That's the third time that's worked on the MCP51.
+The OPEN_MAX constant is an arbitrary number with no useful relation to
+anything.  Nothing should be using it.  SCM_MAX_FD is just an arbitrary
+constant and it should be clear that its value is chosen in net/scm.h
+and not actually derived from anything else meaningful in the system.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ include/net/scm.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/net/scm.h b/include/net/scm.h
+index 5637d5e..423cb1d 100644
+--- a/include/net/scm.h
++++ b/include/net/scm.h
+@@ -8,7 +8,7 @@
+ /* Well, we should have at least one descriptor open
+  * to accept passed FDs 8)
+  */
+-#define SCM_MAX_FD	(OPEN_MAX-1)
++#define SCM_MAX_FD	255
+ 
+ struct scm_fp_list
+ {
