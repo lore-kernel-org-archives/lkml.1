@@ -1,74 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbXGLMp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933324AbXGLMqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932155AbXGLMp0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 08:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbXGLMpR
+	id S933324AbXGLMqj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 08:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbXGLMqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 08:45:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57270 "EHLO mx3.mail.elte.hu"
+	Thu, 12 Jul 2007 08:46:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55091 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754956AbXGLMpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 08:45:15 -0400
-Date: Thu, 12 Jul 2007 14:45:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Ivo van Doorn <IvDoorn@gmail.com>,
-       Dmitry Torokhov <dtor@mail.ru>, "David S. Miller" <davem@davemloft.net>
-Subject: [patch] net/input: fix net/rfkill/rfkill-input.c bug on 64-bit
-	systems
-Message-ID: <20070712124503.GA16633@elte.hu>
+	id S1754956AbXGLMqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 08:46:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Thu, 12 Jul 2007 14:53:48 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <20070711172243.ab44c4d4.akpm@linux-foundation.org> <1184251423.9346.55.camel@caritas-dev.intel.com>
+In-Reply-To: <1184251423.9346.55.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200707121453.49616.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Subject: [patch] net/input: fix net/rfkill/rfkill-input.c bug on 64-bit systems
+On Thursday, 12 July 2007 16:43, Huang, Ying wrote:
+> On Wed, 2007-07-11 at 17:22 -0700, Andrew Morton wrote:
+> > This sounds awesome.  Am I correct in expecting that ultimately the
+> > existing hibernation implementation just goes away and we reuse (and hence
+> > strengthen) the existing kexec (and kdump?) infrastructure?
+> > And that we get hibernation support almost for free on all kexec (and
+> > relocatable-kernel?) capable architectures?
+> > And that all the management of hibernation and resume happens in userspace?
+> 
+> Yes. Ultimately, most of the hibernation code such as process freezer,
+> memory shrinking, memory snapshot (atomic copy), image reading/writing
+> can go away, because kexec based hibernation doesn't depend on them.
+> Just the device/CPU state quiescent/save/restore is necessary to remain.
+> And, the management of hibernation and resume will happen in userspace.
+> 
+> > 
+> > I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI must
+> > be disabled in the to-be-hibernated kernel, or in the little transient
+> > kexec kernel?
+> 
+> Under current implementation of device state quiescent/save/restore, the
+> CONFIG_ACPI must be turned off both in to-be-hibernated kernel and
+> transient kexec kernel.
+> 
+> But the hibernation people are going to separate the device suspend from
+> device hibernate. The device hibernate will put device in quiescent
+> state but not in low power state. When this is done, it is not necessary
+> to disable CONFIG_ACPI at all. It is just a workaround for current
+> implementation that disabling CONFIG_ACPI.
+> 
+> > How close do you think all this is to being a viable thing?
+> 
+> The kexec jump is the first step, maybe the simplest step. There are
+> many other issues to be resolved, at least the following ones.
+> 
+> 1. Separate device suspend from device hibernate.
 
-this recent commit:
+Step 0, I'd say. :-)
 
- commit cf4328cd949c2086091c62c5685f1580fe9b55e4
- Author: Ivo van Doorn <IvDoorn@gmail.com>
- Date:   Mon May 7 00:34:20 2007 -0700
+> 2. Do not reserve memory for kexec kernel. That is, backup needed memory
+> before kexec and restore them after kexec.
 
-     [NET]: rfkill: add support for input key to control wireless radio
+I don't think this is very important initially.
 
-added this 64-bit bug:
+> 3. Support the in-place kexec? The relocatable kernel is not necessary
+> if this can be implemented.
+> 4. Image writing/reading. (Only user space application is needed).
 
-        ....
-	unsigned int flags;
- 
- 	spin_lock_irqsave(&task->lock, flags);
-        ....
+And a kernel interface for that application.
 
-irq 'flags' must be unsigned long, not unsigned int. The -rt tree has 
-strict checks about this on 64-bit so this triggered a build failure. 
+> 5. A smooth resume process. Maybe it is not needed to kexec a new kernel
+> for resume. For example, in the first stage of kernel boot, just first
+> 16M (or a little more) RAM is used, if the resume image is found, the
+> saved kernel image is resumed; if the resume image is not found, turn on
+> the remaining RAM. This will depends on 3.
 
-For -stable too i suspect.
+I think that this is the most difficult part of the whole thing.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
+> be hibernate/resume by the normal kernel too. This way, a real
+> kexec/boot-up is only needed for the first time.
 
-Index: linux-rt.q/net/rfkill/rfkill-input.c
-===================================================================
---- linux-rt.q.orig/net/rfkill/rfkill-input.c
-+++ linux-rt.q/net/rfkill/rfkill-input.c
-@@ -55,7 +55,7 @@ static void rfkill_task_handler(struct w
- 
- static void rfkill_schedule_toggle(struct rfkill_task *task)
- {
--	unsigned int flags;
-+	unsigned long flags;
- 
- 	spin_lock_irqsave(&task->lock, flags);
- 
+I'm not sure what you mean.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
