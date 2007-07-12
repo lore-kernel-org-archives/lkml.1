@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935545AbXGLQoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935551AbXGLQpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935545AbXGLQoQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbXGLQoC
+	id S935551AbXGLQpn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbXGLQpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:44:02 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:46084 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752248AbXGLQoA (ORCPT
+	Thu, 12 Jul 2007 12:45:36 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:35827 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752769AbXGLQpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:44:00 -0400
-Date: Thu, 12 Jul 2007 12:44:00 -0400
-To: James <LinuxKernel@jamesplace.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem recovering a failed RIAD5 array with 4-drives.
-Message-ID: <20070712164400.GD31195@csclub.uwaterloo.ca>
-References: <200707120849.16068.LinuxKernel@jamesplace.net>
+	Thu, 12 Jul 2007 12:45:35 -0400
+Message-ID: <46965B28.7000703@ru.mvista.com>
+Date: Thu, 12 Jul 2007 20:47:36 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707120849.16068.LinuxKernel@jamesplace.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: revert fix for threaded fasteoi IRQ
+ handlers
+References: <200611192243.34850.sshtylyov@ru.mvista.com> <200705171719.34968.sshtylyov@ru.mvista.com>
+In-Reply-To: <200705171719.34968.sshtylyov@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 08:49:15AM -0500, James wrote:
-> My apologies if this is not the correct forum. If there is a better place to 
-> post this please advise.
-> 
-> 
-> Linux localhost.localdomain 2.6.17-1.2187_FC5 #1 Mon Sep 11 01:17:06 EDT 2006 
-> i686 i686 i386 GNU/Linux
-> 
-> (I was planning to upgrade to FC7 this weekend, but that is currently on hold 
-> because-)
-> 
-> I've got a problem with a software RIAD5 using mdadm.
-> Drive sdc failed causing sda to appear failed. Both drives where marked 
-> as 'spare'.
-> 
-> What follows is a record of the steps I've taken and the results. I'm looking 
-> for some direction/advice to get the data back. 
-> 
-> 
-> I've tried a few cautions things to bring the array back up with the three 
-> good drives with no luck. 
-> 
-> The last thing attempted had some limited success. I was able to get all 
-> drives powered up. I checked the Event count on the three good drives and 
-> they were all equal. So I assumed it would be safe to do the following. I 
-> hope I was not wrong. I issued the following commands to try to bring the 
-> array into a usable state.
-> 
-> 
-> 
-> 
-> []# 
-> mdadm --create --verbose /dev/md0 --assume-clean --level=raid5 --raid-devices=4 --spare-devices=0  /dev/sda1 /dev/sdb1 /dev/sdc1 /dev/sdd1
+Hello, I wrote:
 
-Don't you want assemble rather than create if it already exists?
+> Revert the change to the "fasteoi" type chips as after handle_fasteoi_irq() had
+> been fixed, they've become meaningless (and even dangerous -- as was the case
+> with Celleb that has been fixed earlier)...
 
-How did two drives fail at the same time?  Are you running PATA drives
-with two drives on a single cable?  That is a no no for raid.  PATA
-drive failures often take out the bus and you never want two drives in a
-single raid to share an IDE bus.
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-You probably want to try and assemble the non failed drives, and then
-add in the new replacement drive afterwards, since after all it is NOT
-clean.  Hopefully the raid will accept back sda even though it appeared
-failed.  Then you can add the new sdc to resync the raid.
+> ---
+> The patch in question wasn't even initially accepted but then was erroneously
+> restored along with the TOD patch.  I've asked to revert it but to no avail,
+> so here's the formal patch to revert it at last...
 
---
-Len Sorensen
+    Now that the -rt patch has been first release in the broken-out version, 
+let me tell you that the following 3 patches in the series can be just 
+annihilated:
+
+preempt-irqs-ppc-ack-irq-fixups.patch
+preempt-irqs-ppc-fix-b5.patch
+preempt-irqs-ppc-fix-more-fasteoi.patch
+
+as all that the latter two are doing is undoing the former one.
+
+WBR, Sergei
