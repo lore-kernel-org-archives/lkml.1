@@ -1,101 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbXGLVht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935430AbXGLV4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764999AbXGLVht (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 17:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXGLVhk
+	id S935430AbXGLV4m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 17:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbXGLV4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 17:37:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45261 "EHLO
+	Thu, 12 Jul 2007 17:56:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38686 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754581AbXGLVhk (ORCPT
+	by vger.kernel.org with ESMTP id S1758458AbXGLV4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 17:37:40 -0400
-Date: Thu, 12 Jul 2007 14:35:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: jim.houston@ccur.com
-Cc: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       openib-general@openib.org, Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-       raisch@de.ibm.com, Kristian Hoegsberg <krh@redhat.com>,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] fix idr_get_new_above id alias bugs
-Message-Id: <20070712143501.2c2cdf1f.akpm@linux-foundation.org>
-In-Reply-To: <1184097931.3020.73.camel@localhost.localdomain>
-References: <200707021919.27251.hnguyen@linux.vnet.ibm.com>
-	<1183422700.3130.27.camel@localhost.localdomain>
-	<200707041611.30056.hnguyen@linux.vnet.ibm.com>
-	<1184097931.3020.73.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 12 Jul 2007 17:56:30 -0400
+Date: Thu, 12 Jul 2007 14:56:01 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Chris Stromsoe <cbs@cts.ucla.edu>
+Cc: Jiri Kosina <jikos@jikos.cz>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFT] skge: fiber carrier handling
+Message-ID: <20070712145601.72417b42@freepuppy.rosehill.hemminger.net>
+In-Reply-To: <Pine.LNX.4.64.0707110920270.11697@potato.cts.ucla.edu>
+References: <20070710183953.GA8898@havoc.gtf.org>
+	<Pine.LNX.4.64.0707111128330.31463@twin.jikos.cz>
+	<Pine.LNX.4.64.0707110920270.11697@potato.cts.ucla.edu>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 16:05:31 -0400
-Jim Houston <jim.houston@ccur.com> wrote:
+Does this fix your problems?  I don't have dual port boards but have an old SK-9843 fiber board.
+====
 
-> Hoang-Nam Nguyen reported a bug in idr_get_new_above() 
-> which occurred with a starting id value like 0x3ffffffc.
-> His test module easily reproduced the problem.  Thanks.
-> 
-> The test revealed the following bugs:
-> 
-> 1. Relying on shift operations which have undefined results
->    e.g.: 1 << n where n > word size.  On i386 an integer shift
->    only uses the low 5 bits of the shift count.
-> 
-> 2. An off by one error which prevented the top most layer
->    of the radix tree from being allocated.  This meant that
->    sub_alloc() would allocate an entry in the existing portion
->    of the radix tree which aliased the requested address.  When
->    it tried to allocate id 0x40000000, it might use the slot 
->    belonging to id 0.
-> 
-> 3. There was also a failure in the code which walked back up
->    the tree if an allocation failed.  The normal case is to
->    descend the tree checking the starting id value against the
->    bitmap at each level.  If the bit is set, we know that the
->    entire sub-tree is full and we can short cut the search.
->    We may still descend to the lowest level and find that the
->    portion of the id space we want is full.  In this case we
->    need to walk back up the tree and continue the search.
->    The existing code just returned to the previous level and
->    continued.  This resulted in an attempt to allocate an id
->    above 0x3ffffffc using the slot for id 0x3ffffc00 instead of
->    0x40000000 which it then claimed to have allocated.  The same
->    problem occurs with 0x3ff as the requested id value if it
->    is already in use.
-> 
-> With this patch, idr.c should work as advertised allocating id
-> values in the range 0...0x7fffffff.  Andrew had speculated that
-> it should allow the full range 0...0xffffffff to be used.  I was
-> tempted to make changes to allow this, but it would require changes
-> to API, e.g. making the starting id value and the return value
-> unsigned.
+The XM PHY can give IRQ on lost carrier, which is better than polling.
+This version also solves an number of bonding/carrier related bugs.
 
-Problem.  There are a large number of IDR changes pending and this
-patch breaks in way which I am not at all confident in fixing.
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-Originarily I'd just dump the earlier patches because bugfixes come
-first.  But this time there's a very large dependency trail on the
-earlier patches (especially Tejun's extensive sysfs rework in Greg's
-driver tree) so the wreckage would be extensive.
-
-Also, it's possible that Tejun's changes already fixed some of the things
-which you fixed.  Or added new bugs ;)
-
-Bottom line: a reworked patch against 2.6.22-rc6-mm1 would be muchly
-appreciated if poss, please.
-
-While you're there, it would be helpful if you could review all these
-pending IDR changes:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-ida-implement-idr-based-id-allocator.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-idr-fix-obscure-bug-in-allocation-path.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-idr-separate-out-idr_mark_full.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_for_each.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_for_each-fix.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_remove_all.patch
-
-Thanks.
+--- a/drivers/net/skge.c	2007-07-12 14:19:55.000000000 -0700
++++ b/drivers/net/skge.c	2007-07-12 14:53:39.000000000 -0700
+@@ -1091,13 +1091,7 @@ static void xm_link_down(struct skge_hw 
+ {
+ 	struct net_device *dev = hw->dev[port];
+ 	struct skge_port *skge = netdev_priv(dev);
+-	u16 cmd, msk;
+-
+-	if (hw->phy_type == SK_PHY_XMAC) {
+-		msk = xm_read16(hw, port, XM_IMSK);
+-		msk |= XM_IS_INP_ASS | XM_IS_LIPA_RC | XM_IS_RX_PAGE | XM_IS_AND;
+-		xm_write16(hw, port, XM_IMSK, msk);
+-	}
++	u16 cmd;
+ 
+ 	cmd = xm_read16(hw, port, XM_MMU_CMD);
+ 	cmd &= ~(XM_MMU_ENA_RX | XM_MMU_ENA_TX);
+@@ -1107,6 +1101,10 @@ static void xm_link_down(struct skge_hw 
+ 
+ 	if (netif_carrier_ok(dev))
+ 		skge_link_down(skge);
++
++	/* If needed start polling for link to come up */
++	if (netif_running(dev) && hw->phy_type == SK_PHY_XMAC)
++		mod_timer(&skge->link_timer, jiffies + LINK_HZ);
+ }
+ 
+ static int __xm_phy_read(struct skge_hw *hw, int port, u16 reg, u16 *val)
+@@ -1434,30 +1432,25 @@ static void xm_phy_init(struct skge_port
+ 
+ 	xm_phy_write(hw, port, PHY_XMAC_CTRL, ctrl);
+ 
+-	/* Poll PHY for status changes */
+-	mod_timer(&skge->link_timer, jiffies + LINK_HZ);
++	/* Poll for link coming up */
++	mod_timer(&skge->link_timer, jiffies);
+ }
+ 
+-static void xm_check_link(struct net_device *dev)
++/* Check status of link and change state */
++static void xm_link_up(struct skge_port *skge)
+ {
+-	struct skge_port *skge = netdev_priv(dev);
++	struct net_device *dev = skge->netdev;
+ 	struct skge_hw *hw = skge->hw;
+ 	int port = skge->port;
+-	u16 status;
+-
+-	/* read twice because of latch */
+-	(void) xm_phy_read(hw, port, PHY_XMAC_STAT);
+-	status = xm_phy_read(hw, port, PHY_XMAC_STAT);
++	u16 isrc = xm_read16(hw, port, XM_ISRC);
+ 
+-	if ((status & PHY_ST_LSYNC) == 0) {
+-		xm_link_down(hw, port);
+-		return;
+-	}
++	if (netif_msg_intr(skge))
++		printk(KERN_DEBUG PFX "%s: fiber status %#x\n", dev->name, isrc);
+ 
+ 	if (skge->autoneg == AUTONEG_ENABLE) {
+ 		u16 lpa, res;
+ 
+-		if (!(status & PHY_ST_AN_OVER))
++		if (!(isrc & XM_IS_AND))
+ 			return;
+ 
+ 		lpa = xm_phy_read(hw, port, PHY_XMAC_AUNE_LP);
+@@ -1506,10 +1499,7 @@ static void xm_check_link(struct net_dev
+ 		genesis_link_up(skge);
+ }
+ 
+-/* Poll to check for link coming up.
+- * Since internal PHY is wired to a level triggered pin, can't
+- * get an interrupt when carrier is detected.
+- */
++/* Poll to check for link coming up. */
+ static void xm_link_timer(unsigned long arg)
+ {
+ 	struct skge_port *skge = (struct skge_port *) arg;
+@@ -1520,23 +1510,18 @@ static void xm_link_timer(unsigned long 
+ 	if (!netif_running(dev))
+ 		return;
+ 
+-	if (netif_carrier_ok(dev)) {
+-		xm_read16(hw, port, XM_ISRC);
+-		if (!(xm_read16(hw, port, XM_ISRC) & XM_IS_INP_ASS))
+-			goto nochange;
+-	} else {
+-		if (xm_read32(hw, port, XM_GP_PORT) & XM_GP_INP_ASS)
+-			goto nochange;
+-		xm_read16(hw, port, XM_ISRC);
+-		if (xm_read16(hw, port, XM_ISRC) & XM_IS_INP_ASS)
+-			goto nochange;
+-	}
++	if (xm_read32(hw, port, XM_GP_PORT) & XM_GP_INP_ASS)
++		goto resync;
+ 
+ 	spin_lock(&hw->phy_lock);
+-	xm_check_link(dev);
++	xm_link_up(skge);
+ 	spin_unlock(&hw->phy_lock);
+ 
+-nochange:
++	/* Link up, timer no longer needed */
++	if (netif_carrier_ok(dev))
++		return;
++
++resync:
+ 	if (netif_running(dev))
+ 		mod_timer(&skge->link_timer, jiffies + LINK_HZ);
+ }
+@@ -1593,6 +1578,9 @@ static void genesis_mac_init(struct skge
+ 		bcom_check_link(hw, port);
+ 	}
+ 
++	/* Clear any irq */
++	xm_read16(hw, port, XM_ISRC);
++
+ 	/* Set Station Address */
+ 	xm_outaddr(hw, port, XM_SA, dev->dev_addr);
+ 
+@@ -1782,8 +1770,7 @@ static void genesis_mac_intr(struct skge
+ 		printk(KERN_DEBUG PFX "%s: mac interrupt status 0x%x\n",
+ 		       skge->netdev->name, status);
+ 
+-	if (hw->phy_type == SK_PHY_XMAC &&
+-	    (status & (XM_IS_INP_ASS | XM_IS_LIPA_RC)))
++	if (hw->phy_type == SK_PHY_XMAC && (status & XM_IS_INP_ASS))
+ 		xm_link_down(hw, port);
+ 
+ 	if (status & XM_IS_TXF_UR) {
