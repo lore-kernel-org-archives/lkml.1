@@ -1,203 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932769AbXGLNwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933913AbXGLNzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932769AbXGLNwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 09:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763504AbXGLNwS
+	id S933913AbXGLNzB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 09:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762147AbXGLNyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 09:52:18 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:53466 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932657AbXGLNwN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 09:52:13 -0400
-Content-class: urn:content-classes:message
+	Thu, 12 Jul 2007 09:54:54 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:32919 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761428AbXGLNyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 09:54:53 -0400
+Message-ID: <4696329F.7090809@rfo.atmel.com>
+Date: Thu, 12 Jul 2007 15:54:39 +0200
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
+To: "Antonino A. Daplas" <adaplas@gmail.com>,
+       linux-fbdev-devel@lists.sourceforge.net
+CC: Jan Altenberg <jan.altenberg@linutronix.de>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] atmel_lcdfb: Fix STN LCD support
 Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: Documentation of kernel messages (Summary)
-Date: Thu, 12 Jul 2007 21:53:54 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
-In-Reply-To: <200707111413.03513.rob@landley.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Documentation of kernel messages (Summary)
-Thread-Index: AcfD51JzLYGiUFo0QpSTWf8OAW9BLAAmANAA
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Rob Landley" <rob@landley.net>
-Cc: "Gerrit Huizenga" <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       <holzheu@linux.vnet.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>,
-       <lf_kernel_messages@linux-foundation.org>, <mtk-manpages@gmx.net>,
-       <jack@suse.cz>, <randy.dunlap@oracle.com>, <gregkh@suse.de>,
-       <pavel@ucw.cz>, <tim.bird@am.sony.com>, <arjan@infradead.org>,
-       <sam@ravnborg.org>, <jengelh@computergmbh.de>, <joe@perches.com>,
-       <auke-jan.h.kok@intel.com>, <hansendc@us.ibm.com>,
-       <davem@davemloft.net>, <Valdis.Kletnieks@vt.edu>, <kenistoj@us.ibm.com>,
-       <schwidefsky@de.ibm.com>, <heiko.carstens@de.ibm.com>,
-       <linux-doc@vger.kernel.org>
+	charset=ISO-8859-1;
+	format=flowed
+Content-Transfer-Encoding: 7bit
+X-ESAFE-STATUS: Mail clean
+X-ESAFE-DETAILS: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, July 12, 2007 2:13 AM Rob Landley wrote:
-> On Wednesday 11 July 2007 10:26:30 am Li Yang wrote:
-> > There are quite a lot kernel developers for each of the popular
-> > language, AFAIK.  For non-popular languages, there shouldn't be
-> > translation available in the first place.
-> 
-> I don't distinguish between "popular" and "non-popular" languages.  If
-> somebody's willing to do the translation work, it's popular.  If
-nobody's
-> willing to do the work, then even a language 1/3 of the planet's
-population
-> speaks isn't "popular" for kernel development.
-> 
-> I wouldn't discourage a translator into Klingon if they were willing
-to keep
-> their translation up to date and/or it actually resulted in patches.
-> 
-> > It was really a surprise when
-> > I post my Chinese translation on the LKML so many Chinese speakers
-have
-> > commented on the translation and encouraged the translation work.
-They
-> > are not visible as they usually don't talk too much.  :) So I set up
-the
-> > Chinese kernel development maillist(linux-kernel@zh-kernel.org),
-there
-> > will be more and more experienced kernel developer who can read and
-> > update the Chinese documents after they read the translated
-> > documentation and become kernel hacker.
-> 
-> The chinese mailing list is highly cool, and my first instinct was to
-note it
-> on kernel.org/doc, but it would be better if the chinese website I
-already
-> link to notes it instead.  (That way I don't have to worry about how
-to
-> spam-guard your email address. :)
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 
-The benefit of a localized maillist is that patches can be reviewed and
-commented in native language for common problems (like style, API).
+Fixes STN LCD support for the atmel_lcdfb framebuffer driver.
 
-> 
-> This also highlights the need for language maintainers to help the
-patches go
-> upstream to the english list.  (If we can avoid armchair commentators
-> saddling them with the task of translating the entire Documentation
-directory
-> and keeping such a translation up to date, we might actually get one
-too.
-> Fielding patches and questions sounds like plenty to me...)
+Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+---
+Take 2 with 1 minor modification (Kconfig entry depends on board 
+switch).
 
-I do think the documentation translation is very necessary even when
-there is a language maintainer, especially for the policy documents as
-HOWTO, codestyle , and etc.  The contributors should go through these
-policies and check their code for compliance before going to the
-language maintainer for help, or there will be too much for the language
-maintainer to translate.  The language maintainer doesn't need to
-translate all the documents himself, but he can help to coordinate the
-translation effort and help to make it update to date.
+This patch is the result of a work from Jan Altenberg and has 
+been tested on a Hitachi SP06Q002 on at91sam9261ek.
 
-> 
-> Could you ask on said list if anyone is likely to volunteer for the
-position?
-> (JUST translating patches and questions, as part of pushing code
-upstream.)
+It adds a Kconfig switch that enables the proper LCD in the 
+board configuration file (STN or TFT). The switch is used 
+in arch/arm/mach-at91/at91sam9261_devices.c & board-sam9261ek.c 
+as an example.
 
-If we do need a contact person, I can do it.  However I don't think
-there will be much translation work to do here.  As I stated before,
-most Chinese programmers are more or less capable of read/write
-technical English.  The difficult part is to let them know the benefit
-of merging code in kernel and teach them how to do it.  That's why the
-policy documents in native language will be very useful.
+This patch includes the "Fix wrong line_length calculation" 
+little one from Jan and Haavard (submitted earlier).
 
-> 
-> > > Merging into the kernel is a great way to keep CODE up to date.
-Don't
-> > > think
-> > > it's magic pixie dust for documentation.  It never has been
-before.
-> >
-> > IMHO, having contribution merged into the kernel has the MAGIC to
-> > attract people to work for recognition.  When more and more people
-> > volunteer to work on it, the documentation will be up to date
-magically.
-> 
-> Obvious counter-arguments include the floppy driver, the floppy tape
-driver,
-> the tty layer, and most of the existing english Documentation
-directory...
-> 
-> I'll happily stay out of the way of people who actually want to merge
-> translations of documentation into the kernel.  I reserve the right to
-say "I
-> told you so" in about five years.
-> 
-> > > Ah, but It's not a language maintainer's job to update
-documentation.
-> > > It's
-> > > their job to ACCEPT PATCHES.  Translate patches, translate
-questions
-> > > back and
-> > > forth.  This has NOTHING to do with documentation unless they're
-> > > converting
-> > > documentation accompanying the patch one way; into english.
-> >
-> > Language maintainers can integrate updates to the documentation just
-> > like integrating any updates to the code.  Working on the
-documentation
-> > is ,IMHO, a perfect task for novice kernel hacker to get familiar
-with
-> > the process.
-> 
-> From a language maintainer's perspective documentation patches
-wouldn't be any
-> different than any other patches.  Translate the description and
-questions
-> going back and forth.  The patch itself doesn't get translated when
-it's C
-> and applies to scripts/kconfig/, why would it when it's UTF-8 and
-applies to
-> Documentation/?
-> 
-> Of course this brings up the question "what kind of function and
-variable
-> names do chinese people pick?"  (I honestly don't know, but I note
-that
-> attempts to use names that don't fit in 7-bit ascii would probably be
-frowned
-> upon in a big way...)
-> 
-> > It won't be too hard if the work is shared by a community.  Like the
-one
-> > I'm trying to establish.
-> 
-> A list works fine as a point of contact.  I note that in general,
-maintainers
-> are individuals (who delegate like mad, of course), because otherwise
-agenda
-> items languish with everyone thinking it's someone else's
-responsibility.
+AT91 platform informations are directly submitted trough
+the at91 maintainer, here :
+http://article.gmane.org/gmane.linux.kernel/543158
 
-Got it.  I can do it as long as it doesn't consume too much time.  :)
+drivers/video/Kconfig       |   10 +++++
+drivers/video/atmel_lcdfb.c |   62 +++++++++++++++++++++++++++++-----
+2 files changed, 64 insertions(+), 8 deletions(-)
 
-> 
-> http://www.trumanlibrary.org/buckstop.htm
-> 
-> > - Leo
-> >
-> > Advertisement time:
-> > Chinese kernel development community http://zh-kernel.org    :)
-> 
-> Hmmm...  Now I'm wondering if I should link directly to the docs pages
-of the
-> chinese and japanese sites, or to the top level community pages?
+Index: b/drivers/video/atmel_lcdfb.c
+===================================================================
+--- a/drivers/video/atmel_lcdfb.c	2007-06-13 10:55:42.000000000 +0200
++++ b/drivers/video/atmel_lcdfb.c	2007-06-15 10:25:06.000000000 +0200
+@@ -79,6 +79,29 @@
+ 	.accel		= FB_ACCEL_NONE,
+ };
+ 
++static unsigned long compute_hozval(unsigned long xres, unsigned long lcdcon2)
++{
++	unsigned long value;
++
++	if (!(cpu_is_at91sam9261() || cpu_is_at32ap7000()))
++		return xres;
++
++	value = xres;
++	if ((lcdcon2 & ATMEL_LCDC_DISTYPE) != ATMEL_LCDC_DISTYPE_TFT) {
++		/* STN display */
++		if ((lcdcon2 & ATMEL_LCDC_DISTYPE) == ATMEL_LCDC_DISTYPE_STNCOLOR) {
++			value *= 3;
++		}
++		if ( (lcdcon2 & ATMEL_LCDC_IFWIDTH) == ATMEL_LCDC_IFWIDTH_4
++		   || ( (lcdcon2 & ATMEL_LCDC_IFWIDTH) == ATMEL_LCDC_IFWIDTH_8
++		      && (lcdcon2 & ATMEL_LCDC_SCANMOD) == ATMEL_LCDC_SCANMOD_DUAL ))
++			value = DIV_ROUND_UP(value, 4);
++		else
++			value = DIV_ROUND_UP(value, 8);
++	}
++
++	return value;
++}
+ 
+ static void atmel_lcdfb_update_dma(struct fb_info *info,
+ 			       struct fb_var_screeninfo *var)
+@@ -181,6 +204,7 @@
+ 	var->xoffset = var->yoffset = 0;
+ 
+ 	switch (var->bits_per_pixel) {
++	case 1:
+ 	case 2:
+ 	case 4:
+ 	case 8:
+@@ -228,8 +252,10 @@
+ static int atmel_lcdfb_set_par(struct fb_info *info)
+ {
+ 	struct atmel_lcdfb_info *sinfo = info->par;
++	unsigned long hozval_linesz;
+ 	unsigned long value;
+ 	unsigned long clk_value_khz;
++	unsigned long bits_per_line;
+ 
+ 	dev_dbg(info->device, "%s:\n", __func__);
+ 	dev_dbg(info->device, "  * resolution: %ux%u (%ux%u virtual)\n",
+@@ -241,12 +267,15 @@
+ 
+ 	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, 0);
+ 
+-	if (info->var.bits_per_pixel <= 8)
++	if (info->var.bits_per_pixel == 1)
++		info->fix.visual = FB_VISUAL_MONO01;
++	else if (info->var.bits_per_pixel <= 8)
+ 		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+ 	else
+ 		info->fix.visual = FB_VISUAL_TRUECOLOR;
+ 
+-	info->fix.line_length = info->var.xres_virtual * (info->var.bits_per_pixel / 8);
++	bits_per_line = info->var.xres_virtual * info->var.bits_per_pixel;
++	info->fix.line_length = DIV_ROUND_UP(bits_per_line, 8);
+ 
+ 	/* Re-initialize the DMA engine... */
+ 	dev_dbg(info->device, "  * update DMA engine\n");
+@@ -262,18 +291,21 @@
+ 	/* Set pixel clock */
+ 	clk_value_khz = clk_get_rate(sinfo->lcdc_clk) / 1000;
+ 
+-	value = clk_value_khz / PICOS2KHZ(info->var.pixclock);
+-
+-	if (clk_value_khz % PICOS2KHZ(info->var.pixclock))
+-		value++;
++	value = DIV_ROUND_UP(clk_value_khz, PICOS2KHZ(info->var.pixclock));
+ 
+ 	value = (value / 2) - 1;
++	dev_dbg(info->device, "  * programming CLKVAL = 0x%08lx\n", value);
+ 
+ 	if (value <= 0) {
+ 		dev_notice(info->device, "Bypassing pixel clock divider\n");
+ 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, ATMEL_LCDC_BYPASS);
+-	} else
++	} else {
+ 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, value << ATMEL_LCDC_CLKVAL_OFFSET);
++		info->var.pixclock = KHZ2PICOS(clk_value_khz / (2 * (value + 1)));
++		dev_dbg(info->device, "  updated pixclk:     %lu KHz\n",
++					PICOS2KHZ(info->var.pixclock));
++	}
++
+ 
+ 	/* Initialize control register 2 */
+ 	value = sinfo->default_lcdcon2;
+@@ -311,9 +343,14 @@
+ 	dev_dbg(info->device, "  * LCDTIM2 = %08lx\n", value);
+ 	lcdc_writel(sinfo, ATMEL_LCDC_TIM2, value);
+ 
++	/* Horizontal value (aka line size) */
++	hozval_linesz = compute_hozval(info->var.xres,
++					lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2));
++
+ 	/* Display size */
+-	value = (info->var.xres - 1) << ATMEL_LCDC_HOZVAL_OFFSET;
++	value = (hozval_linesz - 1) << ATMEL_LCDC_HOZVAL_OFFSET;
+ 	value |= info->var.yres - 1;
++	dev_dbg(info->device, "  * LCDFRMCFG = %08lx\n", value);
+ 	lcdc_writel(sinfo, ATMEL_LCDC_LCDFRMCFG, value);
+ 
+ 	/* FIFO Threshold: Use formula from data sheet */
+@@ -421,6 +458,15 @@
+ 			ret = 0;
+ 		}
+ 		break;
++
++	case FB_VISUAL_MONO01:
++		if (regno < 2) {
++			val = (regno == 0) ? 0x00 : 0x1F;
++			lcdc_writel(sinfo, ATMEL_LCDC_LUT(regno), val);
++			ret = 0;
++		}
++		break;
++
+ 	}
+ 
+ 	return ret;
+Index: b/drivers/video/Kconfig
+===================================================================
+--- a/drivers/video/Kconfig	2007-05-14 11:02:16.000000000 +0200
++++ b/drivers/video/Kconfig	2007-06-13 11:04:10.000000000 +0200
+@@ -701,6 +701,16 @@
+ 	  Say Y if you want to map Frame Buffer in internal SRAM. Say N if you want
+ 	  to let frame buffer in external SDRAM.
+ 
++config FB_ATMEL_STN
++	bool "Use a STN display with AT91/AT32 LCD Controller"
++	depends on FB_ATMEL && MACH_AT91SAM9261EK
++	default n
++	help
++	  Say Y if you want to connect a STN LCD display to the AT91/AT32 LCD
++	  Controller. Say N if you want to connect a TFT.
++
++	  If unsure, say N.
++
+ config FB_NVIDIA
+ 	tristate "nVidia Framebuffer Support"
+ 	depends on FB && PCI
 
-The documents and maillist are also linked in the front page.  It's
-better to link the top level page.
 
-- Leo
