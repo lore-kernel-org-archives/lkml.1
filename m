@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934488AbXGLOpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765385AbXGLOtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934488AbXGLOpz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 10:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbXGLOps
+	id S1765385AbXGLOtk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 10:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbXGLOtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 10:45:48 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:44277 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755503AbXGLOpr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 10:45:47 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: v2.6.22.1-rt1
-Date: Thu, 12 Jul 2007 16:45:45 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070712121355.GA10949@elte.hu>
-In-Reply-To: <20070712121355.GA10949@elte.hu>
+	Thu, 12 Jul 2007 10:49:33 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:50042 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755087AbXGLOtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 10:49:32 -0400
+Date: Thu, 12 Jul 2007 07:49:30 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] Immunize rcu_dereference() against crazy compiler writers
+Message-ID: <20070712144930.GA11980@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070712010058.GA30869@linux.vnet.ibm.com> <p73hco9yb14.fsf@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6735047.zNW99nFvBq";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707121645.46206.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1184251547;fd7ef82f;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73hco9yb14.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6735047.zNW99nFvBq
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Thu, Jul 12, 2007 at 04:03:19PM +0200, Andi Kleen wrote:
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+> 
+> > Turns out that compiler writers are a bit more aggressive about optimizing
+> > than one might expect.  This patch prevents a number of such optimizations
+> > from messing up rcu_deference().  This is not merely a theoretical
+> > problem, as evidenced by the rmb() in mce_log().
+> 
+> Don't think that's an improvement. rmb() at least is known to work
+> reliable to prevent such reordering. Memory barriers are well
+> documented in the gcc documentation. Who knows about volatile?  The
+> volatile semantics have been traditionally unclear and shakey.
+> The C standard doesn't make much guarantees and i don't think 
+> gcc does either.
 
-[sorry Ingo for the dublicated post]
+Hello, Andi!
 
-> to build a 2.6.22.1-rt1 tree, the following patches should be applied:
-> =C2=A0
-> =C2=A0 =C2=A0http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.b=
-z2
-> =C2=A0 =C2=A0http://redhat.com/~mingo/realtime-preempt/patch-2.6.22.1-rt1
+The rcu_dereference() primitive does not need many guarantees, and
+the ones that it does need are well within those specified in the
+C standard.
 
-I get a compile error on my x86_64 dualcore sytem.
+As I understand it, the compiler is not permitted to move volatile
+accesses past "sequence points".  Sequence points include ends of
+expression statements; control expressions in "if", "switch", "while",
+and "do" statements; each of the three control expressions in the
+"for" statement; return statement expressions; and initializers.
 
-mgd@seneca:/usr/src/linux-2.6.22.1-rt1> make
-=C2=A0 CHK =C2=A0 =C2=A0 include/linux/version.h
-=C2=A0 CHK =C2=A0 =C2=A0 include/linux/utsrelease.h
-=C2=A0 CALL =C2=A0 =C2=A0scripts/checksyscalls.sh
-=C2=A0 CHK =C2=A0 =C2=A0 include/linux/compile.h
-=C2=A0 CC [M] =C2=A0net/rfkill/rfkill-input.o
-net/rfkill/rfkill-input.c: In function =E2=80=98rfkill_schedule_toggle=E2=
-=80=99:
-net/rfkill/rfkill-input.c:60: error: size of array =E2=80=98type name=E2=80=
-=99 is negative
-net/rfkill/rfkill-input.c:60: warning: comparison of distinct pointer types=
- lacks a cast
-net/rfkill/rfkill-input.c:68: error: size of array =E2=80=98type name=E2=80=
-=99 is negative
-net/rfkill/rfkill-input.c:68: warning: comparison of distinct pointer types=
- lacks a cast
-net/rfkill/rfkill-input.c: At top level:
-net/rfkill/rfkill-input.c:82: warning: implicit declaration of function =E2=
-=80=98__MUTEX_INITIALIZER=E2=80=99
-net/rfkill/rfkill-input.c:82: warning: missing braces around initializer
-net/rfkill/rfkill-input.c:82: warning: (near initialization for =E2=80=98rf=
-kill_wlan.mutex=E2=80=99)
-net/rfkill/rfkill-input.c:82: error: initializer element is not constant
-net/rfkill/rfkill-input.c:82: error: (near initialization for =E2=80=98rfki=
-ll_wlan.mutex.lock.wait_lock.raw_lock.slock=E2=80=99)
-net/rfkill/rfkill-input.c:82: error: initializer element is not constant
-net/rfkill/rfkill-input.c:82: error: (near initialization for =E2=80=98rfki=
-ll_wlan.lock=E2=80=99)
-net/rfkill/rfkill-input.c:83: warning: missing braces around initializer
-net/rfkill/rfkill-input.c:83: warning: (near initialization for =E2=80=98rf=
-kill_bt.mutex=E2=80=99)
-net/rfkill/rfkill-input.c:83: error: initializer element is not constant
-net/rfkill/rfkill-input.c:83: error: (near initialization for =E2=80=98rfki=
-ll_bt.mutex.lock.wait_lock.raw_lock.slock=E2=80=99)
-net/rfkill/rfkill-input.c:83: error: initializer element is not constant
-net/rfkill/rfkill-input.c:83: error: (near initialization for =E2=80=98rfki=
-ll_bt.lock=E2=80=99)
-make[2]: *** [net/rfkill/rfkill-input.o] Fehler 1
-make[1]: *** [net/rfkill] Fehler 2
-make: *** [net] Fehler 2
+See http://www.open-std.org/jtc1/sc22/wg14/www/C99RationaleV5.10.pdf
+(PDF page 24, virtual page 18) or any of a number of C texts.
 
+So if gcc adheres to C99, the fetch implied by the new version of
+rcu_dereference() in mce_log() must be emitted at the beginning
+of the outermost "for (;;)" loop.
 
-I used a linux-2.6.22.tar.bz2 and applied patch-2.6.22.1.bz2 followed
-by patch-2.6.22.1-rt1
+Now it might be that mce_log() also needs the rmb() in order to force the
+-CPU- to actually -execute- the fetch in order -- and if that is the case,
+I will happy to update the patch to leave the rmb() but to update the
+comment, which currently only talks about the compiler messing things up:
 
-I had copied my .config from my (working) 2.6.22-cfs-v19 directory and
-issued a 'make oldconfig' using mostly defaults.
+	"The rmb forces the compiler to reload next in each interation"
 
-Best,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=C3=A4ftsf=C3=BChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
+However, my quick look through the code convinced me that if
+rcu_dereference() was guaranteed to force the compiler to emit the load at
+the top of the loop, that reorderings by the CPU were harmless given the
+other barriers in that function.  But I might well have missed something.
 
---nextPart6735047.zNW99nFvBq
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> If anything you might want to embedd rmb(); in a statement expression
+> in rcu_deference instead.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+No way am I putting an rmb() or even an smp_rmb(), into rcu_dereference()!!!
 
-iD8DBQBGlj6aUYYhyuxDQc4RAogTAJ97TC9xUFOCMuu1fr6W0QweBRWLSACfVmwg
-hN/Qb5JmsTKhVZOdJv/g5rY=
-=DJCn
------END PGP SIGNATURE-----
-
---nextPart6735047.zNW99nFvBq--
+							Thanx, Paul
