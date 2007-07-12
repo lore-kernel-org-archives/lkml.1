@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765092AbXGLDf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXGLEHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765092AbXGLDf3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 23:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757254AbXGLDfU
+	id S1752043AbXGLEHN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 00:07:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXGLEHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 23:35:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48045
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755422AbXGLDfT (ORCPT
+	Thu, 12 Jul 2007 00:07:01 -0400
+Received: from 73.pool85-58-18.dynamic.orange.es ([85.58.18.73]:38413 "EHLO
+	cafe.aluzina.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbXGLEHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 23:35:19 -0400
-Date: Wed, 11 Jul 2007 20:35:18 -0700 (PDT)
-Message-Id: <20070711.203518.59469474.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1184210118.6005.719.camel@localhost.localdomain>
-References: <1184208521.6005.695.camel@localhost.localdomain>
-	<20070711.195126.02300228.davem@davemloft.net>
-	<1184210118.6005.719.camel@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jul 2007 00:07:00 -0400
+X-Greylist: delayed 1723 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 00:07:00 EDT
+Message-ID: <4695A225.6050807@aluzina.org>
+Date: Thu, 12 Jul 2007 05:38:13 +0200
+From: =?ISO-8859-1?Q?Zeus_G=F3mez_Marmolejo?= <zeus@aluzina.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: New LSM security operation
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 12 Jul 2007 13:15:18 +1000
+Hi people,
 
-> Sure, the process has /dev/lguest open, so I can do something in the
-> close routine.  Instead of keeping a reference to the tsk, I can keep a
-> reference to the struct lguest (currently it doesn't have or need a
-> refcnt).  Then I need another lock, to protect lg->tsk.
-> 
-> This seems like a lot of dancing to avoid one export.  If it's that
-> important I'd far rather drop the code and do a normal wakeup under the
-> big lguest lock for 2.6.23.
+I've looked around on how to hide inodes in a Linux filesystem but 
+surprisingly the kernel lacks this functionality. It would be desirable 
+for me to add an ACL to a file in order not to be seen in the directory 
+contents but only for some users.
 
-I'm not against the export, so use if it really helps.
+Some Selinux experts point out that the correct way to do this is via 
+poly-instantiated directories such as /tmp or /var/tmp, so each user 
+"view" his own version of this directory. But that's not what I want, 
+for example in /etc, I would want to hide some directories or files for 
+some users. I don't want a whole /etc instantiation for each user logged in.
 
-Ref-counting just seems clumsy to me given how the hw assisted
-virtualization stuff works on platforms I am intimately familiar with
-:)
+Also, there is a patch called LIDS that does the thing, but patching the 
+whole kernel and adding much extra functionality such as intrussion 
+detection system as it is. Some rootkits -like adore- also can hide 
+inodes, but changing the owner to an uid that the kernel module hides 
+from the system call. I don't thing this is a good approach...
+
+For me, the correct way to achieve this is to add an extra op in the 
+"security_operations" struct, as an inode operation. With this, a 
+Mandatory Access Control system that uses LSM such as SELinux can add 
+some policies on the "list" file access vector.
+
+So, I'd call this hook in the vfs_readdir() syscall just after the "file 
+<http://lxr.linux.no/ident?i=file>->f_op->readdir()" -the particular 
+filesystem readdir()- and walk through the list to ask for each inode if 
+it has permission to be "listed" in that directory. Then, the MAC system 
+can handle the grant or deny permission per inode, and then return the 
+"modified" list to userspace.
+
+I'm not sure if this is the correct way, or maybe it adds to much 
+overhead to the "ls" command, but I'd like to hear some opinions, I can 
+try to code it and summit a patch...
+
+Thanks for your answer,
+
+Zeus Gómez.
+PS. Please, include me in the CC if you reply this message.
