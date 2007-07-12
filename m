@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbXGLSY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbXGLSfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbXGLSY6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 14:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXGLSYt
+	id S1760476AbXGLSfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 14:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbXGLSfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 14:24:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:31139 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754526AbXGLSYs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 14:24:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JJ8doo5RVsejYNmIeso3AhFv37e4FGqtNuIX9IZt8MTy1D13Wjh9Vm+uy2oIlfFoSzVg++FtzgHtB10fsMz3vhUryd3XIml1F+Zf9Tgxo6mBiaBh8ocrwwYezP13TOba66pPavu9jGr8B7b9zP5r9YhRHJlJEOcPwOPE7ttGVXA=
-Message-ID: <f76c40f0707121124x41453acl18aabd877e98a447@mail.gmail.com>
-Date: Thu, 12 Jul 2007 11:24:46 -0700
-From: "Ruben Junkie" <rupertjunkie@gmail.com>
-To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
-Subject: Re: Linux Kernel Story
-Cc: "Vijayakumar Subburaj" <vijayakumar.subburaj@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070712164057.GC31195@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 12 Jul 2007 14:35:43 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:33178 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754641AbXGLSfm (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 14:35:42 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Mark Shelby <mshelby1@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel autoconfig option?
+In-Reply-To: Your message of "Thu, 12 Jul 2007 10:18:55 EDT."
+             <78ecab220707120718q7cfcff43u66f80711c7ec1005@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <78ecab220707120718q7cfcff43u66f80711c7ec1005@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1184265341_3357P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b07b02c50707120627se95d62dybc70ef80efdbf24@mail.gmail.com>
-	 <20070712164057.GC31195@csclub.uwaterloo.ca>
+Date: Thu, 12 Jul 2007 14:35:41 -0400
+Message-ID: <11610.1184265341@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/12/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
-> On Thu, Jul 12, 2007 at 06:57:41PM +0530, Vijayakumar Subburaj wrote:
-> > My first mail to lkml.
-> >
-> > I would like to know what happened to linux kernel from its 1.0.
->
-> A lot.
->
-> > I have gone through lkml faqs, and some of LDP documents. Thought that
-> > weekly lkml summary "Kernel Traffic" (http://www.kerneltraffic.org/)
-> > would be useful, but its not.
-> >
-> > Important linux kernel bugs, fixes that were available those bugs.
-> > Why one fix got chosen over other fixes, and related tradeoffs?
-> >
-> > Sorry, I am too lazy to go through entire lkml, or lk usenet postings.
-> >
-> > Are there any documents in web? How I should proceed? where I have to
-> > start with?
->
-> It might be possible to get some overview as to when major things were
-> added like when PCI support came, when each architecture was added, when
-> USB, firewire, scsi and various other sub systems got in, when major
-> replacements were done to the VM system and such.
->
-> Of course I doubt anyone wants to do the work, since the most
-> interesting thing is what the current kernel supports.
->
-> How about asking what happened from Windows 1.0 to today.  How would you
-> answer that question?  Should it also include the history of DOS from
-> 1.0 to the current version of windows?  Should it also include the
-> history of CP/M?
->
+--==_Exmh_1184265341_3357P
+Content-Type: text/plain; charset=us-ascii
 
+On Thu, 12 Jul 2007 10:18:55 EDT, Mark Shelby said:
 
-It didn't change.... it's crappy now ... crappy then (windows I mean :S)
+> Am I just crazy, or wouldn't this idea mke a lot of sense? Wouldn't it
+> pretty much make the kernel "idiot proof" when installing from source?
 
-> It really is a silly question to ask that is much too vague.
->
-> --
-> Len Sorensen
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+That's usually not the place where idiots screw up.  It's stuff like
+loading an initrd that doesn't do LVM, and your / is on an LVM partition,
+or going from a kernel that used the IDE drivers to one that uses libata,
+and forgetting to fix /etc/fstab for the /dev/hd -> /dev/sd change, or ...
 
+You get the idea.  At some point, you have to insist that the user's clue
+must be  ----> THIS TALL in order to build their own kernel rather than going
+with what the distro installed.
 
--- 
-Yo soy el junkie
+--==_Exmh_1184265341_3357P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGlnR9cC3lWbTT17ARAmLbAKCsLfXzknT8jXEY0/0q3t22q1d6igCfZI85
+RCHL41RMpOUExKJBqWfC2EM=
+=1v4c
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1184265341_3357P--
