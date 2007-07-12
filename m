@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761558AbXGLJRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762669AbXGLJTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761558AbXGLJRS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 05:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbXGLJRG
+	id S1762669AbXGLJTE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 05:19:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbXGLJSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 05:17:06 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:64678 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752513AbXGLJRD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 05:17:03 -0400
-Date: Thu, 12 Jul 2007 12:17:00 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <ak@suse.de>, Jeff Garzik <jeff@garzik.org>,
-       Yinghai Lu <Yinghai.Lu@Sun.COM>, Andrew Morton <akpm@osdl.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jon Mason <jdmason@gmail.com>
-Subject: Re: [PATCH 1/1] x86-64: introduce struct pci_sysdata to facilitate sharing of ->sysdata
-Message-ID: <20070712091700.GL4189@rhun.haifa.ibm.com>
-References: <20070711134514.GA4789@rhun.haifa.ibm.com> <1184203051.2693.3.camel@laptopd505.fenrus.org> <20070712091029.GH4189@rhun.haifa.ibm.com> <1184231585.2720.8.camel@laptopd505.fenrus.org>
+	Thu, 12 Jul 2007 05:18:55 -0400
+Received: from mga02.intel.com ([134.134.136.20]:17153 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751581AbXGLJSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 05:18:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,531,1175497200"; 
+   d="scan'208";a="265267924"
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec
+	base	hibernation
+From: "Huang, Ying" <ying.huang@intel.com>
+To: david@lang.hm
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <Pine.LNX.4.64.0707112345250.28090@asgard.lang.hm>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	 <20070711172243.ab44c4d4.akpm@linux-foundation.org>
+	 <1184251423.9346.55.camel@caritas-dev.intel.com>
+	 <Pine.LNX.4.64.0707112345250.28090@asgard.lang.hm>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 12 Jul 2007 17:18:03 +0000
+Message-Id: <1184260683.9346.91.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184231585.2720.8.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 12 Jul 2007 09:18:48.0864 (UTC) FILETIME=[A7C2A200:01C7C465]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 05:13:05PM +0800, Arjan van de Ven wrote:
+On Thu, 2007-07-12 at 00:03 -0700, david@lang.hm wrote:
+> >
+> > The kexec jump is the first step, maybe the simplest step. There are
+> > many other issues to be resolved, at least the following ones.
+> >
+> > 1. Separate device suspend from device hibernate.
+> 
 
-> > > I very much start to dislike the untyped "sysdata"... I much
-> > > rather have separate fields for the different uses (like a IOMMU
-> > > field) that aren't going to share ever. Possibly even typed, but
-> > > for IOMMU that may be tricky....
-> > 
-> > Could you elaborate on what you mean here?
-> > 
-> > If you mean instead of hanging a pci_sysdata off of struct
-> > pci_bus, hang a 'void *iommu' and an 'int node' directly off of
-> > the pci_bus,
-> 
-> yes that is what I mean.
-> 
-> > that looks like a lot of churn (most architecture use sysdata as
-> > an opaque pointer to an arch specific structure) and bloat (you
-> > would
-> 
-> it's only a few bytes per pci device/bus. not all that bad for
-> having something which involves splitting a shared pointer into
-> logical users.
-> 
-> (and heck, if you really really are worried we could make it a union
-> for some of them, although that defeats the "split is safer"
-> benefit)
+Maybe my usage of terminology has some problem. But, the "device
+hibernate" here means put device into quiescent state and save the
+device state, but do not put device into low power state. 
 
-It's not just bloat and code churn, I also don't like teaching every
-architecture about every other architecture's use of sysdata, which is
-inherently architecture specific. I think the benefits of modularity
-here outweigh the benefits of a little type safety.
+> > 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
+> > be hibernate/resume by the normal kernel too. This way, a real
+> > kexec/boot-up is only needed for the first time.
+> 
+> the hibernate kernel shouldn't need a lot of the features of the standard 
+> kerneel (does it really need sound for example), and if tailored even 
+> tighter could be configured to only have the drivers actually used for the 
+> save and restore, makeing a _very_ minimal kernel (no USB, no network, 
+> only simple video drivers, etc) greatly speeding up the boot
 
-Cheers,
-Muli
+There is no need for two kernel. Most drivers and optional features are
+compiled as modules, as that of most desktop distributions. So just
+"insmod" needed modules only in hibernate kernel is sufficient.
+
+Best Regards,
+Huang Ying
