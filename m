@@ -1,100 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935388AbXGLROF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934924AbXGLRPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935388AbXGLROF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbXGLRNx
+	id S934924AbXGLRPj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbXGLRPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:13:53 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36286 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752690AbXGLRNw (ORCPT
+	Thu, 12 Jul 2007 13:15:31 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:56340 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbXGLRPa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:13:52 -0400
-Subject: Re: [Patch RT] Fix CFS load balancing for RT tasks
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux RT Users <linux-rt-users@vger.kernel.org>,
-       Darren Hart <dvhltc@us.ibm.com>, john stultz <johnstul@us.ibm.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>,
-       Gilles Carry <Gilles.Carry@ext.bull.net>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <1184258515.3000.11.camel@josh-work.beaverton.ibm.com>
-References: <20070711164708.48907792@frecb000686.frec.bull.fr>
-	 <1184258515.3000.11.camel@josh-work.beaverton.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 12 Jul 2007 10:13:57 -0700
-Message-Id: <1184260438.3000.16.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Thu, 12 Jul 2007 13:15:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CALD+lUarR7O6/2dsb2JhbAA
+X-IronPort-AV: i="4.16,533,1175497200"; 
+   d="scan'208"; a="166550307:sNHT26726427"
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 00/10] IB/ehca: Multiple Event Queues, MR/MW rework, large page MRs, fixes
+X-Message-Flag: Warning: May contain useful information
+References: <200707121745.27592.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 12 Jul 2007 10:15:24 -0700
+In-Reply-To: <200707121745.27592.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 12 Jul 2007 17:45:26 +0200")
+Message-ID: <adawsx55ys3.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 12 Jul 2007 17:15:25.0598 (UTC) FILETIME=[3CBDF3E0:01C7C4A8]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 09:41 -0700, Josh Triplett wrote:
-> On Wed, 2007-07-11 at 16:47 +0200, Sébastien Dugué wrote:
-> >   there seems to be something wrong with the way the CFS balances (or does not
-> > balance) RT tasks. This was evidenced using the sched_football testcase
-> > available from the RT wiki (http://rt.wiki.kernel.org/index.php/IBM_Test_Cases)
-> > which I modified and attached to this mail.
-> > 
-> >   The testcase starts a number of threads which fall into 3 categories:
-> > 
-> > 	1 referee thread: SCHED_FIFO, RT prio 5
-> > 	ncpus defensive threads: SCHED_FIFO, RT prio 4
-> > 	ncpus offensive threads: SCHED_FIFO, RT prio 3
-> > 
-> > 	(ncpus being the number of CPUs)
-> > 
-> >   To make a long story short, the defensive threads should end up distributed
-> > among all CPUs, but that's not the case. For example, on a dual HT Xeon box,
-> > after task migration stabilizes we have the following running on the different
-> > CPUs:
-> > 
-> >   CPU 0: defense2
-> >   CPU 1: referee offense2 offense3 offense4 defense3
-> >   CPU 2: offense1
-> >   CPU 3: defense1 defense4
-> > 
-> > which clearly show the imbalance between CPU 2 and CPU 3 where offense1
-> > should not be allowed to run while the higher prio defense1 and defense4
-> > are sharing the same CPU.
-> > 
-> >   The following patch fixes this by re-enabling the RT overload detection
-> > for the CFS. It may not be the right solution, maybe it should be incorporated
-> > into the other load balancing mechanisms. I did not digg deep enough yet
-> > to make that call ;-)
-> 
-> 2.6.21.5-rt20 plus this patch passed 1000 runs of the standard
-> sched_football on an 8 processor (quad dual-core) x86-64 box.  Nice
-> work.
+ > Note that patch 7 will introduce a few lines over 80 chars that will be
+ > unindented in patch 8 - I hope that's okay with you.
 
-Hmmm, seems I spoke a bit too soon; due to a bug in the test log
-checker, the test failed but the log checker said PASS.  Actual results:
-$ grep 'Final ball position' rt-tests.log | sort | uniq -c
-    960 Final ball position: 0
-     39 Final ball position: 1
-      1 Final ball position: 2
+That's fine -- the 80 column rule is one thing I don't worry about too
+much; absurdly long lines are bad, but if a line is, say, 84 chars and
+breaking it makes the code uglier, then I just leave the 84 char line.
 
-So it failed 4% of the runs.  However, it failed much less
-spectacularly; rather than overrunning the integer maximum, it only
-reached 1-2.  Still a huge improvement despite not solving the problem
-completely.
+ > [09/10] fixes a lot of checkpatch.pl warnings
 
-> >   The RT overload mechanism of the O(1) scheduler has not been activated
-> > in the new CFS.
-> > 
-> >   This patch fixes that by inserting calls to inc_rt_tasks() and dec_rt_tasks()
-> > in enqueue_task_rt() and dequeue_task_rt() respectively, which enables the
-> > balance_rt_tasks() to be run in the rt_overload case.
-> > 
-> > 
-> > Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
-> 
-> Acked-by: Josh Triplett <josh@kernel.org>
+Are these warnings from earlier patches in the series, or problems
+that already existed in the code?  If they are coming from other
+patches in the series, please just fix the earlier patches before I
+merge them.
 
-Ack still valid despite the above.
-
-- Josh Triplett
-
-
+Thanks,
+  Roland
