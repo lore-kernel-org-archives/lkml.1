@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbXGLSVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbXGLSYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760152AbXGLSVi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 14:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXGLSVc
+	id S1761481AbXGLSYZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 14:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXGLSYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 14:21:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59754 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753923AbXGLSVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 14:21:31 -0400
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, nagar@watson.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Optimize struct task_delay_info
-References: <1184138034.3068.51.camel@ymzhang>
-	<p73d4yzyvkw.fsf@bingen.suse.de> <1184229443.3068.55.camel@ymzhang>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: 12 Jul 2007 14:21:17 -0400
-In-Reply-To: <1184229443.3068.55.camel@ymzhang>
-Message-ID: <y0mzm21eb4y.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.0808 (Gnus v5.8.8) Emacs/21.3
+	Thu, 12 Jul 2007 14:24:17 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:34542 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753856AbXGLSYQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 14:24:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=odOoG+5b6E2H49YlTsV+FUkQThz9fWXIzPS9Cl+e3otXFA0PpxVUW6WLhk7XlHOqEJx65Bkqvk6sp6L7z6hbyvC6TvGD1dJ0Uc+EvG2PPjUN4DLF3T0XBJTMXhtcWsCCBE/bEzen6s9MmMioukwBKefrfivdTDunH4sCUNUG7Sg=
+Message-ID: <75b66ecd0707121124r79d4d691nbea830a3f00eda55@mail.gmail.com>
+Date: Thu, 12 Jul 2007 14:24:15 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Marcos David" <marcosgdavid.ml@gmail.com>
+Subject: Re: /proc/pid/status -> VmLib: 4294948464 kB
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <2ca024a80707121116i3574e2e2k7783bdb591b571b1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <2ca024a80707121114k530cf0f0wa79d4b40cc1cb375@mail.gmail.com>
+	 <2ca024a80707121116i3574e2e2k7783bdb591b571b1@mail.gmail.com>
+X-Google-Sender-Auth: bd04557961a6891c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Zhang, Yanmin" <yanmin_zhang@linux.intel.com> writes:
+On 7/12/07, Marcos David <marcosgdavid.ml@gmail.com> wrote:
+> Hi,
+> I´m using RedHat Enterprise Server 4 Update 3 (kernel 2.6.9-34.ELsmp)
+>
+> I was listing the contents of /proc/pid/status file and I came up with
+> a value of:
+> ...
+> VmLib: 4294948464 kB,
+> ...
+>
+> Is this a known bug?
 
-> [...]
-> > > 2) Delete lock. [..]
-> > > In addition, the result is for performance data collection, so it's
-> > > unnecessary to add such lock.
-> > Not sure that's a good idea. People expect their performance counts
-> > to be accurate too. [...]
-> [...]
-> 2) If the reader could get the correct data when the process updates
-> the data. It might be an issue. But the issue is not
-> important. Mostly, the application tool reads the data in an
-> interval.
+Ask Red Hat.
 
-Can you elaborate on that some more?  Is it OK for the sample
-monitoring program to return inconsistent data sometimes?  Is there
-reason to believe that this sample user-space program will remain the
-sole consumer of this data?  Might a seqlock be appropriate here?
-
-- FChE
+Lee
