@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbXGLEQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbXGLEZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752679AbXGLEQe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 00:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXGLEQZ
+	id S1753257AbXGLEZu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 00:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbXGLEZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 00:16:25 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60725 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750970AbXGLEQY (ORCPT
+	Thu, 12 Jul 2007 00:25:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54893 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751245AbXGLEZk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 00:16:24 -0400
-Date: Thu, 12 Jul 2007 14:16:13 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Message-ID: <20070712041613.GY12413810@sgi.com>
-References: <200707111916.35036.jesper.juhl@gmail.com>
+	Thu, 12 Jul 2007 00:25:40 -0400
+Date: Wed, 11 Jul 2007 21:24:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: David Miller <davem@davemloft.net>, hch@lst.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+Message-Id: <20070711212435.abd33524.akpm@linux-foundation.org>
+In-Reply-To: <1184208521.6005.695.camel@localhost.localdomain>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<20070711122324.GA21714@lst.de>
+	<1184203311.6005.664.camel@localhost.localdomain>
+	<20070711.192829.08323972.davem@davemloft.net>
+	<1184208521.6005.695.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707111916.35036.jesper.juhl@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 07:16:34PM +0200, Jesper Juhl wrote:
-> Hi,
+On Thu, 12 Jul 2007 12:48:41 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> On Wed, 2007-07-11 at 19:28 -0700, David Miller wrote:
+> > From: Rusty Russell <rusty@rustcorp.com.au>
+> > Date: Thu, 12 Jul 2007 11:21:51 +1000
+> > 
+> > > To do inter-guest (ie. inter-process) I/O you really have to make sure
+> > > the other side doesn't go away.
+> > 
+> > You should just let it exit and when it does you receive some kind of
+> > exit notification that resets your virtual device channel.
+> > 
+> > I think the reference counting approach is error and deadlock prone.
+> > Be more loose and let the events reset the virtual devices when
+> > guests go splat.
 > 
-> I'm wondering if it's time to make 4K stacks the default and to start 
-> considering removing the 8K stack option alltogether soon?
+> There are two places where we grab task refcnt.  One might be avoidable
+> (will test and get back) but the deferred wakeup isn't really:
 > 
-> One of the big problem spots was XFS, but that got some stack usage 
-> fixes recently, and the 4K stack option has been around for quite a 
-> while now, so people really should have gotten around to fixing any 
-> code that can't handle it.   Are there still any big problem areas 
-> remaining?
+>         /* We cache one process to wakeup: helps for batching & wakes outside locks. */
+>         void set_wakeup_process(struct lguest *lg, struct task_struct *p)
+>         {
+>         	if (p == lg->wake)
+>         		return;
+>         
+>         	if (lg->wake) {
+>         		wake_up_process(lg->wake);
+>         		put_task_struct(lg->wake);
+>         	}
+>         	lg->wake = p;
+>         	if (lg->wake)
+>         		get_task_struct(lg->wake);
+>         }
 
-Yes. NFS on top of XFS on top of DM/MD.
+<handwaving>
 
-XFS got some fixes recently, of which the main one was to fix the
-regressions that gcc 4.x introduced by inlining single use functions
-that we'd split out of the common code to reduce stack usage. So in
-reality, there hasn't been a great deal of change in the status quo
-here.
-
-In fact, things have probably got worse because the generic
-writeback code is slowly increasing it's stack usage....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+We seem to be taking the reference against the wrong thing here.  It should
+be against the mm, not against a task_struct?
