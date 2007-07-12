@@ -1,77 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933205AbXGLOve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933396AbXGLO7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933205AbXGLOve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 10:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbXGLOv2
+	id S933396AbXGLO7T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 10:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbXGLO7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 10:51:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:57373 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbXGLOv1 (ORCPT
+	Thu, 12 Jul 2007 10:59:07 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:55805 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756507AbXGLO7D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 10:51:27 -0400
-Message-ID: <46963FDD.9010900@arcor.de>
-Date: Thu, 12 Jul 2007 16:51:09 +0200
-From: Sascha Hlusiak <saschahlusiak@arcor.de>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Manually invoke IPv6 router solicitation messages
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5CA497F56A4FED585E029E2D"
-X-Provags-ID: V01U2FsdGVkX1+fR0CmpkQBSST16Lzs957JM8nQnW/xVs0wCp9
- Tqmi2A2R/Pdp1rxcG6sd1Lb6jOcy9RgX/whnIIZvpi0COgXq88
- r4hKeWmKJsRVwNQOrdr2w==
+	Thu, 12 Jul 2007 10:59:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
+        b=Fk+wayDNzPem2E9H5EAihMnJ5Z/NjQ9OOEu5y96rLJzOXE2wastpuPpUTA3BZOX/pEgaJYl0SC/jL3/AwkTsEv0GV/WnQg6M21bmSlx2klO5m8OQBx3fsAQ3sI1o7voCOEkXHQA1mB3+W7zxk/SpuKPd6nnZo+63euLH+dXRf8A=
+Date: Thu, 12 Jul 2007 23:01:35 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: kirk@hpc.ee.ntu.edu.tw, dwmw2@infradead.org
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org,
+       akpm@osdl.org
+Subject: [Patch] drivers/mtd/maps/tqm8xxl.c: Style cleanups
+Message-ID: <20070712150135.GA4102@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5CA497F56A4FED585E029E2D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Change C++ style comments into K&R's.
+Cut long lines into pieces.
 
-Is there a way to manually make the kernel send IPv6 router solicitation
-messages? At the moment the kernel will send a few messages after the
-interface is brought up and then never again, no matter if it succeeded
-or failed to autoconf the device.
+This patch is against 2.6.22.1, and can be also applied to
+the last -mm tree.
 
-Background:
-I use wpa_supplicant to connect to wireless and I use ifplugd/netplug to
-manage my wired network.
-Both tools bring the interface up and immediately the kernel tries to
-autoconfigure them, even the cable is not plugged in or the wireless
-connection is not yet established. When the connection is finally
-brought up, the autoconfig already failed and I have to wait until the
-router is so nice to send a router advertisement message by itself.
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Does it make sense to have a syscall or /proc entry that makes the
-kernel send such a message, or do you suggest having a userspace tool to
-send those messages when needed?
+---
 
+ tqm8xxl.c |   41 +++++++++++++++++++++++++----------------
+ 1 file changed, 25 insertions(+), 16 deletions(-)
 
-Sascha Hlusiak
-
-
-(Please CC me, since I'm off-list)
-
-
-
---------------enig5CA497F56A4FED585E029E2D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGlj/iOyDtNneHFrMRAiSRAKCXikS9B9hFXikoRHPhtHRA+6ADvgCcCr2u
-we7KaDQOa3l3zbdtL1i0g1g=
-=w8C+
------END PGP SIGNATURE-----
-
---------------enig5CA497F56A4FED585E029E2D--
+Index: linux-2.6.22.1/drivers/mtd/maps/tqm8xxl.c
+===================================================================
+--- a/drivers/mtd/maps/tqm8xxl.c	2007-04-26 11:08:32.000000000 +0800
++++ b/drivers/mtd/maps/tqm8xxl.c	2007-07-05 00:16:16.000000000 +0800
+@@ -38,7 +38,7 @@
+ #define FLASH_SIZE 0x00800000
+ #define FLASH_BANK_MAX 4
+ 
+-// trivial struct to describe partition information
++/* trivial struct to describe partition information*/
+ struct mtd_part_def
+ {
+ 	int nums;
+@@ -46,7 +46,7 @@
+ 	struct mtd_partition* mtd_part;
+ };
+ 
+-//static struct mtd_info *mymtd;
++/*static struct mtd_info *mymtd;*/
+ static struct mtd_info* mtd_banks[FLASH_BANK_MAX];
+ static struct map_info* map_banks[FLASH_BANK_MAX];
+ static struct mtd_part_def part_banks[FLASH_BANK_MAX];
+@@ -106,7 +106,7 @@
+ 	  .name = "jffs",
+ 	  .offset = 0x00200000,
+ 	  .size = 0x00200000,
+-	  //.size = MTDPART_SIZ_FULL,
++	  /*.size = MTDPART_SIZ_FULL,*/
+ 	}
+ };
+ #endif
+@@ -121,10 +121,11 @@
+ 	flash_addr = bd->bi_flashstart;
+ 	flash_size = bd->bi_flashsize;
+ 
+-	//request maximum flash size address space
++	/*request maximum flash size address space*/
+ 	start_scan_addr = ioremap(flash_addr, flash_size);
+ 	if (!start_scan_addr) {
+-		printk(KERN_WARNING "%s:Failed to ioremap address:0x%x\n", __FUNCTION__, flash_addr);
++		printk(KERN_WARNING "%s:Failed to ioremap address:0x%x\n",
++			__FUNCTION__, flash_addr);
+ 		return -EIO;
+ 	}
+ 
+@@ -132,12 +133,14 @@
+ 		if(mtd_size >= flash_size)
+ 			break;
+ 
+-		printk(KERN_INFO "%s: chip probing count %d\n", __FUNCTION__, idx);
++		printk(KERN_INFO "%s: chip probing count %d\n", __FUNCTION__,
++			idx);
+ 
+ 		map_banks[idx] = kzalloc(sizeof(struct map_info), GFP_KERNEL);
+ 		if(map_banks[idx] == NULL) {
+ 			ret = -ENOMEM;
+-			/* FIXME: What if some MTD devices were probed already? */
++			/* FIXME: What if some MTD devices were probed
++			 already? */
+ 			goto error_mem;
+ 		}
+ 
+@@ -145,7 +148,8 @@
+ 
+ 		if (!map_banks[idx]->name) {
+ 			ret = -ENOMEM;
+-			/* FIXME: What if some MTD devices were probed already? */
++			/* FIXME: What if some MTD devices were probed
++			 already? */
+ 			goto error_mem;
+ 		}
+ 		sprintf(map_banks[idx]->name, "TQM8xxL%d", idx);
+@@ -170,7 +174,7 @@
+ 			map_banks[idx]->phys += mtd_banks[idx-1]->size;
+ 		}
+ 
+-		//start to probe flash chips
++		/*start to probe flash chips*/
+ 		mtd_banks[idx] = do_map_probe("cfi_probe", map_banks[idx]);
+ 
+ 		if (mtd_banks[idx]) {
+@@ -178,7 +182,8 @@
+ 			mtd_size += mtd_banks[idx]->size;
+ 			num_banks++;
+ 
+-			printk(KERN_INFO "%s: bank%d, name:%s, size:%dbytes \n", __FUNCTION__, num_banks,
++			printk(KERN_INFO "%s: bank%d, name:%s, size:%dbytes \n",
++				__FUNCTION__, num_banks,
+ 			mtd_banks[idx]->name, mtd_banks[idx]->size);
+ 		}
+ 	}
+@@ -204,17 +209,21 @@
+ 
+ 	for(idx = 0; idx < num_banks ; idx++) {
+ 		if (part_banks[idx].nums == 0) {
+-			printk(KERN_NOTICE "TQM flash%d: no partition info available, registering whole flash at once\n", idx);
++			printk(KERN_NOTICE "TQM flash%d: no partition info "
++				"available, registering whole flash at once\n",
++				idx);
+ 			add_mtd_device(mtd_banks[idx]);
+ 		} else {
+-			printk(KERN_NOTICE "TQM flash%d: Using %s partition definition\n",
+-					idx, part_banks[idx].type);
+-			add_mtd_partitions(mtd_banks[idx], part_banks[idx].mtd_part,
+-								part_banks[idx].nums);
++			printk(KERN_NOTICE "TQM flash%d: Using %s partition "
++				"definition\n",
++				idx, part_banks[idx].type);
++			add_mtd_partitions(mtd_banks[idx],
++				part_banks[idx].mtd_part, part_banks[idx].nums);
+ 		}
+ 	}
+ #else
+-	printk(KERN_NOTICE "TQM flash: registering %d whole flash banks at once\n", num_banks);
++	printk(KERN_NOTICE "TQM flash: registering %d whole flash banks at "
++		"once\n", num_banks);
+ 	for(idx = 0 ; idx < num_banks ; idx++)
+ 		add_mtd_device(mtd_banks[idx]);
+ #endif
