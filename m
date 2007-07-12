@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbXGLTPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbXGLTQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756748AbXGLTPp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 15:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbXGLTPe
+	id S1764275AbXGLTQX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 15:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbXGLTQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 15:15:34 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:51668
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbXGLTPd (ORCPT
+	Thu, 12 Jul 2007 15:16:09 -0400
+Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:38150 "EHLO
+	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756842AbXGLTQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 15:15:33 -0400
-Date: Thu, 12 Jul 2007 12:09:31 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-In-Reply-To: <m14pk9fuqa.fsf@ebiederm.dsl.xmission.com>
-Message-ID: <Pine.LNX.4.64.0707121206240.25614@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
- <20070711172243.ab44c4d4.akpm@linux-foundation.org>
- <1184251423.9346.55.camel@caritas-dev.intel.com> <m14pk9fuqa.fsf@ebiederm.dsl.xmission.com>
+	Thu, 12 Jul 2007 15:16:08 -0400
+X-Greylist: delayed 79827 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 15:16:08 EDT
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] sb1250-duart.c: SB1250 DUART serial support
+Date: Thu, 12 Jul 2007 20:15:11 +0100
+User-Agent: KMail/1.9.7
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Mark Mason <mason@broadcom.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-mips@linux-mips.org,
+       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64N.0707121745010.3029@blysk.ds.pg.gda.pl> <469669F5.6070906@shadowen.org> <Pine.LNX.4.64N.0707121904211.3029@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0707121904211.3029@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707122015.12078.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007, Eric W. Biederman wrote:
+On Thursday 12 July 2007 19:16:20 Maciej W. Rozycki wrote:
+> On Thu, 12 Jul 2007, Andy Whitcroft wrote:
+[snip]
+> > WARNING: declaring multiple variables together should be avoided
+> > #372: FILE: drivers/serial/sb1250-duart.c:246:
+> > +	unsigned int mctrl, status;
+>
+>  Well, this is probably superfluous -- why would anyone prefer:
+>
+> 	int r0;
+> 	int r1;
+> 	int r2;
+> 	int r3;
+> 	int r4;
+>
+> to:
+>
+> 	int r0, r1, r2, r3, r4;
+>
+> unconditionally?
 
->> 2. Do not reserve memory for kexec kernel. That is, backup needed memory
->> before kexec and restore them after kexec.
->> 3. Support the in-place kexec? The relocatable kernel is not necessary
->> if this can be implemented.
->
-> It sounds like what you really want is the normal kexec path enhanced
-> so that you can return to the kernel you started with.
->
-> The normal kexec path already knows how to do the memory shuffle so
-> it can do on demand memory allocation.  That code just needs to
-> enhanced slightly so that you allocate an extra page, setup an inverse
-> scatter gather list for restoring the pages, and teach relocate_kernel.S
-> to preserve it's destination pages by using the inverse scatter gather
-> list.
->
-> The normal kexec path already calls device_shutdown and the like to
-> stop devices from running.  Although again that code path is not
-> prepared to restore the devices.
+Imagine you're working on a piece of kernel code that has a lot of parallel 
+churn. Conflicts on lines like "int a,b,c,d;" are more likely to cause Andrew 
+et al pain, which I guess is the rationale for discouraging it. Conversely, 
+if the variables are kept separate, diff handles it fine.
 
-we shouldn't need a restore code path if the new kernel re-detects 
-everything. if kexec already shuts down all the devices we may not need to 
-implement anything new here (although there may be room for future 
-performance optimization)
+I think as long as the variables are logically grouped, the pain is minimised, 
+but there's a few good reasons for the verbose style.
 
-> ...
->
-> For prototyping I would:
-> - reserve a chunk of memory (possibly with the crashkernel= option)
->  and run a relocatable kernel out of it.
->
->  By using the normal kexec you can boot a relocatable restore kernel
->  in that reserved region. It is an extra step but it makes things
->  work today.
->
-> - I would use the normal sys_kexec_load.
->
-> - I would debug/tweak the user space and the code to reenter the
->  old kernel.  I.e. the device driver stop/start code.
->
->  Once it was basically working I would the update normal kexec
->  memory copy code in relocate.S to preserve the destination pages.
+-- 
+Cheers,
+Alistair.
 
-for prototyping there's no need to use the same kernel.
+137/1 Warrender Park Road, Edinburgh, UK.
 
->> 4. Image writing/reading. (Only user space application is needed).
->
-> And possibly a few fixes to /dev/mem.  This is pretty much the same
-> process as generating a core dump so there should be some synergy with that.
-
-what fixes are you thinking of?
-
-you are makeing this sound very simple ;-)
-
-David Lang
