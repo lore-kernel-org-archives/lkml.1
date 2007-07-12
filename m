@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbXGLGbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbXGLGbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759261AbXGLGbS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 02:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXGLGbD
+	id S1760044AbXGLGbc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 02:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758063AbXGLGbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 02:31:03 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37206 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbXGLGbA convert rfc822-to-8bit (ORCPT
+	Thu, 12 Jul 2007 02:31:17 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:49267 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754266AbXGLGbP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 02:31:00 -0400
-Date: Thu, 12 Jul 2007 08:28:54 +0200
-From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux RT Users <linux-rt-users@vger.kernel.org>,
-       Darren Hart <dvhltc@us.ibm.com>, john stultz <johnstul@us.ibm.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>,
-       Gilles Carry <Gilles.Carry@ext.bull.net>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Patch RT] Fix CFS load balancing for RT tasks
-Message-ID: <20070712082854.12a385d3@frecb000686.frec.bull.fr>
-In-Reply-To: <1184173580.12353.105.camel@chaos>
-References: <20070711164708.48907792@frecb000686.frec.bull.fr>
-	<1184173580.12353.105.camel@chaos>
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 12/07/2007 08:35:23,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 12/07/2007 08:35:25,
-	Serialize complete at 12/07/2007 08:35:25
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=UTF-8
+	Thu, 12 Jul 2007 02:31:15 -0400
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: [PATCH 3/4] Extend the DMA-engine API.
+Date: Thu, 12 Jul 2007 14:31:05 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C6F3DFA@zch01exm26.fsl.freescale.net>
+In-Reply-To: <e9c3a7c20707110956r5ea91fd1q1d0b33b9583fe91c@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/4] Extend the DMA-engine API.
+Thread-Index: AcfD3HLe/CQhfaBlRPayHo3ToOCzgQAcUjkQ
+References: <11840607111926-git-send-email-wei.zhang@freescale.com> <e9c3a7c20707101141m17e313e2k99be5b7197edc910@mail.gmail.com> <46B96294322F7D458F9648B60E15112C6F3CED@zch01exm26.fsl.freescale.net> <e9c3a7c20707110956r5ea91fd1q1d0b33b9583fe91c@mail.gmail.com>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Cc: <akpm@linux-foundation.org>, <paulus@samba.org>,
+       <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>,
+       <linux-kernel@vger.kernel.org>, <shannon.nelson@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 19:06:20 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+Hi, Dan,
 
-> On Wed, 2007-07-11 at 16:47 +0200, Sébastien Dugué wrote:
-> >   The following patch fixes this by re-enabling the RT overload detection
-> > for the CFS. It may not be the right solution, maybe it should be incorporated
-> > into the other load balancing mechanisms. I did not digg deep enough yet
-> > to make that call ;-)
-> > 
-> >   P.S. Thanks to Steven Rostedt for logdev which is proving invaluable in
-> >        cases like this.
-> > 
-> >   Sébastien.
+Thanks! I get it.
+It's so lucky we have the same target.
+When your patch could be accepted?
+
+Cheers,
+Wei. 
+
+> -----Original Message-----
+> From: dan.j.williams@gmail.com 
+> [mailto:dan.j.williams@gmail.com] On Behalf Of Dan Williams
+> Sent: Thursday, July 12, 2007 12:57 AM
+> To: Zhang Wei-r63237
+> Cc: akpm@linux-foundation.org; paulus@samba.org; 
+> galak@kernel.crashing.org; linuxppc-dev@ozlabs.org; 
+> linux-kernel@vger.kernel.org; shannon.nelson@intel.com
+> Subject: Re: [PATCH 3/4] Extend the DMA-engine API.
 > 
-> Nice catch. That was dropped during the CFS -> -rt merge.
+> On 7/11/07, Zhang Wei-r63237 <Wei.Zhang@freescale.com> wrote:
+> > Hi, Dan,
+> >
+> > Do you mention here: 
+> http://marc.info/?l=linux-raid&m=118290909614463&w=2 ?
+> > I see the async_tx is located at crypto/ of the above page, 
+> but my patch is for DMA engine in drivers/dma and for DMA 
+> engine driver.
+> >
+> > Thanks!
+> > Wei.
 > 
-> 	tglx
-
-  Thanks, and sorry, I forgot to CC you :(
-
-  Sébastien.
+> Hi Wei,
+> 
+> I was referring to:
+> http://marc.info/?l=linux-raid&m=118290909528910&w=2
+> 
+> async_tx is an api that exploits the raw capabilities of the new
+> dmaengine interface.  For your case when the existing api calls do not
+> provide the proper interface you can open code something like the
+> following:
+> 
+> tx = dev->device_prep_dma_<operation>(chan, len, int_flag)
+> tx->tx_set_src(dma_addr_t, tx, index /* for multi-source ops */)
+> tx->tx_set_dest(dma_addr_t, tx, index)
+> tx->tx_submit(tx)
+> 
+> The expectation is that the most common usages of dmaengines will use
+> async_tx calls, or the 'dma_async_memcpy_foo_to_bar' helper routines.
+> 
+> --
+> Dan
+> 
