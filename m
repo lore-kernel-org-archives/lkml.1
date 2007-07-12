@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934921AbXGLQd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935103AbXGLQfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934921AbXGLQd1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759794AbXGLQdU
+	id S935103AbXGLQfZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761446AbXGLQfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:33:20 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:43641 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759086AbXGLQdT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:33:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GMkwJs0QDlN+akXxB4J7q5qZvIFtFT+JczoaujtV5XfZ5WaVVFcaINa+LU3VxITqI6LQbqJaS2aDtMX50xSWuAnxsI02AMY8TktlDKjiycbbNq++5kOoB5UwBrRZNXVqESV7vAb9jYDCbqxagDDRzeSvp+jquKSKTUPdtP/jYSY=
-Message-ID: <78ecab220707120933q31a4efb5tb6dbed7a4787f5a@mail.gmail.com>
-Date: Thu, 12 Jul 2007 12:33:18 -0400
-From: "Mark Shelby" <mshelby1@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: kernel autoconfig option?
-In-Reply-To: <20070712161402.GA18550@kroah.com>
+	Thu, 12 Jul 2007 12:35:07 -0400
+Received: from rtr.ca ([64.26.128.89]:3657 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759835AbXGLQfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 12:35:05 -0400
+Message-ID: <46965837.8030907@rtr.ca>
+Date: Thu, 12 Jul 2007 12:35:03 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david@lang.hm, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Huang, Ying" <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707121446.14170.rjw@sisk.pl> <469631FA.2070405@rtr.ca> <200707121735.40077.rjw@sisk.pl> <469650DE.4000901@rtr.ca>
+In-Reply-To: <469650DE.4000901@rtr.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <78ecab220707120718q7cfcff43u66f80711c7ec1005@mail.gmail.com>
-	 <Pine.LNX.4.64.0707121635120.25352@fbirervta.pbzchgretzou.qr>
-	 <78ecab220707120802p11ab3e1fye497f4107fe18c1d@mail.gmail.com>
-	 <20070712161402.GA18550@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, greg... Just wondering... If this topic comes up every 6
-months or so -seems like there is a "need" for this sort of thing.
-Wonder why it has not been implemented yet? Especially if as you say
-the system calls are out there already to do it -when you know the
-right commands to type in.
+Mark Lord wrote:
+> Rafael J. Wysocki wrote:
+>..
+>> How much RAM is there in your machine?
+> 
+> 2GB, but It doesn't need to dump that much for good performance.
+> Hibernate here consists of:
+> 
+>   echo "$(( 256 * 1024 * 1024 ))" > /sys/power/image_size
+>   echo -n disk > /sys/power/state
+> 
+> Plus a couple of fiddly commands to deal with the ATI binary X server.
 
-Just curious... In my never ending quest to make Linux accessible to the masses
-:-)
+Whoops.. wrong half of the script.
+For TuxOnIce in 10 seconds, it does this:
 
-
-I'll look up the info and try what you suggested.
-
-
-On 7/12/07, Greg KH <greg@kroah.com> wrote:
-> On Thu, Jul 12, 2007 at 11:02:15AM -0400, Mark Shelby wrote:
-> >  That's an excellent idea. I am still thinking along the lines of
-> >  "idiot proof simplicity." It would be nice to have a configure script
-> >  that scanned your system board, sound card/chip various input ports,
-> >  etc, and went ahead and preselected those to build when you type
-> >  "make.
-> >
-> >  If you could combine this with the make "allmodconfig" command in a
-> >  user friendly interface, I think you'd really be on to something!
-> >  --as long as it's still configurable after the preselected choices are
-> >  made.
->
-> Check the archives, this comes up every 6 months or so.
->
-> Also, you can just use the simple scripts as described in the book,
-> "Linux Kernel in a Nutshell", free online, to do most of what you are
-> looking for here (automatic detection of what driver is needed for what
-> device.)
->
-> good luck,
->
-> greg k-h
->
+  echo 288 > /sys/power/suspend2/image_size_limit
+  echo > /sys/power/suspend2/do_suspend
