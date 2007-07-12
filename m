@@ -1,102 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935430AbXGLV6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935773AbXGLV6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935430AbXGLV6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 17:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbXGLV6F
+	id S935773AbXGLV6k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 17:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761346AbXGLV62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 17:58:05 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:61483 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758458AbXGLV6E (ORCPT
+	Thu, 12 Jul 2007 17:58:28 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:42534 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759635AbXGLV61 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 17:58:04 -0400
-Subject: Re: [PATCH 01/61] Rules on how to use sysfs in userspace programs
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070712084846.GA1882@elf.ucw.cz>
-References: <20070711233021.GA5253@kroah.com>
-	 <11841967403365-git-send-email-gregkh@suse.de>
-	 <20070712084846.GA1882@elf.ucw.cz>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 23:59:36 +0200
-Message-Id: <1184277576.3770.34.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18+xgmp6FlYRhxJen+CKvqBf6JSJVmFVKIC0pb
- GqdMygcwOuBshvg+1rClm9Pf3JpUAsdYL040xXK+dyYajISfo8
- GUe574HeyeVBeAhnuqPu9Xwq3UOzPJZ
+	Thu, 12 Jul 2007 17:58:27 -0400
+To: pavel@ucw.cz
+CC: miklos@szeredi.hu, oliver@neukum.org, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+In-reply-to: <20070712153112.GB5139@ucw.cz> (message from Pavel Machek on Thu,
+	12 Jul 2007 15:31:12 +0000)
+Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+References: <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <20070707121729.GC3111@elf.ucw.cz> <E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu> <20070707233315.GB3820@elf.ucw.cz> <E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu> <20070712153112.GB5139@ucw.cz>
+Message-Id: <E1I96eW-00059M-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 12 Jul 2007 23:56:48 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 10:48 +0200, Pavel Machek wrote:
-> On Wed 2007-07-11 16:31:20, Greg Kroah-Hartman wrote:
-> > From: Kay Sievers <kay.sievers@vrfy.org>
+> > Actually there's also a non-malicious case in which waiting for
+> > requests to finish won't work: when one fuse filesystem is accessing
+> > another.
 > > 
-> > Here's a document to help clear things up.
-> > 
-> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > ---
-> >  Documentation/sysfs-rules.txt |  166 +++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 166 insertions(+), 0 deletions(-)
-> >  create mode 100644 Documentation/sysfs-rules.txt
-> > 
-> > diff --git a/Documentation/sysfs-rules.txt b/Documentation/sysfs-rules.txt
-> > new file mode 100644
-> > index 0000000..42861bb
-> > --- /dev/null
-> > +++ b/Documentation/sysfs-rules.txt
-> > @@ -0,0 +1,166 @@
-> > +Rules on how to access information in the Linux kernel sysfs
-> > +
-> > +The kernel exported sysfs exports internal kernel implementation-details
-> > +and depends on internal kernel structures and layout. It is agreed upon
-> > +by the kernel developers that the Linux kernel does not provide a stable
-> > +internal API. As sysfs is a direct export of kernel internal
-> > +structures, the sysfs interface can not provide a stable interface eighter,
-> > +it may always change along with internal kernel changes.
+> > Since we are blocking new fuse requests, that might block a fuse
+> > daemon, which in turn makes it impossible to finish the pending
+> > request.
 > 
-> It is also agreed upon by the kernel developers that the Linux kernel
-> does have a stable user<->kernel API... so we have a small problem
-> here. 
+> Hmm, yes, this is ugly. But will it hurt? We'll just wait for number
+> of active fuse requests to go down to 0 before proceeding.
+
+I'm thinking of the following situation, immediately after we begin to
+wait for fuse requests to subside:
+
+  - task A is performing file operation O1
+  - O1 is being served by task B
+  - task B needs to perform O2 before finishing O1
+
+Since we don't allow new requests, O2 will never start.  So O1 will
+never finish.  So the number of fuse requests will never go to 0.
+
+> It may still livelock on system with busy fused-s, but we'll detect
+> that with timeout, and I believe it is 'don't do that' situation.
+
+There are no busy fused's.  If we allowed O2 to go through, everything
+would be nice and dandy.  But we cannot know that O2 needs to be let
+through, and other fuse requests must not.
+
+> > And this is not at all theoretical, I know that encfs is used over
+> > various other fuse filesystems like sshfs or ntfs-3g.
+> > 
+> > Yeah, stacking userspace filesystems could be done entirely in
+> > userspace, and I'm actually working on that (with fuse-2.7.0 already
+> > supporting some basic stacking).
 > 
-> Maybe solution is to declare /sys unstable, but... perhaps /sys can
-> stop mirroring internal structures? I do not think we should codify
-> our failure to keep /sys stable here.
+> Great.
+> 
+> > But the point is, that the "wait for fuse to quiescence" hack would
+> > not work in todays environment.
+> 
+> Ok, I'll just blame fuse here. 'You have to write to /sys
+> files for SIGKILL to work' is not funny.
 
-Sysfs never tried to be an ABI/API in the usual sense, parts of it are
-just a nicer looking "kernel dump". :)
+SIGKILL won't work on a stopped task.  Neither on a traced task.
+Neither on a zombie (how many newbies are thoroughly confused about
+that ;)
 
-You have to follow _very_ special rules to extract information here in a
-way that will not produce unexpected results between kernel releases, or
-even a second later on the same system.
+And it won't work on a task that is hanging on an NFS mount, when the
+network broke.
 
-In sysfs, all information is located in a tree, and the nodes in the
-tree can move around even at runtime, directories get dynamically
-renamed, or whole directories get reparented with all their contained
-information. Things you've seen in this second can be somewhere else
-just a second later. That's the expected behavior of sysfs and can
-certainly not be compared to the stability of syscalls, ioctl's, proc
-and similar.
+Oh, and it won't work on a deadlocked fuse filesystem.  How many of
+these have you met?  How many of the others?
 
-We can't remove information from sysfs because it is needed and useful,
-but most of the information can only be reached in a _very_ specific
-way. That's what this document tries to start to document. Maintaining
-the biggest users of sysfs today, udev and that part of HAL for years
-now, I still don't have any better idea than to document how to use it. 
-
-If you follow the rules, it should just be "stable enough" to use it
-reliably, but things like the API of libsysfs, or just making
-assumptions based on the current state, I really don't see how that can
-work.
-
-If you have any more useful words than "failure", or "stop exposing
-internal structures" which will help to explain things better, or change
-sysfs to make it easier to use, you are more than welcome to share your
-ideas.
-
-Thanks,
-Kay
-
+Miklos
