@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937699AbXGLAV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937677AbXGLAWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937699AbXGLAV4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937539AbXGLARg
+	id S937677AbXGLAWi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964859AbXGLARl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:17:36 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36377 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937451AbXGLARa (ORCPT
+	Wed, 11 Jul 2007 20:17:41 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:43786 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937535AbXGLARe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:17:30 -0400
-Subject: [PATCH 13/23] elevate write count for file_update_time()
+	Wed, 11 Jul 2007 20:17:34 -0400
+Subject: [PATCH 15/23] unix_find_other() elevate write count for touch_atime()
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Wed, 11 Jul 2007 17:17:27 -0700
+Date: Wed, 11 Jul 2007 17:17:30 -0700
 References: <20070712001710.654CD9ED@kernel>
 In-Reply-To: <20070712001710.654CD9ED@kernel>
-Message-Id: <20070712001727.27A432E6@kernel>
+Message-Id: <20070712001730.D7A93E7B@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -27,40 +27,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/inode.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ lxc-dave/net/unix/af_unix.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-diff -puN fs/inode.c~elevate-write-count-for-file_update_time fs/inode.c
---- lxc/fs/inode.c~elevate-write-count-for-file_update_time	2007-07-10 12:46:10.000000000 -0700
-+++ lxc-dave/fs/inode.c	2007-07-10 12:46:10.000000000 -0700
-@@ -1221,10 +1221,19 @@ void file_update_time(struct file *file)
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct timespec now;
- 	int sync_it = 0;
-+	int err = 0;
+diff -puN net/unix/af_unix.c~unix-find-other-elevate-write-count-for-touch-atime net/unix/af_unix.c
+--- lxc/net/unix/af_unix.c~unix-find-other-elevate-write-count-for-touch-atime	2007-07-10 12:46:11.000000000 -0700
++++ lxc-dave/net/unix/af_unix.c	2007-07-10 12:46:11.000000000 -0700
+@@ -702,21 +702,27 @@ static struct sock *unix_find_other(stru
+ 		err = path_lookup(sunname->sun_path, LOOKUP_FOLLOW, &nd);
+ 		if (err)
+ 			goto fail;
++
++		err = mnt_want_write(nd.mnt);
++		if (err)
++			goto put_path_fail;
++
+ 		err = vfs_permission(&nd, MAY_WRITE);
+ 		if (err)
+-			goto put_fail;
++			goto mnt_drop_write_fail;
  
- 	if (IS_NOCMTIME(inode))
- 		return;
--	if (IS_RDONLY(inode))
-+	/*
-+	 * Ideally, we want to guarantee that 'f_vfsmnt'
-+	 * is non-NULL here.  But, NFS exports need to
-+	 * be fixed up before we can do that.  So, check
-+	 * it for now. - Dave Hansen
-+	 */
-+	if (file->f_vfsmnt)
-+		err = mnt_want_write(file->f_vfsmnt);
-+	if (err)
- 		return;
+ 		err = -ECONNREFUSED;
+ 		if (!S_ISSOCK(nd.dentry->d_inode->i_mode))
+-			goto put_fail;
++			goto mnt_drop_write_fail;
+ 		u=unix_find_socket_byinode(nd.dentry->d_inode);
+ 		if (!u)
+-			goto put_fail;
++			goto mnt_drop_write_fail;
  
- 	now = current_fs_time(inode->i_sb);
-@@ -1240,6 +1249,8 @@ void file_update_time(struct file *file)
+ 		if (u->sk_type == type)
+ 			touch_atime(nd.mnt, nd.dentry);
  
- 	if (sync_it)
- 		mark_inode_dirty_sync(inode);
-+	if (file->f_vfsmnt)
-+		mnt_drop_write(file->f_vfsmnt);
- }
+ 		path_release(&nd);
++		mnt_drop_write(nd.mnt);
  
- EXPORT_SYMBOL(file_update_time);
+ 		err=-EPROTOTYPE;
+ 		if (u->sk_type != type) {
+@@ -736,7 +742,9 @@ static struct sock *unix_find_other(stru
+ 	}
+ 	return u;
+ 
+-put_fail:
++mnt_drop_write_fail:
++	mnt_drop_write(nd.mnt);
++put_path_fail:
+ 	path_release(&nd);
+ fail:
+ 	*error=err;
 _
