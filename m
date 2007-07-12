@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760304AbXGLG51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbXGLG7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760304AbXGLG51 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 02:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbXGLG5T
+	id S1759009AbXGLG7O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 02:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXGLG67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 02:57:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35483 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753685AbXGLG5S (ORCPT
+	Thu, 12 Jul 2007 02:58:59 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42117 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbXGLG66 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 02:57:18 -0400
-Date: Wed, 11 Jul 2007 23:56:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Jan Kara <jack@suse.cz>,
-       Kirill Korotaev <dev@openvz.org>, devel@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Lost JBD fix
-Message-Id: <20070711235640.bb854b89.akpm@linux-foundation.org>
-In-Reply-To: <20070712065009.GM4587@kernel.dk>
-References: <20070709181443.GF30433@duck.suse.cz>
-	<46951992.8040700@redhat.com>
-	<20070712065009.GM4587@kernel.dk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 12 Jul 2007 02:58:58 -0400
+Date: Thu, 12 Jul 2007 08:56:53 +0200
+From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux RT Users <linux-rt-users@vger.kernel.org>,
+       Darren Hart <dvhltc@us.ibm.com>, john stultz <johnstul@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>
+Subject: Re: [Patch RT] Fix CFS load balancing for RT tasks
+Message-ID: <20070712085653.0bb0064d@frecb000686.frec.bull.fr>
+In-Reply-To: <Pine.LNX.4.58.0707111341190.18766@gandalf.stny.rr.com>
+References: <20070711164708.48907792@frecb000686.frec.bull.fr>
+	<1184173580.12353.105.camel@chaos>
+	<Pine.LNX.4.58.0707111341190.18766@gandalf.stny.rr.com>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 12/07/2007 09:03:21,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 12/07/2007 09:03:22,
+	Serialize complete at 12/07/2007 09:03:22
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 08:50:11 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+On Wed, 11 Jul 2007 13:41:55 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> > > -	if (commit_transaction->t_checkpoint_list == NULL) {
-> > > +	if (commit_transaction->t_checkpoint_list == NULL &&
-> > > +	    commit_transaction->t_checkpoint_io_list == NULL) {
-> > >  		__journal_drop_transaction(journal, commit_transaction);
-> > >  	} else {
-> > >  		if (journal->j_checkpoint_transactions == NULL) {
-> > 
-> > Critical bugfix -- 2.6.22-stable (no earlier versions) should get
-> > this too, right?
+> > On Wed, 2007-07-11 at 16:47 +0200, Sébastien Dugué wrote:
+> > >
+> > >   P.S. Thanks to Steven Rostedt for logdev which is proving invaluable in
+> > >        cases like this.
+> > >
 > 
-> And don't forget that we have a jbd2/ clone as well, for the hugely
-> succesful ext4 project as well.
+> Great to hear!!!
+> 
+> I'll be uploading a new version of Logdev in a week or so.
+> 
+> Thanks for the feedback.
+> 
+> -- Steve
+> 
 
-Yeah, I did that.  Again.
+  Great! It's quite a nice and lightweight tool which I think will become
+one of my top tools for kernel debugging.
+
+  Just one suggestion, maybe, would be to add to the readme file the
+order in which the patches should apply along with a short description
+of what functionality they provide (or maybe document the patches and add a
+series file).
+
+  Anyway, thanks for that great tool.
+
+  Sébastien.
