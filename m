@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935204AbXGLCZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935156AbXGLC2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935204AbXGLCZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 22:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762338AbXGLCZl
+	id S935156AbXGLC2T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 22:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760777AbXGLC2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 22:25:41 -0400
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:10639 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759358AbXGLCZk convert rfc822-to-8bit (ORCPT
+	Wed, 11 Jul 2007 22:28:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47592
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756665AbXGLC2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 22:25:40 -0400
-Message-Id: <469558DB0200005A000275E2@mcclure.wal.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 11 Jul 2007 22:25:31 -0400
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>
-Cc: <jim.houston@ccur.com>, <joe.korty@ccur.com>, <dwalker@mvista.com>,
-       "David Bahi" <DBahi@novell.com>, "Moiz Kohari" <MKohari@novell.com>,
-       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: !! CORRECTION !! Re: Forward port of latest RT patch
-	(2.6.21.5-rt20) to 2.6.22 available
+	Wed, 11 Jul 2007 22:28:06 -0400
+Date: Wed, 11 Jul 2007 19:28:29 -0700 (PDT)
+Message-Id: <20070711.192829.08323972.davem@davemloft.net>
+To: rusty@rustcorp.com.au
+Cc: hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1184203311.6005.664.camel@localhost.localdomain>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<20070711122324.GA21714@lst.de>
+	<1184203311.6005.664.camel@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 00:58 +0000, Gregory Haskins wrote:
-> Hi Ingo, Thomas, and the greater linux-rt community,
->   
-> 	I just wanted to let you guys know that our team has a port of the
-> 21.5-rt20 patch for the 2.6.22 kernel available.  
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Thu, 12 Jul 2007 11:21:51 +1000
 
-FYI: Due to an internal mis-communication I thought we had ported up to
-rt20, but it is only rt19.  We will merge the rt19-rt20 interdiff and
-make a new drop in the next day or so.
+> To do inter-guest (ie. inter-process) I/O you really have to make sure
+> the other side doesn't go away.
 
-Sorry for the confusion! :P
+You should just let it exit and when it does you receive some kind of
+exit notification that resets your virtual device channel.
 
--Greg
-
+I think the reference counting approach is error and deadlock prone.
+Be more loose and let the events reset the virtual devices when
+guests go splat.
