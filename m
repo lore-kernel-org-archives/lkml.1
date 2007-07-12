@@ -1,53 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934781AbXGLQDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934446AbXGLQFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934781AbXGLQDv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758068AbXGLQDp
+	id S934446AbXGLQFf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbXGLQF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:03:45 -0400
-Received: from rtr.ca ([64.26.128.89]:3288 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758032AbXGLQDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:03:44 -0400
-Message-ID: <469650DE.4000901@rtr.ca>
-Date: Thu, 12 Jul 2007 12:03:42 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 12 Jul 2007 12:05:27 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45319
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756868AbXGLQFZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 12:05:25 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Subject: [PATCH] Chinese Language Maintainer
+Date: Thu, 12 Jul 2007 12:05:19 -0400
+User-Agent: KMail/1.9.6
+Cc: "Gerrit Huizenga" <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
+       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
+       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
+References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
+In-Reply-To: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Huang, Ying" <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707121446.14170.rjw@sisk.pl> <469631FA.2070405@rtr.ca> <200707121735.40077.rjw@sisk.pl>
-In-Reply-To: <200707121735.40077.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707121205.20959.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday, 12 July 2007 15:51, Mark Lord wrote:
->..
->> Currently, TuxOnIce(suspend2) takes about 10 seconds to suspend my notebook.
->> Switching to this new scheme would double that to 10 seconds to boot/probe,
->> plus the original 10 seconds to hibernate.  Assuming the new implementation
->> even comes close to suspend2 speed.
-> 
-> How much RAM is there in your machine?
+Proposed patch adding Li Yang to MAINTAINERS, and Documentation
+describing what a language maintainer is.
 
-2GB, but It doesn't need to dump that much for good performance.
-Hibernate here consists of:
+Signed-off-by: Rob Landley <rob@landley.net>
 
-   echo "$(( 256 * 1024 * 1024 ))" > /sys/power/image_size
-   echo -n disk > /sys/power/state
+--
 
-Plus a couple of fiddly commands to deal with the ATI binary X server.
+On Thursday 12 July 2007 9:53:54 am Li Yang-r58472 wrote:
 
-We use this on other machines here too, with 2GB RAM (most of them)
-and 1.3GB RAM (very slow HD, so it takes longer on that one).
+> > > I'm trying to establish.
+> >
+> > A list works fine as a point of contact.  I note that in general,
+> maintainers
+> > are individuals (who delegate like mad, of course), because otherwise
+> agenda
+> > items languish with everyone thinking it's someone else's
+> responsibility.
+>
+> Got it.  I can do it as long as it doesn't consume too much time.  :)
 
-Cheers
+Woot!  See attached patch and sign-off-by if you want the job. :)
 
+The bit about "the maintainer forwards, not the list" is a suggestion to
+prevent duplicates.  It doesn't mean you can't delegate, just that if it's
+open season on the list translating stuff _and_ forwarding it, then
+linux-kernel will get dupes.  (Plus other maintainers are more likely
+to pay attention to somebody they've heard from before.)
+
+Greg KH had entire an OLS presentation about how the developer ->
+maintainer -> subsystem -> anderew+linus forwarding is more
+an ideal than a reality, but at least it gives us a frame of reference
+to diverge from:
+http://lwn.net/Articles/240402/
+
+diff -r edfd2d6f670d MAINTAINERS
+--- a/MAINTAINERS	Tue Jul 10 17:51:13 2007 -0700
++++ b/MAINTAINERS	Thu Jul 12 11:51:19 2007 -0400
+@@ -2146,6 +2146,13 @@ W:	http://auxdisplay.googlepages.com/
+ W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
+ 
++LANGUAGE (CHINESE)
++P:	Li Yang
++M:	LeoLi@freescale.com
++L:	linux-kernel@zh-kernel.org
++W:	http://zh-kernel.org
++S:	Maintained
++
+ LAPB module
+ L:	linux-x25@vger.kernel.org
+ S:	Orphan
+--- /dev/null	2007-04-23 11:59:00.000000000 -0400
++++ linux-2.6/Documentation/language-maintainers.txt	2007-07-12 11:49:20.000000000 -0400
+@@ -0,0 +1,20 @@
++The langauges in which the Linux kernel is developed are C and English.
++(Note that Linus Torvalds' native language is Swedish, yet he chose
++to hold technical discussions in English.)
++
++The job of a language maintainer is to provide a point of contact for
++non-english speaking developers who wish to merge their patches into the
++Linux kernel.  Each language needs a specific language maintainer, who
++accepts non-english patch submissions on behalf of the Linux kernel.
++
++A language maintainer accepts patches to the Linux kernel, written in C, from
++authors who do not also speak English.  The language maintainer translates the
++description of each patch into English, forwards the patches to linux-kernel
++and to the appropriate maintainers for inclusion in the Linux kernel, and
++translates questions and replies about such patches as part of the
++patch review process.
++
++Some language maintainers provide a mailing list as a point of contact, to
++distribute the translation work, but the maintainer is still the person who
++ultimately forwards the results (to prevent duplicates), and the one to contact
++if patches and questions don't get translated and forwarded in a timely fashion.
+
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
