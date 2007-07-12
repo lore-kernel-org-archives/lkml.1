@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935439AbXGLQmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935545AbXGLQoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935439AbXGLQmo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762408AbXGLQmf
+	id S935545AbXGLQoQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbXGLQoC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:42:35 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:46302 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbXGLQme (ORCPT
+	Thu, 12 Jul 2007 12:44:02 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:46084 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752248AbXGLQoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:42:34 -0400
-Subject: Re: [announce] split-up -rt patch-queue, v2.6.22.1-rt2
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070712153717.GA7442@elte.hu>
-References: <20070712153717.GA7442@elte.hu>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 09:33:18 -0700
-Message-Id: <1184257998.7974.44.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jul 2007 12:44:00 -0400
+Date: Thu, 12 Jul 2007 12:44:00 -0400
+To: James <LinuxKernel@jamesplace.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problem recovering a failed RIAD5 array with 4-drives.
+Message-ID: <20070712164400.GD31195@csclub.uwaterloo.ca>
+References: <200707120849.16068.LinuxKernel@jamesplace.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707120849.16068.LinuxKernel@jamesplace.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 17:37 +0200, Ingo Molnar wrote:
-> We are pleased to announce something we've been working on for some 
-> time: a finegrained, split-up patch queue of the -rt kernel patch. From 
-> now on (as of 2.6.22.1-rt2) it will be part of every upstream -rt 
-> release and it is available from the -rt download site:
+On Thu, Jul 12, 2007 at 08:49:15AM -0500, James wrote:
+> My apologies if this is not the correct forum. If there is a better place to 
+> post this please advise.
 > 
->    http://redhat.com/~mingo/realtime-preempt/
 > 
-> the -rt patch-queue consists of 374 patches at the moment, which do:
+> Linux localhost.localdomain 2.6.17-1.2187_FC5 #1 Mon Sep 11 01:17:06 EDT 2006 
+> i686 i686 i386 GNU/Linux
 > 
->    698 files changed, 27920 insertions(+), 9603 deletions(-)
+> (I was planning to upgrade to FC7 this weekend, but that is currently on hold 
+> because-)
+> 
+> I've got a problem with a software RIAD5 using mdadm.
+> Drive sdc failed causing sda to appear failed. Both drives where marked 
+> as 'spare'.
+> 
+> What follows is a record of the steps I've taken and the results. I'm looking 
+> for some direction/advice to get the data back. 
+> 
+> 
+> I've tried a few cautions things to bring the array back up with the three 
+> good drives with no luck. 
+> 
+> The last thing attempted had some limited success. I was able to get all 
+> drives powered up. I checked the Event count on the three good drives and 
+> they were all equal. So I assumed it would be safe to do the following. I 
+> hope I was not wrong. I issued the following commands to try to bring the 
+> array into a usable state.
+> 
+> 
+> 
+> 
+> []# 
+> mdadm --create --verbose /dev/md0 --assume-clean --level=raid5 --raid-devices=4 --spare-devices=0  /dev/sda1 /dev/sdb1 /dev/sdc1 /dev/sdd1
 
-Is the number of patches relevant to you ? It seems like some patches
-could be boken out more. For instance there could be a per-architecture
-patch dedicated to converting spinlocks to raw spinlocks .. I was
-looking at preempt-realtime-i386.patch ..
+Don't you want assemble rather than create if it already exists?
 
-Daniel
+How did two drives fail at the same time?  Are you running PATA drives
+with two drives on a single cable?  That is a no no for raid.  PATA
+drive failures often take out the bus and you never want two drives in a
+single raid to share an IDE bus.
 
+You probably want to try and assemble the non failed drives, and then
+add in the new replacement drive afterwards, since after all it is NOT
+clean.  Hopefully the raid will accept back sda even though it appeared
+failed.  Then you can add the new sdc to resync the raid.
+
+--
+Len Sorensen
