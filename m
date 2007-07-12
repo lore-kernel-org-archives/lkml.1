@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932360AbXGLTtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933758AbXGLTvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932360AbXGLTtm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 15:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbXGLTtR
+	id S933758AbXGLTvT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 15:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbXGLTvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 15:49:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2507 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755613AbXGLTtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 15:49:15 -0400
-Date: Thu, 12 Jul 2007 15:31:12 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: oliver@neukum.org, paulus@samba.org, stern@rowland.harvard.edu,
-       johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-Message-ID: <20070712153112.GB5139@ucw.cz>
-References: <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <20070707121729.GC3111@elf.ucw.cz> <E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu> <20070707233315.GB3820@elf.ucw.cz> <E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 12 Jul 2007 15:51:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56655 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755828AbXGLTvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 15:51:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 2/2] Kexec jump: Kexec jump
+Date: Thu, 12 Jul 2007 21:58:38 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <1184167836.12556.15.camel@caritas-dev.intel.com>
+In-Reply-To: <1184167836.12556.15.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200707122158.39024.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wednesday, 11 July 2007 17:30, Huang, Ying wrote:
+> This patch provide the kexec based implementation of hibernation image
+> operation. Now, only jumping between original kernel and kexeced
+> kernel is supported, real image write/read/check will be provided in
+> next patches.
 
-> > So you want me to handle _malicious_ filesystems now?
-> > 
-> > That should be easy... :-). You already have nasty deadlocks in FUSE,
-> > and you solve them by "root can echo 1 > abort"... so allow me the
-> > same possibility.
-> > 
-> > We can tell fused we are freezing, and if all the requests are not
-> > serviced within, say, 30 seconds, we call the filesystem malicious and
-> > do echo 1 > abort.
-> > 
-> > Not ideal, but neither is allowing malicious filesystems in the first
-> > place...
-> 
-> Actually there's also a non-malicious case in which waiting for
-> requests to finish won't work: when one fuse filesystem is accessing
-> another.
-> 
-> Since we are blocking new fuse requests, that might block a fuse
-> daemon, which in turn makes it impossible to finish the pending
-> request.
+I know a little about kexec.
 
-Hmm, yes, this is ugly. But will it hurt? We'll just wait for number
-of active fuse requests to go down to 0 before proceeding. It may
-still livelock on system with busy fused-s, but we'll detect that with
-timeout, and I believe it is 'don't do that' situation.
+Could you please tell me what I should know/read to understand this patch?
 
-> And this is not at all theoretical, I know that encfs is used over
-> various other fuse filesystems like sshfs or ntfs-3g.
-> 
-> Yeah, stacking userspace filesystems could be done entirely in
-> userspace, and I'm actually working on that (with fuse-2.7.0 already
-> supporting some basic stacking).
+Greetings,
+Rafael 
 
-Great.
 
-> But the point is, that the "wait for fuse to quiescence" hack would
-> not work in todays environment.
-
-Ok, I'll just blame fuse here. 'You have to write to /sys
-files for SIGKILL to work' is not funny.
-							Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
