@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933164AbXGLNJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933880AbXGLNLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933164AbXGLNJU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 09:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763863AbXGLNJG
+	id S933880AbXGLNLS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 09:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763795AbXGLNLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 09:09:06 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:50912 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759011AbXGLNJE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 09:09:04 -0400
-Date: Thu, 12 Jul 2007 18:39:10 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: David Patrick Quigley <dpquigl@tycho.nsa.gov>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       eparis@redhat.com, jmorris@namei.org, sds@tycho.nsa.gov
-Subject: Re: [PATCH 2/7] fallocate() implementation in i386, x86_64 and powerpc
-Message-ID: <20070712130910.GB21606@amitarora.in.ibm.com>
-References: <20070710201200.GA10255@amitarora.in.ibm.com> <20070710202000.GB8797@amitarora.in.ibm.com> <1184244990.18175.6.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
+	Thu, 12 Jul 2007 09:11:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48472 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759011AbXGLNLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 09:11:06 -0400
+Date: Thu, 12 Jul 2007 15:09:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: pwil3058@bigpond.net.au, jim.houston@ccur.com, joe.korty@ccur.com,
+       rostedt@goodmis.org, tglx@linutronix.de, dwalker@mvista.com,
+       David Bahi <DBahi@novell.com>, Moiz Kohari <MKohari@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, dsaxena@plexity.net,
+       williams@redhat.com, abogani@texware.it, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to 2.6.22
+	available
+Message-ID: <20070712130958.GB17494@elte.hu>
+References: <4695E5BB0200005A0002763E@mcclure.wal.novell.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184244990.18175.6.camel@moss-terrapins.epoch.ncsc.mil>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <4695E5BB0200005A0002763E@mcclure.wal.novell.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 08:56:30AM -0400, David Patrick Quigley wrote:
-> From: David P. Quigley <dpquigl@tycho.nsa.gov>
-> 
-> Revalidate the write permissions for fallocate(2), in case security policy has
-> changed since the files were opened.
 
-Thanks for your patch! Will include it in the patchset.
+* Gregory Haskins <ghaskins@novell.com> wrote:
 
---
-Regards,
-Amit Arora
+> On Thu, 2007-07-12 at 14:07 +0200, Ingo Molnar wrote:
+> > * Gregory Haskins <ghaskins@novell.com> wrote:
+> > 
+> > > Hi Ingo, Thomas, and the greater linux-rt community,
+> > >   
+> > > 	I just wanted to let you guys know that our team has a port of 
+> > > the 21.5-rt20 patch for the 2.6.22 kernel available. [...]
+> > 
+> > great! We had the upstream -rt port to .22 in the works too, it was just 
+> > held up by the hpet breakage - which Thomas managed to fix earlier 
+> > today. I've released the 2.6.22.1-rt1 patch to the usual place:
+> > 
+> >     http://redhat.com/~mingo/realtime-preempt/
 > 
-> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
-> 
-> fs/open.c |    3 +++
-> 1 file changed, 3 insertions(+)
-> 
-> diff -uprN -X linux-2.6.22/Documentation/dontdiff linux-2.6.22-fallocate/fs/open.c linux-2.6.22-fallocate-selinux/fs/open.c
-> --- linux-2.6.22-fallocate/fs/open.c	2007-07-11 15:51:10.000000000 -0400
-> +++ linux-2.6.22-fallocate-selinux/fs/open.c	2007-07-11 16:10:43.000000000 -0400
-> @@ -411,6 +411,9 @@ asmlinkage long sys_fallocate(int fd, in
->  		goto out;
->  	if (!(file->f_mode & FMODE_WRITE))
->  		goto out_fput;
-> +	ret = security_file_permission(file, MAY_WRITE);
-> +	if (ret)
-> +		goto out_fput;
-> 
->  	inode = file->f_path.dentry->d_inode;
+> Thats awesome, Ingo!  Thanks!  Could you publish a broken out version 
+> as well?  We found it extremely valuable to be able to bisect this 
+> beast while working on the 21-22 port.
+
+we are working on something in this area :) Stay tuned ...
+
+	Ingo
