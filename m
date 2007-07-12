@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934026AbXGLTw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934389AbXGLTxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934026AbXGLTw3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 15:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXGLTwW
+	id S934389AbXGLTxU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 15:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbXGLTxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 15:52:22 -0400
-Received: from asia.telenet-ops.be ([195.130.137.74]:47787 "EHLO
-	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755828AbXGLTwV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 15:52:21 -0400
-Date: Thu, 12 Jul 2007 21:52:01 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Rob Landley <rob@landley.net>
-Cc: Li Yang-r58472 <LeoLi@freescale.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
-       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
-       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
-       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
-Subject: Re: [PATCH] Chinese Language Maintainer
-In-Reply-To: <200707121205.20959.rob@landley.net>
-Message-ID: <Pine.LNX.4.64.0707122151130.9546@anakin>
-References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
- <200707121205.20959.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 12 Jul 2007 15:53:09 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3310 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757644AbXGLTxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 15:53:08 -0400
+Date: Thu, 12 Jul 2007 19:52:55 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Tejun Heo <htejun@gmail.com>
+Cc: caglar@pardus.org.tr, Robert Hancock <hancockr@shaw.ca>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: SATA exceptions
+Message-ID: <20070712195255.GA6015@ucw.cz>
+References: <fa.hBFih6KVHDFsBf6Qfg6XispiIuY@ifi.uio.no> <fa.NhBdOmH9+RkW+QO72+TjPRwEKj0@ifi.uio.no> <468FD5ED.5060401@shaw.ca> <200707080035.05718.caglar@pardus.org.tr> <46928066.7000705@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46928066.7000705@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007, Rob Landley wrote:
-> --- /dev/null	2007-04-23 11:59:00.000000000 -0400
-> +++ linux-2.6/Documentation/language-maintainers.txt	2007-07-12 11:49:20.000000000 -0400
-> @@ -0,0 +1,20 @@
-> +The langauges in which the Linux kernel is developed are C and English.
-       ^^^^^^^^^
-       languages
+Hi!
 
-> +(Note that Linus Torvalds' native language is Swedish, yet he chose
-> +to hold technical discussions in English.)
-> +
-> +The job of a language maintainer is to provide a point of contact for
-> +non-english speaking developers who wish to merge their patches into the
-> +Linux kernel.  Each language needs a specific language maintainer, who
-> +accepts non-english patch submissions on behalf of the Linux kernel.
-           ^^^^^^^^^^^
-	   non-English
-> +
-> +A language maintainer accepts patches to the Linux kernel, written in C, from
-> +authors who do not also speak English.  The language maintainer translates the
+> >> Your SMART log shows 309 reallocated sectors. That seems somewhat high..
+> > 
+> > Ah sorry to misinterpret the content:), its a quiet new piece of hardware (at 
+> > most ~1.5 month old) and  "Reallocated_Event_Count" constantly increases 
+> > (currently its increased to 313) and although i'm not 100 percent sure these 
+> > errors only occured with kernels > 2.6.18 (or 2.6.18 didn't report these 
+> > cause according to kern.log these only visible with 2.6.22+) 
+> 
+> OS and driver can't really do much about the reallocation event.  Some
+> number of reallocations is okay but if you it going up constantly, you
+> probably have a dying disk.
 
-Gr{oetje,eeting}s,
+Hmm... cut the power while writing is doable from OS and might force
+reallocations?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+You might want to check if number of reallocated sectors increases
+with shutdowns/reboots.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
