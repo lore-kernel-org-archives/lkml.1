@@ -1,36 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765211AbXGLMTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933029AbXGLMU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765211AbXGLMTO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 08:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbXGLMTA
+	id S933029AbXGLMU4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 08:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbXGLMUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 08:19:00 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:23718 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752954AbXGLMS7 (ORCPT
+	Thu, 12 Jul 2007 08:20:47 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:34999 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754568AbXGLMUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 08:18:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Y/uIMLcR9Vd+JjgZHREndcxA681g9BTuGB8t8jZM5/O4e5DQXQmsMbsD22Qroswzx/NJo0jyuD74oawkClMhxHxMT+SwU9USfHn9W2fO3/7bph5tKxVmg6qlDKhoS6W2e9Z3VhUflusXhhGZCiROGICvzxBrpyVBVKReG4vm3Es=
-Message-ID: <a9e22dff0707120518t77d440d3ue0368fd1f3e36c03@mail.gmail.com>
-Date: Thu, 12 Jul 2007 15:18:42 +0300
-From: "Ni@m" <niam.niam@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: NPTL
-In-Reply-To: <a9e22dff0707120518q16aeae73p2905226abbadd03d@mail.gmail.com>
+	Thu, 12 Jul 2007 08:20:46 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [RFC 1/3] lro: Generic LRO for TCP traffic
+Date: Thu, 12 Jul 2007 13:54:42 +0200
+User-Agent: KMail/1.8.2
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+References: <200707111621.34376.ossthema@de.ibm.com> <20070712080137.GA25699@2ka.mipt.ru>
+In-Reply-To: <20070712080137.GA25699@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="koi8-r"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a9e22dff0707120518q16aeae73p2905226abbadd03d@mail.gmail.com>
+Message-Id: <200707121354.43407.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-I have a question about NPTL.
-Are NPTL are still based on `clone` system call? Are NPTL threads are
-"processes" internally?
+Hi Evgeniy
 
-Thanks!
+On Thursday 12 July 2007 10:01, Evgeniy Polyakov wrote:
+
+> > +
+> > +	if (tcph->cwr || tcph->ece || tcph->urg || !tcph->ack || tcph->psh
+> > +	    || tcph->rst || tcph->syn || tcph->fin)
+> > +		return -1;
+> 
+> I think you do not want to break lro frame because of push flag - it is
+> pretty common flag, which does not brak processing (and I'm not sure if
+> it has any special meaning this days).
+> 
+> > +	if (INET_ECN_is_ce(ipv4_get_dsfield(iph)))
+> > +		return -1;
+> > +
+> > +	if (tcph->doff != TCPH_LEN_WO_OPTIONS
+> > +	    && tcph->doff != TCPH_LEN_W_TIMESTAMP)
+> > +		return -1;
+> > +
+> > +	/* check tcp options (only timestamp allowed) */
+> > +	if (tcph->doff == TCPH_LEN_W_TIMESTAMP) {
+> > +		u32 *topt = (u32 *)(tcph + 1);
+> > +
+> > +		if (*topt != htonl((TCPOPT_NOP << 24) | (TCPOPT_NOP << 16)
+> > +				   | (TCPOPT_TIMESTAMP << 8)
+> > +				   | TCPOLEN_TIMESTAMP))
+> > +			return -1;
+> > +
+> > +		/* timestamp should be in right order */
+> > +		topt++;
+> > +		if (lro_desc && (ntohl(lro_desc->tcp_rcv_tsval) > ntohl(*topt)))
+> > +			return -1;
+> 
+> This still does not handle wrapping over 32 bits.
+> What about
+> if (lro_desc && after(ntohl(lro_desc->tcp_rcv_tsval), ntohl(*topt)))
+> 	return -1;
+
+Looks good, will change that
+
+> 
+> > +		/* timestamp reply should not be zero */
+> > +		topt++;
+> > +		if (*topt == 0)
+> > +			return -1;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> 
+> > +static struct net_lro_desc *lro_get_desc(struct net_lro_mgr *mgr,
+> > +					 struct net_lro_desc *lro_arr,
+> > +					 struct iphdr *iph,
+> > +					 struct tcphdr *tcph)
+> > +{
+> > +	struct net_lro_desc *lro_desc = NULL;
+> > +	struct net_lro_desc *tmp;
+> > +	int max_desc = mgr->max_desc;
+> > +	int i;
+> > +
+> > +	for (i = 0; i < max_desc; i++) {
+> > +		tmp = &lro_arr[i];
+> > +		if (tmp->active)
+> > +			if (!lro_check_tcp_conn(tmp, iph, tcph)) {
+> > +				lro_desc = tmp;
+> > +				goto out;
+> > +			}
+> > +	}
+> 
+> Ugh... What about tree structure or hash here?
+Our initial version was based on the following assumptions (remember, 8 elements...):
+
+- given a quota of 64 packets, it makes no sense to use huge arrays for LRO descriptors
+  (in our case 8 elements seem to work fine).
+- trying to benefit from caching effects+branch prediction,
+  + use the built in cacheline prefetch
+
+I guess the array mechanism can be improved (finding free entries), but for the
+initial version to see how the rest of the stack behaves with LRO
+it might be ok this way.
+
+Do you think a tree or hash would improve this with existing 
+caching designs (for a small number of elements)?
+
+> 
+> > +	for (i = 0; i < max_desc; i++) {
+> > +		if(!lro_arr[i].active) {
+> > +			lro_desc = &lro_arr[i];
+> > +			goto out;
+> > +		}
+> > +	}
+> > +
+> > +out:
+> > +	return lro_desc;
+> > +}
+> 
+> > +int __lro_proc_skb(struct net_lro_mgr *lro_mgr, struct sk_buff *skb,
+> > +		   struct vlan_group *vgrp, u16 vlan_tag, void *priv)
+> > +{
+> > +	struct net_lro_desc *lro_desc;
+> > +        struct iphdr *iph;
+> > +        struct tcphdr *tcph;
+> > +
+> > +	if (!lro_mgr->get_ip_tcp_hdr
+> > +	    || lro_mgr->get_ip_tcp_hdr(skb, &iph, &tcph, priv))
+> > +		goto out;
+> > +
+> > +	lro_desc = lro_get_desc(lro_mgr, lro_mgr->lro_arr, iph, tcph);
+> > +	if (!lro_desc)
+> > +		goto out;
+> 
+> There is no protection of the descriptor array from accessing from
+> different CPUs. Is it forbidden to share net_lro_mgr structure?
+> 
+
+Currently we assume that netpoll runs with one device only on one cpu
+at a time, and if there are multiple receive queues that can be processed
+in parallel the traffic is usually sorted per receive queue. It would make
+sense to use an own LRO "Manager" for each queue (would speed up the lookup)
+
+Regards,
+Jan-Bernd
+
