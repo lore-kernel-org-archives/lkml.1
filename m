@@ -1,37 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765783AbXGLDVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765092AbXGLDf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765783AbXGLDVy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 23:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbXGLDVo
+	id S1765092AbXGLDf3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 23:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757254AbXGLDfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 23:21:44 -0400
-Received: from blargh.com ([24.234.115.147]:41134 "EHLO blargh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755435AbXGLDVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 23:21:43 -0400
-References: <courier.4689EFD9.0000589A@blargh.com>
-            <200707040908.21512.ak@suse.de>
-            <courier.468B579E.00002ECF@blargh.com>
-            <200707041038.57677.ak@suse.de>
-            <468B5FBD.3040104@gmail.com>
-            <469365B2.9020809@suse.de>
-In-Reply-To: <469365B2.9020809@suse.de>
-From: 7091@blargh.com
-To: Tejun Heo <teheo@suse.de>
-Cc: Tejun Heo <htejun@gmail.com>, Andi Kleen <ak@suse.de>, 7091@blargh.com,
-       linux-ide@vger.kernel.org, jgarzik@pobox.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sata_sil, writing bug with multiple cards?
-Date: Wed, 11 Jul 2007 20:21:42 -0700
+	Wed, 11 Jul 2007 23:35:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48045
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755422AbXGLDfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 23:35:19 -0400
+Date: Wed, 11 Jul 2007 20:35:18 -0700 (PDT)
+Message-Id: <20070711.203518.59469474.davem@davemloft.net>
+To: rusty@rustcorp.com.au
+Cc: hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1184210118.6005.719.camel@localhost.localdomain>
+References: <1184208521.6005.695.camel@localhost.localdomain>
+	<20070711.195126.02300228.davem@davemloft.net>
+	<1184210118.6005.719.camel@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <courier.46959E46.00000E8F@blargh.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo writes: 
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Thu, 12 Jul 2007 13:15:18 +1000
 
-> Please give a shot at the attached patch on top of 2.6.22.  Thanks.
+> Sure, the process has /dev/lguest open, so I can do something in the
+> close routine.  Instead of keeping a reference to the tsk, I can keep a
+> reference to the struct lguest (currently it doesn't have or need a
+> refcnt).  Then I need another lock, to protect lg->tsk.
+> 
+> This seems like a lot of dancing to avoid one export.  If it's that
+> important I'd far rather drop the code and do a normal wakeup under the
+> big lguest lock for 2.6.23.
 
-Patch applied, but still getting the corruption.
+I'm not against the export, so use if it really helps.
+
+Ref-counting just seems clumsy to me given how the hw assisted
+virtualization stuff works on platforms I am intimately familiar with
+:)
