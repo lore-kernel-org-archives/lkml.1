@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935695AbXGLCm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbXGLCtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935695AbXGLCm4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 22:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932415AbXGLCmk
+	id S934078AbXGLCtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 22:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932569AbXGLCtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 22:42:40 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:35707 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933076AbXGLCmi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 22:42:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=ZcdnMMpEKBbWB7B9u35LYVjMZI9Fyoaoec/pj43ArzhtFdhukE7Hl1OzqYeMYclL4vd44BYMq3GbIctfpZIFdynjMwC+mIKmu3sD5WxVrlFmUPdxxr2P/GAoVQ7Di5BGd26AHDXdR/G+UzZa8BrtBTIT3+umQT4PQjre0GswwrA=  ;
-X-YMail-OSG: VNE5h5AVM1kC5HbKk4HHbto1ymSUS_yrKDWASHkGjrkZhNJdNpo8x.HEhUrF3xJUrOGqcJik45WMD3mMq5WmGkuOy_c30EkOjBu3Horvkjww24H4j2c-
-Message-ID: <46959516.30007@yahoo.com.au>
-Date: Thu, 12 Jul 2007 12:42:30 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linux Memory Management <linux-mm@kvack.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       xfs-oss <xfs@oss.sgi.com>
-Subject: Re: block_page_mkwrite? (Re: fault vs invalidate race (Re: -mm merge
- plans for 2.6.23))
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <46957BE1.1010104@yahoo.com.au> <20070712023100.GX12413810@sgi.com>
-In-Reply-To: <20070712023100.GX12413810@sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 11 Jul 2007 22:49:00 -0400
+Received: from ozlabs.org ([203.10.76.45]:50477 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933218AbXGLCs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 22:48:59 -0400
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: David Miller <davem@davemloft.net>
+Cc: hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20070711.192829.08323972.davem@davemloft.net>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <20070711122324.GA21714@lst.de>
+	 <1184203311.6005.664.camel@localhost.localdomain>
+	 <20070711.192829.08323972.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 12:48:41 +1000
+Message-Id: <1184208521.6005.695.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> On Thu, Jul 12, 2007 at 10:54:57AM +1000, Nick Piggin wrote:
+On Wed, 2007-07-11 at 19:28 -0700, David Miller wrote:
+> From: Rusty Russell <rusty@rustcorp.com.au>
+> Date: Thu, 12 Jul 2007 11:21:51 +1000
 > 
->>Andrew Morton wrote:
->>
->>>The fault-vs-invalidate race fix.  I have belatedly learned that these 
->>>need
->>>more work, so their state is uncertain.
->>
->>The more work may turn out being too much for you (although it is nothing
->>exactly tricky that would introduce subtle bugs, it is a fair amont of 
->>churn).
+> > To do inter-guest (ie. inter-process) I/O you really have to make sure
+> > the other side doesn't go away.
 > 
+> You should just let it exit and when it does you receive some kind of
+> exit notification that resets your virtual device channel.
 > 
-> OK, so does that mean we can finally get the block_page_mkwrite
-> patches merged?
-> 
-> i.e.:
-> 
-> http://marc.info/?l=linux-kernel&m=117426058311032&w=2
-> http://marc.info/?l=linux-kernel&m=117426070111136&w=2
-> 
-> I've got up-to-date versions of them ready to go and they've been
-> consistently tested thanks to the XFSQA test I wrote for the bug
-> that it fixes. I've been holding them out-of-tree for months now
-> because ->fault was supposed to supercede this interface.....
+> I think the reference counting approach is error and deadlock prone.
+> Be more loose and let the events reset the virtual devices when
+> guests go splat.
 
-Yeah, as I've said, don't hold them back because of me. They are
-relatively simple enough that I don't see why they couldn't be
-merged in this window.
+There are two places where we grab task refcnt.  One might be avoidable
+(will test and get back) but the deferred wakeup isn't really:
 
--- 
-SUSE Labs, Novell Inc.
+        /* We cache one process to wakeup: helps for batching & wakes outside locks. */
+        void set_wakeup_process(struct lguest *lg, struct task_struct *p)
+        {
+        	if (p == lg->wake)
+        		return;
+        
+        	if (lg->wake) {
+        		wake_up_process(lg->wake);
+        		put_task_struct(lg->wake);
+        	}
+        	lg->wake = p;
+        	if (lg->wake)
+        		get_task_struct(lg->wake);
+        }
+
+We drop the lock after I/O, and then do this wakeup.  Meanwhile the
+other task might have exited.
+
+I could get rid of it, but I don't think there's anything wrong with the
+code...
+
+Cheers,
+Rusty.
+
+
