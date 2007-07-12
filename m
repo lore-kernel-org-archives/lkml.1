@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935281AbXGLQfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935390AbXGLQgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935281AbXGLQfk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765305AbXGLQfP
+	id S935390AbXGLQgA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765718AbXGLQfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:35:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36246 "EHLO mx2.mail.elte.hu"
+	Thu, 12 Jul 2007 12:35:17 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:46945 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763981AbXGLQfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:35:12 -0400
-Date: Thu, 12 Jul 2007 18:33:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: jim.houston@ccur.com, joe.korty@ccur.com, rostedt@goodmis.org,
-       tglx@linutronix.de, dwalker@mvista.com, David Bahi <DBahi@novell.com>,
-       Moiz Kohari <MKohari@novell.com>, Sven Dietrich <SDietrich@novell.com>,
-       dsaxena@plexity.net, williams@redhat.com, abogani@texware.it,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to 2.6.22
-	available
-Message-ID: <20070712163341.GA9622@elte.hu>
-References: <46961E080200005A000276AE@mcclure.wal.novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46961E080200005A000276AE@mcclure.wal.novell.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1764545AbXGLQfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 12:35:14 -0400
+Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       David Kleikamp <shaggy@us.ibm.com>
+In-Reply-To: <20070712163123.GL28613@v2.random>
+References: <20070706222651.GG5777@v2.random>
+	 <20070708232031.GF12413810@sgi.com> <20070710101148.GJ1482@v2.random>
+	 <20070712001256.GI31489@sgi.com> <20070712111436.GG28613@v2.random>
+	 <20070712144449.GZ31489@sgi.com>  <20070712163123.GL28613@v2.random>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 09:34:57 -0700
+Message-Id: <1184258097.26210.75.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Gregory Haskins <ghaskins@novell.com> wrote:
-
->   For the most part, it seems you guys have resolved most of the 
-> issues that we ran into as well (e.g. early-flush-tlb, relocated 
-> die-notifier, etc, come to mind).  I found one patch that was missing 
-> that allows debug configurations to build properly.  Heres that patch:
+On Thu, 2007-07-12 at 18:31 +0200, Andrea Arcangeli wrote:
+> On Fri, Jul 13, 2007 at 12:44:49AM +1000, David Chinner wrote:
+> > That's crap. Just because a machine has lots of memory does not
+> > make it OK to waste lots of memory.
 > 
-> --- linux-2.6.21.orig/kernel/latency_trace.c
-> +++ linux-2.6.21/kernel/latency_trace.c
-> @@ -24,6 +24,7 @@
->  #include <linux/utsrelease.h>
->  #include <asm/uaccess.h>
->  #include <asm/unistd.h>
-> +#include <asm/asm-offsets.h>
+> It's not just wasted, it lowers overhead all over the place. Yes, the
+> benefit of wasting less pagecache may largely outweight the benefit of
+> having a larger page size, but if you've a lot of memory perhaps your
+> working set already fits in the cache, or perhaps you don't fit in the
+> cache regardless of the page size.
 
-i think this breaks PPC (which has no asm-offsets.h file). In any case i 
-saw this build breakage too and the fix is in -rt2.
+Have you guys seen Shaggy's page cache tails?
 
-> We did find a regression.  I was mistaken earlier when I mentioned our 
-> T60p laptops couldn't boot.  It turns out that issue was resolved 
-> somewhere along the way and our published patches based on 21.5-rt19 
-> do allow the laptop to boot event with acpi=on.  With 22.1-rt1 the 
-> laptop crashes unless acpi=off.  Now that we have your queue we will 
-> bisect this and post that fix as well.
+http://kernel.org/pub/linux/kernel/people/shaggy/OLS-2006/kleikamp.pdf
 
-ok. Make sure you check rt2 as well - and note that it's not fully 
-bisectable with PREEMPT_RT enabled (but should probably be fully 
-bisectable with PREEMPT_RT disabled). So check out first whether the 
-problem still persists with PREEMPT_RT disabled.
+We've had the same memory waste issue on ppc64 with 64k hardware
+pages.  
 
-	Ingo
+-- Dave
+
