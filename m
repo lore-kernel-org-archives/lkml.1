@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937392AbXGLA7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936232AbXGLA7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937392AbXGLA7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbXGLA7G
+	id S936232AbXGLA7n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936338AbXGLA7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:59:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50924 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757576AbXGLA7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:59:02 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 11 Jul 2007 20:59:18 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38982 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936155AbXGLA7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 20:59:16 -0400
+Message-ID: <46957CBF.1000101@zytor.com>
+Date: Wed, 11 Jul 2007 17:58:39 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Bodo Eggert <7eggert@gmx.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] avoid OPEN_MAX in SCM_MAX_FD
-X-Shopping-List: (1) Diplomatic hydrants
-   (2) Apocalyptic sycophant secretions
-   (3) Dormant caves
-   (4) Intolerant polemical furniture
-Message-Id: <20070712005825.EC42A4D0555@magilla.localdomain>
-Date: Wed, 11 Jul 2007 17:58:25 -0700 (PDT)
+Subject: Re: [PATCH] Use BIOS Keyboard variable to set Numlock
+References: <Pine.LNX.4.58.0707112305390.2432@be1.lrz>
+In-Reply-To: <Pine.LNX.4.58.0707112305390.2432@be1.lrz>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bodo Eggert wrote:
+> 
+> Instead of the byte at 0x497 as suggested in that thread, I'm using the 
+> byte at 0x417, which reflects the intended LED state. In order to change 
+> the keyboard LED, DOS programs would change this byte and call INT 5
+> (which is the keyboard software interrupt).
+> 
 
-The OPEN_MAX constant is an arbitrary number with no useful relation to
-anything.  Nothing should be using it.  SCM_MAX_FD is just an arbitrary
-constant and it should be clear that its value is chosen in net/scm.h
-and not actually derived from anything else meaningful in the system.
+0x417 is actually the current keyboard modifier state, which is the
+right thing to use.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- include/net/scm.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Presumably you meant INT 9 (IRQ 1), not INT 5 which is the print screen
+interrupt (also used by the CPU for BOUND error, which has some amusing
+consequence if anyone ever used the BOUND instruction in DOS.)
 
-diff --git a/include/net/scm.h b/include/net/scm.h
-index 5637d5e..423cb1d 100644
---- a/include/net/scm.h
-+++ b/include/net/scm.h
-@@ -8,7 +8,7 @@
- /* Well, we should have at least one descriptor open
-  * to accept passed FDs 8)
-  */
--#define SCM_MAX_FD	(OPEN_MAX-1)
-+#define SCM_MAX_FD	255
- 
- struct scm_fp_list
- {
+That being said, one could argue that since this is a BIOS interface it
+should be queried via INT 16h, AH=02h and stuffed in the zeropage
+structure.  This would also solve the issue of it not being supported by
+non-BIOS firmware.
+
+	-hpa
