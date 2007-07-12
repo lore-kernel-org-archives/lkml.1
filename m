@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765025AbXGLUlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934412AbXGLUlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765025AbXGLUlG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 16:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933979AbXGLUjt
+	id S934412AbXGLUlv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 16:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbXGLUkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 16:39:49 -0400
-Received: from waste.org ([66.93.16.53]:42769 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934741AbXGLUjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 16:39:47 -0400
-Date: Thu, 12 Jul 2007 15:38:35 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
-Message-ID: <20070712203834.GX11166@waste.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu> <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org> <1184191488.12353.160.camel@chaos> <alpine.LFD.0.999.0707111518020.20061@woody.linux-foundation.org> <1184194219.12353.170.camel@chaos>
+	Thu, 12 Jul 2007 16:40:22 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36671 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934063AbXGLUkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 16:40:21 -0400
+Date: Thu, 12 Jul 2007 10:48:46 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 01/61] Rules on how to use sysfs in userspace programs
+Message-ID: <20070712084846.GA1882@elf.ucw.cz>
+References: <20070711233021.GA5253@kroah.com> <11841967403365-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184194219.12353.170.camel@chaos>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <11841967403365-git-send-email-gregkh@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 12:50:19AM +0200, Thomas Gleixner wrote:
-> Linus,
+On Wed 2007-07-11 16:31:20, Greg Kroah-Hartman wrote:
+> From: Kay Sievers <kay.sievers@vrfy.org>
 > 
-> On Wed, 2007-07-11 at 15:20 -0700, Linus Torvalds wrote:
-> > For example, we can make sure that the code in question that actually 
-> > touches the hardware stays exactly the same, and then just move the 
-> > interfaces around - and basically guarantee that _zero_ hardware-specific 
-> > issues pop up when you switch over, for example.
-> > 
-> > That way there is a gradual change-over.
+> Here's a document to help clear things up.
 > 
-> Ok, I can try to split this down further.
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  Documentation/sysfs-rules.txt |  166 +++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 166 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/sysfs-rules.txt
 > 
-> > The other approach (which would be nice _too_) is to actually try to 
-> > convert one clock source at a time. Why is that not an option? 
-> 
-> We need to give control to the clock events core code once we convert
-> one clock event device. Having two competing subsystems controlling
-> different devices (e.g. PIT and APIC) is not really desirable.
+> diff --git a/Documentation/sysfs-rules.txt b/Documentation/sysfs-rules.txt
+> new file mode 100644
+> index 0000000..42861bb
+> --- /dev/null
+> +++ b/Documentation/sysfs-rules.txt
+> @@ -0,0 +1,166 @@
+> +Rules on how to access information in the Linux kernel sysfs
+> +
+> +The kernel exported sysfs exports internal kernel implementation-details
+> +and depends on internal kernel structures and layout. It is agreed upon
+> +by the kernel developers that the Linux kernel does not provide a stable
+> +internal API. As sysfs is a direct export of kernel internal
+> +structures, the sysfs interface can not provide a stable interface eighter,
+> +it may always change along with internal kernel changes.
 
-Can't you take the entire legacy clock system and wrap it as a single
-legacy clock source? Then you take bits out of the old system and put
-them as independent sources in the new system? When the legacy clock
-system is empty, you remove the legacy clock source.
+It is also agreed upon by the kernel developers that the Linux kernel
+does have a stable user<->kernel API... so we have a small problem
+here. 
 
+Maybe solution is to declare /sys unstable, but... perhaps /sys can
+stop mirroring internal structures? I do not think we should codify
+our failure to keep /sys stable here.
+									Pavel
 -- 
-Mathematics is the supreme nostalgia of our time.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
