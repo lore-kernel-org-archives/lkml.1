@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765713AbXGLRBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934881AbXGLRBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765713AbXGLRBg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbXGLRB1
+	id S934881AbXGLRBu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764883AbXGLRBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:01:27 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:3028 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752682AbXGLRB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:01:27 -0400
-Date: Thu, 12 Jul 2007 19:00:44 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Rob Landley <rob@landley.net>
-cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Start to genericize kconfig for use by other projects.
-In-Reply-To: <Pine.LNX.4.64.0707121820110.1817@scrub.home>
-Message-ID: <Pine.LNX.4.64.0707121859120.1818@scrub.home>
-References: <200707111522.14240.rob@landley.net> <Pine.LNX.4.64.0707121820110.1817@scrub.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 12 Jul 2007 13:01:33 -0400
+Received: from www.osadl.org ([213.239.205.134]:58406 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763368AbXGLRBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 13:01:31 -0400
+Subject: Re: [announce] split-up -rt patch-queue, v2.6.22.1-rt2
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <1184257998.7974.44.camel@dhcp193.mvista.com>
+References: <20070712153717.GA7442@elte.hu>
+	 <1184257998.7974.44.camel@dhcp193.mvista.com>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 19:01:29 +0200
+Message-Id: <1184259689.12353.236.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Daniel,
 
-On Thu, 12 Jul 2007, I wrote:
-
-> On Wed, 11 Jul 2007, Rob Landley wrote:
+On Thu, 2007-07-12 at 09:33 -0700, Daniel Walker wrote:
+> On Thu, 2007-07-12 at 17:37 +0200, Ingo Molnar wrote:
+> > We are pleased to announce something we've been working on for some 
+> > time: a finegrained, split-up patch queue of the -rt kernel patch. From 
+> > now on (as of 2.6.22.1-rt2) it will be part of every upstream -rt 
+> > release and it is available from the -rt download site:
+> > 
+> >    http://redhat.com/~mingo/realtime-preempt/
+> > 
+> > the -rt patch-queue consists of 374 patches at the moment, which do:
+> > 
+> >    698 files changed, 27920 insertions(+), 9603 deletions(-)
 > 
-> > Replace name "Linux Kernel" in menuconfig with a macro (defaulting to "Linux
-> > Kernel" if not -Ddefined by the makefile), and remove a few unnecessary
-> > occurrences of "kernel" in pop-up text.
-> 
-> Could you drop the PROJECT_NAME changes for now?
+> Is the number of patches relevant to you ? It seems like some patches
+> could be boken out more. For instance there could be a per-architecture
+> patch dedicated to converting spinlocks to raw spinlocks .. I was
+> looking at preempt-realtime-i386.patch ..
 
-Or at least replace it with a variable at first.
+We know very well and Ingo nowhere said, that this is not a perfect
+queue, but it was and still is _our_ work base and we opened it up for
+the reasons explained.
 
-bye, Roman
+What we definitely not need is platitude advise, how we should manage
+the queue and what could be improved as well as hysteric shuffling in
+the queue right now.
+
+There are enough problems to work on, cleanups to do and the least one
+is to worry about how the queue is organized.
+
+	tglx
+
+
