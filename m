@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbXGLHic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762487AbXGLHjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761395AbXGLHic (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 03:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbXGLHiX
+	id S1762487AbXGLHjQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 03:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbXGLHjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 03:38:23 -0400
-Received: from ptb-relay02.plus.net ([212.159.14.213]:33056 "EHLO
-	ptb-relay02.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754360AbXGLHiW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 03:38:22 -0400
-X-Greylist: delayed 3456 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 03:38:22 EDT
-Subject: Hard drive - dead or dying?
-From: David Sumbler <david@aeolia.co.uk>
-Reply-To: david@aeolia.co.uk
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 07:40:44 +0100
-Message-Id: <1184222444.5969.0.camel@ceres>
+	Thu, 12 Jul 2007 03:39:00 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:35483 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755647AbXGLHjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 03:39:00 -0400
+Date: Thu, 12 Jul 2007 09:37:57 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Alex Maclean <monkeh@monkeh.net>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       tglx@linutronix.de, Tim Gardner <tim.gardner@canonical.com>
+Subject: Re: acpi regression on some laptops
+Message-ID: <20070712093757.24cb70ae@i1501.lan.towertech.it>
+In-Reply-To: <46957CAC.8060308@monkeh.net>
+References: <20070710160056.443ae9ae@i1501.lan.towertech.it>
+	<46952CC5.6050800@redhat.com>
+	<20070712000124.22d0c3a7@i1501.lan.towertech.it>
+	<46955F4D.3090206@monkeh.net>
+	<20070712020944.446f3828@i1501.lan.towertech.it>
+	<46957CAC.8060308@monkeh.net>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My computer (Ubuntu Feisty) would not boot correctly a few days
-ago: it seemed to get into a loop with the following printed about
-every 7 seconds (all laboriously copied in longhand, since it wasn't
-logged!):
+On Thu, 12 Jul 2007 00:58:20 +0000
+Alex Maclean <monkeh@monkeh.net> wrote:
 
-ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
-ata1.01: (BMDMA stat 0x65)
-ata1.01: cmd c8/00:08:80:b4:a8/00:00:00:00:00/f4 tag0 cdb 0x0 data 4096
-in
-         res 51/01:08:80:b4:a8/00:00:00:00:00/f4 Emark 0x1 (device
-error)
-ata1.01: ata_hpa_resize 1: sectors = 78165360, hpa_sectors : 78165360
-ata1.00: ata_hpa_resize 1: sectors = 160086528, hpa_sectors : 160086528
-ata1.00: configured for UDMA/33
-ata1.01: ata_hpa_resize 1: sectors = 78165360, hpa_sectors : 78165360
-ata1.01: configured for PIO3
-ata1.01: EH complete
+> >  hw is a Dell Inspiron 1501, AMD Turion TL52 based.
+> >  drop me a note if you need dmesg or other info.
 
-Periodically there would be other messages.
+> > 
+> >  eax in    eax      ebx      ecx      edx
+> > 00000000 00000001 68747541 444d4163 69746e65
+> > 00000001 00040f82 01020800 00002001 178bfbff
+> > 
+> 
+> What chipset is it? I'm going to guess at nVidia MCP51, in which case.. 
+> That's the third time that's worked on the MCP51.
 
-Most of this means nothing to me, but after several attempts I concluded
-that ata1.00 probably refers to /dev/sda, and ata1.01 to /dev/sdb, and
-that there was a fault with the second.
+ amd sb600/ati rs480.
 
-I disconnected the drive, and the computer booted OK.  I have now
-commented out references to the partitions on /dev/sdb in /etc/fstab.
 
-The drive in question was giving minor problems a couple of years ago,
-and on advice I bought a new one, but kept the old one for backups
-etc.  Until now, it seems to have behaved pretty well.
-
-Can someone tell me this: has the drive now as-good-as died, or is there
-any hope of resurrection?
-
-David
 
 -- 
-David Sumbler <david@aeolia.co.uk>
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
