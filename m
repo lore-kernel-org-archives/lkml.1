@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933273AbXGLMkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933497AbXGLMka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933273AbXGLMkG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 08:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbXGLMjy
+	id S933497AbXGLMka (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 08:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765149AbXGLMkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 08:39:54 -0400
-Received: from pool-70-109-119-137.alb.east.verizon.net ([70.109.119.137]:50894
-	"EHLO gaimboi.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754667AbXGLMjx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 08:39:53 -0400
-Message-ID: <46962173.2050603@tmr.com>
-Date: Thu, 12 Jul 2007 08:41:23 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 12 Jul 2007 08:40:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55031 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764833AbXGLMj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 08:39:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Thu, 12 Jul 2007 14:47:15 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <4695C096.5080400@goop.org> <1184260174.9346.85.camel@caritas-dev.intel.com>
+In-Reply-To: <1184260174.9346.85.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v19
-References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu>
-In-Reply-To: <20070711205556.GA27266@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707121447.16616.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Bill Davidsen <davidsen@tmr.com> wrote:
->
->   
->>> I've taken mainline git tree (freshly integrated CFS!) out for a 
->>> multimedia spin.  I tested watching movies and listenign to music in 
->>> the presence of various sleep/burn loads, pure burn loads, and mixed 
->>> loads. All was peachy here.. I saw no frame drops or sound skips or 
->>> other artifacts under any load where the processor could possibly 
->>> meet demand.
->>>       
->> I would agree with preliminary testing, save that if you get a lot of 
->> processes updating the screen at once, there seems to be a notable 
->> case of processes getting no CPU for 100-300ms, followed by a lot of 
->> CPU.
->>
->> I see this clearly with the "glitch1" test with four scrolling xterms 
->> and glxgears, but also watching videos with little busy processes on 
->> the screen. The only version where I never see this in test or with 
->> real use is cfs-v13.
->>     
->
-> just as a test, does this go away if you:
->
-> 	renice -20 pidof `Xorg`
->
-> i.e. is this connected to the way X is scheduled?
->
->   
-Partial answer: -10 didn't help with v16, I'll try more boost ASAP, but 
-power has been spotty in upstate NY, 20k+ customers with none and the 
-rest of us subject to "load shedding" with zero warning, and the test 
-machines have UPS but no generator, so I hesitate to use them while 
-power is unstable.
-> Another thing to check would be whether it goes away if you set the 
-> granularity to some really finegrained value:
->
->     echo 0 > /proc/sys/kernel/sched_wakeup_granularity_ns
->     echo 500000 > /proc/sys/kernel/sched_granularity_ns
->
-> this really pushes things - but it tests the theory whether this is 
-> related to granularity.
->   
+On Thursday, 12 July 2007 19:09, Huang, Ying wrote:
+> On Wed, 2007-07-11 at 22:48 -0700, Jeremy Fitzhardinge wrote:
+> > >> The kexec jump is implemented in the framework of software suspend. In
+> > >> fact, the kexec based hibernation can be seen as just implementing the
+> > >> image writing and reading method of software suspend with a kexeced
+> > >> Linux kernel.
+> > >>     
+> > 
+> > I guess I'm (still) confused by the terminology here.  Do you mean that 
+> > it fits into suspend-to-disk as a disk-writing mechanism, or in 
+> > suspend-to-ram as a way of going to sleep?
+> 
+> It fits into suspend-to-disk as a disk-writing mechanism. But most
+> tricks of suspend-to-disk will be no longer necessary in kexec based
+> hibernation.
+> 
+> > > I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI must
+> > > be disabled in the to-be-hibernated kernel, or in the little transient
+> > > kexec kernel?
+> > >   
+> > 
+> > I think the point is that if kernel A says "I'm suspending" and calls 
+> > the suspend method on all its devices, then kernel B finds that it has 
+> > no powered on devices to work with.  But then couldn't it turn on the 
+> > ones it wants anyway?  And don't you want to suspend them, to make sure 
+> > they're not still DMAing memory while B is trying to shuffle everything 
+> > off to disk?
+> 
+> The devices should be put quiescent state to stop DMA like things. But
+> they do not need to be put in low power state.
 
-Will do, you suggested dropping sched_granularity_ns to 1000000 earlier, 
-and that didn't do it, but I didn't change the wakeup, and will test 
-these values later today.
+Exactly.  Morover, I don't think it would be correct to put them into low power
+states.
+
+Greetings,
+Rafael
+
 
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+"Premature optimization is the root of all evil." - Donald Knuth
