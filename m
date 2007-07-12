@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933459AbXGLNIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933164AbXGLNJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933459AbXGLNIb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 09:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762823AbXGLNIY
+	id S933164AbXGLNJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 09:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763863AbXGLNJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 09:08:24 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51681 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759011AbXGLNIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 09:08:23 -0400
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] Immunize rcu_dereference() against crazy compiler writers
-References: <20070712010058.GA30869@linux.vnet.ibm.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 12 Jul 2007 16:03:19 +0200
-In-Reply-To: <20070712010058.GA30869@linux.vnet.ibm.com>
-Message-ID: <p73hco9yb14.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
+	Thu, 12 Jul 2007 09:09:06 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:50912 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759011AbXGLNJE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 09:09:04 -0400
+Date: Thu, 12 Jul 2007 18:39:10 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: David Patrick Quigley <dpquigl@tycho.nsa.gov>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       eparis@redhat.com, jmorris@namei.org, sds@tycho.nsa.gov
+Subject: Re: [PATCH 2/7] fallocate() implementation in i386, x86_64 and powerpc
+Message-ID: <20070712130910.GB21606@amitarora.in.ibm.com>
+References: <20070710201200.GA10255@amitarora.in.ibm.com> <20070710202000.GB8797@amitarora.in.ibm.com> <1184244990.18175.6.camel@moss-terrapins.epoch.ncsc.mil>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184244990.18175.6.camel@moss-terrapins.epoch.ncsc.mil>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+On Thu, Jul 12, 2007 at 08:56:30AM -0400, David Patrick Quigley wrote:
+> From: David P. Quigley <dpquigl@tycho.nsa.gov>
+> 
+> Revalidate the write permissions for fallocate(2), in case security policy has
+> changed since the files were opened.
 
-> Turns out that compiler writers are a bit more aggressive about optimizing
-> than one might expect.  This patch prevents a number of such optimizations
-> from messing up rcu_deference().  This is not merely a theoretical
-> problem, as evidenced by the rmb() in mce_log().
+Thanks for your patch! Will include it in the patchset.
 
-Don't think that's an improvement. rmb() at least is known to work
-reliable to prevent such reordering. Memory barriers are well
-documented in the gcc documentation. Who knows about volatile?  The
-volatile semantics have been traditionally unclear and shakey.
-The C standard doesn't make much guarantees and i don't think 
-gcc does either.
-
-If anything you might want to embedd rmb(); in a statement expression
-in rcu_deference instead.
-
--Andi
+--
+Regards,
+Amit Arora
+> 
+> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
+> 
+> fs/open.c |    3 +++
+> 1 file changed, 3 insertions(+)
+> 
+> diff -uprN -X linux-2.6.22/Documentation/dontdiff linux-2.6.22-fallocate/fs/open.c linux-2.6.22-fallocate-selinux/fs/open.c
+> --- linux-2.6.22-fallocate/fs/open.c	2007-07-11 15:51:10.000000000 -0400
+> +++ linux-2.6.22-fallocate-selinux/fs/open.c	2007-07-11 16:10:43.000000000 -0400
+> @@ -411,6 +411,9 @@ asmlinkage long sys_fallocate(int fd, in
+>  		goto out;
+>  	if (!(file->f_mode & FMODE_WRITE))
+>  		goto out_fput;
+> +	ret = security_file_permission(file, MAY_WRITE);
+> +	if (ret)
+> +		goto out_fput;
+> 
+>  	inode = file->f_path.dentry->d_inode;
