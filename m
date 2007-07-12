@@ -1,155 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762107AbXGLH0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762307AbXGLH1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762107AbXGLH0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 03:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbXGLH0N
+	id S1762307AbXGLH1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 03:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbXGLH12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 03:26:13 -0400
-Received: from [222.92.8.141] ([222.92.8.141]:49257 "HELO lemote.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1753257AbXGLH0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 03:26:11 -0400
-Message-ID: <4695D78F.8010806@lemote.com>
-Date: Thu, 12 Jul 2007 15:26:07 +0800
-From: Songmao Tian <tiansm@lemote.com>
-User-Agent: Icedove 1.5.0.8 (X11/20061116)
-MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: about cs5536 interrupt ack
-References: <4694A495.1050006@lemote.com> <Pine.LNX.4.64N.0707111347360.26459@blysk.ds.pg.gda.pl> <4694F4EB.8040000@lemote.com> <Pine.LNX.4.64N.0707111634430.26459@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0707111634430.26459@blysk.ds.pg.gda.pl>
-Content-Type: multipart/mixed;
- boundary="------------000806090703090504080000"
+	Thu, 12 Jul 2007 03:27:28 -0400
+Received: from hermes.xcon.it ([62.48.35.101]:37259 "EHLO hermes.xcon.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753257AbXGLH10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 03:27:26 -0400
+Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to 2.6.22
+	available
+From: Alessio Igor Bogani <abogani@texware.it>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, jim.houston@ccur.com,
+       joe.korty@ccur.com, dwalker@mvista.com, David Bahi <DBahi@novell.com>,
+       Moiz Kohari <MKohari@novell.com>, Sven Dietrich <SDietrich@novell.com>,
+       dsaxena@plexity.net, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <469544710200005A000275CC@mcclure.wal.novell.com>
+References: <469544710200005A000275CC@mcclure.wal.novell.com>
+Content-Type: multipart/mixed; boundary="=-iaal7ahNOjjeRTOnWzAI"
+Date: Thu, 12 Jul 2007 09:27:19 +0200
+Message-Id: <1184225239.5142.20.camel@godzilla.tecnorama.it>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000806090703090504080000
-Content-Type: text/plain; charset=UTF-8; format=flowed
+
+--=-iaal7ahNOjjeRTOnWzAI
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-8259 problem  seems to be done with the attached patch, IDE hung seems 
-to be the dma setting problem.
+Hi All,
 
-Thanks all for your advise, comments. I have learned a lot. now I 
-continue to trace down the IDE problem.
+Sorry for my poor english.
 
-Mao
+On Wed, 2007-07-11 at 20:58 -0400, Gregory Haskins wrote:
+[...]
+> 	I just wanted to let you guys know that our team has a port of the
+> 21.5-rt20 patch for the 2.6.22 kernel available.
 
-Maciej W. Rozycki wrote:
-> On Wed, 11 Jul 2007, Songmao Tian wrote:
->
->   
->>> Huh?  Have you managed to find an 8259A clone *that* broken?  So what does
->>> it return if you write 0xc to the address 0x20 in the I/O port space and
->>> then read back from that location?  You should complain to the 
->>>   
->>>       
->> It's the value of IRR, so guess IRR. AMD has well documented cs5536, I
->> appreciate that.
->>     
->
->  Indeed.  I am surprised they have decided to drop the poll command -- it 
-> surely does not require much logic as it mostly reuses what's used to 
-> produce the vector anyway and it is commonly used when 8259A 
-> implementations are interfaced to non-i386 processors.  PPC is another 
-> example.
->
->   
->>> More or less -- 3-5 should probably be the outcome of a single read
->>> transaction from the north bridge.  I.e. you issue a read to a "magic"
->>> location, 3-5 happen, and the data value returned is the vector presented by
->>> the interrupt controller on the PCI bus.
->>>   
->>>       
->> yeah, we can implement a register in north bridge.
->>     
->
->  Strictly speaking it would not be a register, but a "PCI INTA address 
-> space" much like PCI memory or I/O port address spaces.  Though as the 
-> former ignores addresses driven on the bus, the space occupied does not 
-> have to be extensive -- I would assume whatever slot size is available 
-> with the address decoder you have implemented would do.
->
->   
->>> You can still dispatch interrupts manually by examining the IRR register,
->>> but having a way to ask the 8259A's prioritiser would be nice.  Although
->>> given such a lethal erratum you report I would not count on the prioritiser
->>> to provide any useful flexibility...
->>>   
->>>       
->> yeah, that's a straight thought, tried but failed:(, patch followed.
->>     
->
->  You may have to modify other functions from arch/mips/kernel/i8259.c; 
-> yes, this makes the whole experience not as pretty as one would hope...
->
->   Maciej
->
->
->
->   
+Great! Thanks a lot for effort!
 
+I'm doing the same thing and i don't have doubt your work is better than
+mine. In any case i have a couple of suggestions for your patch (one is
+a simple duplication definition and the other for build kernel with
+CONFIG_SMP on i386).
 
---------------000806090703090504080000
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="diff"
+Please keep me updated!
 
-ZGlmZiAtLWdpdCBhL2FyY2gvbWlwcy9rZXJuZWwvaTgyNTkuYyBiL2FyY2gvbWlwcy9rZXJu
-ZWwvaTgyNTkuYwppbmRleCA5Yzc5NzAzLi5mZDdmNGJhIDEwMDY0NAotLS0gYS9hcmNoL21p
-cHMva2VybmVsL2k4MjU5LmMKKysrIGIvYXJjaC9taXBzL2tlcm5lbC9pODI1OS5jCkBAIC00
-NywxMSArNDcsNyBAQCBzdGF0aWMgc3RydWN0IGlycV9jaGlwIGk4MjU5QV9jaGlwID0gewog
-LyoKICAqIFRoaXMgY29udGFpbnMgdGhlIGlycSBtYXNrIGZvciBib3RoIDgyNTlBIGlycSBj
-b250cm9sbGVycywKICAqLwotc3RhdGljIHVuc2lnbmVkIGludCBjYWNoZWRfaXJxX21hc2sg
-PSAweGZmZmY7Ci0KLSNkZWZpbmUgY2FjaGVkX21hc3Rlcl9tYXNrCShjYWNoZWRfaXJxX21h
-c2spCi0jZGVmaW5lIGNhY2hlZF9zbGF2ZV9tYXNrCShjYWNoZWRfaXJxX21hc2sgPj4gOCkK
-LQordW5zaWduZWQgaW50IGNhY2hlZF9pcnFfbWFzayA9IDB4ZmZmZjsKIHZvaWQgZGlzYWJs
-ZV84MjU5QV9pcnEodW5zaWduZWQgaW50IGlycSkKIHsKIAl1bnNpZ25lZCBpbnQgbWFzazsK
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvYXNtLW1pcHMvaTgyNTkuaCBiL2luY2x1ZGUvYXNtLW1p
-cHMvaTgyNTkuaAppbmRleCBlODhhMDE2Li5lN2RjZjdiIDEwMDY0NAotLS0gYS9pbmNsdWRl
-L2FzbS1taXBzL2k4MjU5LmgKKysrIGIvaW5jbHVkZS9hc20tbWlwcy9pODI1OS5oCkBAIC0z
-NywxMSArMzcsNTUgQEAKIAogZXh0ZXJuIHNwaW5sb2NrX3QgaTgyNTlBX2xvY2s7CiAKK2V4
-dGVybiB1bnNpZ25lZCBpbnQgY2FjaGVkX2lycV9tYXNrOworI2RlZmluZSBjYWNoZWRfbWFz
-dGVyX21hc2sJKGNhY2hlZF9pcnFfbWFzaykKKyNkZWZpbmUgY2FjaGVkX3NsYXZlX21hc2sJ
-KGNhY2hlZF9pcnFfbWFzayA+PiA4KQorCiBleHRlcm4gdm9pZCBpbml0XzgyNTlBKGludCBh
-dXRvX2VvaSk7CiBleHRlcm4gdm9pZCBlbmFibGVfODI1OUFfaXJxKHVuc2lnbmVkIGludCBp
-cnEpOwogZXh0ZXJuIHZvaWQgZGlzYWJsZV84MjU5QV9pcnEodW5zaWduZWQgaW50IGlycSk7
-CiAKIGV4dGVybiB2b2lkIGluaXRfaTgyNTlfaXJxcyh2b2lkKTsKKyNkZWZpbmUgQ09ORklH
-X05PX0lOVEVSUlVQVF9BQ0sKKyNpZmRlZiBDT05GSUdfTk9fSU5URVJSVVBUX0FDSworc3Rh
-dGljIGlubGluZSBpbnQgX2J5dGVfZmZzKHU4IHdvcmQpCit7CisJaW50IG51bSA9IDA7CisJ
-aWYgKCh3b3JkICYgMHhmKSA9PSAwKSB7CisJCW51bSArPSA0OworCQl3b3JkID4+PSA0Owor
-CX0KKwlpZiAoKHdvcmQgJiAweDMpID09IDApIHsKKwkJbnVtICs9IDI7CisJCXdvcmQgPj49
-IDI7CisJfQorCWlmICgod29yZCAmIDB4MSkgPT0gMCkKKwkJbnVtICs9IDE7CisJcmV0dXJu
-IG51bTsKK30KKworc3RhdGljIGlubGluZSBpbnQgcmVhZF9pcnEoaW50IHBvcnQpCit7CisJ
-aW50IGlycTsKKwlvdXRiKDB4MEEsIHBvcnQpOworCWlmIChwb3J0ID09IFBJQ19NQVNURVJf
-Q01EKSB7CisJCWlycSA9IGluYihwb3J0KSAmIH5jYWNoZWRfbWFzdGVyX21hc2s7CisJfSBl
-bHNlIHsKKwkJaXJxID0gaW5iKHBvcnQpICYgfmNhY2hlZF9zbGF2ZV9tYXNrOworCX0KKwlp
-ZiAoaXJxID09IDApCisJCXJldHVybiAtMTsKKwllbHNlCisJCXJldHVybiBfYnl0ZV9mZnMo
-aXJxKTsKK30KKyNlbHNlCitzdGF0aWMgaW5saW5lIGludCByZWFkX2lycShpbnQgcG9ydCkK
-K3sKKwkvKiBQZXJmb3JtIGFuIGludGVycnVwdCBhY2tub3dsZWRnZSBjeWNsZSBvbiBjb250
-cm9sbGVyIDEuICovCisJb3V0YigweDBDLCBwb3J0KTsJCS8qIHByZXBhcmUgZm9yIHBvbGwg
-Ki8KKwlyZXR1cm4gaW5iKHBvcnQpICYgNzsKK30KKyNlbmRpZgogCiAvKgogICogRG8gdGhl
-IHRyYWRpdGlvbmFsIGk4MjU5IGludGVycnVwdCBwb2xsaW5nIHRoaW5nLiAgVGhpcyBpcyBm
-b3IgdGhlIGZldwpAQCAtNTQsMTggKzk4LDE2IEBAIHN0YXRpYyBpbmxpbmUgaW50IGk4MjU5
-X2lycSh2b2lkKQogCiAJc3Bpbl9sb2NrKCZpODI1OUFfbG9jayk7CiAKLQkvKiBQZXJmb3Jt
-IGFuIGludGVycnVwdCBhY2tub3dsZWRnZSBjeWNsZSBvbiBjb250cm9sbGVyIDEuICovCi0J
-b3V0YigweDBDLCBQSUNfTUFTVEVSX0NNRCk7CQkvKiBwcmVwYXJlIGZvciBwb2xsICovCi0J
-aXJxID0gaW5iKFBJQ19NQVNURVJfQ01EKSAmIDc7CisJaXJxID0gcmVhZF9pcnEoUElDX01B
-U1RFUl9DTUQpOwogCWlmIChpcnEgPT0gUElDX0NBU0NBREVfSVIpIHsKIAkJLyoKIAkJICog
-SW50ZXJydXB0IGlzIGNhc2NhZGVkIHNvIHBlcmZvcm0gaW50ZXJydXB0CiAJCSAqIGFja25v
-d2xlZGdlIG9uIGNvbnRyb2xsZXIgMi4KIAkJICovCi0JCW91dGIoMHgwQywgUElDX1NMQVZF
-X0NNRCk7CQkvKiBwcmVwYXJlIGZvciBwb2xsICovCi0JCWlycSA9IChpbmIoUElDX1NMQVZF
-X0NNRCkgJiA3KSArIDg7Ci0JfQorCQlpcnEgPSByZWFkX2lycShQSUNfU0xBVkVfQ01EKSAr
-IDg7CisJfSAKIAorI2lmbmRlZiBDT05GSUdfTk9fSU5URVJSVVBUX0FDSwogCWlmICh1bmxp
-a2VseShpcnEgPT0gNykpIHsKIAkJLyoKIAkJICogVGhpcyBtYXkgYmUgYSBzcHVyaW91cyBp
-bnRlcnJ1cHQuCkBAIC03OCw2ICsxMjAsMTEgQEAgc3RhdGljIGlubGluZSBpbnQgaTgyNTlf
-aXJxKHZvaWQpCiAJCWlmKH5pbmIoUElDX01BU1RFUl9JU1IpICYgMHg4MCkKIAkJCWlycSA9
-IC0xOwogCX0KKyNlbHNlCisJaWYgKGNhY2hlZF9pcnFfbWFzayAmICgxIDw8IGlycSkpIHsK
-KwkJaXJxID0gLTE7CisJfQorI2VuZGlmCiAKIAlzcGluX3VubG9jaygmaTgyNTlBX2xvY2sp
-OwogCg==
---------------000806090703090504080000--
+Hope these helps.
+
+Ciao,
+Alessio
+
+--=-iaal7ahNOjjeRTOnWzAI
+Content-Disposition: attachment; filename=duplicated-div64_64.c
+Content-Type: text/x-patch; name=duplicated-div64_64.c; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+diff -ruNp linux-2.6.22-rt1.orig/lib/div64.c linux-2.6.22-rt1.test/lib/div64.c
+--- linux-2.6.22-rt1.orig/lib/div64.c	2007-07-12 08:57:33.000000000 +0200
++++ linux-2.6.22-rt1.test/lib/div64.c	2007-07-12 08:49:47.000000000 +0200
+@@ -78,26 +78,4 @@ uint64_t div64_64(uint64_t dividend, uin
+ }
+ EXPORT_SYMBOL(div64_64);
+ 
+-/* 64bit divisor, dividend and result. dynamic precision */
+-uint64_t div64_64(uint64_t dividend, uint64_t divisor)
+-{
+-	uint32_t d = divisor;
+-
+-	if (divisor > 0xffffffffULL) {
+-		unsigned int shift = fls(divisor >> 32);
+-
+-		d = divisor >> shift;
+-		dividend >>= shift;
+-	}
+-
+-	/* avoid 64 bit division if possible */
+-	if (dividend >> 32)
+-		do_div(dividend, d);
+-	else
+-		dividend = (uint32_t) dividend / d;
+-
+-	return dividend;
+-}
+-EXPORT_SYMBOL(div64_64);
+-
+ #endif /* BITS_PER_LONG == 32 */
+
+--=-iaal7ahNOjjeRTOnWzAI
+Content-Disposition: attachment; filename=patch-percpu-smp.diff
+Content-Type: text/x-patch; name=patch-percpu-smp.diff; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+diff -ruNp linux-2.6.22-rt1.orig/include/asm-generic/percpu.h linux-2.6.22-rt1.test/include/asm-generic/percpu.h
+--- linux-2.6.22-rt1.orig/include/asm-generic/percpu.h	2007-07-12 09:13:08.000000000 +0200
++++ linux-2.6.22-rt1.test/include/asm-generic/percpu.h	2007-07-12 09:04:53.000000000 +0200
+@@ -14,10 +14,6 @@ extern unsigned long __per_cpu_offset[NR
+ #define DEFINE_PER_CPU(type, name) \
+     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
+ 
+-#define DEFINE_PER_CPU_LOCKED(type, name) \
+-    __attribute__((__section__(".data.percpu"))) __DEFINE_SPINLOCK(per_cpu_lock__##name##_locked); \
+-    __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name##_locked
+-
+ /* var is in discarded region: offset to particular copy we want */
+ #define per_cpu(var, cpu) (*({				\
+ 	extern int simple_identifier_##var(void);	\
+@@ -25,15 +21,6 @@ extern unsigned long __per_cpu_offset[NR
+ #define __get_cpu_var(var) per_cpu(var, smp_processor_id())
+ #define __raw_get_cpu_var(var) per_cpu(var, raw_smp_processor_id())
+ 
+-#define per_cpu_lock(var, cpu) \
+-	(*RELOC_HIDE(&per_cpu_lock__##var##_locked, __per_cpu_offset[cpu]))
+-#define per_cpu_var_locked(var, cpu) \
+-		(*RELOC_HIDE(&per_cpu__##var##_locked, __per_cpu_offset[cpu]))
+-#define __get_cpu_lock(var, cpu) \
+-		per_cpu_lock(var, cpu)
+-#define __get_cpu_var_locked(var, cpu) \
+-		per_cpu_var_locked(var, cpu)
+-
+ /* A macro to avoid #include hell... */
+ #define percpu_modcopy(pcpudst, src, size)			\
+ do {								\
+@@ -60,13 +47,8 @@ do {								\
+ #endif	/* SMP */
+ 
+ #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
+-#define DECLARE_PER_CPU_LOCKED(type, name) \
+-    extern spinlock_t per_cpu_lock__##name##_locked; \
+-    extern __typeof__(type) per_cpu__##name##_locked
+ 
+ #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+ #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
+-#define EXPORT_PER_CPU_LOCKED_SYMBOL(var) EXPORT_SYMBOL(per_cpu_lock__##var##_locked); EXPORT_SYMBOL(per_cpu__##var##_locked)
+-#define EXPORT_PER_CPU_LOCKED_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu_lock__##var##_locked); EXPORT_SYMBOL_GPL(per_cpu__##var##_locked)
+ 
+ #endif /* _ASM_GENERIC_PERCPU_H_ */
+diff -ruNp linux-2.6.22-rt1.orig/include/asm-i386/percpu.h linux-2.6.22-rt1.test/include/asm-i386/percpu.h
+--- linux-2.6.22-rt1.orig/include/asm-i386/percpu.h	2007-07-12 09:13:32.000000000 +0200
++++ linux-2.6.22-rt1.test/include/asm-i386/percpu.h	2007-07-12 09:05:12.000000000 +0200
+@@ -54,6 +54,10 @@ extern unsigned long __per_cpu_offset[];
+ #define DEFINE_PER_CPU(type, name) \
+     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
+ 
++#define DEFINE_PER_CPU_LOCKED(type, name) \
++    __attribute__((__section__(".data.percpu"))) __DEFINE_SPINLOCK(per_cpu_lock__##name##_locked); \
++    __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name##_locked
++
+ /* We can use this directly for local CPU (faster). */
+ DECLARE_PER_CPU(unsigned long, this_cpu_off);
+ 
+@@ -69,6 +73,15 @@ DECLARE_PER_CPU(unsigned long, this_cpu_
+ 
+ #define __get_cpu_var(var) __raw_get_cpu_var(var)
+ 
++#define per_cpu_lock(var, cpu) \
++	(*RELOC_HIDE(&per_cpu_lock__##var##_locked, __per_cpu_offset[cpu]))
++#define per_cpu_var_locked(var, cpu) \
++		(*RELOC_HIDE(&per_cpu__##var##_locked, __per_cpu_offset[cpu]))
++#define __get_cpu_lock(var, cpu) \
++		per_cpu_lock(var, cpu)
++#define __get_cpu_var_locked(var, cpu) \
++		per_cpu_var_locked(var, cpu)
++
+ /* A macro to avoid #include hell... */
+ #define percpu_modcopy(pcpudst, src, size)			\
+ do {								\
+@@ -144,6 +157,14 @@ extern void __bad_percpu_size(void);
+ #define x86_add_percpu(var,val) percpu_to_op("add", per_cpu__##var, val)
+ #define x86_sub_percpu(var,val) percpu_to_op("sub", per_cpu__##var, val)
+ #define x86_or_percpu(var,val) percpu_to_op("or", per_cpu__##var, val)
++
++#define DECLARE_PER_CPU_LOCKED(type, name) \
++    extern spinlock_t per_cpu_lock__##name##_locked; \
++    extern __typeof__(type) per_cpu__##name##_locked
++
++#define EXPORT_PER_CPU_LOCKED_SYMBOL(var) EXPORT_SYMBOL(per_cpu_lock__##var##_locked); EXPORT_SYMBOL(per_cpu__##var##_locked)
++#define EXPORT_PER_CPU_LOCKED_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu_lock__##var##_locked); EXPORT_SYMBOL_GPL(per_cpu__##var##_locked)
++
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif /* __ARCH_I386_PERCPU__ */
+
+--=-iaal7ahNOjjeRTOnWzAI--
+
