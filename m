@@ -1,110 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXGLMy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbXGLM5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933299AbXGLMy7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 08:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760860AbXGLMyw
+	id S933020AbXGLM5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 08:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758637AbXGLM5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 08:54:52 -0400
-Received: from smtp2.utsp.utwente.nl ([130.89.2.9]:45450 "EHLO smtp.utwente.nl"
+	Thu, 12 Jul 2007 08:57:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55150 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758456AbXGLMyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 08:54:52 -0400
-X-Greylist: delayed 1395 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 08:54:51 EDT
-Date: Thu, 12 Jul 2007 14:31:31 +0200 (CEST)
-From: Martijn Uffing <mp3project@sarijopen.student.utwente.nl>
-To: linux-kernel@vger.kernel.org
-Subject: RFH: Converting a driver from semaphore to mutex in 2.6.21
-Message-ID: <Pine.LNX.4.62.0707121414540.17278@sarijopen.student.utwente.nl>
+	id S1757740AbXGLM5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 08:57:03 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: david@lang.hm
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to =?iso-8859-1?q?kexec=09base=09hibernation?=
+Date: Thu, 12 Jul 2007 15:01:02 +0200
+User-Agent: KMail/1.9.5
+Cc: "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <1184260683.9346.91.camel@caritas-dev.intel.com> <Pine.LNX.4.64.0707120247230.25614@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707120247230.25614@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-UTwente-MailScanner-Information: Scanned by MailScanner. Contact helpdesk@ITBE.utwente.nl for more information.
-X-UTwente-MailScanner: Found to be clean
-X-UTwente-MailScanner-From: mp3project@sarijopen.student.utwente.nl
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707121501.03016.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ave lkml folks.
+On Thursday, 12 July 2007 12:10, david@lang.hm wrote:
+> On Thu, 12 Jul 2007, Huang, Ying wrote:
+> 
+> > On Thu, 2007-07-12 at 00:03 -0700, david@lang.hm wrote:
+> >>>
+> >>> The kexec jump is the first step, maybe the simplest step. There are
+> >>> many other issues to be resolved, at least the following ones.
+> >>>
+> >>> 1. Separate device suspend from device hibernate.
+> >>
+> >
+> > Maybe my usage of terminology has some problem. But, the "device
+> > hibernate" here means put device into quiescent state and save the
+> > device state, but do not put device into low power state.
+> 
+> is there really enough savings (in time or otherwise) to make it worth 
+> splitting this into two steps? for suspend-to-ram we definantly will need 
+> to option to go all the way to a low power state, there's significant 
+> extra complexity if you also have a state between normal operation and 
+> this low power state.
+> 
+> it may be worth doing if the low-power state is expensive (in time or 
+> effort) to get to or from and the lesser state allows the computer overall 
+> to save power (like the different cpu C states)
+> 
+> but I suspect that the number of drivers where this is worth doing is 
+> relativly small, and it may be a better approach to start off with just 
+> putting everything into the low-power state until some drive shows up that 
+> makes it worth adding the intermediate state to the system (and drivers 
+> wouldn't have to change, if they only support one suspend state it's the 
+> low-power one, if they support more then higher layers choose which ones 
+> to move to)
 
-I'm trying to convert the out of tree bt869 driver in 2.6.21 from using a 
-semaphore to using a mutex. I followed the guidelines at 
-http://lwn.net/Articles/164802/ and used 
-http://lkml.org/lkml/2006/1/13/127 aa an example.
-The original driver source can be found at 
-http://sarijopen/~caligula/kernel/patches/bt869-2.6.21.patch
+We've discussed that a lot on linux-pm and the conclusion is that devices
+should not be put into low power states before creating the hibernation
+image, because that leads to problems during the restore.
 
----------------
+In turn, during the restore, when the image has been loaded and the "old"
+kernel gets the control, it should reprobe devices and initialize them from
+scratch rather than doing something like "resume devices after suspend
+to RAM".
 
-At first I only changed "struct semaphore update_lock" into "struct 
-mutex_debug update_lock;"
+> >>> 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
+> >>> be hibernate/resume by the normal kernel too. This way, a real
+> >>> kexec/boot-up is only needed for the first time.
+> >>
+> >> the hibernate kernel shouldn't need a lot of the features of the standard
+> >> kerneel (does it really need sound for example), and if tailored even
+> >> tighter could be configured to only have the drivers actually used for the
+> >> save and restore, makeing a _very_ minimal kernel (no USB, no network,
+> >> only simple video drivers, etc) greatly speeding up the boot
+> >
+> > There is no need for two kernel. Most drivers and optional features are
+> > compiled as modules, as that of most desktop distributions. So just
+> > "insmod" needed modules only in hibernate kernel is sufficient.
+> 
+> actually, I think that while you may be able to get away with only one 
+> kernel, you are probably better off with two. on the hibernate kernel you 
+> can choose many 'embedded' options that don't make sense for the normal 
+> kernel (no high mem, no SMP support, no SELinux, no network routing, not 
+> netfilter, use SLOB not SLAB/SLUB, etc). also keep in mind that each 
+> module that you load wastes apartial page of memory.
+> 
+> remember people run complete linux systems in 8M of ram, a syspend system 
+> for a simple 'write the ram image to partition X on this IDE drive' should 
+> be aiming at 2-4M of memory.
+> 
+> more complex setups may want more space, but let the distros bloat things 
+> up, design and demo an optimized system :-)
 
-However gcc gave me a
-drivers/i2c/chips/bt869.c:63: error: field `update_lock' has incomplete type
-make[1]: *** [drivers/i2c/chips/bt869.o] Error 1
-make: *** [drivers/i2c/chips/bt869.ko] Error 2
+So if a user wants to install a kernel.org kernel on his system, (s)he'll have
+to compile and install two kernels with different options.
 
-----------------
-Then I did a full conversion:
+That doesn't sound good to me. :-)
 
---- drivers/i2c/chips/bt869.c--orig	2007-07-12 07:14:18.000000000 +0200
-+++ drivers/i2c/chips/bt869.c	2007-07-12 10:54:04.000000000 +0200
-@@ -31,6 +31,7 @@
-  #include <linux/init.h>
-  #include <linux/slab.h>
-  #include <linux/i2c.h>
-+#include <linux/mutex.h>
-
-  /* Addresses to scan */
-  /* found only at 0x44 or 0x45 */
-@@ -59,7 +60,7 @@ struct bt869_data {
-  	struct i2c_client client;
-  	int sysctl_id;
-
--	struct semaphore update_lock;
-+	struct mutex_debug update_lock;
-  	char valid;		/* !=0 if following fields are valid */
-  	unsigned long last_updated;	/* In jiffies */
-
-@@ -547,7 +548,7 @@ int bt869_detect(struct i2c_adapter *ada
-
-  	//new_client->id = bt869_id++;
-  	data->valid = 0;
--	init_MUTEX(&data->update_lock);
-+	mutex_init(&data->update_lock);
-
-  	/* Tell the I2C layer a new client has arrived */
-  	if ((err = i2c_attach_client(new_client)))
-@@ -650,7 +651,7 @@ static struct bt869_data *bt869_update_c
-  	struct i2c_client *client = to_i2c_client(dev);
-  	struct bt869_data *data = i2c_get_clientdata(client);
-
--	down(&data->update_lock);
-+	mutex_lock(&data->update_lock);
-
-  	if ((jiffies - data->last_updated > HZ + HZ / 2) ||
-  	    (jiffies < data->last_updated) || !data->valid) {
-@@ -732,7 +733,7 @@ static struct bt869_data *bt869_update_c
-  		data->last_updated = jiffies;
-  		data->valid = 1;
-  	}
--	up(&data->update_lock);
-+	mutex_unlock(&data->update_lock);
-
-  	return data;
-  }
-
-
-Still gcc gives me a :
-drivers/i2c/chips/bt869.c:63: error: field `update_lock' has incomplete 
-type
-make[1]: *** [drivers/i2c/chips/bt869.o] Error 1
-make: *** [drivers/i2c/chips/bt869.ko] Error 2
-
-
-I must miss something really really obvious, but I really can't find it.
-Can someone guide me to the Right Way (TM) to convert this semaphore?
-Thanks
-
-Martijn Uffing
+Greetings,
+Rafael
 
 
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
