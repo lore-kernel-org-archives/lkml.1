@@ -1,132 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbXGLR4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbXGLR45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbXGLR4l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXGLR4b
+	id S1760287AbXGLR45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXGLR4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:56:31 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45579 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754778AbXGLR4a (ORCPT
+	Thu, 12 Jul 2007 13:56:48 -0400
+Received: from eastrmmtao101.cox.net ([68.230.240.7]:55564 "EHLO
+	eastrmmtao101.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760282AbXGLR4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:56:30 -0400
-Date: Thu, 12 Jul 2007 10:59:53 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] try parent numa_node at first before using default
-In-reply-to: <20070712172310.4d662e1f@gondolin.boeblingen.de.ibm.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       rientjes@google.com, Christoph Lameter <clameter@sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200707121059.54320.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200707101641.17672.yinghai.lu@sun.com>
- <469610D4.70009@s5r6.in-berlin.de>
- <20070712172310.4d662e1f@gondolin.boeblingen.de.ibm.com>
-User-Agent: KMail/1.8.2
+	Thu, 12 Jul 2007 13:56:46 -0400
+X-Greylist: delayed 1737 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 13:56:46 EDT
+Message-ID: <15366.199.125.14.2.1184261266.squirrel@localmail-dr.mcsimons.com>
+Date: Thu, 12 Jul 2007 12:27:46 -0500 (CDT)
+Subject: reiserfs fs/reiserfs/bitmap.c:1287
+From: "Anthony Simons" <tony@tvortex.net>
+To: linux-kernel@vger.kernel.org
+Reply-To: tony@tvortex.net
+User-Agent: SquirrelMail/1.4.9a
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] try parent numa_node at first before using default
+Was decompressing a newly compiled kernel to my usb drive and received the
+below error almost immediatly after I began.
 
-For pci_device, pcibios_scan_root and pci_scan_root will call pci_device_add.
-pci_device_add will call device_initialize and set_dev_node(&dev->dev,
-pcibus_to_node(bus)).
-other device such as netdev, and usb_device, set_dev_node is never be
-used. So that field numa_node always is -1.
+[tonys@squishy ~]$ uname -a
+Linux squishy 2.6.21-1.3228.fc7 #1 SMP Tue Jun 12 15:37:31 EDT 2007 i686
+i686 i386 GNU/Linux
 
-So for netdev, it will need to use dev->parent to get pci_device to
-use it's numa_node. esp in netdev_alloc_skb()
-not sure how other device such as infiniband do that.
+After I recive the error, a simple ls just won't work.
 
-Actually before patch
-[PATCH 1/2] x86_64: get mp_bus_to_node as early
-there is a bug about squence of bus->sysdata and using pcibus_to_node.
-the numa_node of pci_dev->dev is never set correctly...always 0.
 
-So some device have to use pcibus_to_node(to_pci_dev(dev)->bus) directly
-such as dma_alloc_pages in arch/x86_64/kernel/pci-dma.c.
-or hwif_to_node in include/linux/ide.h
+------------[ cut here ]------------
+kernel BUG at fs/reiserfs/bitmap.c:1287!
+invalid opcode: 0000 [#1]
+SMP
+last sysfs file: /block/sdb/size
+Modules linked in: ext2 usb_storage nvidia(P)(U) autofs4 hidp rfcomm l2cap
+bluetooth sunrpc cpufreq_ondemand acpi_cpufreq ext3 jbd mbcache dm_mirror
+dm_multipath dm_mod video sbs i2c_ec button dock battery ac ipv6 lp loop
+parport_pc parport arc4 ecb blkcipher rc80211_simple irda snd_intel8x0m
+crc_ccitt bcm43xx_mac80211 ssb iTCO_wdt mac80211 snd_intel8x0
+iTCO_vendor_support snd_ac97_codec serio_raw cfg80211 tg3 ac97_bus
+snd_seq_dummy i2c_core snd_seq_oss fw_ohci fw_core sr_mod cdrom
+snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss joydev
+snd_pcm snd_timer snd soundcore snd_page_alloc sg ata_generic ata_piix
+libata sd_mod scsi_mod reiserfs ehci_hcd ohci_hcd uhci_hcd
+CPU:    0
+EIP:    0060:[<f88a306c>]    Tainted: P       VLI
+EFLAGS: 00210246   (2.6.21-1.3228.fc7 #1)
+EIP is at reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
+eax: e6461000   ebx: f8896314   ecx: 00000000   edx: e6460ffc
+esi: f5a54668   edi: 00000000   ebp: 000000c5   esp: e4a2dd78
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process tar (pid: 6860, ti=e4a2d000 task=e528e710 task.ti=e4a2d000)
+Stack: f5a54668 0018a000 e4bede00 f88a313d 00000400 04040404 e4bede00
+e4bede00
+       f8896000 f8896314 e4bede00 d71cbe00 d71cbe60 f88a36d4 fffffff4
+000041ed
+       00000000 f88adbde eab6be0c e6394950 00000001 e3af31d0 e4bede00
+d71cbe60
+Call Trace:
+ [<f88a313d>] reiserfs_read_bitmap_block+0xc9/0xd3 [reiserfs]
+ [<f88a36d4>] reiserfs_choose_packing+0x4a/0x78 [reiserfs]
+ [<f88adbde>] reiserfs_new_inode+0xb8/0x826 [reiserfs]
+ [<f88c35e7>] do_journal_begin_r+0x73/0x28d [reiserfs]
+ [<c04850e3>] d_splice_alias+0xdd/0xe3
+ [<f88c389a>] journal_begin+0x99/0xd0 [reiserfs]
+ [<f88a9a79>] reiserfs_mkdir+0x183/0x2c2 [reiserfs]
+ [<f88c6e0b>] reiserfs_permission+0x0/0x1e [reiserfs]
+ [<c047bd7c>] vfs_mkdir+0xbd/0x125
+ [<c047e226>] sys_mkdirat+0x88/0xba
+ [<c0450fcd>] audit_syscall_exit+0x294/0x2b0
+ [<c0450d0f>] audit_syscall_entry+0x10d/0x137
+ [<c047e277>] sys_mkdir+0x1f/0x23
+ [<c0404f70>] syscall_call+0x7/0xb
+ =======================
+Code: 00 00 0f a3 0a 19 c0 85 c0 75 0a 66 ff 43 02 8d 04 39 66 89 03 49 83
+f9 ff 75 e7 8b 46 18 83 ea 04 39 c2 73 ba 66 83 3b 00 75 04 <0f> 0b eb fe
+5b 5e 5f c3 55 89 d5 57 89 c7 56 53 83 ec 14 8b 90
+EIP: [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
+SS:ESP 0068:e4a2dd78
+BUG: warning at kernel/exit.c:798/do_exit() (Tainted: P      )
+ [<c04294f3>] do_exit+0x54/0x6d3
+ [<c040655c>] die+0x21b/0x240
+ [<c0406967>] do_invalid_op+0x0/0xab
+ [<c0406a09>] do_invalid_op+0xa2/0xab
+ [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
+ [<f88e378d>] scsi_request_fn+0x2d3/0x31d [scsi_mod]
+ [<c04d9a27>] blk_remove_plug+0x58/0x64
+ [<c042d6e7>] getnstimeofday+0x30/0xb6
+ [<c04394c4>] ktime_get_ts+0x16/0x44
+ [<c0454c38>] delayacct_end+0x70/0x77
+ [<c0454d26>] __delayacct_blkio_end+0x5b/0x5e
+ [<c0600b39>] __wait_on_bit+0x50/0x58
+ [<c0601a84>] error_code+0x7c/0x84
+ [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
+ [<f88a313d>] reiserfs_read_bitmap_block+0xc9/0xd3 [reiserfs]
+ [<f88a36d4>] reiserfs_choose_packing+0x4a/0x78 [reiserfs]
+ [<f88adbde>] reiserfs_new_inode+0xb8/0x826 [reiserfs]
+ [<f88c35e7>] do_journal_begin_r+0x73/0x28d [reiserfs]
+ [<c04850e3>] d_splice_alias+0xdd/0xe3
+ [<f88c389a>] journal_begin+0x99/0xd0 [reiserfs]
+ [<f88a9a79>] reiserfs_mkdir+0x183/0x2c2 [reiserfs]
+ [<f88c6e0b>] reiserfs_permission+0x0/0x1e [reiserfs]
+ [<c047bd7c>] vfs_mkdir+0xbd/0x125
+ [<c047e226>] sys_mkdirat+0x88/0xba
+ [<c0450fcd>] audit_syscall_exit+0x294/0x2b0
+ [<c0450d0f>] audit_syscall_entry+0x10d/0x137
+ [<c047e277>] sys_mkdir+0x1f/0x23
+ [<c0404f70>] syscall_call+0x7/0xb
+ =======================
 
-According to Stefan Richter
-  - Change all subsystems to set dev->parent before device_initialize().
-    *Document* that the device_initialize() API has this requirement.
-    This is counter-intuitive, amounts to some work across the kernel,
-    and could be gotten wrong again in future code because it's a
-    counter-intuitive API.
 
-  - Move your code from device_initialize() to device_add().  One minor
-    drawback is that node-specific allocations based on the device's
-    numa_node would not be optimized before device_add(), but there is
-    probably no need for this.  Driver probes come after device_add().
 
-  - Let subsystems explicitly call set_dev_node() on their own.
+-- 
+Anthony Simons
+Council Bluffs, IA 51501
+(402)689-6573
 
-this patch is using second method.
-
-Also we don't need call set_dev_node in pci_device_add anymore. but need to
-make sure every pci root bus's bridge device numa is set.
-
-with this patch, we could use device->numa_node direclty for all device.
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index dd40d78..091c2b1 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -666,6 +666,11 @@ int device_add(struct device *dev)
- 	if (error)
- 		goto Error;
- 
-+	/* use parent numa_node */
-+	if (parent) {
-+		set_dev_node(dev, dev_to_node(dev->parent));
-+	}
-+
- 	/* first, register with generic layer. */
- 	kobject_set_name(&dev->kobj, "%s", dev->bus_id);
- 	error = kobject_add(&dev->kobj);
-@@ -1285,8 +1290,11 @@ int device_move(struct device *dev, struct device *new_parent)
- 	dev->parent = new_parent;
- 	if (old_parent)
- 		klist_remove(&dev->knode_parent);
--	if (new_parent)
-+	if (new_parent) {
- 		klist_add_tail(&dev->knode_parent, &new_parent->klist_children);
-+		set_dev_node(dev, dev_to_node(new_parent));
-+	}
-+
- 	if (!dev->class)
- 		goto out_put;
- 	error = device_move_class_links(dev, old_parent, new_parent);
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index e48fcf0..c029ffc 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -935,7 +938,6 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
- 	dev->dev.release = pci_release_dev;
- 	pci_dev_get(dev);
- 
--	set_dev_node(&dev->dev, pcibus_to_node(bus));
- 	dev->dev.dma_mask = &dev->dma_mask;
- 	dev->dev.coherent_dma_mask = 0xffffffffull;
- 
-@@ -1096,6 +1098,9 @@ struct pci_bus * pci_create_bus(struct device *parent,
- 		goto dev_reg_err;
- 	b->bridge = get_device(dev);
- 
-+	if (!parent)
-+		set_dev_node(b->bridge, pcibus_to_node(b));
-+
- 	b->class_dev.class = &pcibus_class;
- 	sprintf(b->class_dev.class_id, "%04x:%02x", pci_domain_nr(b), bus);
- 	error = class_device_register(&b->class_dev);
