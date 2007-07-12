@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbXGLLKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932740AbXGLLKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932433AbXGLLKd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 07:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762074AbXGLLKZ
+	id S932740AbXGLLKr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 07:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932475AbXGLLKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 07:10:25 -0400
-Received: from il.qumranet.com ([82.166.9.18]:54105 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762070AbXGLLKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 07:10:24 -0400
-Message-ID: <46960C27.5040803@qumranet.com>
-Date: Thu, 12 Jul 2007 14:10:31 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, hch@lst.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <20070711122324.GA21714@lst.de>	 <1184203311.6005.664.camel@localhost.localdomain>	 <20070711.192829.08323972.davem@davemloft.net>	 <1184208521.6005.695.camel@localhost.localdomain>	 <20070711212435.abd33524.akpm@linux-foundation.org> <1184215943.6005.745.camel@localhost.localdomain>
-In-Reply-To: <1184215943.6005.745.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jul 2007 07:10:34 -0400
+Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:32118 "EHLO
+	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932369AbXGLLKc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 07:10:32 -0400
+Message-Id: <4695D3DD0200005A00027621@mcclure.wal.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 12 Jul 2007 07:10:21 -0400
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>
+Cc: <jim.houston@ccur.com>, <joe.korty@ccur.com>, <dwalker@mvista.com>,
+       "David Bahi" <DBahi@novell.com>, "Moiz Kohari" <MKohari@novell.com>,
+       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
+       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to 2.6.22
+	available
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Remove export of __put_task_struct, and usage in lguest
->
-> lguest takes a reference count of tasks for two reasons.  The first is
-> bogus: the /dev/lguest close callback will be called before the task
-> is destroyed anyway, so no need to take a reference on open.
->
+On Thu, 2007-07-12 at 00:58 +0000, Gregory Haskins wrote:
+> Hi Ingo, Thomas, and the greater linux-rt community,
 >   
+> 	I just wanted to let you guys know that our team has a port of the
+> 21.5-rt20 patch for the 2.6.22 kernel available.  
 
-What about
+Ok, we have incorporated some of the feedback from you guys and made a
+new drop: rt2
 
-  Open /dev/lguest
-  transfer fd using SCM_RIGHTS (or clone()?)
-  close fd in original task
-  exit()
+Changes:
 
-?
+*) split into series
 
-My feeling is that if you want to be bound to a task, not a file, you 
-need to use syscalls, not ioctls.
+*) split the rt patch into two sections.  The first is .21.5-rt19 after
+it applies to 2.6.22 minus the rejects.  The second patch is the
+resolution of those rejects + our fixes (sorry, dont have this broken
+down finer grained yet) (Thanks to Daniel for this suggestion)
 
--- 
-error compiling committee.c: too many arguments to function
+*) We rolled Alessio's fix for duplication of div64 into the rt patch
+
+*) We added Alessio's fix for percpu to the series
+
+Notably missing:
+
+*) We are still at rt19.  We will push rt20 in shortly, and rt21 as
+available.
+
+You can find the patch here:
+ftp://ftp.novell.com/dev/patches-2.6.22-rt2.tar.gz
+
+Thanks for the feedback, guys!
+
+Regards,
+-Greg
 
