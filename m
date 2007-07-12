@@ -1,110 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbXGLTio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933008AbXGLTox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbXGLTio (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 15:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbXGLTif
+	id S933008AbXGLTox (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 15:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbXGLTok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 15:38:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56600 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753667AbXGLTie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 15:38:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Thu, 12 Jul 2007 21:45:55 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Huang, Ying" <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707122120.19662.rjw@sisk.pl> <Pine.LNX.4.64.0707121210210.25614@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707121210210.25614@asgard.lang.hm>
+	Thu, 12 Jul 2007 15:44:40 -0400
+Received: from mexforward.lss.emc.com ([128.222.32.20]:32003 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754670AbXGLToi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 15:44:38 -0400
+Message-ID: <4696844E.5060407@emc.com>
+Date: Thu, 12 Jul 2007 15:43:10 -0400
+From: Ric Wheeler <ric@emc.com>
+Reply-To: ric@emc.com
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Valdis.Kletnieks@vt.edu
+CC: Tejun Heo <htejun@gmail.com>, david@lang.hm,
+       Stefan Bader <Stefan.Bader@de.ibm.com>, Phillip Susi <psusi@cfl.rr.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>
+Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices,
+ filesystems, and dm/md.
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528094358.GM25091@agk.fab.redhat.com> <5201e28f0705290225v14fdac44hb0382a4137a84d01@mail.gmail.com> <20070529220500.GA6513@agk.fab.redhat.com> <5201e28f0705300212g3be16464u5ee1a4c80db27a11@mail.gmail.com> <465DAC72.1010201@cfl.rr.com> <5201e28f0705310414u1a9aebc4je135748274543946@mail.gmail.com> <465F9197.7060002@gmail.com> <Pine.LNX.4.64.0705312144400.6705@asgard.lang.hm> <465FC7B1.3060309@gmail.com> <4693D26D.2060004@emc.com> <4758.1184110800@turing-police.cc.vt.edu>            <46955D45.8010606@emc.com> <7718.1184261676@turing-police.cc.vt.edu>
+In-Reply-To: <7718.1184261676@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707122145.56567.rjw@sisk.pl>
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.7.6.21134
+X-PerlMx-Spam: Gauge=, SPAM=1%, Reason='EMC_FROM_0+ -3, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 12 July 2007 21:14, david@lang.hm wrote:
-> On Thu, 12 Jul 2007, Rafael J. Wysocki wrote:
+
+
+Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 11 Jul 2007 18:44:21 EDT, Ric Wheeler said:
+>> Valdis.Kletnieks@vt.edu wrote:
+>>> On Tue, 10 Jul 2007 14:39:41 EDT, Ric Wheeler said:
+>>>
+>>>> All of the high end arrays have non-volatile cache (read, on power loss, it is a 
+>>>> promise that it will get all of your data out to permanent storage). You don't 
+>>>> need to ask this kind of array to drain the cache. In fact, it might just ignore 
+>>>> you if you send it that kind of request ;-)
+>>> OK, I'll bite - how does the kernel know whether the other end of that
+>>> fiberchannel cable is attached to a DMX-3 or to some no-name product that
+>>> may not have the same assurances?  Is there a "I'm a high-end array" bit
+>>> in the sense data that I'm unaware of?
+>>>
+>> There are ways to query devices (think of hdparm -I in S-ATA/P-ATA drives, SCSI 
+>> has similar queries) to see what kind of device you are talking to. I am not
+>> sure it is worth the trouble to do any automatic detection/handling of this.
+>>
+>> In this specific case, it is more a case of when you attach a high end (or 
+>> mid-tier) device to a server, you should configure it without barriers for its
+>> exported LUNs.
 > 
-> >>>> note that what devices get put to sleep could be configurable, potentially
-> >>>> to the extreme of things like the OLPC (that have hardware designed for
-> >>>> cheap sleeping) going into a light suspend-to-ram state between keystrokes
-> >>>> if nothing else has a timer event scheduled before that.
-> >>>>
-> >>>> Suspend-do-disk (Hibernate) involves stopping the system, makeing a
-> >>>> snapshot of ram, writing the snapshot to somewhere and powering off the
-> >>>> box. on wakeup (power-on) a helper kernel boots, loads the snapshot into
-> >>>> ram and jumps to the kernel in the snapshot to resume operation.
-> >>>>
-> >>>> as I understand the proposal the thought is to do the following
-> >>>>
-> >>>> 1. system kernel does suspend-to-ram to put the devices into a known safe
-> >>>> state.
-> >>>
-> >>> Not necessarily suspend-to-RAM.  I'd much prefer it if devices were not put
-> >>> into low power states but quiesced (ie. no DMA, no interrupts).
-> >>
-> >> as I asked in another message, is it really worth having two (or more)
-> >> modes here?
-> >
-> > I think so.  The suspend-to-RAM mode is quite specific and on some platform
-> > (ie. ACPI) it requires platform support.
-> >
-> > We've already reached the conclusion that it's better to separate suspend from
-> > hibernation, as far as device drivers are concerned, and let's not repeat the
-> > discussion.
-> 
-> Ok, I seem to have been miscommunicating here. the old combined 
-> suspend/hibernate took everything to the hibernate state even if you only 
-> needed to suspend.
+> I don't have a problem with the sysadmin *telling* the system "the other end of
+> that fiber cable has characteristics X, Y and Z".  What worried me was that it
+> looked like conflating "device reported writeback cache" with "device actually
+> has enough battery/hamster/whatever backup to flush everything on a power loss".
+> (My back-of-envelope calculation shows for a worst-case of needing a 1ms seek
+> for each 4K block, a 1G cache can take up to 4 1/2 minutes to sync.  That's
+> a lot of battery..)
 
-No, quite the other way around.
+I think that we are on the same page here - just let the sys admin mount without 
+barriers for big arrays.
 
-For creating a hibernation image you don't have to suspend devices.
-Furthermore, you don't want to suspend at least some of them, because you'll
-be using them to save the image in a while.  Also, there's no need to worry
-about what power state to put the device into, so that it can wake up the
-system from the sleep state etc.
+1GB of cache, by the way, is really small for some of us ;-)
 
-We've made hibernation use suspend-specific callbacks and that causes quite
-a lot of problems to appear.
+ric
 
-> I was still seeing two diffent states involved
-> 
-> for suspend go to low-power mode
-> 
-> for hibernate go to low-power mode,
-
-No, that is not the way to go, IMO.  We can shut down devices before creating
-the image, but not suspend them.
-
-> kexec the new kernel, do your stuff, power off 
-
-Here, instead of just powering off, we may want to make the system enter a
-sleep state (S4 in ACPI systems), which is similar to suspend.
-
-> note that this doesn't really matter as you have pointed out in other 
-> messages that we don't really want to put things in low-power mode, and 
-> Eric pointed out that kexec already handles disabling devices, so it 
-> sounds like this may be a solved problem if he's right and an issue to be 
-> solved differently if he's not.
-
-Shutting down devices and reinitializing them is costly.  I wouldn't like to
-do that.
-
-Of course, in a proof-of-concept version this is viable, but IMO not in the
-final one.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
