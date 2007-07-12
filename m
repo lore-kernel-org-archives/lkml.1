@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936284AbXGLDA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936201AbXGLDE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936284AbXGLDA4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 23:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934073AbXGLDAs
+	id S936201AbXGLDE1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 23:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764229AbXGLDES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 23:00:48 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:45373 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933964AbXGLDAr (ORCPT
+	Wed, 11 Jul 2007 23:04:18 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:63389 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760236AbXGLDER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 23:00:47 -0400
+	Wed, 11 Jul 2007 23:04:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Sem2Msce5W9QJuzpkWM6LpqQj5t4RPHAUJeF902eAeDMh/DS3xh1BpRaYZw7h/HVYGRX6Nfa/nWDmOmAaM9VH0m6eYWW8xsnmxrlTdc32eRt5exo6fUi8hoBeCY3Vh2Xq66gFbP8SpVCA4PJdscoBLLiFwCzGi/MsZZ+y8tVbiM=
-Message-ID: <46959958.6080005@gmail.com>
-Date: Thu, 12 Jul 2007 12:00:40 +0900
+        b=D9G++tY/N3U/NU8cAZAuaFALhjD2/KCS3G9IH35oUme6wssqDkOfUjped1mZYmYWPlWDQ9MqhQG1pstD917ASKjb7d3y6oER9/7OLJ3DVq+wSoTkEEl+PWw8oo713Yj3FrCJZRqclXe/ArU3r6BZgDgKjYpmtxFSGcn8+Qw8GTI=
+Message-ID: <46959A2C.7090908@gmail.com>
+Date: Thu, 12 Jul 2007 12:04:12 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: =?UTF-8?B?WU9TSElGVUpJIEhpZGVha2kgLyDlkInol6Toi7HmmI4=?= 
-	<yoshfuji@linux-ipv6.org>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 24/61] sysfs: make sysfs_put() ignore NULL sd
-References: <11841968512510-git-send-email-gregkh@suse.de>	<20070712.085047.37780825.yoshfuji@linux-ipv6.org>	<20070711235529.GA7485@suse.de> <20070712.100617.14203407.yoshfuji@linux-ipv6.org>
-In-Reply-To: <20070712.100617.14203407.yoshfuji@linux-ipv6.org>
+To: Miles Lane <miles.lane@gmail.com>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc6-mm1 -- BUG - EIP: [<c01a77a1>] sysfs_addrm_finish+0x1c2/0x226
+ SS:ESP 0068:c5ff9db8
+References: <a44ae5cd0707030932h16a90ca3j8ad65b7a3ec64b03@mail.gmail.com>	 <a44ae5cd0707040036x74c82dcci12b0a3f83a27af56@mail.gmail.com>	 <468C9E74.4080606@gmail.com>	 <a44ae5cd0707060101g38147b2gb3d33d9903082113@mail.gmail.com>	 <468F36F5.4010803@gmail.com>	 <a44ae5cd0707071753g6dd4445bsaac2e2296327e510@mail.gmail.com>	 <469038EF.7040709@gmail.com>	 <a44ae5cd0707072156y7d0c9e5am2ded3efdc036bcf7@mail.gmail.com>	 <469484E1.6040000@gmail.com> <4694A769.7040502@gmail.com> <a44ae5cd0707111539l5e5adc4ct76ae2f4cb9063e58@mail.gmail.com>
+In-Reply-To: <a44ae5cd0707111539l5e5adc4ct76ae2f4cb9063e58@mail.gmail.com>
 X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YOSHIFUJI Hideaki / 吉藤英明 wrote:
-> In article <20070711235529.GA7485@suse.de> (at Wed, 11 Jul 2007 16:55:29 -0700), Greg KH <gregkh@suse.de> says:
-> 
->> On Thu, Jul 12, 2007 at 08:50:47AM +0900, YOSHIFUJI Hideaki / ?$B5HF#1QL@ wrote:
->>> In article <11841968512510-git-send-email-gregkh@suse.de> (at Wed, 11 Jul 2007 16:31:43 -0700), Greg Kroah-Hartman <gregkh@suse.de> says:
->>>
->>>> Make sysfs_put() ignore NULL sd instead of oopsing.
->>> I do not think this is a good idea; it is non-sense (and rather a bug)
->>> to call "put" with NULL argument in general.
->> It's better than having to check it all the time in the caller :)
-> 
-> How many callers do we have that will get benefit from this change?
-> 
-> Well, the change will hide the bug. It seems all callers in fs/sysfs
-> already assume that the argument is NOT NULL, and it is a bug to call
-> sysfs_put() with NULL; the function should be used to "put" something
-> you "have" (non-NULL). If it is called with NULL, I would say, we
-> should BUG here to detect the logical bug.
+Miles Lane wrote:
+> Does this patch replace or add to the last patch you sent me?
+> I'll try applying them with --dry-run and assume that if #1 + #2
+> doesn't apply cleanly, then you only want me to test with this
+> latest patch.
 
-Well, I'm okay either way.  It's not like one way is undisputably better
-than the other but we're leaning toward accepting NULL argument in this
-type of functions.  Think about kfree(NULL) and its usefulness.  More
-importantly, the ecosystem around sysfs - that is, kobject, driver model
-- generally accepts NULL argument for their get/put functions, so unless
-there's a compelling reason to convert them all, and I don't see any,
-sysfs_put() needs to follow the same rule.
+This replaces the old one.  Just revert the old one and apply this one.
+
+> I'll be able to test this later this evening.  I've had house guests and
+> so haven't been available the last few days.
+
+Yeap, I'll wait for the result.  Thanks a lot.
 
 -- 
 tejun
