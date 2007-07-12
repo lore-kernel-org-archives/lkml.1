@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbXGLXUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763709AbXGLXV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933148AbXGLXUZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 19:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbXGLXUN
+	id S1763709AbXGLXV6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 19:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbXGLXVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 19:20:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:45315 "EHLO ozlabs.org"
+	Thu, 12 Jul 2007 19:21:52 -0400
+Received: from ns1.suse.de ([195.135.220.2]:35024 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755680AbXGLXUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 19:20:12 -0400
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, hch@lst.de,
-       linux-kernel@vger.kernel.org, carsteno <carsteno@de.ibm.com>
-In-Reply-To: <46960C27.5040803@qumranet.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <20070711122324.GA21714@lst.de>
-	 <1184203311.6005.664.camel@localhost.localdomain>
-	 <20070711.192829.08323972.davem@davemloft.net>
-	 <1184208521.6005.695.camel@localhost.localdomain>
-	 <20070711212435.abd33524.akpm@linux-foundation.org>
-	 <1184215943.6005.745.camel@localhost.localdomain>
-	 <46960C27.5040803@qumranet.com>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 09:20:05 +1000
-Message-Id: <1184282405.6005.803.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1757452AbXGLXVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 19:21:51 -0400
+From: Neil Brown <neilb@suse.de>
+To: LinuxKernel@jamesplace.net
+Date: Fri, 13 Jul 2007 09:21:57 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18070.46997.541325.761868@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problem recovering a failed RIAD5 array with 4-drives.
+In-Reply-To: message from James on Thursday July 12
+References: <200707120849.16068.LinuxKernel@jamesplace.net>
+	<18070.44975.347933.29688@notabene.brown>
+	<200707121810.57648.LinuxKernel@jamesplace.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 14:10 +0300, Avi Kivity wrote:
-> Rusty Russell wrote:
-> > Remove export of __put_task_struct, and usage in lguest
-> >
-> > lguest takes a reference count of tasks for two reasons.  The first is
-> > bogus: the /dev/lguest close callback will be called before the task
-> > is destroyed anyway, so no need to take a reference on open.
-> >
-> >   
+On Thursday July 12, LinuxKernel@jamesplace.net wrote:
 > 
-> What about
+> I don't know the original order of the array before all the problems started. 
 > 
->   Open /dev/lguest
->   transfer fd using SCM_RIGHTS (or clone()?)
->   close fd in original task
->   exit()
+> Is there a way to determine the original order? 
+
+No, unless you have some old kernel logs of the last time it assembled
+the array properly.
+The one thing that "--create" does destroy is the information about
+any previous array that the drives were a part of.
+
 > 
-> ?
-> 
-> My feeling is that if you want to be bound to a task, not a file, you 
-> need to use syscalls, not ioctls.
+> The order that --detail is showing now is the order that appeared after 
+> issuing the command is it is in the email. (ie: a b c d)
 
-"Don't do that".  You'll lose the ability to access the operations on
-the fd once you are no longer the original task (explicit check).,
+Odd.  I cannot reproduce it.
+I suggest you try different arrangements (of the 3 good drives and the
+word 'missing') until you find one that 'fsck -n' likes.
 
-It's not an exact match, but a file is a remarkably convenient
-abstraction for a non-ABI such as lguest.  Of course, Carsten was
-talking about unifying the lguest & kvm userspace interface, so this
-could well change anyway.
-
-Cheers,
-Rusty.
-
+NeilBrown
