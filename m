@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935824AbXGLDNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936412AbXGLDPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935824AbXGLDNi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 23:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765304AbXGLDNb
+	id S936412AbXGLDPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 23:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbXGLDPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 23:13:31 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:50883 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765267AbXGLDNa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 23:13:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=HXK8+JGALWvkyTfzGVtiCx3iStKIELKsq3/i+vDZ7aCckbV8GQpWHiBp5CzhL92P0GC6hOLy12naDQmP1Wnb6vmnx2NsHkAbELVdWpkVd/fTx4Zego4+TL/PeWecbZcfv4QfE6ndCTxxs7vIzMyHsqyn3/hv34gzfRMJAGa2P7o=
-Message-ID: <46959C54.6030905@gmail.com>
-Date: Thu, 12 Jul 2007 12:13:24 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: caglar@pardus.org.tr, Robert Hancock <hancockr@shaw.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: SATA exceptions
-References: <fa.hBFih6KVHDFsBf6Qfg6XispiIuY@ifi.uio.no> <fa.NhBdOmH9+RkW+QO72+TjPRwEKj0@ifi.uio.no> <468FD5ED.5060401@shaw.ca> <200707080035.05718.caglar@pardus.org.tr> <46953E1B.1090306@rtr.ca>
-In-Reply-To: <46953E1B.1090306@rtr.ca>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 11 Jul 2007 23:15:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:57793 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758660AbXGLDPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 23:15:37 -0400
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: David Miller <davem@davemloft.net>
+Cc: hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20070711.195126.02300228.davem@davemloft.net>
+References: <1184203311.6005.664.camel@localhost.localdomain>
+	 <20070711.192829.08323972.davem@davemloft.net>
+	 <1184208521.6005.695.camel@localhost.localdomain>
+	 <20070711.195126.02300228.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 13:15:18 +1000
+Message-Id: <1184210118.6005.719.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> I'm not even sure how to interpret those numbers.
-> It seems rather odd that nearly all fields are either "100" or "253",
-> so those are probably pre-programmed numbers rather than actual counts.
-> The raw value at the end of the line (for the various "Reallocated*"
-> fields)
-> is probably the real value here.
+On Wed, 2007-07-11 at 19:51 -0700, David Miller wrote:
+> From: Rusty Russell <rusty@rustcorp.com.au>
+> Date: Thu, 12 Jul 2007 12:48:41 +1000
+> 
+> > We drop the lock after I/O, and then do this wakeup.  Meanwhile the
+> > other task might have exited.
+> 
+> I already understand what you're doing.
+> 
+> Is it possible to use exit notifiers to handle this case?
+> That's what I'm trying to suggest. :)
 
-I dunno exactly either.  Different vendors seem to use different metrics
-anyway but increasing raw number on reallocate counter is pretty easy to
-interpret.
+Sure, the process has /dev/lguest open, so I can do something in the
+close routine.  Instead of keeping a reference to the tsk, I can keep a
+reference to the struct lguest (currently it doesn't have or need a
+refcnt).  Then I need another lock, to protect lg->tsk.
 
--- 
-tejun
+This seems like a lot of dancing to avoid one export.  If it's that
+important I'd far rather drop the code and do a normal wakeup under the
+big lguest lock for 2.6.23.
+
+Cheers,
+Rusty.
+
+
