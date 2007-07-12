@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbXGLFcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbXGLFfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbXGLFcn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 01:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXGLFce
+	id S1757741AbXGLFfr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 01:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXGLFfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 01:32:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:56416 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751048AbXGLFcd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 01:32:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=OTicvJ/aAVyBBBA2stUrv8VO12e1qF3JOOCw3Onraorf2bVUSEMWYdY6xQuRzCTSp+UVfn082Ub0uZ5oqY7oALqKLeSEGvClfqsYCjqHn4CCfGSQ/QitqRA4pS6CNPgtUyjuNue8F1Zu6Tdn8+DfQVXsLh8AsIHk2NxgSd2QxJM=
-Message-ID: <4695BCEA.4060108@gmail.com>
-Date: Thu, 12 Jul 2007 09:32:26 +0400
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Thu, 12 Jul 2007 01:35:40 -0400
+Received: from il.qumranet.com ([82.166.9.18]:37199 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751526AbXGLFfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 01:35:39 -0400
+Message-ID: <4695BDA9.7070104@qumranet.com>
+Date: Thu, 12 Jul 2007 08:35:37 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
-       Zhang Rui <rui.zhang@intel.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] the scheduled ACPI_PROCFS removal
-References: <20070709145755.GD3492@stusta.de> <20070709174544.2a6b7067@the-village.bc.nu> <Pine.LNX.4.64.0707092044520.2887@fbirervta.pbzchgretzou.qr> <46951969.4030109@tmr.com>
-In-Reply-To: <46951969.4030109@tmr.com>
-X-Enigmail-Version: 0.94.2.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] KVM Updates for 2.6.23-rc1
+References: <11841377191653-git-send-email-avi@qumranet.com> <46955465.8080207@redhat.com>
+In-Reply-To: <46955465.8080207@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Thu, 12 Jul 2007 08:35:37 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> [*] Does someone have an alternative for
->> /proc/acpi/battery/BAT1/{state,info}?
-I'm working on it. Should have proto by the end of week.
+Chuck Ebbert wrote:
+> On 07/11/2007 03:08 AM, Avi Kivity wrote:
+>   
+>> Linus, please do your usual thing from the repository and branch at
+>>
+>>  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
+>>
+>> This contains kvm updates for the 2.6.23 merge window, including
+>>
+>>  - performance improvements
+>>  - suspend/resume fixes
+>>  - guest smp
+>>  - random fixes and cleanups
+>>
+>>     
+>
+> What version of KVM does this update contain? I can't find any place
+> in the code with version number.
+>   
 
-Regards,
-Alex
+There is an ABI version number (now at 12) in include/linux/kvm.h.  That
+means any version of kvm userspace from kvm-22  upwards can be used. 
+Since the ABI will not change anymore except in a backward compatible
+manner, the old concerns of matching userspace to kernel are gone.
+
+In terms of parity with the external kernel module, 2.6.23-rc1 will be
+very similar to kvm-29.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
