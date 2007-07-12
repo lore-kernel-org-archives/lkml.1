@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936154AbXGLAdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937447AbXGLAeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936154AbXGLAdo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965089AbXGLA3j
+	id S937447AbXGLAeS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965167AbXGLAaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:29:39 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:39294 "EHLO e1.ny.us.ibm.com"
+	Wed, 11 Jul 2007 20:30:19 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60216 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964900AbXGLA3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:29:35 -0400
-Subject: Re: [EXT4 set 9][PATCH 5/5]Extent micro cleanups
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-In-Reply-To: <20070710232008.599b25aa.akpm@linux-foundation.org>
-References: <1183275539.4010.141.camel@localhost.localdomain>
-	 <20070710232008.599b25aa.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 11 Jul 2007 17:29:35 -0400
-Message-Id: <1184189375.3886.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	id S964952AbXGLAaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 20:30:16 -0400
+Date: Wed, 11 Jul 2007 17:30:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, rostedt@goodmis.org,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com,
+       linux-rt-users@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH -rt WIP] NMI-safe lightweight parallel-update -rt RCU
+Message-ID: <20070712003011.GF14550@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070712000157.GA4168@linux.vnet.ibm.com> <20070712000937.GA1946@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070712000937.GA1946@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-10 at 23:20 -0700, Andrew Morton wrote:
-> On Sun, 01 Jul 2007 03:38:59 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
+On Thu, Jul 12, 2007 at 02:09:37AM +0200, Ingo Molnar wrote:
 > 
-> > From: Dmitry Monakhov <dmonakhov@sw.ru>
-> > Subject: ext4: extent macros cleanup
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > Hello!
 > > 
-> > - Replace math equation to it's macro equivalent
+> > Just work in progress, not recommended for inclusion.  Seems stable 
+> > under rigorous rcutorture testing, so should be OK for 
+> > experimentation.
 > 
-> s/it's/its/;)
-Okay.
+> nice stuff!
+> 
+> i'm wondering, could you try to do this as a splitup against -mm? I 
+> think we should get people exposed to the idea of RCU_PREEMPT in the 
+> upstream kernel a bit more. The netfilter folks promised some 
+> preparatory enhancements to make it easier, a few months ago :)
 
-> 
-> > - make ext4_ext_grow_indepth() indexes/leaf correct
-> 
-> hm, what was wrong with it?
-> 
-Looking at the code, ext4_ext_ext_grow_indepth() implements tree growing
-procedure. It allocates a new index block, moves the top-level data of
-the tree(root or leaf blocks in i_data) into the new block, initializes
-the new root, creating index that points to the just created index block
+Good point!
 
-The original top-level data (in i_data) could be extent tree root (index
-block) or extents (leaf block). The current code (without the patch)
-treats the top-level data always be the leaf block, which is incorrect.
+Besides, I might as well test out my assertion that I have made
+integration with CPU hotplug easier, being as that was one of the reasons
+that it got kicked out earlier this year, IIRC.  ;-)
 
-
-assumes when the tree is growing the extent structure pass in is always
-> > @@ -922,8 +922,11 @@ static int ext4_ext_grow_indepth(handle_t *handle, struct inode *inode,
-> >  	curp->p_hdr->eh_max = cpu_to_le16(ext4_ext_space_root_idx(inode));
-> >  	curp->p_hdr->eh_entries = cpu_to_le16(1);
-> >  	curp->p_idx = EXT_FIRST_INDEX(curp->p_hdr);
-> > -	/* FIXME: it works, but actually path[0] can be index */
-> > -	curp->p_idx->ei_block = EXT_FIRST_EXTENT(path[0].p_hdr)->ee_block;
-> > +	
-> > +	if (path[0].p_hdr->eh_depth)
-> > +	  curp->p_idx->ei_block = EXT_FIRST_INDEX(path[0].p_hdr)->ei_block;
-> > +	else
-> > +	  curp->p_idx->ei_block = EXT_FIRST_EXTENT(path[0].p_hdr)->ee_block;
-> 
-> whitespace bustage there.
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+						Thanx, Paul
