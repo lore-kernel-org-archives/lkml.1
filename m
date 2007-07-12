@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964883AbXGLAN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937410AbXGLAOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964883AbXGLAN5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935882AbXGLAHY
+	id S937410AbXGLAOk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937244AbXGLAJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:07:24 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53691 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935874AbXGLAHW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:07:22 -0400
-Date: Thu, 12 Jul 2007 02:07:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
-Message-ID: <20070712000720.GA26585@one.firstfloor.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu> <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org> <1184191488.12353.160.camel@chaos> <alpine.LFD.0.999.0707111518020.20061@woody.linux-foundation.org> <1184194219.12353.170.camel@chaos> <alpine.LFD.0.999.0707111558250.20061@woody.linux-foundation.org> <20070711233618.GD25510@one.firstfloor.org> <20070711235852.GA625@elte.hu>
+	Wed, 11 Jul 2007 20:09:50 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:36282 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S936462AbXGLAJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 20:09:48 -0400
+Date: Thu, 12 Jul 2007 02:09:44 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Alex Maclean <monkeh@monkeh.net>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       tglx@linutronix.de, Tim Gardner <tim.gardner@canonical.com>
+Subject: Re: acpi regression on some laptops
+Message-ID: <20070712020944.446f3828@i1501.lan.towertech.it>
+In-Reply-To: <46955F4D.3090206@monkeh.net>
+References: <20070710160056.443ae9ae@i1501.lan.towertech.it>
+	<46952CC5.6050800@redhat.com>
+	<20070712000124.22d0c3a7@i1501.lan.towertech.it>
+	<46955F4D.3090206@monkeh.net>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070711235852.GA625@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> i dont think "clean, modern x86 code" will ever happen - x86_64 has and 
-> is going to have the exact same type of crap. And i'll say a weird thing 
+On Wed, 11 Jul 2007 22:53:01 +0000
+Alex Maclean <monkeh@monkeh.net> wrote:
 
-Yes, but it will be new crap, but no old crap anymore.
+> 
+> I'm unsure just what hardware you're working with, but try using the 
+> option nolapic_timer.
 
-If you always pile the new crap on the old crap at some point
-the whole thing might fall over. 64bit was intended as a fresh start.
+ it worked, thanks!
 
-Admittedly we're getting more and more workarounds too and sometimes
-when I want to remove cruft i find out it is still needed on some
-64bit boxes (e.g. see my repeated attempts to clean up the irq 0
-routing), but it's still much better than i386.
+ hw is a Dell Inspiron 1501, AMD Turion TL52 based.
+ drop me a note if you need dmesg or other info.
 
-> I think the PowerPC experience (although it is not a fully equivalent 
-> case) about them merging their 32-bit and 64-bit architectures was an 
-> overwhelmingly positive move, and x86 could learn a thing or two from 
-> that.
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 72
+model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
+stepping        : 2
 
-The equivalent to the powerpc way would be essentially to report i386
-into the x86-64 code base and leave the really old hardware only
-in arch/i386. I've considered doing it, but it would be an awful
-lot of work and to tempt distributions to actually use the new
-port would require going back quite a long time. And at least
-immediately it would end up with three cases to do things instead
-of two like currently.
+ eax in    eax      ebx      ecx      edx
+00000000 00000001 68747541 444d4163 69746e65
+00000001 00040f82 01020800 00002001 178bfbff
 
--Andi
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
