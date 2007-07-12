@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXGLEHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbXGLEQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbXGLEHN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 00:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXGLEHB
+	id S1752679AbXGLEQe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 00:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXGLEQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 00:07:01 -0400
-Received: from 73.pool85-58-18.dynamic.orange.es ([85.58.18.73]:38413 "EHLO
-	cafe.aluzina.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbXGLEHA (ORCPT
+	Thu, 12 Jul 2007 00:16:25 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60725 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750970AbXGLEQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 00:07:00 -0400
-X-Greylist: delayed 1723 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 00:07:00 EDT
-Message-ID: <4695A225.6050807@aluzina.org>
-Date: Thu, 12 Jul 2007 05:38:13 +0200
-From: =?ISO-8859-1?Q?Zeus_G=F3mez_Marmolejo?= <zeus@aluzina.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: New LSM security operation
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 12 Jul 2007 00:16:24 -0400
+Date: Thu, 12 Jul 2007 14:16:13 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+Message-ID: <20070712041613.GY12413810@sgi.com>
+References: <200707111916.35036.jesper.juhl@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707111916.35036.jesper.juhl@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi people,
+On Wed, Jul 11, 2007 at 07:16:34PM +0200, Jesper Juhl wrote:
+> Hi,
+> 
+> I'm wondering if it's time to make 4K stacks the default and to start 
+> considering removing the 8K stack option alltogether soon?
+> 
+> One of the big problem spots was XFS, but that got some stack usage 
+> fixes recently, and the 4K stack option has been around for quite a 
+> while now, so people really should have gotten around to fixing any 
+> code that can't handle it.   Are there still any big problem areas 
+> remaining?
 
-I've looked around on how to hide inodes in a Linux filesystem but 
-surprisingly the kernel lacks this functionality. It would be desirable 
-for me to add an ACL to a file in order not to be seen in the directory 
-contents but only for some users.
+Yes. NFS on top of XFS on top of DM/MD.
 
-Some Selinux experts point out that the correct way to do this is via 
-poly-instantiated directories such as /tmp or /var/tmp, so each user 
-"view" his own version of this directory. But that's not what I want, 
-for example in /etc, I would want to hide some directories or files for 
-some users. I don't want a whole /etc instantiation for each user logged in.
+XFS got some fixes recently, of which the main one was to fix the
+regressions that gcc 4.x introduced by inlining single use functions
+that we'd split out of the common code to reduce stack usage. So in
+reality, there hasn't been a great deal of change in the status quo
+here.
 
-Also, there is a patch called LIDS that does the thing, but patching the 
-whole kernel and adding much extra functionality such as intrussion 
-detection system as it is. Some rootkits -like adore- also can hide 
-inodes, but changing the owner to an uid that the kernel module hides 
-from the system call. I don't thing this is a good approach...
+In fact, things have probably got worse because the generic
+writeback code is slowly increasing it's stack usage....
 
-For me, the correct way to achieve this is to add an extra op in the 
-"security_operations" struct, as an inode operation. With this, a 
-Mandatory Access Control system that uses LSM such as SELinux can add 
-some policies on the "list" file access vector.
+Cheers,
 
-So, I'd call this hook in the vfs_readdir() syscall just after the "file 
-<http://lxr.linux.no/ident?i=file>->f_op->readdir()" -the particular 
-filesystem readdir()- and walk through the list to ask for each inode if 
-it has permission to be "listed" in that directory. Then, the MAC system 
-can handle the grant or deny permission per inode, and then return the 
-"modified" list to userspace.
-
-I'm not sure if this is the correct way, or maybe it adds to much 
-overhead to the "ls" command, but I'd like to hear some opinions, I can 
-try to code it and summit a patch...
-
-Thanks for your answer,
-
-Zeus Gómez.
-PS. Please, include me in the CC if you reply this message.
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
