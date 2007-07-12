@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbXGLXQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbXGLXQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762891AbXGLXQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 19:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759699AbXGLXQF
+	id S1759147AbXGLXQu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 19:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762691AbXGLXQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 19:16:05 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:5274 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759472AbXGLXQB (ORCPT
+	Thu, 12 Jul 2007 19:16:25 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:59653 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759577AbXGLXQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 19:16:01 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CANtSlkarR7PD/2dsb2JhbAA
-X-IronPort-AV: i="4.16,534,1175497200"; 
-   d="scan'208"; a="502704628:sNHT28499792"
-To: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Further 2.6.23 merge plans...
-X-Message-Flag: Warning: May contain useful information
-References: <adalkdl43w0.fsf@cisco.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 12 Jul 2007 16:15:58 -0700
-In-Reply-To: <adalkdl43w0.fsf@cisco.com> (Roland Dreier's message of "Thu, 12 Jul 2007 16:07:59 -0700")
-Message-ID: <adahco943ip.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Jul 2007 23:15:59.0713 (UTC) FILETIME=[9BADED10:01C7C4DA]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Thu, 12 Jul 2007 19:16:24 -0400
+To: miklos@szeredi.hu
+CC: pavel@ucw.cz, miklos@szeredi.hu, oliver@neukum.org, paulus@samba.org,
+       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org, benh@kernel.crashing.org
+In-reply-to: <E1I96eW-00059M-00@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Thu, 12 Jul 2007 23:56:48 +0200)
+Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
+References: <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <20070707121729.GC3111@elf.ucw.cz> <E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu> <20070707233315.GB3820@elf.ucw.cz> <E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu> <20070712153112.GB5139@ucw.cz> <E1I96eW-00059M-00@dorka.pomaz.szeredi.hu>
+Message-Id: <E1I97qP-0005JF-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 13 Jul 2007 01:13:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As you can see, I just sent my first 2.6.23 pull request for Linus.
-There are still a few more things I plan to do in before the merge
-window closes (in ~10 days):
+> > Ok, I'll just blame fuse here. 'You have to write to /sys
+> > files for SIGKILL to work' is not funny.
+> 
+> SIGKILL won't work on a stopped task.  Neither on a traced task.
+> Neither on a zombie (how many newbies are thoroughly confused about
+> that ;)
+> 
+> And it won't work on a task that is hanging on an NFS mount, when the
+> network broke.
+> 
+> Oh, and it won't work on a deadlocked fuse filesystem.  How many of
+> these have you met?  How many of the others?
 
- - Write a patch to add P_Key handling to user_mad in the way we
-   discussed (add an ioctl to enable P_Key mode without breaking old
-   apps) -- I hope to do this tomorrow so we can get some review and
-   testing before merging it.
+And maybe someday, when I'm feeling _really_ bored, I may start
+hacking the VFS to make it possible for tasks to be killed while
+waiting on a mutex.  Can a task doing a page fault be interrupted?  I
+don't see why not.
 
- - Take a look at Sean's local SA caching patches.  I merged
-   everything else from Sean's tree, but I'm still undecided about
-   these.  I haven't read them carefully yet, but even aside from that
-   I don't have a good feeling about whether there's consensus about
-   this yet.  Any opinions about merging, for or against, would be
-   appreciated here.
+But, it's _not_ going to happen now, to fix the problems with suspend.
+Hacking fuse (however broken it may be) or the VFS is not the right
+way to fix those problems.  It may be easier than fixing the drivers,
+though I doubt it.  But even if it's the easier way it's not the
+_right_ way.
 
- - Merge up pending hardware driver changes, including the cxgb3 and
-   ehca patches I have in my queue, plus Jack's catastrophic error
-   patch for mlx4.
+We want the various subsystems in the kernel to be less dependent on
+each other not more.  And the freezer is just adding unnecessary
+dependence on totally unrelated code.  And that does not only impact
+fuse, but a lot of other code in the kernel, in the form of
+try_to_freeze() calls all over the place.
 
- - Try to get to resolution on the IPoIB "CM without SRQ" solution.
+Is that so hard to understand?
 
-Also, if there's something I didn't list and didn't already include in
-the tree I asked Linus to pull, please remind me.  I probably dropped it.
+You can bash fuse all you want, I really don't mind.  But please stop
+trying to prove, that this situation is best handled in fuse.  It just
+won't happen, not because I'm lazy to do the work but because I don't
+have the guts to do something so obviously wrong.
 
- - R.
+Miklos
