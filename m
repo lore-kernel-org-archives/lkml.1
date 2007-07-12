@@ -1,34 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964867AbXGLVKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935538AbXGLVSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964867AbXGLVKq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 17:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933904AbXGLVK3
+	id S935538AbXGLVSk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 17:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759923AbXGLVS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 17:10:29 -0400
-Received: from depni.sinp.msu.ru ([213.131.7.21]:37537 "EHLO depni.sinp.msu.ru"
+	Thu, 12 Jul 2007 17:18:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45106 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757882AbXGLVK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 17:10:27 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [announce] split-up -rt patch-queue, v2.6.22.1-rt2
-References: <20070712153717.GA7442@elte.hu>
-From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Date: Fri, 13 Jul 2007 01:10:25 +0400
-In-Reply-To: <20070712153717.GA7442@elte.hu> (Ingo Molnar's message of "Thu\, 12 Jul 2007 17\:37\:17 +0200")
-Message-ID: <873azt2uri.fsf@depni.sinp.msu.ru>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
-MIME-Version: 1.0
+	id S1759743AbXGLVS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 17:18:27 -0400
+Date: Thu, 12 Jul 2007 22:18:20 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Mike Anderson <andmike@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [2.6.23 PATCH 14/18] dm: netlink add to core
+Message-ID: <20070712211820.GK30047@agk.fab.redhat.com>
+Mail-Followup-To: "Eric W. Biederman" <ebiederm@xmission.com>,
+	Mike Anderson <andmike@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20070711210159.GF24114@agk.fab.redhat.com> <20070711143423.36722a41.akpm@linux-foundation.org> <m1bqehfyp0.fsf@ebiederm.dsl.xmission.com> <20070712173410.GA2505@us.ibm.com> <m1wsx5e7lk.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1wsx5e7lk.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Thu, Jul 12, 2007 at 01:37:43PM -0600, Eric W. Biederman wrote:
+> This of course assumes things are a good fit or the other pieces
+> can be made to be a good fit.  Currently I don't see the what makes
+> device mapper's events not fit the existing models, and I don't
+> see it in the description for this patch why we need to invent
+> something new.
+ 
+The existing event protocol used by device-mapper is trivial.  It just
+lets kernel device-mapper say to userspace 'Something happened on mapped
+device X in which you might be interested: Check it out!'.  Userspace
+then runs various checks to work out what happened and decide whether
+any action should be taken.  Though simple, in practice this often
+proves very inefficient.
 
-> We are pleased to announce something we've been working on for some 
-> time: a finegrained, split-up patch queue of the -rt kernel patch. From 
-> now on (as of 2.6.22.1-rt2) it will be part of every upstream -rt 
-> release and it is available from the -rt download site:
+We want to change the mechanism so device-mapper can pass an arbitrary
+small payload to userspace to tell it exactly what happened immediately
+so it no longer needs to waste time probing for things that could have
+happened but kernel device-mapper knows didn't.
 
-Better late than never. Thank You.
+These netlink patches are the first attempt to put such a mechanism in
+place for a few specific multipath conditions.  Sure, we *could*
+shoe-horn this into extended dm ioctls but I see that as a last resort
+if we can't make an existing mechanism do what we need.
+
+Examples of events raised against device-mapper block devices to switch
+to whichever new mechanism is chosen:
+  - a new dm table has gone live (payload holds some basic info about
+the new table)
+  - the dm device name has just been changed (new name in payload)
+  - a path in a multipath table has been marked as failed e.g. after
+an I/O failure (payload says which path)
+  - a failed path in a multipath table has been reenabled (payload says
+which path)
+  - a specific group of multipath paths has been bypassed (payload says
+which group)
+  - I/O is being directed to a different group of multipath paths
+(payload says which group)
+  - mirror recovery is complete
+  - a mirror's log device has failed
+  - a snapshot has been marked invalid (payload indicates reason)
+
+Depending on the context, the events are caught by a userspace
+device-mapper process (sometimes a long-lived daemon) - one that is
+often locked in memory with preallocated buffers all set to process the
+information and resolve the problem etc.
+
+Alasdair
+-- 
+agk@redhat.com
