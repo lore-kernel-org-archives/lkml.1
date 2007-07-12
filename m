@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762957AbXGLXR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbXGLXUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762957AbXGLXR1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 19:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759429AbXGLXRS
+	id S933148AbXGLXUZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 19:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbXGLXUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 19:17:18 -0400
-Received: from waste.org ([66.93.16.53]:59065 "EHLO waste.org"
+	Thu, 12 Jul 2007 19:20:13 -0400
+Received: from ozlabs.org ([203.10.76.45]:45315 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758381AbXGLXRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 19:17:17 -0400
-Date: Thu, 12 Jul 2007 18:16:45 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Rob Landley <rob@landley.net>
-Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Start to genericize kconfig for use by other projects.
-Message-ID: <20070712231645.GY11166@waste.org>
-References: <200707111522.14240.rob@landley.net> <Pine.LNX.4.64.0707121820110.1817@scrub.home> <200707121444.18599.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707121444.18599.rob@landley.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1755680AbXGLXUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 19:20:12 -0400
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, hch@lst.de,
+       linux-kernel@vger.kernel.org, carsteno <carsteno@de.ibm.com>
+In-Reply-To: <46960C27.5040803@qumranet.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <20070711122324.GA21714@lst.de>
+	 <1184203311.6005.664.camel@localhost.localdomain>
+	 <20070711.192829.08323972.davem@davemloft.net>
+	 <1184208521.6005.695.camel@localhost.localdomain>
+	 <20070711212435.abd33524.akpm@linux-foundation.org>
+	 <1184215943.6005.745.camel@localhost.localdomain>
+	 <46960C27.5040803@qumranet.com>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 09:20:05 +1000
+Message-Id: <1184282405.6005.803.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 02:44:18PM -0400, Rob Landley wrote:
-> On Thursday 12 July 2007 12:28:39 pm Roman Zippel wrote:
-> > Hi,
+On Thu, 2007-07-12 at 14:10 +0300, Avi Kivity wrote:
+> Rusty Russell wrote:
+> > Remove export of __put_task_struct, and usage in lguest
 > >
-> > On Wed, 11 Jul 2007, Rob Landley wrote:
-> > > Replace name "Linux Kernel" in menuconfig with a macro (defaulting to
-> > > "Linux Kernel" if not -Ddefined by the makefile), and remove a few
-> > > unnecessary occurrences of "kernel" in pop-up text.
+> > lguest takes a reference count of tasks for two reasons.  The first is
+> > bogus: the /dev/lguest close callback will be called before the task
+> > is destroyed anyway, so no need to take a reference on open.
 > >
-> > Could you drop the PROJECT_NAME changes for now? The rest looks fine.
-> > I would prefer if the project would be settable via Kconfig.
+> >   
 > 
-> Are projects likely to grab a common kconfig binary externally, rather
-> than build their own? 
+> What about
+> 
+>   Open /dev/lguest
+>   transfer fd using SCM_RIGHTS (or clone()?)
+>   close fd in original task
+>   exit()
+> 
+> ?
+> 
+> My feeling is that if you want to be bound to a task, not a file, you 
+> need to use syscalls, not ioctls.
 
-Yes.
+"Don't do that".  You'll lose the ability to access the operations on
+the fd once you are no longer the original task (explicit check).,
 
-If you really want to share kconfig, it'd be better to break it off
-into a separately packaged project. For the time being, the kernel
-makefiles can look for it in path, then fall back to its own copy
-which we can eventually drop.
+It's not an exact match, but a file is a remarkably convenient
+abstraction for a non-ABI such as lguest.  Of course, Carsten was
+talking about unifying the lguest & kvm userspace interface, so this
+could well change anyway.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Cheers,
+Rusty.
+
