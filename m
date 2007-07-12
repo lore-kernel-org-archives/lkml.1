@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932314AbXGLTd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbXGLTi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932314AbXGLTd4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 15:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764009AbXGLTdr
+	id S1760736AbXGLTi0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 15:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbXGLTiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 15:33:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50052 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763825AbXGLTdq (ORCPT
+	Thu, 12 Jul 2007 15:38:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33054 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753955AbXGLTiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 15:33:46 -0400
-Date: Thu, 12 Jul 2007 12:33:43 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, jeremy@goop.org, Tim Hockin <thockin@google.com>,
-       jesse.barnes@intel.com
-Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
-In-Reply-To: <p734pkbyuu4.fsf@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0707121230370.11653@schroedinger.engr.sgi.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
- <p734pkbyuu4.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 12 Jul 2007 15:38:19 -0400
+Date: Thu, 12 Jul 2007 21:38:17 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: x86 setup code rewrite in C - revised
+Message-ID: <20070712193817.GA1255@one.firstfloor.org>
+References: <1184181538674-git-send-email-hpa@zytor.com> <alpine.LFD.0.999.0707121016210.20061@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707121016210.20061@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007, Andi Kleen wrote:
-
-> These all need re-review:
+On Thu, Jul 12, 2007 at 10:24:48AM -0700, Linus Torvalds wrote:
 > 
-> > i386-add-support-for-picopower-irq-router.patch
-> > make-arch-i386-kernel-setupcremapped_pgdat_init-static.patch
-> > arch-i386-kernel-i8253c-should-include-asm-timerh.patch
-> > make-arch-i386-kernel-io_apicctimer_irq_works-static-again.patch
+> 
+> On Wed, 11 Jul 2007, H. Peter Anvin wrote:
+> >
+> > This patch set replaces the x86 setup code, which is currently all in
+> > assembly, with a version written in C, using the ".code16gcc" feature
+> > of binutils (which has been present since at least 2001.)
+> >
+> >  76 files changed, 4606 insertions(+), 5209 deletions(-)
+> 
+> I can't really argue against this on any sane grounds - not only is it 
+> removing more lines than it adds, but moving from mostly unreadable 
+> assembly to C seems a good idea.
 
+The only thing questionable is that .code16gcc is arguably quite
+an abuse of gcc. I even checked with some gcc developers 
+and they weren't too happy about it. e.g. it's not regression
+tested at all so we would be basically on our own with it.
 
-> > quicklist-support-for-x86_64.patch
+But yes the code looks good.
 
-^^^ That patch was supposed to be merged for 2.6.22 (you told me you 
-forgot to merge it) and has been for a long time in mm. Does it now 
-need to be rereviewed for 2.6.23? The other pieces of the quicklist patch 
-for core and other arches were merged for 2.6.22.
+-Andi
+
