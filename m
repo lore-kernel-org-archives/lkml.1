@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934368AbXGLUok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934929AbXGLUpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934368AbXGLUok (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 16:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbXGLUob
+	id S934929AbXGLUpa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 16:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbXGLUpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 16:44:31 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:52480 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756505AbXGLUoa (ORCPT
+	Thu, 12 Jul 2007 16:45:20 -0400
+Received: from mga09.intel.com ([134.134.136.24]:55635 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755827AbXGLUpR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 16:44:30 -0400
-X-Greylist: delayed 1247 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 16:44:30 EDT
-Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to 2.6.22
-	available
-From: Sven-Thorsten Dietrich <sdietrich@novell.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Gregory Haskins <ghaskins@novell.com>, jim.houston@ccur.com,
-       joe.korty@ccur.com, rostedt@goodmis.org, tglx@linutronix.de,
-       dwalker@mvista.com, David Bahi <DBahi@novell.com>,
-       Moiz Kohari <MKohari@novell.com>, dsaxena@plexity.net,
-       williams@redhat.com, abogani@texware.it, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <20070712163341.GA9622@elte.hu>
-References: <46961E080200005A000276AE@mcclure.wal.novell.com>
-	 <20070712163341.GA9622@elte.hu>
-Content-Type: text/plain
-Organization: Suse
-Date: Thu, 12 Jul 2007 13:21:40 -0700
-Message-Id: <1184271700.24942.175.camel@sx.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jul 2007 16:45:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,533,1175497200"; 
+   d="scan'208";a="105678679"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: S3 state transition
+Date: Thu, 12 Jul 2007 13:45:10 -0700
+Message-ID: <A3258B497F1C1441AD36A2E8B45FD6284C73D2@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <20070712141349.GB3881@ucw.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: S3 state transition
+Thread-Index: AcfEj0NZ+4fsVDPLQvilKPGV+ArokAANixsw
+References: <A3258B497F1C1441AD36A2E8B45FD628486D78@scsmsx412.amr.corp.intel.com> <20070712141349.GB3881@ucw.cz>
+From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 12 Jul 2007 20:45:11.0002 (UTC) FILETIME=[8A3A33A0:01C7C4C5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 18:33 +0200, Ingo Molnar wrote:
-> * Gregory Haskins <ghaskins@novell.com> wrote:
-> 
+I searched the archives but couldn't get much. Can you point me to code?
 
-> 
-> ok. Make sure you check rt2 as well - and note that it's not fully 
-> bisectable with PREEMPT_RT enabled (but should probably be fully 
-> bisectable with PREEMPT_RT disabled). So check out first whether the 
-> problem still persists with PREEMPT_RT disabled.
-> 
+Thanks,
+Lomesh
 
-There is also a regression on my Dell 690 dual-quadcore
+-----Original Message-----
+From: Pavel Machek [mailto:pavel@ucw.cz] 
+Sent: Thursday, July 12, 2007 7:14 AM
+To: Agarwal, Lomesh
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: S3 state transition
 
-rt2 hangs like a brick at boot. rt1 comes up fine.
+On Wed 2007-07-11 16:15:37, Agarwal, Lomesh wrote:
+> I am trying to understand how Linux handles S3 state transition.
+> Specially I want to understand what it does anything for processes
+> loaded at the time of transition. Any pointers to code/document will
+be
+> helpful.
 
-I am configured at max 8 CPUs so it doesn't seem to be an out of memory
-situation.
+Do you mean suspend2ram? Search archives for freezer flamewar.
 
-I'll look at the interdiffs and see what I can find.
-
-Regards,
-
-Sven
-
-> 	Ingo
 -- 
-Sven-Thorsten Dietrich
-+1 415 694-2930
-( www.novell.com/linux )
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures)
+http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
