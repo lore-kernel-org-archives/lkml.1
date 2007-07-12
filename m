@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934115AbXGLRD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765611AbXGLRKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934115AbXGLRD3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbXGLRDT
+	id S1765611AbXGLRKt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXGLRKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:03:19 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:51338 "EHLO 2ka.mipt.ru"
+	Thu, 12 Jul 2007 13:10:40 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:50223 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752996AbXGLRDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:03:18 -0400
-Date: Thu, 12 Jul 2007 21:02:47 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       olaf.kirch@oracle.com
-Subject: Re: [PATCH][RFC] network splice receive v3
-Message-ID: <20070712170247.GA18469@2ka.mipt.ru>
-References: <20070711091927.GQ4587@kernel.dk>
+	id S1753051AbXGLRKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 13:10:39 -0400
+Subject: Re: [Patch RT] Fix CFS load balancing for RT tasks
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux RT Users <linux-rt-users@vger.kernel.org>,
+       Darren Hart <dvhltc@us.ibm.com>, john stultz <johnstul@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20070711164708.48907792@frecb000686.frec.bull.fr>
+References: <20070711164708.48907792@frecb000686.frec.bull.fr>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 12 Jul 2007 09:41:55 -0700
+Message-Id: <1184258515.3000.11.camel@josh-work.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070711091927.GQ4587@kernel.dk>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 11:19:27AM +0200, Jens Axboe (jens.axboe@oracle.com) wrote:
-> Hi,
+On Wed, 2007-07-11 at 16:47 +0200, Sébastien Dugué wrote:
+>   there seems to be something wrong with the way the CFS balances (or does not
+> balance) RT tasks. This was evidenced using the sched_football testcase
+> available from the RT wiki (http://rt.wiki.kernel.org/index.php/IBM_Test_Cases)
+> which I modified and attached to this mail.
+> 
+>   The testcase starts a number of threads which fall into 3 categories:
+> 
+> 	1 referee thread: SCHED_FIFO, RT prio 5
+> 	ncpus defensive threads: SCHED_FIFO, RT prio 4
+> 	ncpus offensive threads: SCHED_FIFO, RT prio 3
+> 
+> 	(ncpus being the number of CPUs)
+> 
+>   To make a long story short, the defensive threads should end up distributed
+> among all CPUs, but that's not the case. For example, on a dual HT Xeon box,
+> after task migration stabilizes we have the following running on the different
+> CPUs:
+> 
+>   CPU 0: defense2
+>   CPU 1: referee offense2 offense3 offense4 defense3
+>   CPU 2: offense1
+>   CPU 3: defense1 defense4
+> 
+> which clearly show the imbalance between CPU 2 and CPU 3 where offense1
+> should not be allowed to run while the higher prio defense1 and defense4
+> are sharing the same CPU.
+> 
+>   The following patch fixes this by re-enabling the RT overload detection
+> for the CFS. It may not be the right solution, maybe it should be incorporated
+> into the other load balancing mechanisms. I did not digg deep enough yet
+> to make that call ;-)
 
-Hi Jens.
+2.6.21.5-rt20 plus this patch passed 1000 runs of the standard
+sched_football on an 8 processor (quad dual-core) x86-64 box.  Nice
+work.
 
-> Here's an updated implementation of tcp network splice receive support.
-> It actually works for me now, no data corruption seen.
+>   The RT overload mechanism of the O(1) scheduler has not been activated
+> in the new CFS.
 > 
-> For the original announcement and how to test it, see:
+>   This patch fixes that by inserting calls to inc_rt_tasks() and dec_rt_tasks()
+> in enqueue_task_rt() and dequeue_task_rt() respectively, which enables the
+> balance_rt_tasks() to be run in the rt_overload case.
 > 
-> http://marc.info/?l=linux-netdev&m=118103093400770&w=2
 > 
-> The splice core changes needed to support this are now merged in
-> 2.6.22-git, so the patchset shrinks to just two patches - one for adding
-> a release hook, and one for the networking changes.
-> 
-> The code is also available in the splice-net branch here:
-> 
-> git://git.kernel.dk/data/git/linux-2.6-block.git splice-net
-> 
-> There's a third experimental patch in there that allows vmsplice
-> directly to user memory, that still needs some work though.
-> 
-> Comments, testing welcome!
+> Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
 
-It looks like you included all bits we found in the previous runs, so
-likely it will work good, but so far I have conflicts merging todays git
-and your tree in include/linux/splice.h, fs/ext2/file.c, fs/splice.c and 
-mm/filemap_xip.c. This can be a problem with my tree though.
-It really looks like the last tree we tested, so if you think additional
-one will not hurt, feel free to ping, so I will completely rebase
-testing tree.
+Acked-by: Josh Triplett <josh@kernel.org>
 
-> -- 
-> Jens Axboe
+- Josh Triplett
 
 
--- 
-	Evgeniy Polyakov
