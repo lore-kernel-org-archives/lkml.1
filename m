@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934456AbXGLCKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934914AbXGLCWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934456AbXGLCKx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 22:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761625AbXGLCKo
+	id S934914AbXGLCWE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 22:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762816AbXGLCVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 22:10:44 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:44349 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760337AbXGLCKn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 22:10:43 -0400
-Message-ID: <46958D9D.9090802@zytor.com>
-Date: Wed, 11 Jul 2007 19:10:37 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Bodo Eggert <7eggert@gmx.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Use BIOS Keyboard variable to set Numlock
-References: <Pine.LNX.4.58.0707112305390.2432@be1.lrz> <46957CBF.1000101@zytor.com> <Pine.LNX.4.58.0707120321200.28727@be1.lrz>
-In-Reply-To: <Pine.LNX.4.58.0707120321200.28727@be1.lrz>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 11 Jul 2007 22:21:53 -0400
+Received: from ozlabs.org ([203.10.76.45]:51266 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762338AbXGLCVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 22:21:53 -0400
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20070711122324.GA21714@lst.de>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <20070711122324.GA21714@lst.de>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 11:21:51 +1000
+Message-Id: <1184203311.6005.664.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert wrote:
+On Wed, 2007-07-11 at 14:23 +0200, Christoph Hellwig wrote:
+> > lguest-export-symbols-for-lguest-as-a-module.patch
 > 
->> That being said, one could argue that since this is a BIOS interface it
->> should be queried via INT 16h, AH=02h and stuffed in the zeropage
->> structure.  This would also solve the issue of it not being supported by
->> non-BIOS firmware.
+> __put_task_struct is one of those no way in hell should this be exported
+> things because we don't want modules messing with task lifetimes.
 > 
-> This is an interesting option, but it's more invasive. I'd rather like a 
-> feedback saying we can depend on that data area to be there.
+> Fortunately I can't find anything actually using this in lguest, so
+> it looks the issue has been solved in the meantime.
 
-I don't think we can.  You might find garbage there.
+To do inter-guest (ie. inter-process) I/O you really have to make sure
+the other side doesn't go away.
 
-	-hpa
+> I also have a rather bad feeling about exporting access_process_vm.
+> This is the proverbial sledge hammer for access to user vm addresses
+> and I'd rather keep it away from module programmers with "if all
+> you have is a hammer ..." in mind.
+> 
+> In lguest this is used by send_dma which from my short reading of the
+> code seems to be the central IPC mechanism.  The double copy here
+> doesn't look very efficient to me either.  Maybe some VM folks could
+> look into a better way to archive this that might be both more
+> efficient and not require the export.
+
+It's not a double copy: it's a map & copy.
+
+If KVM develops inter-guest I/O then this could all be extracted into a
+helper function and made more efficient.
+
+> Just started to reading this (again) so no useful comment here, but it
+> would be nice if the code could follow CodingStyle and place the || and
+> && at the end of the line in multiline conditionals instead of at the
+> beginning of the new one.
+
+Surprisingly, you have a point here.  Since the key purpose of lguest is
+as demonstration code, it meticulously match kernel style.
+
+I shall immediately prepare a patch to convert the rest of the kernel to
+the correct "&& at beginning of line" style.
+
+Rusty.
+
