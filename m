@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935538AbXGLVSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935430AbXGLVUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935538AbXGLVSk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 17:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759923AbXGLVS2
+	id S935430AbXGLVUg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 17:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761341AbXGLVU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 17:18:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45106 "EHLO mx1.redhat.com"
+	Thu, 12 Jul 2007 17:20:28 -0400
+Received: from ns1.suse.de ([195.135.220.2]:56850 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759743AbXGLVS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 17:18:27 -0400
-Date: Thu, 12 Jul 2007 22:18:20 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Mike Anderson <andmike@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [2.6.23 PATCH 14/18] dm: netlink add to core
-Message-ID: <20070712211820.GK30047@agk.fab.redhat.com>
-Mail-Followup-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-	Mike Anderson <andmike@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <20070711210159.GF24114@agk.fab.redhat.com> <20070711143423.36722a41.akpm@linux-foundation.org> <m1bqehfyp0.fsf@ebiederm.dsl.xmission.com> <20070712173410.GA2505@us.ibm.com> <m1wsx5e7lk.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1761240AbXGLVU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 17:20:27 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Joshua Wise <jwise@google.com>
+Subject: Re: [x86_64 MCE] [RFC] mce.c race condition (or: when evil hacks are the only options)
+Date: Thu, 12 Jul 2007 23:20:19 +0200
+User-Agent: KMail/1.9.6
+Cc: akpm@google.com, linux-kernel@vger.kernel.org,
+       Tim Hockin <thockin@google.com>, Mike Waychison <mikew@google.com>
+References: <Pine.LNX.4.64.0707121309520.617@internets.corp.google.com>
+In-Reply-To: <Pine.LNX.4.64.0707121309520.617@internets.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1wsx5e7lk.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Message-Id: <200707122320.19489.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 01:37:43PM -0600, Eric W. Biederman wrote:
-> This of course assumes things are a good fit or the other pieces
-> can be made to be a good fit.  Currently I don't see the what makes
-> device mapper's events not fit the existing models, and I don't
-> see it in the description for this patch why we need to invent
-> something new.
- 
-The existing event protocol used by device-mapper is trivial.  It just
-lets kernel device-mapper say to userspace 'Something happened on mapped
-device X in which you might be interested: Check it out!'.  Userspace
-then runs various checks to work out what happened and decide whether
-any action should be taken.  Though simple, in practice this often
-proves very inefficient.
+On Thursday 12 July 2007 22:24:36 Joshua Wise wrote:
+> Some time after my first[1] patch to mce.c, I had continued testing using
+> the test method described there (inject hundreds of thousands of single-bit
+> errors while reading from /dev/mcelog), and I came across a strange issue. 
+> Once every couple test cycles (i.e., every hundred-thousand injects), the
+> system would begin behaving very strangely. The serial port would stop
+> responding entirely, and my SSH sessions would respond, but to one keystroke
+> behind what I had typed. After two minutes, the watchdog timer would reboot
+> the system.
 
-We want to change the mechanism so device-mapper can pass an arbitrary
-small payload to userspace to tell it exactly what happened immediately
-so it no longer needs to waste time probing for things that could have
-happened but kernel device-mapper knows didn't.
+Thanks for the analysis.
 
-These netlink patches are the first attempt to put such a mechanism in
-place for a few specific multipath conditions.  Sure, we *could*
-shoe-horn this into extended dm ioctls but I see that as a last resort
-if we can't make an existing mechanism do what we need.
+I guess at some point it would make sense to model the whole thing in spin or 
+similar and find even the last race. Anyone interested? @)
 
-Examples of events raised against device-mapper block devices to switch
-to whichever new mechanism is chosen:
-  - a new dm table has gone live (payload holds some basic info about
-the new table)
-  - the dm device name has just been changed (new name in payload)
-  - a path in a multipath table has been marked as failed e.g. after
-an I/O failure (payload says which path)
-  - a failed path in a multipath table has been reenabled (payload says
-which path)
-  - a specific group of multipath paths has been bypassed (payload says
-which group)
-  - I/O is being directed to a different group of multipath paths
-(payload says which group)
-  - mirror recovery is complete
-  - a mirror's log device has failed
-  - a snapshot has been marked invalid (payload indicates reason)
+> 
+> At this point, mce_read() and mce_log() are blocking on each other, and will
+> be for all eternity. mce_log() is waiting for the on_each_cpu() to complete
+> so that the loop can complete, and on_each_cpu() (from mce_read()) is
+> waiting for mce_log() to finish.
 
-Depending on the context, the events are caught by a userspace
-device-mapper process (sometimes a long-lived daemon) - one that is
-often locked in memory with preallocated buffers all set to process the
-information and resolve the problem etc.
+I suspect the right fix is to get rid of collect_tscs(). 
 
-Alasdair
--- 
-agk@redhat.com
+One possible way would be to get the TSCs from the mce_log table
+before the synchronization instead of asking the CPUs.
+
+Or switch it over to the NMI supporting RCU that was recently posted.
+
+
+> -- there may be other edge cases other than 
+> this one. I'm actually surprised that this wasn't a ring buffer to start
+> with -- it certainly seems like it wanted to be one. 
+
+The problem with a ring buffer is that it would lose old entries; but 
+for machine checks you really want the first entries because
+the later ones might be just junk.
+
+-Andi
