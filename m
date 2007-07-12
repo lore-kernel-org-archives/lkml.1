@@ -1,445 +1,2843 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762795AbXGLXnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964938AbXGLXpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762795AbXGLXnR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 19:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbXGLXnE
+	id S964938AbXGLXpm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 19:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758738AbXGLXp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 19:43:04 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:53606 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbXGLXnB (ORCPT
+	Thu, 12 Jul 2007 19:45:29 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59649 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757898AbXGLXpU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 19:43:01 -0400
-Date: Thu, 12 Jul 2007 16:42:33 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: [GIT PATCH] USB patches for 2.6.22
-Message-ID: <20070712234233.GA22339@kroah.com>
+	Thu, 12 Jul 2007 19:45:20 -0400
+Date: Fri, 13 Jul 2007 01:45:53 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jens Axboe <jens.axboe@oracle.com>, Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com, netdev@vger.kernel.org,
+       geert@linux-m68k.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org
+Subject: [2.6 patch] more ACSI removal
+Message-ID: <20070712234553.GR3492@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a bunch of USB patches and fixes against your 2.6.22 git tree.
+This patch removes some code that became dead code after the ATARI_ACSI 
+removal.
 
-They include a number of new drivers, some cleanups in anticipation of
-future API changes, new infrastructure to make writing USB drivers
-easier, and a lot of USB suspend work.  There are a lot of minor little
-things in here too, see the changelog below for everything.
+It also indirectly fixes the following bug introduced by
+commit c2bcf3b8978c291e1b7f6499475c8403a259d4d6:
 
-All of these have been in the -mm releases for a while.
-
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
-
-The full patches will be sent to the linux-usb-devel mailing list, if
-anyone wants to see them.
-
-thanks,
-
-greg k-h
+ config ATARI_SLM
+        tristate "Atari SLM laser printer support"
+-       depends on ATARI && ATARI_ACSI!=n
++       depends on ATARI
 
 
- Documentation/ABI/testing/sysfs-bus-usb          |   13 +
- Documentation/power/swsusp.txt                   |    3 +
- Documentation/usb/dma.txt                        |   52 +-
- Documentation/usb/persist.txt                    |  156 ++
- MAINTAINERS                                      |    8 +-
- drivers/block/ub.c                               |   12 +-
- drivers/hid/usbhid/hid-core.c                    |    9 +-
- drivers/usb/Kconfig                              |    9 +-
- drivers/usb/Makefile                             |    2 +-
- drivers/usb/atm/cxacru.c                         |   73 +-
- drivers/usb/class/cdc-acm.c                      |    3 +
- drivers/usb/class/usblp.c                        |  618 ++++---
- drivers/usb/core/Kconfig                         |   25 +
- drivers/usb/core/config.c                        |   42 +-
- drivers/usb/core/devices.c                       |   26 +
- drivers/usb/core/driver.c                        |  162 +-
- drivers/usb/core/file.c                          |   29 +-
- drivers/usb/core/generic.c                       |   29 +-
- drivers/usb/core/hcd-pci.c                       |    3 +-
- drivers/usb/core/hcd.c                           |  126 +-
- drivers/usb/core/hcd.h                           |   14 +-
- drivers/usb/core/hub.c                           |  645 +++----
- drivers/usb/core/message.c                       |   38 +-
- drivers/usb/core/quirks.c                        |   18 +
- drivers/usb/core/sysfs.c                         |  109 +-
- drivers/usb/core/urb.c                           |  105 +-
- drivers/usb/core/usb.c                           |   12 +-
- drivers/usb/core/usb.h                           |   14 +-
- drivers/usb/gadget/Kconfig                       |   53 +
- drivers/usb/gadget/Makefile                      |    6 +
- drivers/usb/gadget/at91_udc.c                    |   21 -
- drivers/usb/gadget/dummy_hcd.c                   |   39 +-
- drivers/usb/gadget/ether.c                       |    8 +-
- drivers/usb/gadget/file_storage.c                |   22 +-
- drivers/usb/gadget/fsl_usb2_udc.c                |   99 +-
- drivers/usb/gadget/fsl_usb2_udc.h                |    4 +
- drivers/usb/gadget/gadget_chips.h                |   27 +-
- drivers/usb/gadget/gmidi.c                       |    8 +-
- drivers/usb/gadget/goku_udc.c                    |   84 +-
- drivers/usb/gadget/goku_udc.h                    |   10 +-
- drivers/usb/gadget/inode.c                       |    8 +-
- drivers/usb/gadget/lh7a40x_udc.c                 |   27 -
- drivers/usb/gadget/m66592-udc.c                  | 1653 ++++++++++++++++
- drivers/usb/gadget/m66592-udc.h                  |  577 ++++++
- drivers/usb/gadget/net2280.c                     |   97 -
- drivers/usb/gadget/omap_udc.c                    |  108 --
- drivers/usb/gadget/pxa2xx_udc.c                  |  473 +----
- drivers/usb/gadget/pxa2xx_udc.h                  |   48 +-
- drivers/usb/gadget/rndis.c                       |  164 +-
- drivers/usb/gadget/s3c2410_udc.c                 | 2045 ++++++++++++++++++++
- drivers/usb/gadget/s3c2410_udc.h                 |  110 ++
- drivers/usb/gadget/serial.c                      |   14 +-
- drivers/usb/gadget/zero.c                        |    9 +-
- drivers/usb/host/Kconfig                         |   28 +-
- drivers/usb/host/Makefile                        |    2 +
- drivers/usb/host/ehci-dbg.c                      |  183 +-
- drivers/usb/host/ehci-fsl.c                      |   10 +-
- drivers/usb/host/ehci-hcd.c                      |  118 +-
- drivers/usb/host/ehci-hub.c                      |  122 ++-
- drivers/usb/host/ehci-mem.c                      |   27 +-
- drivers/usb/host/ehci-pci.c                      |    7 +-
- drivers/usb/host/ehci-ppc-soc.c                  |  182 ++
- drivers/usb/host/ehci-ps3.c                      |   86 +-
- drivers/usb/host/ehci-q.c                        |   96 +-
- drivers/usb/host/ehci-sched.c                    |  339 +++-
- drivers/usb/host/ehci.h                          |  234 ++-
- drivers/usb/host/ohci-dbg.c                      |    4 +-
- drivers/usb/host/ohci-hcd.c                      |   92 +-
- drivers/usb/host/ohci-hub.c                      |    5 +-
- drivers/usb/host/ohci-mem.c                      |    1 +
- drivers/usb/host/ohci-pci.c                      |   57 +-
- drivers/usb/host/ohci-pnx4008.c                  |    2 +-
- drivers/usb/host/ohci-ps3.c                      |   87 +-
- drivers/usb/host/ohci.h                          |    2 +
- drivers/usb/host/r8a66597-hcd.c                  | 2244 ++++++++++++++++++++++
- drivers/usb/host/r8a66597.h                      |  634 ++++++
- drivers/usb/host/uhci-hcd.c                      |    5 +-
- drivers/usb/misc/adutux.c                        |   31 +-
- drivers/usb/misc/auerswald.c                     |    6 +-
- drivers/usb/misc/berry_charge.c                  |   35 +
- drivers/usb/misc/idmouse.c                       |   54 +-
- drivers/usb/misc/iowarrior.c                     |   26 +-
- drivers/usb/misc/ldusb.c                         |   33 +-
- drivers/usb/misc/legousbtower.c                  |   24 +-
- drivers/usb/misc/sisusbvga/sisusb.c              |   38 +-
- drivers/usb/misc/sisusbvga/sisusb_con.c          |   25 +-
- drivers/usb/misc/sisusbvga/sisusb_init.h         |    2 -
- drivers/usb/misc/usblcd.c                        |   67 +-
- drivers/usb/mon/mon_bin.c                        |   34 +-
- drivers/usb/mon/mon_main.c                       |   14 +-
- drivers/usb/mon/mon_text.c                       |   29 +-
- drivers/usb/mon/usb_mon.h                        |    7 +-
- drivers/usb/serial/Kconfig                       |   10 +
- drivers/usb/serial/Makefile                      |    1 +
- drivers/usb/serial/aircable.c                    |   16 +-
- drivers/usb/serial/airprime.c                    |   10 +-
- drivers/usb/serial/ark3116.c                     |   61 +-
- drivers/usb/serial/belkin_sa.c                   |   78 +-
- drivers/usb/serial/cyberjack.c                   |   17 +-
- drivers/usb/serial/cypress_m8.c                  |   18 +-
- drivers/usb/serial/digi_acceleport.c             |   99 +-
- drivers/usb/serial/empeg.c                       |   14 +-
- drivers/usb/serial/ftdi_sio.c                    |  119 +-
- drivers/usb/serial/garmin_gps.c                  |   47 +-
- drivers/usb/serial/generic.c                     |   97 +-
- drivers/usb/serial/io_edgeport.c                 |   40 +-
- drivers/usb/serial/io_fw_down3.h                 | 1460 +++++++-------
- drivers/usb/serial/io_ti.c                       |  124 +-
- drivers/usb/serial/io_usbvend.h                  |   12 +-
- drivers/usb/serial/ipaq.c                        |   14 +-
- drivers/usb/serial/ipw.c                         |   12 +-
- drivers/usb/serial/ir-usb.c                      |  154 +-
- drivers/usb/serial/keyspan.c                     |  456 ++++-
- drivers/usb/serial/keyspan.h                     |   74 +-
- drivers/usb/serial/keyspan_pda.c                 |   17 +-
- drivers/usb/serial/keyspan_usa67msg.h            |  254 +++
- drivers/usb/serial/kl5kusb105.c                  |   22 +-
- drivers/usb/serial/kobil_sct.c                   |   26 +-
- drivers/usb/serial/mct_u232.c                    |  149 ++-
- drivers/usb/serial/mct_u232.h                    |   15 +-
- drivers/usb/serial/mos7720.c                     |   43 +-
- drivers/usb/serial/mos7840.c                     |  106 +-
- drivers/usb/serial/navman.c                      |    7 +-
- drivers/usb/serial/omninet.c                     |   20 +-
- drivers/usb/serial/option.c                      |   34 +-
- drivers/usb/serial/oti6858.c                     | 1342 +++++++++++++
- drivers/usb/serial/oti6858.h                     |   15 +
- drivers/usb/serial/pl2303.c                      |   90 +-
- drivers/usb/serial/safe_serial.c                 |    6 +-
- drivers/usb/serial/sierra.c                      |  371 ++--
- drivers/usb/serial/ti_usb_3410_5052.c            |   46 +-
- drivers/usb/serial/usb-serial.c                  |   35 +-
- drivers/usb/serial/visor.c                       |   64 +-
- drivers/usb/serial/whiteheat.c                   |  122 +-
- drivers/usb/storage/scsiglue.c                   |   21 +-
- drivers/usb/storage/unusual_devs.h               |  188 +-
- drivers/usb/storage/usb.c                        |   91 +-
- drivers/usb/storage/usb.h                        |    1 +
- drivers/usb/usb-skeleton.c                       |  151 ++-
- include/asm-arm/arch-ixp4xx/udc.h                |   22 -
- include/asm-arm/arch-pxa/udc.h                   |   33 -
- include/linux/usb.h                              |   69 +-
- include/linux/usb/Kbuild                         |    1 +
- include/linux/{usb_gadgetfs.h => usb/gadgetfs.h} |   24 +-
- include/linux/usb/quirks.h                       |    3 +
- include/linux/usb/serial.h                       |    7 +
- include/linux/usb_gadget.h                       |   48 -
- 147 files changed, 14872 insertions(+), 4565 deletions(-)
- create mode 100644 Documentation/usb/persist.txt
- create mode 100644 drivers/usb/gadget/m66592-udc.c
- create mode 100644 drivers/usb/gadget/m66592-udc.h
- create mode 100644 drivers/usb/gadget/s3c2410_udc.c
- create mode 100644 drivers/usb/gadget/s3c2410_udc.h
- create mode 100644 drivers/usb/host/ehci-ppc-soc.c
- create mode 100644 drivers/usb/host/r8a66597-hcd.c
- create mode 100644 drivers/usb/host/r8a66597.h
- create mode 100644 drivers/usb/serial/keyspan_usa67msg.h
- create mode 100644 drivers/usb/serial/oti6858.c
- create mode 100644 drivers/usb/serial/oti6858.h
- rename include/linux/{usb_gadgetfs.h => usb/gadgetfs.h} (74%)
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
----------------
+---
 
-Al Borchers (1):
-      USB: digi_acceleport further buffer clean up
+ Documentation/m68k/kernel-options.txt    |    7 
+ Documentation/networking/net-modules.txt |    6 
+ drivers/block/Kconfig                    |   11 
+ drivers/block/Makefile                   |    1 
+ drivers/block/acsi_slm.c                 | 1032 -----------------------
+ drivers/net/Kconfig                      |   16 
+ drivers/net/Makefile                     |    2 
+ drivers/net/Space.c                      |    8 
+ drivers/net/atari_bionet.c               |  675 ---------------
+ drivers/net/atari_pamsnet.c              |  878 -------------------
+ include/asm-m68k/atari_SLM.h             |   28 
+ include/asm-m68k/atari_acsi.h            |   37 
+ 12 files changed, 2701 deletions(-)
 
-Alan Cox (8):
-      USB: serial: ark3116.c: Mixed fixups
-      USB: serial: belkin_sa: Various needed fixes
-      USB: serial: ir_usb: Clean up the worst of it, remove exciting 'crash on open' feature
-      USB: mos7840.c: turn this into a serial driver
-      USB: pl2303: remove bogus checks and fix speed support to use tty_get_baud_rate()
-      USB: visor and whiteheat: remove bogus termios change checks
-      USB: mos7720: remove bogus no termios change check
-      USB: io_*: remove bogus termios no change checks
-
-Alan Stern (27):
-      USB: interface PM state
-      USB: Implement PM FREEZE and PRETHAW
-      USB: move bus_suspend and bus_resume method calls
-      USB: don't unsuspend for a new connection
-      USB: remove references to dev.power.power_state
-      USB: remove "locktree" routine from the hub driver
-      USB: make hub driver's release more robust
-      USB: add USB-Persist facility
-      USB: EHCI, OHCI: handover changes
-      USB: add RESET_RESUME device quirk
-      USB: EHCI: fix handover for designated full-speed ports
-      USB: Make device reset stop retrying after disconnect
-      USB: prevent char device open/deregister race
-      USB: rework C++-style comments
-      USB: remove __usb_port_suspend
-      USB: separate root and non-root suspend/resume
-      USB: remove excess code from hub.c
-      USB: add reset_resume method
-      USB: unify reset_resume and normal resume
-      USB: add power/persist device attribute
-      USB: option: fix usage of urb->status abuse
-      USB: usb-storage: use kthread_stop() for the control thread
-      USB: Handle bogus low-speed Bulk endpoints
-      USB: Remove usages of dev->power.power_state
-      USB: Don't resume root hub if the controller is suspended
-      USB: Fix off-by-1 error in the scatter-gather library
-      usb-storage: implement autosuspend
-
-Andrey Arapov (1):
-      USB: cdc-acm: add new device id to option driver
-
-Arjan van de Ven (1):
-      USB: Patch to align the various USB timers to fire at the same time
-
-Arnaud Patard (1):
-      USB Gadget driver for Samsung s3c2410 ARM SoC
-
-Benny Halevy (1):
-      synchronization in usb_serial_put
-
-Christian Engelmayer (1):
-      ehci-hub: improved over-current recovery
-
-Craig W. Nadler (1):
-      USB: add IAD support to usbfs and sysfs
-
-Daniel Drake (1):
-      USB: add USB_DEVICE_AND_INTERFACE_INFO for device matching
-
-Dave Platt (1):
-      USB: RTS/CTS handshaking support, DTR fixes for MCT U232 serial adapter
-
-David Brownell (11):
-      USB: ehci refcounts work on ppc7448
-      USB: usb gadget, dead config cleanup
-      USB: export <linux/usb_gadgetfs> as <linux/usb/gadgetfs.h>
-      USB: usb serial gadget, sparse fixes
-      USB: usb host side can be configured given PCMCIA
-      USB: usb/dma doc updates
-      USB: pxa2xx_udc -- cleanups, mostly removing dma hooks
-      usb gadget stack: remove usb_ep_*_buffer(), part 1
-      usb gadget stack: remove usb_ep_*_buffer(), part 2
-      USB: usb gadget stack can now -DDEBUG with Kconfig
-      USB: goku_udc trivial cleanups
-
-David Rientjes (1):
-      USB: use function attribute __maybe_unused
-
-Geoff Levand (1):
-      USB: PS3: USB system-bus rework
-
-Greg Kroah-Hartman (36):
-      USB: fix up license wording on some of my usb-serial drivers
-      USB: serial: aircable: clean up urb->status usage
-      USB: serial: airprime: clean up urb->status usage
-      USB: serial: belkin_sa: clean up urb->status usage
-      USB: serial: cyberjack: clean up urb->status usage
-      USB: serial: cypress_m8: clean up urb->status usage
-      USB: serial: digi_acceleport: clean up urb->status usage
-      USB: serial: empeg: clean up urb->status usage
-      USB: serial: ftdi_sio: clean up urb->status usage
-      USB: serial: garmin_gps: clean up urb->status usage
-      USB: serial: generic: clean up urb->status usage
-      USB: serial: io_edgeport: clean up urb->status usage
-      USB: serial: io_ti: clean up urb->status usage
-      USB: serial: ipaq: clean up urb->status usage
-      USB: serial: ipw: clean up urb->status usage
-      USB: serial: ir-usb: clean up urb->status usage
-      USB: serial: keyspan: clean up urb->status usage
-      USB: serial: keyspan_pda: clean up urb->status usage
-      USB: serial: kl5kusb105: clean up urb->status usage
-      USB: serial: kobil_sct: clean up urb->status usage
-      USB: serial: mct_u232: clean up urb->status usage
-      USB: serial: mos7720: clean up urb->status usage
-      USB: serial: mos7840: clean up urb->status usage
-      USB: serial: navman: clean up urb->status usage
-      USB: serial: omninet: clean up urb->status usage
-      USB: serial: option: clean up urb->status usage
-      USB: serial: oti6858: clean up urb->status usage
-      USB: serial: pl2303: clean up urb->status usage
-      USB: serial: safe_serial: clean up urb->status usage
-      USB: serial: sierra: clean up urb->status usage
-      USB: serial: ti_usb_3410_5052: clean up urb->status usage
-      USB: serial: visor: clean up urb->status usage
-      USB: serial: whiteheat: clean up urb->status usage
-      USB: sierra: remove incorrect usage of the urb status field
-      USB: sierra: cleanup the startup and shutdown path
-      USB: mos7720: change developer email addresses
-
-Haavard Skinnemoen (1):
-      usb gadget: Rename husb2dev -> usba
-
-Jan Engelhardt (2):
-      USB: Use menuconfig objects
-      USB: fix gregkh-usb-usb-use-menuconfig-objects
-
-Jeremy Katz (2):
-      USB: Support Blackberry Pearl with berry_charge
-      USB: Don't autosuspend Blackberry devices.
-
-Kees Lemmens (1):
-      USB: oti6858 usb-serial driver (in Nokia CA-42 cable)
-
-Laurent Pinchart (1):
-      USB: Fix up full-speed bInterval values in high-speed interrupt descriptor
-
-Li Yang (4):
-      USB: ehci_fsl update for MPC831x support
-      USB: fsl_usb2_udc: replace deprecated irq flag
-      USB: fsl_usb2_udc: Get max ep number from DCCPARAMS register
-      USB: fsl_usb2_udc: fix bug for portsc bit masking
-
-Lucy McCoy (1):
-      USB Serial Keyspan: add support for USA-49WG & USA-28XG
-
-Marcel Holtmann (1):
-      USB: Add URB_FREE_BUFFER flag and the logic behind it
-
-Mark Lord (1):
-      USB: hub.c loops forever on resume from ram due to bluetooth
-
-Martin K. Petersen (1):
-      USB: io_ti: Digi EdgePort update for new devices
-
-Matthias Kaehlcke (1):
-      USB: drivers/block/ub.c: use list_for_each_entry()
-
-Michael Hanselmann (1):
-      USB: Fix NEC OHCI chip silicon bug
-
-Milan Svoboda (1):
-      USB: pxa2xx_udc: use generic gpio layer
-
-Oliver Neukum (15):
-      USB: suspend support for usb serial
-      USB: visor driver adapted to new tty buffering
-      USB: Digi AccelePort adapted to new tty buffering
-      USB: generic usb serial to new buffering scheme
-      USB: introduce usb_anchor
-      USB: usb-skeleton: usb anchor to implement flush
-      USB: whiteheat driver update
-      USB: io_ti: sleep with spinlock held detected by automatic tool
-      USB: usb-skeleton: use anchors in disconnect handling
-      USB: usb-skeleton" use anchors in suspend/resume handling
-      USB: usb-skeleton: use anchors in pre/post reset
-      USB: autosuspend for usblcd
-      USB: ftdi_sio: fix oops due to processing workarounds too early
-      USB: quirk for samsung printer
-      USB: additions to the quirk list
-
-Pete Zaitcev (4):
-      usbmon: Add class for binary interface
-      usb: free DMA mappings if enqueue fails
-      USB: Pete's taking over usblp
-      USB: usblp: add dynamic URBs, fix races
-
-Robert P. J. Day (1):
-      USB: remove Makefile reference to obsolete OHCI_AT91
-
-S.Caglar Onur (1):
-      USB: drivers/usb/storage/unusual_devs.h whitespace cleanup
-
-Simon Arlott (1):
-      USB: cxacru: Cleanup sysfs attribute code
-
-Stefan Roese (3):
-      USB: EHCI support for big-endian descriptors
-      USB: EHCI big endian data structures support (for 440EPx)
-      USB: Set CONFIG_USB_EHCI_BIG_ENDIAN_MMIO/_DESC in usb/host/Kconfig
-
-Stepan Moskovchenko (1):
-      USB: ftdi_sio.c: Allow setting latency timer on FT232RL
-
-Stuart_Hayes@Dell.com (1):
-      USB: EHCI cpufreq fix
-
-Suresh Jayaraman (1):
-      USB: ohci-pnx4008: Remove unnecessary cast of return value of kzalloc
-
-Tony Lindgren (1):
-      USB: Disable file_storage USB_CONFIG_ATT_WAKEUP
-
-Venki Pallipadi (1):
-      USB: Make usb-autosuspend timer 1 sec jiffy aligned
-
-Vikram Pandita (1):
-      USB Core: hub.c: prevent re-enumeration on HNP
-
-Vladimir Barinov (1):
-      USB: EHCI: Safe endianness for transfer buffers after reset in case of HUB with TT
-
-Yinghai Lu (1):
-      USB: make the usb_device numa_node get assigned from controller
-
-Yoshihiro Shimoda (4):
-      USB: m66592-udc: peripheral controller driver for M66592
-      USB: m66592-udc: fix use old interrupt flags
-      USB: r8a66597-hcd: host controller driver for R8A66597
-      USB: r8a66597-hcd: fix NULL access
-
-t.sefzick (1):
-      USB: flow control fix for pl2303
+--- linux-2.6.22-rc6-mm1/Documentation/networking/net-modules.txt.old	2007-07-12 20:43:25.000000000 +0200
++++ linux-2.6.22-rc6-mm1/Documentation/networking/net-modules.txt	2007-07-12 20:43:37.000000000 +0200
+@@ -146,12 +146,6 @@
+ 	irq = 0
+ 	(Probes ports: 0x260, 0x280, 0x2A0, 0x240, 0x340, 0x320, 0x380, 0x300)
+ 
+-atari_bionet.c:
+-	Supports full autoprobing. (m68k/Atari)
+-
+-atari_pamsnet.c:
+-	Supports full autoprobing. (m68k/Atari)
+-
+ atarilance.c:
+ 	Supports full autoprobing. (m68k/Atari)
+ 
+--- linux-2.6.22-rc6-mm1/Documentation/m68k/kernel-options.txt.old	2007-07-12 20:31:06.000000000 +0200
++++ linux-2.6.22-rc6-mm1/Documentation/m68k/kernel-options.txt	2007-07-12 20:31:15.000000000 +0200
+@@ -82,13 +82,6 @@
+   /dev/fd : -> 0x0200 (floppy disk)
+   /dev/xda: -> 0x0c00 (first XT disk, unused in Linux/m68k)
+   /dev/xdb: -> 0x0c40 (second XT disk, unused in Linux/m68k)
+-  /dev/ada: -> 0x1c00 (first ACSI device)
+-  /dev/adb: -> 0x1c10 (second ACSI device)
+-  /dev/adc: -> 0x1c20 (third ACSI device)
+-  /dev/add: -> 0x1c30 (forth ACSI device)
+-
+-The last four names are available only if the kernel has been compiled
+-with Atari and ACSI support.
+ 
+   The name must be followed by a decimal number, that stands for the
+ partition number. Internally, the value of the number is just
+--- linux-2.6.22-rc6-mm1/drivers/block/Kconfig.old	2007-07-12 20:31:24.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/block/Kconfig	2007-07-12 20:31:43.000000000 +0200
+@@ -97,17 +97,6 @@
+ 	  devices have only one LUN, and so most people can say N here and
+ 	  should in fact do so, because it is safer.
+ 
+-config ATARI_SLM
+-	tristate "Atari SLM laser printer support"
+-	depends on ATARI
+-	help
+-	  If you have an Atari SLM laser printer, say Y to include support for
+-	  it in the kernel. Otherwise, say N. This driver is also available as
+-	  a module ( = code which can be inserted in and removed from the
+-	  running kernel whenever you want). The module will be called
+-	  acsi_slm. Be warned: the driver needs much ST-RAM and can cause
+-	  problems due to that fact!
+-
+ config BLK_DEV_XD
+ 	tristate "XT hard disk support"
+ 	depends on ISA && ISA_DMA_API
+--- linux-2.6.22-rc6-mm1/drivers/block/Makefile.old	2007-07-12 20:31:51.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/block/Makefile	2007-07-12 20:31:58.000000000 +0200
+@@ -10,6 +10,5 @@
+ obj-$(CONFIG_AMIGA_FLOPPY)	+= amiflop.o
+ obj-$(CONFIG_ATARI_FLOPPY)	+= ataflop.o
+-obj-$(CONFIG_ATARI_SLM)		+= acsi_slm.o
+ obj-$(CONFIG_AMIGA_Z2RAM)	+= z2ram.o
+ obj-$(CONFIG_BLK_DEV_RAM)	+= rd.o
+ obj-$(CONFIG_BLK_DEV_LOOP)	+= loop.o
+--- linux-2.6.22-rc6-mm1/drivers/net/Kconfig.old	2007-07-12 20:33:44.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/net/Kconfig	2007-07-12 20:34:03.000000000 +0200
+@@ -378,22 +378,6 @@
+ 	  on the AMD Lance chipset: RieblCard (with or without battery), or
+ 	  PAMCard VME (also the version by Rhotron, with different addresses).
+ 
+-config ATARI_BIONET
+-	tristate "BioNet-100 support"
+-	depends on ATARI && ATARI_ACSI && BROKEN
+-	help
+-	  Say Y to include support for BioData's BioNet-100 Ethernet adapter
+-	  for the ACSI port. The driver works (has to work...) with a polled
+-	  I/O scheme, so it's rather slow :-(
+-
+-config ATARI_PAMSNET
+-	tristate "PAMsNet support"
+-	depends on ATARI && ATARI_ACSI && BROKEN
+-	help
+-	  Say Y to include support for the PAMsNet Ethernet adapter for the
+-	  ACSI port ("ACSI node"). The driver works (has to work...) with a
+-	  polled I/O scheme, so it's rather slow :-(
+-
+ config SUN3LANCE
+ 	tristate "Sun3/Sun3x on-board LANCE support"
+ 	depends on SUN3 || SUN3X
+--- linux-2.6.22-rc6-mm1/drivers/net/Makefile.old	2007-07-12 20:34:15.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/net/Makefile	2007-07-12 20:34:26.000000000 +0200
+@@ -175,8 +175,6 @@
+ obj-$(CONFIG_SGI_IOC3_ETH) += ioc3-eth.o
+ obj-$(CONFIG_DECLANCE) += declance.o
+ obj-$(CONFIG_ATARILANCE) += atarilance.o
+-obj-$(CONFIG_ATARI_BIONET) += atari_bionet.o
+-obj-$(CONFIG_ATARI_PAMSNET) += atari_pamsnet.o
+ obj-$(CONFIG_A2065) += a2065.o
+ obj-$(CONFIG_HYDRA) += hydra.o
+ obj-$(CONFIG_ARIADNE) += ariadne.o
+--- linux-2.6.22-rc6-mm1/drivers/net/Space.c.old	2007-07-12 20:35:09.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/net/Space.c	2007-07-12 20:35:23.000000000 +0200
+@@ -75,8 +75,6 @@
+ extern struct net_device *sun3lance_probe(int unit);
+ extern struct net_device *sun3_82586_probe(int unit);
+ extern struct net_device *apne_probe(int unit);
+-extern struct net_device *bionet_probe(int unit);
+-extern struct net_device *pamsnet_probe(int unit);
+ extern struct net_device *cs89x0_probe(int unit);
+ extern struct net_device *hplance_probe(int unit);
+ extern struct net_device *bagetlance_probe(int unit);
+@@ -264,12 +262,6 @@
+ #ifdef CONFIG_APNE		/* A1200 PCMCIA NE2000 */
+ 	{apne_probe, 0},
+ #endif
+-#ifdef CONFIG_ATARI_BIONET	/* Atari Bionet Ethernet board */
+-	{bionet_probe, 0},
+-#endif
+-#ifdef CONFIG_ATARI_PAMSNET	/* Atari PAMsNet Ethernet board */
+-	{pamsnet_probe, 0},
+-#endif
+ #ifdef CONFIG_MVME147_NET	/* MVME147 internal Ethernet */
+ 	{mvme147lance_probe, 0},
+ #endif
+--- linux-2.6.22-rc6-mm1/include/asm-m68k/atari_acsi.h	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,37 +0,0 @@
+-#ifndef _ASM_ATARI_ACSI_H
+-#define _ASM_ATARI_ACSI_H
+-
+-/* Functions exported by drivers/block/acsi.c */
+-
+-void acsi_delay_start( void );
+-void acsi_delay_end( long usec );
+-int acsi_wait_for_IRQ( unsigned timeout );
+-int acsi_wait_for_noIRQ( unsigned timeout );
+-int acsicmd_nodma( const char *cmd, int enable);
+-int acsi_getstatus( void );
+-int acsi_extstatus( char *buffer, int cnt );
+-void acsi_end_extstatus( void );
+-int acsi_extcmd( unsigned char *buffer, int cnt );
+-
+-/* The ACSI buffer is guarantueed to reside in ST-RAM and may be used by other
+- * drivers that work on the ACSI bus, too. It's data are valid only as long as
+- * the ST-DMA is locked. */
+-extern char *acsi_buffer;
+-extern unsigned long phys_acsi_buffer;
+-
+-/* Utility macros */
+-
+-/* Send one data byte over the bus and set mode for next operation
+- * with one move.l -- Atari recommends this...
+- */
+-
+-#define DMA_LONG_WRITE(data,mode)							\
+-    do {													\
+-		*((unsigned long *)&dma_wd.fdc_acces_seccount) =	\
+-			((data)<<16) | (mode);							\
+-	} while(0)
+-
+-#define ENABLE_IRQ()	atari_turnon_irq( IRQ_MFP_ACSI )
+-#define DISABLE_IRQ()	atari_turnoff_irq( IRQ_MFP_ACSI )
+-
+-#endif /* _ASM_ATARI_ACSI_H */
+--- linux-2.6.22-rc6-mm1/include/asm-m68k/atari_SLM.h	2007-04-26 05:08:32.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,28 +0,0 @@
+-
+-#ifndef _ATARI_SLM_H
+-#define _ATARI_SLM_H
+-
+-/* Atari SLM laser printer specific ioctls */
+-
+-#define	SLMIOGSTAT	0xa100
+-#define	SLMIOGPSIZE	0xa101
+-#define	SLMIOGMFEED	0xa102
+-
+-#define	SLMIORESET	0xa140
+-
+-#define	SLMIOSPSIZE	0xa181
+-#define	SLMIOSMFEED	0xa182
+-
+-/* Status returning structure (SLMIOGSTAT) */
+-struct SLM_status {
+-	int		stat;		/* numeric status code */
+-	char	str[40];	/* status string */
+-};
+-
+-/* Paper size structure (SLMIO[GS]PSIZE) */
+-struct SLM_paper_size {
+-	int		width;
+-	int		height;
+-};
+-
+-#endif /* _ATARI_SLM_H */
+--- linux-2.6.22-rc6-mm1/drivers/block/acsi_slm.c	2007-07-12 20:40:41.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,1032 +0,0 @@
+-/*
+- * acsi_slm.c -- Device driver for the Atari SLM laser printer
+- *
+- * Copyright 1995 Roman Hodek <Roman.Hodek@informatik.uni-erlangen.de>
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License.  See the file COPYING in the main directory of this archive for
+- * more details.
+- * 
+- */
+-
+-/*
+-
+-Notes:
+-
+-The major number for SLM printers is 28 (like ACSI), but as a character
+-device, not block device. The minor number is the number of the printer (if
+-you have more than one SLM; currently max. 2 (#define-constant) SLMs are
+-supported). The device can be opened for reading and writing. If reading it,
+-you get some status infos (MODE SENSE data). Writing mode is used for the data
+-to be printed. Some ioctls allow to get the printer status and to tune printer
+-modes and some internal variables.
+-
+-A special problem of the SLM driver is the timing and thus the buffering of
+-the print data. The problem is that all the data for one page must be present
+-in memory when printing starts, else --when swapping occurs-- the timing could
+-not be guaranteed. There are several ways to assure this:
+-
+- 1) Reserve a buffer of 1196k (maximum page size) statically by
+-    atari_stram_alloc(). The data are collected there until they're complete,
+-	and then printing starts. Since the buffer is reserved, no further
+-	considerations about memory and swapping are needed. So this is the
+-	simplest method, but it needs a lot of memory for just the SLM.
+-
+-    An striking advantage of this method is (supposed the SLM_CONT_CNT_REPROG
+-	method works, see there), that there are no timing problems with the DMA
+-	anymore.
+-	
+- 2) The other method would be to reserve the buffer dynamically each time
+-    printing is required. I could think of looking at mem_map where the
+-	largest unallocted ST-RAM area is, taking the area, and then extending it
+-	by swapping out the neighbored pages, until the needed size is reached.
+-	This requires some mm hacking, but seems possible. The only obstacle could
+-	be pages that cannot be swapped out (reserved pages)...
+-
+- 3) Another possibility would be to leave the real data in user space and to
+-    work with two dribble buffers of about 32k in the driver: While the one
+-	buffer is DMAed to the SLM, the other can be filled with new data. But
+-	to keep the timing, that requires that the user data remain in memory and
+-	are not swapped out. Requires mm hacking, too, but maybe not so bad as
+-	method 2).
+-
+-*/
+-
+-#include <linux/module.h>
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#include <linux/timer.h>
+-#include <linux/fs.h>
+-#include <linux/major.h>
+-#include <linux/kernel.h>
+-#include <linux/delay.h>
+-#include <linux/interrupt.h>
+-#include <linux/time.h>
+-#include <linux/mm.h>
+-#include <linux/slab.h>
+-
+-#include <asm/pgtable.h>
+-#include <asm/system.h>
+-#include <asm/uaccess.h>
+-#include <asm/atarihw.h>
+-#include <asm/atariints.h>
+-#include <asm/atari_acsi.h>
+-#include <asm/atari_stdma.h>
+-#include <asm/atari_stram.h>
+-#include <asm/atari_SLM.h>
+-
+-
+-#undef	DEBUG
+-
+-/* Define this if the page data are continuous in physical memory. That
+- * requires less reprogramming of the ST-DMA */
+-#define	SLM_CONTINUOUS_DMA
+-
+-/* Use continuous reprogramming of the ST-DMA counter register. This is
+- * --strictly speaking-- not allowed, Atari recommends not to look at the
+- * counter register while a DMA is going on. But I don't know if that applies
+- * only for reading the register, or also writing to it. Writing only works
+- * fine for me... The advantage is that the timing becomes absolutely
+- * uncritical: Just update each, say 200ms, the counter reg to its maximum,
+- * and the DMA will work until the status byte interrupt occurs.
+- */
+-#define	SLM_CONT_CNT_REPROG
+-
+-#define CMDSET_TARG_LUN(cmd,targ,lun)			\
+-    do {										\
+-		cmd[0] = (cmd[0] & ~0xe0) | (targ)<<5;	\
+-		cmd[1] = (cmd[1] & ~0xe0) | (lun)<<5;	\
+-	} while(0)
+-
+-#define	START_TIMER(to)	mod_timer(&slm_timer, jiffies + (to))
+-#define	STOP_TIMER()	del_timer(&slm_timer)
+-
+-
+-static char slmreqsense_cmd[6] = { 0x03, 0, 0, 0, 0, 0 };
+-static char slmprint_cmd[6]    = { 0x0a, 0, 0, 0, 0, 0 };
+-static char slminquiry_cmd[6]  = { 0x12, 0, 0, 0, 0, 0x80 };
+-static char slmmsense_cmd[6]   = { 0x1a, 0, 0, 0, 255, 0 };
+-#if 0
+-static char slmmselect_cmd[6]  = { 0x15, 0, 0, 0, 0, 0 };
+-#endif
+-
+-
+-#define	MAX_SLM		2
+-
+-static struct slm {
+-	unsigned	target;			/* target number */
+-	unsigned	lun;			/* LUN in target controller */
+-	atomic_t	wr_ok; 			/* set to 0 if output part busy */
+-	atomic_t	rd_ok;			/* set to 0 if status part busy */
+-} slm_info[MAX_SLM];
+-
+-int N_SLM_Printers = 0;
+-
+-/* printer buffer */
+-static unsigned char	*SLMBuffer;	/* start of buffer */
+-static unsigned char	*BufferP;	/* current position in buffer */
+-static int				BufferSize;	/* length of buffer for page size */
+-
+-typedef enum { IDLE, FILLING, PRINTING } SLMSTATE;
+-static SLMSTATE			SLMState;
+-static int				SLMBufOwner;	/* SLM# currently using the buffer */
+-
+-/* DMA variables */
+-#ifndef SLM_CONT_CNT_REPROG
+-static unsigned long	SLMCurAddr;		/* current base addr of DMA chunk */
+-static unsigned long	SLMEndAddr;		/* expected end addr */
+-static unsigned long	SLMSliceSize;	/* size of one DMA chunk */
+-#endif
+-static int				SLMError;
+-
+-/* wait queues */
+-static DECLARE_WAIT_QUEUE_HEAD(slm_wait);	/* waiting for buffer */
+-static DECLARE_WAIT_QUEUE_HEAD(print_wait);	/* waiting for printing finished */
+-
+-/* status codes */
+-#define	SLMSTAT_OK		0x00
+-#define	SLMSTAT_ORNERY	0x02
+-#define	SLMSTAT_TONER	0x03
+-#define	SLMSTAT_WARMUP	0x04
+-#define	SLMSTAT_PAPER	0x05
+-#define	SLMSTAT_DRUM	0x06
+-#define	SLMSTAT_INJAM	0x07
+-#define	SLMSTAT_THRJAM	0x08
+-#define	SLMSTAT_OUTJAM	0x09
+-#define	SLMSTAT_COVER	0x0a
+-#define	SLMSTAT_FUSER	0x0b
+-#define	SLMSTAT_IMAGER	0x0c
+-#define	SLMSTAT_MOTOR	0x0d
+-#define	SLMSTAT_VIDEO	0x0e
+-#define	SLMSTAT_SYSTO	0x10
+-#define	SLMSTAT_OPCODE	0x12
+-#define	SLMSTAT_DEVNUM	0x15
+-#define	SLMSTAT_PARAM	0x1a
+-#define	SLMSTAT_ACSITO	0x1b	/* driver defined */
+-#define	SLMSTAT_NOTALL	0x1c	/* driver defined */
+-
+-static char *SLMErrors[] = {
+-	/* 0x00 */	"OK and ready",
+-	/* 0x01 */	NULL,
+-	/* 0x02 */	"ornery printer",
+-	/* 0x03 */	"toner empty",
+-	/* 0x04 */	"warming up",
+-	/* 0x05 */	"paper empty",
+-	/* 0x06 */	"drum empty",
+-	/* 0x07 */	"input jam",
+-	/* 0x08 */	"through jam",
+-	/* 0x09 */	"output jam",
+-	/* 0x0a */	"cover open",
+-	/* 0x0b */	"fuser malfunction",
+-	/* 0x0c */	"imager malfunction",
+-	/* 0x0d */	"motor malfunction",
+-	/* 0x0e */	"video malfunction",
+-	/* 0x0f */	NULL,
+-	/* 0x10 */	"printer system timeout",
+-	/* 0x11 */	NULL,
+-	/* 0x12 */	"invalid operation code",
+-	/* 0x13 */	NULL,
+-	/* 0x14 */	NULL,
+-	/* 0x15 */	"invalid device number",
+-	/* 0x16 */	NULL,
+-	/* 0x17 */	NULL,
+-	/* 0x18 */	NULL,
+-	/* 0x19 */	NULL,
+-	/* 0x1a */	"invalid parameter list",
+-	/* 0x1b */	"ACSI timeout",
+-	/* 0x1c */	"not all printed"
+-};
+-
+-#define	N_ERRORS	(sizeof(SLMErrors)/sizeof(*SLMErrors))
+-
+-/* real (driver caused) error? */
+-#define	IS_REAL_ERROR(x)	(x > 0x10)
+-
+-
+-static struct {
+-	char	*name;
+-	int 	w, h;
+-} StdPageSize[] = {
+-	{ "Letter", 2400, 3180 },
+-	{ "Legal",  2400, 4080 },
+-	{ "A4",     2336, 3386 },
+-	{ "B5",     2016, 2914 }
+-};
+-
+-#define	N_STD_SIZES		(sizeof(StdPageSize)/sizeof(*StdPageSize))
+-
+-#define	SLM_BUFFER_SIZE	(2336*3386/8)	/* A4 for now */
+-#define	SLM_DMA_AMOUNT	255				/* #sectors to program the DMA for */
+-
+-#ifdef	SLM_CONTINUOUS_DMA
+-# define	SLM_DMA_INT_OFFSET	0		/* DMA goes until seccnt 0, no offs */
+-# define	SLM_DMA_END_OFFSET	32		/* 32 Byte ST-DMA FIFO */
+-# define	SLM_SLICE_SIZE(w) 	(255*512)
+-#else
+-# define	SLM_DMA_INT_OFFSET	32		/* 32 Byte ST-DMA FIFO */
+-# define	SLM_DMA_END_OFFSET	32		/* 32 Byte ST-DMA FIFO */
+-# define	SLM_SLICE_SIZE(w)	((254*512)/(w/8)*(w/8))
+-#endif
+-
+-/* calculate the number of jiffies to wait for 'n' bytes */
+-#ifdef SLM_CONT_CNT_REPROG
+-#define	DMA_TIME_FOR(n)		50
+-#define	DMA_STARTUP_TIME	0
+-#else
+-#define	DMA_TIME_FOR(n)		(n/1400-1)
+-#define	DMA_STARTUP_TIME	650
+-#endif
+-
+-/***************************** Prototypes *****************************/
+-
+-static char *slm_errstr( int stat );
+-static int slm_getstats( char *buffer, int device );
+-static ssize_t slm_read( struct file* file, char *buf, size_t count, loff_t
+-                         *ppos );
+-static void start_print( int device );
+-static irqreturn_t slm_interrupt(int irc, void *data);
+-static void slm_test_ready( unsigned long dummy );
+-static void set_dma_addr( unsigned long paddr );
+-static unsigned long get_dma_addr( void );
+-static ssize_t slm_write( struct file *file, const char *buf, size_t count,
+-                          loff_t *ppos );
+-static int slm_ioctl( struct inode *inode, struct file *file, unsigned int
+-                      cmd, unsigned long arg );
+-static int slm_open( struct inode *inode, struct file *file );
+-static int slm_release( struct inode *inode, struct file *file );
+-static int slm_req_sense( int device );
+-static int slm_mode_sense( int device, char *buffer, int abs_flag );
+-#if 0
+-static int slm_mode_select( int device, char *buffer, int len, int
+-                            default_flag );
+-#endif
+-static int slm_get_pagesize( int device, int *w, int *h );
+-
+-/************************* End of Prototypes **************************/
+-
+-
+-static DEFINE_TIMER(slm_timer, slm_test_ready, 0, 0);
+-
+-static const struct file_operations slm_fops = {
+-	.owner =	THIS_MODULE,
+-	.read =		slm_read,
+-	.write =	slm_write,
+-	.ioctl =	slm_ioctl,
+-	.open =		slm_open,
+-	.release =	slm_release,
+-};
+-
+-
+-/* ---------------------------------------------------------------------- */
+-/*							   Status Functions							  */
+-
+-
+-static char *slm_errstr( int stat )
+-
+-{	char *p;
+-	static char	str[22];
+-
+-	stat &= 0x1f;
+-	if (stat >= 0 && stat < N_ERRORS && (p = SLMErrors[stat]))
+-		return( p );
+-	sprintf( str, "unknown status 0x%02x", stat );
+-	return( str );
+-}
+-
+-
+-static int slm_getstats( char *buffer, int device )
+-
+-{	int 			len = 0, stat, i, w, h;
+-	unsigned char	buf[256];
+-	
+-	stat = slm_mode_sense( device, buf, 0 );
+-	if (IS_REAL_ERROR(stat))
+-		return( -EIO );
+-	
+-#define SHORTDATA(i)		((buf[i] << 8) | buf[i+1])
+-#define	BOOLDATA(i,mask)	((buf[i] & mask) ? "on" : "off")
+-
+-	w = SHORTDATA( 3 );
+-	h = SHORTDATA( 1 );
+-		
+-	len += sprintf( buffer+len, "Status\t\t%s\n",
+-					slm_errstr( stat ) );
+-	len += sprintf( buffer+len, "Page Size\t%dx%d",
+-					w, h );
+-
+-	for( i = 0; i < N_STD_SIZES; ++i ) {
+-		if (w == StdPageSize[i].w && h == StdPageSize[i].h)
+-			break;
+-	}
+-	if (i < N_STD_SIZES)
+-		len += sprintf( buffer+len, " (%s)", StdPageSize[i].name );
+-	buffer[len++] = '\n';
+-
+-	len += sprintf( buffer+len, "Top/Left Margin\t%d/%d\n",
+-					SHORTDATA( 5 ), SHORTDATA( 7 ) );
+-	len += sprintf( buffer+len, "Manual Feed\t%s\n",
+-					BOOLDATA( 9, 0x01 ) );
+-	len += sprintf( buffer+len, "Input Select\t%d\n",
+-					(buf[9] >> 1) & 7 );
+-	len += sprintf( buffer+len, "Auto Select\t%s\n",
+-					BOOLDATA( 9, 0x10 ) );
+-	len += sprintf( buffer+len, "Prefeed Paper\t%s\n",
+-					BOOLDATA( 9, 0x20 ) );
+-	len += sprintf( buffer+len, "Thick Pixels\t%s\n",
+-					BOOLDATA( 9, 0x40 ) );
+-	len += sprintf( buffer+len, "H/V Resol.\t%d/%d dpi\n",
+-					SHORTDATA( 12 ), SHORTDATA( 10 ) );
+-	len += sprintf( buffer+len, "System Timeout\t%d\n",
+-					buf[14] );
+-	len += sprintf( buffer+len, "Scan Time\t%d\n",
+-					SHORTDATA( 15 ) );
+-	len += sprintf( buffer+len, "Page Count\t%d\n",
+-					SHORTDATA( 17 ) );
+-	len += sprintf( buffer+len, "In/Out Cap.\t%d/%d\n",
+-					SHORTDATA( 19 ), SHORTDATA( 21 ) );
+-	len += sprintf( buffer+len, "Stagger Output\t%s\n",
+-					BOOLDATA( 23, 0x01 ) );
+-	len += sprintf( buffer+len, "Output Select\t%d\n",
+-					(buf[23] >> 1) & 7 );
+-	len += sprintf( buffer+len, "Duplex Print\t%s\n",
+-					BOOLDATA( 23, 0x10 ) );
+-	len += sprintf( buffer+len, "Color Sep.\t%s\n",
+-					BOOLDATA( 23, 0x20 ) );
+-
+-	return( len );
+-}
+-
+-
+-static ssize_t slm_read( struct file *file, char *buf, size_t count,
+-						 loff_t *ppos )
+-
+-{
+-	struct inode *node = file->f_path.dentry->d_inode;
+-	unsigned long page;
+-	int length;
+-	int end;
+-
+-	if (!(page = __get_free_page( GFP_KERNEL )))
+-		return( -ENOMEM );
+-	
+-	length = slm_getstats( (char *)page, iminor(node) );
+-	if (length < 0) {
+-		count = length;
+-		goto out;
+-	}
+-	if (file->f_pos >= length) {
+-		count = 0;
+-		goto out;
+-	}
+-	if (count + file->f_pos > length)
+-		count = length - file->f_pos;
+-	end = count + file->f_pos;
+-	if (copy_to_user(buf, (char *)page + file->f_pos, count)) {
+-		count = -EFAULT;
+-		goto out;
+-	}
+-	file->f_pos = end;
+-out:	free_page( page );
+-	return( count );
+-}
+-
+-
+-/* ---------------------------------------------------------------------- */
+-/*								   Printing								  */
+-
+-
+-static void start_print( int device )
+-
+-{	struct slm *sip = &slm_info[device];
+-	unsigned char	*cmd;
+-	unsigned long	paddr;
+-	int				i;
+-	
+-	stdma_lock( slm_interrupt, NULL );
+-
+-	CMDSET_TARG_LUN( slmprint_cmd, sip->target, sip->lun );
+-	cmd = slmprint_cmd;
+-	paddr = virt_to_phys( SLMBuffer );
+-	dma_cache_maintenance( paddr, virt_to_phys(BufferP)-paddr, 1 );
+-	DISABLE_IRQ();
+-
+-	/* Low on A1 */
+-	dma_wd.dma_mode_status = 0x88;
+-	MFPDELAY();
+-
+-	/* send the command bytes except the last */
+-	for( i = 0; i < 5; ++i ) {
+-		DMA_LONG_WRITE( *cmd++, 0x8a );
+-		udelay(20);
+-		if (!acsi_wait_for_IRQ( HZ/2 )) {
+-			SLMError = 1;
+-			return; /* timeout */
+-		}
+-	}
+-	/* last command byte */
+-	DMA_LONG_WRITE( *cmd++, 0x82 );
+-	MFPDELAY();
+-	/* set DMA address */
+-	set_dma_addr( paddr );
+-	/* program DMA for write and select sector counter reg */
+-	dma_wd.dma_mode_status = 0x192;
+-	MFPDELAY();
+-	/* program for 255*512 bytes and start DMA */
+-	DMA_LONG_WRITE( SLM_DMA_AMOUNT, 0x112 );
+-
+-#ifndef SLM_CONT_CNT_REPROG
+-	SLMCurAddr = paddr;
+-	SLMEndAddr = paddr + SLMSliceSize + SLM_DMA_INT_OFFSET;
+-#endif
+-	START_TIMER( DMA_STARTUP_TIME + DMA_TIME_FOR( SLMSliceSize ));
+-#if !defined(SLM_CONT_CNT_REPROG) && defined(DEBUG)
+-	printk( "SLM: CurAddr=%#lx EndAddr=%#lx timer=%ld\n",
+-			SLMCurAddr, SLMEndAddr, DMA_TIME_FOR( SLMSliceSize ) );
+-#endif
+-	
+-	ENABLE_IRQ();
+-}
+-
+-
+-/* Only called when an error happened or at the end of a page */
+-
+-static irqreturn_t slm_interrupt(int irc, void *data)
+-
+-{	unsigned long	addr;
+-	int				stat;
+-	
+-	STOP_TIMER();
+-	addr = get_dma_addr();
+-	stat = acsi_getstatus();
+-	SLMError = (stat < 0)             ? SLMSTAT_ACSITO :
+-		       (addr < virt_to_phys(BufferP)) ? SLMSTAT_NOTALL :
+-									    stat;
+-
+-	dma_wd.dma_mode_status = 0x80;
+-	MFPDELAY();
+-#ifdef DEBUG
+-	printk( "SLM: interrupt, addr=%#lx, error=%d\n", addr, SLMError );
+-#endif
+-
+-	wake_up( &print_wait );
+-	stdma_release();
+-	ENABLE_IRQ();
+-	return IRQ_HANDLED;
+-}
+-
+-
+-static void slm_test_ready( unsigned long dummy )
+-
+-{
+-#ifdef SLM_CONT_CNT_REPROG
+-	/* program for 255*512 bytes again */
+-	dma_wd.fdc_acces_seccount = SLM_DMA_AMOUNT;
+-	START_TIMER( DMA_TIME_FOR(0) );
+-#ifdef DEBUG
+-	printk( "SLM: reprogramming timer for %d jiffies, addr=%#lx\n",
+-			DMA_TIME_FOR(0), get_dma_addr() );
+-#endif
+-	
+-#else /* !SLM_CONT_CNT_REPROG */
+-
+-	unsigned long	flags, addr;
+-	int				d, ti;
+-#ifdef DEBUG
+-	struct timeval start_tm, end_tm;
+-	int			   did_wait = 0;
+-#endif
+-
+-	local_irq_save(flags);
+-
+-	addr = get_dma_addr();
+-	if ((d = SLMEndAddr - addr) > 0) {
+-		local_irq_restore(flags);
+-		
+-		/* slice not yet finished, decide whether to start another timer or to
+-		 * busy-wait */
+-		ti = DMA_TIME_FOR( d );
+-		if (ti > 0) {
+-#ifdef DEBUG
+-			printk( "SLM: reprogramming timer for %d jiffies, rest %d bytes\n",
+-					ti, d );
+-#endif
+-			START_TIMER( ti );
+-			return;
+-		}
+-		/* wait for desired end address to be reached */
+-#ifdef DEBUG
+-		do_gettimeofday( &start_tm );
+-		did_wait = 1;
+-#endif
+-		local_irq_disable();
+-		while( get_dma_addr() < SLMEndAddr )
+-			barrier();
+-	}
+-
+-	/* slice finished, start next one */
+-	SLMCurAddr += SLMSliceSize;
+-
+-#ifdef SLM_CONTINUOUS_DMA
+-	/* program for 255*512 bytes again */
+-	dma_wd.fdc_acces_seccount = SLM_DMA_AMOUNT;
+-#else
+-	/* set DMA address;
+-	 * add 2 bytes for the ones in the SLM controller FIFO! */
+-	set_dma_addr( SLMCurAddr + 2 );
+-	/* toggle DMA to write and select sector counter reg */
+-	dma_wd.dma_mode_status = 0x92;
+-	MFPDELAY();
+-	dma_wd.dma_mode_status = 0x192;
+-	MFPDELAY();
+-	/* program for 255*512 bytes and start DMA */
+-	DMA_LONG_WRITE( SLM_DMA_AMOUNT, 0x112 );
+-#endif
+-	
+-	local_irq_restore(flags);
+-
+-#ifdef DEBUG
+-	if (did_wait) {
+-		int ms;
+-		do_gettimeofday( &end_tm );
+-		ms = (end_tm.tv_sec*1000000+end_tm.tv_usec) -
+-			 (start_tm.tv_sec*1000000+start_tm.tv_usec); 
+-		printk( "SLM: did %ld.%ld ms busy waiting for %d bytes\n",
+-				ms/1000, ms%1000, d );
+-	}
+-	else
+-		printk( "SLM: didn't wait (!)\n" );
+-#endif
+-
+-	if ((unsigned char *)PTOV( SLMCurAddr + SLMSliceSize ) >= BufferP) {
+-		/* will be last slice, no timer necessary */
+-#ifdef DEBUG
+-		printk( "SLM: CurAddr=%#lx EndAddr=%#lx last slice -> no timer\n",
+-				SLMCurAddr, SLMEndAddr );
+-#endif
+-	}
+-	else {
+-		/* not last slice */
+-		SLMEndAddr = SLMCurAddr + SLMSliceSize + SLM_DMA_INT_OFFSET;
+-		START_TIMER( DMA_TIME_FOR( SLMSliceSize ));
+-#ifdef DEBUG
+-		printk( "SLM: CurAddr=%#lx EndAddr=%#lx timer=%ld\n",
+-				SLMCurAddr, SLMEndAddr, DMA_TIME_FOR( SLMSliceSize ) );
+-#endif
+-	}
+-#endif /* SLM_CONT_CNT_REPROG */
+-}
+-
+-
+-static void set_dma_addr( unsigned long paddr )
+-
+-{	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	dma_wd.dma_lo = (unsigned char)paddr;
+-	paddr >>= 8;
+-	MFPDELAY();
+-	dma_wd.dma_md = (unsigned char)paddr;
+-	paddr >>= 8;
+-	MFPDELAY();
+-	if (ATARIHW_PRESENT( EXTD_DMA ))
+-		st_dma_ext_dmahi = (unsigned short)paddr;
+-	else
+-		dma_wd.dma_hi = (unsigned char)paddr;
+-	MFPDELAY();
+-	local_irq_restore(flags);
+-}
+-
+-
+-static unsigned long get_dma_addr( void )
+-
+-{	unsigned long	addr;
+-	
+-	addr = dma_wd.dma_lo & 0xff;
+-	MFPDELAY();
+-	addr |= (dma_wd.dma_md & 0xff) << 8;
+-	MFPDELAY();
+-	addr |= (dma_wd.dma_hi & 0xff) << 16;
+-	MFPDELAY();
+-
+-	return( addr );
+-}
+-
+-
+-static ssize_t slm_write( struct file *file, const char *buf, size_t count,
+-						  loff_t *ppos )
+-
+-{
+-	struct inode *node = file->f_path.dentry->d_inode;
+-	int		device = iminor(node);
+-	int		n, filled, w, h;
+-
+-	while( SLMState == PRINTING ||
+-		   (SLMState == FILLING && SLMBufOwner != device) ) {
+-		interruptible_sleep_on( &slm_wait );
+-		if (signal_pending(current))
+-			return( -ERESTARTSYS );
+-	}
+-	if (SLMState == IDLE) {
+-		/* first data of page: get current page size  */
+-		if (slm_get_pagesize( device, &w, &h ))
+-			return( -EIO );
+-		BufferSize = w*h/8;
+-		if (BufferSize > SLM_BUFFER_SIZE)
+-			return( -ENOMEM );
+-
+-		SLMState = FILLING;
+-		SLMBufOwner = device;
+-	}
+-
+-	n = count;
+-	filled = BufferP - SLMBuffer;
+-	if (filled + n > BufferSize)
+-		n = BufferSize - filled;
+-
+-	if (copy_from_user(BufferP, buf, n))
+-		return -EFAULT;
+-	BufferP += n;
+-	filled += n;
+-
+-	if (filled == BufferSize) {
+-		/* Check the paper size again! The user may have switched it in the
+-		 * time between starting the data and finishing them. Would end up in
+-		 * a trashy page... */
+-		if (slm_get_pagesize( device, &w, &h ))
+-			return( -EIO );
+-		if (BufferSize != w*h/8) {
+-			printk( KERN_NOTICE "slm%d: page size changed while printing\n",
+-					device );
+-			return( -EAGAIN );
+-		}
+-
+-		SLMState = PRINTING;
+-		/* choose a slice size that is a multiple of the line size */
+-#ifndef SLM_CONT_CNT_REPROG
+-		SLMSliceSize = SLM_SLICE_SIZE(w);
+-#endif
+-		
+-		start_print( device );
+-		sleep_on( &print_wait );
+-		if (SLMError && IS_REAL_ERROR(SLMError)) {
+-			printk( KERN_ERR "slm%d: %s\n", device, slm_errstr(SLMError) );
+-			n = -EIO;
+-		}
+-
+-		SLMState = IDLE;
+-		BufferP = SLMBuffer;
+-		wake_up_interruptible( &slm_wait );
+-	}
+-	
+-	return( n );
+-}
+-
+-
+-/* ---------------------------------------------------------------------- */
+-/*							   ioctl Functions							  */
+-
+-
+-static int slm_ioctl( struct inode *inode, struct file *file,
+-					  unsigned int cmd, unsigned long arg )
+-
+-{	int		device = iminor(inode), err;
+-	
+-	/* I can think of setting:
+-	 *  - manual feed
+-	 *  - paper format
+-	 *  - copy count
+-	 *  - ...
+-	 * but haven't implemented that yet :-)
+-	 * BTW, has anybody better docs about the MODE SENSE/MODE SELECT data?
+-	 */
+-	switch( cmd ) {
+-
+-	  case SLMIORESET:		/* reset buffer, i.e. empty the buffer */
+-		if (!(file->f_mode & 2))
+-			return( -EINVAL );
+-		if (SLMState == PRINTING)
+-			return( -EBUSY );
+-		SLMState = IDLE;
+-		BufferP = SLMBuffer;
+-		wake_up_interruptible( &slm_wait );
+-		return( 0 );
+-		
+-	  case SLMIOGSTAT: {	/* get status */
+-		int stat;
+-		char *str;
+-
+-		stat = slm_req_sense( device );
+-		if (arg) {
+-			str = slm_errstr( stat );
+-			if (put_user(stat,
+-    	    	    	    	     (long *)&((struct SLM_status *)arg)->stat))
+-    	    	    	    	return -EFAULT;
+-			if (copy_to_user( ((struct SLM_status *)arg)->str, str,
+-						 strlen(str) + 1))
+-				return -EFAULT;
+-		}
+-		return( stat );
+-	  }
+-		
+-	  case SLMIOGPSIZE: {	/* get paper size */
+-		int w, h;
+-		
+-		if ((err = slm_get_pagesize( device, &w, &h ))) return( err );
+-		
+-    	    	if (put_user(w, (long *)&((struct SLM_paper_size *)arg)->width))
+-			return -EFAULT;
+-		if (put_user(h, (long *)&((struct SLM_paper_size *)arg)->height))
+-			return -EFAULT;
+-		return( 0 );
+-	  }
+-		
+-	  case SLMIOGMFEED:	/* get manual feed */
+-		return( -EINVAL );
+-
+-	  case SLMIOSPSIZE:	/* set paper size */
+-		return( -EINVAL );
+-
+-	  case SLMIOSMFEED:	/* set manual feed */
+-		return( -EINVAL );
+-
+-	}
+-	return( -EINVAL );
+-}
+-
+-
+-/* ---------------------------------------------------------------------- */
+-/*							 Opening and Closing						  */
+-
+-
+-static int slm_open( struct inode *inode, struct file *file )
+-
+-{	int device;
+-	struct slm *sip;
+-	
+-	device = iminor(inode);
+-	if (device >= N_SLM_Printers)
+-		return( -ENXIO );
+-	sip = &slm_info[device];
+-
+-	if (file->f_mode & 2) {
+-		/* open for writing is exclusive */
+-		if ( !atomic_dec_and_test(&sip->wr_ok) ) {
+-			atomic_inc(&sip->wr_ok);	
+-			return( -EBUSY );
+-		}
+-	}
+-	if (file->f_mode & 1) {
+-		/* open for reading is exclusive */
+-                if ( !atomic_dec_and_test(&sip->rd_ok) ) {
+-                        atomic_inc(&sip->rd_ok);
+-                        return( -EBUSY );
+-                }
+-	}
+-
+-	return( 0 );
+-}
+-
+-
+-static int slm_release( struct inode *inode, struct file *file )
+-
+-{	int device;
+-	struct slm *sip;
+-	
+-	device = iminor(inode);
+-	sip = &slm_info[device];
+-
+-	if (file->f_mode & 2)
+-		atomic_inc( &sip->wr_ok );
+-	if (file->f_mode & 1)
+-		atomic_inc( &sip->rd_ok );
+-	
+-	return( 0 );
+-}
+-
+-
+-/* ---------------------------------------------------------------------- */
+-/*						 ACSI Primitives for the SLM					  */
+-
+-
+-static int slm_req_sense( int device )
+-
+-{	int			stat, rv;
+-	struct slm *sip = &slm_info[device];
+-	
+-	stdma_lock( NULL, NULL );
+-
+-	CMDSET_TARG_LUN( slmreqsense_cmd, sip->target, sip->lun );
+-	if (!acsicmd_nodma( slmreqsense_cmd, 0 ) ||
+-		(stat = acsi_getstatus()) < 0)
+-		rv = SLMSTAT_ACSITO;
+-	else
+-		rv = stat & 0x1f;
+-
+-	ENABLE_IRQ();
+-	stdma_release();
+-	return( rv );
+-}
+-
+-
+-static int slm_mode_sense( int device, char *buffer, int abs_flag )
+-
+-{	unsigned char	stat, len;
+-	int				rv = 0;
+-	struct slm		*sip = &slm_info[device];
+-	
+-	stdma_lock( NULL, NULL );
+-
+-	CMDSET_TARG_LUN( slmmsense_cmd, sip->target, sip->lun );
+-	slmmsense_cmd[5] = abs_flag ? 0x80 : 0;
+-	if (!acsicmd_nodma( slmmsense_cmd, 0 )) {
+-		rv = SLMSTAT_ACSITO;
+-		goto the_end;
+-	}
+-
+-	if (!acsi_extstatus( &stat, 1 )) {
+-		acsi_end_extstatus();
+-		rv = SLMSTAT_ACSITO;
+-		goto the_end;
+-	}
+-	
+-	if (!acsi_extstatus( &len, 1 )) {
+-		acsi_end_extstatus();
+-		rv = SLMSTAT_ACSITO;
+-		goto the_end;
+-	}
+-	buffer[0] = len;
+-	if (!acsi_extstatus( buffer+1, len )) {
+-		acsi_end_extstatus();
+-		rv = SLMSTAT_ACSITO;
+-		goto the_end;
+-	}
+-	
+-	acsi_end_extstatus();
+-	rv = stat & 0x1f;
+-
+-  the_end:
+-	ENABLE_IRQ();
+-	stdma_release();
+-	return( rv );
+-}
+-
+-
+-#if 0
+-/* currently unused */
+-static int slm_mode_select( int device, char *buffer, int len,
+-							int default_flag )
+-
+-{	int			stat, rv;
+-	struct slm	*sip = &slm_info[device];
+-	
+-	stdma_lock( NULL, NULL );
+-
+-	CMDSET_TARG_LUN( slmmselect_cmd, sip->target, sip->lun );
+-	slmmselect_cmd[5] = default_flag ? 0x80 : 0;
+-	if (!acsicmd_nodma( slmmselect_cmd, 0 )) {
+-		rv = SLMSTAT_ACSITO;
+-		goto the_end;
+-	}
+-
+-	if (!default_flag) {
+-		unsigned char c = len;
+-		if (!acsi_extcmd( &c, 1 )) {
+-			rv = SLMSTAT_ACSITO;
+-			goto the_end;
+-		}
+-		if (!acsi_extcmd( buffer, len )) {
+-			rv = SLMSTAT_ACSITO;
+-			goto the_end;
+-		}
+-	}
+-	
+-	stat = acsi_getstatus();
+-	rv = (stat < 0 ? SLMSTAT_ACSITO : stat);
+-
+-  the_end:
+-	ENABLE_IRQ();
+-	stdma_release();
+-	return( rv );
+-}
+-#endif
+-
+-
+-static int slm_get_pagesize( int device, int *w, int *h )
+-
+-{	char	buf[256];
+-	int		stat;
+-	
+-	stat = slm_mode_sense( device, buf, 0 );
+-	ENABLE_IRQ();
+-	stdma_release();
+-
+-	if (stat != SLMSTAT_OK)
+-		return( -EIO );
+-
+-	*w = (buf[3] << 8) | buf[4];
+-	*h = (buf[1] << 8) | buf[2];
+-	return( 0 );
+-}
+-
+-
+-/* ---------------------------------------------------------------------- */
+-/*								Initialization							  */
+-
+-
+-int attach_slm( int target, int lun )
+-
+-{	static int	did_register;
+-	int			len;
+-
+-	if (N_SLM_Printers >= MAX_SLM) {
+-		printk( KERN_WARNING "Too much SLMs\n" );
+-		return( 0 );
+-	}
+-	
+-	/* do an INQUIRY */
+-	udelay(100);
+-	CMDSET_TARG_LUN( slminquiry_cmd, target, lun );
+-	if (!acsicmd_nodma( slminquiry_cmd, 0 )) {
+-	  inq_timeout:
+-		printk( KERN_ERR "SLM inquiry command timed out.\n" );
+-	  inq_fail:
+-		acsi_end_extstatus();
+-		return( 0 );
+-	}
+-	/* read status and header of return data */
+-	if (!acsi_extstatus( SLMBuffer, 6 ))
+-		goto inq_timeout;
+-
+-	if (SLMBuffer[1] != 2) { /* device type == printer? */
+-		printk( KERN_ERR "SLM inquiry returned device type != printer\n" );
+-		goto inq_fail;
+-	}
+-	len = SLMBuffer[5];
+-	
+-	/* read id string */
+-	if (!acsi_extstatus( SLMBuffer, len ))
+-		goto inq_timeout;
+-	acsi_end_extstatus();
+-	SLMBuffer[len] = 0;
+-
+-	if (!did_register) {
+-		did_register = 1;
+-	}
+-
+-	slm_info[N_SLM_Printers].target = target;
+-	slm_info[N_SLM_Printers].lun    = lun;
+-	atomic_set(&slm_info[N_SLM_Printers].wr_ok, 1 ); 
+-	atomic_set(&slm_info[N_SLM_Printers].rd_ok, 1 );
+-	
+-	printk( KERN_INFO "  Printer: %s\n", SLMBuffer );
+-	printk( KERN_INFO "Detected slm%d at id %d lun %d\n",
+-			N_SLM_Printers, target, lun );
+-	N_SLM_Printers++;
+-	return( 1 );
+-}
+-
+-int slm_init( void )
+-
+-{
+-	int i;
+-	if (register_chrdev( ACSI_MAJOR, "slm", &slm_fops )) {
+-		printk( KERN_ERR "Unable to get major %d for ACSI SLM\n", ACSI_MAJOR );
+-		return -EBUSY;
+-	}
+-	
+-	if (!(SLMBuffer = atari_stram_alloc( SLM_BUFFER_SIZE, "SLM" ))) {
+-		printk( KERN_ERR "Unable to get SLM ST-Ram buffer.\n" );
+-		unregister_chrdev( ACSI_MAJOR, "slm" );
+-		return -ENOMEM;
+-	}
+-	BufferP = SLMBuffer;
+-	SLMState = IDLE;
+-	
+-	return 0;
+-}
+-
+-#ifdef MODULE
+-
+-/* from acsi.c */
+-void acsi_attach_SLMs( int (*attach_func)( int, int ) );
+-
+-int init_module(void)
+-{
+-	int err;
+-
+-	if ((err = slm_init()))
+-		return( err );
+-	/* This calls attach_slm() for every target/lun where acsi.c detected a
+-	 * printer */
+-	acsi_attach_SLMs( attach_slm );
+-	return( 0 );
+-}
+-
+-void cleanup_module(void)
+-{
+-	if (unregister_chrdev( ACSI_MAJOR, "slm" ) != 0)
+-		printk( KERN_ERR "acsi_slm: cleanup_module failed\n");
+-	atari_stram_free( SLMBuffer );
+-}
+-#endif
+--- linux-2.6.22-rc6-mm1/drivers/net/atari_bionet.c	2007-06-28 14:53:05.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,675 +0,0 @@
+-/* bionet.c     BioNet-100 device driver for linux68k.
+- *
+- * Version:	@(#)bionet.c	1.0	02/06/96
+- *
+- * Author:	Hartmut Laue <laue@ifk-mp.uni-kiel.de>
+- * and		Torsten Narjes <narjes@ifk-mp.uni-kiel.de>
+- *
+- * Little adaptions for integration into pl7 by Roman Hodek
+- *
+- * Some changes in bionet_poll_rx by Karl-Heinz Lohner
+- *
+-	What is it ?
+-	------------
+-	This driver controls the BIONET-100 LAN-Adapter which connects
+-	an ATARI ST/TT via the ACSI-port to an Ethernet-based network.
+-
+-	This version can be compiled as a loadable module (See the
+-	compile command at the bottom of this file).
+-	At load time, you can optionally set the debugging level and the
+-	fastest response time on the command line of 'insmod'.
+-
+-	'bionet_debug'
+-		controls the amount of diagnostic messages:
+-	  0  : no messages
+-	  >0 : see code for meaning of printed messages
+-
+-	'bionet_min_poll_time' (always >=1)
+-		gives the time (in jiffies) between polls. Low values
+-		increase the system load (beware!)
+-
+-	When loaded, a net device with the name 'bio0' becomes available,
+-	which can be controlled with the usual 'ifconfig' command.
+-
+-	It is possible to compile this driver into the kernel like other
+-	(net) drivers. For this purpose, some source files (e.g. config-files
+-	makefiles, Space.c) must be changed accordingly. (You may refer to
+-	other drivers how to do it.) In this case, the device will be detected
+-	at boot time and (probably) appear as 'eth0'.
+-
+-	This code is based on several sources:
+-	- The driver code for a parallel port ethernet adapter by
+-	  Donald Becker (see file 'atp.c' from the PC linux distribution)
+-	- The ACSI code by Roman Hodek for the ATARI-ACSI harddisk support
+-	  and DMA handling.
+-	- Very limited information about moving packets in and out of the
+-	  BIONET-adapter from the TCP package for TOS by BioData GmbH.
+-
+-	Theory of Operation
+-	-------------------
+-	Because the ATARI DMA port is usually shared between several
+-	devices (eg. harddisk, floppy) we cannot block the ACSI bus
+-	while waiting for interrupts. Therefore we use a polling mechanism
+-	to fetch packets from the adapter. For the same reason, we send
+-	packets without checking that the previous packet has been sent to
+-	the LAN. We rely on the higher levels of the networking code to detect
+-	missing packets and resend them.
+-
+-	Before we access the ATARI DMA controller, we check if another
+-	process is using the DMA. If not, we lock the DMA, perform one or
+-	more packet transfers and unlock the DMA before returning.
+-	We do not use 'stdma_lock' unconditionally because it is unclear
+-	if the networking code can be set to sleep, which will happen if
+-	another (possibly slow) device is using the DMA controller.
+-
+-	The polling is done via timer interrupts which periodically
+-	'simulate' an interrupt from the Ethernet adapter. The time (in jiffies)
+-	between polls varies depending on an estimate of the net activity.
+-	The allowed range is given by the variable 'bionet_min_poll_time'
+-	for the lower (fastest) limit and the constant 'MAX_POLL_TIME'
+-	for the higher (slowest) limit.
+-
+-	Whenever a packet arrives, we switch to fastest response by setting
+-	the polling time to its lowest limit. If the following poll fails,
+-	because no packets have arrived, we increase the time for the next
+-	poll. When the net activity is low, the polling time effectively
+-	stays at its maximum value, resulting in the lowest load for the
+-	machine.
+- */
+-
+-#define MAX_POLL_TIME	10
+-
+-static char version[] =
+-	"bionet.c:v1.0 06-feb-96 (c) Hartmut Laue.\n";
+-
+-#include <linux/module.h>
+-
+-#include <linux/errno.h>
+-#include <linux/kernel.h>
+-#include <linux/jiffies.h>
+-#include <linux/types.h>
+-#include <linux/fcntl.h>
+-#include <linux/interrupt.h>
+-#include <linux/ioport.h>
+-#include <linux/in.h>
+-#include <linux/slab.h>
+-#include <linux/string.h>
+-#include <linux/delay.h>
+-#include <linux/timer.h>
+-#include <linux/init.h>
+-#include <linux/bitops.h>
+-
+-#include <linux/netdevice.h>
+-#include <linux/etherdevice.h>
+-#include <linux/skbuff.h>
+-
+-#include <asm/setup.h>
+-#include <asm/pgtable.h>
+-#include <asm/system.h>
+-#include <asm/io.h>
+-#include <asm/dma.h>
+-#include <asm/atarihw.h>
+-#include <asm/atariints.h>
+-#include <asm/atari_acsi.h>
+-#include <asm/atari_stdma.h>
+-
+-
+-/* use 0 for production, 1 for verification, >2 for debug
+- */
+-#ifndef NET_DEBUG
+-#define NET_DEBUG 0
+-#endif
+-/*
+- * Global variable 'bionet_debug'. Can be set at load time by 'insmod'
+- */
+-unsigned int bionet_debug = NET_DEBUG;
+-module_param(bionet_debug, int, 0);
+-MODULE_PARM_DESC(bionet_debug, "bionet debug level (0-2)");
+-MODULE_LICENSE("GPL");
+-
+-static unsigned int bionet_min_poll_time = 2;
+-
+-
+-/* Information that need to be kept for each board.
+- */
+-struct net_local {
+-	struct net_device_stats stats;
+-	long open_time;			/* for debugging */
+-	int  poll_time;			/* polling time varies with net load */
+-};
+-
+-static struct nic_pkt_s {		/* packet format */
+-	unsigned char	status;
+-	unsigned char	dummy;
+-	unsigned char	l_lo, l_hi;
+-	unsigned char	buffer[3000];
+-} *nic_packet;
+-unsigned char *phys_nic_packet;
+-
+-/* Index to functions, as function prototypes.
+- */
+-static int bionet_open(struct net_device *dev);
+-static int bionet_send_packet(struct sk_buff *skb, struct net_device *dev);
+-static void bionet_poll_rx(struct net_device *);
+-static int bionet_close(struct net_device *dev);
+-static struct net_device_stats *net_get_stats(struct net_device *dev);
+-static void bionet_tick(unsigned long);
+-
+-static DEFINE_TIMER(bionet_timer, bionet_tick, 0, 0);
+-
+-#define STRAM_ADDR(a)	(((a) & 0xff000000) == 0)
+-
+-/* The following routines access the ethernet board connected to the
+- * ACSI port via the st_dma chip.
+- */
+-#define NODE_ADR 0x60
+-
+-#define C_READ 8
+-#define C_WRITE 0x0a
+-#define C_GETEA 0x0f
+-#define C_SETCR 0x0e
+-
+-static int
+-sendcmd(unsigned int a0, unsigned int mod, unsigned int cmd) {
+-	unsigned int c;
+-
+-	dma_wd.dma_mode_status = (mod | ((a0) ? 2 : 0) | 0x88);
+-	dma_wd.fdc_acces_seccount = cmd;
+-	dma_wd.dma_mode_status = (mod | 0x8a);
+-
+-	if( !acsi_wait_for_IRQ(HZ/2) )	/* wait for cmd ack */
+-		return -1;		/* timeout */
+-
+-	c = dma_wd.fdc_acces_seccount;
+-	return (c & 0xff);
+-}
+-
+-
+-static void
+-set_status(int cr) {
+-	sendcmd(0,0x100,NODE_ADR | C_SETCR);    /* CMD: SET CR */
+-	sendcmd(1,0x100,cr);
+-
+-	dma_wd.dma_mode_status = 0x80;
+-}
+-
+-static int
+-get_status(unsigned char *adr) {
+-	int i,c;
+-
+-	DISABLE_IRQ();
+-	c = sendcmd(0,0x00,NODE_ADR | C_GETEA);  /* CMD: GET ETH ADR*/
+-	if( c < 0 ) goto gsend;
+-
+-	/* now read status bytes */
+-
+-	for (i=0; i<6; i++) {
+-		dma_wd.fdc_acces_seccount = 0;	/* request next byte */
+-
+-    		if( !acsi_wait_for_IRQ(HZ/2) ) {	/* wait for cmd ack */
+-			c = -1;
+-			goto gsend;		/* timeout */
+-		}
+-		c = dma_wd.fdc_acces_seccount;
+-		*adr++ = (unsigned char)c;
+-	}
+-	c = 1;
+-gsend:
+-  	dma_wd.dma_mode_status = 0x80;
+-	return c;
+-}
+-
+-static irqreturn_t
+-bionet_intr(int irq, void *data) {
+-	return IRQ_HANDLED;
+-}
+-
+-
+-static int
+-get_frame(unsigned long paddr, int odd) {
+-	int c;
+-	unsigned long flags;
+-
+-	DISABLE_IRQ();
+-	local_irq_save(flags);
+-
+-	dma_wd.dma_mode_status		= 0x9a;
+-	dma_wd.dma_mode_status		= 0x19a;
+-	dma_wd.dma_mode_status		= 0x9a;
+-	dma_wd.fdc_acces_seccount	= 0x04;		/* sector count (was 5) */
+-	dma_wd.dma_lo			= (unsigned char)paddr;
+-	paddr >>= 8;
+-	dma_wd.dma_md			= (unsigned char)paddr;
+-	paddr >>= 8;
+-	dma_wd.dma_hi			= (unsigned char)paddr;
+-	local_irq_restore(flags);
+-
+-	c = sendcmd(0,0x00,NODE_ADR | C_READ);	/* CMD: READ */
+-	if( c < 128 ) goto rend;
+-
+-	/* now read block */
+-
+-	c = sendcmd(1,0x00,odd);	/* odd flag for address shift */
+-	dma_wd.dma_mode_status	= 0x0a;
+-
+-	if( !acsi_wait_for_IRQ(100) ) {	/* wait for DMA to complete */
+-		c = -1;
+-		goto rend;
+-	}
+-	dma_wd.dma_mode_status	= 0x8a;
+-	dma_wd.dma_mode_status	= 0x18a;
+-	dma_wd.dma_mode_status	= 0x8a;
+-	c = dma_wd.fdc_acces_seccount;
+-
+-	dma_wd.dma_mode_status	= 0x88;
+-	c = dma_wd.fdc_acces_seccount;
+-	c = 1;
+-
+-rend:
+-	dma_wd.dma_mode_status	= 0x80;
+-	udelay(40);
+-	acsi_wait_for_noIRQ(20);
+-	return c;
+-}
+-
+-
+-static int
+-hardware_send_packet(unsigned long paddr, int cnt) {
+-	unsigned int c;
+-	unsigned long flags;
+-
+-	DISABLE_IRQ();
+-	local_irq_save(flags);
+-
+-	dma_wd.dma_mode_status	= 0x19a;
+-	dma_wd.dma_mode_status	= 0x9a;
+-	dma_wd.dma_mode_status	= 0x19a;
+-	dma_wd.dma_lo		= (unsigned char)paddr;
+-	paddr >>= 8;
+-	dma_wd.dma_md		= (unsigned char)paddr;
+-	paddr >>= 8;
+-	dma_wd.dma_hi		= (unsigned char)paddr;
+-
+-	dma_wd.fdc_acces_seccount	= 0x4;		/* sector count */
+-	local_irq_restore(flags);
+-
+-	c = sendcmd(0,0x100,NODE_ADR | C_WRITE);	/* CMD: WRITE */
+-	c = sendcmd(1,0x100,cnt&0xff);
+-	c = sendcmd(1,0x100,cnt>>8);
+-
+-	/* now write block */
+-
+-	dma_wd.dma_mode_status	= 0x10a;	/* DMA enable */
+-	if( !acsi_wait_for_IRQ(100) )		/* wait for DMA to complete */
+-		goto end;
+-
+-	dma_wd.dma_mode_status	= 0x19a;	/* DMA disable ! */
+-	c = dma_wd.fdc_acces_seccount;
+-
+-end:
+-	c = sendcmd(1,0x100,0);
+-	c = sendcmd(1,0x100,0);
+-
+-	dma_wd.dma_mode_status	= 0x180;
+-	udelay(40);
+-	acsi_wait_for_noIRQ(20);
+-	return( c & 0x02);
+-}
+-
+-
+-/* Check for a network adaptor of this type, and return '0' if one exists.
+- */
+-struct net_device * __init bionet_probe(int unit)
+-{
+-	struct net_device *dev;
+-	unsigned char station_addr[6];
+-	static unsigned version_printed;
+-	static int no_more_found;	/* avoid "Probing for..." printed 4 times */
+-	int i;
+-	int err;
+-
+-	if (!MACH_IS_ATARI || no_more_found)
+-		return ERR_PTR(-ENODEV);
+-
+-	dev = alloc_etherdev(sizeof(struct net_local));
+-	if (!dev)
+-		return ERR_PTR(-ENOMEM);
+-	if (unit >= 0) {
+-		sprintf(dev->name, "eth%d", unit);
+-		netdev_boot_setup_check(dev);
+-	}
+-	SET_MODULE_OWNER(dev);
+-
+-	printk("Probing for BioNet 100 Adapter...\n");
+-
+-	stdma_lock(bionet_intr, NULL);
+-	i = get_status(station_addr);	/* Read the station address PROM.  */
+-	ENABLE_IRQ();
+-	stdma_release();
+-
+-	/* Check the first three octets of the S.A. for the manufactor's code.
+-	 */
+-
+-	if( i < 0
+-	||  station_addr[0] != 'B'
+-	||  station_addr[1] != 'I'
+-	||  station_addr[2] != 'O' ) {
+-		no_more_found = 1;
+-		printk( "No BioNet 100 found.\n" );
+-		free_netdev(dev);
+-		return ERR_PTR(-ENODEV);
+-	}
+-
+-	if (bionet_debug > 0 && version_printed++ == 0)
+-		printk(version);
+-
+-	printk("%s: %s found, eth-addr: %02x-%02x-%02x:%02x-%02x-%02x.\n",
+-		dev->name, "BioNet 100",
+-		station_addr[0], station_addr[1], station_addr[2],
+-		station_addr[3], station_addr[4], station_addr[5]);
+-
+-	/* Initialize the device structure. */
+-
+-	nic_packet = (struct nic_pkt_s *)acsi_buffer;
+-	phys_nic_packet = (unsigned char *)phys_acsi_buffer;
+-	if (bionet_debug > 0) {
+-		printk("nic_packet at 0x%p, phys at 0x%p\n",
+-			nic_packet, phys_nic_packet );
+-	}
+-
+-	dev->open		= bionet_open;
+-	dev->stop		= bionet_close;
+-	dev->hard_start_xmit	= bionet_send_packet;
+-	dev->get_stats		= net_get_stats;
+-
+-	/* Fill in the fields of the device structure with ethernet-generic
+-	 * values. This should be in a common file instead of per-driver.
+-	 */
+-
+-	for (i = 0; i < ETH_ALEN; i++) {
+-#if 0
+-		dev->broadcast[i] = 0xff;
+-#endif
+-		dev->dev_addr[i]  = station_addr[i];
+-	}
+-	err = register_netdev(dev);
+-	if (!err)
+-		return dev;
+-	free_netdev(dev);
+-	return ERR_PTR(err);
+-}
+-
+-/* Open/initialize the board.  This is called (in the current kernel)
+-   sometime after booting when the 'ifconfig' program is run.
+-
+-   This routine should set everything up anew at each open, even
+-   registers that "should" only need to be set once at boot, so that
+-   there is non-reboot way to recover if something goes wrong.
+- */
+-static int
+-bionet_open(struct net_device *dev) {
+-	struct net_local *lp = netdev_priv(dev);
+-
+-	if (bionet_debug > 0)
+-		printk("bionet_open\n");
+-	stdma_lock(bionet_intr, NULL);
+-
+-	/* Reset the hardware here.
+-	 */
+-	set_status(4);
+-	lp->open_time = 0;	/*jiffies*/
+-	lp->poll_time = MAX_POLL_TIME;
+-
+-	dev->tbusy = 0;
+-	dev->interrupt = 0;
+-	dev->start = 1;
+-
+-	stdma_release();
+-	bionet_timer.data = (long)dev;
+-	bionet_timer.expires = jiffies + lp->poll_time;
+-	add_timer(&bionet_timer);
+-	return 0;
+-}
+-
+-static int
+-bionet_send_packet(struct sk_buff *skb, struct net_device *dev) {
+-	struct net_local *lp = netdev_priv(dev);
+-	unsigned long flags;
+-
+-	/* Block a timer-based transmit from overlapping.  This could better be
+-	 * done with atomic_swap(1, dev->tbusy), but set_bit() works as well.
+-	 */
+-	local_irq_save(flags);
+-
+-	if (stdma_islocked()) {
+-		local_irq_restore(flags);
+-		lp->stats.tx_errors++;
+-	}
+-	else {
+-		int length = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
+-		unsigned long buf = virt_to_phys(skb->data);
+-		int stat;
+-
+-		stdma_lock(bionet_intr, NULL);
+-		local_irq_restore(flags);
+-		if( !STRAM_ADDR(buf+length-1) ) {
+-			skb_copy_from_linear_data(skb, nic_packet->buffer,
+-						  length);
+-			buf = (unsigned long)&((struct nic_pkt_s *)phys_nic_packet)->buffer;
+-		}
+-
+-		if (bionet_debug >1) {
+-			u_char *data = nic_packet->buffer, *p;
+-			int i;
+-
+-			printk( "%s: TX pkt type 0x%4x from ", dev->name,
+-				  ((u_short *)data)[6]);
+-
+-			for( p = &data[6], i = 0; i < 6; i++ )
+-				printk("%02x%s", *p++,i != 5 ? ":" : "" );
+-			printk(" to ");
+-
+-			for( p = data, i = 0; i < 6; i++ )
+-				printk("%02x%s", *p++,i != 5 ? ":" : "" "\n" );
+-
+-			printk( "%s: ", dev->name );
+-			printk(" data %02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x"
+-			       " %02x%02x%02x%02x len %d\n",
+-				  data[12], data[13], data[14], data[15], data[16], data[17], data[18], data[19],
+-				  data[20], data[21], data[22], data[23], data[24], data[25], data[26], data[27],
+-				  data[28], data[29], data[30], data[31], data[32], data[33],
+-				  length );
+-		}
+-		dma_cache_maintenance(buf, length, 1);
+-
+-		stat = hardware_send_packet(buf, length);
+-		ENABLE_IRQ();
+-		stdma_release();
+-
+-		dev->trans_start = jiffies;
+-		dev->tbusy	 = 0;
+-		lp->stats.tx_packets++;
+-		lp->stats.tx_bytes+=length;
+-	}
+-	dev_kfree_skb(skb);
+-
+-	return 0;
+-}
+-
+-/* We have a good packet(s), get it/them out of the buffers.
+- */
+-static void
+-bionet_poll_rx(struct net_device *dev) {
+-	struct net_local *lp = netdev_priv(dev);
+-	int boguscount = 10;
+-	int pkt_len, status;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	/* ++roman: Take care at locking the ST-DMA... This must be done with ints
+-	 * off, since otherwise an int could slip in between the question and the
+-	 * locking itself, and then we'd go to sleep... And locking itself is
+-	 * necessary to keep the floppy_change timer from working with ST-DMA
+-	 * registers. */
+-	if (stdma_islocked()) {
+-		local_irq_restore(flags);
+-		return;
+-	}
+-	stdma_lock(bionet_intr, NULL);
+-	DISABLE_IRQ();
+-	local_irq_restore(flags);
+-
+-	if( lp->poll_time < MAX_POLL_TIME ) lp->poll_time++;
+-
+-	while(boguscount--) {
+-		status = get_frame((unsigned long)phys_nic_packet, 0);
+-
+-		if( status == 0 ) break;
+-
+-		/* Good packet... */
+-
+-		dma_cache_maintenance((unsigned long)phys_nic_packet, 1520, 0);
+-
+-		pkt_len = (nic_packet->l_hi << 8) | nic_packet->l_lo;
+-
+-		lp->poll_time = bionet_min_poll_time;    /* fast poll */
+-		if( pkt_len >= 60 && pkt_len <= 1520 ) {
+-					/*	^^^^ war 1514  KHL */
+-			/* Malloc up new buffer.
+-			 */
+-			struct sk_buff *skb = dev_alloc_skb( pkt_len + 2 );
+-			if (skb == NULL) {
+-				printk("%s: Memory squeeze, dropping packet.\n",
+-					dev->name);
+-				lp->stats.rx_dropped++;
+-				break;
+-			}
+-
+-			skb_reserve( skb, 2 );		/* 16 Byte align  */
+-			skb_put( skb, pkt_len );	/* make room */
+-
+-			/* 'skb->data' points to the start of sk_buff data area.
+-			 */
+-			skb_copy_to_linear_data(skb, nic_packet->buffer,
+-						pkt_len);
+-			skb->protocol = eth_type_trans( skb, dev );
+-			netif_rx(skb);
+-			dev->last_rx = jiffies;
+-			lp->stats.rx_packets++;
+-			lp->stats.rx_bytes+=pkt_len;
+-
+-	/* If any worth-while packets have been received, dev_rint()
+-	   has done a mark_bh(INET_BH) for us and will work on them
+-	   when we get to the bottom-half routine.
+-	 */
+-
+- 			if (bionet_debug >1) {
+- 				u_char *data = nic_packet->buffer, *p;
+- 				int i;
+-
+- 				printk( "%s: RX pkt type 0x%4x from ", dev->name,
+- 					  ((u_short *)data)[6]);
+-
+-
+- 				for( p = &data[6], i = 0; i < 6; i++ )
+- 					printk("%02x%s", *p++,i != 5 ? ":" : "" );
+- 				printk(" to ");
+- 				for( p = data, i = 0; i < 6; i++ )
+- 					printk("%02x%s", *p++,i != 5 ? ":" : "" "\n" );
+-
+- 				printk( "%s: ", dev->name );
+- 				printk(" data %02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x"
+- 				       " %02x%02x%02x%02x len %d\n",
+- 					  data[12], data[13], data[14], data[15], data[16], data[17], data[18], data[19],
+- 					  data[20], data[21], data[22], data[23], data[24], data[25], data[26], data[27],
+- 					  data[28], data[29], data[30], data[31], data[32], data[33],
+- 						  pkt_len );
+- 			}
+- 		}
+- 		else {
+- 			printk(" Packet has wrong length: %04d bytes\n", pkt_len);
+- 			lp->stats.rx_errors++;
+- 		}
+- 	}
+-	stdma_release();
+-	ENABLE_IRQ();
+-	return;
+-}
+-
+-/* bionet_tick: called by bionet_timer. Reads packets from the adapter,
+- * passes them to the higher layers and restarts the timer.
+- */
+-static void
+-bionet_tick(unsigned long data) {
+-	struct net_device	 *dev = (struct net_device *)data;
+-	struct net_local *lp = netdev_priv(dev);
+-
+-	if( bionet_debug > 0 && (lp->open_time++ & 7) == 8 )
+-		printk("bionet_tick: %ld\n", lp->open_time);
+-
+-	if( !stdma_islocked() ) bionet_poll_rx(dev);
+-
+-	bionet_timer.expires = jiffies + lp->poll_time;
+-	add_timer(&bionet_timer);
+-}
+-
+-/* The inverse routine to bionet_open().
+- */
+-static int
+-bionet_close(struct net_device *dev) {
+-	struct net_local *lp = netdev_priv(dev);
+-
+-	if (bionet_debug > 0)
+-		printk("bionet_close, open_time=%ld\n", lp->open_time);
+-	del_timer(&bionet_timer);
+-	stdma_lock(bionet_intr, NULL);
+-
+-	set_status(0);
+-	lp->open_time = 0;
+-
+-	dev->tbusy = 1;
+-	dev->start = 0;
+-
+-	stdma_release();
+-	return 0;
+-}
+-
+-/* Get the current statistics.
+-   This may be called with the card open or closed.
+- */
+-static struct net_device_stats *net_get_stats(struct net_device *dev)
+-{
+-	struct net_local *lp = netdev_priv(dev);
+-	return &lp->stats;
+-}
+-
+-
+-#ifdef MODULE
+-
+-static struct net_device *bio_dev;
+-
+-int init_module(void)
+-{
+-	bio_dev = bionet_probe(-1);
+-	if (IS_ERR(bio_dev))
+-		return PTR_ERR(bio_dev);
+-	return 0;
+-}
+-
+-void cleanup_module(void)
+-{
+-	unregister_netdev(bio_dev);
+-	free_netdev(bio_dev);
+-}
+-
+-#endif /* MODULE */
+-
+-/* Local variables:
+- *  compile-command: "gcc -D__KERNEL__ -I/usr/src/linux/include
+-	-b m68k-linuxaout -Wall -Wstrict-prototypes -O2
+-	-fomit-frame-pointer -pipe -DMODULE -I../../net/inet -c bionet.c"
+- *  version-control: t
+- *  kept-new-versions: 5
+- *  tab-width: 8
+- * End:
+- */
+--- linux-2.6.22-rc6-mm1/drivers/net/atari_pamsnet.c	2007-06-28 14:54:31.000000000 +0200
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,878 +0,0 @@
+-/* atari_pamsnet.c     PAMsNet device driver for linux68k.
+- *
+- * Version:	@(#)PAMsNet.c	0.2�	03/31/96
+- *
+- * Author:  Torsten Lang <Torsten.Lang@ap.physik.uni-giessen.de>
+- *                       <Torsten.Lang@jung.de>
+- *
+- * This driver is based on my driver PAMSDMA.c for MiNT-Net and
+- * on the driver bionet.c written by
+- *          Hartmut Laue <laue@ifk-mp.uni-kiel.de>
+- * and      Torsten Narjes <narjes@ifk-mp.uni-kiel.de>
+- *
+- * Little adaptions for integration into pl7 by Roman Hodek
+- *
+-	What is it ?
+-	------------
+-	This driver controls the PAMsNet LAN-Adapter which connects
+-	an ATARI ST/TT via the ACSI-port to an Ethernet-based network.
+-
+-	This version can be compiled as a loadable module (See the
+-	compile command at the bottom of this file).
+-	At load time, you can optionally set the debugging level and the
+-	fastest response time on the command line of 'insmod'.
+-
+-	'pamsnet_debug'
+-		controls the amount of diagnostic messages:
+-	  0  : no messages
+-	  >0 : see code for meaning of printed messages
+-
+-	'pamsnet_min_poll_time' (always >=1)
+-		gives the time (in jiffies) between polls. Low values
+-		increase the system load (beware!)
+-
+-	When loaded, a net device with the name 'eth?' becomes available,
+-	which can be controlled with the usual 'ifconfig' command.
+-
+-	It is possible to compile this driver into the kernel like other
+-	(net) drivers. For this purpose, some source files (e.g. config-files
+-	makefiles, Space.c) must be changed accordingly. (You may refer to
+-	other drivers how to do it.) In this case, the device will be detected
+-	at boot time and (probably) appear as 'eth0'.
+-
+-	Theory of Operation
+-	-------------------
+-	Because the ATARI DMA port is usually shared between several
+-	devices (eg. harddisk, floppy) we cannot block the ACSI bus
+-	while waiting for interrupts. Therefore we use a polling mechanism
+-	to fetch packets from the adapter. For the same reason, we send
+-	packets without checking that the previous packet has been sent to
+-	the LAN. We rely on the higher levels of the networking code to detect
+-	missing packets and resend them.
+-
+-	Before we access the ATARI DMA controller, we check if another
+-	process is using the DMA. If not, we lock the DMA, perform one or
+-	more packet transfers and unlock the DMA before returning.
+-	We do not use 'stdma_lock' unconditionally because it is unclear
+-	if the networking code can be set to sleep, which will happen if
+-	another (possibly slow) device is using the DMA controller.
+-
+-	The polling is done via timer interrupts which periodically
+-	'simulate' an interrupt from the Ethernet adapter. The time (in jiffies)
+-	between polls varies depending on an estimate of the net activity.
+-	The allowed range is given by the variable 'bionet_min_poll_time'
+-	for the lower (fastest) limit and the constant 'MAX_POLL_TIME'
+-	for the higher (slowest) limit.
+-
+-	Whenever a packet arrives, we switch to fastest response by setting
+-	the polling time to its lowest limit. If the following poll fails,
+-	because no packets have arrived, we increase the time for the next
+-	poll. When the net activity is low, the polling time effectively
+-	stays at its maximum value, resulting in the lowest load for the
+-	machine.
+- */
+-
+-#define MAX_POLL_TIME	10
+-
+-static char *version =
+-	"pamsnet.c:v0.2beta 30-mar-96 (c) Torsten Lang.\n";
+-
+-#include <linux/module.h>
+-
+-#include <linux/kernel.h>
+-#include <linux/jiffies.h>
+-#include <linux/types.h>
+-#include <linux/fcntl.h>
+-#include <linux/interrupt.h>
+-#include <linux/ioport.h>
+-#include <linux/in.h>
+-#include <linux/slab.h>
+-#include <linux/string.h>
+-#include <linux/bitops.h>
+-#include <asm/system.h>
+-#include <asm/pgtable.h>
+-#include <asm/io.h>
+-#include <asm/dma.h>
+-#include <linux/errno.h>
+-#include <asm/atarihw.h>
+-#include <asm/atariints.h>
+-#include <asm/atari_stdma.h>
+-#include <asm/atari_acsi.h>
+-
+-#include <linux/delay.h>
+-#include <linux/timer.h>
+-#include <linux/init.h>
+-
+-#include <linux/netdevice.h>
+-#include <linux/etherdevice.h>
+-#include <linux/skbuff.h>
+-
+-#undef READ
+-#undef WRITE
+-
+-/* use 0 for production, 1 for verification, >2 for debug
+- */
+-#ifndef NET_DEBUG
+-#define NET_DEBUG 0
+-#endif
+-/*
+- * Global variable 'pamsnet_debug'. Can be set at load time by 'insmod'
+- */
+-unsigned int pamsnet_debug = NET_DEBUG;
+-module_param(pamsnet_debug, int, 0);
+-MODULE_PARM_DESC(pamsnet_debug, "pamsnet debug enable (0-1)");
+-MODULE_LICENSE("GPL");
+-
+-static unsigned int pamsnet_min_poll_time = 2;
+-
+-
+-/* Information that need to be kept for each board.
+- */
+-struct net_local {
+-	struct net_device_stats stats;
+-	long open_time;			/* for debugging */
+-	int  poll_time;			/* polling time varies with net load */
+-};
+-
+-static struct nic_pkt_s {		/* packet format */
+-	unsigned char	buffer[2048];
+-} *nic_packet = 0;
+-unsigned char *phys_nic_packet;
+-
+-typedef unsigned char HADDR[6]; /* 6-byte hardware address of lance */
+-
+-/* Index to functions, as function prototypes.
+- */
+-static void	start (int target);
+-static int	stop (int target);
+-static int	testpkt (int target);
+-static int	sendpkt (int target, unsigned char *buffer, int length);
+-static int	receivepkt (int target, unsigned char *buffer);
+-static int	inquiry (int target, unsigned char *buffer);
+-static HADDR	*read_hw_addr(int target, unsigned char *buffer);
+-static void	setup_dma (void *address, unsigned rw_flag, int num_blocks);
+-static int	send_first (int target, unsigned char byte);
+-static int	send_1_5 (int lun, unsigned char *command, int dma);
+-static int	get_status (void);
+-static int	calc_received (void *start_address);
+-
+-static int pamsnet_open(struct net_device *dev);
+-static int pamsnet_send_packet(struct sk_buff *skb, struct net_device *dev);
+-static void pamsnet_poll_rx(struct net_device *);
+-static int pamsnet_close(struct net_device *dev);
+-static struct net_device_stats *net_get_stats(struct net_device *dev);
+-static void pamsnet_tick(unsigned long);
+-
+-static irqreturn_t pamsnet_intr(int irq, void *data);
+-
+-static DEFINE_TIMER(pamsnet_timer, pamsnet_tick, 0, 0);
+-
+-#define STRAM_ADDR(a)	(((a) & 0xff000000) == 0)
+-
+-typedef struct
+-{
+-	unsigned char reserved1[0x38];
+-	HADDR  hwaddr;
+-	unsigned char reserved2[0x1c2];
+-} DMAHWADDR;
+-
+-/*
+- * Definitions of commands understood by the PAMs DMA adaptor.
+- *
+- * In general the DMA adaptor uses LUN 0, 5, 6 and 7 on one ID changeable
+- * by the PAM's Net software.
+- *
+- * LUN 0 works as a harddisk. You can boot the PAM's Net driver there.
+- * LUN 5 works as a harddisk and lets you access the RAM and some I/O HW
+- *       area. In sector 0, bytes 0x38-0x3d you find the ethernet HW address
+- *       of the adaptor.
+- * LUN 6 works as a harddisk and lets you access the firmware ROM.
+- * LUN 7 lets you send and receive packets.
+- *
+- * Some commands like the INQUIRY command work identical on all used LUNs.
+- *
+- * UNKNOWN1 seems to read some data.
+- *          Command length is 6 bytes.
+- * UNKNOWN2 seems to read some data (command byte 1 must be !=0). The
+- *          following bytes seem to be something like an allocation length.
+- *          Command length is 6 bytes.
+- * READPKT  reads a packet received by the DMA adaptor.
+- *          Command length is 6 bytes.
+- * WRITEPKT sends a packet transferred by the following DMA phase. The length
+- *          of the packet is transferred in command bytes 3 and 4.
+- *          The adaptor automatically replaces the src hw address in an ethernet
+- *          packet by its own hw address.
+- *          Command length is 6 bytes.
+- * INQUIRY  has the same function as the INQUIRY command supported by harddisks
+- *          and other SCSI devices. It lets you detect which device you found
+- *          at a given address.
+- *          Command length is 6 bytes.
+- * START    initializes the DMA adaptor. After this command it is able to send
+- *          and receive packets. There is no status byte returned!
+- *          Command length is 1 byte.
+- * NUMPKTS  gives back the number of received packets waiting in the queue in
+- *          the status byte.
+- *          Command length is 1 byte.
+- * UNKNOWN3
+- * UNKNOWN4 Function of these three commands is unknown.
+- * UNKNOWN5 The command length of these three commands is 1 byte.
+- * DESELECT immediately deselects the DMA adaptor. May important with interrupt
+- *          driven operation.
+- *          Command length is 1 byte.
+- * STOP     resets the DMA adaptor. After this command packets can no longer
+- *          be received or transferred.
+- *          Command length is 6 byte.
+- */
+-
+-enum {UNKNOWN1=3, READPKT=8, UNKNOWN2, WRITEPKT=10, INQUIRY=18, START,
+-      NUMPKTS=22, UNKNOWN3, UNKNOWN4, UNKNOWN5, DESELECT, STOP};
+-
+-#define READSECTOR  READPKT
+-#define WRITESECTOR WRITEPKT
+-
+-u_char *inquire8="MV      PAM's NET/GK";
+-
+-#define DMALOW   dma_wd.dma_lo
+-#define DMAMID   dma_wd.dma_md
+-#define DMAHIGH  dma_wd.dma_hi
+-#define DACCESS  dma_wd.fdc_acces_seccount
+-
+-#define MFP_GPIP mfp.par_dt_reg
+-
+-/* Some useful functions */
+-
+-#define INT      (!(MFP_GPIP & 0x20))
+-#define DELAY ({MFP_GPIP; MFP_GPIP; MFP_GPIP;})
+-#define WRITEMODE(value)					\
+-	({	u_short dummy = value;				\
+-		__asm__ volatile("movew %0, 0xFFFF8606" : : "d"(dummy));	\
+-		DELAY;						\
+-	})
+-#define WRITEBOTH(value1, value2)				\
+-	({	u_long dummy = (u_long)(value1)<<16 | (u_short)(value2);	\
+-		__asm__ volatile("movel %0, 0xFFFF8604" : : "d"(dummy));	\
+-		DELAY;						\
+-	})
+-
+-/* Definitions for DMODE */
+-
+-#define READ        0x000
+-#define WRITE       0x100
+-
+-#define DMA_FDC     0x080
+-#define DMA_ACSI    0x000
+-
+-#define DMA_DISABLE 0x040
+-
+-#define SEC_COUNT   0x010
+-#define DMA_WINDOW  0x000
+-
+-#define REG_ACSI    0x008
+-#define REG_FDC     0x000
+-
+-#define A1          0x002
+-
+-/* Timeout constants */
+-
+-#define TIMEOUTCMD HZ/2   /* ca. 500ms */
+-#define TIMEOUTDMA HZ     /* ca. 1s */
+-#define COMMAND_DELAY 500 /* ca. 0.5ms */
+-
+-unsigned rw;
+-int lance_target = -1;
+-int if_up = 0;
+-
+-/* The following routines access the ethernet board connected to the
+- * ACSI port via the st_dma chip.
+- */
+-
+-/* The following lowlevel routines work on physical addresses only and assume
+- * that eventually needed buffers are
+- * - completely located in ST RAM
+- * - are contigous in the physical address space
+- */
+-
+-/* Setup the DMA counter */
+-
+-static void
+-setup_dma (void *address, unsigned rw_flag, int num_blocks)
+-{
+-	WRITEMODE((unsigned) rw_flag          | DMA_FDC | SEC_COUNT | REG_ACSI |
+-		  A1);
+-	WRITEMODE((unsigned)(rw_flag ^ WRITE) | DMA_FDC | SEC_COUNT | REG_ACSI |
+-		  A1);
+-	WRITEMODE((unsigned) rw_flag          | DMA_FDC | SEC_COUNT | REG_ACSI |
+-		  A1);
+-	DMALOW  = (unsigned char)((unsigned long)address & 0xFF);
+-	DMAMID  = (unsigned char)(((unsigned long)address >>  8) & 0xFF);
+-	DMAHIGH = (unsigned char)(((unsigned long)address >> 16) & 0xFF);
+-	WRITEBOTH((unsigned)num_blocks & 0xFF,
+-		  rw_flag | DMA_FDC | DMA_WINDOW | REG_ACSI | A1);
+-	rw = rw_flag;
+-}
+-
+-/* Send the first byte of an command block */
+-
+-static int
+-send_first (int target, unsigned char byte)
+-{
+-	rw = READ;
+-	acsi_delay_end(COMMAND_DELAY);
+-	/*
+-	 * wake up ACSI
+-	 */
+-	WRITEMODE(DMA_FDC | DMA_WINDOW | REG_ACSI);
+-	/*
+-	 * write command byte
+-	 */
+-	WRITEBOTH((target << 5) | (byte & 0x1F), DMA_FDC |
+-	          DMA_WINDOW | REG_ACSI | A1);
+-	return (!acsi_wait_for_IRQ(TIMEOUTCMD));
+-}
+-
+-/* Send the rest of an command block */
+-
+-static int
+-send_1_5 (int lun, unsigned char *command, int dma)
+-{
+-	int i, j;
+-
+-	for (i=0; i<5; i++) {
+-		WRITEBOTH((!i ? (((lun & 0x7) << 5) | (command[i] & 0x1F))
+-			      : command[i]),
+-			  rw | REG_ACSI | DMA_WINDOW |
+-			   ((i < 4) ? DMA_FDC
+-				    : (dma ? DMA_ACSI
+-					   : DMA_FDC)) | A1);
+-		if (i < 4 && (j = !acsi_wait_for_IRQ(TIMEOUTCMD)))
+-			return (j);
+-	}
+-	return (0);
+-}
+-
+-/* Read a status byte */
+-
+-static int
+-get_status (void)
+-{
+-	WRITEMODE(DMA_FDC | DMA_WINDOW | REG_ACSI | A1);
+-	acsi_delay_start();
+-	return ((int)(DACCESS & 0xFF));
+-}
+-
+-/* Calculate the number of received bytes */
+-
+-static int
+-calc_received (void *start_address)
+-{
+-	return (int)(
+-		(((unsigned long)DMAHIGH << 16) | ((unsigned)DMAMID << 8) | DMALOW)
+-	      - (unsigned long)start_address);
+-}
+-
+-/* The following midlevel routines still work on physical addresses ... */
+-
+-/* start() starts the PAM's DMA adaptor */
+-
+-static void
+-start (int target)
+-{
+-	send_first(target, START);
+-}
+-
+-/* stop() stops the PAM's DMA adaptor and returns a value of zero in case of success */
+-
+-static int
+-stop (int target)
+-{
+-	int ret = -1;
+-	unsigned char cmd_buffer[5];
+-
+-	if (send_first(target, STOP))
+-		goto bad;
+-	cmd_buffer[0] = cmd_buffer[1] = cmd_buffer[2] =
+-	cmd_buffer[3] = cmd_buffer[4] = 0;
+-	if (send_1_5(7, cmd_buffer, 0) ||
+-	    !acsi_wait_for_IRQ(TIMEOUTDMA) ||
+-	    get_status())
+-		goto bad;
+-	ret = 0;
+-bad:
+-	return (ret);
+-}
+-
+-/* testpkt() returns the number of received packets waiting in the queue */
+-
+-static int
+-testpkt(int target)
+-{
+-	int ret = -1;
+-
+-	if (send_first(target, NUMPKTS))
+-		goto bad;
+-	ret = get_status();
+-bad:
+-	return (ret);
+-}
+-
+-/* inquiry() returns 0 when PAM's DMA found, -1 when timeout, -2 otherwise */
+-/* Please note: The buffer is for internal use only but must be defined!   */
+-
+-static int
+-inquiry (int target, unsigned char *buffer)
+-{
+-	int ret = -1;
+-	unsigned char *vbuffer = phys_to_virt((unsigned long)buffer);
+-	unsigned char cmd_buffer[5];
+-
+-	if (send_first(target, INQUIRY))
+-		goto bad;
+-	setup_dma(buffer, READ, 1);
+-	vbuffer[8] = vbuffer[27] = 0; /* Avoid confusion with previous read data */
+-	cmd_buffer[0] = cmd_buffer[1] = cmd_buffer[2] = cmd_buffer[4] = 0;
+-	cmd_buffer[3] = 48;
+-	if (send_1_5(5, cmd_buffer, 1) ||
+-	    !acsi_wait_for_IRQ(TIMEOUTDMA) ||
+-	    get_status() ||
+-	    (calc_received(buffer) < 32))
+-		goto bad;
+-	dma_cache_maintenance((unsigned long)(buffer+8), 20, 0);
+-	if (memcmp(inquire8, vbuffer+8, 20))
+-		goto bad;
+-	ret = 0;
+-bad:
+-	if (!!NET_DEBUG) {
+-		vbuffer[8+20]=0;
+-		printk("inquiry of target %d: %s\n", target, vbuffer+8);
+-	}
+-	return (ret);
+-}
+-
+-/*
+- * read_hw_addr() reads the sector containing the hwaddr and returns
+- * a pointer to it (virtual address!) or 0 in case of an error
+- */
+-
+-static HADDR
+-*read_hw_addr(int target, unsigned char *buffer)
+-{
+-	HADDR *ret = 0;
+-	unsigned char cmd_buffer[5];
+-
+-	if (send_first(target, READSECTOR))
+-		goto bad;
+-	setup_dma(buffer, READ, 1);
+-	cmd_buffer[0] = cmd_buffer[1] = cmd_buffer[2] = cmd_buffer[4] = 0;
+-	cmd_buffer[3] = 1;
+-	if (send_1_5(5, cmd_buffer, 1) ||
+-	    !acsi_wait_for_IRQ(TIMEOUTDMA) ||
+-	    get_status())
+-		goto bad;
+-	ret = phys_to_virt((unsigned long)&(((DMAHWADDR *)buffer)->hwaddr));
+-	dma_cache_maintenance((unsigned long)buffer, 512, 0);
+-bad:
+-	return (ret);
+-}
+-
+-static irqreturn_t
+-pamsnet_intr(int irq, void *data)
+-{
+-	return IRQ_HANDLED;
+-}
+-
+-/* receivepkt() loads a packet to a given buffer and returns its length */
+-
+-static int
+-receivepkt (int target, unsigned char *buffer)
+-{
+-	int ret = -1;
+-	unsigned char cmd_buffer[5];
+-
+-	if (send_first(target, READPKT))
+-		goto bad;
+-	setup_dma(buffer, READ, 3);
+-	cmd_buffer[0] = cmd_buffer[1] = cmd_buffer[2] = cmd_buffer[4] = 0;
+-	cmd_buffer[3] = 3;
+-	if (send_1_5(7, cmd_buffer, 1) ||
+-	    !acsi_wait_for_IRQ(TIMEOUTDMA) ||
+-	    get_status())
+-		goto bad;
+-	ret = calc_received(buffer);
+-bad:
+-	return (ret);
+-}
+-
+-/* sendpkt() sends a packet and returns a value of zero when the packet was sent
+-             successfully */
+-
+-static int
+-sendpkt (int target, unsigned char *buffer, int length)
+-{
+-	int ret = -1;
+-	unsigned char cmd_buffer[5];
+-
+-	if (send_first(target, WRITEPKT))
+-		goto bad;
+-	setup_dma(buffer, WRITE, 3);
+-	cmd_buffer[0] = cmd_buffer[1] = cmd_buffer[4] = 0;
+-	cmd_buffer[2] = length >> 8;
+-	cmd_buffer[3] = length & 0xFF;
+-	if (send_1_5(7, cmd_buffer, 1) ||
+-	    !acsi_wait_for_IRQ(TIMEOUTDMA) ||
+-	    get_status())
+-		goto bad;
+-	ret = 0;
+-bad:
+-	return (ret);
+-}
+-
+-/* The following higher level routines work on virtual addresses and convert them to
+- * physical addresses when passed to the lowlevel routines. It's up to the higher level
+- * routines to copy data from Alternate RAM to ST RAM if neccesary!
+- */
+-
+-/* Check for a network adaptor of this type, and return '0' if one exists.
+- */
+-
+-struct net_device * __init pamsnet_probe (int unit)
+-{
+-	struct net_device *dev;
+-	int i;
+-	HADDR *hwaddr;
+-	int err;
+-
+-	unsigned char station_addr[6];
+-	static unsigned version_printed;
+-	/* avoid "Probing for..." printed 4 times - the driver is supporting only one adapter now! */
+-	static int no_more_found;
+-
+-	if (no_more_found)
+-		return ERR_PTR(-ENODEV);
+-	no_more_found = 1;
+-
+-	dev = alloc_etherdev(sizeof(struct net_local));
+-	if (!dev)
+-		return ERR_PTR(-ENOMEM);
+-	if (unit >= 0) {
+-		sprintf(dev->name, "eth%d", unit);
+-		netdev_boot_setup_check(dev);
+-	}
+-	SET_MODULE_OWNER(dev);
+-
+-	printk("Probing for PAM's Net/GK Adapter...\n");
+-
+-	/* Allocate the DMA buffer here since we need it for probing! */
+-
+-	nic_packet = (struct nic_pkt_s *)acsi_buffer;
+-	phys_nic_packet = (unsigned char *)phys_acsi_buffer;
+-	if (pamsnet_debug > 0) {
+-		printk("nic_packet at 0x%p, phys at 0x%p\n",
+-			   nic_packet, phys_nic_packet );
+-	}
+-
+-	stdma_lock(pamsnet_intr, NULL);
+-	DISABLE_IRQ();
+-
+-	for (i=0; i<8; i++) {
+-		/* Do two inquiries to cover cases with strange equipment on previous ID */
+-		/* blocking the ACSI bus (like the SLMC804 laser printer controller...   */
+-		inquiry(i, phys_nic_packet);
+-		if (!inquiry(i, phys_nic_packet)) {
+-			lance_target = i;
+-			break;
+-		}
+-	}
+-
+-	if (!!NET_DEBUG)
+-		printk("ID: %d\n",i);
+-
+-	if (lance_target >= 0) {
+-		if (!(hwaddr = read_hw_addr(lance_target, phys_nic_packet)))
+-			lance_target = -1;
+-		else
+-			memcpy (station_addr, hwaddr, ETH_ALEN);
+-	}
+-
+-	ENABLE_IRQ();
+-	stdma_release();
+-
+-	if (lance_target < 0) {
+-		printk("No PAM's Net/GK found.\n");
+-		free_netdev(dev);
+-		return ERR_PTR(-ENODEV);
+-	}
+-
+-	if (pamsnet_debug > 0 && version_printed++ == 0)
+-		printk(version);
+-
+-	printk("%s: %s found on target %01d, eth-addr: %02x:%02x:%02x:%02x:%02x:%02x.\n",
+-		dev->name, "PAM's Net/GK", lance_target,
+-		station_addr[0], station_addr[1], station_addr[2],
+-		station_addr[3], station_addr[4], station_addr[5]);
+-
+-	/* Initialize the device structure. */
+-	dev->open		= pamsnet_open;
+-	dev->stop		= pamsnet_close;
+-	dev->hard_start_xmit	= pamsnet_send_packet;
+-	dev->get_stats		= net_get_stats;
+-
+-	/* Fill in the fields of the device structure with ethernet-generic
+-	 * values. This should be in a common file instead of per-driver.
+-	 */
+-
+-	for (i = 0; i < ETH_ALEN; i++) {
+-#if 0
+-		dev->broadcast[i] = 0xff;
+-#endif
+-		dev->dev_addr[i]  = station_addr[i];
+-	}
+-	err = register_netdev(dev);
+-	if (!err)
+-		return dev;
+-
+-	free_netdev(dev);
+-	return ERR_PTR(err);
+-}
+-
+-/* Open/initialize the board.  This is called (in the current kernel)
+-   sometime after booting when the 'ifconfig' program is run.
+-
+-   This routine should set everything up anew at each open, even
+-   registers that "should" only need to be set once at boot, so that
+-   there is non-reboot way to recover if something goes wrong.
+- */
+-static int
+-pamsnet_open(struct net_device *dev)
+-{
+-	struct net_local *lp = netdev_priv(dev);
+-
+-	if (pamsnet_debug > 0)
+-		printk("pamsnet_open\n");
+-	stdma_lock(pamsnet_intr, NULL);
+-	DISABLE_IRQ();
+-
+-	/* Reset the hardware here.
+-	 */
+-	if (!if_up)
+-		start(lance_target);
+-	if_up = 1;
+-	lp->open_time = 0;	/*jiffies*/
+-	lp->poll_time = MAX_POLL_TIME;
+-
+-	dev->tbusy = 0;
+-	dev->interrupt = 0;
+-	dev->start = 1;
+-
+-	ENABLE_IRQ();
+-	stdma_release();
+-	pamsnet_timer.data = (long)dev;
+-	pamsnet_timer.expires = jiffies + lp->poll_time;
+-	add_timer(&pamsnet_timer);
+-	return 0;
+-}
+-
+-static int
+-pamsnet_send_packet(struct sk_buff *skb, struct net_device *dev)
+-{
+-	struct net_local *lp = netdev_priv(dev);
+-	unsigned long flags;
+-
+-	/* Block a timer-based transmit from overlapping.  This could better be
+-	 * done with atomic_swap(1, dev->tbusy), but set_bit() works as well.
+-	 */
+-	local_irq_save(flags);
+-
+-	if (stdma_islocked()) {
+-		local_irq_restore(flags);
+-		lp->stats.tx_errors++;
+-	}
+-	else {
+-		int length = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
+-		unsigned long buf = virt_to_phys(skb->data);
+-		int stat;
+-
+-		stdma_lock(pamsnet_intr, NULL);
+-		DISABLE_IRQ();
+-
+-		local_irq_restore(flags);
+-		if( !STRAM_ADDR(buf+length-1) ) {
+-			skb_copy_from_linear_data(skb, nic_packet->buffer,
+-						  length);
+-			buf = (unsigned long)phys_nic_packet;
+-		}
+-
+-		dma_cache_maintenance(buf, length, 1);
+-
+-		stat = sendpkt(lance_target, (unsigned char *)buf, length);
+-		ENABLE_IRQ();
+-		stdma_release();
+-
+-		dev->trans_start = jiffies;
+-		dev->tbusy	 = 0;
+-		lp->stats.tx_packets++;
+-		lp->stats.tx_bytes+=length;
+-	}
+-	dev_kfree_skb(skb);
+-
+-	return 0;
+-}
+-
+-/* We have a good packet(s), get it/them out of the buffers.
+- */
+-static void
+-pamsnet_poll_rx(struct net_device *dev)
+-{
+-	struct net_local *lp = netdev_priv(dev);
+-	int boguscount;
+-	int pkt_len;
+-	struct sk_buff *skb;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	/* ++roman: Take care at locking the ST-DMA... This must be done with ints
+-	 * off, since otherwise an int could slip in between the question and the
+-	 * locking itself, and then we'd go to sleep... And locking itself is
+-	 * necessary to keep the floppy_change timer from working with ST-DMA
+-	 * registers. */
+-	if (stdma_islocked()) {
+-		local_irq_restore(flags);
+-		return;
+-	}
+-	stdma_lock(pamsnet_intr, NULL);
+-	DISABLE_IRQ();
+-	local_irq_restore(flags);
+-
+-	boguscount = testpkt(lance_target);
+-	if( lp->poll_time < MAX_POLL_TIME ) lp->poll_time++;
+-
+-	while(boguscount--) {
+-		pkt_len = receivepkt(lance_target, phys_nic_packet);
+-
+-		if( pkt_len < 60 ) break;
+-
+-		/* Good packet... */
+-
+-		dma_cache_maintenance((unsigned long)phys_nic_packet, pkt_len, 0);
+-
+-		lp->poll_time = pamsnet_min_poll_time;    /* fast poll */
+-		if( pkt_len >= 60 && pkt_len <= 2048 ) {
+-			if (pkt_len > 1514)
+-				pkt_len = 1514;
+-
+-			/* Malloc up new buffer.
+-			 */
+-			skb = alloc_skb(pkt_len, GFP_ATOMIC);
+-			if (skb == NULL) {
+-				printk("%s: Memory squeeze, dropping packet.\n",
+-					dev->name);
+-				lp->stats.rx_dropped++;
+-				break;
+-			}
+-			skb->len = pkt_len;
+-			skb->dev = dev;
+-
+-			/* 'skb->data' points to the start of sk_buff data area.
+-			 */
+-			skb_copy_to_linear_data(skb, nic_packet->buffer,
+-						pkt_len);
+-			netif_rx(skb);
+-			dev->last_rx = jiffies;
+-			lp->stats.rx_packets++;
+-			lp->stats.rx_bytes+=pkt_len;
+-		}
+-	}
+-
+-	/* If any worth-while packets have been received, dev_rint()
+-	   has done a mark_bh(INET_BH) for us and will work on them
+-	   when we get to the bottom-half routine.
+-	 */
+-
+-	ENABLE_IRQ();
+-	stdma_release();
+-	return;
+-}
+-
+-/* pamsnet_tick: called by pamsnet_timer. Reads packets from the adapter,
+- * passes them to the higher layers and restarts the timer.
+- */
+-static void
+-pamsnet_tick(unsigned long data)
+-{
+-	struct net_device	 *dev = (struct net_device *)data;
+-	struct net_local *lp = netdev_priv(dev);
+-
+-	if( pamsnet_debug > 0 && (lp->open_time++ & 7) == 8 )
+-		printk("pamsnet_tick: %ld\n", lp->open_time);
+-
+-	pamsnet_poll_rx(dev);
+-
+-	pamsnet_timer.expires = jiffies + lp->poll_time;
+-	add_timer(&pamsnet_timer);
+-}
+-
+-/* The inverse routine to pamsnet_open().
+- */
+-static int
+-pamsnet_close(struct net_device *dev)
+-{
+-	struct net_local *lp = netdev_priv(dev);
+-
+-	if (pamsnet_debug > 0)
+-		printk("pamsnet_close, open_time=%ld\n", lp->open_time);
+-	del_timer(&pamsnet_timer);
+-	stdma_lock(pamsnet_intr, NULL);
+-	DISABLE_IRQ();
+-
+-	if (if_up)
+-		stop(lance_target);
+-	if_up = 0;
+-
+-	lp->open_time = 0;
+-
+-	dev->tbusy = 1;
+-	dev->start = 0;
+-
+-	ENABLE_IRQ();
+-	stdma_release();
+-	return 0;
+-}
+-
+-/* Get the current statistics.
+-   This may be called with the card open or closed.
+- */
+-static struct net_device_stats *net_get_stats(struct net_device *dev)
+-{
+-	struct net_local *lp = netdev_priv(dev);
+-	return &lp->stats;
+-}
+-
+-
+-#ifdef MODULE
+-
+-static struct net_device *pam_dev;
+-
+-int init_module(void)
+-{
+-	pam_dev = pamsnet_probe(-1);
+-	if (IS_ERR(pam_dev))
+-		return PTR_ERR(pam_dev);
+-	return 0;
+-}
+-
+-void cleanup_module(void)
+-{
+-	unregister_netdev(pam_dev);
+-	free_netdev(pam_dev);
+-}
+-
+-#endif /* MODULE */
+-
+-/* Local variables:
+- *  compile-command: "gcc -D__KERNEL__ -I/usr/src/linux/include
+-	-b m68k-linuxaout -Wall -Wstrict-prototypes -O2
+-	-fomit-frame-pointer -pipe -DMODULE -I../../net/inet -c atari_pamsnet.c"
+- *  version-control: t
+- *  kept-new-versions: 5
+- *  tab-width: 8
+- * End:
+- */
 
