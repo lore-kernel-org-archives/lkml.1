@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935714AbXGLQqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935477AbXGLQsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935714AbXGLQqM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935600AbXGLQpq
+	id S935477AbXGLQsW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759174AbXGLQsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:45:46 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:53505 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935456AbXGLQpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:45:44 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Thu, 12 Jul 2007 22:38:17 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2 -mm 9/9] netconsole: Support dynamic reconfiguration
- using configfs
-In-Reply-To: <4695FCB8.8090102@bx.jp.nec.com>
-Message-ID: <Pine.LNX.4.64.0707122235330.10842@cselinux1.cse.iitk.ac.in>
-References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070710092006.23907.33652.sendpatchset@cselinux1.cse.iitk.ac.in>
- <4695FCB8.8090102@bx.jp.nec.com>
+	Thu, 12 Jul 2007 12:48:15 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:37765 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752248AbXGLQsO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 12:48:14 -0400
+Date: Thu, 12 Jul 2007 12:48:14 -0400
+To: "Ni@m" <niam.niam@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: NPTL
+Message-ID: <20070712164813.GE31195@csclub.uwaterloo.ca>
+References: <a9e22dff0707120518t77d440d3ue0368fd1f3e36c03@mail.gmail.com> <MDEHLPKNGKAHNMBLJOLKCEOCFDAC.davids@webmaster.com> <a9e22dff0707120537l1a29de93vdd67f146cf36a120@mail.gmail.com> <1184244078.20032.48.camel@twins> <a9e22dff0707120557t574f9383g5363c26074ea6d6a@mail.gmail.com> <a9e22dff0707120558k17ca1f86rb0044096d60c4dc1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a9e22dff0707120558k17ca1f86rb0044096d60c4dc1@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jul 12, 2007 at 03:58:34PM +0300, Ni@m wrote:
+> Of course .. I ment they are _almoust_ similar.
 
-On Thu, 12 Jul 2007, Keiichi KII wrote:
-> Hi Satyam,
-> 
-> >  struct netconsole_target {
-> >  	struct list_head	list;
-> > +#ifdef	CONFIG_NETCONSOLE_DYNAMIC
-> > +	struct config_item	item;
-> > +	int			enabled;
-> > +#endif
-> >  	struct netpoll		np;
-> >  };
-> 
-> If CONFIG_NETCONSOLE_DYNAMIC is unset, we can't access to the "enabled" member.
-> So, the compile errors occur because the following functions make use of 
-> the above one.
+The lack of an address space seems to make them rather different too.  A
+process contains address space, and one or more threads.  A thread is
+hence a component of a process, but not really similar to a process
+since it is just part of a process.
 
-Gargh, yes.
+> Hm. If the thread is running after it's sister or parent process - you
+> do not have to switich the process context. Is this done in kernel??
 
-> Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-> 
-> Index: mm/drivers/net/netconsole.c
-> ===================================================================
-> --- mm.orig/drivers/net/netconsole.c
-> +++ mm/drivers/net/netconsole.c
-> @@ -94,8 +94,8 @@ struct netconsole_target {
->         struct list_head        list;
->  #ifdef CONFIG_NETCONSOLE_DYNAMIC
->         struct config_item      item;
-> -       int                     enabled;
->  #endif
-> +       int                     enabled;
->         struct netpoll          np;
->  };
+You are switching out cpu registers, stack, and such, even though you
+are not changing address space, so you are doing a context switch.  The
+cpu registers and state is the context.  Running multiple threads of a
+single process in a row can avoid messing with the TLB and other address
+space related things, but it still switches context.
 
-Yup, enabled should be out of CONFIG_NETCONSOLE_DYNAMIC. I'll include this
-change in the next version as well.
-
-Thanks,
-Satyam
+--
+Len Sorensen
