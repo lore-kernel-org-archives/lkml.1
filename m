@@ -1,128 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbXGLLeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763641AbXGLLis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932803AbXGLLeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 07:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762241AbXGLLeK
+	id S1763641AbXGLLis (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 07:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXGLLij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 07:34:10 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:18483 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757674AbXGLLeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 07:34:06 -0400
-Date: Thu, 12 Jul 2007 13:34:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, neilb@suse.de
-Subject: Re: [PATCH] BLOCK:  Remove references to dead CONFIG_MM_MAP_MEMORY
-	variable.
-Message-ID: <20070712113402.GS4587@kernel.dk>
-References: <Pine.LNX.4.64.0707120401140.24359@localhost.localdomain>
+	Thu, 12 Jul 2007 07:38:39 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4353 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751369AbXGLLii (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 07:38:38 -0400
+Message-ID: <469612B4.5070105@shadowen.org>
+Date: Thu, 12 Jul 2007 12:38:28 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707120401140.24359@localhost.localdomain>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: cmm@us.ibm.com, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 2][PATCH 2/5] cleanups: Add extent sanity checks
+References: <1183275382.4010.121.camel@localhost.localdomain> <20070710163020.196d32a0.akpm@linux-foundation.org>
+In-Reply-To: <20070710163020.196d32a0.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12 2007, Robert P. J. Day wrote:
+Andrew Morton wrote:
+> On Sun, 01 Jul 2007 03:36:22 -0400
+> Mingming Cao <cmm@us.ibm.com> wrote:
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+>> with the patch all headers are checked. the code should become
+>> more resistant to on-disk corruptions. needless BUG_ON() have
+>> been removed. please, review for inclusion.
+>>
+>> ...
+> 
+>> @@ -269,6 +239,70 @@
+>>  	return size;
+>>  }
+>>  
+>> +static inline int
+>> +ext4_ext_max_entries(struct inode *inode, int depth)
+> 
+> Please remove the `inline'.
+> 
+> `inline' is usually wrong.  It is wrong here.  If this function has a
+> single callsite (it has) then the compiler will inline it.  If the function
+> later gains more callsites then the compiler will know (correctly) not to
+> inline it.
+> 
+> We hope.  If we find the compiler still inlines a function as large as this
+> one then we'd need to use noinline and complain at the gcc developers.
+> 
+>> +{
+>> +	int max;
+>> +
+>> +	if (depth == ext_depth(inode)) {
+>> +		if (depth == 0)
+>> +			max = ext4_ext_space_root(inode);
+>> +		else
+>> +			max = ext4_ext_space_root_idx(inode);
+>> +	} else {
+>> +		if (depth == 0)
+>> +			max = ext4_ext_space_block(inode);
+>> +		else
+>> +			max = ext4_ext_space_block_idx(inode);
+>> +	}
+>> +
+>> +	return max;
+>> +}
+>> +
+>> +static int __ext4_ext_check_header(const char *function, struct inode *inode,
+>> +					struct ext4_extent_header *eh,
+>> +					int depth)
+>> +{
+>> +	const char *error_msg = NULL;
+> 
+> Unneeded initialisation.
+> 
+>> +	int max = 0;
+>> +
+>> +	if (unlikely(eh->eh_magic != EXT4_EXT_MAGIC)) {
+>> +		error_msg = "invalid magic";
+>> +		goto corrupted;
+>> +	}
+>> +	if (unlikely(le16_to_cpu(eh->eh_depth) != depth)) {
+>> +		error_msg = "unexpected eh_depth";
+>> +		goto corrupted;
+>> +	}
+>> +	if (unlikely(eh->eh_max == 0)) {
+>> +		error_msg = "invalid eh_max";
+>> +		goto corrupted;
+>> +	}
+>> +	max = ext4_ext_max_entries(inode, depth);
+>> +	if (unlikely(le16_to_cpu(eh->eh_max) > max)) {
+>> +		error_msg = "too large eh_max";
+>> +		goto corrupted;
+>> +	}
+>> +	if (unlikely(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max))) {
+>> +		error_msg = "invalid eh_entries";
+>> +		goto corrupted;
+>> +	}
+>> +	return 0;
+>> +
+>> +corrupted:
+>> +	ext4_error(inode->i_sb, function,
+>> +			"bad header in inode #%lu: %s - magic %x, "
+>> +			"entries %u, max %u(%u), depth %u(%u)",
+>> +			inode->i_ino, error_msg, le16_to_cpu(eh->eh_magic),
+>> +			le16_to_cpu(eh->eh_entries), le16_to_cpu(eh->eh_max),
+>> +			max, le16_to_cpu(eh->eh_depth), depth);
+>> +
+>> +	return -EIO;
+>> +}
+>> +
+>>
+>> ...
+>>
+>> +	i = depth = ext_depth(inode);
+>>
+> 
+> Mulitple assignments like this are somewhat unpopular from the coding-style
+> POV.  
+> 
+> We have a local variable called `i' which is not used as a simple counter
+> and which has no explanatory comment.  This is plain bad.  Please find a
+> better name for this variable.  Review the code for other such lack of
+> clarity - I'm sure there's more.
+> 
+> 
+>> -	BUG_ON(le16_to_cpu(eh->eh_entries) > le16_to_cpu(eh->eh_max));
+>> -	BUG_ON(eh->eh_magic != EXT4_EXT_MAGIC);
+> 
+> Yeah, this patch improves things a lot.
+> 
+> How well-tested is it?  Have any of these errors actually been triggered?
+> 
+>>  			path[i].p_hdr = ext_block_hdr(path[i].p_bh);
+>> -			if (ext4_ext_check_header(__FUNCTION__, inode,
+>> -							path[i].p_hdr)) {
+>> -				err = -EIO;
+>> -				goto out;
+>> -			}
+>>  		}
+>>  
+>> -		BUG_ON(le16_to_cpu(path[i].p_hdr->eh_entries)
+>> -			   > le16_to_cpu(path[i].p_hdr->eh_max));
+>> -		BUG_ON(path[i].p_hdr->eh_magic != EXT4_EXT_MAGIC);
+>> -
+>>  		if (!path[i].p_idx) {
+>>  			/* this level hasn't been touched yet */
+>>  			path[i].p_idx = EXT_LAST_INDEX(path[i].p_hdr);
+>> @@ -1873,17 +1890,24 @@
+>>  				i, EXT_FIRST_INDEX(path[i].p_hdr),
+>>  				path[i].p_idx);
+>>  		if (ext4_ext_more_to_rm(path + i)) {
+>> +			struct buffer_head *bh;
+>>  			/* go to the next level */
+>>  			ext_debug("move to level %d (block %llu)\n",
+>>  				  i + 1, idx_pblock(path[i].p_idx));
+>>  			memset(path + i + 1, 0, sizeof(*path));
+>> -			path[i+1].p_bh =
+>> -				sb_bread(sb, idx_pblock(path[i].p_idx));
+>> -			if (!path[i+1].p_bh) {
+>> +			bh = sb_bread(sb, idx_pblock(path[i].p_idx));
+>> +			if (!bh) {
+>>  				/* should we reset i_size? */
+>>  				err = -EIO;
+>>  				break;
+>>  			}
+>> +			BUG_ON(i + 1 > depth);
+> 
+> ouch.  Couldn't we do WARN_ON then return -EIO here?
+> 
+>> +			if (ext4_ext_check_header(inode, ext_block_hdr(bh),
+>> +							depth - i - 1)) {
+>> +				err = -EIO;
+>> +				break;
+>> +			}
+>> +			path[i+1].p_bh = bh;
+> 
+> Really that should have been "i + 1".  checkpatch misses this.  It seems to
+> be missing more stuff that it used to lately.
 
-Looks fine to me, I remember this being brought up a long time ago, but
-apparently it never got merged. Neil?
+This one is difficult.  The rules up to now have been consistent spacing
+is required on both sides of mathematics operators.  I personally like
+spaces always, but we do tend to use them without spaces too where the
+binding is effectivly part of the value -- the classic case is something
+like:
 
-> 
-> ---
-> 
-> diff --git a/drivers/block/umem.c b/drivers/block/umem.c
-> index 6f5d620..62c9d08 100644
-> --- a/drivers/block/umem.c
-> +++ b/drivers/block/umem.c
-> @@ -105,12 +105,6 @@ struct cardinfo {
->  	unsigned long	csr_base;
->  	unsigned char	__iomem *csr_remap;
->  	unsigned long	csr_len;
-> -#ifdef CONFIG_MM_MAP_MEMORY
-> -	unsigned long	mem_base;
-> -	unsigned char	__iomem *mem_remap;
-> -	unsigned long	mem_len;
-> -#endif
-> -
->  	unsigned int	win_size; /* PCI window size */
->  	unsigned int	mm_size;  /* size in kbytes */
-> 
-> @@ -872,10 +866,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
-> 
->  	card->csr_base = pci_resource_start(dev, 0);
->  	card->csr_len  = pci_resource_len(dev, 0);
-> -#ifdef CONFIG_MM_MAP_MEMORY
-> -	card->mem_base = pci_resource_start(dev, 1);
-> -	card->mem_len  = pci_resource_len(dev, 1);
-> -#endif
-> 
->  	printk(KERN_INFO "Micro Memory(tm) controller #%d found at %02x:%02x (PCI Mem Module (Battery Backup))\n",
->  	       card->card_number, dev->bus->number, dev->devfn);
-> @@ -903,27 +893,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
->  	printk(KERN_INFO "MM%d: CSR 0x%08lx -> 0x%p (0x%lx)\n", card->card_number,
->  	       card->csr_base, card->csr_remap, card->csr_len);
-> 
-> -#ifdef CONFIG_MM_MAP_MEMORY
-> -	if (!request_mem_region(card->mem_base, card->mem_len, "Micro Memory")) {
-> -		printk(KERN_ERR "MM%d: Unable to request memory region\n", card->card_number);
-> -		ret = -ENOMEM;
-> -
-> -		goto failed_req_mem;
-> -	}
-> -
-> -	if (!(card->mem_remap = ioremap(card->mem_base, cards->mem_len))) {
-> -		printk(KERN_ERR "MM%d: Unable to remap memory region\n", card->card_number);
-> -		ret = -ENOMEM;
-> -
-> -		goto failed_remap_mem;
-> -	}
-> -
-> -	printk(KERN_INFO "MM%d: MEM 0x%8lx -> 0x%8lx (0x%lx)\n", card->card_number,
-> -	       card->mem_base, card->mem_remap, card->mem_len);
-> -#else
-> -	printk(KERN_INFO "MM%d: MEM area not remapped (CONFIG_MM_MAP_MEMORY not set)\n",
-> -	       card->card_number);
-> -#endif
->  	switch(card->dev->device) {
->  	case 0x5415:
->  		card->flags |= UM_FLAG_NO_BYTE_STATUS | UM_FLAG_NO_BATTREG;
-> @@ -1091,12 +1060,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
->  				    card->mm_pages[1].desc,
->  				    card->mm_pages[1].page_dma);
->   failed_magic:
-> -#ifdef CONFIG_MM_MAP_MEMORY
-> -	iounmap(card->mem_remap);
-> - failed_remap_mem:
-> -	release_mem_region(card->mem_base, card->mem_len);
-> - failed_req_mem:
-> -#endif
->  	iounmap(card->csr_remap);
->   failed_remap_csr:
->  	release_mem_region(card->csr_base, card->csr_len);
-> @@ -1116,10 +1079,6 @@ static void mm_pci_remove(struct pci_dev *dev)
->  	tasklet_kill(&card->tasklet);
->  	iounmap(card->csr_remap);
->  	release_mem_region(card->csr_base, card->csr_len);
-> -#ifdef CONFIG_MM_MAP_MEMORY
-> -	iounmap(card->mem_remap);
-> -	release_mem_region(card->mem_base, card->mem_len);
-> -#endif
->  	free_irq(card->irq, card);
-> 
->  	if (card->mm_pages[0].desc)
-> -- 
-> ========================================================================
-> Robert P. J. Day
-> Linux Consulting, Training and Annoying Kernel Pedantry
-> Waterloo, Ontario, CANADA
-> 
-> http://fsdev.net/wiki/index.php?title=Main_Page
-> ========================================================================
+	pfn << MAX_ORDER-1
 
--- 
-Jens Axboe
+In allowing that sort of thing, we implictly allow the one you note
+above.  We have tried to be overly annoying on these things, and so the
+check is consistancy, spaces both or neither.  We could be stricter.
 
+-apw
