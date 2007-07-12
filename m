@@ -1,120 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763571AbXGLKIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762894AbXGLKPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763571AbXGLKIW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 06:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbXGLKII
+	id S1762894AbXGLKPk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 06:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXGLKPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 06:08:08 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39529 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758983AbXGLKIG (ORCPT
+	Thu, 12 Jul 2007 06:15:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:43010 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751376AbXGLKPa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 06:08:06 -0400
-Message-ID: <4695FCB8.8090102@bx.jp.nec.com>
-Date: Thu, 12 Jul 2007 19:04:40 +0900
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Thu, 12 Jul 2007 06:15:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=jgp+sh7Y0zy47n9YZ4hVFh8EpNuQNEf/6zrFjZEr2fKHEGE3kq2cwrK8SlgcYJCYCCpTLuxSralSfu9MS1L/a79RisBiQ5ImcuNyXHYiTJgHKTti5RD7Q7+ui3FwOA4I8ql1BZMZcpszvh98Y6Jb52qzBOZ9iNfcCuHh2Unf2xc=
+Message-ID: <4695FF3E.60307@gmail.com>
+Date: Thu, 12 Jul 2007 14:15:26 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2 -mm 9/9] netconsole: Support dynamic reconfiguration
- using configfs
-References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in> <20070710092006.23907.33652.sendpatchset@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <20070710092006.23907.33652.sendpatchset@cselinux1.cse.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Richard Hughes <hughsient@gmail.com>
+CC: Bill Davidsen <davidsen@tmr.com>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
+       Zhang Rui <rui.zhang@intel.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] the scheduled ACPI_PROCFS removal
+References: <20070709145755.GD3492@stusta.de>	 <20070709174544.2a6b7067@the-village.bc.nu>	 <Pine.LNX.4.64.0707092044520.2887@fbirervta.pbzchgretzou.qr>	 <46951969.4030109@tmr.com>  <4695BCEA.4060108@gmail.com> <1184231897.2380.2.camel@work>
+In-Reply-To: <1184231897.2380.2.camel@work>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Satyam,
+Richard Hughes wrote:
+> On Thu, 2007-07-12 at 09:32 +0400, Alexey Starikovskiy wrote:
+>>>> [*] Does someone have an alternative for
+>>>> /proc/acpi/battery/BAT1/{state,info}?
+>> I'm working on it. Should have proto by the end of week.
+> 
+> If you are using the power_supply class (i hope you are ;-) then a HAL
+> from freedesktop git should make userspace continue to just work. Please
+> yell if you notice any differences.
+Well, both SBS and CM batteries were able to set an alarm capacity. 
+I did not found write capability to property in power_supply class yet.
+So consider this a yelling :)
 
->  struct netconsole_target {
->  	struct list_head	list;
-> +#ifdef	CONFIG_NETCONSOLE_DYNAMIC
-> +	struct config_item	item;
-> +	int			enabled;
-> +#endif
->  	struct netpoll		np;
->  };
-
-If CONFIG_NETCONSOLE_DYNAMIC is unset, we can't access to the "enabled" member.
-So, the compile errors occur because the following functions make use of 
-the above one.
-
-> +/* Allocate new target (from boot/module param) and setup netpoll for it */
-> +static struct netconsole_target *alloc_param_target(char *target_config)
->  {
->  	int err = -ENOMEM;
->  	struct netconsole_target *nt;
->  
-> -	/* Allocate and initialize with defaults */
-> +	/*
-> +	 * Allocate and initialize with defaults.
-> +	 * Note that these targets get their config_item fields zeroed-out.
-> +	 */
->  	nt = kzalloc(sizeof(*nt), GFP_KERNEL);
->  	if (!nt) {
->  		printk(KERN_ERR "netconsole: failed to allocate memory\n");
-> @@ -106,6 +188,8 @@ static struct netconsole_target *alloc_t
->  	if (err)
->  		goto fail;
->  
-> +	nt->enabled = 1;
-> +
->  	return nt;
->  
->  fail:
-> @@ -113,13 +197,469 @@ fail:
->  	return ERR_PTR(err);
->  }
-
-
-> @@ -169,7 +711,8 @@ static void write_msg(struct console *co
->  
->  	spin_lock_irqsave(&target_list_lock, flags);
->  	list_for_each_entry(nt, &target_list, list) {
-> -		if (netif_running(nt->np.dev)) {
-> +		netconsole_target_get(nt);
-> +		if (nt->enabled && netif_running(nt->np.dev)) {
->  			/*
->  			 * We nest this inside the for-each-target loop above
->  			 * so that we're able to get as much logging out to
-> @@ -184,6 +727,7 @@ static void write_msg(struct console *co
->  				left -= frag;
->  			}
->  		}
-> +		netconsole_target_put(nt);
->  	}
->  	spin_unlock_irqrestore(&target_list_lock, flags);
->  }
-
-I created the following patch for performing some tests.
-If there is nothing wrong with the patch, I'm going to continue to test.
-
-Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-
-Index: mm/drivers/net/netconsole.c
-===================================================================
---- mm.orig/drivers/net/netconsole.c
-+++ mm/drivers/net/netconsole.c
-@@ -94,8 +94,8 @@ struct netconsole_target {
-        struct list_head        list;
- #ifdef CONFIG_NETCONSOLE_DYNAMIC
-        struct config_item      item;
--       int                     enabled;
- #endif
-+       int                     enabled;
-        struct netpoll          np;
- };
-
-
-Thanks
--- 
-Keiichi KII
-NEC Corporation OSS Platform Development Division
-E-mail: k-keiichi@bx.jp.nec.com
+Thanks,
+Alex.
