@@ -1,229 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932384AbXGLWsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXGLXCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932384AbXGLWsi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 18:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760008AbXGLWsR
+	id S932178AbXGLXCY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 19:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXGLXCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 18:48:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60614 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759014AbXGLWsO (ORCPT
+	Thu, 12 Jul 2007 19:02:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:6092 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755955AbXGLXCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 18:48:14 -0400
-Date: Thu, 12 Jul 2007 15:47:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelianov <xemul@openvz.org>
-Cc: Cedric Le Goater <clg@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 3/3] Dynamic kmem cache allocator for pid namespaces
-Message-Id: <20070712154750.5914a419.akpm@linux-foundation.org>
-In-Reply-To: <4693977A.5030501@openvz.org>
-References: <46939561.4070100@openvz.org>
-	<4693977A.5030501@openvz.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jul 2007 19:02:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=e58Og9IvWf1aLMnIFMDMtGiEDYupsg5u4lsWCal2lcan4uSl0QFxDNeEFsWWjJUXBGxLC5Yt4yYcwE7w7bXbR+jbq6NCCeP2rWb36k+4PlcpLYtqIoMy2+rR4Ped65wnOefZNxdbHuFJH5N2ikJuXuTsZTgeasNSR9TvORLq4a8=
+Date: Fri, 13 Jul 2007 01:02:25 +0200
+From: Domenico Andreoli <cavokz@gmail.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Nish Aravamudan <nish.aravamudan@gmail.com>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.22.1
+Message-ID: <20070712230225.GB25937@raptus.dandreoli.com>
+Mail-Followup-To: Chris Wright <chrisw@sous-sol.org>,
+	Nish Aravamudan <nish.aravamudan@gmail.com>,
+	Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+	stable@kernel.org
+References: <20070710200637.GA5881@kroah.com> <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com> <20070712184106.GA22849@kroah.com> <29495f1d0707121146k7b3a7175l1fcb40877e59cfaf@mail.gmail.com> <20070712185219.GR4306@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070712185219.GR4306@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 18:28:10 +0400
-Pavel Emelianov <xemul@openvz.org> wrote:
-
-> Add kmem_cache to pid_namespace to allocate pids from.
-
-I'm having trouble understanding this changelog.
-
-> Since booth implementations expand the struct pid to carry
-> more numerical values each namespace should have separate
-> cache to store pids of different sizes.
-
-Assuming "booth" means "both": you are referring to two different
-implementations of <something>.  What are they?  Where are they?
-
-I don't understand any of this :(
-
-> Each kmem cache is names "pid_<NR>", where <NR> is the number
-> of numerical ids on the pid.
-
-What is a "numerical ID on a pid"?
-
-> Different namespaces with same
-> level of nesting will have same caches.
-
-ok...
-
-> This patch has two FIXMEs that are to be fixed after we reach
-> the consensus about the struct pid itself.
+On Thu, Jul 12, 2007 at 11:52:19AM -0700, Chris Wright wrote:
+> * Nish Aravamudan (nish.aravamudan@gmail.com) wrote:
+> > On 7/12/07, Greg KH <greg@kroah.com> wrote:
+> > > That is a tree that Chris did, and I didn't realize we were maintaining
+> > > it as the "official" stable tree, that is why it is not mentioned in the
+> > > release notes :)
+> > 
+> > Fair enough -- it's just a little bit easier from my side for
+> > mirroring to only have to mirror one tree rather simply rather than
+> > pulling multiple trees into one (and thus having to add to the list as
+> > time goes on).
+> > 
+> > > I'll let Chris decide if he wishes to maintain it or not, Chris?
 > 
-> The first one is that the namespace to free the pid from in
-> free_pid() must be taken from pid. Now the init_pid_ns is
-> used.
+> Nish, I think you might be the only user ;-)  I never figured out a nice
+> way to do this w/out having a coherency issue (well, triggers aside).
+> Ideally git would allow for something more transparent than
+> alternatives, actual moving view to another tree.  It's possible with
+> links, but that seems just dirty.  Short of that, do folks find the tree
+> useful?  If so, I can work on some better automation to keep it
+> up-to-date.
 
-That looks like a fatal bug to me?  We free a slab object into a kmem_cache
-which it was not obtained from?  slab will go BUG, surely?
+yes, please keep it (updated). i discovered it only few days ago...
 
-> The second FIXME is about the cache allocation. When we do know
-> how long the object will be then we'll have to calculate this
-> size in create_pid_cachep. Right now the sizeof(struct pid)
-> value is used.
+many thanks anyway,
+domenico
 
-hm, we already have code which is good at choosing an appropriate cache
-based upon the requested size.  It's called kmalloc() ;)
-
-Do we really expect that there will be so many of these objects that the
-(modest) space-saving which a custom cache provides will be worthwhile?
-
-> diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-> index ddb9a4c..27cfad3 100644
-> --- a/include/linux/pid_namespace.h
-> +++ b/include/linux/pid_namespace.h
-> @@ -20,6 +20,7 @@ struct pid_namespace {
->  	struct pidmap pidmap[PIDMAP_ENTRIES];
->  	int last_pid;
->  	struct task_struct *child_reaper;
-> +	struct kmem_cache_t *pid_cachep;
->  };
->  
->  extern struct pid_namespace init_pid_ns;
-> diff --git a/kernel/pid.c b/kernel/pid.c
-> index c6e3f9f..d3f0f91 100644
-> --- a/kernel/pid.c
-> +++ b/kernel/pid.c
-> @@ -32,7 +32,6 @@
->  #define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
->  static struct hlist_head *pid_hash;
->  static int pidhash_shift;
-> -static struct kmem_cache *pid_cachep;
->  struct pid init_struct_pid = INIT_STRUCT_PID;
->  
->  int pid_max = PID_MAX_DEFAULT;
-> @@ -176,11 +175,16 @@ static int next_pidmap(struct pid_namesp
->  
->  fastcall void put_pid(struct pid *pid)
->  {
-> +	struct pid_namespace *ns;
-> +
->  	if (!pid)
->  		return;
-> +
-> +	/* FIXME - this must be the namespace this pid lives in */
-> +	ns = &init_pid_ns;
->  	if ((atomic_read(&pid->count) == 1) ||
->  	     atomic_dec_and_test(&pid->count))
-> -		kmem_cache_free(pid_cachep, pid);
-> +		kmem_cache_free(ns->pid_cachep, pid);
->  }
->  EXPORT_SYMBOL_GPL(put_pid);
->  
-> @@ -208,12 +212,14 @@ struct pid *alloc_pid(void)
->  	struct pid *pid;
->  	enum pid_type type;
->  	int nr = -1;
-> +	struct pid_namespace *ns;
->  
-> -	pid = kmem_cache_alloc(pid_cachep, GFP_KERNEL);
-> +	ns = current->nsproxy->pid_ns;
-> +	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
->  	if (!pid)
->  		goto out;
->  
-> -	nr = alloc_pidmap(current->nsproxy->pid_ns);
-> +	nr = alloc_pidmap(ns);
->  	if (nr < 0)
->  		goto out_free;
->  
-> @@ -230,7 +236,7 @@ out:
->  	return pid;
->  
->  out_free:
-> -	kmem_cache_free(pid_cachep, pid);
-> +	kmem_cache_free(ns->pid_cachep, pid);
->  	pid = NULL;
->  	goto out;
->  }
-> @@ -365,6 +371,56 @@ struct pid *find_ge_pid(int nr)
->  }
->  EXPORT_SYMBOL_GPL(find_get_pid);
->  
-> +struct pid_cache {
-> +	int nr_ids;
-> +	char name[16];
-> +	struct kmem_cache *cachep;
-> +	struct list_head list;
-> +};
-
-Please put a lot of effort into documenting data structures.  They are key
-to understanding the code and effort here really does pay off in
-understandability and hence maintainability and quality.
-
-I would contend that zero documentation simply does not meet kernel standards.
-
-A good code comment would, amongst other things, explain to the reader why
-this code exists at all.  That would (permanently) answer my kmalloc
-question, above.
-
-> +static LIST_HEAD(pid_caches_lh);
-> +static DEFINE_MUTEX(pid_caches_mutex);
-> +
-> +/*
-> + * creates the kmem cache to allocate pids from.
-> + * @nr_ids: the number of numerical ids this pid will have to carry
-> + */
-> +
-> +static struct kmem_cache *create_pid_cachep(int nr_ids)
-> +{
-> +	struct pid_cache *pcache;
-> +	struct kmem_cache *cachep;
-> +
-> +	mutex_lock(&pid_caches_mutex);
-> +	list_for_each_entry (pcache, &pid_caches_lh, list)
-> +		if (pcache->nr_ids == nr_ids)
-> +			goto out;
-> +
-> +	pcache = kmalloc(sizeof(struct pid_cache), GFP_KERNEL);
-> +	if (pcache == NULL)
-> +		goto err_alloc;
-> +
-> +	snprintf(pcache->name, sizeof(pcache->name), "pid_%d", nr_ids);
-> +	cachep = kmem_cache_create(pcache->name,
-> +			/* FIXME add numerical ids here */
-> +			sizeof(struct pid), 0, SLAB_HWCACHE_ALIGN, NULL, NULL);
-> +	if (cachep == NULL)
-> +		goto err_cachep;
-> +
-> +	pcache->nr_ids = nr_ids;
-> +	pcache->cachep = cachep;
-> +	list_add(&pcache->list, &pid_caches_lh);
-> +out:
-> +	mutex_unlock(&pid_caches_mutex);
-> +	return pcache->cachep;
-> +
-> +err_cachep:
-> +	kfree(pcache);
-> +err_alloc:
-> +	mutex_unlock(&pid_caches_mutex);
-> +	return NULL;
-> +}
-> +
->  struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old_ns)
->  {
->  	BUG_ON(!old_ns);
-> @@ -412,5 +468,7 @@ void __init pidmap_init(void)
->  	set_bit(0, init_pid_ns.pidmap[0].page);
->  	atomic_dec(&init_pid_ns.pidmap[0].nr_free);
->  
-> -	pid_cachep = KMEM_CACHE(pid, SLAB_PANIC);
-> +	init_pid_ns.pid_cachep = create_pid_cachep(1);
-> +	if (init_pid_ns.pid_cachep == NULL)
-> +		panic("Can't create pid_1 cachep\n");
->  }
-
-hm, so that global list of pid_caches which we're carefully maintaining
-doesn't actually get used for anything.
-
-I assume there is some plan to use this list in the future, but this should
-have been covered in the changelog, please.
+-----[ Domenico Andreoli, aka cavok
+ --[ http://www.dandreoli.com/gpgkey.asc
+   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
