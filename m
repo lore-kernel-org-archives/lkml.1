@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764191AbXGLKUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932120AbXGLK1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764191AbXGLKUy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 06:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbXGLKUr
+	id S932120AbXGLK1j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 06:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760341AbXGLK13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 06:20:47 -0400
-Received: from mga09.intel.com ([134.134.136.24]:3584 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbXGLKUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 06:20:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,532,1175497200"; 
-   d="scan'208";a="105484649"
-Subject: [PATCH] ACPI: update ACPI_PROCFS removal schedule
-From: rzhang1 <rui.zhang@intel.com>
-To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 18:20:34 +0800
-Message-Id: <1184235634.6286.2.camel@rzhang1-laptop>
+	Thu, 12 Jul 2007 06:27:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48648
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1760131AbXGLK13 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 06:27:29 -0400
+Date: Thu, 12 Jul 2007 03:27:27 -0700 (PDT)
+Message-Id: <20070712.032727.07453420.davem@davemloft.net>
+To: johnpol@2ka.mipt.ru
+Cc: andmike@us.ibm.com, akpm@linux-foundation.org, agk@redhat.com,
+       dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [2.6.23 PATCH 13/18] dm: netlink
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070712081028.GB25699@2ka.mipt.ru>
+References: <20070711142712.e646995b.akpm@linux-foundation.org>
+	<20070711233736.GA29241@us.ibm.com>
+	<20070712081028.GB25699@2ka.mipt.ru>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jul 2007 10:20:41.0738 (UTC) FILETIME=[4CCE3EA0:01C7C46E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Date: Thu, 12 Jul 2007 12:10:29 +0400
 
-ACPI sysfs conversion is not finished yet and
-some user space tools still depend on the ACPI procfs I/F.
+> On Wed, Jul 11, 2007 at 04:37:36PM -0700, Mike Anderson (andmike@us.ibm.com) wrote:
+> > > > --- linux.orig/include/linux/netlink.h	2007-07-11 21:37:31.000000000 +0100
+> > > > +++ linux/include/linux/netlink.h	2007-07-11 21:37:50.000000000 +0100
+> > > > @@ -21,7 +21,7 @@
+> > > >  #define NETLINK_DNRTMSG		14	/* DECnet routing messages */
+> > > >  #define NETLINK_KOBJECT_UEVENT	15	/* Kernel messages to userspace */
+> > > >  #define NETLINK_GENERIC		16
+> > > > -/* leave room for NETLINK_DM (DM Events) */
+> > > > +#define NETLINK_DM		17	/* Device Mapper */
+> > > >  #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
+> > > >  #define NETLINK_ECRYPTFS	19
+> > > 
+> > > Have the net guys checked this?  
+> > 
+> > No. The support is a derivative of the netlink support in
+> > scsi_transport_iscsi.c.
+> 
+> I'm not sure about all net guys, but the first question rised after
+> reading this - why do you want special netlink family and do not want to
+> use interfaces created on top of - like connector and genetlink?
 
-The ACPI_PROCFS removal schedule is changed to Jan 08.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- Documentation/feature-removal-schedule.txt |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.22/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux-2.6.22.orig/Documentation/feature-removal-schedule.txt	2007-07-12 17:50:46.000000000 +0800
-+++ linux-2.6.22/Documentation/feature-removal-schedule.txt	2007-07-12 18:03:31.000000000 +0800
-@@ -243,7 +243,7 @@
- ---------------------------
- 
- What:	ACPI procfs interface
--When:	July 2007
-+When:	January 2008
- Why:	After ACPI sysfs conversion, ACPI attributes will be duplicated
- 	in sysfs and the ACPI procfs interface should be removed.
- Who:	Zhang Rui <rui.zhang@intel.com>
+I agree, there is really no reason to not at least use
+genetlink.
