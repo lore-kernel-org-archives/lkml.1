@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935773AbXGLV6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964962AbXGLWA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935773AbXGLV6k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 17:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761346AbXGLV62
+	id S964962AbXGLWA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 18:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935708AbXGLWAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 17:58:28 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:42534 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759635AbXGLV61 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 17:58:27 -0400
-To: pavel@ucw.cz
-CC: miklos@szeredi.hu, oliver@neukum.org, paulus@samba.org,
-       stern@rowland.harvard.edu, johannes@sipsolutions.net, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, benh@kernel.crashing.org
-In-reply-to: <20070712153112.GB5139@ucw.cz> (message from Pavel Machek on Thu,
-	12 Jul 2007 15:31:12 +0000)
-Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM pathway)
-References: <200707050858.03638.oliver@neukum.org> <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu> <20070705091801.GB3084@elf.ucw.cz> <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu> <20070705115400.GF3984@ucw.cz> <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu> <20070707121729.GC3111@elf.ucw.cz> <E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu> <20070707233315.GB3820@elf.ucw.cz> <E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu> <20070712153112.GB5139@ucw.cz>
-Message-Id: <E1I96eW-00059M-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 12 Jul 2007 23:56:48 +0200
+	Thu, 12 Jul 2007 18:00:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59211 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935706AbXGLV76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 17:59:58 -0400
+Message-ID: <4696A3AB.2020602@redhat.com>
+Date: Thu, 12 Jul 2007 17:56:59 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jim.houston@ccur.com, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org, Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+       raisch@de.ibm.com, Kristian Hoegsberg <krh@redhat.com>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] fix idr_get_new_above id alias bugs
+References: <200707021919.27251.hnguyen@linux.vnet.ibm.com>	<1183422700.3130.27.camel@localhost.localdomain>	<200707041611.30056.hnguyen@linux.vnet.ibm.com>	<1184097931.3020.73.camel@localhost.localdomain> <20070712143501.2c2cdf1f.akpm@linux-foundation.org>
+In-Reply-To: <20070712143501.2c2cdf1f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Actually there's also a non-malicious case in which waiting for
-> > requests to finish won't work: when one fuse filesystem is accessing
-> > another.
-> > 
-> > Since we are blocking new fuse requests, that might block a fuse
-> > daemon, which in turn makes it impossible to finish the pending
-> > request.
+On 07/12/2007 05:35 PM, Andrew Morton wrote:
+>>
+>> With this patch, idr.c should work as advertised allocating id
+>> values in the range 0...0x7fffffff.  Andrew had speculated that
+>> it should allow the full range 0...0xffffffff to be used.  I was
+>> tempted to make changes to allow this, but it would require changes
+>> to API, e.g. making the starting id value and the return value
+>> unsigned.
 > 
-> Hmm, yes, this is ugly. But will it hurt? We'll just wait for number
-> of active fuse requests to go down to 0 before proceeding.
-
-I'm thinking of the following situation, immediately after we begin to
-wait for fuse requests to subside:
-
-  - task A is performing file operation O1
-  - O1 is being served by task B
-  - task B needs to perform O2 before finishing O1
-
-Since we don't allow new requests, O2 will never start.  So O1 will
-never finish.  So the number of fuse requests will never go to 0.
-
-> It may still livelock on system with busy fused-s, but we'll detect
-> that with timeout, and I believe it is 'don't do that' situation.
-
-There are no busy fused's.  If we allowed O2 to go through, everything
-would be nice and dandy.  But we cannot know that O2 needs to be let
-through, and other fuse requests must not.
-
-> > And this is not at all theoretical, I know that encfs is used over
-> > various other fuse filesystems like sshfs or ntfs-3g.
-> > 
-> > Yeah, stacking userspace filesystems could be done entirely in
-> > userspace, and I'm actually working on that (with fuse-2.7.0 already
-> > supporting some basic stacking).
+> Problem.  There are a large number of IDR changes pending and this
+> patch breaks in way which I am not at all confident in fixing.
 > 
-> Great.
+> Originarily I'd just dump the earlier patches because bugfixes come
+> first.  But this time there's a very large dependency trail on the
+> earlier patches (especially Tejun's extensive sysfs rework in Greg's
+> driver tree) so the wreckage would be extensive.
 > 
-> > But the point is, that the "wait for fuse to quiescence" hack would
-> > not work in todays environment.
+> Also, it's possible that Tejun's changes already fixed some of the things
+> which you fixed.  Or added new bugs ;)
 > 
-> Ok, I'll just blame fuse here. 'You have to write to /sys
-> files for SIGKILL to work' is not funny.
+> Bottom line: a reworked patch against 2.6.22-rc6-mm1 would be muchly
+> appreciated if poss, please.
+> 
+> While you're there, it would be helpful if you could review all these
+> pending IDR changes:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-ida-implement-idr-based-id-allocator.patch
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-idr-fix-obscure-bug-in-allocation-path.patch
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/gregkh-driver-idr-separate-out-idr_mark_full.patch
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_for_each.patch
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_for_each-fix.patch
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/lib-add-idr_remove_all.patch
+> 
 
-SIGKILL won't work on a stopped task.  Neither on a traced task.
-Neither on a zombie (how many newbies are thoroughly confused about
-that ;)
-
-And it won't work on a task that is hanging on an NFS mount, when the
-network broke.
-
-Oh, and it won't work on a deadlocked fuse filesystem.  How many of
-these have you met?  How many of the others?
-
-Miklos
+The first three just got merged into mainline...
