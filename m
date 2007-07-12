@@ -1,960 +1,321 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965118AbXGLAbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965329AbXGLAba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965118AbXGLAbE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964987AbXGLASm
+	id S965329AbXGLAba (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935935AbXGLASp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:18:42 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36151 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936814AbXGLARW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:17:22 -0400
-Subject: [PATCH 06/23] r/o bind mounts: elevate write count for some ioctls
+	Wed, 11 Jul 2007 20:18:45 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:47412 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936787AbXGLARU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 20:17:20 -0400
+Subject: [PATCH 03/23] filesystem helpers for custom 'struct file's
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Wed, 11 Jul 2007 17:17:18 -0700
+Date: Wed, 11 Jul 2007 17:17:13 -0700
 References: <20070712001710.654CD9ED@kernel>
 In-Reply-To: <20070712001710.654CD9ED@kernel>
-Message-Id: <20070712001718.ED5232CD@kernel>
+Message-Id: <20070712001713.27376AD1@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Some ioctl()s can cause writes to the filesystem.  Take
-these, and make them use mnt_want/drop_write() instead.
+Christoph H. says this stands on its own and can go in before the
+rest of the r/o bind mount set.  
 
-We need to pass the filp one layer deeper in XFS, but
-somebody _just_ pulled it out in February because nobody
-was using it, so I don't feel guilty for adding it back.
+---
+
+Some filesystems forego the vfs and may_open() and create their
+own 'struct file's.
+
+This patch creates a couple of helper functions which can be
+used by these filesystems, and will provide a unified place
+which the r/o bind mount code may patch.
+
+Also, rename an existing, static-scope init_file() to a less
+generic name.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/ext2/ioctl.c              |   46 +++++++++-----
- lxc-dave/fs/ext3/ioctl.c              |  100 +++++++++++++++++++++-----------
- lxc-dave/fs/ext4/ioctl.c              |  105 +++++++++++++++++++++-------------
- lxc-dave/fs/fat/file.c                |   10 +--
- lxc-dave/fs/hfsplus/ioctl.c           |   39 +++++++-----
- lxc-dave/fs/jfs/ioctl.c               |   33 ++++++----
- lxc-dave/fs/ocfs2/ioctl.c             |   11 +--
- lxc-dave/fs/reiserfs/ioctl.c          |   53 +++++++++++------
- lxc-dave/fs/xfs/linux-2.6/xfs_ioctl.c |   15 +++-
- lxc-dave/fs/xfs/linux-2.6/xfs_iops.c  |    7 --
- lxc-dave/fs/xfs/linux-2.6/xfs_lrw.c   |    9 ++
- 11 files changed, 272 insertions(+), 156 deletions(-)
+ lxc-dave/fs/configfs/dir.c    |    5 +++--
+ lxc-dave/fs/file_table.c      |   34 ++++++++++++++++++++++++++++++++++
+ lxc-dave/fs/hugetlbfs/inode.c |   22 +++++++++-------------
+ lxc-dave/include/linux/file.h |    9 +++++++++
+ lxc-dave/ipc/shm.c            |   13 +++++--------
+ lxc-dave/mm/shmem.c           |    7 ++-----
+ lxc-dave/mm/tiny-shmem.c      |   19 +++++++------------
+ lxc-dave/net/socket.c         |   18 +++++++++---------
+ 8 files changed, 78 insertions(+), 49 deletions(-)
 
-diff -puN fs/ext2/ioctl.c~ioctl-mnt-takers fs/ext2/ioctl.c
---- lxc/fs/ext2/ioctl.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/ext2/ioctl.c	2007-07-10 12:46:05.000000000 -0700
-@@ -12,6 +12,7 @@
- #include <linux/time.h>
- #include <linux/sched.h>
- #include <linux/compat.h>
-+#include <linux/mount.h>
- #include <linux/smp_lock.h>
- #include <asm/current.h>
- #include <asm/uaccess.h>
-@@ -22,6 +23,7 @@ int ext2_ioctl (struct inode * inode, st
+diff -puN fs/configfs/dir.c~filesystem-helpers-for-custom-struct-file-s fs/configfs/dir.c
+--- lxc/fs/configfs/dir.c~filesystem-helpers-for-custom-struct-file-s	2007-07-10 12:46:03.000000000 -0700
++++ lxc-dave/fs/configfs/dir.c	2007-07-10 12:46:03.000000000 -0700
+@@ -142,7 +142,7 @@ static int init_dir(struct inode * inode
+ 	return 0;
+ }
+ 
+-static int init_file(struct inode * inode)
++static int configfs_init_file(struct inode * inode)
  {
- 	struct ext2_inode_info *ei = EXT2_I(inode);
- 	unsigned int flags;
-+	int ret;
+ 	inode->i_size = PAGE_SIZE;
+ 	inode->i_fop = &configfs_file_operations;
+@@ -283,7 +283,8 @@ static int configfs_attach_attr(struct c
  
- 	ext2_debug ("cmd = %u, arg = %lu\n", cmd, arg);
+ 	dentry->d_fsdata = configfs_get(sd);
+ 	sd->s_dentry = dentry;
+-	error = configfs_create(dentry, (attr->ca_mode & S_IALLUGO) | S_IFREG, init_file);
++	error = configfs_create(dentry, (attr->ca_mode & S_IALLUGO) | S_IFREG,
++				configfs_init_file);
+ 	if (error) {
+ 		configfs_put(sd);
+ 		return error;
+diff -puN fs/file_table.c~filesystem-helpers-for-custom-struct-file-s fs/file_table.c
+--- lxc/fs/file_table.c~filesystem-helpers-for-custom-struct-file-s	2007-07-10 12:46:03.000000000 -0700
++++ lxc-dave/fs/file_table.c	2007-07-10 12:46:03.000000000 -0700
+@@ -138,6 +138,40 @@ fail:
  
-@@ -33,14 +35,19 @@ int ext2_ioctl (struct inode * inode, st
- 	case EXT2_IOC_SETFLAGS: {
- 		unsigned int oldflags;
+ EXPORT_SYMBOL(get_empty_filp);
  
--		if (IS_RDONLY(inode))
--			return -EROFS;
--
--		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
--			return -EACCES;
-+		ret = mnt_want_write(filp->f_vfsmnt);
-+		if (ret)
-+			return ret;
++struct file *alloc_file(struct vfsmount *mnt, struct dentry *dentry,
++		mode_t mode, const struct file_operations *fop)
++{
++	struct file *file;
++	struct path;
 +
-+		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
-+			ret = -EACCES;
-+			goto setflags_out;
-+		}
- 
--		if (get_user(flags, (int __user *) arg))
--			return -EFAULT;
-+		if (get_user(flags, (int __user *) arg)) {
-+			ret = -EFAULT;
-+			goto setflags_out;
-+		}
- 
- 		if (!S_ISDIR(inode->i_mode))
- 			flags &= ~EXT2_DIRSYNC_FL;
-@@ -57,7 +64,8 @@ int ext2_ioctl (struct inode * inode, st
- 		if ((flags ^ oldflags) & (EXT2_APPEND_FL | EXT2_IMMUTABLE_FL)) {
- 			if (!capable(CAP_LINUX_IMMUTABLE)) {
- 				mutex_unlock(&inode->i_mutex);
--				return -EPERM;
-+				ret = -EPERM;
-+				goto setflags_out;
- 			}
- 		}
- 
-@@ -69,20 +77,26 @@ int ext2_ioctl (struct inode * inode, st
- 		ext2_set_inode_flags(inode);
- 		inode->i_ctime = CURRENT_TIME_SEC;
- 		mark_inode_dirty(inode);
--		return 0;
-+setflags_out:
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return ret;
- 	}
- 	case EXT2_IOC_GETVERSION:
- 		return put_user(inode->i_generation, (int __user *) arg);
- 	case EXT2_IOC_SETVERSION:
- 		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
- 			return -EPERM;
--		if (IS_RDONLY(inode))
--			return -EROFS;
--		if (get_user(inode->i_generation, (int __user *) arg))
--			return -EFAULT;	
--		inode->i_ctime = CURRENT_TIME_SEC;
--		mark_inode_dirty(inode);
--		return 0;
-+		ret = mnt_want_write(filp->f_vfsmnt);
-+		if (ret)
-+			return ret;
-+		if (get_user(inode->i_generation, (int __user *) arg)) {
-+			ret = -EFAULT;
-+		} else {
-+			inode->i_ctime = CURRENT_TIME_SEC;
-+			mark_inode_dirty(inode);
-+		}
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return ret;
- 	default:
- 		return -ENOTTY;
- 	}
-diff -puN fs/ext3/ioctl.c~ioctl-mnt-takers fs/ext3/ioctl.c
---- lxc/fs/ext3/ioctl.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/ext3/ioctl.c	2007-07-10 12:46:05.000000000 -0700
-@@ -12,6 +12,7 @@
- #include <linux/capability.h>
- #include <linux/ext3_fs.h>
- #include <linux/ext3_jbd.h>
-+#include <linux/mount.h>
- #include <linux/time.h>
- #include <linux/compat.h>
- #include <linux/smp_lock.h>
-@@ -38,14 +39,19 @@ int ext3_ioctl (struct inode * inode, st
- 		unsigned int oldflags;
- 		unsigned int jflag;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
- 
--		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
--			return -EACCES;
-+		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
-+			err = -EACCES;
-+			goto flags_out;
-+		}
- 
--		if (get_user(flags, (int __user *) arg))
--			return -EFAULT;
-+		if (get_user(flags, (int __user *) arg)) {
-+			err = -EFAULT;
-+			goto flags_out;
-+		}
- 
- 		if (!S_ISDIR(inode->i_mode))
- 			flags &= ~EXT3_DIRSYNC_FL;
-@@ -65,7 +71,8 @@ int ext3_ioctl (struct inode * inode, st
- 		if ((flags ^ oldflags) & (EXT3_APPEND_FL | EXT3_IMMUTABLE_FL)) {
- 			if (!capable(CAP_LINUX_IMMUTABLE)) {
- 				mutex_unlock(&inode->i_mutex);
--				return -EPERM;
-+				err = -EPERM;
-+				goto flags_out;
- 			}
- 		}
- 
-@@ -76,7 +83,8 @@ int ext3_ioctl (struct inode * inode, st
- 		if ((jflag ^ oldflags) & (EXT3_JOURNAL_DATA_FL)) {
- 			if (!capable(CAP_SYS_RESOURCE)) {
- 				mutex_unlock(&inode->i_mutex);
--				return -EPERM;
-+				err = -EPERM;
-+				goto flags_out;
- 			}
- 		}
- 
-@@ -84,7 +92,8 @@ int ext3_ioctl (struct inode * inode, st
- 		handle = ext3_journal_start(inode, 1);
- 		if (IS_ERR(handle)) {
- 			mutex_unlock(&inode->i_mutex);
--			return PTR_ERR(handle);
-+			err = PTR_ERR(handle);
-+			goto flags_out;
- 		}
- 		if (IS_SYNC(inode))
- 			handle->h_sync = 1;
-@@ -110,6 +119,8 @@ flags_err:
- 		if ((jflag ^ oldflags) & (EXT3_JOURNAL_DATA_FL))
- 			err = ext3_change_inode_journal_flag(inode, jflag);
- 		mutex_unlock(&inode->i_mutex);
-+flags_out:
-+		mnt_drop_write(filp->f_vfsmnt);
- 		return err;
- 	}
- 	case EXT3_IOC_GETVERSION:
-@@ -124,14 +135,18 @@ flags_err:
- 
- 		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
- 			return -EPERM;
--		if (IS_RDONLY(inode))
--			return -EROFS;
--		if (get_user(generation, (int __user *) arg))
--			return -EFAULT;
--
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
-+		if (get_user(generation, (int __user *) arg)) {
-+			err = -EFAULT;
-+			goto setversion_out;
-+		}
- 		handle = ext3_journal_start(inode, 1);
--		if (IS_ERR(handle))
--			return PTR_ERR(handle);
-+		if (IS_ERR(handle)) {
-+			err = PTR_ERR(handle);
-+			goto setversion_out;
-+		}
- 		err = ext3_reserve_inode_write(handle, inode, &iloc);
- 		if (err == 0) {
- 			inode->i_ctime = CURRENT_TIME_SEC;
-@@ -139,6 +154,8 @@ flags_err:
- 			err = ext3_mark_iloc_dirty(handle, inode, &iloc);
- 		}
- 		ext3_journal_stop(handle);
-+setversion_out:
-+		mnt_drop_write(filp->f_vfsmnt);
- 		return err;
- 	}
- #ifdef CONFIG_JBD_DEBUG
-@@ -174,18 +191,24 @@ flags_err:
- 		}
- 		return -ENOTTY;
- 	case EXT3_IOC_SETRSVSZ: {
-+		int err;
- 
- 		if (!test_opt(inode->i_sb, RESERVATION) ||!S_ISREG(inode->i_mode))
- 			return -ENOTTY;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
- 
--		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
--			return -EACCES;
-+		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
-+			err = -EACCES;
-+			goto setrsvsz_out;
-+		}
- 
--		if (get_user(rsv_window_size, (int __user *)arg))
--			return -EFAULT;
-+		if (get_user(rsv_window_size, (int __user *)arg)) {
-+			err = -EFAULT;
-+			goto setrsvsz_out;
-+		}
- 
- 		if (rsv_window_size > EXT3_MAX_RESERVE_BLOCKS)
- 			rsv_window_size = EXT3_MAX_RESERVE_BLOCKS;
-@@ -203,7 +226,9 @@ flags_err:
- 			rsv->rsv_goal_size = rsv_window_size;
- 		}
- 		mutex_unlock(&ei->truncate_mutex);
--		return 0;
-+setrsvsz_out:
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return err;
- 	}
- 	case EXT3_IOC_GROUP_EXTEND: {
- 		ext3_fsblk_t n_blocks_count;
-@@ -213,17 +238,20 @@ flags_err:
- 		if (!capable(CAP_SYS_RESOURCE))
- 			return -EPERM;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
--
--		if (get_user(n_blocks_count, (__u32 __user *)arg))
--			return -EFAULT;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
- 
-+		if (get_user(n_blocks_count, (__u32 __user *)arg)) {
-+			err = -EFAULT;
-+			goto group_extend_out;
-+		}
- 		err = ext3_group_extend(sb, EXT3_SB(sb)->s_es, n_blocks_count);
- 		journal_lock_updates(EXT3_SB(sb)->s_journal);
- 		journal_flush(EXT3_SB(sb)->s_journal);
- 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
--
-+group_extend_out:
-+		mnt_drop_write(filp->f_vfsmnt);
- 		return err;
- 	}
- 	case EXT3_IOC_GROUP_ADD: {
-@@ -234,18 +262,22 @@ flags_err:
- 		if (!capable(CAP_SYS_RESOURCE))
- 			return -EPERM;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
- 
- 		if (copy_from_user(&input, (struct ext3_new_group_input __user *)arg,
--				sizeof(input)))
--			return -EFAULT;
-+				sizeof(input))) {
-+			err = -EFAULT;
-+			goto group_add_out;
-+		}
- 
- 		err = ext3_group_add(sb, &input);
- 		journal_lock_updates(EXT3_SB(sb)->s_journal);
- 		journal_flush(EXT3_SB(sb)->s_journal);
- 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
--
-+group_add_out:
-+		mnt_drop_write(filp->f_vfsmnt);
- 		return err;
- 	}
- 
-diff -puN fs/ext4/ioctl.c~ioctl-mnt-takers fs/ext4/ioctl.c
---- lxc/fs/ext4/ioctl.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/ext4/ioctl.c	2007-07-10 12:46:05.000000000 -0700
-@@ -12,6 +12,7 @@
- #include <linux/capability.h>
- #include <linux/ext4_fs.h>
- #include <linux/ext4_jbd2.h>
-+#include <linux/mount.h>
- #include <linux/time.h>
- #include <linux/compat.h>
- #include <linux/smp_lock.h>
-@@ -37,15 +38,19 @@ int ext4_ioctl (struct inode * inode, st
- 		unsigned int oldflags;
- 		unsigned int jflag;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
--
--		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
--			return -EACCES;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
- 
--		if (get_user(flags, (int __user *) arg))
--			return -EFAULT;
-+		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
-+			err = -EACCES;
-+			goto flags_out;
-+		}
- 
-+		if (get_user(flags, (int __user *) arg)) {
-+			err = -EFAULT;
-+			goto flags_out;
-+		}
- 		if (!S_ISDIR(inode->i_mode))
- 			flags &= ~EXT4_DIRSYNC_FL;
- 
-@@ -64,7 +69,8 @@ int ext4_ioctl (struct inode * inode, st
- 		if ((flags ^ oldflags) & (EXT4_APPEND_FL | EXT4_IMMUTABLE_FL)) {
- 			if (!capable(CAP_LINUX_IMMUTABLE)) {
- 				mutex_unlock(&inode->i_mutex);
--				return -EPERM;
-+				err = -EPERM;
-+				goto flags_out;
- 			}
- 		}
- 
-@@ -75,7 +81,8 @@ int ext4_ioctl (struct inode * inode, st
- 		if ((jflag ^ oldflags) & (EXT4_JOURNAL_DATA_FL)) {
- 			if (!capable(CAP_SYS_RESOURCE)) {
- 				mutex_unlock(&inode->i_mutex);
--				return -EPERM;
-+				err = -EPERM;
-+				goto flags_out;
- 			}
- 		}
- 
-@@ -83,7 +90,8 @@ int ext4_ioctl (struct inode * inode, st
- 		handle = ext4_journal_start(inode, 1);
- 		if (IS_ERR(handle)) {
- 			mutex_unlock(&inode->i_mutex);
--			return PTR_ERR(handle);
-+			err = PTR_ERR(handle);
-+			goto flags_out;
- 		}
- 		if (IS_SYNC(inode))
- 			handle->h_sync = 1;
-@@ -103,12 +111,14 @@ flags_err:
- 		ext4_journal_stop(handle);
- 		if (err) {
- 			mutex_unlock(&inode->i_mutex);
--			return err;
-+			goto flags_out;
- 		}
- 
- 		if ((jflag ^ oldflags) & (EXT4_JOURNAL_DATA_FL))
- 			err = ext4_change_inode_journal_flag(inode, jflag);
- 		mutex_unlock(&inode->i_mutex);
-+flags_out:
-+		mnt_drop_write(filp->f_vfsmnt);
- 		return err;
- 	}
- 	case EXT4_IOC_GETVERSION:
-@@ -123,14 +133,18 @@ flags_err:
- 
- 		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
- 			return -EPERM;
--		if (IS_RDONLY(inode))
--			return -EROFS;
--		if (get_user(generation, (int __user *) arg))
--			return -EFAULT;
--
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
-+		if (get_user(generation, (int __user *) arg)) {
-+			err = -EFAULT;
-+			goto setversion_out;
-+		}
- 		handle = ext4_journal_start(inode, 1);
--		if (IS_ERR(handle))
--			return PTR_ERR(handle);
-+		if (IS_ERR(handle)) {
-+			err = PTR_ERR(handle);
-+			goto setversion_out;
-+		}
- 		err = ext4_reserve_inode_write(handle, inode, &iloc);
- 		if (err == 0) {
- 			inode->i_ctime = CURRENT_TIME_SEC;
-@@ -138,6 +152,8 @@ flags_err:
- 			err = ext4_mark_iloc_dirty(handle, inode, &iloc);
- 		}
- 		ext4_journal_stop(handle);
-+setversion_out:
-+		mnt_drop_write(filp->f_vfsmnt);
- 		return err;
- 	}
- #ifdef CONFIG_JBD_DEBUG
-@@ -173,19 +189,23 @@ flags_err:
- 		}
- 		return -ENOTTY;
- 	case EXT4_IOC_SETRSVSZ: {
-+		int err;
- 
- 		if (!test_opt(inode->i_sb, RESERVATION) ||!S_ISREG(inode->i_mode))
- 			return -ENOTTY;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
--
--		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
--			return -EACCES;
--
--		if (get_user(rsv_window_size, (int __user *)arg))
--			return -EFAULT;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
- 
-+		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
-+			err = -EACCES;
-+			goto setrsvsz_out;
-+		}
-+		if (get_user(rsv_window_size, (int __user *)arg)) {
-+			err = -EFAULT;
-+			goto setrsvsz_out;
-+		}
- 		if (rsv_window_size > EXT4_MAX_RESERVE_BLOCKS)
- 			rsv_window_size = EXT4_MAX_RESERVE_BLOCKS;
- 
-@@ -202,7 +222,9 @@ flags_err:
- 			rsv->rsv_goal_size = rsv_window_size;
- 		}
- 		mutex_unlock(&ei->truncate_mutex);
--		return 0;
-+setrsvsz_out:
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return err;
- 	}
- 	case EXT4_IOC_GROUP_EXTEND: {
- 		ext4_fsblk_t n_blocks_count;
-@@ -212,17 +234,21 @@ flags_err:
- 		if (!capable(CAP_SYS_RESOURCE))
- 			return -EPERM;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
--
--		if (get_user(n_blocks_count, (__u32 __user *)arg))
--			return -EFAULT;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
- 
-+		if (get_user(n_blocks_count, (__u32 __user *)arg)) {
-+			err = -EFAULT;
-+			goto group_extend_out;
-+		}
- 		err = ext4_group_extend(sb, EXT4_SB(sb)->s_es, n_blocks_count);
- 		jbd2_journal_lock_updates(EXT4_SB(sb)->s_journal);
- 		jbd2_journal_flush(EXT4_SB(sb)->s_journal);
- 		jbd2_journal_unlock_updates(EXT4_SB(sb)->s_journal);
- 
-+group_extend_out:
-+		mnt_drop_write(filp->f_vfsmnt);
- 		return err;
- 	}
- 	case EXT4_IOC_GROUP_ADD: {
-@@ -233,18 +259,21 @@ flags_err:
- 		if (!capable(CAP_SYS_RESOURCE))
- 			return -EPERM;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
- 
- 		if (copy_from_user(&input, (struct ext4_new_group_input __user *)arg,
--				sizeof(input)))
--			return -EFAULT;
--
-+				sizeof(input))) {
-+			err = -EFAULT;
-+			goto group_add_out;
-+		}
- 		err = ext4_group_add(sb, &input);
- 		jbd2_journal_lock_updates(EXT4_SB(sb)->s_journal);
- 		jbd2_journal_flush(EXT4_SB(sb)->s_journal);
- 		jbd2_journal_unlock_updates(EXT4_SB(sb)->s_journal);
--
-+group_add_out:
-+		mnt_drop_write(filp->f_vfsmnt);
- 		return err;
- 	}
- 
-diff -puN fs/fat/file.c~ioctl-mnt-takers fs/fat/file.c
---- lxc/fs/fat/file.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/fat/file.c	2007-07-10 12:46:05.000000000 -0700
-@@ -8,6 +8,7 @@
- 
- #include <linux/capability.h>
- #include <linux/module.h>
-+#include <linux/mount.h>
- #include <linux/time.h>
- #include <linux/msdos_fs.h>
- #include <linux/smp_lock.h>
-@@ -46,10 +47,9 @@ int fat_generic_ioctl(struct inode *inod
- 
- 		mutex_lock(&inode->i_mutex);
- 
--		if (IS_RDONLY(inode)) {
--			err = -EROFS;
--			goto up;
--		}
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			goto up_no_drop_write;
- 
- 		/*
- 		 * ATTR_VOLUME and ATTR_DIR cannot be changed; this also
-@@ -106,6 +106,8 @@ int fat_generic_ioctl(struct inode *inod
- 		MSDOS_I(inode)->i_attrs = attr & ATTR_UNUSED;
- 		mark_inode_dirty(inode);
- 	up:
-+		mnt_drop_write(filp->f_vfsmnt);
-+	up_no_drop_write:
- 		mutex_unlock(&inode->i_mutex);
- 		return err;
- 	}
-diff -puN fs/hfsplus/ioctl.c~ioctl-mnt-takers fs/hfsplus/ioctl.c
---- lxc/fs/hfsplus/ioctl.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/hfsplus/ioctl.c	2007-07-10 12:46:05.000000000 -0700
-@@ -35,25 +35,32 @@ int hfsplus_ioctl(struct inode *inode, s
- 			flags |= FS_NODUMP_FL; /* EXT2_NODUMP_FL */
- 		return put_user(flags, (int __user *)arg);
- 	case HFSPLUS_IOC_EXT2_SETFLAGS: {
--		if (IS_RDONLY(inode))
--			return -EROFS;
--
--		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
--			return -EACCES;
--
--		if (get_user(flags, (int __user *)arg))
--			return -EFAULT;
--
-+		int err = 0;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
++	file = get_empty_filp();
++	if (!file)
++		return NULL;
 +
-+		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
-+			err = -EACCES;
-+			goto setflags_out;
-+		}
-+		if (get_user(flags, (int __user *)arg)) {
-+			err = -EFAULT;
-+			goto setflags_out;
-+		}
- 		if (flags & (FS_IMMUTABLE_FL|FS_APPEND_FL) ||
- 		    HFSPLUS_I(inode).rootflags & (HFSPLUS_FLG_IMMUTABLE|HFSPLUS_FLG_APPEND)) {
--			if (!capable(CAP_LINUX_IMMUTABLE))
--				return -EPERM;
-+			if (!capable(CAP_LINUX_IMMUTABLE)) {
-+				err = -EPERM;
-+				goto setflags_out;
-+			}
- 		}
- 
- 		/* don't silently ignore unsupported ext2 flags */
--		if (flags & ~(FS_IMMUTABLE_FL|FS_APPEND_FL|FS_NODUMP_FL))
--			return -EOPNOTSUPP;
--
-+		if (flags & ~(FS_IMMUTABLE_FL|FS_APPEND_FL|FS_NODUMP_FL)) {
-+			err = -EOPNOTSUPP;
-+			goto setflags_out;
-+		}
- 		if (flags & FS_IMMUTABLE_FL) { /* EXT2_IMMUTABLE_FL */
- 			inode->i_flags |= S_IMMUTABLE;
- 			HFSPLUS_I(inode).rootflags |= HFSPLUS_FLG_IMMUTABLE;
-@@ -75,7 +82,9 @@ int hfsplus_ioctl(struct inode *inode, s
- 
- 		inode->i_ctime = CURRENT_TIME_SEC;
- 		mark_inode_dirty(inode);
--		return 0;
-+setflags_out:
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return err;
- 	}
- 	default:
- 		return -ENOTTY;
-diff -puN fs/jfs/ioctl.c~ioctl-mnt-takers fs/jfs/ioctl.c
---- lxc/fs/jfs/ioctl.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/jfs/ioctl.c	2007-07-10 12:46:05.000000000 -0700
-@@ -8,6 +8,7 @@
- #include <linux/fs.h>
- #include <linux/ctype.h>
- #include <linux/capability.h>
-+#include <linux/mount.h>
- #include <linux/time.h>
- #include <linux/sched.h>
- #include <asm/current.h>
-@@ -65,16 +66,20 @@ int jfs_ioctl(struct inode * inode, stru
- 		return put_user(flags, (int __user *) arg);
- 	case JFS_IOC_SETFLAGS: {
- 		unsigned int oldflags;
-+		int err;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
--
--		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
--			return -EACCES;
--
--		if (get_user(flags, (int __user *) arg))
--			return -EFAULT;
--
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
++	init_file(file, mnt, dentry, mode, fop);
++	return file;
++}
++EXPORT_SYMBOL(alloc_file);
 +
-+		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
-+			err = -EACCES;
-+			goto setflags_out;
-+		}
-+		if (get_user(flags, (int __user *) arg)) {
-+			err = -EFAULT;
-+			goto setflags_out;
-+		}
- 		flags = jfs_map_ext2(flags, 1);
- 		if (!S_ISDIR(inode->i_mode))
- 			flags &= ~JFS_DIRSYNC_FL;
-@@ -89,8 +94,10 @@ int jfs_ioctl(struct inode * inode, stru
- 		if ((oldflags & JFS_IMMUTABLE_FL) ||
- 			((flags ^ oldflags) &
- 			(JFS_APPEND_FL | JFS_IMMUTABLE_FL))) {
--			if (!capable(CAP_LINUX_IMMUTABLE))
--				return -EPERM;
-+			if (!capable(CAP_LINUX_IMMUTABLE)) {
-+				err = -EPERM;
-+				goto setflags_out;
-+			}
- 		}
- 
- 		flags = flags & JFS_FL_USER_MODIFIABLE;
-@@ -100,7 +107,9 @@ int jfs_ioctl(struct inode * inode, stru
- 		jfs_set_inode_flags(inode);
- 		inode->i_ctime = CURRENT_TIME_SEC;
- 		mark_inode_dirty(inode);
--		return 0;
-+setflags_out:
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return err;
- 	}
- 	default:
- 		return -ENOTTY;
-diff -puN fs/ocfs2/ioctl.c~ioctl-mnt-takers fs/ocfs2/ioctl.c
---- lxc/fs/ocfs2/ioctl.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/ocfs2/ioctl.c	2007-07-10 12:46:05.000000000 -0700
-@@ -57,10 +57,6 @@ static int ocfs2_set_inode_attr(struct i
- 		goto bail;
- 	}
- 
--	status = -EROFS;
--	if (IS_RDONLY(inode))
--		goto bail_unlock;
--
- 	status = -EACCES;
- 	if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
- 		goto bail_unlock;
-@@ -128,8 +124,13 @@ int ocfs2_ioctl(struct inode * inode, st
- 		if (get_user(flags, (int __user *) arg))
- 			return -EFAULT;
- 
--		return ocfs2_set_inode_attr(inode, flags,
-+		status = mnt_want_write(filp->f_vfsmnt);
-+		if (status)
-+			return status;
-+		status = ocfs2_set_inode_attr(inode, flags,
- 			OCFS2_FL_MODIFIABLE);
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return status;
- 	default:
- 		return -ENOTTY;
- 	}
-diff -puN fs/reiserfs/ioctl.c~ioctl-mnt-takers fs/reiserfs/ioctl.c
---- lxc/fs/reiserfs/ioctl.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/reiserfs/ioctl.c	2007-07-10 12:46:05.000000000 -0700
-@@ -4,6 +4,7 @@
- 
- #include <linux/capability.h>
- #include <linux/fs.h>
-+#include <linux/mount.h>
- #include <linux/reiserfs_fs.h>
- #include <linux/time.h>
- #include <asm/uaccess.h>
-@@ -25,6 +26,7 @@ int reiserfs_ioctl(struct inode *inode, 
- 		   unsigned long arg)
++/*
++ * Note: This is a crappy interface.  It is here to make
++ * merging with the existing users of get_empty_filp()
++ * who have complex failure logic easier.  All users
++ * of this should be moving to alloc_file().
++ */
++int init_file(struct file *file, struct vfsmount *mnt, struct dentry *dentry,
++	   mode_t mode, const struct file_operations *fop)
++{
++	int error = 0;
++	file->f_path.dentry = dentry;
++	file->f_path.mnt = mntget(mnt);
++	file->f_mapping = dentry->d_inode->i_mapping;
++	file->f_mode = mode;
++	file->f_op = fop;
++	return error;
++}
++EXPORT_SYMBOL(init_file);
++
+ void fastcall fput(struct file *file)
  {
- 	unsigned int flags;
-+	int err = 0;
+ 	if (atomic_dec_and_test(&file->f_count))
+diff -puN fs/hugetlbfs/inode.c~filesystem-helpers-for-custom-struct-file-s fs/hugetlbfs/inode.c
+--- lxc/fs/hugetlbfs/inode.c~filesystem-helpers-for-custom-struct-file-s	2007-07-10 12:46:03.000000000 -0700
++++ lxc-dave/fs/hugetlbfs/inode.c	2007-07-10 12:46:03.000000000 -0700
+@@ -761,16 +761,11 @@ struct file *hugetlb_file_setup(const ch
+ 	if (!dentry)
+ 		goto out_shm_unlock;
  
- 	switch (cmd) {
- 	case REISERFS_IOC_UNPACK:
-@@ -48,48 +50,61 @@ int reiserfs_ioctl(struct inode *inode, 
- 			if (!reiserfs_attrs(inode->i_sb))
- 				return -ENOTTY;
- 
--			if (IS_RDONLY(inode))
--				return -EROFS;
-+			err = mnt_want_write(filp->f_vfsmnt);
-+			if (err)
-+				return err;
- 
- 			if ((current->fsuid != inode->i_uid)
--			    && !capable(CAP_FOWNER))
--				return -EPERM;
+-	error = -ENFILE;
+-	file = get_empty_filp();
+-	if (!file)
+-		goto out_dentry;
 -
--			if (get_user(flags, (int __user *)arg))
--				return -EFAULT;
--
-+			    && !capable(CAP_FOWNER)) {
-+				err = -EPERM;
-+				goto setflags_out;
-+			}
-+			if (get_user(flags, (int __user *)arg)) {
-+				err = -EFAULT;
-+				goto setflags_out;
-+			}
- 			if (((flags ^ REISERFS_I(inode)->
- 			      i_attrs) & (REISERFS_IMMUTABLE_FL |
- 					  REISERFS_APPEND_FL))
--			    && !capable(CAP_LINUX_IMMUTABLE))
--				return -EPERM;
--
-+			    && !capable(CAP_LINUX_IMMUTABLE)) {
-+				err = -EPERM;
-+				goto setflags_out;
-+			}
- 			if ((flags & REISERFS_NOTAIL_FL) &&
- 			    S_ISREG(inode->i_mode)) {
- 				int result;
+ 	error = -ENOSPC;
+ 	inode = hugetlbfs_get_inode(root->d_sb, current->fsuid,
+ 				current->fsgid, S_IFREG | S_IRWXUGO, 0);
+ 	if (!inode)
+-		goto out_file;
++		goto out_dentry;
  
- 				result = reiserfs_unpack(inode, filp);
--				if (result)
--					return result;
-+				if (result) {
-+					err = result;
-+					goto setflags_out;
-+				}
- 			}
- 			sd_attrs_to_i_attrs(flags, inode);
- 			REISERFS_I(inode)->i_attrs = flags;
- 			inode->i_ctime = CURRENT_TIME_SEC;
- 			mark_inode_dirty(inode);
--			return 0;
-+setflags_out:
-+			mnt_drop_write(filp->f_vfsmnt);
-+			return err;
- 		}
- 	case REISERFS_IOC_GETVERSION:
- 		return put_user(inode->i_generation, (int __user *)arg);
- 	case REISERFS_IOC_SETVERSION:
- 		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
- 			return -EPERM;
--		if (IS_RDONLY(inode))
--			return -EROFS;
--		if (get_user(inode->i_generation, (int __user *)arg))
--			return -EFAULT;
-+		err = mnt_want_write(filp->f_vfsmnt);
-+		if (err)
-+			return err;
-+		if (get_user(inode->i_generation, (int __user *)arg)) {
-+			err = -EFAULT;
-+			goto setversion_out;
-+		}
- 		inode->i_ctime = CURRENT_TIME_SEC;
- 		mark_inode_dirty(inode);
--		return 0;
-+setversion_out:
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return err;
- 	default:
- 		return -ENOTTY;
- 	}
-diff -puN fs/xfs/linux-2.6/xfs_ioctl.c~ioctl-mnt-takers fs/xfs/linux-2.6/xfs_ioctl.c
---- lxc/fs/xfs/linux-2.6/xfs_ioctl.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/xfs/linux-2.6/xfs_ioctl.c	2007-07-10 12:46:05.000000000 -0700
-@@ -526,8 +526,6 @@ xfs_attrmulti_attr_set(
- 	char			*kbuf;
- 	int			error = EFAULT;
+ 	error = -ENOMEM;
+ 	if (hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
+@@ -779,17 +774,18 @@ struct file *hugetlb_file_setup(const ch
+ 	d_instantiate(dentry, inode);
+ 	inode->i_size = size;
+ 	inode->i_nlink = 0;
+-	file->f_path.mnt = mntget(hugetlbfs_vfsmount);
+-	file->f_path.dentry = dentry;
+-	file->f_mapping = inode->i_mapping;
+-	file->f_op = &hugetlbfs_file_operations;
+-	file->f_mode = FMODE_WRITE | FMODE_READ;
++
++	error = -ENFILE;
++	file = alloc_file(hugetlbfs_vfsmount, dentry,
++			FMODE_WRITE | FMODE_READ,
++			&hugetlbfs_file_operations);
++	if (!file)
++		goto out_inode;
++
+ 	return file;
  
--	if (IS_RDONLY(&vp->v_inode))
--		return -EROFS;
- 	if (IS_IMMUTABLE(&vp->v_inode) || IS_APPEND(&vp->v_inode))
- 		return EPERM;
- 	if (len > XATTR_SIZE_MAX)
-@@ -553,8 +551,6 @@ xfs_attrmulti_attr_remove(
- 	char			*name,
- 	__uint32_t		flags)
+ out_inode:
+ 	iput(inode);
+-out_file:
+-	put_filp(file);
+ out_dentry:
+ 	dput(dentry);
+ out_shm_unlock:
+diff -puN include/linux/file.h~filesystem-helpers-for-custom-struct-file-s include/linux/file.h
+--- lxc/include/linux/file.h~filesystem-helpers-for-custom-struct-file-s	2007-07-10 12:46:03.000000000 -0700
++++ lxc-dave/include/linux/file.h	2007-07-10 12:46:03.000000000 -0700
+@@ -62,6 +62,15 @@ extern struct kmem_cache *filp_cachep;
+ extern void FASTCALL(__fput(struct file *));
+ extern void FASTCALL(fput(struct file *));
+ 
++struct file_operations;
++struct vfsmount;
++struct dentry;
++extern int init_file(struct file *, struct vfsmount *mnt,
++		struct dentry *dentry, mode_t mode,
++		const struct file_operations *fop);
++extern struct file *alloc_file(struct vfsmount *, struct dentry *dentry,
++		mode_t mode, const struct file_operations *fop);
++
+ static inline void fput_light(struct file *file, int fput_needed)
  {
--	if (IS_RDONLY(&vp->v_inode))
--		return -EROFS;
- 	if (IS_IMMUTABLE(&vp->v_inode) || IS_APPEND(&vp->v_inode))
- 		return EPERM;
- 	return bhv_vop_attr_remove(vp, name, flags, NULL);
-@@ -564,6 +560,7 @@ STATIC int
- xfs_attrmulti_by_handle(
- 	xfs_mount_t		*mp,
- 	void			__user *arg,
-+	struct file		*parfilp,
- 	struct inode		*parinode)
- {
- 	int			error;
-@@ -618,13 +615,21 @@ xfs_attrmulti_by_handle(
- 					&ops[i].am_length, ops[i].am_flags);
- 			break;
- 		case ATTR_OP_SET:
-+			ops[i].am_error = mnt_want_write(parfilp->f_vfsmnt);
-+			if (ops[i].am_error)
-+				break;
- 			ops[i].am_error = xfs_attrmulti_attr_set(vp,
- 					attr_name, ops[i].am_attrvalue,
- 					ops[i].am_length, ops[i].am_flags);
-+			mnt_drop_write(parfilp->f_vfsmnt);
- 			break;
- 		case ATTR_OP_REMOVE:
-+			ops[i].am_error = mnt_want_write(parfilp->f_vfsmnt);
-+			if (ops[i].am_error)
-+				break;
- 			ops[i].am_error = xfs_attrmulti_attr_remove(vp,
- 					attr_name, ops[i].am_flags);
-+			mnt_drop_write(parfilp->f_vfsmnt);
- 			break;
- 		default:
- 			ops[i].am_error = EINVAL;
-@@ -804,7 +809,7 @@ xfs_ioctl(
- 		return xfs_attrlist_by_handle(mp, arg, inode);
+ 	if (unlikely(fput_needed))
+diff -puN ipc/shm.c~filesystem-helpers-for-custom-struct-file-s ipc/shm.c
+--- lxc/ipc/shm.c~filesystem-helpers-for-custom-struct-file-s	2007-07-10 12:46:03.000000000 -0700
++++ lxc-dave/ipc/shm.c	2007-07-10 12:46:03.000000000 -0700
+@@ -906,7 +906,7 @@ long do_shmat(int shmid, char __user *sh
+ 		goto out_unlock;
  
- 	case XFS_IOC_ATTRMULTI_BY_HANDLE:
--		return xfs_attrmulti_by_handle(mp, arg, inode);
-+		return xfs_attrmulti_by_handle(mp, arg, filp, inode);
+ 	path.dentry = dget(shp->shm_file->f_path.dentry);
+-	path.mnt    = mntget(shp->shm_file->f_path.mnt);
++	path.mnt    = shp->shm_file->f_path.mnt;
+ 	shp->shm_nattch++;
+ 	size = i_size_read(path.dentry->d_inode);
+ 	shm_unlock(shp);
+@@ -914,18 +914,16 @@ long do_shmat(int shmid, char __user *sh
+ 	err = -ENOMEM;
+ 	sfd = kzalloc(sizeof(*sfd), GFP_KERNEL);
+ 	if (!sfd)
+-		goto out_put_path;
++		goto out_put_dentry;
  
- 	case XFS_IOC_SWAPEXT: {
- 		error = xfs_swapext((struct xfs_swapext __user *)arg);
-diff -puN fs/xfs/linux-2.6/xfs_iops.c~ioctl-mnt-takers fs/xfs/linux-2.6/xfs_iops.c
---- lxc/fs/xfs/linux-2.6/xfs_iops.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/xfs/linux-2.6/xfs_iops.c	2007-07-10 12:46:05.000000000 -0700
-@@ -156,13 +156,6 @@ xfs_ichgtime_fast(
- 	 */
- 	ASSERT((flags & XFS_ICHGTIME_ACC) == 0);
+ 	err = -ENOMEM;
+-	file = get_empty_filp();
++
++	file = alloc_file(path.mnt, path.dentry, f_mode, &shm_file_operations);
+ 	if (!file)
+ 		goto out_free;
  
--	/*
--	 * We're not supposed to change timestamps in readonly-mounted
--	 * filesystems.  Throw it away if anyone asks us.
--	 */
--	if (unlikely(IS_RDONLY(inode)))
--		return;
+-	file->f_op = &shm_file_operations;
+ 	file->private_data = sfd;
+-	file->f_path = path;
+ 	file->f_mapping = shp->shm_file->f_mapping;
+-	file->f_mode = f_mode;
+ 	sfd->id = shp->id;
+ 	sfd->ns = get_ipc_ns(ns);
+ 	sfd->file = shp->shm_file;
+@@ -976,9 +974,8 @@ out_unlock:
+ 
+ out_free:
+ 	kfree(sfd);
+-out_put_path:
++out_put_dentry:
+ 	dput(path.dentry);
+-	mntput(path.mnt);
+ 	goto out_nattch;
+ }
+ 
+diff -puN mm/shmem.c~filesystem-helpers-for-custom-struct-file-s mm/shmem.c
+--- lxc/mm/shmem.c~filesystem-helpers-for-custom-struct-file-s	2007-07-10 12:46:03.000000000 -0700
++++ lxc-dave/mm/shmem.c	2007-07-10 12:46:03.000000000 -0700
+@@ -2566,11 +2566,8 @@ struct file *shmem_file_setup(char *name
+ 	d_instantiate(dentry, inode);
+ 	inode->i_size = size;
+ 	inode->i_nlink = 0;	/* It is unlinked */
+-	file->f_path.mnt = mntget(shm_mnt);
+-	file->f_path.dentry = dentry;
+-	file->f_mapping = inode->i_mapping;
+-	file->f_op = &shmem_file_operations;
+-	file->f_mode = FMODE_WRITE | FMODE_READ;
++	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
++			&shmem_file_operations);
+ 	return file;
+ 
+ close_file:
+diff -puN mm/tiny-shmem.c~filesystem-helpers-for-custom-struct-file-s mm/tiny-shmem.c
+--- lxc/mm/tiny-shmem.c~filesystem-helpers-for-custom-struct-file-s	2007-07-10 12:46:03.000000000 -0700
++++ lxc-dave/mm/tiny-shmem.c	2007-07-10 12:46:03.000000000 -0700
+@@ -66,24 +66,19 @@ struct file *shmem_file_setup(char *name
+ 	if (!dentry)
+ 		goto put_memory;
+ 
+-	error = -ENFILE;
+-	file = get_empty_filp();
+-	if (!file)
+-		goto put_dentry;
 -
- 	if (flags & XFS_ICHGTIME_MOD) {
- 		tvp = &inode->i_mtime;
- 		ip->i_d.di_mtime.t_sec = (__int32_t)tvp->tv_sec;
-diff -puN fs/xfs/linux-2.6/xfs_lrw.c~ioctl-mnt-takers fs/xfs/linux-2.6/xfs_lrw.c
---- lxc/fs/xfs/linux-2.6/xfs_lrw.c~ioctl-mnt-takers	2007-07-10 12:46:05.000000000 -0700
-+++ lxc-dave/fs/xfs/linux-2.6/xfs_lrw.c	2007-07-10 12:46:05.000000000 -0700
-@@ -50,6 +50,7 @@
- #include "xfs_iomap.h"
+ 	error = -ENOSPC;
+ 	inode = ramfs_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0);
+ 	if (!inode)
+-		goto close_file;
++		goto put_dentry;
  
- #include <linux/capability.h>
-+#include <linux/mount.h>
- #include <linux/writeback.h>
+ 	d_instantiate(dentry, inode);
+-	inode->i_nlink = 0;	/* It is unlinked */
++	error = -ENFILE;
++	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
++			&ramfs_file_operations);
++	if (!file)
++		goto put_dentry;
  
+-	file->f_path.mnt = mntget(shm_mnt);
+-	file->f_path.dentry = dentry;
+-	file->f_mapping = inode->i_mapping;
+-	file->f_op = &ramfs_file_operations;
+-	file->f_mode = FMODE_WRITE | FMODE_READ;
++	inode->i_nlink = 0;	/* It is unlinked */
  
-@@ -761,10 +762,16 @@ start:
- 	if (new_size > xip->i_size)
- 		io->io_new_size = new_size;
+ 	/* notify everyone as to the change of file size */
+ 	error = do_truncate(dentry, size, 0, file);
+diff -puN net/socket.c~filesystem-helpers-for-custom-struct-file-s net/socket.c
+--- lxc/net/socket.c~filesystem-helpers-for-custom-struct-file-s	2007-07-10 12:46:03.000000000 -0700
++++ lxc-dave/net/socket.c	2007-07-10 12:46:03.000000000 -0700
+@@ -364,26 +364,26 @@ static int sock_alloc_fd(struct file **f
  
--	if (likely(!(ioflags & IO_INVIS))) {
-+	/*
-+	 * We're not supposed to change timestamps in readonly-mounted
-+	 * filesystems.  Throw it away if anyone asks us.
-+	 */
-+	if (likely(!(ioflags & IO_INVIS) &&
-+		   !mnt_want_write(file->f_vfsmnt))) {
- 		file_update_time(file);
- 		xfs_ichgtime_fast(xip, inode,
- 				  XFS_ICHGTIME_MOD | XFS_ICHGTIME_CHG);
-+		mnt_drop_write(file->f_vfsmnt);
- 	}
+ static int sock_attach_fd(struct socket *sock, struct file *file)
+ {
++	struct dentry *dentry;
+ 	struct qstr name = { .name = "" };
  
+-	file->f_path.dentry = d_alloc(sock_mnt->mnt_sb->s_root, &name);
+-	if (unlikely(!file->f_path.dentry))
++	dentry = d_alloc(sock_mnt->mnt_sb->s_root, &name);
++	if (unlikely(!dentry))
+ 		return -ENOMEM;
+ 
+-	file->f_path.dentry->d_op = &sockfs_dentry_operations;
++	dentry->d_op = &sockfs_dentry_operations;
  	/*
+ 	 * We dont want to push this dentry into global dentry hash table.
+ 	 * We pretend dentry is already hashed, by unsetting DCACHE_UNHASHED
+ 	 * This permits a working /proc/$pid/fd/XXX on sockets
+ 	 */
+-	file->f_path.dentry->d_flags &= ~DCACHE_UNHASHED;
+-	d_instantiate(file->f_path.dentry, SOCK_INODE(sock));
+-	file->f_path.mnt = mntget(sock_mnt);
+-	file->f_mapping = file->f_path.dentry->d_inode->i_mapping;
++	dentry->d_flags &= ~DCACHE_UNHASHED;
++	d_instantiate(dentry, SOCK_INODE(sock));
+ 
+ 	sock->file = file;
+-	file->f_op = SOCK_INODE(sock)->i_fop = &socket_file_ops;
+-	file->f_mode = FMODE_READ | FMODE_WRITE;
++	init_file(file, sock_mnt, dentry, FMODE_READ | FMODE_WRITE,
++		  &socket_file_ops);
++	SOCK_INODE(sock)->i_fop = &socket_file_ops;
+ 	file->f_flags = O_RDWR;
+ 	file->f_pos = 0;
+ 	file->private_data = sock;
 _
