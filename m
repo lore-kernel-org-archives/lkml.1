@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935481AbXGLC33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935622AbXGLCba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935481AbXGLC33 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 22:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbXGLC3S
+	id S935622AbXGLCba (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 22:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763584AbXGLCbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 22:29:18 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47595
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760777AbXGLC3R (ORCPT
+	Wed, 11 Jul 2007 22:31:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58615 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758128AbXGLCbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 22:29:17 -0400
-Date: Wed, 11 Jul 2007 19:29:40 -0700 (PDT)
-Message-Id: <20070711.192940.21926073.davem@davemloft.net>
-To: miklos@szeredi.hu
-Cc: netdev@vger.kernel.org, ebiederm@xmission.com, akpm@linux-foundation.org,
-       viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH resend] rewrite AF_UNIX garbage collector, fixes race
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <E1I61UT-0006Gk-00@dorka.pomaz.szeredi.hu>
-References: <E1I61UT-0006Gk-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 11 Jul 2007 22:31:18 -0400
+Date: Thu, 12 Jul 2007 12:31:00 +1000
+From: David Chinner <dgc@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linux Memory Management <linux-mm@kvack.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       xfs-oss <xfs@oss.sgi.com>
+Subject: block_page_mkwrite? (Re: fault vs invalidate race (Re: -mm merge plans for 2.6.23))
+Message-ID: <20070712023100.GX12413810@sgi.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <46957BE1.1010104@yahoo.com.au>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46957BE1.1010104@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 04 Jul 2007 11:49:41 +0200
+On Thu, Jul 12, 2007 at 10:54:57AM +1000, Nick Piggin wrote:
+> Andrew Morton wrote:
+> > The fault-vs-invalidate race fix.  I have belatedly learned that these 
+> > need
+> > more work, so their state is uncertain.
+> 
+> The more work may turn out being too much for you (although it is nothing
+> exactly tricky that would introduce subtle bugs, it is a fair amont of 
+> churn).
 
-> Throw out the old mark & sweep garbage collector and put in a
-> refcounting cycle detecting one.
-> 
-> The old one had a race with recvmsg, that resulted in false positives
-> and hence data loss.  The old algorithm operated on all unix sockets
-> in the system, so any additional locking would have meant performance
-> problems for all users of these.
-> 
-> The new algorithm instead only operates on "in flight" sockets, which
-> are very rare, and the additional locking for these doesn't negatively
-> impact the vast majority of users.
-> 
-> In fact it's probable, that there weren't *any* heavy senders of
-> sockets over sockets, otherwise the above race would have been
-> discovered long ago.
-> 
-> The patch works OK with the app that exposed the race with the old
-> code.  The garbage collection has also been verified to work in a few
-> simple cases.
-> 
-> See comments inside patch for the description of the algorithm.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+OK, so does that mean we can finally get the block_page_mkwrite
+patches merged?
 
-This looks good, patch applied and I'll get this into the
-2.6.23 merge window.
+i.e.:
 
-Once this sits around for a while and we feel super-confident
-with it we can consider a backport into -stable.
+http://marc.info/?l=linux-kernel&m=117426058311032&w=2
+http://marc.info/?l=linux-kernel&m=117426070111136&w=2
 
+I've got up-to-date versions of them ready to go and they've been
+consistently tested thanks to the XFSQA test I wrote for the bug
+that it fixes. I've been holding them out-of-tree for months now
+because ->fault was supposed to supercede this interface.....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
