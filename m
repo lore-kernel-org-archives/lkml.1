@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbXGLAZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935020AbXGLA0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932423AbXGLAZx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964901AbXGLARp
+	id S935020AbXGLA0f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964938AbXGLASK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:17:45 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:54530 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964857AbXGLARi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:17:38 -0400
-Subject: [PATCH 18/23] elevate writer count for do_sys_truncate()
+	Wed, 11 Jul 2007 20:18:10 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:36312 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964882AbXGLARo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 20:17:44 -0400
+Subject: [PATCH 22/23] elevate mnt writers for vfs_unlink() callers
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Wed, 11 Jul 2007 17:17:34 -0700
+Date: Wed, 11 Jul 2007 17:17:40 -0700
 References: <20070712001710.654CD9ED@kernel>
 In-Reply-To: <20070712001710.654CD9ED@kernel>
-Message-Id: <20070712001734.F5F178B0@kernel>
+Message-Id: <20070712001740.DCBCA563@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -26,55 +27,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/open.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ lxc-dave/fs/namei.c   |    4 ++++
+ lxc-dave/ipc/mqueue.c |    5 ++++-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
-diff -puN fs/open.c~elevate-writer-count-for-do-sys-truncate fs/open.c
---- lxc/fs/open.c~elevate-writer-count-for-do-sys-truncate	2007-07-10 12:46:13.000000000 -0700
-+++ lxc-dave/fs/open.c	2007-07-10 12:46:13.000000000 -0700
-@@ -243,28 +243,28 @@ static long do_sys_truncate(const char _
- 	if (!S_ISREG(inode->i_mode))
- 		goto dput_and_out;
- 
--	error = vfs_permission(&nd, MAY_WRITE);
-+	error = mnt_want_write(nd.mnt);
- 	if (error)
- 		goto dput_and_out;
- 
--	error = -EROFS;
--	if (IS_RDONLY(inode))
--		goto dput_and_out;
-+	error = vfs_permission(&nd, MAY_WRITE);
-+	if (error)
-+		goto mnt_drop_write_and_out;
- 
- 	error = -EPERM;
- 	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
--		goto dput_and_out;
-+		goto mnt_drop_write_and_out;
- 
- 	/*
- 	 * Make sure that there are no leases.
- 	 */
- 	error = break_lease(inode, FMODE_WRITE);
- 	if (error)
--		goto dput_and_out;
-+		goto mnt_drop_write_and_out;
- 
- 	error = get_write_access(inode);
- 	if (error)
--		goto dput_and_out;
-+		goto mnt_drop_write_and_out;
- 
- 	error = locks_verify_truncate(inode, NULL, length);
- 	if (!error) {
-@@ -273,6 +273,8 @@ static long do_sys_truncate(const char _
+diff -puN fs/namei.c~elevate-mnt-writers-for-vfs-unlink-callers fs/namei.c
+--- lxc/fs/namei.c~elevate-mnt-writers-for-vfs-unlink-callers	2007-07-10 12:46:16.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-07-10 12:46:16.000000000 -0700
+@@ -2195,7 +2195,11 @@ static long do_unlinkat(int dfd, const c
+ 		inode = dentry->d_inode;
+ 		if (inode)
+ 			atomic_inc(&inode->i_count);
++		error = mnt_want_write(nd.mnt);
++		if (error)
++			goto exit2;
+ 		error = vfs_unlink(nd.dentry->d_inode, dentry);
++		mnt_drop_write(nd.mnt);
+ 	exit2:
+ 		dput(dentry);
  	}
- 	put_write_access(inode);
+diff -puN ipc/mqueue.c~elevate-mnt-writers-for-vfs-unlink-callers ipc/mqueue.c
+--- lxc/ipc/mqueue.c~elevate-mnt-writers-for-vfs-unlink-callers	2007-07-10 12:46:16.000000000 -0700
++++ lxc-dave/ipc/mqueue.c	2007-07-10 12:46:16.000000000 -0700
+@@ -750,8 +750,11 @@ asmlinkage long sys_mq_unlink(const char
+ 	inode = dentry->d_inode;
+ 	if (inode)
+ 		atomic_inc(&inode->i_count);
+-
++	err = mnt_want_write(mqueue_mnt);
++	if (err)
++		goto out_err;
+ 	err = vfs_unlink(dentry->d_parent->d_inode, dentry);
++	mnt_drop_write(mqueue_mnt);
+ out_err:
+ 	dput(dentry);
  
-+mnt_drop_write_and_out:
-+	mnt_drop_write(nd.mnt);
- dput_and_out:
- 	path_release(&nd);
- out:
 _
