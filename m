@@ -1,106 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbXGLXQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbXGLXQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762303AbXGLXQP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 19:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbXGLXP5
+	id S1762891AbXGLXQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 19:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759699AbXGLXQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 19:15:57 -0400
-Received: from sccrmhc15.comcast.net ([63.240.77.85]:38930 "EHLO
-	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753955AbXGLXPz (ORCPT
+	Thu, 12 Jul 2007 19:16:05 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:5274 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759472AbXGLXQB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 19:15:55 -0400
-Message-Id: <200707122310.l6CNAoo08224@www.watkins-home.com>
-From: "Guy Watkins" <linux-raid@watkins-home.com>
-To: <Valdis.Kletnieks@vt.edu>, <ric@emc.com>
-Cc: "'Tejun Heo'" <htejun@gmail.com>, <david@lang.hm>,
-       "'Stefan Bader'" <Stefan.Bader@de.ibm.com>,
-       "'Phillip Susi'" <psusi@cfl.rr.com>,
-       "'device-mapper development'" <dm-devel@redhat.com>,
-       <linux-fsdevel@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <linux-raid@vger.kernel.org>, "'Jens Axboe'" <jens.axboe@oracle.com>,
-       "'David Chinner'" <dgc@sgi.com>,
-       "'Andreas Dilger'" <adilger@clusterfs.com>
-Subject: RE: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-Date: Thu, 12 Jul 2007 19:10:45 -0400
+	Thu, 12 Jul 2007 19:16:01 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CANtSlkarR7PD/2dsb2JhbAA
+X-IronPort-AV: i="4.16,534,1175497200"; 
+   d="scan'208"; a="502704628:sNHT28499792"
+To: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Further 2.6.23 merge plans...
+X-Message-Flag: Warning: May contain useful information
+References: <adalkdl43w0.fsf@cisco.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 12 Jul 2007 16:15:58 -0700
+In-Reply-To: <adalkdl43w0.fsf@cisco.com> (Roland Dreier's message of "Thu, 12 Jul 2007 16:07:59 -0700")
+Message-ID: <adahco943ip.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook, Build 11.0.6353
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Thread-Index: AcfEq3G8d3UPREa9RoelUk2ZIGjftQALYd3A
-In-Reply-To: <7718.1184261676@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 12 Jul 2007 23:15:59.0713 (UTC) FILETIME=[9BADED10:01C7C4DA]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-} -----Original Message-----
-} From: linux-raid-owner@vger.kernel.org [mailto:linux-raid-
-} owner@vger.kernel.org] On Behalf Of Valdis.Kletnieks@vt.edu
-} Sent: Thursday, July 12, 2007 1:35 PM
-} To: ric@emc.com
-} Cc: Tejun Heo; david@lang.hm; Stefan Bader; Phillip Susi; device-mapper
-} development; linux-fsdevel@vger.kernel.org; linux-kernel@vger.kernel.org;
-} linux-raid@vger.kernel.org; Jens Axboe; David Chinner; Andreas Dilger
-} Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for
-} devices, filesystems, and dm/md.
-} 
-} On Wed, 11 Jul 2007 18:44:21 EDT, Ric Wheeler said:
-} > Valdis.Kletnieks@vt.edu wrote:
-} > > On Tue, 10 Jul 2007 14:39:41 EDT, Ric Wheeler said:
-} > >
-} > >> All of the high end arrays have non-volatile cache (read, on power
-} loss, it is a
-} > >> promise that it will get all of your data out to permanent storage).
-} You don't
-} > >> need to ask this kind of array to drain the cache. In fact, it might
-} just ignore
-} > >> you if you send it that kind of request ;-)
-} > >
-} > > OK, I'll bite - how does the kernel know whether the other end of that
-} > > fiberchannel cable is attached to a DMX-3 or to some no-name product
-} that
-} > > may not have the same assurances?  Is there a "I'm a high-end array"
-} bit
-} > > in the sense data that I'm unaware of?
-} > >
-} >
-} > There are ways to query devices (think of hdparm -I in S-ATA/P-ATA
-} drives, SCSI
-} > has similar queries) to see what kind of device you are talking to. I am
-} not
-} > sure it is worth the trouble to do any automatic detection/handling of
-} this.
-} >
-} > In this specific case, it is more a case of when you attach a high end
-} (or
-} > mid-tier) device to a server, you should configure it without barriers
-} for its
-} > exported LUNs.
-} 
-} I don't have a problem with the sysadmin *telling* the system "the other
-} end of
-} that fiber cable has characteristics X, Y and Z".  What worried me was
-} that it
-} looked like conflating "device reported writeback cache" with "device
-} actually
-} has enough battery/hamster/whatever backup to flush everything on a power
-} loss".
-} (My back-of-envelope calculation shows for a worst-case of needing a 1ms
-} seek
-} for each 4K block, a 1G cache can take up to 4 1/2 minutes to sync.
-} That's
-} a lot of battery..)
+As you can see, I just sent my first 2.6.23 pull request for Linus.
+There are still a few more things I plan to do in before the merge
+window closes (in ~10 days):
 
-Most hardware RAID devices I know of use the battery to save the cache while
-the power is off.  When the power is restored it flushes the cache to disk.
-If the power failure lasts longer than the batteries then the cache data is
-lost, but the batteries last 24+ hours I beleve.
+ - Write a patch to add P_Key handling to user_mad in the way we
+   discussed (add an ioctl to enable P_Key mode without breaking old
+   apps) -- I hope to do this tomorrow so we can get some review and
+   testing before merging it.
 
-A big EMC array we had had enough battery power to power about 400 disks
-while the 16 Gig of cache was flushed.  I think EMC told me the batteries
-would last about 20 minutes.  I don't recall if the array was usable during
-the 20 minutes.  We never tested a power failure.
+ - Take a look at Sean's local SA caching patches.  I merged
+   everything else from Sean's tree, but I'm still undecided about
+   these.  I haven't read them carefully yet, but even aside from that
+   I don't have a good feeling about whether there's consensus about
+   this yet.  Any opinions about merging, for or against, would be
+   appreciated here.
 
-Guy
+ - Merge up pending hardware driver changes, including the cxgb3 and
+   ehca patches I have in my queue, plus Jack's catastrophic error
+   patch for mlx4.
 
+ - Try to get to resolution on the IPoIB "CM without SRQ" solution.
+
+Also, if there's something I didn't list and didn't already include in
+the tree I asked Linus to pull, please remind me.  I probably dropped it.
+
+ - R.
