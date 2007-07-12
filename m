@@ -1,97 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762878AbXGLIfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762307AbXGLIiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762878AbXGLIfY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 04:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbXGLIfK
+	id S1762307AbXGLIiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 04:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbXGLIiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 04:35:10 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:7881 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754673AbXGLIfH (ORCPT
+	Thu, 12 Jul 2007 04:38:09 -0400
+Received: from mga05.intel.com ([192.55.52.89]:61197 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754673AbXGLIiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 04:35:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=CZZjEbnLxADJoCN2nxjIxHmkwfB1fd4UikSqrIllgk3MLBZ5QMRY+ivBsZWmi+cXo9TNAciSvxq1a4f/9MVEUrfTd5bJbnd6YY2sPoDODa+4xbHDj9FKupTssDKQwpEM4VPVf7h7PvIiL5Ek6Te5MK8kCmg0qwNhqgCJXESvRHc=
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/4] fbdev: make fb_find_mode look
-	for a mode with the highest refresh rate
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: spock@gentoo.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20070623110424.9a68d82d.akpm@linux-foundation.org>
-References: <20070623105046.GB12623@spock.one.pl>
-	 <20070623110424.9a68d82d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 16:34:53 +0800
-Message-Id: <1184229293.4504.33.camel@daplas>
+	Thu, 12 Jul 2007 04:38:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,531,1175497200"; 
+   d="scan'208";a="267353497"
+Subject: Re: [PATCH] Optimize struct task_delay_info
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: nagar@watson.ibm.com, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <p73d4yzyvkw.fsf@bingen.suse.de>
+References: <1184138034.3068.51.camel@ymzhang>
+	 <p73d4yzyvkw.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 12 Jul 2007 16:37:23 +0800
+Message-Id: <1184229443.3068.55.camel@ymzhang>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-06-23 at 11:04 -0700, Andrew Morton wrote:
-> On Sat, 23 Jun 2007 12:50:46 +0200 Michal Januszewski <spock@gentoo.org> wrote:
+On Wed, 2007-07-11 at 14:27 +0200, Andi Kleen wrote:
+> "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> writes:
+> > replace them;
+> > 2) Delete lock. The change to the protected data has no nested cases.
+> > In addition, the result is for performance data collection, so it’s
+> > unnecessary to add such lock. 
 > 
-> > If the refresh rate hasn't been explicitly specified, fd_find_mode
-> > currently returns the first mode with the requested resolution. Change
-> > it so that it returns a mode with the requested resolution and the
-> > highest refresh rate.
-> > 
-> > Also export fb_destroy_modelist, which is used in uvesafb.
-> > 
-> > Signed-off-by: Michal Januszewski <spock@gentoo.org>
-> > ---
-> > drivers/video/modedb.c |    7 +++++--
-> >  1 files changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-> > index 3741ad7..98ee77b 100644
-> > --- a/drivers/video/modedb.c
-> > +++ b/drivers/video/modedb.c
-> > @@ -606,16 +606,18 @@ done:
-> >  	DPRINTK("Trying specified video mode%s %ix%i\n",
-> >  	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
-> >  
-> > +	if (!refresh_specified)
-> > +		refresh = 200;
-> >  	diff = refresh;
-> >  	best = -1;
-> >  	for (i = 0; i < dbsize; i++) {
-> >  		if (name_matches(db[i], name, namelen) ||
-> >  		    (res_specified && res_matches(db[i], xres, yres))) {
-> >  			if(!fb_try_mode(var, info, &db[i], bpp)) {
-> > -				if(!refresh_specified || db[i].refresh == refresh)
-> > +				if (refresh_specified && db[i].refresh == refresh)
-> >  					return 1;
-> >  				else {
-> > -					if(diff > abs(db[i].refresh - refresh)) {
-> > +					if (diff > abs(db[i].refresh - refresh)) {
-> >  						diff = abs(db[i].refresh - refresh);
-> >  						best = i;
-> >  					}
-> > @@ -938,6 +940,7 @@ void fb_destroy_modelist(struct list_head *head)
-> >  		kfree(pos);
-> >  	}
-> >  }
-> > +EXPORT_SYMBOL_GPL(fb_destroy_modelist);
-> >  
-> 
-> fbdev ignoramus asks: isn't this pretty risky?  People who were previously
-> relying upon (or at least using) the kernel's default resolution will find
-> their displays coming up in a quite different resolution.
+> Not sure that's a good idea. People expect their performance counts
+> to be accurate too. You could possibly use atomics though, but 
+> when there are multiple counters updated the spinlock will be likely
+> faster.
+Accurancy here has 2 meanings.
+1) From data update point of view. The data is correct because only the
+process itself updates them and there is no nested update.
+2) If the reader could get the correct data when the process updates the data. It
+might be an issue. But the issue is not important. Mostly, the application tool
+reads the data in an interval.
 
-It's only the refresh rate that will change.  The current behavior is
-that a user can get near random results in terms of the vertical refresh
-rates.  At least with this patch, we know what we get.
-
-> 
-> This change seems to be quite unrelated to the uvesafb stuff and should be
-> in a separate patch from the export, which _is_ uvesafb-related.  I think. 
-> If that's wrong then the changelog could do with some attention.
-> 
-
-Tony
-
+Yanmin
