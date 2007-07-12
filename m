@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760900AbXGLPCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXGLPJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760900AbXGLPCc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 11:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763087AbXGLPCS
+	id S932579AbXGLPJg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 11:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbXGLPJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 11:02:18 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:53157 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762290AbXGLPCR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 11:02:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H3WZfomKTFUrpOj709WwzjZlSCQZ422uJiKwT43u1+QbGz/lFVzuvhld/HRMKnot7s1y6iHvttNEHnQAfxfCe90wsn96j8qhx82GLpkC0kyiGIeKdX4PIc/FYBZbuxhhq4W/a+fo9kyWmVxUc8Jg6/sxM6E4LNFmnWxIfODzCWA=
-Message-ID: <78ecab220707120802p11ab3e1fye497f4107fe18c1d@mail.gmail.com>
-Date: Thu, 12 Jul 2007 11:02:15 -0400
-From: "Mark Shelby" <mshelby1@gmail.com>
+	Thu, 12 Jul 2007 11:09:28 -0400
+Received: from main.gmane.org ([80.91.229.2]:35682 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756507AbXGLPJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 11:09:28 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+Mail-Followup-To: linux-kernel@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Subject: Re: kernel autoconfig option?
-In-Reply-To: <Pine.LNX.4.64.0707121635120.25352@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <78ecab220707120718q7cfcff43u66f80711c7ec1005@mail.gmail.com>
-	 <Pine.LNX.4.64.0707121635120.25352@fbirervta.pbzchgretzou.qr>
+From: Oleg Verych <for.gmane@flower.upol.cz>
+Subject: Re: [PATCH] mkmakefile: include ARCH on O= builds
+Date: Thu, 12 Jul 2007 15:09:11 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnf9chpn.l6.for.gmane@flower.upol.cz>
+References: <Pine.LNX.4.58.0707120331530.28774@be1.lrz>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+Mail-Copies-To: never
+X-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That's an excellent idea. I am still thinking along the lines of
-"idiot proof simplicity." It would be nice to have a configure script
-that scanned your system board, sound card/chip various input ports,
-etc, and went ahead and preselected those to build when you type
-"make.
+* Bodo Eggert "Thu, 12 Jul 2007 03:40:04 +0200 (CEST)"
 
-If you could combine this with the make "allmodconfig" command in a
-user friendly interface, I think you'd really be on to something!
---as long as it's still configurable after the preselected choices are
-made.
+> If you build using O=builddir ARCH=bar, you'll currently need to supply
+> ARCH= on builds from the builddir, too. With this patch, the generated
+> Makefile will do that instead.
 
+I've sent such thing at least twice.
 
-On 7/12/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+But now i'm thinking about kbuild/kconfig rewrite instead.
+
+> make ARCH= will still override the Makefile default, allowing existing 
+> scripts to work correctly.
 >
-> On Jul 12 2007 10:18, Mark Shelby wrote:
-> >
-> > Would it be possible to design a program to scan your existing system
-> > hardware and pre-select your onboard hardware options within the
-> > kernel config menus?
->
-> > Am I just crazy, or wouldn't this idea mke a lot of sense? Wouldn't it
-> > pretty much make the kernel "idiot proof" when installing from source?
->
-> Why not just use `make allmodconfig`? If you happen to suddenly have a new
-> device you never had before (and I can assure you: this happens!), you
-> already have all modules.
->
->
->
->        Jan
-> --
->
+> Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
+____
+
