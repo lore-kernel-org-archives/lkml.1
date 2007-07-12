@@ -1,45 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbXGLQ2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933988AbXGLQbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933228AbXGLQ2g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbXGLQ23
+	id S933988AbXGLQbs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbXGLQbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:28:29 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4228 "EHLO scrub.xs4all.nl"
+	Thu, 12 Jul 2007 12:31:41 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56336 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758536AbXGLQ23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:28:29 -0400
-Date: Thu, 12 Jul 2007 18:28:39 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Rob Landley <rob@landley.net>
-cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Start to genericize kconfig for use by other projects.
-In-Reply-To: <200707111522.14240.rob@landley.net>
-Message-ID: <Pine.LNX.4.64.0707121820110.1817@scrub.home>
-References: <200707111522.14240.rob@landley.net>
+	id S1759086AbXGLQbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 12:31:40 -0400
+Date: Thu, 12 Jul 2007 18:31:23 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: David Chinner <dgc@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
+Message-ID: <20070712163123.GL28613@v2.random>
+References: <20070706222651.GG5777@v2.random> <20070708232031.GF12413810@sgi.com> <20070710101148.GJ1482@v2.random> <20070712001256.GI31489@sgi.com> <20070712111436.GG28613@v2.random> <20070712144449.GZ31489@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070712144449.GZ31489@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Jul 13, 2007 at 12:44:49AM +1000, David Chinner wrote:
+> That's crap. Just because a machine has lots of memory does not
+> make it OK to waste lots of memory.
 
-On Wed, 11 Jul 2007, Rob Landley wrote:
-
-> Replace name "Linux Kernel" in menuconfig with a macro (defaulting to "Linux
-> Kernel" if not -Ddefined by the makefile), and remove a few unnecessary
-> occurrences of "kernel" in pop-up text.
-
-Could you drop the PROJECT_NAME changes for now? The rest looks fine.
-I would prefer if the project would be settable via Kconfig.
-If you want to play with it add this to Kconfig:
-
-config PROJECT_NAME
-	string
-	default "Linux kernel"
-
-and at the end of conf_parse() you can lookup, calculate and cache the 
-value.
-
-bye, Roman
+It's not just wasted, it lowers overhead all over the place. Yes, the
+benefit of wasting less pagecache may largely outweight the benefit of
+having a larger page size, but if you've a lot of memory perhaps your
+working set already fits in the cache, or perhaps you don't fit in the
+cache regardless of the page size.
