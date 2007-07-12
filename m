@@ -1,155 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbXGLM6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933923AbXGLM6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933811AbXGLM6J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 08:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbXGLM5w
+	id S933923AbXGLM6p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 08:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbXGLM6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 08:57:52 -0400
-Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:51274 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757740AbXGLM5v (ORCPT
+	Thu, 12 Jul 2007 08:58:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:15704 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759284AbXGLM6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 08:57:51 -0400
-Subject: Re: [EXT4 set 3][PATCH 1/1] ext4 nanosecond timestamp
-From: Kalpak Shah <kalpak@clusterfs.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andreas Dilger <adilger@clusterfs.com>
-In-Reply-To: <20070710163027.1bf7e94e.akpm@linux-foundation.org>
-References: <1183275416.4010.125.camel@localhost.localdomain>
-	 <20070710163027.1bf7e94e.akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary="=-Yj6/pte0b0iSbPhUdoJA"
-Date: Thu, 12 Jul 2007 18:28:46 +0530
-Message-Id: <1184245126.4299.20.camel@garfield>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-SystemSpamProbe: GOOD 0.0000740 d9cadd83f7d79ba120e22f33104e95a7
+	Thu, 12 Jul 2007 08:58:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tWBzdVk0VkbW+4hu12c6op0JlZIIkPF90ItBnM3tBVTLcYO6EJs8CRY5VJQTRdXPSEaSYhRSfYob3P09zPk4JkADj2sRSShJyyWdaDGvlV97nbKp5fd9Fxfr4gF3wVqcEcNRSIbQgv3YpY6ox9aZ5AyEl1q0yQRdEBIRf9Nc0Jc=
+Message-ID: <a9e22dff0707120558k17ca1f86rb0044096d60c4dc1@mail.gmail.com>
+Date: Thu, 12 Jul 2007 15:58:34 +0300
+From: "Ni@m" <niam.niam@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Fwd: NPTL
+In-Reply-To: <a9e22dff0707120557t574f9383g5363c26074ea6d6a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a9e22dff0707120518t77d440d3ue0368fd1f3e36c03@mail.gmail.com>
+	 <MDEHLPKNGKAHNMBLJOLKCEOCFDAC.davids@webmaster.com>
+	 <a9e22dff0707120537l1a29de93vdd67f146cf36a120@mail.gmail.com>
+	 <1184244078.20032.48.camel@twins>
+	 <a9e22dff0707120557t574f9383g5363c26074ea6d6a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>BTW, please do _NOT_ top post!
+sorry
 
---=-Yj6/pte0b0iSbPhUdoJA
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+>>No, a process also contains an address space.
+Of course .. I ment they are _almoust_ similar.
 
-On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
-> On Sun, 01 Jul 2007 03:36:56 -0400
-> Mingming Cao <cmm@us.ibm.com> wrote:
-> 
-> > This patch is a spinoff of the old nanosecond patches.
-> 
-> I don't know what the "old nanosecond patches" are.  A link to a suitable
-> changlog for those patches would do in a pinch.  Preferable would be to
-> write a proper changelog for this patch.
+>>No, that is creating a schedule unit (task) without an address space.
+Ok, I've already found that in kernel code ... and correctly understood.
 
-The incremental patch contains a proper changelog describing the patch.
+>>Surely you need some context switch when switching between runnable
+contexts.
+Hm. If the thread is running after it's sister or parent process - you
+do not have to switich the process context. Is this done in kernel??
 
-> > +static inline __le32 ext4_encode_extra_time(struct timespec *time)
-> > +{
-> > +       return cpu_to_le32((sizeof(time->tv_sec) > 4 ?
-> > +			   time->tv_sec >> 32 : 0) |
-> > +			   ((time->tv_nsec << 2) & EXT4_NSEC_MASK));
-> > +}
-> > +
-> > +static inline void ext4_decode_extra_time(struct timespec *time, __le32 extra)
-> > +{
-> > +       if (sizeof(time->tv_sec) > 4)
-> > +	       time->tv_sec |= (__u64)(le32_to_cpu(extra) & EXT4_EPOCH_MASK)
-> > +			       << 32;
-> > +       time->tv_nsec = (le32_to_cpu(extra) & EXT4_NSEC_MASK) >> 2;
-> > +}
-> 
-> Consider uninlining these functions.
-
-Done.
-
-This patch adds comments, few small corrections and an appropriate
-changelog entry.
-
-Thanks,
-Kalpak.
-
---=-Yj6/pte0b0iSbPhUdoJA
-Content-Disposition: attachment; filename=ext4_nanosecond_correction.patch
-Content-Type: text/x-patch; name=ext4_nanosecond_correction.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-This patch adds nanosecond timestamps for ext4. This involves adding
-*time_extra fields to the ext4_inode to extend the timestamps to 64-bits.
-Creation time is also added by this patch.
-
-These extended fields will fit into an inode if the filesystem was formatted
-with large inodes (-I 256 or larger) and there are currently no EAs
-consuming all of the available space. For new inodes we always reserve
-enough space for the kernel's known extended fields, but for inodes
-created with an old kernel this might not have been the case. So this patch
-also adds the EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE feature flag(ro-compat so that
-older kernels can't create inodes with a smaller extra_isize). which indicates
-if the fields fitting inside s_min_extra_isize are available or not.
-If the expansion of inodes if unsuccessful then this feature will be disabled.
-This feature is only enabled if requested by the sysadmin.
-
-None of the extended inode fields is critical for correct filesystem operation.
-
-Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
-Signed-off-by: Kalpak Shah <kalpak@clusterfs.com>
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-
-Index: linux-2.6.22/include/linux/ext4_fs.h
-===================================================================
---- linux-2.6.22.orig/include/linux/ext4_fs.h
-+++ linux-2.6.22/include/linux/ext4_fs.h
-@@ -350,20 +350,30 @@ struct ext4_inode {
- #define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
- #define EXT4_NSEC_MASK  (~0UL << EXT4_EPOCH_BITS)
- 
-+/*
-+ * Extended fields will fit into an inode if the filesystem was formatted
-+ * with large inodes (-I 256 or larger) and there are not currently any EAs
-+ * consuming all of the available space. For new inodes we always reserve
-+ * enough space for the kernel's known extended fields, but for inodes
-+ * created with an old kernel this might not have been the case. None of
-+ * the extended inode fields is critical for correct filesystem operation.
-+ * This macro checks if a certain field fits in the inode. Note that
-+ * inode-size = GOOD_OLD_INODE_SIZE + i_extra_isize
-+ */
- #define EXT4_FITS_IN_INODE(ext4_inode, einode, field)	\
- 	((offsetof(typeof(*ext4_inode), field) +	\
- 	  sizeof((ext4_inode)->field))			\
- 	<= (EXT4_GOOD_OLD_INODE_SIZE +			\
- 	    (einode)->i_extra_isize))			\
- 
--static inline __le32 ext4_encode_extra_time(struct timespec *time)
-+static __le32 ext4_encode_extra_time(struct timespec *time)
- {
-        return cpu_to_le32((sizeof(time->tv_sec) > 4 ?
- 			   time->tv_sec >> 32 : 0) |
- 			   ((time->tv_nsec << 2) & EXT4_NSEC_MASK));
- }
- 
--static inline void ext4_decode_extra_time(struct timespec *time, __le32 extra)
-+static void ext4_decode_extra_time(struct timespec *time, __le32 extra)
- {
-        if (sizeof(time->tv_sec) > 4)
- 	       time->tv_sec |= (__u64)(le32_to_cpu(extra) & EXT4_EPOCH_MASK)
-Index: linux-2.6.22/include/linux/ext4_fs_i.h
-===================================================================
---- linux-2.6.22.orig/include/linux/ext4_fs_i.h
-+++ linux-2.6.22/include/linux/ext4_fs_i.h
-@@ -153,6 +153,10 @@ struct ext4_inode_info {
- 
- 	unsigned long i_ext_generation;
- 	struct ext4_ext_cache i_cached_extent;
-+	/*
-+	 * File creation time. Its function is same as that of
-+	 * struct timespec i_{a,c,m}time in the generic inode.
-+	 */
- 	struct timespec i_crtime;
- };
- 
-
---=-Yj6/pte0b0iSbPhUdoJA--
-
+Sorry if my thought are idiotic .. I'm a newby and trying to
+investigate the kernel.
