@@ -1,111 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935847AbXGLWKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935723AbXGLWO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935847AbXGLWKB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 18:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760002AbXGLWJw
+	id S935723AbXGLWO4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 18:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbXGLWOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 18:09:52 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:22061 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760794AbXGLWJv (ORCPT
+	Thu, 12 Jul 2007 18:14:49 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:44726 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755592AbXGLWOs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 18:09:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=g7pC6nMTXbyHjxBqmlT6bDw+n516LVqIiA4jUQsneEyA4BbvWhw579A5Ow7z7Sq4oxOskhsRayt7xu98JKnIi7giKakimHEeb6yD1v2LNN68oHhPzuXQ3GFBMiwb2A2GrzPa4qy8E88YvgwKTGV1BJAehRedwRFKhBmqzUqcDO4=
-Message-ID: <9a8748490707121509w3feb3fd6sd566effca5266308@mail.gmail.com>
-Date: Fri, 13 Jul 2007 00:09:36 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Matt LaPlante" <kernel1@cyberdogtech.com>
-Subject: Re: [PATCH] 2.6.22 - Documentation Cleanup
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-In-Reply-To: <20070712114432.8f3d3b1c.kernel1@cyberdogtech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070709134516.f5e7dc07.kernel1@cyberdogtech.com>
-	 <20070712114432.8f3d3b1c.kernel1@cyberdogtech.com>
+	Thu, 12 Jul 2007 18:14:48 -0400
+To: pavel@ucw.cz
+CC: miklos@szeredi.hu, nigel@nigel.suspend2.net, rjw@sisk.pl, a1426z@gawab.com,
+       jeremy@goop.org, jbms@cmu.edu, nickpiggin@yahoo.com.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <20070712091553.GC1866@elf.ucw.cz> (message from Pavel Machek on
+	Thu, 12 Jul 2007 11:15:53 +0200)
+Subject: Re: Hibernation Redesign
+References: <200707081737.21932.a1426z@gawab.com> <200707111350.41806.rjw@sisk.pl> <E1I8amY-00009H-00@dorka.pomaz.szeredi.hu> <200707112200.43613.nigel@nigel.suspend2.net> <E1I8b0l-0000DB-00@dorka.pomaz.szeredi.hu> <20070712091553.GC1866@elf.ucw.cz>
+Message-Id: <E1I96uz-0005Bl-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 13 Jul 2007 00:13:49 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/07/07, Matt LaPlante <kernel1@cyberdogtech.com> wrote:
-> Version 2 with fixes suggested by Randy & Joe.
->
-> On Mon, 9 Jul 2007 13:45:16 -0400
-> Matt LaPlante <kernel1@cyberdogtech.com> wrote:
->
-> > Fix misc small issues/typos/grammar in Documentation txts for 2.6.22.
-> >
+> > > > Freezing of tasks is slowing down suspend.  Don't know how serious
+> > > > this is, suspend is pretty fast, but could possibly be even faster.
+> > > 
+> > > It's FUD. Freezing of tasks normally takes next to no time. I've never 
+> > > understood the rediculously long timeout it has. If freezing succeeds, all 
+> > > processes are frozen within 1/2 a second tops. If it fails, nothing is going 
+> > > to change in the following 19.5 seconds (or whatever it is if I don't 
+> > > remember the value properly).
+> > 
+> > Right.  The 20s timeout is again a sign of brokenness.
+> 
+> Well, "scenario 1/2 - simple/tricky deadlock" is a sign of brokenness,
+> too.
 
-Looks good to me, except for a few minor bits outlined below.
+Sure.  But that one hasn't generated a single bug report (and never
+will), because it's so insanely difficult to produce, even if one
+explicitly wants to do that.  It will just never happen accidentally.
 
+And even if it happens, there's absolutely no side affects on the rest
+of the system.  You managed to make a process not react to SIGKILL,
+well hurray.  You can do that more easily with ptrace().
 
-> > Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
-> > --
->
-> diff -ru a/Documentation/arm/Samsung-S3C24XX/DMA.txt b/Documentation/arm/Samsung-S3C24XX/DMA.txt
-> --- a/Documentation/arm/Samsung-S3C24XX/DMA.txt 2007-07-08 19:32:17.000000000 -0400
-> +++ b/Documentation/arm/Samsung-S3C24XX/DMA.txt 2007-07-11 21:47:43.000000000 -0400
-[snip]
->
->     struct s3c24xx_dma_order has a list of channels, and
-> -   each channel within has a slot for a list of dma
-> -   channel numbers. The slots are searched in order, for
-> -   the presence of a dma channel number with DMA_CH_VALID
-> +   each channel within has a slot for a list of DMA
-> +   channel numbers. The slots are searched in order for
-> +   the presence of a DMA channel number with DMA_CH_VALID
->     orred in.
-
-"orred"?? Wouldn't "OR'ed" or similar be better?
-
-[snip]
->
->  ** WARNING **
-> -I may not be held responsible for any dammage or harm caused if you try to
-> +I may not be held responsible for any damage or harm caused if you try to
-
-I'm guessing that the original author really meant to write "I shall
-not be held responsible ..."
-
-[snip]
->
->  This is a symlink to the latest version, which at the time of writing is
->  20061214, the only release of kexec-tools-testing so far. As other versions
-> -are made released, the older onese will remain available at
-> +are made released, the older ones will remain available at
-
-s/are made released/are released/
-
-[snip]
-> @@ -1172,7 +1172,7 @@
->         recommended version is 3.2 or later. Here, the F/W support is in
->         a stable and reliable condition. Wide-addressing is in addition
->         supported.
-> -     Q: I get a Ooops message and something like "killing interrupt".
-> +     Q: I get a oops message and something like "killing interrupt".
-
-I believe that should be "Oops" - two o's, first one uppercase.
-
-[snip]
->
-> -   If you have extensive bugreports, including Ooops messages and
-> +   If you have extensive bug reports, including oops messages and
-
-"Oops" ?
-
-[snip]
-> @@ -10,10 +10,11 @@
->      cpu. This is not ideal and leads to code duplication i.e. Linux now has 4
-
-s/cpu/CPU/ ?
-
-[snip]
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Miklos
