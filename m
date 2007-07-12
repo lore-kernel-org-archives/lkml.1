@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761716AbXGLR7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbXGLSON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761716AbXGLR7P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbXGLR6d
+	id S1756758AbXGLSON (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 14:14:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXGLSNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:58:33 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33023
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755718AbXGLR6b (ORCPT
+	Thu, 12 Jul 2007 14:13:50 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:9788 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755499AbXGLSNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:58:31 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: Documentation of kernel messages (Summary)
-Date: Thu, 12 Jul 2007 12:56:24 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com> <200707111413.03513.rob@landley.net> <28606.1184190834@turing-police.cc.vt.edu>
-In-Reply-To: <28606.1184190834@turing-police.cc.vt.edu>
+	Thu, 12 Jul 2007 14:13:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=WlC32bstQF8gG06cnNh/IVeFO6CNp2V9xxDKBrpga+OQG14FYu+Gi51orN+2bfoRGe07G9CGRtsq0Ooqgjj7wgUrwqcFyw518272mZ7P5PjGKmKaVFe6tNzQ6zO6tH7EXricRXcxmbJmbD9gNaT36XAhxP7DHq/orcwEFmge+6c=
+Message-ID: <8c34a9060707121113u6094d3acj7e01a8b560623ae7@mail.gmail.com>
+Date: Thu, 12 Jul 2007 13:13:45 -0500
+From: "Brett Boren" <brett.boren@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: IRQ problem with IO-APIC and plx9056-based data capture board
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707121256.24708.rob@landley.net>
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 July 2007 5:53:54 pm Valdis.Kletnieks@vt.edu wrote:
-> On Wed, 11 Jul 2007 14:13:02 EDT, Rob Landley said:
-> > I wouldn't discourage a translator into Klingon if they were willing to
-> > keep their translation up to date and/or it actually resulted in patches.
->
-> The guys at the Klingon Language Institute are going to have a fit - what's
-> the Klingon word for 'freezer' as used in our suspend code? :)
+I have a plx9056-based data capture board that works with the winXP
+drivers (based off of the win32 plx sdk) but does not work with the
+linux driver provided to me. The board constitently gets 0xa (IRQ 10)
+in the INTERRUPT_LINE register but the IO-APIC reports IRQ 49 to the
+kernel. To add to the confusion when an interrupt is triggered it
+arrives on IRQ 17 causing an irq disable. When run with `noapic` on
+the kernel bootline a consistent irq 10 is observed and the driver
+behaves correctly. When `irqpoll` is given the driver behaves
+correctly(kernel complains about irq 10 being the registered irq
+handler) though it causes other kernel problems. The following options
+have been tried in isolation with no success: pci=nommconf; pci=conf2
+(noboot); acpi=bigsmp; pci=routeirq (kernel output changes, but no
+change in behavior); pci=noacpi acpi=noirq (seems identical to
+pci=routeirq); acpi=irq_balance; apic=debug.
 
-Considering that Klingon didn't have "to be" before Star Trek 6 needed hamlet, 
-I suspect they'll manage somehow.
+I'm running primarily in a Dell precision 370n workstation with 3
+PCI-X slots. The irq reported in by the IO-APIC changes depending on
+which slot I plug it in.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Slot       INTERRUPT_LINE     IO-APIC        Observed
+1           10                            49                 17
+2           10                            53                 17
+3           9                              26                 18
+
+The same general behavior has been observed in _every_ linux machine
+I've been able to plug this card into that had an IO-APIC. These were
+mostly Intel chipsets but I 've also had it in a Tyan 8-proc AMD board
+with a Nvidia chipset with the same interrupt issues.
+
+I see two problems: first, the INTERRUPT_LINE register on the card is
+not consistent with either the APIC reported irq or the actual irq.
+Second, that the IO_APIC, which is supposed to maintain a mapping of
+its pins to a particular irq, is inconsistent in what IRQ is reported
+for a particular pin (different slots result in different irqs
+reported, but still actually use irq 17).
+
+I'm not a LKML subscriber so please CC to brett.boren_at_gmail_dot_com.
+
+Thanks,
+Brett
