@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbXGLFkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbXGLFnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbXGLFkZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 01:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXGLFkK
+	id S1757428AbXGLFnT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 01:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXGLFnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 01:40:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43317 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750971AbXGLFkI (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 01:40:08 -0400
-Date: Thu, 12 Jul 2007 15:39:56 +1000
-From: David Chinner <dgc@sgi.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs-oss <xfs@oss.sgi.com>
-Subject: [PATCH, RESEND] Teach do_mpage_readpage() about unwritten buffers
-Message-ID: <20070712053956.GT31489@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Thu, 12 Jul 2007 01:43:11 -0400
+Received: from il.qumranet.com ([82.166.9.18]:47239 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750971AbXGLFnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 01:43:10 -0400
+Message-ID: <4695BF6C.9000501@qumranet.com>
+Date: Thu, 12 Jul 2007 08:43:08 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Luca <kronos.it@gmail.com>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 2/2] KVM: Use the scheduler preemption hooks
+ to make kvm preemptible
+References: <11841693332609-git-send-email-avi@qumranet.com>	 <1184169333786-git-send-email-avi@qumranet.com> <68676e00707111310v4862974am37dc7c723486b96c@mail.gmail.com>
+In-Reply-To: <68676e00707111310v4862974am37dc7c723486b96c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Thu, 12 Jul 2007 08:43:09 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Teach do_mpage_readpage() about unwritten extents so we can
-always map them in get_blocks rather than they are are holes on
-read. Allows setup_swap_extents() to use preallocated files on XFS
-filesystems for swap files without ever needing to convert them.
+Luca wrote:
+> On 7/11/07, Avi Kivity <avi@qumranet.com> wrote:
+>> Current kvm disables preemption while the new virtualization
+>> registers are
+>> in use.  This of course is not very good for latency sensitive
+>> workloads (one
+>> use of virtualization is to offload user interface and other latency
+>> insensitive stuff to a container, so that it is easier to analyze the
+>> remaining workload).  This patch re-enables preemption for kvm;
+>> preemption
+>> is now only disabled when switching the registers in and out, and during
+>> the switch to guest mode and back.
+> [...]
+>> diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
+>> index 33fa28a..92644b5 100644
+>> --- a/drivers/kvm/Kconfig
+>> +++ b/drivers/kvm/Kconfig
+>> @@ -10,7 +10,7 @@ if VIRTUALIZATION
+>>
+>>  config KVM
+>>         tristate "Kernel-based Virtual Machine (KVM) support"
+>> -       depends on X86 && EXPERIMENTAL
+>> +       depends on X86 && EXPERIMENTAL && PREEMPT_HOOKS
+>>         depends on X86_CMPXCHG64 || 64BIT
+>
+> select PREEMPT_HOOKS maybe?
+>
 
-Signed-Off-By: Dave Chinner <dgc@sgi.com>
+Yes.  And default PREEMPT_HOOKS to n in the first patch.  I'll make both
+these changes.
 
----
- fs/mpage.c                  |    5 +++--
- fs/xfs/linux-2.6/xfs_aops.c |   13 +++----------
- 2 files changed, 6 insertions(+), 12 deletions(-)
 
-Index: 2.6.x-xfs-new/fs/mpage.c
-===================================================================
---- 2.6.x-xfs-new.orig/fs/mpage.c	2007-05-29 16:17:59.000000000 +1000
-+++ 2.6.x-xfs-new/fs/mpage.c	2007-06-27 22:39:35.568852270 +1000
-@@ -207,7 +207,8 @@ do_mpage_readpage(struct bio *bio, struc
- 	 * Map blocks using the result from the previous get_blocks call first.
- 	 */
- 	nblocks = map_bh->b_size >> blkbits;
--	if (buffer_mapped(map_bh) && block_in_file > *first_logical_block &&
-+	if (buffer_mapped(map_bh) && !buffer_unwritten(map_bh) &&
-+			block_in_file > *first_logical_block &&
- 			block_in_file < (*first_logical_block + nblocks)) {
- 		unsigned map_offset = block_in_file - *first_logical_block;
- 		unsigned last = nblocks - map_offset;
-@@ -242,7 +243,7 @@ do_mpage_readpage(struct bio *bio, struc
- 			*first_logical_block = block_in_file;
- 		}
- 
--		if (!buffer_mapped(map_bh)) {
-+		if (!buffer_mapped(map_bh) || buffer_unwritten(map_bh)) {
- 			fully_mapped = 0;
- 			if (first_hole == blocks_per_page)
- 				first_hole = page_block;
-Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_aops.c
-===================================================================
---- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_aops.c	2007-06-05 22:14:39.000000000 +1000
-+++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_aops.c	2007-06-27 22:39:29.545636749 +1000
-@@ -1340,16 +1340,9 @@ __xfs_get_blocks(
- 		return 0;
- 
- 	if (iomap.iomap_bn != IOMAP_DADDR_NULL) {
--		/*
--		 * For unwritten extents do not report a disk address on
--		 * the read case (treat as if we're reading into a hole).
--		 */
--		if (create || !(iomap.iomap_flags & IOMAP_UNWRITTEN)) {
--			xfs_map_buffer(bh_result, &iomap, offset,
--				       inode->i_blkbits);
--		}
--		if (create && (iomap.iomap_flags & IOMAP_UNWRITTEN)) {
--			if (direct)
-+		xfs_map_buffer(bh_result, &iomap, offset, inode->i_blkbits);
-+		if (iomap.iomap_flags & IOMAP_UNWRITTEN) {
-+			if (create && direct)
- 				bh_result->b_private = inode;
- 			set_buffer_unwritten(bh_result);
- 		}
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
