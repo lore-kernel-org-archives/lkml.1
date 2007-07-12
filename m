@@ -1,134 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbXGLRy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbXGLR4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbXGLRy0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXGLRyR
+	id S1759784AbXGLR4l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXGLR4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:54:17 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4870 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752878AbXGLRyQ (ORCPT
+	Thu, 12 Jul 2007 13:56:31 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45579 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754778AbXGLR4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:54:16 -0400
-Message-ID: <469669F5.6070906@shadowen.org>
-Date: Thu, 12 Jul 2007 18:50:45 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Mark Mason <mason@broadcom.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-mips@linux-mips.org,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sb1250-duart.c: SB1250 DUART serial support
-References: <Pine.LNX.4.64N.0707121745010.3029@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0707121745010.3029@blysk.ds.pg.gda.pl>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jul 2007 13:56:30 -0400
+Date: Thu, 12 Jul 2007 10:59:53 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] try parent numa_node at first before using default
+In-reply-to: <20070712172310.4d662e1f@gondolin.boeblingen.de.ibm.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       rientjes@google.com, Christoph Lameter <clameter@sgi.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200707121059.54320.yinghai.lu@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200707101641.17672.yinghai.lu@sun.com>
+ <469610D4.70009@s5r6.in-berlin.de>
+ <20070712172310.4d662e1f@gondolin.boeblingen.de.ibm.com>
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
->  This is a driver for the SB1250 DUART, a dual serial port implementation 
-> included in the Broadcom family of SOCs descending from the SiByte SB1250 
-> MIPS64 chip multiprocessor.  It is a new implementation replacing the 
-> old-fashioned driver currently present in the linux-mips.org tree.  It 
-> supports all the usual features one would expect from a(n asynchronous) 
-> serial driver, including modem line control (as far as hardware supports 
-> it -- there is edge detection logic missing from the DCD and RI lines and 
-> the driver does not implement polling of these lines at the moment), the 
-> serial console, BREAK transmission and reception, including the magic 
-> SysRq.  The receive FIFO threshold is not maintained though.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
-> Hi,
-> 
->  The driver was tested with a SWARM board which uses a BCM1250 SOC (which 
-> is dual MIPS64 CMP) and has both ports of the single DUART implemented 
-> wired externally.  Both were tested.  Testing included using the ports as 
-> terminal lines at 1200bps (which is the ports minimum), 115200bps and a 
-> couple of random speeds inbetween.  The modem lines were verified to 
-> operate correctly.  No testing was performed with a use as a network 
-> interface, like with SLIP or PPP.
-> 
->  The driver builds succesfully and without warnings both as integrated and 
-> as modular.  There are a couple of -W warnings, but they are results of 
-> some inconsistencies (signedness mismatches) in the serial core.  It 
-> produces no sparse warnings.  There are a few benign warnings from 
-> patchcheck.pl, one of which is, I believe, a bug in the script itself 
-> (maintainers cc-ed):
-> 
-> printk() should include KERN_ facility level
-> #750: FILE: drivers/serial/sb1250-duart.c:675:
-> +		printk(err);
+[PATCH] try parent numa_node at first before using default
 
-Heh, yeah Ingo pointed this style out.  This is a wrapper where the
-facility will be supplied by the caller (I assume).  The thought there
-was that only complain on printks which had a string literal as their
-first arguement.  That gets us very high accuracy and eliminates these
-falsies.
+For pci_device, pcibios_scan_root and pci_scan_root will call pci_device_add.
+pci_device_add will call device_initialize and set_dev_node(&dev->dev,
+pcibus_to_node(bus)).
+other device such as netdev, and usb_device, set_dev_node is never be
+used. So that field numa_node always is -1.
 
-> 
-> The <asm/io.h> warning is, I gather, not a problem and warnings about the 
-> _SB_MAKEMASK() macro should be addressed as a separate change.
+So for netdev, it will need to use dev->parent to get pci_device to
+use it's numa_node. esp in netdev_alloc_skb()
+not sure how other device such as infiniband do that.
 
-I think I tend to agree that the MAKEMASK ones are separate.  Good to
-see someone using their common sense in the face of whinging by the tool.
+Actually before patch
+[PATCH 1/2] x86_64: get mp_bus_to_node as early
+there is a bug about squence of bus->sysdata and using pcibus_to_node.
+the numa_node of pci_dev->dev is never set correctly...always 0.
 
-You will be pleased to know that the latest version of the tool is
-throwing a new batch of errors on your patch :)  Included at the end of
-the email.
+So some device have to use pcibus_to_node(to_pci_dev(dev)->bus) directly
+such as dma_alloc_pages in arch/x86_64/kernel/pci-dma.c.
+or hwif_to_node in include/linux/ide.h
 
->  The driver runs correctly with a 64-bit SMP kernel in a big- and 
-> little-endian configuration (with spinlock debugging enabled).  Modular 
-> configuration was not tested at the run time.  UP configuration was not 
-> tested at all, but is not expected to give any troubles.
-> 
->  I have asked for testing at the linux-mips list, but rather than results 
-> I have received some pressure to push the patch regardless.  So here it 
-> goes. ;-)
+According to Stefan Richter
+  - Change all subsystems to set dev->parent before device_initialize().
+    *Document* that the device_initialize() API has this requirement.
+    This is counter-intuitive, amounts to some work across the kernel,
+    and could be gotten wrong again in future code because it's a
+    counter-intuitive API.
 
--apw
+  - Move your code from device_initialize() to device_add().  One minor
+    drawback is that node-specific allocations based on the device's
+    numa_node would not be optimized before device_add(), but there is
+    probably no need for this.  Driver probes come after device_add().
 
-WARNING: declaring multiple variables together should be avoided
-#372: FILE: drivers/serial/sb1250-duart.c:246:
-+	unsigned int mctrl, status;
+  - Let subsystems explicitly call set_dev_node() on their own.
 
-WARNING: declaring multiple variables together should be avoided
-#386: FILE: drivers/serial/sb1250-duart.c:260:
-+	unsigned int clr = 0, set = 0, mode2;
+this patch is using second method.
 
-WARNING: declaring multiple variables together should be avoided
-#464: FILE: drivers/serial/sb1250-duart.c:338:
-+	unsigned int status, ch, flag;
+Also we don't need call set_dev_node in pci_device_add anymore. but need to
+make sure every pci root bus's bridge device numa is set.
 
-WARNING: declaring multiple variables together should be avoided
-#667: FILE: drivers/serial/sb1250-duart.c:541:
-+	unsigned int mode1 = 0, mode2 = 0, aux = 0;
+with this patch, we could use device->numa_node direclty for all device.
 
-WARNING: declaring multiple variables together should be avoided
-#668: FILE: drivers/serial/sb1250-duart.c:542:
-+	unsigned int mode1mask = 0, mode2mask = 0, auxmask = 0;
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-WARNING: declaring multiple variables together should be avoided
-#669: FILE: drivers/serial/sb1250-duart.c:543:
-+	unsigned int oldmode1, oldmode2, oldaux;
-
-WARNING: declaring multiple variables together should be avoided
-#670: FILE: drivers/serial/sb1250-duart.c:544:
-+	unsigned int baud, brg;
-
-WARNING: declaring multiple variables together should be avoided
-#907: FILE: drivers/serial/sb1250-duart.c:781:
-+	int chip, side;
-
-WARNING: declaring multiple variables together should be avoided
-#908: FILE: drivers/serial/sb1250-duart.c:782:
-+	int max_lines, line;
-
-WARNING: declaring multiple variables together should be avoided
-#1060: FILE: drivers/serial/sb1250-duart.c:934:
-+	int i, ret;
-
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index dd40d78..091c2b1 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -666,6 +666,11 @@ int device_add(struct device *dev)
+ 	if (error)
+ 		goto Error;
+ 
++	/* use parent numa_node */
++	if (parent) {
++		set_dev_node(dev, dev_to_node(dev->parent));
++	}
++
+ 	/* first, register with generic layer. */
+ 	kobject_set_name(&dev->kobj, "%s", dev->bus_id);
+ 	error = kobject_add(&dev->kobj);
+@@ -1285,8 +1290,11 @@ int device_move(struct device *dev, struct device *new_parent)
+ 	dev->parent = new_parent;
+ 	if (old_parent)
+ 		klist_remove(&dev->knode_parent);
+-	if (new_parent)
++	if (new_parent) {
+ 		klist_add_tail(&dev->knode_parent, &new_parent->klist_children);
++		set_dev_node(dev, dev_to_node(new_parent));
++	}
++
+ 	if (!dev->class)
+ 		goto out_put;
+ 	error = device_move_class_links(dev, old_parent, new_parent);
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index e48fcf0..c029ffc 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -935,7 +938,6 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+ 	dev->dev.release = pci_release_dev;
+ 	pci_dev_get(dev);
+ 
+-	set_dev_node(&dev->dev, pcibus_to_node(bus));
+ 	dev->dev.dma_mask = &dev->dma_mask;
+ 	dev->dev.coherent_dma_mask = 0xffffffffull;
+ 
+@@ -1096,6 +1098,9 @@ struct pci_bus * pci_create_bus(struct device *parent,
+ 		goto dev_reg_err;
+ 	b->bridge = get_device(dev);
+ 
++	if (!parent)
++		set_dev_node(b->bridge, pcibus_to_node(b));
++
+ 	b->class_dev.class = &pcibus_class;
+ 	sprintf(b->class_dev.class_id, "%04x:%02x", pci_domain_nr(b), bus);
+ 	error = class_device_register(&b->class_dev);
