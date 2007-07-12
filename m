@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933424AbXGLB2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934846AbXGLBbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933424AbXGLB2R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 21:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763426AbXGLB2F
+	id S934846AbXGLBbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 21:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbXGLBbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 21:28:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40424 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763151AbXGLB2E (ORCPT
+	Wed, 11 Jul 2007 21:31:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:10817 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761267AbXGLBbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 21:28:04 -0400
-Date: Wed, 11 Jul 2007 18:27:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: tytso@mit.edu, "linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rocket: Fix mutex locking compile warning
-Message-Id: <20070711182721.0c0e2235.akpm@linux-foundation.org>
-In-Reply-To: <200707120156.32795.mb@bu3sch.de>
-References: <200707120156.32795.mb@bu3sch.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 11 Jul 2007 21:31:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=q5dXPAoXWE/hJ7d9PJxDEi9BHmQESAEo/l6rLpzk2jec+cTvCa37sgrTAMRRXEwULttaWRqZBFvIQocTfVn+7fFdk/cLq1OUJttCa93LjMF1FRnJzEvRI2kyF6alfVTWGt3l/wAZCdcUdudkMN+Y/j97RARiiSKhEB2f5YlXJCI=
+Message-ID: <d3dac270707111831v508e7c56w966df5bc2e7f855e@mail.gmail.com>
+Date: Wed, 11 Jul 2007 18:31:10 -0700
+From: "Max Alekseyev" <maxale@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22 booting hangs after "INIT: version 2.86 booting"
+In-Reply-To: <d3dac270707111413j42ac7a0eif032636a9018df66@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d3dac270707111413j42ac7a0eif032636a9018df66@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 01:56:32 +0200
-Michael Buesch <mb@bu3sch.de> wrote:
+It happened that this weird behavior was caused by gcc-4.2 compiler.
+After recompiling the kernel with gcc-4.1 all troubles have gone.
 
-> This fixes
-> 
-> drivers/char/rocket.c: In function ‘rp_write’:
-> drivers/char/rocket.c:1705: warning: ignoring return value of ‘mutex_lock_interruptible’, declared with attribute warn_unused_result
-> 
-> Signed-off-by: Michael Buesch <mb@bu3sch.de>
-> 
-> Index: bu3sch-wireless-dev/drivers/char/rocket.c
-> ===================================================================
-> --- bu3sch-wireless-dev.orig/drivers/char/rocket.c	2007-05-18 18:09:48.000000000 +0200
-> +++ bu3sch-wireless-dev/drivers/char/rocket.c	2007-07-12 01:52:44.000000000 +0200
-> @@ -1702,7 +1702,8 @@ static int rp_write(struct tty_struct *t
->  	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
->  		return 0;
->  
-> -	mutex_lock_interruptible(&info->write_mtx);
-> +	if (mutex_lock_interruptible(&info->write_mtx))
-> +		return -ERESTARTSYS;
->  
->  #ifdef ROCKET_DEBUG_WRITE
->  	printk(KERN_INFO "rp_write %d chars...", count);
-> 
+Max
 
-Thanks, I already have this queued as
-rocketc-fix-unchecked-mutex_lock_interruptible.patch
+On 7/11/07, Max Alekseyev <maxale@gmail.com> wrote:
+> Hello!
+>
+> I have trouble with booting linux kernel 2.6.22 from kernel.org on my
+> AMD dual-Opteron 250 system.
+> The booting stops right after printing line "INIT: version 2.86
+> booting". Nothing happens after that, but it is not a hardware hang as
+> keyboard leds respond to pressing Caps/Num lock keys.
+>
+> If I boot with init=/bin/sh parameter I successfully get into the
+> shell but attempts to run scripts from /etc/rcS.d/ all end up with
+> Segmentation faults, e.g.:
+>
+> # sh -x /etc/rcS.d/S01glibc.sh
+> ++ uname -s
+> Segmentation fault
+>
+> I am not sure where these segfaults happen as running programs like
+> 'uname' directly from the shell works OK.
+>
+> The 2.6.22 configuration is derived from the working 2.6.21 one. The
+> kernel 2.6.21 boots on the very same system without any problems.
+> Any suggestions?
+>
+> Thanks,
+> Max
+>
