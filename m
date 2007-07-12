@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935989AbXGLC50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765259AbXGLC6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935989AbXGLC50 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 22:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765191AbXGLC5R
+	id S1765259AbXGLC6X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 22:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933664AbXGLC6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 22:57:17 -0400
-Received: from ozlabs.org ([203.10.76.45]:53436 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765172AbXGLC5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 22:57:17 -0400
-Subject: Re: [PATCH 1/2] SCHED: Generic hooks for trapping task preemption
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, shaohua.li@intel.com
-In-Reply-To: <11841693333159-git-send-email-avi@qumranet.com>
-References: <11841693332609-git-send-email-avi@qumranet.com>
-	 <11841693333159-git-send-email-avi@qumranet.com>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 12:56:58 +1000
-Message-Id: <1184209018.6005.706.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jul 2007 22:58:11 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:47041 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764301AbXGLC6J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 22:58:09 -0400
+Date: Wed, 11 Jul 2007 20:01:32 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH 1/5] try parent numa_node at first before using default
+In-reply-to: <46959651.1050400@s5r6.in-berlin.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, rientjes@google.com,
+       Christoph Lameter <clameter@sgi.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <4695998C.8090100@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+References: <200707101641.17672.yinghai.lu@sun.com>
+ <200707101652.31378.yinghai.lu@sun.com> <4694B702.2050507@s5r6.in-berlin.de>
+ <20070711210833.GA22745@kroah.com> <46954B92.8000407@sun.com>
+ <46959651.1050400@s5r6.in-berlin.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 18:55 +0300, Avi Kivity wrote:
-> +config PREEMPT_HOOKS
-> +	bool
-> +	depends on X86
-> +	default y
+Stefan Richter wrote:
+> Yinghai Lu wrote:
+>> original default is -1, and this patch just try to use parent's node as
+>> default.
+> 
+> But in many cases, the patch does so at a time when the parent is not
+> yet known.
+then it will use -1.
 
-Hmm, I would have thought that having CONFIG_KVM "select PREEMPT_HOOKS"
-would be a little clearer.
-
-> +static void fire_sched_in_preempt_hooks(struct task_struct *tsk)
-> +{
-> +	struct preempt_hook *hook;
-> +	struct hlist_node *node;
-> +
-> +	hlist_for_each_entry(hook, node, &tsk->preempt_hooks, link)
-> +		hook->ops->sched_in(hook, raw_smp_processor_id());
-> +}
-
-The old current/tsk conflation.  You hand in "tsk" here, but since
-that's not handed through to the sched_in, it must be "current".  It's
-just unfortunate that this generates better code...
-
-But patch looks good.
-
-Cheers,
-Rusty.
-
+YH
