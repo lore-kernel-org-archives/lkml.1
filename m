@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbXGLJfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762074AbXGLJk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760874AbXGLJfx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 05:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXGLJfp
+	id S1762074AbXGLJk0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 05:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbXGLJkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 05:35:45 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:42205 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbXGLJfo (ORCPT
+	Thu, 12 Jul 2007 05:40:19 -0400
+Received: from server78.greatnet.de ([83.133.96.102]:44640 "EHLO
+	server78.greatnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754575AbXGLJkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 05:35:44 -0400
-Subject: Re: [PATCH 2/2] workqueue: debug work related deadlocks with
-	lockdep
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20070706125324.GA74@tv-sign.ru>
-References: <20070705110744.564273000@sipsolutions.net>
-	 <20070705110820.622888000@sipsolutions.net>
-	 <20070705153648.GA236@tv-sign.ru> <1183718633.3818.96.camel@johannes.berg>
-	 <20070706125324.GA74@tv-sign.ru>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+v+NVPnTN/yGThsWoPMh"
-Date: Wed, 11 Jul 2007 13:37:06 +0200
-Message-Id: <1184153827.3738.51.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Thu, 12 Jul 2007 05:40:17 -0400
+Message-ID: <4695F726.7030203@nachtwindheim.de>
+Date: Thu, 12 Jul 2007 11:40:54 +0200
+From: Henne <henne@nachtwindheim.de>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: len.brown@intel.com, linux-acpi@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][ACPI][BUTTON] remove procfs-interface
+References: <4695ED3F.7020303@nachtwindheim.de> <1184230838.2720.5.camel@laptopd505.fenrus.org>
+In-Reply-To: <1184230838.2720.5.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven wrote:
 
---=-+v+NVPnTN/yGThsWoPMh
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Thu, 2007-07-12 at 10:58 +0200, Henne wrote:
+>   
+>> Removes the proc_fs interface from the ACPI button driver.
+>> Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+>>
+>> ---
+>>     
+>
+> you forgot to say why.....
+>
+>
+>   
+First, because refering to /Documentation/feature-removal-schedule.txt it should be done:
 
-On Fri, 2007-07-06 at 16:53 +0400, Oleg Nesterov wrote:
+>What:   /proc/acpi/button
+>When:   August 2007
+>Why:    /proc/acpi/button has been replaced by events to the input layer
+>        since 2.6.20.
+>Who:    Len Brown <len.brown@intel.com>
 
-> Yes, got it, but forgot to reply to myself. But thanks for your confirmat=
-ion
-> of my understanding.
+Second, refering to /Documentation/feature-removal-schedule.txt
+ 
+>What:   ACPI procfs interface
+>When:   July 2007
+>Why:    After ACPI sysfs conversion, ACPI attributes will be duplicated
+>        in sysfs and the ACPI procfs interface should be removed.
+>Who:    Zhang Rui <rui.zhang@intel.com>
 
-:)
+The button driver uses acpi_root_dir which won't be available if acpi is removed this month.
+That would lead to errors, I think.
 
-> I believe both patches are nice.
 
-Is there anything I should be doing now to get these patches in?
-
-johannes
-
---=-+v+NVPnTN/yGThsWoPMh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGlMDi/ETPhpq3jKURAtEuAJ4qGfIbItSJDii8zeQCyZq8lm4TUgCcDuB9
-K05C4c10WlCAiRSt9V5/dNQ=
-=GkXk
------END PGP SIGNATURE-----
-
---=-+v+NVPnTN/yGThsWoPMh--
 
