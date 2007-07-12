@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbXGLOtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933205AbXGLOve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758196AbXGLOtx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 10:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759974AbXGLOtf
+	id S933205AbXGLOve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 10:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbXGLOv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 10:49:35 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3880 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755084AbXGLOte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 10:49:34 -0400
-Date: Thu, 12 Jul 2007 14:49:12 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Lord <lkml@rtr.ca>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, david@lang.hm,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Huang, Ying" <ying.huang@intel.com>, nigel@nigel.suspend2.net,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Message-ID: <20070712144912.GA4987@ucw.cz>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <4695C096.5080400@goop.org> <Pine.LNX.4.64.0707112319550.28090@asgard.lang.hm> <200707121446.14170.rjw@sisk.pl> <469631FA.2070405@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <469631FA.2070405@rtr.ca>
-User-Agent: Mutt/1.5.9i
+	Thu, 12 Jul 2007 10:51:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:57373 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbXGLOv1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 10:51:27 -0400
+Message-ID: <46963FDD.9010900@arcor.de>
+Date: Thu, 12 Jul 2007 16:51:09 +0200
+From: Sascha Hlusiak <saschahlusiak@arcor.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Manually invoke IPv6 router solicitation messages
+X-Enigmail-Version: 0.95.2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig5CA497F56A4FED585E029E2D"
+X-Provags-ID: V01U2FsdGVkX1+fR0CmpkQBSST16Lzs957JM8nQnW/xVs0wCp9
+ Tqmi2A2R/Pdp1rxcG6sd1Lb6jOcy9RgX/whnIIZvpi0COgXq88
+ r4hKeWmKJsRVwNQOrdr2w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig5CA497F56A4FED585E029E2D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> And the complexity and difficulty of setup really scares 
-> me.
-> Right now, we've got a pretty good/fast in-kernel (well, 
-> external patch)
-> that allows my machines to hibernate very quickly, wake 
-> up even faster,
-> and not swap like mad afterwards.  Without any external 
-> programs,
-> initramfs, or extra kernels required.
-> 
-> And we want to replace this with an ultra-complex setup 
-> because.. ????
+Hi,
 
-...freezer does not work with fuse :-). Or more exactly because
-freezer is ugly, and we don't know how to get rid of it...
+Is there a way to manually make the kernel send IPv6 router solicitation
+messages? At the moment the kernel will send a few messages after the
+interface is brought up and then never again, no matter if it succeeded
+or failed to autoconf the device.
 
-(Not that I advocate kexec-based hibernation. I think it is going to
-suck. But it might allow kdump-but-keep-running, so work is not
-wasted).
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Background:
+I use wpa_supplicant to connect to wireless and I use ifplugd/netplug to
+manage my wired network.
+Both tools bring the interface up and immediately the kernel tries to
+autoconfigure them, even the cable is not plugged in or the wireless
+connection is not yet established. When the connection is finally
+brought up, the autoconfig already failed and I have to wait until the
+router is so nice to send a router advertisement message by itself.
+
+Does it make sense to have a syscall or /proc entry that makes the
+kernel send such a message, or do you suggest having a userspace tool to
+send those messages when needed?
+
+
+Sascha Hlusiak
+
+
+(Please CC me, since I'm off-list)
+
+
+
+--------------enig5CA497F56A4FED585E029E2D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGlj/iOyDtNneHFrMRAiSRAKCXikS9B9hFXikoRHPhtHRA+6ADvgCcCr2u
+we7KaDQOa3l3zbdtL1i0g1g=
+=w8C+
+-----END PGP SIGNATURE-----
+
+--------------enig5CA497F56A4FED585E029E2D--
