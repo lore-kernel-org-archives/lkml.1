@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764750AbXGLLvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763840AbXGLMA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764750AbXGLLvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 07:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763614AbXGLLvd
+	id S1763840AbXGLMA0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 08:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbXGLMAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 07:51:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58641 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752954AbXGLLvc (ORCPT
+	Thu, 12 Jul 2007 08:00:15 -0400
+Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:50933
+	"EHLO randymail-a12.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753156AbXGLMAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 07:51:32 -0400
-Date: Thu, 12 Jul 2007 12:51:20 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: torvalds@linux-foundation.org, gerg@uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [M68KNOMMU]: generic irq handling
-Message-ID: <20070712115120.GA29905@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Greg Ungerer <gerg@snapgear.com>, torvalds@linux-foundation.org,
-	gerg@uclinux.org, linux-kernel@vger.kernel.org
-References: <200707120705.l6C75Icx014878@goober>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707120705.l6C75Icx014878@goober>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 12 Jul 2007 08:00:14 -0400
+Message-ID: <469617C4.4060000@monkeh.net>
+Date: Thu, 12 Jul 2007 12:00:04 +0000
+From: Alex Maclean <monkeh@monkeh.net>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070616)
+MIME-Version: 1.0
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       tglx@linutronix.de, Tim Gardner <tim.gardner@canonical.com>
+Subject: Re: acpi regression on some laptops
+References: <20070710160056.443ae9ae@i1501.lan.towertech.it>	<46952CC5.6050800@redhat.com>	<20070712000124.22d0c3a7@i1501.lan.towertech.it>	<46955F4D.3090206@monkeh.net>	<20070712020944.446f3828@i1501.lan.towertech.it>	<46957CAC.8060308@monkeh.net> <20070712093757.24cb70ae@i1501.lan.towertech.it>
+In-Reply-To: <20070712093757.24cb70ae@i1501.lan.towertech.it>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 05:05:18PM +1000, Greg Ungerer wrote:
-> Change the m68knommu irq handling to use the generic irq framework.
+Alessandro Zummo wrote:
+> On Thu, 12 Jul 2007 00:58:20 +0000
+> Alex Maclean <monkeh@monkeh.net> wrote:
+> 
+>>>  hw is a Dell Inspiron 1501, AMD Turion TL52 based.
+>>>  drop me a note if you need dmesg or other info.
+> 
+>>>  eax in    eax      ebx      ecx      edx
+>>> 00000000 00000001 68747541 444d4163 69746e65
+>>> 00000001 00040f82 01020800 00002001 178bfbff
+>>>
+>> What chipset is it? I'm going to guess at nVidia MCP51, in which case.. 
+>> That's the third time that's worked on the MCP51.
+> 
+>  amd sb600/ati rs480.
+> 
+> 
+> 
 
-Nice, thanks a lot.
+Hm, rather different from mine.
 
+Does anyone with a clue want to have a look at this?
