@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934406AbXGLB0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933424AbXGLB2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934406AbXGLB0K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 21:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763421AbXGLBZ5
+	id S933424AbXGLB2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 21:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763426AbXGLB2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 21:25:57 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:27517 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763411AbXGLBZ4 (ORCPT
+	Wed, 11 Jul 2007 21:28:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40424 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763151AbXGLB2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 21:25:56 -0400
-Date: Wed, 11 Jul 2007 18:27:13 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <greg@kroah.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, James.Smart@Emulex.Com,
-       pcihpd-discuss@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Pcihpd-discuss] [PATCH 26/34] PCI: add pci_try_set_mwi
-Message-Id: <20070711182713.2547a52e.randy.dunlap@oracle.com>
-In-Reply-To: <20070712003731.GA8126@kroah.com>
-References: <11841968092270-git-send-email-gregkh@suse.de>
-	<11841968133805-git-send-email-gregkh@suse.de>
-	<11841968172168-git-send-email-gregkh@suse.de>
-	<11841968221388-git-send-email-gregkh@suse.de>
-	<11841968302709-git-send-email-gregkh@suse.de>
-	<11841968341206-git-send-email-gregkh@suse.de>
-	<11841968561560-git-send-email-gregkh@suse.de>
-	<11841968591561-git-send-email-gregkh@suse.de>
-	<11841968633587-git-send-email-gregkh@suse.de>
-	<20070712000149.GX9704@parisc-linux.org>
-	<20070712003731.GA8126@kroah.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 11 Jul 2007 21:28:04 -0400
+Date: Wed, 11 Jul 2007 18:27:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: tytso@mit.edu, "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rocket: Fix mutex locking compile warning
+Message-Id: <20070711182721.0c0e2235.akpm@linux-foundation.org>
+In-Reply-To: <200707120156.32795.mb@bu3sch.de>
+References: <200707120156.32795.mb@bu3sch.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jul 2007 17:37:31 -0700 Greg KH wrote:
+On Thu, 12 Jul 2007 01:56:32 +0200
+Michael Buesch <mb@bu3sch.de> wrote:
 
-> On Wed, Jul 11, 2007 at 06:01:49PM -0600, Matthew Wilcox wrote:
-> > On Wed, Jul 11, 2007 at 04:31:40PM -0700, Greg Kroah-Hartman wrote:
-> > > As suggested by Andrew, add pci_try_set_mwi(), which does not require
-> > > return-value checking.
-> > 
-> > Seems like a daft suggestion.  What's wrong with just removing the
-> > __must_check from pci_set_mwi()?  Did it find any bugs?
-> > 
-> > > --- a/drivers/scsi/lpfc/lpfc_init.c
-> > > +++ b/drivers/scsi/lpfc/lpfc_init.c
-> > > @@ -1578,10 +1578,7 @@ lpfc_pci_probe_one(struct pci_dev *pdev, const struct pci_device_id *pid)
-> > >  	INIT_LIST_HEAD(&phba->fc_nodes);
-> > >  
-> > >  	pci_set_master(pdev);
-> > > -	retval = pci_set_mwi(pdev);
-> > > -	if (retval)
-> > > -		dev_printk(KERN_WARNING, &pdev->dev,
-> > > -			   "Warning: pci_set_mwi returned %d\n", retval);
-> > > +	pci_try_set_mwi(pdev);
-> > 
-> > Why remove the warning?  Presumably people want to know if pci_set_mwi
-> > failed.
+> This fixes
 > 
-> Randy, this was your change, right?
+> drivers/char/rocket.c: In function ‘rp_write’:
+> drivers/char/rocket.c:1705: warning: ignoring return value of ‘mutex_lock_interruptible’, declared with attribute warn_unused_result
+> 
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> 
+> Index: bu3sch-wireless-dev/drivers/char/rocket.c
+> ===================================================================
+> --- bu3sch-wireless-dev.orig/drivers/char/rocket.c	2007-05-18 18:09:48.000000000 +0200
+> +++ bu3sch-wireless-dev/drivers/char/rocket.c	2007-07-12 01:52:44.000000000 +0200
+> @@ -1702,7 +1702,8 @@ static int rp_write(struct tty_struct *t
+>  	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+>  		return 0;
+>  
+> -	mutex_lock_interruptible(&info->write_mtx);
+> +	if (mutex_lock_interruptible(&info->write_mtx))
+> +		return -ERESTARTSYS;
+>  
+>  #ifdef ROCKET_DEBUG_WRITE
+>  	printk(KERN_INFO "rp_write %d chars...", count);
+> 
 
-Yes, I'm trying to track that down...
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Thanks, I already have this queued as
+rocketc-fix-unchecked-mutex_lock_interruptible.patch
