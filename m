@@ -1,71 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934489AbXGLNaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932876AbXGLNfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934489AbXGLNaI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 09:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764312AbXGLN3z
+	id S932876AbXGLNfV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 09:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761635AbXGLNfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 09:29:55 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:26414 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761839AbXGLN3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 09:29:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uEvjiUFPr3tRMk8Kv/ppeTg8Afs384gkzs1J3r5smnCKtfKnjf7TMSKtbCHXHumXSBOIqGXcquNvlQOIqOC16mgWKQ9scsIbQJI9DmE9Eaa3+8nYQJt0j4HQy7m19E95u6sAQdjRPC/+63VeaZVFKhxz034o3kAG9lxi3bJPT20=
-Message-ID: <d120d5000707120629n53f123ccs5a933c71c9a14542@mail.gmail.com>
-Date: Thu, 12 Jul 2007 09:29:54 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] net/input: fix net/rfkill/rfkill-input.c bug on 64-bit systems
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Greg KH" <gregkh@suse.de>, "Chris Wright" <chrisw@sous-sol.org>,
-       "Ivo van Doorn" <IvDoorn@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20070712124503.GA16633@elte.hu>
+	Thu, 12 Jul 2007 09:35:08 -0400
+Received: from rtr.ca ([64.26.128.89]:4723 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759284AbXGLNfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 09:35:07 -0400
+Message-ID: <46962E09.40606@rtr.ca>
+Date: Thu, 12 Jul 2007 09:35:05 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
+To: david@aeolia.co.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Hard drive - dead or dying?
+References: <1184222444.5969.0.camel@ceres>
+In-Reply-To: <1184222444.5969.0.camel@ceres>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070712124503.GA16633@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/12/07, Ingo Molnar <mingo@elte.hu> wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Subject: [patch] net/input: fix net/rfkill/rfkill-input.c bug on 64-bit systems
->
-> this recent commit:
->
->  commit cf4328cd949c2086091c62c5685f1580fe9b55e4
->  Author: Ivo van Doorn <IvDoorn@gmail.com>
->  Date:   Mon May 7 00:34:20 2007 -0700
->
->     [NET]: rfkill: add support for input key to control wireless radio
->
-> added this 64-bit bug:
->
->        ....
->        unsigned int flags;
->
->        spin_lock_irqsave(&task->lock, flags);
->        ....
->
-> irq 'flags' must be unsigned long, not unsigned int. The -rt tree has
-> strict checks about this on 64-bit so this triggered a build failure.
->
+David Sumbler wrote:
+> My computer (Ubuntu Feisty) would not boot correctly a few days
+> ago: it seemed to get into a loop with the following printed about
+> every 7 seconds (all laboriously copied in longhand, since it wasn't
+> logged!):
+> 
+> ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> ata1.01: (BMDMA stat 0x65)
+> ata1.01: cmd c8/00:08:80:b4:a8/00:00:00:00:00/f4 tag0 cdb 0x0 data 4096
+> in
+>          res 51/01:08:80:b4:a8/00:00:00:00:00/f4 Emark 0x1 (device error)
 
-Yep, my fault.
+Use 'smartctl' to find out what the drive is having issues with.
 
-> For -stable too i suspect.
->
-
-I don't think anyone uses rfkill in mainline yet. People were asking
-to add it so that they can develop against it but I guess I should
-have waited for the real user before pushing rfkill to David...
-ANyway, I see it is being used in wireless-dev so it is not completely
-useless ;)
-
--- 
-Dmitry
+-ml
