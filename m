@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934183AbXGLPXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933511AbXGLP2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934183AbXGLPXT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 11:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbXGLPXG
+	id S933511AbXGLP2d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 11:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758910AbXGLP20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 11:23:06 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:44198 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756507AbXGLPXC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 11:23:02 -0400
-Date: Thu, 12 Jul 2007 17:23:10 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Yinghai.Lu@Sun.COM, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       rientjes@google.com, Christoph Lameter <clameter@sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/5] try parent numa_node at first before using default
-Message-ID: <20070712172310.4d662e1f@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <469610D4.70009@s5r6.in-berlin.de>
-References: <200707101641.17672.yinghai.lu@sun.com>
-	<200707101652.31378.yinghai.lu@sun.com>
-	<4694B702.2050507@s5r6.in-berlin.de>
-	<20070711210833.GA22745@kroah.com>
-	<46954B92.8000407@sun.com>
-	<46959651.1050400@s5r6.in-berlin.de>
-	<4695998C.8090100@sun.com>
-	<4695C088.7000606@s5r6.in-berlin.de>
-	<20070712091529.2b914ece@gondolin.boeblingen.de.ibm.com>
-	<469610D4.70009@s5r6.in-berlin.de>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jul 2007 11:28:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55670 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758470AbXGLP2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 11:28:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Thu, 12 Jul 2007 17:35:38 +0200
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Huang, Ying" <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707121446.14170.rjw@sisk.pl> <469631FA.2070405@rtr.ca>
+In-Reply-To: <469631FA.2070405@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707121735.40077.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 13:30:28 +0200,
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> So, since figuring the correct DMA device out is done by drivers
-> themselves, they usually can figure out the correct NUMA node as well.
-> The only precondition is that each DMA device has the correct NUMA node
-> set.  This is the job of subsystems like PCI, but it may be reasonable
-> to have simple and broadly applicable helpers for this in the driver core.
+On Thursday, 12 July 2007 15:51, Mark Lord wrote:
+> Rafael J. Wysocki wrote:
+> > On Thursday, 12 July 2007 08:43, david@lang.hm wrote:
+> >> On Wed, 11 Jul 2007, Jeremy Fitzhardinge wrote:
+> >>
+> >>> Andrew Morton wrote:
+> ..
+> >> 8. hibernate kernel does syspend-to-ram to put the devices into a known 
+> >> safe state.
+> > Again, the devices should be quiesced rather then suspended in this step.
 > 
-> So, _is_ the dev->numa_node = dev->parent.numa_node assumption, if
-> implemented in device_add() and device_move(), as simple and as broadly
-> applicable as we want driver core's API to be?  Perhaps yes.
+> That's just not possible.  The Hibernate kernel will not have all
+> of the same device drivers as the mainline kernel.  Or at least that's
+> what people have previously stated here.
 
-If making the general assumption that the device will inherit the
-numa_node through its parent(s) from the responsible DMA device is
-reasonable, then device_move() should certainly update the numa_node
-from the new parent. (For special cases, the caller could still call
-set_dev_node() itself.)
+OK, one more problem to solve. :-)
+
+> >>>>  This sounds awesome.  Am I correct in expecting that ultimately the
+> >>>>  existing hibernation implementation just goes away and we reuse (and hence
+> >>>>  strengthen) the existing kexec (and kdump?) infrastructure?
+> 
+> No, not so simple.  We still need much of the code to santize devices
+> upon wakeup from hibernation.   And adding this extra reboot-kernel step
+> in the midst of hibernate will double the time it takes (ugh).
+> 
+> Currently, TuxOnIce(suspend2) takes about 10 seconds to suspend my notebook.
+> Switching to this new scheme would double that to 10 seconds to boot/probe,
+> plus the original 10 seconds to hibernate.  Assuming the new implementation
+> even comes close to suspend2 speed.
+
+How much RAM is there in your machine?
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
