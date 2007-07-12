@@ -1,178 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932772AbXGLTM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762945AbXGLTPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932772AbXGLTM7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 15:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbXGLTMu
+	id S1762945AbXGLTPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 15:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbXGLTPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 15:12:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56463 "EHLO ogre.sisk.pl"
+	Thu, 12 Jul 2007 15:15:10 -0400
+Received: from mx1.suse.de ([195.135.220.2]:49006 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753856AbXGLTMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 15:12:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Thu, 12 Jul 2007 21:20:18 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Huang, Ying" <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707121446.14170.rjw@sisk.pl> <Pine.LNX.4.64.0707121138140.25614@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707121138140.25614@asgard.lang.hm>
+	id S1755382AbXGLTPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 15:15:09 -0400
+Message-ID: <46967D7D.5090204@suse.com>
+Date: Thu, 12 Jul 2007 15:14:05 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: tony@tvortex.net
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: reiserfs fs/reiserfs/bitmap.c:1287
+References: <15366.199.125.14.2.1184261266.squirrel@localmail-dr.mcsimons.com>
+In-Reply-To: <15366.199.125.14.2.1184261266.squirrel@localmail-dr.mcsimons.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707122120.19662.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 12 July 2007 20:42, david@lang.hm wrote:
-> On Thu, 12 Jul 2007, Rafael J. Wysocki wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Anthony Simons wrote:
+> Was decompressing a newly compiled kernel to my usb drive and received the
+> below error almost immediatly after I began.
 > 
-> > On Thursday, 12 July 2007 08:43, david@lang.hm wrote:
-> >> On Wed, 11 Jul 2007, Jeremy Fitzhardinge wrote:
-> >>
-> >>> Andrew Morton wrote:
-> >>>>  On Wed, 11 Jul 2007 15:30:31 +0000
-> >>>>  "Huang, Ying" <ying.huang@intel.com> wrote:
-> >>>>
-> >>>>>  1. Boot a kernel A
-> >>>>>  2. Work under kernel A
-> >>>>>  3. Kexec another kernel B in kernel A
-> >>>>>  4. Work under kernel B
-> >>>>>  5. Jump from kernel B to kernel A
-> >>>>>  6. Continue work under kernel A
-> >>>>>
-> >>>>>  This is the first step to implement kexec based hibernation. If the
-> >>>>>  memory image of kernel A is written to or read from a permanent media
-> >>>>>  in step 4, a preliminary version of kexec based hibernation can be
-> >>>>>  implemented.
-> >>>>>
-> >>>>>  The kernel B is run as a crashdump kernel in reserved memory
-> >>>>>  region. This is the biggest constrains of the patch. It is planed to
-> >>>>>  be eliminated in the next version. That is, instead of reserving memory
-> >>>>>  region previously, the needed memory region is backuped before kexec
-> >>>>>  and restored after jumping back.
-> >>>>>
-> >>>>>  Another constrains of the patch is that the CONFIG_ACPI must be turned
-> >>>>>  off to make kexec jump work. Because ACPI will put devices into low
-> >>>>>  power state, the kexeced kernel can not be booted properly under
-> >>>>>  it. This constrains can be eliminated by separating the suspend method
-> >>>>>  and hibernation method of the devices as proposed earlier in the LKML.
-> >>>>>
-> >>>>>  The kexec jump is implemented in the framework of software suspend. In
-> >>>>>  fact, the kexec based hibernation can be seen as just implementing the
-> >>>>>  image writing and reading method of software suspend with a kexeced
-> >>>>>  Linux kernel.
-> >>>>>
-> >>>
-> >>> I guess I'm (still) confused by the terminology here.  Do you mean that it
-> >>> fits into suspend-to-disk as a disk-writing mechanism, or in suspend-to-ram
-> >>> as a way of going to sleep?
-> >>
-> >> Suspend-to-ram involves stopping the system and shutting down devices to
-> >> go into low-power mode, then on wakeup restarting devices and resuming
-> >> operation
-> >>
-> >> so the steps would be.
-> >>
-> >> 1. stop userspace
-> >>
-> >> 2. walk the system device tree and put devices to sleep
-> >>
-> >> 3. go into the lowest power mode available and wait for a wakeup signal
-> >>
-> >> later
-> >>
-> >> 4. walk the system device tree and wake up devices
-> >>
-> >> 5. resume userspace scheduling.
-> >
-> > Note that we are going to phase out steps 1 and 5.
+> [tonys@squishy ~]$ uname -a
+> Linux squishy 2.6.21-1.3228.fc7 #1 SMP Tue Jun 12 15:37:31 EDT 2007 i686
+> i686 i386 GNU/Linux
 > 
-> what I'm referring to in #1 and #5 is not the current freezer, it's just 
-> the kernel not allocating any cpu time to userspace while it's shutting 
-> things down (this could be as simple as unplugging all non-boot cpu's and 
-> then doing the rest of the work without letting the scheduler run.
+> After I recive the error, a simple ls just won't work.
 
-This is not what we're going to do.  There is a plan to block tasks on I/O if
-they request it during a suspend.
+That's expected. Locks that you'll need to acquire for the ls to
+complete were held by process that BUG()'d.
 
-> >> note that what devices get put to sleep could be configurable, potentially
-> >> to the extreme of things like the OLPC (that have hardware designed for
-> >> cheap sleeping) going into a light suspend-to-ram state between keystrokes
-> >> if nothing else has a timer event scheduled before that.
-> >>
-> >> Suspend-do-disk (Hibernate) involves stopping the system, makeing a
-> >> snapshot of ram, writing the snapshot to somewhere and powering off the
-> >> box. on wakeup (power-on) a helper kernel boots, loads the snapshot into
-> >> ram and jumps to the kernel in the snapshot to resume operation.
-> >>
-> >> as I understand the proposal the thought is to do the following
-> >>
-> >> 1. system kernel does suspend-to-ram to put the devices into a known safe
-> >> state.
-> >
-> > Not necessarily suspend-to-RAM.  I'd much prefer it if devices were not put
-> > into low power states but quiesced (ie. no DMA, no interrupts).
+This error corresponds to this check in reiserfs_cache_bitmap_metadata():
+
+        /* The first bit must ALWAYS be 1 */
+        BUG_ON(info->first_zero_hint == 0);
+
+Bit 0 corresponds to the bitmap block itself, so it must *always* be set.
+
+Can you run reiserfsck on the file system? I have a patch set in
+development that handles errors like these a bit more gracefully.
+
+- -Jeff
+
 > 
-> as I asked in another message, is it really worth having two (or more) 
-> modes here?
-
-I think so.  The suspend-to-RAM mode is quite specific and on some platform
-(ie. ACPI) it requires platform support.
-
-We've already reached the conclusion that it's better to separate suspend from
-hibernation, as far as device drivers are concerned, and let's not repeat the
-discussion.
-
-> >> 2. system kernel uses kexec to start hibernate kernel
-> >>
-> >> 3. hibernate kernel wakes up devices it needs as if it was doing a
-> >> resume-from-ram
-> >
-> > I think that the devices should be initialized from scratch in this step.
-> >
-> >> 4. hibernate kernel copies ram image somewhere
-> >
-> > In this step some userland may be involved (started from the "hibernate"
-> > kernel).
+> ------------[ cut here ]------------
+> kernel BUG at fs/reiserfs/bitmap.c:1287!
+> invalid opcode: 0000 [#1]
+> SMP
+> last sysfs file: /block/sdb/size
+> Modules linked in: ext2 usb_storage nvidia(P)(U) autofs4 hidp rfcomm l2cap
+> bluetooth sunrpc cpufreq_ondemand acpi_cpufreq ext3 jbd mbcache dm_mirror
+> dm_multipath dm_mod video sbs i2c_ec button dock battery ac ipv6 lp loop
+> parport_pc parport arc4 ecb blkcipher rc80211_simple irda snd_intel8x0m
+> crc_ccitt bcm43xx_mac80211 ssb iTCO_wdt mac80211 snd_intel8x0
+> iTCO_vendor_support snd_ac97_codec serio_raw cfg80211 tg3 ac97_bus
+> snd_seq_dummy i2c_core snd_seq_oss fw_ohci fw_core sr_mod cdrom
+> snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss joydev
+> snd_pcm snd_timer snd soundcore snd_page_alloc sg ata_generic ata_piix
+> libata sd_mod scsi_mod reiserfs ehci_hcd ohci_hcd uhci_hcd
+> CPU:    0
+> EIP:    0060:[<f88a306c>]    Tainted: P       VLI
+> EFLAGS: 00210246   (2.6.21-1.3228.fc7 #1)
+> EIP is at reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
+> eax: e6461000   ebx: f8896314   ecx: 00000000   edx: e6460ffc
+> esi: f5a54668   edi: 00000000   ebp: 000000c5   esp: e4a2dd78
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process tar (pid: 6860, ti=e4a2d000 task=e528e710 task.ti=e4a2d000)
+> Stack: f5a54668 0018a000 e4bede00 f88a313d 00000400 04040404 e4bede00
+> e4bede00
+>        f8896000 f8896314 e4bede00 d71cbe00 d71cbe60 f88a36d4 fffffff4
+> 000041ed
+>        00000000 f88adbde eab6be0c e6394950 00000001 e3af31d0 e4bede00
+> d71cbe60
+> Call Trace:
+>  [<f88a313d>] reiserfs_read_bitmap_block+0xc9/0xd3 [reiserfs]
+>  [<f88a36d4>] reiserfs_choose_packing+0x4a/0x78 [reiserfs]
+>  [<f88adbde>] reiserfs_new_inode+0xb8/0x826 [reiserfs]
+>  [<f88c35e7>] do_journal_begin_r+0x73/0x28d [reiserfs]
+>  [<c04850e3>] d_splice_alias+0xdd/0xe3
+>  [<f88c389a>] journal_begin+0x99/0xd0 [reiserfs]
+>  [<f88a9a79>] reiserfs_mkdir+0x183/0x2c2 [reiserfs]
+>  [<f88c6e0b>] reiserfs_permission+0x0/0x1e [reiserfs]
+>  [<c047bd7c>] vfs_mkdir+0xbd/0x125
+>  [<c047e226>] sys_mkdirat+0x88/0xba
+>  [<c0450fcd>] audit_syscall_exit+0x294/0x2b0
+>  [<c0450d0f>] audit_syscall_entry+0x10d/0x137
+>  [<c047e277>] sys_mkdir+0x1f/0x23
+>  [<c0404f70>] syscall_call+0x7/0xb
+>  =======================
+> Code: 00 00 0f a3 0a 19 c0 85 c0 75 0a 66 ff 43 02 8d 04 39 66 89 03 49 83
+> f9 ff 75 e7 8b 46 18 83 ea 04 39 c2 73 ba 66 83 3b 00 75 04 <0f> 0b eb fe
+> 5b 5e 5f c3 55 89 d5 57 89 c7 56 53 83 ec 14 8b 90
+> EIP: [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
+> SS:ESP 0068:e4a2dd78
+> BUG: warning at kernel/exit.c:798/do_exit() (Tainted: P      )
+>  [<c04294f3>] do_exit+0x54/0x6d3
+>  [<c040655c>] die+0x21b/0x240
+>  [<c0406967>] do_invalid_op+0x0/0xab
+>  [<c0406a09>] do_invalid_op+0xa2/0xab
+>  [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
+>  [<f88e378d>] scsi_request_fn+0x2d3/0x31d [scsi_mod]
+>  [<c04d9a27>] blk_remove_plug+0x58/0x64
+>  [<c042d6e7>] getnstimeofday+0x30/0xb6
+>  [<c04394c4>] ktime_get_ts+0x16/0x44
+>  [<c0454c38>] delayacct_end+0x70/0x77
+>  [<c0454d26>] __delayacct_blkio_end+0x5b/0x5e
+>  [<c0600b39>] __wait_on_bit+0x50/0x58
+>  [<c0601a84>] error_code+0x7c/0x84
+>  [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
+>  [<f88a313d>] reiserfs_read_bitmap_block+0xc9/0xd3 [reiserfs]
+>  [<f88a36d4>] reiserfs_choose_packing+0x4a/0x78 [reiserfs]
+>  [<f88adbde>] reiserfs_new_inode+0xb8/0x826 [reiserfs]
+>  [<f88c35e7>] do_journal_begin_r+0x73/0x28d [reiserfs]
+>  [<c04850e3>] d_splice_alias+0xdd/0xe3
+>  [<f88c389a>] journal_begin+0x99/0xd0 [reiserfs]
+>  [<f88a9a79>] reiserfs_mkdir+0x183/0x2c2 [reiserfs]
+>  [<f88c6e0b>] reiserfs_permission+0x0/0x1e [reiserfs]
+>  [<c047bd7c>] vfs_mkdir+0xbd/0x125
+>  [<c047e226>] sys_mkdirat+0x88/0xba
+>  [<c0450fcd>] audit_syscall_exit+0x294/0x2b0
+>  [<c0450d0f>] audit_syscall_entry+0x10d/0x137
+>  [<c047e277>] sys_mkdir+0x1f/0x23
+>  [<c0404f70>] syscall_call+0x7/0xb
+>  =======================
 > 
-> yes,, I should have been much clearer that it's the userspace for the 
-> hibernate kernel that does this.
 > 
-> >> 5. hibernate kernel shuts down the box
-> >>
-> >> later
-> >>
-> >> 6. hibernate kernel boots
-> >>
-> >> 7. hibernate kernel copies ram image from somewhere
-> >>
-> >> 8. hibernate kernel does syspend-to-ram to put the devices into a known
-> >> safe state.
-> >
-> > Again, the devices should be quiesced rather then suspended in this step.
-> >
-> >> 9. hibernate kernel uses kexec to start system kernel
-> >>
-> >> 10. system kernel wakes up devices it needs as if it was doing a
-> >> resume-from-ram.
-> >
-> > I think it should reconfigure devices from scratch (ie. reprobe).
 > 
-> probably a good idea, especially since there will be devices that the 
-> hibernate krenel hasn't touched.
-
-Exactly.
-
-Greetings,
-Rafael
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFGln18LPWxlyuTD7IRAmDRAJ48kzuX8OX7vGvPY29O9G7EdEB6NACfbfme
+VwqSa01lXDDeJYl7j0FMZYI=
+=yWNQ
+-----END PGP SIGNATURE-----
