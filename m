@@ -1,112 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbXGLM5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbXGLM6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbXGLM5S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 08:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758637AbXGLM5I
+	id S933811AbXGLM6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 08:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbXGLM5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 08:57:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55150 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757740AbXGLM5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 08:57:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to =?iso-8859-1?q?kexec=09base=09hibernation?=
-Date: Thu, 12 Jul 2007 15:01:02 +0200
-User-Agent: KMail/1.9.5
-Cc: "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <1184260683.9346.91.camel@caritas-dev.intel.com> <Pine.LNX.4.64.0707120247230.25614@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707120247230.25614@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707121501.03016.rjw@sisk.pl>
+	Thu, 12 Jul 2007 08:57:52 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:51274 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757740AbXGLM5v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 08:57:51 -0400
+Subject: Re: [EXT4 set 3][PATCH 1/1] ext4 nanosecond timestamp
+From: Kalpak Shah <kalpak@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andreas Dilger <adilger@clusterfs.com>
+In-Reply-To: <20070710163027.1bf7e94e.akpm@linux-foundation.org>
+References: <1183275416.4010.125.camel@localhost.localdomain>
+	 <20070710163027.1bf7e94e.akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary="=-Yj6/pte0b0iSbPhUdoJA"
+Date: Thu, 12 Jul 2007 18:28:46 +0530
+Message-Id: <1184245126.4299.20.camel@garfield>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-SystemSpamProbe: GOOD 0.0000740 d9cadd83f7d79ba120e22f33104e95a7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 12 July 2007 12:10, david@lang.hm wrote:
-> On Thu, 12 Jul 2007, Huang, Ying wrote:
+
+--=-Yj6/pte0b0iSbPhUdoJA
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
+> On Sun, 01 Jul 2007 03:36:56 -0400
+> Mingming Cao <cmm@us.ibm.com> wrote:
 > 
-> > On Thu, 2007-07-12 at 00:03 -0700, david@lang.hm wrote:
-> >>>
-> >>> The kexec jump is the first step, maybe the simplest step. There are
-> >>> many other issues to be resolved, at least the following ones.
-> >>>
-> >>> 1. Separate device suspend from device hibernate.
-> >>
-> >
-> > Maybe my usage of terminology has some problem. But, the "device
-> > hibernate" here means put device into quiescent state and save the
-> > device state, but do not put device into low power state.
+> > This patch is a spinoff of the old nanosecond patches.
 > 
-> is there really enough savings (in time or otherwise) to make it worth 
-> splitting this into two steps? for suspend-to-ram we definantly will need 
-> to option to go all the way to a low power state, there's significant 
-> extra complexity if you also have a state between normal operation and 
-> this low power state.
+> I don't know what the "old nanosecond patches" are.  A link to a suitable
+> changlog for those patches would do in a pinch.  Preferable would be to
+> write a proper changelog for this patch.
+
+The incremental patch contains a proper changelog describing the patch.
+
+> > +static inline __le32 ext4_encode_extra_time(struct timespec *time)
+> > +{
+> > +       return cpu_to_le32((sizeof(time->tv_sec) > 4 ?
+> > +			   time->tv_sec >> 32 : 0) |
+> > +			   ((time->tv_nsec << 2) & EXT4_NSEC_MASK));
+> > +}
+> > +
+> > +static inline void ext4_decode_extra_time(struct timespec *time, __le32 extra)
+> > +{
+> > +       if (sizeof(time->tv_sec) > 4)
+> > +	       time->tv_sec |= (__u64)(le32_to_cpu(extra) & EXT4_EPOCH_MASK)
+> > +			       << 32;
+> > +       time->tv_nsec = (le32_to_cpu(extra) & EXT4_NSEC_MASK) >> 2;
+> > +}
 > 
-> it may be worth doing if the low-power state is expensive (in time or 
-> effort) to get to or from and the lesser state allows the computer overall 
-> to save power (like the different cpu C states)
-> 
-> but I suspect that the number of drivers where this is worth doing is 
-> relativly small, and it may be a better approach to start off with just 
-> putting everything into the low-power state until some drive shows up that 
-> makes it worth adding the intermediate state to the system (and drivers 
-> wouldn't have to change, if they only support one suspend state it's the 
-> low-power one, if they support more then higher layers choose which ones 
-> to move to)
+> Consider uninlining these functions.
 
-We've discussed that a lot on linux-pm and the conclusion is that devices
-should not be put into low power states before creating the hibernation
-image, because that leads to problems during the restore.
+Done.
 
-In turn, during the restore, when the image has been loaded and the "old"
-kernel gets the control, it should reprobe devices and initialize them from
-scratch rather than doing something like "resume devices after suspend
-to RAM".
+This patch adds comments, few small corrections and an appropriate
+changelog entry.
 
-> >>> 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
-> >>> be hibernate/resume by the normal kernel too. This way, a real
-> >>> kexec/boot-up is only needed for the first time.
-> >>
-> >> the hibernate kernel shouldn't need a lot of the features of the standard
-> >> kerneel (does it really need sound for example), and if tailored even
-> >> tighter could be configured to only have the drivers actually used for the
-> >> save and restore, makeing a _very_ minimal kernel (no USB, no network,
-> >> only simple video drivers, etc) greatly speeding up the boot
-> >
-> > There is no need for two kernel. Most drivers and optional features are
-> > compiled as modules, as that of most desktop distributions. So just
-> > "insmod" needed modules only in hibernate kernel is sufficient.
-> 
-> actually, I think that while you may be able to get away with only one 
-> kernel, you are probably better off with two. on the hibernate kernel you 
-> can choose many 'embedded' options that don't make sense for the normal 
-> kernel (no high mem, no SMP support, no SELinux, no network routing, not 
-> netfilter, use SLOB not SLAB/SLUB, etc). also keep in mind that each 
-> module that you load wastes apartial page of memory.
-> 
-> remember people run complete linux systems in 8M of ram, a syspend system 
-> for a simple 'write the ram image to partition X on this IDE drive' should 
-> be aiming at 2-4M of memory.
-> 
-> more complex setups may want more space, but let the distros bloat things 
-> up, design and demo an optimized system :-)
+Thanks,
+Kalpak.
 
-So if a user wants to install a kernel.org kernel on his system, (s)he'll have
-to compile and install two kernels with different options.
+--=-Yj6/pte0b0iSbPhUdoJA
+Content-Disposition: attachment; filename=ext4_nanosecond_correction.patch
+Content-Type: text/x-patch; name=ext4_nanosecond_correction.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-That doesn't sound good to me. :-)
+This patch adds nanosecond timestamps for ext4. This involves adding
+*time_extra fields to the ext4_inode to extend the timestamps to 64-bits.
+Creation time is also added by this patch.
 
-Greetings,
-Rafael
+These extended fields will fit into an inode if the filesystem was formatted
+with large inodes (-I 256 or larger) and there are currently no EAs
+consuming all of the available space. For new inodes we always reserve
+enough space for the kernel's known extended fields, but for inodes
+created with an old kernel this might not have been the case. So this patch
+also adds the EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE feature flag(ro-compat so that
+older kernels can't create inodes with a smaller extra_isize). which indicates
+if the fields fitting inside s_min_extra_isize are available or not.
+If the expansion of inodes if unsuccessful then this feature will be disabled.
+This feature is only enabled if requested by the sysadmin.
 
+None of the extended inode fields is critical for correct filesystem operation.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
+Signed-off-by: Kalpak Shah <kalpak@clusterfs.com>
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+
+Index: linux-2.6.22/include/linux/ext4_fs.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/ext4_fs.h
++++ linux-2.6.22/include/linux/ext4_fs.h
+@@ -350,20 +350,30 @@ struct ext4_inode {
+ #define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
+ #define EXT4_NSEC_MASK  (~0UL << EXT4_EPOCH_BITS)
+ 
++/*
++ * Extended fields will fit into an inode if the filesystem was formatted
++ * with large inodes (-I 256 or larger) and there are not currently any EAs
++ * consuming all of the available space. For new inodes we always reserve
++ * enough space for the kernel's known extended fields, but for inodes
++ * created with an old kernel this might not have been the case. None of
++ * the extended inode fields is critical for correct filesystem operation.
++ * This macro checks if a certain field fits in the inode. Note that
++ * inode-size = GOOD_OLD_INODE_SIZE + i_extra_isize
++ */
+ #define EXT4_FITS_IN_INODE(ext4_inode, einode, field)	\
+ 	((offsetof(typeof(*ext4_inode), field) +	\
+ 	  sizeof((ext4_inode)->field))			\
+ 	<= (EXT4_GOOD_OLD_INODE_SIZE +			\
+ 	    (einode)->i_extra_isize))			\
+ 
+-static inline __le32 ext4_encode_extra_time(struct timespec *time)
++static __le32 ext4_encode_extra_time(struct timespec *time)
+ {
+        return cpu_to_le32((sizeof(time->tv_sec) > 4 ?
+ 			   time->tv_sec >> 32 : 0) |
+ 			   ((time->tv_nsec << 2) & EXT4_NSEC_MASK));
+ }
+ 
+-static inline void ext4_decode_extra_time(struct timespec *time, __le32 extra)
++static void ext4_decode_extra_time(struct timespec *time, __le32 extra)
+ {
+        if (sizeof(time->tv_sec) > 4)
+ 	       time->tv_sec |= (__u64)(le32_to_cpu(extra) & EXT4_EPOCH_MASK)
+Index: linux-2.6.22/include/linux/ext4_fs_i.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/ext4_fs_i.h
++++ linux-2.6.22/include/linux/ext4_fs_i.h
+@@ -153,6 +153,10 @@ struct ext4_inode_info {
+ 
+ 	unsigned long i_ext_generation;
+ 	struct ext4_ext_cache i_cached_extent;
++	/*
++	 * File creation time. Its function is same as that of
++	 * struct timespec i_{a,c,m}time in the generic inode.
++	 */
+ 	struct timespec i_crtime;
+ };
+ 
+
+--=-Yj6/pte0b0iSbPhUdoJA--
+
