@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935723AbXGLWO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbXGLWP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935723AbXGLWO4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 18:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbXGLWOt
+	id S932594AbXGLWP2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 18:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761412AbXGLWPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 18:14:49 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:44726 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755592AbXGLWOs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 18:14:48 -0400
-To: pavel@ucw.cz
-CC: miklos@szeredi.hu, nigel@nigel.suspend2.net, rjw@sisk.pl, a1426z@gawab.com,
-       jeremy@goop.org, jbms@cmu.edu, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-reply-to: <20070712091553.GC1866@elf.ucw.cz> (message from Pavel Machek on
-	Thu, 12 Jul 2007 11:15:53 +0200)
-Subject: Re: Hibernation Redesign
-References: <200707081737.21932.a1426z@gawab.com> <200707111350.41806.rjw@sisk.pl> <E1I8amY-00009H-00@dorka.pomaz.szeredi.hu> <200707112200.43613.nigel@nigel.suspend2.net> <E1I8b0l-0000DB-00@dorka.pomaz.szeredi.hu> <20070712091553.GC1866@elf.ucw.cz>
-Message-Id: <E1I96uz-0005Bl-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 13 Jul 2007 00:13:49 +0200
+	Thu, 12 Jul 2007 18:15:08 -0400
+Received: from ns.suse.de ([195.135.220.2]:59468 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761861AbXGLWPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 18:15:06 -0400
+Date: Thu, 12 Jul 2007 15:14:02 -0700
+From: Greg KH <gregkh@suse.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 01/61] Rules on how to use sysfs in userspace programs
+Message-ID: <20070712221402.GA30182@suse.de>
+References: <20070711233021.GA5253@kroah.com> <11841967403365-git-send-email-gregkh@suse.de> <20070712084846.GA1882@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070712084846.GA1882@elf.ucw.cz>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > Freezing of tasks is slowing down suspend.  Don't know how serious
-> > > > this is, suspend is pretty fast, but could possibly be even faster.
-> > > 
-> > > It's FUD. Freezing of tasks normally takes next to no time. I've never 
-> > > understood the rediculously long timeout it has. If freezing succeeds, all 
-> > > processes are frozen within 1/2 a second tops. If it fails, nothing is going 
-> > > to change in the following 19.5 seconds (or whatever it is if I don't 
-> > > remember the value properly).
+On Thu, Jul 12, 2007 at 10:48:46AM +0200, Pavel Machek wrote:
+> On Wed 2007-07-11 16:31:20, Greg Kroah-Hartman wrote:
+> > From: Kay Sievers <kay.sievers@vrfy.org>
 > > 
-> > Right.  The 20s timeout is again a sign of brokenness.
+> > Here's a document to help clear things up.
+> > 
+> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > ---
+> >  Documentation/sysfs-rules.txt |  166 +++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 166 insertions(+), 0 deletions(-)
+> >  create mode 100644 Documentation/sysfs-rules.txt
+> > 
+> > diff --git a/Documentation/sysfs-rules.txt b/Documentation/sysfs-rules.txt
+> > new file mode 100644
+> > index 0000000..42861bb
+> > --- /dev/null
+> > +++ b/Documentation/sysfs-rules.txt
+> > @@ -0,0 +1,166 @@
+> > +Rules on how to access information in the Linux kernel sysfs
+> > +
+> > +The kernel exported sysfs exports internal kernel implementation-details
+> > +and depends on internal kernel structures and layout. It is agreed upon
+> > +by the kernel developers that the Linux kernel does not provide a stable
+> > +internal API. As sysfs is a direct export of kernel internal
+> > +structures, the sysfs interface can not provide a stable interface eighter,
+> > +it may always change along with internal kernel changes.
 > 
-> Well, "scenario 1/2 - simple/tricky deadlock" is a sign of brokenness,
-> too.
+> It is also agreed upon by the kernel developers that the Linux kernel
+> does have a stable user<->kernel API... so we have a small problem
+> here. 
 
-Sure.  But that one hasn't generated a single bug report (and never
-will), because it's so insanely difficult to produce, even if one
-explicitly wants to do that.  It will just never happen accidentally.
+I agree, that is why we have described the proper ways to use /sys in a
+manner that is acceptable to future changes in it.
 
-And even if it happens, there's absolutely no side affects on the rest
-of the system.  You managed to make a process not react to SIGKILL,
-well hurray.  You can do that more easily with ptrace().
+> Maybe solution is to declare /sys unstable, but... perhaps /sys can
+> stop mirroring internal structures? I do not think we should codify
+> our failure to keep /sys stable here.
 
-Miklos
+I think that /sys is to valuable to say it can just never be used by
+userspace programs.  With these suggestions, do you see any problems
+with any potential future changes in the layout that you can come up
+with?
+
+thanks,
+
+greg k-h
