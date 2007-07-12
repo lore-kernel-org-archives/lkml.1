@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935622AbXGLCba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935204AbXGLCmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935622AbXGLCba (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 22:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763584AbXGLCbT
+	id S935204AbXGLCmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 22:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932415AbXGLCmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 22:31:19 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58615 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758128AbXGLCbS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 22:31:18 -0400
-Date: Thu, 12 Jul 2007 12:31:00 +1000
-From: David Chinner <dgc@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linux Memory Management <linux-mm@kvack.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       xfs-oss <xfs@oss.sgi.com>
-Subject: block_page_mkwrite? (Re: fault vs invalidate race (Re: -mm merge plans for 2.6.23))
-Message-ID: <20070712023100.GX12413810@sgi.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <46957BE1.1010104@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46957BE1.1010104@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 11 Jul 2007 22:42:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:59636 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757587AbXGLCmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 22:42:13 -0400
+Message-ID: <469594CB.8090705@goop.org>
+Date: Wed, 11 Jul 2007 19:41:15 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] Add /sys/kernel/notes
+References: <20070712004249.A59D84D0555@magilla.localdomain>
+In-Reply-To: <20070712004249.A59D84D0555@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 10:54:57AM +1000, Nick Piggin wrote:
-> Andrew Morton wrote:
-> > The fault-vs-invalidate race fix.  I have belatedly learned that these 
-> > need
-> > more work, so their state is uncertain.
-> 
-> The more work may turn out being too much for you (although it is nothing
-> exactly tricky that would introduce subtle bugs, it is a fair amont of 
-> churn).
+Roland McGrath wrote:
+> The earlier patches in this series change the linker script to place it
+> appropriately and set the phdr.  It's allocated when its input sections are
+> allocated.  Current builds I've seen don't have any input note sections at
+> all.  My motivation is for the ld --build-id support, which generates an
+> allocated note section as if it were input.
+>   
 
-OK, so does that mean we can finally get the block_page_mkwrite
-patches merged?
+OK, I see.
 
-i.e.:
+>> I have a patch to always do this, and also convert all the note 
+>> generation to C code rather than asm.  If your patch works for you, 
+>> however, it should be completely orthogonal.
+>>     
+>
+> What note generation do you mean?  The only explicit notes in asm that I
+> know of are in the vDSO images, not in vmlinux.  This patch has nothing to
+> do with any vDSO image's generation.
+>   
 
-http://marc.info/?l=linux-kernel&m=117426058311032&w=2
-http://marc.info/?l=linux-kernel&m=117426070111136&w=2
+I'm adding other notes for Xen, so I have some in my tree.  But the vdso 
+ones could also be generated in C rather than asm.   I'm not sure what 
+stage the patch to convert vsyscall-notes to using linux/elfnote.h is 
+at; I think its in Andi's tree.
 
-I've got up-to-date versions of them ready to go and they've been
-consistently tested thanks to the XFSQA test I wrote for the bug
-that it fixes. I've been holding them out-of-tree for months now
-because ->fault was supposed to supercede this interface.....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+    J
