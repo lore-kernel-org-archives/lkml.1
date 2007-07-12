@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935591AbXGLVcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935673AbXGLVcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935591AbXGLVcU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 17:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757909AbXGLVcK
+	id S935673AbXGLVcz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 17:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbXGLVcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 17:32:10 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:37071 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757843AbXGLVcI (ORCPT
+	Thu, 12 Jul 2007 17:32:45 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:60226 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757909AbXGLVco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 17:32:08 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: v2.6.22.1-rt1
-Date: Thu, 12 Jul 2007 23:31:52 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070712121355.GA10949@elte.hu> <200707121645.46206.mgd@technosis.de> <20070712160139.GB8252@elte.hu>
-In-Reply-To: <20070712160139.GB8252@elte.hu>
+	Thu, 12 Jul 2007 17:32:44 -0400
+Date: Thu, 12 Jul 2007 22:32:41 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: npiggin@suse.de, kenchen@google.com, jschopp@austin.ibm.com,
+       apw@shadowen.org, kamezawa.hiroyu@jp.fujitsu.com,
+       a.p.zijlstra@chello.nl, y-goto@jp.fujitsu.com, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans -- anti-fragmentation
+Message-ID: <20070712213241.GA7279@skynet.ie>
+References: <20070710102043.GA20303@skynet.ie> <20070712122925.192a6601.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1240844.KQ6A0WQCvD";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707122332.04193.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1184275928;bb3c151d;
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070712122925.192a6601.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1240844.KQ6A0WQCvD
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On (12/07/07 12:29), Andrew Morton didst pronounce:
+> On Tue, 10 Jul 2007 11:20:43 +0100
+> mel@skynet.ie (Mel Gorman) wrote:
+> 
+> > > create-the-zone_movable-zone.patch
+> > > allow-huge-page-allocations-to-use-gfp_high_movable.patch
+> > > handle-kernelcore=-generic.patch
+> > > 
+> > >  Mel's moveable-zone work.  In a similar situation.  We need to stop whatever
+> > >  we're doing and get down and work out what we're going to do with all this
+> > >  stuff.
+> > > 
+> > 
+> > Whatever about grouping pages by mobility, I would like to see these go
+> > through. They have a real application for hugetlb pool resizing where the
+> > administrator knows the range of hugepages that will be required but doesn't
+> > want to waste memory when the required number of hugepages is small. I've
+> > cc'd Kenneth Chen as I believe he has run into this problem recently where
+> > I believe partitioning memory would have helped. He'll either confirm or deny.
+> 
+> Still no decision here, really.
+> 
+> Should we at least go for
+> 
+> add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
+> create-the-zone_movable-zone.patch
+> allow-huge-page-allocations-to-use-gfp_high_movable.patch
+> handle-kernelcore=-generic.patch
+> 
+> in 2.6.23?
 
-> > > to build a 2.6.22.1-rt1 tree, the following patches should be applied:
-> > > =A0
-> > > =A0 =A0http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
-> > > =A0 =A0http://redhat.com/~mingo/realtime-preempt/patch-2.6.22.1-rt1
-> >=20
-> > I get a compile error on my x86_64 dualcore sytem.
->=20
-> could you check it builds fine with -rt2?
+Well, yes please from me obviously :) . There is one additional patch
+I would like to send on tomorrow and that is providing the movablecore=
+switch as well as kernelcore=. This is based on Nick's feedback where he
+felt the configuration item might be not be the ideal in all situations -
+Yasunori Goto agreed with him. I've posted a candidate patch and Andy had
+a minor problem with it that I will correct.
 
-It builds fine now with -rt2.
+While I would of course like grouping pages by mobility to go in as well,
+I recognise that it probably needs a resubmission to -mm so people can take
+another look in the next cycle.
 
-Thanks, best wishes,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
+On the positive side with just these patches, they gain us a few things;
 
---nextPart1240844.KQ6A0WQCvD
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+1. A zone where the huge page pool can likely grow to at runtime. On
+batch systems between jobs, the next job owner could grow the pool to
+the size of ZONE_MOVABLE with reasonable reliability. This means an
+administrator can set the zone to be a given size and let users decide
+for themselves what size the hugepage pool will be. This gives us a
+fairly reliable pool without the downside of wasting memory. Talking
+to Kenneth Chen at OLS led me to believe that this would be a useful
+feature in real world situations. He's been quite at the moment so
+hopefully this will nudge him into saying something.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+2. It does help the memory unplug case to some extent. The page
+isolation code in that patchset does depend on grouping pages by
+mobility but I could cut down grouping pages by mobility to *just* the
+parts they need as a starting point
 
-iD8DBQBGlp3UUYYhyuxDQc4RArnNAJ96App9OeaOrW7i6SmCo/qF5fjGDACgjVis
-v+7dIJDSH6aTjGz5qsEva40=
-=zQWo
------END PGP SIGNATURE-----
+3. In contrast to grouping pages by mobility, you know well in advance how
+many hugepages are likely to be allocated. The success rates of grouping
+pages by mobility on it's own is workload dependant.
 
---nextPart1240844.KQ6A0WQCvD--
+4. The zone is lower risk than grouping pages by mobility. It's less
+complicated, the complexity is at the side and the code at runtime is the
+same as todays.
+
+So it's lower risk than grouping pages by mobility, has predictable behaviour
+and helps some cases.  As Nick points out as well, we can see how far we can
+get with just this reserve zone without taking the full plunge with grouping
+pages by mobility.
+
+Hopefully other people will throw their 2 cents in here too.
+
+Thanks
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
