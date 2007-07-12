@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935861AbXGLBBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937516AbXGLBDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935861AbXGLBBy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 21:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761823AbXGLBBq
+	id S937516AbXGLBDV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 21:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759025AbXGLBDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 21:01:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51877 "EHLO mx1.redhat.com"
+	Wed, 11 Jul 2007 21:03:12 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44768 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761779AbXGLBBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 21:01:45 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove CHILD_MAX
-Message-Id: <20070712010110.120F14D0555@magilla.localdomain>
-Date: Wed, 11 Jul 2007 18:01:10 -0700 (PDT)
+	id S1756532AbXGLBDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 21:03:11 -0400
+Date: Wed, 11 Jul 2007 18:03:08 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, dipankar@in.ibm.com, josht@linux.vnet.ibm.com,
+       akpm@linux-foundation.org
+Subject: [PATCH] Remove workaround for unimmunized rcu_dereference from mce_log()
+Message-ID: <20070712010308.GA1605@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070712010058.GA30869@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070712010058.GA30869@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The CHILD_MAX macro in limits.h should not be there.  It claims to be the
-limit on processes a user can own, but its value is wrong for that.
-There is no constant value, but a variable resource limit (RLIMIT_NPROC).
-Nothing in the kernel uses CHILD_MAX.
+Remove the rmb() from mce_log(), since the immunized version of
+rcu_dereference() makes it unnecessary.
 
-The proper thing to do according to POSIX is not to define CHILD_MAX at all.
-The sysconf (_SC_CHILD_MAX) implementation works by calling getrlimit.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/limits.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/limits.h b/include/linux/limits.h
-index c4b4e57..2d0f941 100644
---- a/include/linux/limits.h
-+++ b/include/linux/limits.h
-@@ -5,7 +5,6 @@
- 
- #define NGROUPS_MAX    65536	/* supplemental group IDs are available */
- #define ARG_MAX       131072	/* # bytes of args + environ for exec() */
--#define CHILD_MAX        999    /* no limit :-) */
- #define LINK_MAX         127	/* # links a file may have */
- #define MAX_CANON        255	/* size of the canonical input queue */
- #define MAX_INPUT        255	/* size of the type-ahead buffer */
+ mce.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+diff -urpNa -X dontdiff linux-2.6.22-volrcud/arch/x86_64/kernel/mce.c linux-2.6.22-volrcud-mcefix/arch/x86_64/kernel/mce.c
+--- linux-2.6.22-volrcud/arch/x86_64/kernel/mce.c	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.22-volrcud-mcefix/arch/x86_64/kernel/mce.c	2007-07-11 17:22:06.000000000 -0700
+@@ -67,9 +67,6 @@ void mce_log(struct mce *mce)
+ 	wmb();
+ 	for (;;) {
+ 		entry = rcu_dereference(mcelog.next);
+-		/* The rmb forces the compiler to reload next in each
+-		    iteration */
+-		rmb();
+ 		for (;;) {
+ 			/* When the buffer fills up discard new entries. Assume
+ 			   that the earlier errors are the more interesting. */
