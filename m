@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXGLPJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764758AbXGLPOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932579AbXGLPJg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 11:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbXGLPJ2
+	id S1764758AbXGLPOK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 11:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbXGLPNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 11:09:28 -0400
-Received: from main.gmane.org ([80.91.229.2]:35682 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756507AbXGLPJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 11:09:28 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-Mail-Followup-To: linux-kernel@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-From: Oleg Verych <for.gmane@flower.upol.cz>
-Subject: Re: [PATCH] mkmakefile: include ARCH on O= builds
-Date: Thu, 12 Jul 2007 15:09:11 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department.
-Message-ID: <slrnf9chpn.l6.for.gmane@flower.upol.cz>
-References: <Pine.LNX.4.58.0707120331530.28774@be1.lrz>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-Mail-Copies-To: never
-X-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	Thu, 12 Jul 2007 11:13:54 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57606 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757483AbXGLPNx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 11:13:53 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Mike Anderson <andmike@us.ibm.com>,
+       netdev@vger.kernel.org
+Subject: Re: [2.6.23 PATCH 14/18] dm: netlink add to core
+References: <20070711210159.GF24114@agk.fab.redhat.com>
+	<20070711143423.36722a41.akpm@linux-foundation.org>
+Date: Thu, 12 Jul 2007 09:07:07 -0600
+In-Reply-To: <20070711143423.36722a41.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Wed, 11 Jul 2007 14:34:23 -0700")
+Message-ID: <m1bqehfyp0.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bodo Eggert "Thu, 12 Jul 2007 03:40:04 +0200 (CEST)"
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> If you build using O=builddir ARCH=bar, you'll currently need to supply
-> ARCH= on builds from the builddir, too. With this patch, the generated
-> Makefile will do that instead.
-
-I've sent such thing at least twice.
-
-But now i'm thinking about kbuild/kconfig rewrite instead.
-
-> make ARCH= will still override the Makefile default, allowing existing 
-> scripts to work correctly.
+> On Wed, 11 Jul 2007 22:01:59 +0100
+> Alasdair G Kergon <agk@redhat.com> wrote:
 >
-> Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
-____
+>> From: Mike Anderson <andmike@us.ibm.com>
+>> 
+>> This patch adds support for the dm_path_event dm_send_event funtions which
+>> create and send netlink attribute events.
+>> 
+>> ...
+>>
+>> --- linux.orig/drivers/md/dm-netlink.c 2007-07-11 21:37:50.000000000 +0100
+>> +++ linux/drivers/md/dm-netlink.c	2007-07-11 21:37:51.000000000 +0100
+>> @@ -40,6 +40,17 @@ struct dm_event_cache {
+>>  
+>>  static struct dm_event_cache _dme_cache;
+>>  
+>> +struct dm_event {
+>> +        struct dm_event_cache *cdata;
+>> +        struct mapped_device *md;
+>> +        struct sk_buff *skb;
+>> +        struct list_head elist;
+>> +};
+>> +
+>> +static struct sock *_dm_netlink_sock;
+>> +static uint32_t _dm_netlink_daemon_pid;
+>> +static DEFINE_SPINLOCK(_dm_netlink_pid_lock);
+>
+> The usage of this lock makes my head spin a bit.  It's a shame it wasn't
+> documented.
+>
+> There's obviously something very significant happening with process IDs in
+> here.  A description of the design would be helpful.  Especially for the
+> containerisation guys who no doubt will need to tear their hair out over it
+> all ;)
 
+Andrew this actually has nothing to do with process IDs.  The pid
+referred to here is the netlink port number. It just happens to be called
+a pid.
+
+In this case netlink is being used to simply broadcast events.
+
+I may be a little off but looking at the events types defined.
+device down, device up.  Defining a completely new interface for this
+looks absolutely absurd.
+
+
+This is device hotplug isn't it?   As such we should be using the
+hotplug infrastructure and not reinventing the wheel here.
+
+If it isn't hotplug it looks like something that inotify should
+handle.
+
+If that isn't the case I am fairly certain that md already has a
+mechanism to handle this, and those two should stay in sync
+if at all possible on this kind of thing.
+
+So this appears to be a gratuitous user interface addition.
+Why do we need a new user interface for this?
+
+Eric
