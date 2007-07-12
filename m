@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762074AbXGLJk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762669AbXGLJqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762074AbXGLJk0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 05:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbXGLJkT
+	id S1762669AbXGLJqJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 05:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbXGLJpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 05:40:19 -0400
-Received: from server78.greatnet.de ([83.133.96.102]:44640 "EHLO
-	server78.greatnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754575AbXGLJkR (ORCPT
+	Thu, 12 Jul 2007 05:45:55 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:53082 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755292AbXGLJpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 05:40:17 -0400
-Message-ID: <4695F726.7030203@nachtwindheim.de>
-Date: Thu, 12 Jul 2007 11:40:54 +0200
-From: Henne <henne@nachtwindheim.de>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: len.brown@intel.com, linux-acpi@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][ACPI][BUTTON] remove procfs-interface
-References: <4695ED3F.7020303@nachtwindheim.de> <1184230838.2720.5.camel@laptopd505.fenrus.org>
-In-Reply-To: <1184230838.2720.5.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jul 2007 05:45:54 -0400
+Date: Thu, 12 Jul 2007 13:46:06 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Bob Tracy <rct@gherkin.frus.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.22-rc6 bad page error
+Message-ID: <20070712134606.A10012@jurassic.park.msu.ru>
+References: <20070709185324.387ACDBA1@gherkin.frus.com> <Pine.LNX.4.64.0707102120550.7594@blonde.wat.veritas.com> <20070711170245.A1148@jurassic.park.msu.ru> <Pine.LNX.4.64.0707111743580.22786@blonde.wat.veritas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+In-Reply-To: <Pine.LNX.4.64.0707111743580.22786@blonde.wat.veritas.com>; from hugh@veritas.com on Wed, Jul 11, 2007 at 06:07:59PM +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
+On Wed, Jul 11, 2007 at 06:07:59PM +0100, Hugh Dickins wrote:
+> > +	gfp &= ~GFP_DMA;
+> 
+> The canonical form for this masking, even on arches without HIGHMEM,
+> appears to be:
+> 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
+> But I guess that won't make any actual difference.
 
-> On Thu, 2007-07-12 at 10:58 +0200, Henne wrote:
->   
->> Removes the proc_fs interface from the ACPI button driver.
->> Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
->>
->> ---
->>     
->
-> you forgot to say why.....
->
->
->   
-First, because refering to /Documentation/feature-removal-schedule.txt it should be done:
+As far as I can see, none of 64-bit architectures masks the HIGHMEM
+(or any other) bits. It's just not obvious because most of their
+"alloc_coherent" routines are hidden in iommu_ops or something like that.
 
->What:   /proc/acpi/button
->When:   August 2007
->Why:    /proc/acpi/button has been replaced by events to the input layer
->        since 2.6.20.
->Who:    Len Brown <len.brown@intel.com>
+> > +	return __pci_alloc_consistent(dev, size, dma, GFP_ATOMIC);
+> 
+> I was going to ask you why that needs to be GFP_ATOMIC on Alpha.
+> But find you're following the example of asm-generic and others.
+> So really should be asking Sparc how it gets away with GFP_KERNEL.
 
-Second, refering to /Documentation/feature-removal-schedule.txt
- 
->What:   ACPI procfs interface
->When:   July 2007
->Why:    After ACPI sysfs conversion, ACPI attributes will be duplicated
->        in sysfs and the ACPI procfs interface should be removed.
->Who:    Zhang Rui <rui.zhang@intel.com>
+According to DMA-mapping.txt GFP_ATOMIC is mandatory for
+pci_alloc_consistent() since it can be called from interrupt context.
+So sparc code is probably incorrect...
 
-The button driver uses acpi_root_dir which won't be available if acpi is removed this month.
-That would lead to errors, I think.
-
-
-
+Ivan.
