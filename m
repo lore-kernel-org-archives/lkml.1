@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763184AbXGLUEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764030AbXGLUG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763184AbXGLUEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 16:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbXGLUEQ
+	id S1764030AbXGLUG0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 16:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbXGLUGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 16:04:16 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41737 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755189AbXGLUEP (ORCPT
+	Thu, 12 Jul 2007 16:06:17 -0400
+Received: from smtp.andrew.cmu.edu ([128.2.10.83]:56474 "EHLO
+	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbXGLUGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 16:04:15 -0400
-Date: Thu, 12 Jul 2007 21:03:34 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Marcos David <marcosgdavid.ml@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: /proc/pid/status -> VmLib: 4294948464 kB
-In-Reply-To: <2ca024a80707121116i3574e2e2k7783bdb591b571b1@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707122056440.6384@blonde.wat.veritas.com>
-References: <2ca024a80707121114k530cf0f0wa79d4b40cc1cb375@mail.gmail.com>
- <2ca024a80707121116i3574e2e2k7783bdb591b571b1@mail.gmail.com>
+	Thu, 12 Jul 2007 16:06:17 -0400
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Mark Lord <lkml@rtr.ca>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, david@lang.hm,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Huang\, Ying" <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<200707121446.14170.rjw@sisk.pl> <469631FA.2070405@rtr.ca>
+	<200707121735.40077.rjw@sisk.pl> <469650DE.4000901@rtr.ca>
+	<46965837.8030907@rtr.ca>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Thu, 12 Jul 2007 16:05:31 -0400
+In-Reply-To: <46965837.8030907@rtr.ca> (Mark Lord's message of "Thu\, 12 Jul
+	2007 12\:35\:03 -0400")
+Message-ID: <87y7hl2xro.fsf@jbms.ath.cx>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-721708450-1184270614=:6384"
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAAmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbWFyY29zZ2RhdmlkLm1sQGdtYWlsLmNvbQA=
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Mark Lord <lkml@rtr.ca> writes:
 
---8323584-721708450-1184270614=:6384
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+[snip]
 
-On Thu, 12 Jul 2007, Marcos David wrote:
-> Hi,
-> I=C2=B4m using RedHat Enterprise Server 4 Update 3 (kernel 2.6.9-34.ELsmp=
-)
->=20
-> I was listing the contents of /proc/pid/status file and I came up with
-> a value of:
-> ...
-> VmLib: 4294948464 kB,
-> ...
->=20
-> Is this a known bug?
-> the process in question uses a lot of threads ~100 but there are no
-> memory leaks...
->=20
-> Any help would be appreciated.
+> Whoops.. wrong half of the script.
+> For TuxOnIce in 10 seconds, it does this:
 
-Yes, it's known, I sent two patches to fix it
-=09[PATCH] VmLib wrapped: executable brk
-=09[PATCH] VmLib wrapped: mprotect flags
-on 28 Nov 2004, and those were included in 2.6.10.
+[snip]
 
-It's just an ugliness in the numbers shown, doesn't affect how the
-kernel runs: so Red Hat have not bothered to fix it in their update.
+I'd argue that for most usage patterns, it doesn't matter all that much
+how long it takes to hibernate and power off the system.  What really
+matter is that it is extremely reliable, and how fast it takes to
+resume.
 
-Hugh
---8323584-721708450-1184270614=:6384--
+The reason for this is as follows:
+
+A typical usage pattern of hibernate on a laptop is to shut the lid,
+causing the system to start to hibernate, and to place the machine in
+the bag.  This is fine, as long as you aren't too rough moving it into
+the bag, and the hibernation is extremely reliable (i.e. there is no
+chance that it fails to hibernate, and remains powered on.)  Presumably
+some additional userspace logic could help here, like start beeping
+loudly if the hibernate fails, or perhaps just initiate a shut down, to
+avoid the machine overheating in the bag.
+
+Note that in this usage pattern, it doesn't matter how long it takes to
+hibernate, because you don't actually wait for it to finish.  The only
+waiting occurs when you turn it on, and the resume path should be
+essentially exactly the same under kexec hibernate as with the existing
+hibernate.
+
+Thus, if kexec hibernate improves reliability (as it might, given that
+it eliminates the need for the freezer), it may be worth the slightly
+increased hibernate time.  I think the actual amount of extra time it
+will take may be very small; a stripped down kernel may only take a
+second or two to initialize.
+
+-- 
+Jeremy Maitin-Shepard
