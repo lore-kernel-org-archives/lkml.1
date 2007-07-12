@@ -1,98 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbXGLHJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760758AbXGLHPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760580AbXGLHJN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 03:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXGLHI7
+	id S1760758AbXGLHPa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 03:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbXGLHPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 03:08:59 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:37166
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752679AbXGLHI6 (ORCPT
+	Thu, 12 Jul 2007 03:15:17 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:45729 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753881AbXGLHPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 03:08:58 -0400
-Date: Thu, 12 Jul 2007 00:03:24 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Huang, Ying" <ying.huang@intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base	hibernation
-In-Reply-To: <1184251423.9346.55.camel@caritas-dev.intel.com>
-Message-ID: <Pine.LNX.4.64.0707112345250.28090@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> 
- <20070711172243.ab44c4d4.akpm@linux-foundation.org>
- <1184251423.9346.55.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 12 Jul 2007 03:15:14 -0400
+Date: Thu, 12 Jul 2007 09:15:29 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Yinghai.Lu@Sun.COM, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       rientjes@google.com, Christoph Lameter <clameter@sgi.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/5] try parent numa_node at first before using default
+Message-ID: <20070712091529.2b914ece@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <4695C088.7000606@s5r6.in-berlin.de>
+References: <200707101641.17672.yinghai.lu@sun.com>
+	<200707101652.31378.yinghai.lu@sun.com>
+	<4694B702.2050507@s5r6.in-berlin.de>
+	<20070711210833.GA22745@kroah.com>
+	<46954B92.8000407@sun.com>
+	<46959651.1050400@s5r6.in-berlin.de>
+	<4695998C.8090100@sun.com>
+	<4695C088.7000606@s5r6.in-berlin.de>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007, Huang, Ying wrote:
+On Thu, 12 Jul 2007 07:47:52 +0200,
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> On Wed, 2007-07-11 at 17:22 -0700, Andrew Morton wrote:
->> This sounds awesome.  Am I correct in expecting that ultimately the
->> existing hibernation implementation just goes away and we reuse (and hence
->> strengthen) the existing kexec (and kdump?) infrastructure?
->> And that we get hibernation support almost for free on all kexec (and
->> relocatable-kernel?) capable architectures?
->> And that all the management of hibernation and resume happens in userspace?
->
-> Yes. Ultimately, most of the hibernation code such as process freezer,
-> memory shrinking, memory snapshot (atomic copy), image reading/writing
-> can go away, because kexec based hibernation doesn't depend on them.
-> Just the device/CPU state quiescent/save/restore is necessary to remain.
+> The patch does nothing for all subsystems which do
+> 
+> 	device_initialize(&dev);
+> 	dev->parent = pd;
+> 	device_add(&dev);
+> 
+> Let's avoid to add infrastructure which does nothing, or only does
+> something by accident.
 
-and the device/CPU quiesent/save/restore/sleep/wakeup functions are needed 
-for suspend-to-ram and low-power mode.
+I agree. dev->parent now is only expected to be set in device_add(),
+not in device_initialize(), so the sequence above is perfectly fine.
+(Why should you need it, anyway? parent information becomes necessary
+only when something is added to the tree.)
+> 
+> The alternatives are:
+> 
+>   - Change all subsystems to set dev->parent before device_initialize().
+>     *Document* that the device_initialize() API has this requirement.
+>     This is counter-intuitive, amounts to some work across the kernel,
+>     and could be gotten wrong again in future code because it's a
+>     counter-intuitive API.
 
-> And, the management of hibernation and resume will happen in userspace.
->
->>
->> I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI must
->> be disabled in the to-be-hibernated kernel, or in the little transient
->> kexec kernel?
->
-> Under current implementation of device state quiescent/save/restore, the
-> CONFIG_ACPI must be turned off both in to-be-hibernated kernel and
-> transient kexec kernel.
->
-> But the hibernation people are going to separate the device suspend from
-> device hibernate. The device hibernate will put device in quiescent
-> state but not in low power state. When this is done, it is not necessary
-> to disable CONFIG_ACPI at all. It is just a workaround for current
-> implementation that disabling CONFIG_ACPI.
->
->> How close do you think all this is to being a viable thing?
->
-> The kexec jump is the first step, maybe the simplest step. There are
-> many other issues to be resolved, at least the following ones.
->
-> 1. Separate device suspend from device hibernate.
+Yes. We shouldn't do that.
+> 
+>   - Move your code from device_initialize() to device_add().  One minor
+>     drawback is that node-specific allocations based on the device's
+>     numa_node would not be optimized before device_add(), but there is
+>     probably no need for this.  Driver probes come after device_add().
 
-you shouldn't need a device hibernate, hibernate will be a system 
-shutdown.
+I'd expect most allocations to be done when probing, so this shouldn't
+hurt much.
+> 
+>   - Let subsystems explicitly call set_dev_node() on their own.
+> 
+> 
+> Also keep in mind that either device_move() should update the numa_node,
+> or the subsystems which call device_move() should explicitly update it
+> on their own.   (Unless they know that their devices will always stay at
+> the same NUMA node even when switching parents.)
 
-> 2. Do not reserve memory for kexec kernel. That is, backup needed memory
-> before kexec and restore them after kexec.
-> 3. Support the in-place kexec? The relocatable kernel is not necessary
-> if this can be implemented.
-> 4. Image writing/reading. (Only user space application is needed).
-> 5. A smooth resume process. Maybe it is not needed to kexec a new kernel
-> for resume. For example, in the first stage of kernel boot, just first
-> 16M (or a little more) RAM is used, if the resume image is found, the
-> saved kernel image is resumed; if the resume image is not found, turn on
-> the remaining RAM. This will depends on 3.
-> 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
-> be hibernate/resume by the normal kernel too. This way, a real
-> kexec/boot-up is only needed for the first time.
-
-the hibernate kernel shouldn't need a lot of the features of the standard 
-kerneel (does it really need sound for example), and if tailored even 
-tighter could be configured to only have the drivers actually used for the 
-save and restore, makeing a _very_ minimal kernel (no USB, no network, 
-only simple video drivers, etc) greatly speeding up the boot
-
-David Lang
-
+I'd trust the subsystems to know best whether something regarding NUMA
+changed.
