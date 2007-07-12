@@ -1,126 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbXGLR45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbXGLR6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760287AbXGLR45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXGLR4s
+	id S1760857AbXGLR6j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbXGLR62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:56:48 -0400
-Received: from eastrmmtao101.cox.net ([68.230.240.7]:55564 "EHLO
-	eastrmmtao101.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760282AbXGLR4q (ORCPT
+	Thu, 12 Jul 2007 13:58:28 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33021
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754796AbXGLR60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:56:46 -0400
-X-Greylist: delayed 1737 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 13:56:46 EDT
-Message-ID: <15366.199.125.14.2.1184261266.squirrel@localmail-dr.mcsimons.com>
-Date: Thu, 12 Jul 2007 12:27:46 -0500 (CDT)
-Subject: reiserfs fs/reiserfs/bitmap.c:1287
-From: "Anthony Simons" <tony@tvortex.net>
-To: linux-kernel@vger.kernel.org
-Reply-To: tony@tvortex.net
-User-Agent: SquirrelMail/1.4.9a
+	Thu, 12 Jul 2007 13:58:26 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Subject: Re: Documentation of kernel messages (Summary)
+Date: Thu, 12 Jul 2007 13:35:54 -0400
+User-Agent: KMail/1.9.6
+Cc: "Gerrit Huizenga" <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
+       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
+       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
+References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
+In-Reply-To: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Disposition: inline
+Message-Id: <200707121335.55817.rob@landley.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Was decompressing a newly compiled kernel to my usb drive and received the
-below error almost immediatly after I began.
+On Thursday 12 July 2007 9:53:54 am Li Yang-r58472 wrote:
+> > Fielding patches and questions sounds like plenty to me...)
+>
+> I do think the documentation translation is very necessary even when
+> there is a language maintainer, especially for the policy documents as
+> HOWTO, codestyle , and etc.  The contributors should go through these
+> policies and check their code for compliance before going to the
+> language maintainer for help, or there will be too much for the language
+> maintainer to translate.  The language maintainer doesn't need to
+> translate all the documents himself, but he can help to coordinate the
+> translation effort and help to make it update to date.
 
-[tonys@squishy ~]$ uname -a
-Linux squishy 2.6.21-1.3228.fc7 #1 SMP Tue Jun 12 15:37:31 EDT 2007 i686
-i686 i386 GNU/Linux
+It would help if all the policy documents got grouped into a single 
+Documentation/development directory so we could separate "policy documents in 
+each language would be nice" from "that document about the amiga zorro bus 
+really needs to be kept up-to-date in Navajo and that should be in the kernel 
+tarball please".
 
-After I recive the error, a simple ls just won't work.
+Lemme see, which ones are we talking about?  The candidates are:
+  applying-patches.txt
+  BUG-HUNTING
+  Changes
+  CodingStyle
+  debugging-modules.txt
+  feature-removal-schedule.txt
+  HOWTO
+  kernel-docs.txt
+  language-maintainers.txt
+  ManagementStyle
+  oops-tracing.txt
+  SecurityBugs
+  sparse.txt
+  stable_api_nonsense.txt
+  stable_kernel_rules.txt
+  SubmitChecklist
+  SubmittingDrivers
+  SubmittingPatches
+  volatile-considered-harmful.txt
 
+That's everything I noticed in the top level directory that's a good candidate 
+to be grouped into a "development" subdirectory.  Did I miss anything?
 
-------------[ cut here ]------------
-kernel BUG at fs/reiserfs/bitmap.c:1287!
-invalid opcode: 0000 [#1]
-SMP
-last sysfs file: /block/sdb/size
-Modules linked in: ext2 usb_storage nvidia(P)(U) autofs4 hidp rfcomm l2cap
-bluetooth sunrpc cpufreq_ondemand acpi_cpufreq ext3 jbd mbcache dm_mirror
-dm_multipath dm_mod video sbs i2c_ec button dock battery ac ipv6 lp loop
-parport_pc parport arc4 ecb blkcipher rc80211_simple irda snd_intel8x0m
-crc_ccitt bcm43xx_mac80211 ssb iTCO_wdt mac80211 snd_intel8x0
-iTCO_vendor_support snd_ac97_codec serio_raw cfg80211 tg3 ac97_bus
-snd_seq_dummy i2c_core snd_seq_oss fw_ohci fw_core sr_mod cdrom
-snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss joydev
-snd_pcm snd_timer snd soundcore snd_page_alloc sg ata_generic ata_piix
-libata sd_mod scsi_mod reiserfs ehci_hcd ohci_hcd uhci_hcd
-CPU:    0
-EIP:    0060:[<f88a306c>]    Tainted: P       VLI
-EFLAGS: 00210246   (2.6.21-1.3228.fc7 #1)
-EIP is at reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
-eax: e6461000   ebx: f8896314   ecx: 00000000   edx: e6460ffc
-esi: f5a54668   edi: 00000000   ebp: 000000c5   esp: e4a2dd78
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process tar (pid: 6860, ti=e4a2d000 task=e528e710 task.ti=e4a2d000)
-Stack: f5a54668 0018a000 e4bede00 f88a313d 00000400 04040404 e4bede00
-e4bede00
-       f8896000 f8896314 e4bede00 d71cbe00 d71cbe60 f88a36d4 fffffff4
-000041ed
-       00000000 f88adbde eab6be0c e6394950 00000001 e3af31d0 e4bede00
-d71cbe60
-Call Trace:
- [<f88a313d>] reiserfs_read_bitmap_block+0xc9/0xd3 [reiserfs]
- [<f88a36d4>] reiserfs_choose_packing+0x4a/0x78 [reiserfs]
- [<f88adbde>] reiserfs_new_inode+0xb8/0x826 [reiserfs]
- [<f88c35e7>] do_journal_begin_r+0x73/0x28d [reiserfs]
- [<c04850e3>] d_splice_alias+0xdd/0xe3
- [<f88c389a>] journal_begin+0x99/0xd0 [reiserfs]
- [<f88a9a79>] reiserfs_mkdir+0x183/0x2c2 [reiserfs]
- [<f88c6e0b>] reiserfs_permission+0x0/0x1e [reiserfs]
- [<c047bd7c>] vfs_mkdir+0xbd/0x125
- [<c047e226>] sys_mkdirat+0x88/0xba
- [<c0450fcd>] audit_syscall_exit+0x294/0x2b0
- [<c0450d0f>] audit_syscall_entry+0x10d/0x137
- [<c047e277>] sys_mkdir+0x1f/0x23
- [<c0404f70>] syscall_call+0x7/0xb
- =======================
-Code: 00 00 0f a3 0a 19 c0 85 c0 75 0a 66 ff 43 02 8d 04 39 66 89 03 49 83
-f9 ff 75 e7 8b 46 18 83 ea 04 39 c2 73 ba 66 83 3b 00 75 04 <0f> 0b eb fe
-5b 5e 5f c3 55 89 d5 57 89 c7 56 53 83 ec 14 8b 90
-EIP: [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
-SS:ESP 0068:e4a2dd78
-BUG: warning at kernel/exit.c:798/do_exit() (Tainted: P      )
- [<c04294f3>] do_exit+0x54/0x6d3
- [<c040655c>] die+0x21b/0x240
- [<c0406967>] do_invalid_op+0x0/0xab
- [<c0406a09>] do_invalid_op+0xa2/0xab
- [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
- [<f88e378d>] scsi_request_fn+0x2d3/0x31d [scsi_mod]
- [<c04d9a27>] blk_remove_plug+0x58/0x64
- [<c042d6e7>] getnstimeofday+0x30/0xb6
- [<c04394c4>] ktime_get_ts+0x16/0x44
- [<c0454c38>] delayacct_end+0x70/0x77
- [<c0454d26>] __delayacct_blkio_end+0x5b/0x5e
- [<c0600b39>] __wait_on_bit+0x50/0x58
- [<c0601a84>] error_code+0x7c/0x84
- [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
- [<f88a313d>] reiserfs_read_bitmap_block+0xc9/0xd3 [reiserfs]
- [<f88a36d4>] reiserfs_choose_packing+0x4a/0x78 [reiserfs]
- [<f88adbde>] reiserfs_new_inode+0xb8/0x826 [reiserfs]
- [<f88c35e7>] do_journal_begin_r+0x73/0x28d [reiserfs]
- [<c04850e3>] d_splice_alias+0xdd/0xe3
- [<f88c389a>] journal_begin+0x99/0xd0 [reiserfs]
- [<f88a9a79>] reiserfs_mkdir+0x183/0x2c2 [reiserfs]
- [<f88c6e0b>] reiserfs_permission+0x0/0x1e [reiserfs]
- [<c047bd7c>] vfs_mkdir+0xbd/0x125
- [<c047e226>] sys_mkdirat+0x88/0xba
- [<c0450fcd>] audit_syscall_exit+0x294/0x2b0
- [<c0450d0f>] audit_syscall_entry+0x10d/0x137
- [<c047e277>] sys_mkdir+0x1f/0x23
- [<c0404f70>] syscall_call+0x7/0xb
- =======================
+I note that Changes is a bit stale in places (16 bit assembly?), 
+feature-removal-schedule.txt changes often but is good to know, 
+kernel-docs.txt might be useless to translate considering it's mostly links 
+to english documentation, language-maintainers.txt is assuming my patch from 
+earlier today gets accepted...
 
+I can submit a patch grouping all that stuff together into a subdirectory if 
+it would help...
 
+> If we do need a contact person, I can do it.  However I don't think
+> there will be much translation work to do here.  As I stated before,
+> most Chinese programmers are more or less capable of read/write
+> technical English.  The difficult part is to let them know the benefit
+> of merging code in kernel and teach them how to do it.  That's why the
+> policy documents in native language will be very useful.
 
+Does the above look like a good list?  There are more that need to be written, 
+but that's what I saw in Documentation...
+
+Rob
+
+P.S.  Dear kmail/postfix developers: having a transient DNS lookup failure on 
+one address in a long cc: list is _NOT_ a reason to have the message stay in 
+the kmail outbox.  It should go into the postfix send queue and be retried 
+from there.  Right now, if I tell it to resend, how do I know who it has and 
+hasn't been successfully distributed to on the first attempt?  I've gotten 
+dinged for trimming the cc: list before, but now I'm about to send out 
+duplicates.  Wheee...
 -- 
-Anthony Simons
-Council Bluffs, IA 51501
-(402)689-6573
-
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
