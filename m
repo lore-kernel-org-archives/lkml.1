@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934822AbXGLOQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934722AbXGLOTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934822AbXGLOQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 10:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933048AbXGLOQX
+	id S934722AbXGLOTJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 10:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932741AbXGLOS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 10:16:23 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4627 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763731AbXGLOQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 10:16:22 -0400
-Date: Thu, 12 Jul 2007 14:06:59 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec	base	hibernation
-Message-ID: <20070712140658.GA3881@ucw.cz>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <20070711172243.ab44c4d4.akpm@linux-foundation.org> <1184251423.9346.55.camel@caritas-dev.intel.com> <Pine.LNX.4.64.0707112345250.28090@asgard.lang.hm> <1184260683.9346.91.camel@caritas-dev.intel.com> <Pine.LNX.4.64.0707120247230.25614@asgard.lang.hm>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 12 Jul 2007 10:18:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:18715 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932232AbXGLOSz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 10:18:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=KpN6djnjXNzuzdM4P9Q0qxNtRUg5o6O9MyQoD/PSz/WmnpcqSB+FsAV7qdYTqQQeYCn983DtyRTVYKH+Be8lg5pP5LFVTu09roPp1Z6rFJ1imE9UQ82i8GEQo0FglLkWzdpEeRNt71spMa5W+B8Ud8GHQmyQO59sfNXzBbdd0wM=
+Message-ID: <78ecab220707120718q7cfcff43u66f80711c7ec1005@mail.gmail.com>
+Date: Thu, 12 Jul 2007 10:18:55 -0400
+From: "Mark Shelby" <mshelby1@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: kernel autoconfig option?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707120247230.25614@asgard.lang.hm>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+I have used Linux for about 9+ years. I have built several kernels.
+The install process has gotten quite a bit better. The config menus are great!
 
-> >Maybe my usage of terminology has some problem. But, 
-> >the "device
-> >hibernate" here means put device into quiescent state 
-> >and save the
-> >device state, but do not put device into low power 
-> >state.
-> 
-> is there really enough savings (in time or otherwise) to 
-> make it worth splitting this into two steps? for 
+I just downloaded and am setting up the 2.6.22 kernel.
 
-Yep.
+I joined this list to ask a specific question:
 
-> but I suspect that the number of drivers where this is 
-> worth doing is relativly small, and it may be a better 
-> approach to start off with just putting everything into 
-> the low-power state until some drive shows up that makes 
-> it worth adding the intermediate state to the system 
+Would it be possible to design a program to scan your existing system
+hardware and pre-select your onboard hardware options within the
+kernel config menus?
 
-We have had this flamewar before, and linus decided 'snapshot' and
-'suspend' are different operations - and he's right. Disk takes 10
-seconds to suspend/resume (spindown).
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I am building this particular kernel on a laptop and am not likely to
+be adding new hardware anytime soon! The only flaw I can find is in
+add-on peripherals. I guess you'd want some way for the kernel to
+anticipate & build in "useability" for common hardware plugins.
+
+Am I just crazy, or wouldn't this idea mke a lot of sense? Wouldn't it
+pretty much make the kernel "idiot proof" when installing from source?
