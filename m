@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765488AbXGLUlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765025AbXGLUlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765488AbXGLUlb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 16:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764535AbXGLUkN
+	id S1765025AbXGLUlG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 16:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933979AbXGLUjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 16:40:13 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36632 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755827AbXGLUkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 16:40:11 -0400
-Date: Thu, 12 Jul 2007 11:42:07 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+	Thu, 12 Jul 2007 16:39:49 -0400
+Received: from waste.org ([66.93.16.53]:42769 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934741AbXGLUjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 16:39:47 -0400
+Date: Thu, 12 Jul 2007 15:38:35 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 2/2] Kexec jump: Kexec jump
-Message-ID: <20070712094207.GG1866@elf.ucw.cz>
-References: <1184167836.12556.15.camel@caritas-dev.intel.com>
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+Message-ID: <20070712203834.GX11166@waste.org>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu> <alpine.LFD.0.999.0707111438530.20061@woody.linux-foundation.org> <1184191488.12353.160.camel@chaos> <alpine.LFD.0.999.0707111518020.20061@woody.linux-foundation.org> <1184194219.12353.170.camel@chaos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184167836.12556.15.camel@caritas-dev.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <1184194219.12353.170.camel@chaos>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, Jul 12, 2007 at 12:50:19AM +0200, Thomas Gleixner wrote:
+> Linus,
+> 
+> On Wed, 2007-07-11 at 15:20 -0700, Linus Torvalds wrote:
+> > For example, we can make sure that the code in question that actually 
+> > touches the hardware stays exactly the same, and then just move the 
+> > interfaces around - and basically guarantee that _zero_ hardware-specific 
+> > issues pop up when you switch over, for example.
+> > 
+> > That way there is a gradual change-over.
+> 
+> Ok, I can try to split this down further.
+> 
+> > The other approach (which would be nice _too_) is to actually try to 
+> > convert one clock source at a time. Why is that not an option? 
+> 
+> We need to give control to the clock events core code once we convert
+> one clock event device. Having two competing subsystems controlling
+> different devices (e.g. PIT and APIC) is not really desirable.
 
-> This patch provide the kexec based implementation of hibernation image
-> operation. Now, only jumping between original kernel and kexeced
-> kernel is supported, real image write/read/check will be provided in
-> next patches.
+Can't you take the entire legacy clock system and wrap it as a single
+legacy clock source? Then you take bits out of the old system and put
+them as independent sources in the new system? When the legacy clock
+system is empty, you remove the legacy clock source.
 
-I'd prefer this not to use hibernation hooks... existing dumping
-infrastructure should be good enough to write resume image, no?
-
-BTW... is this able to do kdump, then return back to the old kernel?
-That seems to be similar functionality to hibernation, and I was told
-it would be very welcome.
-
-> +static int kexec_suspend(void)
-> +{
-> +	int error;
-> +
-> +	local_irq_disable();
-> +	/* At this point, device_suspend() has been called, but *not*
-> +	 * device_power_down(). We *must* device_power_down() now.
-> +	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
-> +	 * become desynchronized with the actual state of the hardware
-> +	 * at resume time, and evil weirdness ensues.
-> +	 */
-> +	error = device_power_down(PMSG_FREEZE);
-> +	if (error) {
-> +		printk(KERN_ERR "Some devices failed to power down, aborting suspend\n");
-> +		goto Enable_irqs;
-> +	}
-> +
-> +	save_processor_state();
-> +	error = kexec_jump(KEXEC_JUMP_TYPE_EXEC);
-> +	restore_processor_state();
-> +
-> +	/* NOTE:  device_power_up() is just a resume() for devices
-> +	 * that suspended with irqs off ... no overall powerup.
-> +	 */
-> +	device_power_up();
-> + Enable_irqs:
-> +	in_suspend = 0;
-> +	local_irq_enable();
-> +	return error;
-> +}
-...
-> +static int kexec_resume(void)
-> +{
-> +	int error = 0;
-> +
-> +	local_irq_disable();
-> +	/* NOTE:  device_power_down() is just a suspend() with irqs off;
-> +	 * it has no special "power things down" semantics
-> +	 */
-> +	if (device_power_down(PMSG_PRETHAW))
-> +		printk(KERN_ERR "Some devices failed to power down, very bad\n");
-> +	/* We'll ignore saved state, but this gets preempt count (etc) right */
-> +	save_processor_state();
-> +	kexec_restore_backup();
-> +	error = kexec_jump(KEXEC_JUMP_TYPE_JUMP);
-> +	swsusp_free();
-> +	restore_processor_state();
-> +	touch_softlockup_watchdog();
-> +	device_power_up();
-> +	local_irq_enable();
-> +	return error;
-> +}
-
-This seems like mostly generic stuff for going between two kernels,
-no? I'd prefer it not be hooked into hibernation infrastructure.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mathematics is the supreme nostalgia of our time.
