@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbXGLN6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933467AbXGLOJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933924AbXGLN6H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 09:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764124AbXGLN5z
+	id S933467AbXGLOJO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 10:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761363AbXGLOI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 09:57:55 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43159 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762147AbXGLN5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 09:57:54 -0400
-Subject: Re: [EXT4 set 2][PATCH 2/5] cleanups: Add extent sanity checks
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-In-Reply-To: <469612B4.5070105@shadowen.org>
-References: <1183275382.4010.121.camel@localhost.localdomain>
-	 <20070710163020.196d32a0.akpm@linux-foundation.org>
-	 <469612B4.5070105@shadowen.org>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 08:57:51 -0500
-Message-Id: <1184248671.10312.7.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
+	Thu, 12 Jul 2007 10:08:58 -0400
+Received: from smtp-02.mandic.com.br ([200.225.81.133]:42883 "EHLO
+	smtp-02.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753735AbXGLOI6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 10:08:58 -0400
+Message-ID: <469635F4.9010409@mandic.com.br>
+Date: Thu, 12 Jul 2007 11:08:52 -0300
+From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Vijayakumar Subburaj <vijayakumar.subburaj@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux Kernel Story
+References: <b07b02c50707120627se95d62dybc70ef80efdbf24@mail.gmail.com>
+In-Reply-To: <b07b02c50707120627se95d62dybc70ef80efdbf24@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 12:38 +0100, Andy Whitcroft wrote:
-> Andrew Morton wrote:
-> >> +			if (ext4_ext_check_header(inode, ext_block_hdr(bh),
-> >> +							depth - i - 1)) {
-> >> +				err = -EIO;
-> >> +				break;
-> >> +			}
-> >> +			path[i+1].p_bh = bh;
-> > 
-> > Really that should have been "i + 1".  checkpatch misses this.  It seems to
-> > be missing more stuff that it used to lately.
-> 
-> This one is difficult.  The rules up to now have been consistent spacing
-> is required on both sides of mathematics operators.  I personally like
-> spaces always, but we do tend to use them without spaces too where the
-> binding is effectivly part of the value -- the classic case is something
-> like:
-> 
-> 	pfn << MAX_ORDER-1
-> 
-> In allowing that sort of thing, we implictly allow the one you note
-> above.  We have tried to be overly annoying on these things, and so the
-> check is consistancy, spaces both or neither.  We could be stricter.
+Vijayakumar Subburaj escreveu:
+> My first mail to lkml.
 
-I personally think stricter is better.  An occasionally false-positive
-isn't going to hurt anyone.  (Well, maybe the checkpatch.pl maintainers
-will get nagged.)  It at least will cause the developer to look at the
-line of code in question and make a conscious decision to leave it as it
-is.  I'm assuming that upstream maintainers use checkpatch.pl with some
-constraint, and don't throw every patch that produces a warning back at
-the submitter.
+Welcome :-)
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+> I would like to know what happened to linux kernel from its 1.0.
 
+ From 1.0 to 2.6.22.1?
+Wowwwwwwwwwww
+
+I think that you can read all changelogs available in www.kernel.org. In 
+2 years you finish read 2.4 and 2.6 series :-)
+
+Are you try <http://kernelnewbies.org/LinuxChanges>?
+
+Regards,
+Renato
