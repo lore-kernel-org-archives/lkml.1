@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935408AbXGLQlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935495AbXGLQll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935408AbXGLQlQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbXGLQk7
+	id S935495AbXGLQll (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759399AbXGLQlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:40:59 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:45783 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758520AbXGLQk6 (ORCPT
+	Thu, 12 Jul 2007 12:41:32 -0400
+Received: from mailhost.ics.forth.gr ([139.91.157.55]:38371 "EHLO
+	mailhost.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759278AbXGLQlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:40:58 -0400
-Date: Thu, 12 Jul 2007 12:40:57 -0400
-To: Vijayakumar Subburaj <vijayakumar.subburaj@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Kernel Story
-Message-ID: <20070712164057.GC31195@csclub.uwaterloo.ca>
-References: <b07b02c50707120627se95d62dybc70ef80efdbf24@mail.gmail.com>
+	Thu, 12 Jul 2007 12:41:31 -0400
+X-Greylist: delayed 9605 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 12:41:30 EDT
+X-AuditID: 7f000001-a90cabb000001a55-0f-469659b8b292 
+Message-ID: <46965A3B.1050503@ics.forth.gr>
+Date: Thu, 12 Jul 2007 19:43:39 +0300
+From: Thanos Makatos <mcatos@ics.forth.gr>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b07b02c50707120627se95d62dybc70ef80efdbf24@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Full buffer cache not working as expected
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 06:57:41PM +0530, Vijayakumar Subburaj wrote:
-> My first mail to lkml.
-> 
-> I would like to know what happened to linux kernel from its 1.0.
+I run several times the following test and what I've seen is that when
+the buffer cache becomes full, unneeded dirty buffer heads are not evicted
+and no other memory allocation can happen (including reading a block
+from the disk to the buffer cache). Should this happen?
+Here's the code that reproduces this issue:
 
-A lot.
+for(i = 0; i < get_capacity(bdev->bd_disk)/8; i++) {
+        bh = __bread(bdev, i, PAGE_SIZE);
+        lock_buffer(bh);
+        memset(bh->b_data, 0, PAGE_SIZE);
+        set_buffer_dirty(bh);
+        unlock_buffer(bh);
+        __brelse(bh);
+}
 
-> I have gone through lkml faqs, and some of LDP documents. Thought that
-> weekly lkml summary "Kernel Traffic" (http://www.kerneltraffic.org/)
-> would be useful, but its not.
-> 
-> Important linux kernel bugs, fixes that were available those bugs.
-> Why one fix got chosen over other fixes, and related tradeoffs?
-> 
-> Sorry, I am too lazy to go through entire lkml, or lk usenet postings.
-> 
-> Are there any documents in web? How I should proceed? where I have to
-> start with?
+I added some printks printing the buffer head's reference counter: after
+the '__bread' ref count is 2, after '__brelse' ref count is 1. Shouldn't
+these
+numbers be 1 and 0 respectively? I added an extra 'put_bh' before (or
+after) the '__brelse' but I get a BUG().
 
-It might be possible to get some overview as to when major things were
-added like when PCI support came, when each architecture was added, when
-USB, firewire, scsi and various other sub systems got in, when major
-replacements were done to the VM system and such.
-
-Of course I doubt anyone wants to do the work, since the most
-interesting thing is what the current kernel supports.
-
-How about asking what happened from Windows 1.0 to today.  How would you
-answer that question?  Should it also include the history of DOS from
-1.0 to the current version of windows?  Should it also include the
-history of CP/M?
-
-It really is a silly question to ask that is much too vague.
-
---
-Len Sorensen
