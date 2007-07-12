@@ -1,52 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937185AbXGLAkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964962AbXGLAlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937185AbXGLAkW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 20:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933281AbXGLAkG
+	id S964962AbXGLAlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 20:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933281AbXGLAkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:40:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37356 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765926AbXGLAkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:40:04 -0400
-Date: Wed, 11 Jul 2007 17:39:23 -0700
-From: Greg KH <gregkh@suse.de>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH 05/34] PCI: Use a weak symbol for the empty version of
-	pcibios_add_platform_entries()
-Message-ID: <20070712003923.GA8132@suse.de>
-References: <20070711233037.GB5253@kroah.com> <11841967082916-git-send-email-gregkh@suse.de> <1184196712526-git-send-email-gregkh@suse.de> <11841967172946-git-send-email-gregkh@suse.de> <11841967322884-git-send-email-gregkh@suse.de> <11841967361726-git-send-email-gregkh@suse.de> <20070711234922.GW9704@parisc-linux.org>
-MIME-Version: 1.0
+	Wed, 11 Jul 2007 20:40:46 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:42702 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763658AbXGLAko (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 20:40:44 -0400
+Date: Wed, 11 Jul 2007 17:40:38 -0700
+From: Mike Anderson <andmike@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [2.6.23 PATCH 14/18] dm: netlink add to core
+Message-ID: <20070712004038.GB29241@us.ibm.com>
+References: <20070711210159.GF24114@agk.fab.redhat.com> <20070711143423.36722a41.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070711234922.GW9704@parisc-linux.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070711143423.36722a41.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 05:49:22PM -0600, Matthew Wilcox wrote:
-> On Wed, Jul 11, 2007 at 04:31:19PM -0700, Greg Kroah-Hartman wrote:
-> > I'm not sure if this is going to fly, weak symbols work on the compilers I'm
-> > using, but whether they work for all of the affected architectures I can't say.
-> > I've cc'ed as many arch maintainers/lists as I could find.
-> > 
-> > But assuming they do, we can use a weak empty definition of
-> > pcibios_add_platform_entries() to avoid having an empty definition on every
-> > arch.
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 11 Jul 2007 22:01:59 +0100
+> Alasdair G Kergon <agk@redhat.com> wrote:
 > 
-> This seems like a regression.  We go from having an empty inline
-> function that gets optimised away to 0 to having a function call to a
-> trivial function.  And on any architecture that *does* define this,
-> (unless I misunderstand the GCC manual), we still include the weak
-> definition, thus wasting space.
+> > From: Mike Anderson <andmike@us.ibm.com>
+> > 
+> > This patch adds support for the dm_path_event dm_send_event funtions which
+> > create and send netlink attribute events.
+> > 
+> > ...
+> >
+> > --- linux.orig/drivers/md/dm-netlink.c	2007-07-11 21:37:50.000000000 +0100
+> > +++ linux/drivers/md/dm-netlink.c	2007-07-11 21:37:51.000000000 +0100
+> > @@ -40,6 +40,17 @@ struct dm_event_cache {
+> >  
+> >  static struct dm_event_cache _dme_cache;
+> >  
+> > +struct dm_event {
+> > +        struct dm_event_cache *cdata;
+> > +        struct mapped_device *md;
+> > +        struct sk_buff *skb;
+> > +        struct list_head elist;
+> > +};
+> > +
+> > +static struct sock *_dm_netlink_sock;
+> > +static uint32_t _dm_netlink_daemon_pid;
+> > +static DEFINE_SPINLOCK(_dm_netlink_pid_lock);
+> 
+> The usage of this lock makes my head spin a bit.  It's a shame it wasn't
+> documented.
+> 
+> There's obviously something very significant happening with process IDs in
+> here.  A description of the design would be helpful.  Especially for the
+> containerisation guys who no doubt will need to tear their hair out over it
+> all ;)
+> 
 
-Yeah, but it can be a big pain to add it to every architecture when only
-1 or two need it, which is why I see people using the week symbol stuff
-more and more, right?  This is just following that trend.
+ok, answered below.
 
-thanks,
+> 
+> > +static int dm_netlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
+> > +{
+> > +	int r = 0;
+> > +
+> > +	if (security_netlink_recv(skb, CAP_SYS_ADMIN))
+> > +		return -EPERM;
+> > +
+> > +	spin_lock(&_dm_netlink_pid_lock);
+> > +	if (_dm_netlink_daemon_pid) {
+> > +		if (_dm_netlink_daemon_pid != nlh->nlmsg_pid)
+> > +			r = -EBUSY;
+> > +	} else
+> > +		_dm_netlink_daemon_pid = nlh->nlmsg_pid;
+> > +	spin_unlock(&_dm_netlink_pid_lock);
+> > +
+> > +	return r;
+> > +}
+> 
+> This really does need some comments.  nfi what it's all trying to do here.
+> 
 
-greg k-h
+The code is restricting the connection to only one daemon.
+
+I added the lock above as in some testing of connect / disconnect cycles
+with a lot of events I receiving errors.
+
+The pid is a hold over from older code. If this will cause issue for other
+users I can switch to using nlmsg_multicast (genlmsg_multicast depending
+on the comment if I need to switch to the genl interface) and remove this
+code all together.
+
+> > +static void dm_netlink_rcv(struct sock *sk, int len)
+> > +{
+> > +	unsigned qlen = 0;
+> 
+> stupid gcc.
+> 
+> > +
+> > +	do
+> > +		netlink_run_queue(sk, &qlen, &dm_netlink_rcv_msg);
+> > +	while (qlen);
+> > +
+> > +}
+> 
+> stray blank line there.
+> 
+
+ok, removed.
+
+> > +static int dm_netlink_rcv_event(struct notifier_block *this,
+> > +				unsigned long event, void *ptr)
+> > +{
+> > +	struct netlink_notify *n = ptr;
+> > +
+> > +	spin_lock(&_dm_netlink_pid_lock);
+> > +
+> > +	if (event == NETLINK_URELEASE &&
+> > +	    n->protocol == NETLINK_DM && n->pid &&
+> > +	    n->pid == _dm_netlink_daemon_pid)
+> > +		_dm_netlink_daemon_pid = 0;
+> > +
+> > +	spin_unlock(&_dm_netlink_pid_lock);
+> > +
+> > +	return NOTIFY_DONE;
+> > +}
+> > +
+> > +static struct notifier_block dm_netlink_notifier = {
+> > +	.notifier_call  = dm_netlink_rcv_event,
+> > +};
+> > +
+> >  int __init dm_netlink_init(void)
+> >  {
+> >  	int r;
+> >  
+> > +	r = netlink_register_notifier(&dm_netlink_notifier);
+> > +	if (r)
+> > +		return r;
+> > +
+> > +	_dm_netlink_sock = netlink_kernel_create(NETLINK_DM, 0,
+> > +						 dm_netlink_rcv, NULL,
+> > +						 THIS_MODULE);
+> 
+> I think we're supposed to use the genetlink APIs here.  One for the net
+> guys to check, please.
+> 
+ok, I can switch if that is the new recommended method.
+
+> > +	if (!_dm_netlink_sock) {
+> > +		r = -ENOBUFS;
+> > +		goto notifier_out;
+> > +	}
+> >  	r = dme_cache_init(&_dme_cache, DM_EVENT_SKB_SIZE);
+> > -	if (!r)
+> > -		DMINFO("version 1.0.0 loaded");
+> > +	if (r)
+> > +		goto socket_out;
+> > +
+> > +	DMINFO("version 1.0.0 loaded");
+> > +
+> > +	return 0;
+> > +
+> > +socket_out:
+> > +	sock_release(_dm_netlink_sock->sk_socket);
+> > +notifier_out:
+> > +	netlink_unregister_notifier(&dm_netlink_notifier);
+> > +	DMERR("%s: dme_cache_init failed: %d", __FUNCTION__, r);
+> >  
+> >  	return r;
+> >  }
+> > @@ -100,4 +292,6 @@ int __init dm_netlink_init(void)
+> >  void dm_netlink_exit(void)
+> >  {
+> >  	dme_cache_destroy(&_dme_cache);
+> > +	sock_release(_dm_netlink_sock->sk_socket);
+> > +	netlink_unregister_notifier(&dm_netlink_notifier);
+> >  }
+> > Index: linux/drivers/md/dm-netlink.h
+> > ===================================================================
+> > --- linux.orig/drivers/md/dm-netlink.h	2007-07-11 21:37:50.000000000 +0100
+> > +++ linux/drivers/md/dm-netlink.h	2007-07-11 21:37:51.000000000 +0100
+> > @@ -21,19 +21,22 @@
+> >  #ifndef DM_NETLINK_H
+> >  #define DM_NETLINK_H
+> >  
+> > -struct dm_event_cache;
+> > +#include <linux/dm-netlink-if.h>
+> > +
+> > +struct dm_table;
+> >  struct mapped_device;
+> > -struct dm_event {
+> > -	struct dm_event_cache *cdata;
+> > -	struct mapped_device *md;
+> > -	struct sk_buff *skb;
+> > -	struct list_head elist;
+> > -};
+> > +struct dm_event;
+> > +
+> > +void dm_event_add(struct mapped_device *md, struct list_head *elist);
+> >  
+> >  #ifdef CONFIG_DM_NETLINK
+> >  
+> >  int dm_netlink_init(void);
+> >  void dm_netlink_exit(void);
+> > +void dm_netlink_send_events(struct list_head *events);
+> > +
+> > +void dm_path_event(enum dm_netlink_event_type evt_type, struct dm_table *t,
+> > +                   const char *path, int nr_valid_paths);
+> >  
+> >  #else	/* CONFIG_DM_NETLINK */
+> >  
+> > @@ -44,6 +47,14 @@ static inline int __init dm_netlink_init
+> >  static inline void dm_netlink_exit(void)
+> >  {
+> >  }
+> > +static void inline dm_netlink_send_events(struct list_head *events)
+> > +{
+> > +}
+> > +static void inline dm_path_event(enum dm_netlink_event_type evt_type,
+> > +			  struct dm_table *t, const char *path,
+> > +			  int nr_valid_paths)
+> > +{
+> > +}
+> 
+> Please use `static inline void', not `static void inline'.  Just a
+> consistency thing.
+> 
+
+Done.
+
+-andmike
+--
+Michael Anderson
+andmike@us.ibm.com
