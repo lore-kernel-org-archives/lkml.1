@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760903AbXGLSQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbXGLSQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760903AbXGLSQR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 14:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXGLSQH
+	id S932158AbXGLSQu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 14:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757225AbXGLSQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 14:16:07 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:23213 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755404AbXGLSQE convert rfc822-to-8bit (ORCPT
+	Thu, 12 Jul 2007 14:16:39 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4148 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755499AbXGLSQh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 14:16:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nztLnUNb+hIz0LVAoYpeeCDdAVt6/NM9CUZayqAxjas9XgPv7jxxxkPcpxvvJ+oXaRL050YyQBXIXnGfRPGpIgyDJNqzSqbeKrMgOiJ4OyvP31SRPFQTTMgb2Kz56kQ3sm76ktmppkKz+cK41y1QibiIXkLTlc/3vVR3JgLlexg=
-Message-ID: <2ca024a80707121116i3574e2e2k7783bdb591b571b1@mail.gmail.com>
-Date: Thu, 12 Jul 2007 19:16:03 +0100
-From: "Marcos David" <marcosgdavid.ml@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: /proc/pid/status -> VmLib: 4294948464 kB
-In-Reply-To: <2ca024a80707121114k530cf0f0wa79d4b40cc1cb375@mail.gmail.com>
+	Thu, 12 Jul 2007 14:16:37 -0400
+Date: Thu, 12 Jul 2007 19:16:20 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Mark Mason <mason@broadcom.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-mips@linux-mips.org,
+       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sb1250-duart.c: SB1250 DUART serial support
+In-Reply-To: <469669F5.6070906@shadowen.org>
+Message-ID: <Pine.LNX.4.64N.0707121904211.3029@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0707121745010.3029@blysk.ds.pg.gda.pl>
+ <469669F5.6070906@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <2ca024a80707121114k530cf0f0wa79d4b40cc1cb375@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I´m using RedHat Enterprise Server 4 Update 3 (kernel 2.6.9-34.ELsmp)
+On Thu, 12 Jul 2007, Andy Whitcroft wrote:
 
-I was listing the contents of /proc/pid/status file and I came up with
-a value of:
-...
-VmLib: 4294948464 kB,
-...
+> > printk() should include KERN_ facility level
+> > #750: FILE: drivers/serial/sb1250-duart.c:675:
+> > +		printk(err);
+> 
+> Heh, yeah Ingo pointed this style out.  This is a wrapper where the
+> facility will be supplied by the caller (I assume).  The thought there
 
-Is this a known bug?
-the process in question uses a lot of threads ~100 but there are no
-memory leaks...
+ Actually "err" is "static const char *", except it is used twice in the 
+function, so rather than cluttering the source with two identical strings 
+and relying on GCC merging them I did it explicitly.
 
-Any help would be appreciated.
+> was that only complain on printks which had a string literal as their
+> first arguement.  That gets us very high accuracy and eliminates these
+> falsies.
 
-Thanks in advance.
-Marcos David
->
+ That would be my suggestion too, if you asked me.  But as did not, I do 
+not either.
+
+> I think I tend to agree that the MAKEMASK ones are separate.  Good to
+> see someone using their common sense in the face of whinging by the tool.
+
+ Thanks for appreciation. ;-)
+
+> WARNING: declaring multiple variables together should be avoided
+> #372: FILE: drivers/serial/sb1250-duart.c:246:
+> +	unsigned int mctrl, status;
+
+ Well, this is probably superfluous -- why would anyone prefer:
+
+	int r0;
+	int r1;
+	int r2;
+	int r3;
+	int r4;
+
+to:
+
+	int r0, r1, r2, r3, r4;
+
+unconditionally?  I agree clustering variable declarations may obfuscate 
+the code, but then again, a bit of common sense should be used.  It 
+usually makes sense to group related variables together and declare other 
+ones separately.
+
+ And obviously if somebody writes unreadable code, then it is hard to 
+change the habit with a script no matter how much you try.
+
+  Maciej
