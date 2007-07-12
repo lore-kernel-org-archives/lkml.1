@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934924AbXGLRPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765034AbXGLRZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934924AbXGLRPj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 13:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbXGLRPb
+	id S1765034AbXGLRZP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 13:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbXGLRZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 13:15:31 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:56340 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846AbXGLRPa (ORCPT
+	Thu, 12 Jul 2007 13:25:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54442 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753071AbXGLRZB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 13:15:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CALD+lUarR7O6/2dsb2JhbAA
-X-IronPort-AV: i="4.16,533,1175497200"; 
-   d="scan'208"; a="166550307:sNHT26726427"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 00/10] IB/ehca: Multiple Event Queues, MR/MW rework, large page MRs, fixes
-X-Message-Flag: Warning: May contain useful information
-References: <200707121745.27592.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 12 Jul 2007 10:15:24 -0700
-In-Reply-To: <200707121745.27592.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 12 Jul 2007 17:45:26 +0200")
-Message-ID: <adawsx55ys3.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Thu, 12 Jul 2007 13:25:01 -0400
+Date: Thu, 12 Jul 2007 10:24:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: andi@firstfloor.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: x86 setup code rewrite in C - revised
+In-Reply-To: <1184181538674-git-send-email-hpa@zytor.com>
+Message-ID: <alpine.LFD.0.999.0707121016210.20061@woody.linux-foundation.org>
+References: <1184181538674-git-send-email-hpa@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Jul 2007 17:15:25.0598 (UTC) FILETIME=[3CBDF3E0:01C7C4A8]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Note that patch 7 will introduce a few lines over 80 chars that will be
- > unindented in patch 8 - I hope that's okay with you.
 
-That's fine -- the 80 column rule is one thing I don't worry about too
-much; absurdly long lines are bad, but if a line is, say, 84 chars and
-breaking it makes the code uglier, then I just leave the 84 char line.
 
- > [09/10] fixes a lot of checkpatch.pl warnings
+On Wed, 11 Jul 2007, H. Peter Anvin wrote:
+>
+> This patch set replaces the x86 setup code, which is currently all in
+> assembly, with a version written in C, using the ".code16gcc" feature
+> of binutils (which has been present since at least 2001.)
+>
+>  76 files changed, 4606 insertions(+), 5209 deletions(-)
 
-Are these warnings from earlier patches in the series, or problems
-that already existed in the code?  If they are coming from other
-patches in the series, please just fix the earlier patches before I
-merge them.
+I can't really argue against this on any sane grounds - not only is it 
+removing more lines than it adds, but moving from mostly unreadable 
+assembly to C seems a good idea.
 
-Thanks,
-  Roland
+How does this impact the size of that code? Do we even care?
+
+But as to how to integrate it, I'm not sure I really want to just merge 
+it. I suspect we would want to have it in some public tree that people 
+actually test at least to some degree first, and the -mm tree seems to 
+make most sense.
+
+I didn't see anything objectionable in the series, although I do think the 
+explanations need to be re-done for a number of them. You seem to have 
+violated the "a single line to explain the patch at the top" rule, and as 
+a result they make no sense for some of them (the explanation for patch 
+05/33 doesn't parse for me and 07/33 seems to have the single-line 
+problem)
+
+So let's just get this merged. But the question is, do we put it in 
+2.6.23-rc1, or do we put it in -mm for a few weeks, which would imply 
+waiting for the next merge window? Andrew?
+
+			Linus
