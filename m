@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935156AbXGLC2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935496AbXGLC2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935156AbXGLC2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 22:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760777AbXGLC2H
+	id S935496AbXGLC2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 22:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXGLC2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 22:28:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47592
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756665AbXGLC2G (ORCPT
+	Wed, 11 Jul 2007 22:28:11 -0400
+Received: from gatekeeper.greshamstorage.com ([216.143.252.225]:27005 "EHLO
+	AUSEXCH1.greshamstorage.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1764947AbXGLC2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 22:28:06 -0400
-Date: Wed, 11 Jul 2007 19:28:29 -0700 (PDT)
-Message-Id: <20070711.192829.08323972.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1184203311.6005.664.camel@localhost.localdomain>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<20070711122324.GA21714@lst.de>
-	<1184203311.6005.664.camel@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 11 Jul 2007 22:28:09 -0400
+Message-ID: <469590FC.3090703@greshamstorage.com>
+Date: Wed, 11 Jul 2007 21:25:00 -0500
+From: Jeremy Linton <jlinton@greshamstorage.com>
+Organization: Gresham Enterprise Storage
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Mike Christie <michaelc@cs.wisc.edu>
+CC: Jeremy Linton <jli@greshamstorage.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Linux Scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][BUG] Incorrect SCSI transfer length computation from
+ odd sized scsi_execute_async() transfers.
+References: <46957820.9090008@greshamstorage.com> <469581BA.4010009@cs.wisc.edu>
+In-Reply-To: <469581BA.4010009@cs.wisc.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Jul 2007 02:26:29.0323 (UTC) FILETIME=[0DD841B0:01C7C42C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 12 Jul 2007 11:21:51 +1000
+Mike Christie wrote:
+> I think you needed some other bits in there. See this patch 
+> I tried just setting the bufflen first, and that still had problems. 
+> Could you try the patch here
+> 
+> http://marc.info/?l=linux-scsi&m=117392208211297&w=2
 
-> To do inter-guest (ie. inter-process) I/O you really have to make sure
-> the other side doesn't go away.
 
-You should just let it exit and when it does you receive some kind of
-exit notification that resets your virtual device channel.
+I just read the thread.. I didn't see any strange retries with my test 
+case. I will try duplicating the problem tomorrow. Then I will apply 
+your patch and rerun my test.
 
-I think the reference counting approach is error and deadlock prone.
-Be more loose and let the events reset the virtual devices when
-guests go splat.
+I'm curious if this has been known since 2.6.19 why the patch hasn't 
+propagated to the main kernel tree?
+
+
