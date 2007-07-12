@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbXGLSON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760903AbXGLSQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbXGLSON (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 14:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXGLSNu
+	id S1760903AbXGLSQR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 14:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXGLSQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 14:13:50 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:9788 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755499AbXGLSNq (ORCPT
+	Thu, 12 Jul 2007 14:16:07 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:23213 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755404AbXGLSQE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 14:13:46 -0400
+	Thu, 12 Jul 2007 14:16:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=WlC32bstQF8gG06cnNh/IVeFO6CNp2V9xxDKBrpga+OQG14FYu+Gi51orN+2bfoRGe07G9CGRtsq0Ooqgjj7wgUrwqcFyw518272mZ7P5PjGKmKaVFe6tNzQ6zO6tH7EXricRXcxmbJmbD9gNaT36XAhxP7DHq/orcwEFmge+6c=
-Message-ID: <8c34a9060707121113u6094d3acj7e01a8b560623ae7@mail.gmail.com>
-Date: Thu, 12 Jul 2007 13:13:45 -0500
-From: "Brett Boren" <brett.boren@gmail.com>
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nztLnUNb+hIz0LVAoYpeeCDdAVt6/NM9CUZayqAxjas9XgPv7jxxxkPcpxvvJ+oXaRL050YyQBXIXnGfRPGpIgyDJNqzSqbeKrMgOiJ4OyvP31SRPFQTTMgb2Kz56kQ3sm76ktmppkKz+cK41y1QibiIXkLTlc/3vVR3JgLlexg=
+Message-ID: <2ca024a80707121116i3574e2e2k7783bdb591b571b1@mail.gmail.com>
+Date: Thu, 12 Jul 2007 19:16:03 +0100
+From: "Marcos David" <marcosgdavid.ml@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: IRQ problem with IO-APIC and plx9056-based data capture board
+Subject: Re: /proc/pid/status -> VmLib: 4294948464 kB
+In-Reply-To: <2ca024a80707121114k530cf0f0wa79d4b40cc1cb375@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
+References: <2ca024a80707121114k530cf0f0wa79d4b40cc1cb375@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a plx9056-based data capture board that works with the winXP
-drivers (based off of the win32 plx sdk) but does not work with the
-linux driver provided to me. The board constitently gets 0xa (IRQ 10)
-in the INTERRUPT_LINE register but the IO-APIC reports IRQ 49 to the
-kernel. To add to the confusion when an interrupt is triggered it
-arrives on IRQ 17 causing an irq disable. When run with `noapic` on
-the kernel bootline a consistent irq 10 is observed and the driver
-behaves correctly. When `irqpoll` is given the driver behaves
-correctly(kernel complains about irq 10 being the registered irq
-handler) though it causes other kernel problems. The following options
-have been tried in isolation with no success: pci=nommconf; pci=conf2
-(noboot); acpi=bigsmp; pci=routeirq (kernel output changes, but no
-change in behavior); pci=noacpi acpi=noirq (seems identical to
-pci=routeirq); acpi=irq_balance; apic=debug.
+Hi,
+I´m using RedHat Enterprise Server 4 Update 3 (kernel 2.6.9-34.ELsmp)
 
-I'm running primarily in a Dell precision 370n workstation with 3
-PCI-X slots. The irq reported in by the IO-APIC changes depending on
-which slot I plug it in.
+I was listing the contents of /proc/pid/status file and I came up with
+a value of:
+...
+VmLib: 4294948464 kB,
+...
 
-Slot       INTERRUPT_LINE     IO-APIC        Observed
-1           10                            49                 17
-2           10                            53                 17
-3           9                              26                 18
+Is this a known bug?
+the process in question uses a lot of threads ~100 but there are no
+memory leaks...
 
-The same general behavior has been observed in _every_ linux machine
-I've been able to plug this card into that had an IO-APIC. These were
-mostly Intel chipsets but I 've also had it in a Tyan 8-proc AMD board
-with a Nvidia chipset with the same interrupt issues.
+Any help would be appreciated.
 
-I see two problems: first, the INTERRUPT_LINE register on the card is
-not consistent with either the APIC reported irq or the actual irq.
-Second, that the IO_APIC, which is supposed to maintain a mapping of
-its pins to a particular irq, is inconsistent in what IRQ is reported
-for a particular pin (different slots result in different irqs
-reported, but still actually use irq 17).
-
-I'm not a LKML subscriber so please CC to brett.boren_at_gmail_dot_com.
-
-Thanks,
-Brett
+Thanks in advance.
+Marcos David
+>
