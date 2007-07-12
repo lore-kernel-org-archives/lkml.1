@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934846AbXGLBbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933777AbXGLBk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934846AbXGLBbZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 21:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbXGLBbR
+	id S933777AbXGLBk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 21:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760353AbXGLBkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 21:31:17 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:10817 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761267AbXGLBbQ (ORCPT
+	Wed, 11 Jul 2007 21:40:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:58708 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758055AbXGLBkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 21:31:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=q5dXPAoXWE/hJ7d9PJxDEi9BHmQESAEo/l6rLpzk2jec+cTvCa37sgrTAMRRXEwULttaWRqZBFvIQocTfVn+7fFdk/cLq1OUJttCa93LjMF1FRnJzEvRI2kyF6alfVTWGt3l/wAZCdcUdudkMN+Y/j97RARiiSKhEB2f5YlXJCI=
-Message-ID: <d3dac270707111831v508e7c56w966df5bc2e7f855e@mail.gmail.com>
-Date: Wed, 11 Jul 2007 18:31:10 -0700
-From: "Max Alekseyev" <maxale@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22 booting hangs after "INIT: version 2.86 booting"
-In-Reply-To: <d3dac270707111413j42ac7a0eif032636a9018df66@mail.gmail.com>
+	Wed, 11 Jul 2007 21:40:18 -0400
+Date: Thu, 12 Jul 2007 03:40:04 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kai@germaschewski.name
+Subject: [PATCH] mkmakefile: include ARCH on O= builds
+Message-ID: <Pine.LNX.4.58.0707120331530.28774@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d3dac270707111413j42ac7a0eif032636a9018df66@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+MekxwJ5iHTBw0RJKcILJTsFiwrtuuddBMjK2
+ v+ptXtK2NBYZjav8gQ6EeNai9Y2CVlUSYtFtXw4Zsh7ODuhqul
+ 9Yq8incAmRZakDzslE3vg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It happened that this weird behavior was caused by gcc-4.2 compiler.
-After recompiling the kernel with gcc-4.1 all troubles have gone.
+If you build using O=builddir ARCH=bar, you'll currently need to supply
+ARCH= on builds from the builddir, too. With this patch, the generated
+Makefile will do that instead.
 
-Max
+make ARCH= will still override the Makefile default, allowing existing 
+scripts to work correctly.
 
-On 7/11/07, Max Alekseyev <maxale@gmail.com> wrote:
-> Hello!
->
-> I have trouble with booting linux kernel 2.6.22 from kernel.org on my
-> AMD dual-Opteron 250 system.
-> The booting stops right after printing line "INIT: version 2.86
-> booting". Nothing happens after that, but it is not a hardware hang as
-> keyboard leds respond to pressing Caps/Num lock keys.
->
-> If I boot with init=/bin/sh parameter I successfully get into the
-> shell but attempts to run scripts from /etc/rcS.d/ all end up with
-> Segmentation faults, e.g.:
->
-> # sh -x /etc/rcS.d/S01glibc.sh
-> ++ uname -s
-> Segmentation fault
->
-> I am not sure where these segfaults happen as running programs like
-> 'uname' directly from the shell works OK.
->
-> The 2.6.22 configuration is derived from the working 2.6.21 one. The
-> kernel 2.6.21 boots on the very same system without any problems.
-> Any suggestions?
->
-> Thanks,
-> Max
->
+Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
+
+diff -X dontdiff -pruN linux-2.6.22/Makefile linux-2.6.22.changed/Makefile
+--- linux-2.6.22/Makefile	2007-07-11 23:15:33.000000000 +0200
++++ linux-2.6.22.changed/Makefile	2007-07-12 02:59:39.000000000 +0200
+@@ -357,7 +357,7 @@ PHONY += outputmakefile
+ outputmakefile:
+ ifneq ($(KBUILD_SRC),)
+ 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
+-	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
++	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL) $(ARCH)
+ endif
+ 
+ # To make sure we do not include .config for any of the *config targets
+diff -X dontdiff -pruN linux-2.6.22/scripts/mkmakefile linux-2.6.22.changed/scripts/mkmakefile
+--- linux-2.6.22/scripts/mkmakefile	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6.22.changed/scripts/mkmakefile	2007-07-12 03:03:49.000000000 +0200
+@@ -8,6 +8,7 @@
+ # $2 - Output directory
+ # $3 - version
+ # $4 - patchlevel
++# $5 - patchlevel
+ 
+ 
+ test ! -r $2/Makefile -o -O $2/Makefile || exit 0
+@@ -21,16 +22,17 @@ PATCHLEVEL = $4
+ 
+ KERNELSRC    := $1
+ KERNELOUTPUT := $2
++ARCH         := $5
+ 
+ MAKEFLAGS += --no-print-directory
+ 
+ .PHONY: all \$(MAKECMDGOALS)
+ 
+ all:
+-	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT)
++	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) ARCH=\$(ARCH)
+ 
+ Makefile:;
+ 
+ \$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
+-	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
++	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) ARCH=\$(ARCH) \$@
+ EOF
+-- 
+The tough part about being an officer is that the troops don't know what
+they want, but they know for certain what they DON'T want.
