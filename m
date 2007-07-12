@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbXGLUbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbXGLUbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbXGLUbd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 16:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758702AbXGLUbM
+	id S934559AbXGLUbv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 16:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758702AbXGLUbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 16:31:12 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:32928 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758393AbXGLUbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 16:31:10 -0400
-Message-ID: <46968F88.7070300@acm.org>
-Date: Thu, 12 Jul 2007 14:31:04 -0600
-From: Zan Lynx <zlynx@acm.org>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: Edward Shishkin <edward@namesys.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
-       "Vladimir V. Saveliev" <vs@namesys.com>
-Subject: Re: 2.6.22-rc6-mm1 reiser4_tree_by_page NULL pointer
-References: <1184090582.6933.20.camel@localhost> <469523FA.7010308@namesys.com>
-In-Reply-To: <469523FA.7010308@namesys.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 12 Jul 2007 16:31:42 -0400
+Received: from ptb-relay03.plus.net ([212.159.14.214]:47493 "EHLO
+	ptb-relay03.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758384AbXGLUbl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 16:31:41 -0400
+Subject: Re: Hard drive - dead or dying?
+From: David Sumbler <david@aeolia.co.uk>
+Reply-To: david@aeolia.co.uk
+To: Mark Lord <lkml@rtr.ca>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46962E09.40606@rtr.ca>
+References: <1184222444.5969.0.camel@ceres>  <46962E09.40606@rtr.ca>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 21:31:39 +0100
+Message-Id: <1184272299.5965.4.camel@ceres>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Envelope-From: zlynx@acm.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Edward Shishkin wrote:
+On Thu, 2007-07-12 at 09:35 -0400, Mark Lord wrote:
+> David Sumbler wrote:
+> > My computer (Ubuntu Feisty) would not boot correctly a few days
+> > ago: it seemed to get into a loop with the following printed about
+> > every 7 seconds (all laboriously copied in longhand, since it wasn't
+> > logged!):
+> > 
+> > ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> > ata1.01: (BMDMA stat 0x65)
+> > ata1.01: cmd c8/00:08:80:b4:a8/00:00:00:00:00/f4 tag0 cdb 0x0 data 4096
+> > in
+> >          res 51/01:08:80:b4:a8/00:00:00:00:00/f4 Emark 0x1 (device error)
 > 
-> I have found the bug, which kills data
-> when booting after crash, power loss, etc.
-> The patch is attached.
-> Please, ping me, if it doesn't help..
+> Use 'smartctl' to find out what the drive is having issues with.
 
-It appears to be holding up well so far.  About 5 hours of Gentoo 
-updating and compiling.
+Unfortunately I cannot boot the computer unless the drive in question is
+disconnected.
+
+David
+
+-- 
+David Sumbler <david@aeolia.co.uk>
 
