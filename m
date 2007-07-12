@@ -1,63 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761363AbXGLHZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761841AbXGLHZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761363AbXGLHZI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 03:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbXGLHY5
+	id S1761841AbXGLHZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 03:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760620AbXGLHZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 03:24:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38187 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752523AbXGLHY5 (ORCPT
+	Thu, 12 Jul 2007 03:25:35 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:52386 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753744AbXGLHZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 03:24:57 -0400
-Subject: Re: [RFT][PATCH] mm: drop behind
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tim Pepper <lnxninja@us.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>, riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <eada2a070707111537p20ab429anebd8b1840f5e5b5f@mail.gmail.com>
-References: <1184007008.1913.45.camel@twins>
-	 <eada2a070707111537p20ab429anebd8b1840f5e5b5f@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 12 Jul 2007 09:24:46 +0200
-Message-Id: <1184225086.20032.45.camel@twins>
+	Thu, 12 Jul 2007 03:25:33 -0400
+Date: Thu, 12 Jul 2007 12:58:13 +0530
+From: Suparna Bhattacharya <suparna@in.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, adilger@clusterfs.com,
+       David Chinner <dgc@sgi.com>, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070712072813.GA31260@in.ibm.com>
+Reply-To: suparna@in.ibm.com
+References: <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070630102111.GB23568@infradead.org> <20070630165246.GA5159@schatzie.adilger.int> <20070703100848.GA14936@amitarora.in.ibm.com> <20070703103107.GA29763@infradead.org> <20070703114650.GB14936@amitarora.in.ibm.com> <20070711090312.GA18301@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070711090312.GA18301@infradead.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tim,
-
-On Wed, 2007-07-11 at 15:37 -0700, Tim Pepper wrote:
-> On 7/9/07, Peter Zijlstra <peterz@infradead.org> wrote:
-> > Use the read-ahead code to provide hints to page reclaim.
-> >
-> > This patch has the potential to solve the streaming-IO trashes my
-> > desktop problem.
-> >
-> > It tries to aggressively reclaim pages that were loaded in a strong
-> > sequential pattern and have been consumed. Thereby limiting the damage
-> > to the current resident set.
+On Wed, Jul 11, 2007 at 10:03:12AM +0100, Christoph Hellwig wrote:
+> On Tue, Jul 03, 2007 at 05:16:50PM +0530, Amit K. Arora wrote:
+> > Well, if you see the modes proposed using above flags :
+> > 
+> > #define FA_ALLOCATE	0
+> > #define FA_DEALLOCATE	FA_FL_DEALLOC
+> > #define FA_RESV_SPACE	FA_FL_KEEP_SIZE
+> > #define FA_UNRESV_SPACE	(FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA)
+> > 
+> > FA_FL_DEL_DATA is _not_ being used for preallocation. We have two modes
+> > for preallocation FA_ALLOCATE and FA_RESV_SPACE, which do not use this
+> > flag. Hence prealloction will never delete data.
+> > This mode is required only for FA_UNRESV_SPACE, which is a deallocation
+> > mode, to support any existing XFS aware applications/usage-scenarios.
 > 
-> Interesting...
+> Sorry, but this doesn't make any sense.  There is no need to put every
+> feature in the XFS ioctls in the syscalls.  The XFS ioctls will need to
+> be supported forever anyway - as I suggested before they really should
+> be moved to generic code.
 > 
-> Would it make sense to tie this into (finally) making
-> POSIX_FADV_NOREUSE something more than a noop?
+> What needs to be supported is what makes sense as an interface.
+> A punch a hole interface does make sense, but trying to hack this into
+> a preallocation system call is just madness.  We're not IRIX or windows
+> that fit things into random subcall just because there was some space
+> left to squeeze them in.
+> 
+> > > > > FA_FL_NO_MTIME	0x10 /* keep same mtime (default change on size, data change) */
+> > > > > FA_FL_NO_CTIME	0x20 /* keep same ctime (default change on size, data change) */
+> > > 
+> > > NACK to these aswell.  If i_size changes c/mtime need updates, if the size
+> > > doesn't chamge they don't.  No need to add more flags for this.
+> > 
+> > This requirement was from the point of view of HSM applications. Hope
+> > you saw Andreas previous post and are keeping that in mind.
+> 
+> HSMs needs this basically for every system call, which screams for an
+> open flag like O_INVISIBLE anyway.  Adding this in a generic way is
+> a good idea, but hacking bits and pieces that won't fit into the global
+> design is completely wrong.
 
-We talked about that, but the thing is, if we make the functionality
-conditional, nobody will ever use it :-/
 
-So, yes, in a perfect world that would indeed make sense. However since
-nobody ever uses these [fm]advise calls,..
+Why don't we just merge the interface for preallocation (essentially
+enough to satisfy posix_fallocate() and the simple XFS requirement for 
+space reservation without changing file size), which there is clear agreement
+on (I hope :)).  After all, this was all that we set out to do when we
+started.
 
-So the big question is, does this functionally hurt any workload? If it
-turns out it does (which I still doubt) then we might hide it behind
-knobs, otherwise I'd like to keep it always on.
+And leave all the dealloc/punch/hsm type features for separate future patches/
+debates, those really shouldn't hold up the basic fallocate interface.
+I agree with Christoph that we are just diverging too much in trying to
+club those decisions here.
 
-Peter
+Dave, Andreas, Ted ?
 
+Regards
+Suparna
 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+Suparna Bhattacharya (suparna@in.ibm.com)
+Linux Technology Center
+IBM Software Lab, India
 
