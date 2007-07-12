@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932621AbXGLQOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934825AbXGLQO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932621AbXGLQOi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 12:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758071AbXGLQOb
+	id S934825AbXGLQO5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 12:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758071AbXGLQOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 12:14:31 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:45733 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756868AbXGLQO3 (ORCPT
+	Thu, 12 Jul 2007 12:14:47 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:52075 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934115AbXGLQOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 12:14:29 -0400
-Date: Thu, 12 Jul 2007 17:13:46 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Bill Irwin <wli@holomorphy.com>
-cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bob Tracy <rct@gherkin.frus.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.22-rc6 bad page error
-In-Reply-To: <20070712134606.A10012@jurassic.park.msu.ru>
-Message-ID: <Pine.LNX.4.64.0707121708180.4887@blonde.wat.veritas.com>
-References: <20070709185324.387ACDBA1@gherkin.frus.com>
- <Pine.LNX.4.64.0707102120550.7594@blonde.wat.veritas.com>
- <20070711170245.A1148@jurassic.park.msu.ru> <Pine.LNX.4.64.0707111743580.22786@blonde.wat.veritas.com>
- <20070712134606.A10012@jurassic.park.msu.ru>
+	Thu, 12 Jul 2007 12:14:46 -0400
+Date: Thu, 12 Jul 2007 09:14:02 -0700
+From: Greg KH <greg@kroah.com>
+To: Mark Shelby <mshelby1@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel autoconfig option?
+Message-ID: <20070712161402.GA18550@kroah.com>
+References: <78ecab220707120718q7cfcff43u66f80711c7ec1005@mail.gmail.com> <Pine.LNX.4.64.0707121635120.25352@fbirervta.pbzchgretzou.qr> <78ecab220707120802p11ab3e1fye497f4107fe18c1d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAB2luYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbGludXgtYWxwaGFAdmdlci5rZXJuZWwub3JnAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAaW5rQGp1cmFzc2ljLnBhcmsubXN1LnJ1AHdsaUBob2xvbW9ycGh5LmNvbQBtaWNoYWwuay5rLnBpb3Ryb3dza2lAZ21haWwuY29tAHJjdEBnaGVya2luLmZydXMuY29tAA==
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <78ecab220707120802p11ab3e1fye497f4107fe18c1d@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007, Ivan Kokshaysky wrote:
-> On Wed, Jul 11, 2007 at 06:07:59PM +0100, Hugh Dickins wrote:
+On Thu, Jul 12, 2007 at 11:02:15AM -0400, Mark Shelby wrote:
+>  That's an excellent idea. I am still thinking along the lines of
+>  "idiot proof simplicity." It would be nice to have a configure script
+>  that scanned your system board, sound card/chip various input ports,
+>  etc, and went ahead and preselected those to build when you type
+>  "make.
 > 
-> > > +	return __pci_alloc_consistent(dev, size, dma, GFP_ATOMIC);
-> > 
-> > I was going to ask you why that needs to be GFP_ATOMIC on Alpha.
-> > But find you're following the example of asm-generic and others.
-> > So really should be asking Sparc how it gets away with GFP_KERNEL.
-> 
-> According to DMA-mapping.txt GFP_ATOMIC is mandatory for
-> pci_alloc_consistent() since it can be called from interrupt context.
-> So sparc code is probably incorrect...
+>  If you could combine this with the make "allmodconfig" command in a
+>  user friendly interface, I think you'd really be on to something!
+>  --as long as it's still configurable after the preselected choices are
+>  made.
 
-Hi Bill, we've veered away from the original topic, and are wondering
-how the sparc32 pci_alloc_consistent() gets away with using GFP_KERNEL,
-when GFP_ATOMIC seems to be required?
+Check the archives, this comes up every 6 months or so.
 
-Hugh
+Also, you can just use the simple scripts as described in the book,
+"Linux Kernel in a Nutshell", free online, to do most of what you are
+looking for here (automatic detection of what driver is needed for what
+device.)
+
+good luck,
+
+greg k-h
