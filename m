@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762669AbXGLJTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762872AbXGLJVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762669AbXGLJTE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 05:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbXGLJSz
+	id S1762872AbXGLJVp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 05:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbXGLJVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 05:18:55 -0400
-Received: from mga02.intel.com ([134.134.136.20]:17153 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751581AbXGLJSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 05:18:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,531,1175497200"; 
-   d="scan'208";a="265267924"
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec
-	base	hibernation
-From: "Huang, Ying" <ying.huang@intel.com>
-To: david@lang.hm
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-In-Reply-To: <Pine.LNX.4.64.0707112345250.28090@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	 <20070711172243.ab44c4d4.akpm@linux-foundation.org>
-	 <1184251423.9346.55.camel@caritas-dev.intel.com>
-	 <Pine.LNX.4.64.0707112345250.28090@asgard.lang.hm>
+	Thu, 12 Jul 2007 05:21:35 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:46750 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755348AbXGLJVe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 05:21:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=dvvEyDt2cLWwm/TVEL/onob+VPfYlXBFkV7vy3JbO+7CNaYI1btLRx+Lj4xyK3hB8Xsj+nKTVu6xEepByES1SKdMTdLRUpaP0Itw+4gpDqcgYHKYp5MKz/9zUjIksUNKD+fmeNVCM12giKyn5V4yq8FbJWJQV09r8LQlN3JTOzU=
+Subject: Re: [2.6 patch] the scheduled ACPI_PROCFS removal
+From: Richard Hughes <hughsient@gmail.com>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Bill Davidsen <davidsen@tmr.com>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
+       Zhang Rui <rui.zhang@intel.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4695BCEA.4060108@gmail.com>
+References: <20070709145755.GD3492@stusta.de>
+	 <20070709174544.2a6b7067@the-village.bc.nu>
+	 <Pine.LNX.4.64.0707092044520.2887@fbirervta.pbzchgretzou.qr>
+	 <46951969.4030109@tmr.com>  <4695BCEA.4060108@gmail.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 12 Jul 2007 17:18:03 +0000
-Message-Id: <1184260683.9346.91.camel@caritas-dev.intel.com>
+Date: Thu, 12 Jul 2007 10:18:17 +0100
+Message-Id: <1184231897.2380.2.camel@work>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 12 Jul 2007 09:18:48.0864 (UTC) FILETIME=[A7C2A200:01C7C465]
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 00:03 -0700, david@lang.hm wrote:
-> >
-> > The kexec jump is the first step, maybe the simplest step. There are
-> > many other issues to be resolved, at least the following ones.
-> >
-> > 1. Separate device suspend from device hibernate.
-> 
+On Thu, 2007-07-12 at 09:32 +0400, Alexey Starikovskiy wrote:
+> >> [*] Does someone have an alternative for
+> >> /proc/acpi/battery/BAT1/{state,info}?
+> I'm working on it. Should have proto by the end of week.
 
-Maybe my usage of terminology has some problem. But, the "device
-hibernate" here means put device into quiescent state and save the
-device state, but do not put device into low power state. 
+If you are using the power_supply class (i hope you are ;-) then a HAL
+from freedesktop git should make userspace continue to just work. Please
+yell if you notice any differences.
 
-> > 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
-> > be hibernate/resume by the normal kernel too. This way, a real
-> > kexec/boot-up is only needed for the first time.
-> 
-> the hibernate kernel shouldn't need a lot of the features of the standard 
-> kerneel (does it really need sound for example), and if tailored even 
-> tighter could be configured to only have the drivers actually used for the 
-> save and restore, makeing a _very_ minimal kernel (no USB, no network, 
-> only simple video drivers, etc) greatly speeding up the boot
+Richard.
 
-There is no need for two kernel. Most drivers and optional features are
-compiled as modules, as that of most desktop distributions. So just
-"insmod" needed modules only in hibernate kernel is sufficient.
 
-Best Regards,
-Huang Ying
