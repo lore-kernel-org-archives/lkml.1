@@ -1,53 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761973AbXGLHsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760329AbXGLIEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761973AbXGLHsQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 03:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbXGLHsB
+	id S1760329AbXGLIEu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 04:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXGLIEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 03:48:01 -0400
-Received: from il.qumranet.com ([82.166.9.18]:46551 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757051AbXGLHsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 03:48:00 -0400
-Message-ID: <4695DCAD.70507@qumranet.com>
-Date: Thu, 12 Jul 2007 10:47:57 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 12 Jul 2007 04:04:30 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:51540 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754631AbXGLIE1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 04:04:27 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 12 Jul 2007 04:02:16 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: axboe@kernel.dk
+Subject: [PATCH] BLOCK:  Remove references to dead CONFIG_MM_MAP_MEMORY
+ variable.
+Message-ID: <Pine.LNX.4.64.0707120401140.24359@localhost.localdomain>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH] lguest: disable SYSENTER for guests
-References: <1184224595.6005.772.camel@localhost.localdomain>
-In-Reply-To: <1184224595.6005.772.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Thu, 12 Jul 2007 10:47:57 +0300 (IDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> The SYSENTER instruction jumps to a pre-programmed address at
-> privilege level 0.  We must not allow execution of guest code at that
-> privilege level, so disable sysenter when we enter the guest (and
-> re-enable it on return).  This fixes current case where guest
-> userspace can crash host.
->
-> This save/restore adds 3% to guest context switch times.  (If only
-> there were some kind of scheduler hook or something which would tell
-> us when we were being preempted so we could fix this up lazily.  But
-> what kind of daredevil coder would propose such a thing?)
->
->   
 
-Ah, so this is why you want ->next in preempt hooks.  Well, my plan for
-this sort of thing (for kvm has the same issues with the *STAR family of
-msrs) is to add a new hook on switching from kernel to userspace, and
-swap those msrs there.  This allows not only the guest1->guest2 case to
-be optimized, but also guest->kthread->guest, which is a common pattern
-with I/O (and very common with -rt, which runs interrupts in threads).
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
+---
+
+diff --git a/drivers/block/umem.c b/drivers/block/umem.c
+index 6f5d620..62c9d08 100644
+--- a/drivers/block/umem.c
++++ b/drivers/block/umem.c
+@@ -105,12 +105,6 @@ struct cardinfo {
+ 	unsigned long	csr_base;
+ 	unsigned char	__iomem *csr_remap;
+ 	unsigned long	csr_len;
+-#ifdef CONFIG_MM_MAP_MEMORY
+-	unsigned long	mem_base;
+-	unsigned char	__iomem *mem_remap;
+-	unsigned long	mem_len;
+-#endif
+-
+ 	unsigned int	win_size; /* PCI window size */
+ 	unsigned int	mm_size;  /* size in kbytes */
+
+@@ -872,10 +866,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
+
+ 	card->csr_base = pci_resource_start(dev, 0);
+ 	card->csr_len  = pci_resource_len(dev, 0);
+-#ifdef CONFIG_MM_MAP_MEMORY
+-	card->mem_base = pci_resource_start(dev, 1);
+-	card->mem_len  = pci_resource_len(dev, 1);
+-#endif
+
+ 	printk(KERN_INFO "Micro Memory(tm) controller #%d found at %02x:%02x (PCI Mem Module (Battery Backup))\n",
+ 	       card->card_number, dev->bus->number, dev->devfn);
+@@ -903,27 +893,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
+ 	printk(KERN_INFO "MM%d: CSR 0x%08lx -> 0x%p (0x%lx)\n", card->card_number,
+ 	       card->csr_base, card->csr_remap, card->csr_len);
+
+-#ifdef CONFIG_MM_MAP_MEMORY
+-	if (!request_mem_region(card->mem_base, card->mem_len, "Micro Memory")) {
+-		printk(KERN_ERR "MM%d: Unable to request memory region\n", card->card_number);
+-		ret = -ENOMEM;
+-
+-		goto failed_req_mem;
+-	}
+-
+-	if (!(card->mem_remap = ioremap(card->mem_base, cards->mem_len))) {
+-		printk(KERN_ERR "MM%d: Unable to remap memory region\n", card->card_number);
+-		ret = -ENOMEM;
+-
+-		goto failed_remap_mem;
+-	}
+-
+-	printk(KERN_INFO "MM%d: MEM 0x%8lx -> 0x%8lx (0x%lx)\n", card->card_number,
+-	       card->mem_base, card->mem_remap, card->mem_len);
+-#else
+-	printk(KERN_INFO "MM%d: MEM area not remapped (CONFIG_MM_MAP_MEMORY not set)\n",
+-	       card->card_number);
+-#endif
+ 	switch(card->dev->device) {
+ 	case 0x5415:
+ 		card->flags |= UM_FLAG_NO_BYTE_STATUS | UM_FLAG_NO_BATTREG;
+@@ -1091,12 +1060,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
+ 				    card->mm_pages[1].desc,
+ 				    card->mm_pages[1].page_dma);
+  failed_magic:
+-#ifdef CONFIG_MM_MAP_MEMORY
+-	iounmap(card->mem_remap);
+- failed_remap_mem:
+-	release_mem_region(card->mem_base, card->mem_len);
+- failed_req_mem:
+-#endif
+ 	iounmap(card->csr_remap);
+  failed_remap_csr:
+ 	release_mem_region(card->csr_base, card->csr_len);
+@@ -1116,10 +1079,6 @@ static void mm_pci_remove(struct pci_dev *dev)
+ 	tasklet_kill(&card->tasklet);
+ 	iounmap(card->csr_remap);
+ 	release_mem_region(card->csr_base, card->csr_len);
+-#ifdef CONFIG_MM_MAP_MEMORY
+-	iounmap(card->mem_remap);
+-	release_mem_region(card->mem_base, card->mem_len);
+-#endif
+ 	free_irq(card->irq, card);
+
+ 	if (card->mm_pages[0].desc)
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
