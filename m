@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937844AbXGLBAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763411AbXGLBBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937844AbXGLBAH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 21:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934425AbXGLA7t
+	id S1763411AbXGLBBS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 21:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761779AbXGLBBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 20:59:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51224 "EHLO mx1.redhat.com"
+	Wed, 11 Jul 2007 21:01:03 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:41772 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937761AbXGLA7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 20:59:48 -0400
+	id S1761186AbXGLBBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jul 2007 21:01:01 -0400
+Date: Wed, 11 Jul 2007 18:00:58 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, dipankar@in.ibm.com, josht@linux.vnet.ibm.com,
+       akpm@linux-foundation.org
+Subject: [PATCH] Immunize rcu_dereference() against crazy compiler writers
+Message-ID: <20070712010058.GA30869@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove OPEN_MAX
-X-Windows: power tools for power fools.
-Message-Id: <20070712005914.CA51C4D0555@magilla.localdomain>
-Date: Wed, 11 Jul 2007 17:59:14 -0700 (PDT)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The OPEN_MAX macro in limits.h should not be there.  It claims to be the
-limit on file descriptors in a process, but its value is wrong for that.
-There is no constant value, but a variable resource limit (RLIMIT_NOFILE).
-Nothing in the kernel uses OPEN_MAX except things that are wrong to do so.
-I've submitted other patches to remove those uses.
+Turns out that compiler writers are a bit more aggressive about optimizing
+than one might expect.  This patch prevents a number of such optimizations
+from messing up rcu_deference().  This is not merely a theoretical
+problem, as evidenced by the rmb() in mce_log().
 
-The proper thing to do according to POSIX is not to define OPEN_MAX at all.
-The sysconf (_SC_OPEN_MAX) implementation works by calling getrlimit.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/limits.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/limits.h b/include/linux/limits.h
-index eaf2e09..c4b4e57 100644
---- a/include/linux/limits.h
-+++ b/include/linux/limits.h
-@@ -6,7 +6,6 @@
- #define NGROUPS_MAX    65536	/* supplemental group IDs are available */
- #define ARG_MAX       131072	/* # bytes of args + environ for exec() */
- #define CHILD_MAX        999    /* no limit :-) */
--#define OPEN_MAX         256	/* # open files a process may have */
- #define LINK_MAX         127	/* # links a file may have */
- #define MAX_CANON        255	/* size of the canonical input queue */
- #define MAX_INPUT        255	/* size of the type-ahead buffer */
+ rcupdate.h |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff -urpNa -X dontdiff linux-2.6.22/include/linux/rcupdate.h linux-2.6.22-volrcud/include/linux/rcupdate.h
+--- linux-2.6.22/include/linux/rcupdate.h	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.22-volrcud/include/linux/rcupdate.h	2007-07-11 17:21:09.000000000 -0700
+@@ -217,6 +217,18 @@ extern int rcu_needs_cpu(int cpu);
+ 		local_bh_enable(); \
+ 	} while(0)
+ 
++/*
++ * Prevent the compiler from merging or refetching accesses.  The compiler
++ * is also forbidden from reordering successive instances of ACCESS_ONCE(),
++ * but only when the compiler is aware of some particular ordering.  One way
++ * to make the compiler aware of ordering is to put the two invocations of 
++ * ACCESS_ONCE() in different C statements.
++ *
++ * This macro does absolutely -nothing- to prevent the CPU from reordering,
++ * merging, or refetching absolutely anything at any time.
++ */
++#define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
++
+ /**
+  * rcu_dereference - fetch an RCU-protected pointer in an
+  * RCU read-side critical section.  This pointer may later
+@@ -228,7 +240,7 @@ extern int rcu_needs_cpu(int cpu);
+  */
+ 
+ #define rcu_dereference(p)     ({ \
+-				typeof(p) _________p1 = p; \
++				typeof(p) _________p1 = ACCESS_ONCE(p); \
+ 				smp_read_barrier_depends(); \
+ 				(_________p1); \
+ 				})
