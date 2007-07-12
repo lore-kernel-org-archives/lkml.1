@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762487AbXGLHjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbXGLHnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762487AbXGLHjQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 03:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbXGLHjA
+	id S1762168AbXGLHnG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 03:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbXGLHm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 03:39:00 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:35483 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755647AbXGLHjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 03:39:00 -0400
-Date: Thu, 12 Jul 2007 09:37:57 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Alex Maclean <monkeh@monkeh.net>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de, Tim Gardner <tim.gardner@canonical.com>
-Subject: Re: acpi regression on some laptops
-Message-ID: <20070712093757.24cb70ae@i1501.lan.towertech.it>
-In-Reply-To: <46957CAC.8060308@monkeh.net>
-References: <20070710160056.443ae9ae@i1501.lan.towertech.it>
-	<46952CC5.6050800@redhat.com>
-	<20070712000124.22d0c3a7@i1501.lan.towertech.it>
-	<46955F4D.3090206@monkeh.net>
-	<20070712020944.446f3828@i1501.lan.towertech.it>
-	<46957CAC.8060308@monkeh.net>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jul 2007 03:42:56 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50442 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755001AbXGLHm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 03:42:56 -0400
+Message-ID: <4695DB7D.40201@garzik.org>
+Date: Thu, 12 Jul 2007 03:42:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Meelis Roos <mroos@linux.ee>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: AHCI linkage error in 2.6.22+git
+References: <Pine.SOC.4.64.0707121004410.18637@math>
+In-Reply-To: <Pine.SOC.4.64.0707121004410.18637@math>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 00:58:20 +0000
-Alex Maclean <monkeh@monkeh.net> wrote:
-
-> >  hw is a Dell Inspiron 1501, AMD Turion TL52 based.
-> >  drop me a note if you need dmesg or other info.
-
-> > 
-> >  eax in    eax      ebx      ecx      edx
-> > 00000000 00000001 68747541 444d4163 69746e65
-> > 00000001 00040f82 01020800 00002001 178bfbff
-> > 
+Meelis Roos wrote:
+> Trying to compile modular AHCI on ppc (prep):
 > 
-> What chipset is it? I'm going to guess at nVidia MCP51, in which case.. 
-> That's the third time that's worked on the MCP51.
+>   MODPOST 648 modules
+> ERROR: "ahci_port_resume" [drivers/ata/ahci.ko] undefined!
 
- amd sb600/ati rs480.
+Do you have CONFIG_PM disabled?
+
+	Jeff
 
 
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
 
