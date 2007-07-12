@@ -1,125 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760329AbXGLIEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbXGLIMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760329AbXGLIEu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 04:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXGLIEa
+	id S1761417AbXGLIMZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 04:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757805AbXGLIMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 04:04:30 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:51540 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbXGLIE1 (ORCPT
+	Thu, 12 Jul 2007 04:12:13 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:42970 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757914AbXGLIMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 04:04:27 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 12 Jul 2007 04:02:16 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: axboe@kernel.dk
-Subject: [PATCH] BLOCK:  Remove references to dead CONFIG_MM_MAP_MEMORY
- variable.
-Message-ID: <Pine.LNX.4.64.0707120401140.24359@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 12 Jul 2007 04:12:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=m9Sd1nmnAp6pab+FqDni0fUz54SiyUT7GfJ98uIaU65s3h1lm2lF83Sdxhpx3w5fG+qBzpH1LdLnoxdb3yX5B6pAVtMJcJEpWBjE0ec4jsXdlgP6/LjsI1P8CG4e+IUMlzMWTgXDk191TYkNugl1SVJBxDelaBJ+sfb12SdM9ls=
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/4] fbdev: uvesafb
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070623104920.GA12623@spock.one.pl>
+References: <20070623104920.GA12623@spock.one.pl>
+Content-Type: text/plain
+Date: Thu, 12 Jul 2007 16:12:01 +0800
+Message-Id: <1184227922.4504.22.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-06-23 at 12:49 +0200, Michal Januszewski wrote:
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+My apologies for the delayed response. I had problems with my ISP.
+ 
+> uvesafb is a generic driver for VBE2+ compliant video cards; an enhanced
+> version of vesafb and a direct successor of vesafb-tng [1].
+> 
+> uvesafb uses a userspace helper application (v86d, [2]) to run the x86
+> Video BIOS code.  This makes it possible to include in uvesafb all the
+> standard features (refresh rate control, video mode changes etc) that
+> are missing from vesafb without resorting to ugly hacks such as the ones
+> used in [1].  The current implementation of v86d can use either LRMI or
+> x86emu to run the BIOS code and supports both x86 and x86_64.
+> 
+> [1] http://dev.gentoo.org/~spock/projects/vesafb-tng/
+> [2] http://dev.gentoo.org/~spock/projects/uvesafb/
+> 
 
----
+This is cool, I had a similar project before (which did work) but
+abandoned it. In fact, it need not be restricted to vbe, as long as the
+userspace daemon can interpret VESA.
 
-diff --git a/drivers/block/umem.c b/drivers/block/umem.c
-index 6f5d620..62c9d08 100644
---- a/drivers/block/umem.c
-+++ b/drivers/block/umem.c
-@@ -105,12 +105,6 @@ struct cardinfo {
- 	unsigned long	csr_base;
- 	unsigned char	__iomem *csr_remap;
- 	unsigned long	csr_len;
--#ifdef CONFIG_MM_MAP_MEMORY
--	unsigned long	mem_base;
--	unsigned char	__iomem *mem_remap;
--	unsigned long	mem_len;
--#endif
--
- 	unsigned int	win_size; /* PCI window size */
- 	unsigned int	mm_size;  /* size in kbytes */
+Tony
 
-@@ -872,10 +866,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
 
- 	card->csr_base = pci_resource_start(dev, 0);
- 	card->csr_len  = pci_resource_len(dev, 0);
--#ifdef CONFIG_MM_MAP_MEMORY
--	card->mem_base = pci_resource_start(dev, 1);
--	card->mem_len  = pci_resource_len(dev, 1);
--#endif
-
- 	printk(KERN_INFO "Micro Memory(tm) controller #%d found at %02x:%02x (PCI Mem Module (Battery Backup))\n",
- 	       card->card_number, dev->bus->number, dev->devfn);
-@@ -903,27 +893,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
- 	printk(KERN_INFO "MM%d: CSR 0x%08lx -> 0x%p (0x%lx)\n", card->card_number,
- 	       card->csr_base, card->csr_remap, card->csr_len);
-
--#ifdef CONFIG_MM_MAP_MEMORY
--	if (!request_mem_region(card->mem_base, card->mem_len, "Micro Memory")) {
--		printk(KERN_ERR "MM%d: Unable to request memory region\n", card->card_number);
--		ret = -ENOMEM;
--
--		goto failed_req_mem;
--	}
--
--	if (!(card->mem_remap = ioremap(card->mem_base, cards->mem_len))) {
--		printk(KERN_ERR "MM%d: Unable to remap memory region\n", card->card_number);
--		ret = -ENOMEM;
--
--		goto failed_remap_mem;
--	}
--
--	printk(KERN_INFO "MM%d: MEM 0x%8lx -> 0x%8lx (0x%lx)\n", card->card_number,
--	       card->mem_base, card->mem_remap, card->mem_len);
--#else
--	printk(KERN_INFO "MM%d: MEM area not remapped (CONFIG_MM_MAP_MEMORY not set)\n",
--	       card->card_number);
--#endif
- 	switch(card->dev->device) {
- 	case 0x5415:
- 		card->flags |= UM_FLAG_NO_BYTE_STATUS | UM_FLAG_NO_BATTREG;
-@@ -1091,12 +1060,6 @@ static int __devinit mm_pci_probe(struct pci_dev *dev, const struct pci_device_i
- 				    card->mm_pages[1].desc,
- 				    card->mm_pages[1].page_dma);
-  failed_magic:
--#ifdef CONFIG_MM_MAP_MEMORY
--	iounmap(card->mem_remap);
-- failed_remap_mem:
--	release_mem_region(card->mem_base, card->mem_len);
-- failed_req_mem:
--#endif
- 	iounmap(card->csr_remap);
-  failed_remap_csr:
- 	release_mem_region(card->csr_base, card->csr_len);
-@@ -1116,10 +1079,6 @@ static void mm_pci_remove(struct pci_dev *dev)
- 	tasklet_kill(&card->tasklet);
- 	iounmap(card->csr_remap);
- 	release_mem_region(card->csr_base, card->csr_len);
--#ifdef CONFIG_MM_MAP_MEMORY
--	iounmap(card->mem_remap);
--	release_mem_region(card->mem_base, card->mem_len);
--#endif
- 	free_irq(card->irq, card);
-
- 	if (card->mm_pages[0].desc)
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
