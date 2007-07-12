@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936676AbXGLDQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765577AbXGLDUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936676AbXGLDQU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jul 2007 23:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbXGLDQA
+	id S1765577AbXGLDUT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jul 2007 23:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbXGLDUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jul 2007 23:16:00 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:58165
-	"EHLO moonbase" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765462AbXGLDP7 (ORCPT
+	Wed, 11 Jul 2007 23:20:04 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:59579 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756363AbXGLDUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jul 2007 23:15:59 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Date: Wed, 11 Jul 2007 20:15:53 -0700
-User-Agent: KMail/1.9.5
-Cc: Zan Lynx <zlynx@acm.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200707111916.35036.jesper.juhl@gmail.com> <200707111305.08603.phillips@phunq.net> <18069.21771.945367.815193@notabene.brown>
-In-Reply-To: <18069.21771.945367.815193@notabene.brown>
+	Wed, 11 Jul 2007 23:20:03 -0400
+Date: Wed, 11 Jul 2007 23:20:00 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: [GIT] SELinux changes for 2.6.23 (updated)
+Message-ID: <Line.LNX.4.64.0707112315480.30564@d.namei>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707112015.53434.phillips@phunq.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 July 2007 15:09, Neil Brown wrote:
-> > > Has anyone fixed the infrequent crashes with 4K stacks and ext3
-> > > -> LVM snapshot -> LVM -> DM mirror -> libata?
-> >
-> > Ahem: ext3 -> LVM snapshot -> LVM -> DM mirror -> DM crypt -> md ->
-> > libata, or worse.
-> >
-> > No, it's not fixed.  The model is wrong.  Virtual block drivers
-> > should not be callling submit_bio.  The recursive IO submissions
-> > should be handled on a dedicated stack, most probably allocated as
-> > part of the request queue. This could be done easily in device
-> > mapper and md, or better, in submit_bio.
->
-> Maybe you should read that latest kernel source code.  Particularly
-> generic_make_request in block/ll_rw_blk.c.
+This is an updated set of 2.6.23 SELinux changes, rebased & tested against 
+current git.  The vmsplice patch has been dropped from this and will be 
+resubmitted via Jens.  Also added an ack from Chris Wright for the mmap 
+null dereference hooks (which I'd forgotten to add to my tree some time 
+ago).
 
-And plus you've had that one sitting around since 2005, hats off for
-nailing the issue from way out.  Sorry for missing the action, I was 
-elsewhere.  Niggles begin here.
+Please pull.
 
-I'm not sure I like the additional task_struct encumbrance when the
-functions themselves could sort it out, albeit with an API change
-affecting a gaggle of md and dm drivers.
 
-Hopefully there are other users of the bio list fields, otherwise I
-would point out that a per-queue stack is less memory than two
-per-bio fields.  I didn't go delving that far.
+The following changes since commit 4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4:
+  Alan Cox (1):
+        lots-of-architectures: enable arbitary speed tty support
 
-The pointer to the description of the barrier deadlock is not right, it
-points to the problem report when it really out to point to the
-definitive analysis and include a subject line, because list archives
-come and go:
+are found in the git repository at:
 
-   [PATCH] block: always requeue !fs requests at the front
-   http://thread.gmane.org/gmane.linux.kernel/537473
+  git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-linus
 
-Is there a good reason why we should not just put the whole
-analysis from Tejun Heo in as a comment?  It is terse enough.
+Adrian Bunk (1):
+      security: unexport mmap_min_addr
 
-In other words, looks good to me :)
+Christopher J. PeBenito (4):
+      selinux: add support for querying object classes and permissions from the running policy
+      selinux: rename sel_remove_bools() for more general usage.
+      selinux: change sel_make_dir() to specify inode counter.
+      selinux: add selinuxfs structure for object class discovery
 
-Regards,
+Eric Paris (2):
+      selinux: introduce schedule points in policydb_destroy()
+      security: Protection for exploiting null dereference using mmap
 
-Daniel
+Paul Moore (1):
+      SELinux: use SECINITSID_NETMSG instead of SECINITSID_UNLABELED for NetLabel
+
+Stephen Smalley (1):
+      SELinux: allow preemption between transition permission checks
+
+Tobias Oed (1):
+      SELinux: Use %lu for inode->i_no when printing avc
+
+ Documentation/sysctl/vm.txt                  |   15 ++
+ include/linux/security.h                     |   17 ++-
+ kernel/sysctl.c                              |   10 +
+ mm/mmap.c                                    |    4 +-
+ mm/mremap.c                                  |   13 +-
+ mm/nommu.c                                   |    2 +-
+ security/dummy.c                             |    6 +-
+ security/security.c                          |    1 +
+ security/selinux/avc.c                       |   12 +-
+ security/selinux/hooks.c                     |   42 +++--
+ security/selinux/include/av_perm_to_string.h |    1 +
+ security/selinux/include/av_permissions.h    |    1 +
+ security/selinux/include/avc.h               |    6 +-
+ security/selinux/include/class_to_string.h   |    1 +
+ security/selinux/include/flask.h             |    1 +
+ security/selinux/include/security.h          |    4 +
+ security/selinux/netlabel.c                  |   34 ++--
+ security/selinux/selinuxfs.c                 |  269 +++++++++++++++++++++++++-
+ security/selinux/ss/policydb.c               |    7 +
+ security/selinux/ss/services.c               |  144 ++++++++++++--
+ 20 files changed, 504 insertions(+), 86 deletions(-)
