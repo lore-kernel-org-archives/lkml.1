@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763413AbXGMTyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763223AbXGMT6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763413AbXGMTyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 15:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757056AbXGMTyd
+	id S1763223AbXGMT6e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 15:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758031AbXGMT60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 15:54:33 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:50287 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbXGMTyd (ORCPT
+	Fri, 13 Jul 2007 15:58:26 -0400
+Received: from smtp108.sbc.mail.mud.yahoo.com ([68.142.198.207]:35166 "HELO
+	smtp108.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757684AbXGMT60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 15:54:33 -0400
-Subject: Re: [PATCH] Simplify /proc/<pid|self>/exe symlink code
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Al Viro <viro@ftp.linux.org.uk>,
-       linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>, "Hallyn, Serge" <serue@us.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <20070712192114.bb357ce4.akpm@linux-foundation.org>
-References: <1184292012.13479.14.camel@localhost.localdomain>
-	 <20070712192114.bb357ce4.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 13 Jul 2007 12:54:20 -0700
-Message-Id: <1184356460.16131.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Fri, 13 Jul 2007 15:58:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=52QGURNF6Jlq2HuU95uiZRpRmBx/yjTCBdekUXLsMpqnAK7UMXlTQ5a0wigQHWV1BxDmFB7V7CKs5jdFL7iXAnlCnwNjVGnAFiPaK2fgkKXf47E3JJzqGJSD6fcb2VViu60jAP5wo8A8hGTr8lb/jxKkhvK4SLIhWxo94YQA/Eo=  ;
+X-YMail-OSG: dVXiqP0VM1mnmLErQWbKY7Z.Qqx2yT9omH8Czrlkb.CP51g7
+From: David Brownell <david-b@pacbell.net>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: [RESEND patch 2.6.22-rc4 1/2] ads7846 sample settling
+Date: Fri, 13 Jul 2007 12:58:23 -0700
+User-Agent: KMail/1.9.6
+Cc: "Semih Hazar" <semih.hazar@indefia.com>,
+       "Imre Deak" <imre.deak@solidboot.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+References: <200707131129.10885.david-b@pacbell.net> <d120d5000707131201x4ccfb41bk5fe610c299869514@mail.gmail.com>
+In-Reply-To: <d120d5000707131201x4ccfb41bk5fe610c299869514@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707131258.23543.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 19:21 -0700, Andrew Morton wrote:
-> On Thu, 12 Jul 2007 19:00:12 -0700 Matt Helsley <matthltc@us.ibm.com> wrote:
+On Friday 13 July 2007, Dmitry Torokhov wrote:
+> HI David,
 > 
-> > This patch avoids holding the mmap semaphore while walking VMAs in response to
-> > programs which read or follow the /proc/<pid|self>/exe symlink. This also allows
-> > us to merge mmu and nommu proc_exe_link() functions. The costs are holding the
-> > task lock, a separate reference to the executable file stored in the task
-> > struct, and increased code in fork, exec, and exit paths.
-> > 
-> > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> > ---
-> > 
-> > Changelog:
-> > 
-> > Hold task_lock() while using task->exe_file. With this change I haven't
-> > 	been able to reproduce Chris Wright's Oops report:
-> > 		http://lkml.org/lkml/2007/5/31/34 
-> > 	I used a 4-way, x86 system running kernbench. I also tried a 4-way x86_64
-> > 	system running pidof. I used oprofile during all runs but I could not
-> > 	reproduce Chris' Oops with the new patch.
-> > 
-> > Compiled and passed simple tests for regressions when patched against a 2.6.20
-> > and a 2.6.22 kernel. Regression tests included a variety of file operations on
-> > /proc/<pid|self>/exe such as stat, lstat, open, close, readlink, and unlink. All
-> > produced the expected, baseline output results.
-> > 
-> > Andrew, please consider this patch for inclusion in -mm.
+> On 7/13/07, David Brownell <david-b@pacbell.net> wrote:
+> > From: Semih Hazar <semih.hazar@indefia.com>
+> >
+> > The ads7846 driver has support for filtering, but when the chip gets
+> > deselected between samples this causes noise. This patch adds support
+> > for an optional settling delay time, so that two consecutive samples
+> > will be taken with the specified delay time apart.  This ensures that
+> > the chip won't be deselected, so the noise won't appear.
+> >
 > 
-> I wish we had a description of the bug which this fixes.  That email of
-> Chris's is referencing code which diddles with task_struct.exe_file, but
-> your patch _adds_ task_struct.exe_file, so I am all confused.
+> 
+> Sorry for being unresponsive.
 
-Chris was testing the patch. The patch isn't a bug fix so much as a
-failed attempt to remove one use of the mm's mmap lock.
+It happens to all of us sometimes!  No real problem.
 
-> Your patch does lots of fput()s under task_lock(), but fput() can sleep.
 
-Ack, you're right.
+> 	I have both patches in my tree and I 
+> will push them to Linus with my next batch for 2.6.23-pre-rc1.
 
-> Plus what Al said.
+Great, that's what I wanted to see happen.
 
-Yup.
 
-Thanks,
-	-Matt Helsley
+Watching this touchscreen driver evolve has been interesting;
+I hadn't realized it took quite so much work to get accurate
+measurements!  Some touchscreen controllers seem to do the
+sample quality improvement in hardware (or firmware), but this
+seems to be the only driver doing this much of the work itself.
+
+- Dave
 
