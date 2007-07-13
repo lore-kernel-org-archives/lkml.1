@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935998AbXGMOdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936197AbXGMOff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935998AbXGMOdw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759744AbXGMOdo
+	id S936197AbXGMOff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 10:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932191AbXGMOf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:33:44 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:45064 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758007AbXGMOdn (ORCPT
+	Fri, 13 Jul 2007 10:35:26 -0400
+Received: from alnrmhc14.comcast.net ([204.127.225.94]:62677 "EHLO
+	alnrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760472AbXGMOfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:33:43 -0400
-Date: Fri, 13 Jul 2007 10:33:41 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: [Bug 7750] open/close loop causes disabled irq (fwd)
-Message-ID: <Pine.LNX.4.44L0.0707131030280.4865-100000@iolanthe.rowland.org>
+	Fri, 13 Jul 2007 10:35:25 -0400
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: david@lang.hm
+Cc: Joseph Fannin <jfannin@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Huang\, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: Hibernating To Swap Considered Harmful
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<200707121453.49616.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707121150460.25614@asgard.lang.hm>
+	<200707122134.29991.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
+	<20070713054244.GA20082@nineveh.local>
+	<Pine.LNX.4.64.0707122250170.25614@asgard.lang.hm>
+	<20070713062039.GA29055@nineveh.local>
+	<Pine.LNX.4.64.0707122319270.25614@asgard.lang.hm>
+	<20070713071512.GB29055@nineveh.local>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Fri, 13 Jul 2007 10:35:22 -0400
+In-Reply-To: <20070713071512.GB29055@nineveh.local> (Joseph Fannin's message
+	of "Fri\, 13 Jul 2007 03\:15\:12 -0400")
+Message-ID: <87odig1idx.fsf@jbms.ath.cx>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan:
+jfannin@gmail.com (Joseph Fannin) writes:
 
-Can this be ignored, or is it a case of a patch papering over a real
-problem?  It seems possible that some serial driver is leaving device
-IRQs enabled after it has unregistered itself as an interrupt handler.
+[snip]
 
-Alan Stern
+> Intel Macs use GPT partition tables, which support a huge number
+> of primary partitions, and so don't support secondary partitions.
 
+> 32bit Windows does not support GPT, so PC-style MBR partition tables
+> must also be used.  GPT was designed to coexist with MBR tools, so
+> this mostly works, but you're limited to the union of supported
+> features -- 4 primary partitions, no secondaries.
 
----------- Forwarded message ----------
-Date: Thu, 12 Jul 2007 20:02:25 -0700 (PDT)
-From: bugme-daemon@bugzilla.kernel.org
-To: stern@rowland.harvard.edu
-Subject: [Bug 7750] open/close loop causes disabled irq
+There is a very simple solution to this obscure problem: (if I
+understand correctly, you want to dual boot Mac OS X and Linux (and
+maybe also Windows?))
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7750
-
-
-
-
-
-------- Comment #4 from dannf@dannf.org  2007-07-12 20:07 -------
-I attempted to reproduce this today under 2.6.22 and was unable to. I then used
-git bisect to try and identify the changeset that fixed the issue and ended up
-with the one below.
-
-I wonder if this should be considered a security issue (DoS)?
-
-commit 8528b0f1de1101c6002036fd53638fb21111d0ea
-Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-Date:   Tue Jan 23 14:16:31 2007 -0800
-
-    Clear spurious irq stat information when adding irq handler
-
-    Any newly added irq handler may obviously make any old spurious irq
-    status invalid, since the new handler may well be the thing that is
-    supposed to handle any interrupts that came in.
-
-    So just clear the statistics when adding handlers.
-
-    Pointed-out-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-    Acked-by: Thomas Gleixner <tglx@linutronix.de>
-    Acked-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-:040000 040000 d3bd3ddf15462bca9f796e899b96f2e17d30bc34
-3ea41ebe53747377873202db8b59e2c4e84aef8c M      kernel
-
+use LVM, thus allowing you to have as many volumes as you like in the
+partition
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
-
-
+Jeremy Maitin-Shepard
