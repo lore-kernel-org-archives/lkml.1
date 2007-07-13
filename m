@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbXGMMVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbXGMMWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbXGMMVZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 08:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756278AbXGMMVQ
+	id S1759290AbXGMMWl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 08:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbXGMMWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 08:21:16 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:25284 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755996AbXGMMVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 08:21:15 -0400
-Date: Fri, 13 Jul 2007 14:21:00 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       olaf.kirch@oracle.com
-Subject: Re: [PATCH][RFC] network splice receive v3
-Message-ID: <20070713122058.GL5328@kernel.dk>
-References: <20070711091927.GQ4587@kernel.dk> <20070712170247.GA18469@2ka.mipt.ru>
+	Fri, 13 Jul 2007 08:22:32 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:22250 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756935AbXGMMWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 08:22:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=rYjs2xmt7dUom01vzvi4VcvhOH59nC5BYp7/OQ0UFrGHxkFJGR4ByLYYZc8HlpACVC2tKV0P9hxmiYNTPmzhiKucbdaR1V+aLQkLuvdVVxtbMqnmUQrH8yS1RIU3AOOrFEyHYNXVuvwvVveI38/oS3uatwNS2iqvnOr0BOn2vWI=
+Message-ID: <84144f020707130522l3a800b61i6b7c4d9084277cdf@mail.gmail.com>
+Date: Fri, 13 Jul 2007 15:22:29 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Kalpak Shah" <kalpak@clusterfs.com>
+Subject: Re: [EXT4 set 7][PATCH 1/1]Remove 32000 subdirs limit.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, cmm@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+In-Reply-To: <1184322648.4315.2.camel@garfield.linsyssoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070712170247.GA18469@2ka.mipt.ru>
+References: <1183275498.4010.135.camel@localhost.localdomain>
+	 <20070710224011.e60b9864.akpm@linux-foundation.org>
+	 <1184322648.4315.2.camel@garfield.linsyssoft.com>
+X-Google-Sender-Auth: 3b1bff51d36c62d0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12 2007, Evgeniy Polyakov wrote:
-> On Wed, Jul 11, 2007 at 11:19:27AM +0200, Jens Axboe (jens.axboe@oracle.com) wrote:
-> > Hi,
-> 
-> Hi Jens.
-> 
-> > Here's an updated implementation of tcp network splice receive support.
-> > It actually works for me now, no data corruption seen.
-> > 
-> > For the original announcement and how to test it, see:
-> > 
-> > http://marc.info/?l=linux-netdev&m=118103093400770&w=2
-> > 
-> > The splice core changes needed to support this are now merged in
-> > 2.6.22-git, so the patchset shrinks to just two patches - one for adding
-> > a release hook, and one for the networking changes.
-> > 
-> > The code is also available in the splice-net branch here:
-> > 
-> > git://git.kernel.dk/data/git/linux-2.6-block.git splice-net
-> > 
-> > There's a third experimental patch in there that allows vmsplice
-> > directly to user memory, that still needs some work though.
-> > 
-> > Comments, testing welcome!
-> 
-> It looks like you included all bits we found in the previous runs, so
-> likely it will work good, but so far I have conflicts merging todays git
-> and your tree in include/linux/splice.h, fs/ext2/file.c, fs/splice.c and 
-> mm/filemap_xip.c. This can be a problem with my tree though.
+On 7/13/07, Kalpak Shah <kalpak@clusterfs.com> wrote:
+> > EXT4_DIR_LINK_MAX() is buggy: it evaluates its arg twice.
+>
+> #define EXT4_DIR_LINK_MAX(dir) (!is_dx(dir) && (dir)->i_nlink >= EXT4_LINK_MAX)
 
-Hmm, the patch should apply directly to the tree as of when I posted
-this original mail, or any later one. I just tried a rebase, and it
-rebased fine on top of the current -git as well. So I think the issue is
-with your tree, sorry!
+[snip]
 
-> It really looks like the last tree we tested, so if you think additional
-> one will not hurt, feel free to ping, so I will completely rebase
-> testing tree.
+> Sorry, I didn't understand what is the problem with this macro?
 
-It would be great if you could retest! There are some minor changes in
-there, and some extra testing definitely will not hurt.
+The expression represented by 'dir' is evaluated twice (think dir++
+here). It's safer to make it a static inline function.
 
--- 
-Jens Axboe
-
+                                       Pekka
