@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbXGMEN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbXGMEQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751782AbXGMEN1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 00:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbXGMENT
+	id S1752288AbXGMEQH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 00:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbXGMEP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 00:13:19 -0400
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:47788 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750717AbXGMENS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 00:13:18 -0400
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Christoph Hellwig <hch@infradead.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Nitin Gupta <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Gmail and flowed text (was Re: Correction to LZO1X)
-Date: Wed, 11 Jul 2007 22:05:26 +0100
-User-Agent: KMail/1.9.7
-References: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com> <20070711152144.GA1394@infradead.org>
-In-Reply-To: <20070711152144.GA1394@infradead.org>
+	Fri, 13 Jul 2007 00:15:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:43145 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755AbXGMEP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 00:15:56 -0400
+Message-ID: <4696FC43.3000201@goop.org>
+Date: Thu, 12 Jul 2007 21:14:59 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Ray Lee <ray-lk@madrabbit.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+References: <200707111916.35036.jesper.juhl@gmail.com>	 <2c0942db0707112159v3ee2cd83i74759c7138e273f7@mail.gmail.com>	 <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com>	 <4696C89E.4010002@goop.org> <9a8748490707121925w5fb22c0o61068f06d66d5845@mail.gmail.com>
+In-Reply-To: <9a8748490707121925w5fb22c0o61068f06d66d5845@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707112205.26470.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 July 2007 16:21:44 Christoph Hellwig wrote:
-> On Wed, Jul 11, 2007 at 07:06:23PM +0530, Satyam Sharma wrote:
-> > Which leaves Gmail, but Gmail has the flowed text disease (that
-> > cannot be disabled) and although Gmail offers SMTP/POP, our evil
-> > proxy/NAT setup here wouldn't let me make any use of it to access
-> > it from some other MUA such as pine/mutt.
->
-> Given the amount of google people here maybe someone can get this
-> piece of junk called gmail fixed?  If google claims they're not
-> evil they should stop sending broken patches around..
+Jesper Juhl wrote:
+> Yes and no.  If that will get things moving in the direction of
+> getting rid of the stack size as a config option, then I'm all for it.
+> But on the other hand it is my personal opinion that this is an area
+> where we should just make up our minds as to whether we want 4K or 8K
+> stacks and whether we want interrupt stacks or not, and then not have
+> it configurable at all.  
 
-It'd be nice if they stopped mangling headers too (spaces->tabs).
+Well, smaller stacks are better where possible, but there's nothing 
+magic about 4k.  Sure, its mostly enough, but there's no particular 
+reason to believe it will be enough for everything.  You could state a 
+priori that all kernel code paths must fit into 4k of stack, but that's 
+pretty arbitrary.
 
--- 
-Cheers,
-Alistair.
+I'm tempted to post a patch making XFS depend on 8K stacks.  I know is 
+simplistic, given that it seems to be xfs+lvm which is particularly 
+problematic, and other filesystems+lvm are also a problem.  But its 
+better than crashing.
 
-137/1 Warrender Park Road, Edinburgh, UK.
-
+    J
