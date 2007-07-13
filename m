@@ -1,70 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762119AbXGMAVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbXGMAfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762119AbXGMAVy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 20:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbXGMAVq
+	id S1760548AbXGMAfn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 20:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbXGMAfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 20:21:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54423 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757141AbXGMAVq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 20:21:46 -0400
-Date: Thu, 12 Jul 2007 17:20:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
+	Thu, 12 Jul 2007 20:35:36 -0400
+Received: from gw.goop.org ([64.81.55.164]:47594 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751846AbXGMAff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 20:35:35 -0400
+Message-ID: <4696C89E.4010002@goop.org>
+Date: Thu, 12 Jul 2007 17:34:38 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Ray Lee <ray-lk@madrabbit.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [GIT PATCH] USB patches for 2.6.22
-Message-Id: <20070712172023.d59c3001.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707121647420.20061@woody.linux-foundation.org>
-References: <20070712234233.GA22339@kroah.com>
-	<alpine.LFD.0.999.0707121647420.20061@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+References: <200707111916.35036.jesper.juhl@gmail.com>	 <2c0942db0707112159v3ee2cd83i74759c7138e273f7@mail.gmail.com> <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com>
+In-Reply-To: <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 17:03:46 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Jesper Juhl wrote:
+> If, on the other hand, we consider 4K stacks to be the superior
+> solution, then we should work to get all code fixed to be able to
+> handle it so that it's actually something distros will start to enable
+> so that we can eventually get rid of the 8K stack option alltogether.
+> Making 4K stacks default and no longer a debug option is just the
+> first step in that direction.
 
-> 
-> On Thu, 12 Jul 2007, Greg KH wrote:
-> >
-> > Here are a bunch of USB patches and fixes against your 2.6.22 git tree.
-> 
-> This also seems to contain some *totally*pointless* config variable 
-> changes, that actually break simple things like "make oldconfig".
-> 
-> This commit is insane: acb11c8b8020f1f1b2545152020675ef32d09a58 "USB: fix 
-> gregkh-usb-usb-use-menuconfig-objects"
-> 
-> It fixes nothing at all, quite the reverse. It makes the default be 
-> somethign that breaks everything, and more irritatingly, even if you 
-> answer 'y' (against the default), it breaks "make oldconfig", which will 
-> have ignored all the old options and now will ask you for all of them 
-> again.
-> 
-> Yeah, that second part may be a "make oldconfig" bug, but regardless, 
-> these kinds of Kconfig changes are BAD, BAD, BAD!
-> 
-> I hate how people do just stupid things to "clean up" config files 
-> (renaming config options etc), apparently never even bothering to think 
-> about whether a question is sane or not, or whether normal users want to 
-> see it or not.
-> 
-> I know I'm not the only one who does "make oldconfig". Answering the same 
-> questions over and over again is not something *anybody* wants to do.
-> 
-> So please stop this madness. I've reverted the change that left the 
-> menuconfig entry without a default, which at least fixes "make oldconfig", 
-> but I just found this really irritating. I can pretty much guarantee that 
-> nobody actually *tested* this change, did they?
-> 
+First step is to apply wli's patch which makes separate interrupt stacks 
+orthogonal to the 4K stack option.
 
-I went through the same pain a few weeks ago and I _thought_ all except one
-of these "fixes" got tossed.  However it looks like the USB one escaped.
+    J
