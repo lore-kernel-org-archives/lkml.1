@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbXGMGdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934199AbXGMGfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932615AbXGMGdQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbXGMGdD
+	id S934199AbXGMGfW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbXGMGfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:33:03 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:35220
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753676AbXGMGdB (ORCPT
+	Fri, 13 Jul 2007 02:35:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57119 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752086AbXGMGfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:33:01 -0400
-Date: Thu, 12 Jul 2007 23:27:41 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Joseph Fannin <jfannin@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: Hibernating To Swap Considered Harmful
-In-Reply-To: <20070713062039.GA29055@nineveh.local>
-Message-ID: <Pine.LNX.4.64.0707122319270.25614@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
- <200707121453.49616.rjw@sisk.pl> <Pine.LNX.4.64.0707121150460.25614@asgard.lang.hm>
- <200707122134.29991.rjw@sisk.pl> <Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
- <20070713054244.GA20082@nineveh.local> <Pine.LNX.4.64.0707122250170.25614@asgard.lang.hm>
- <20070713062039.GA29055@nineveh.local>
+	Fri, 13 Jul 2007 02:35:08 -0400
+Date: Thu, 12 Jul 2007 23:34:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bryan Wu <bryan.wu@analog.com>
+cc: Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       Nish Aravamudan <nish.aravamudan@gmail.com>
+Subject: Re: Linux 2.6.22.1
+In-Reply-To: <1184308100.8943.12.camel@roc-desktop>
+Message-ID: <alpine.LFD.0.999.0707122328340.20061@woody.linux-foundation.org>
+References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com> 
+ <1184307380.8943.7.camel@roc-desktop>  <20070713061617.GA24317@kroah.com>
+ <1184308100.8943.12.camel@roc-desktop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007, Joseph Fannin wrote:
 
-> On Thu, Jul 12, 2007 at 10:57:04PM -0700, david@lang.hm wrote:
->> On Fri, 13 Jul 2007, Joseph Fannin wrote:
->>
->> the only justification I have heard for why the hibernate image must be
->> written to the swap partition is backwards compatibility (i.e., we've
->> always done it that way)
->>
->> if you are going to reserve disk space for hibernation, what is so bad
->> about useing a normal partition?
->>
->    You have to either repartition when you upgrade your memory, or
-> waste a bunch of disk space with a partition as large as you think
-> your RAM might ever expand to.
 
-memory upgrades are rare and tools are available nowdays to resize linux 
-partitions.
+On Fri, 13 Jul 2007, Bryan Wu wrote:
+> 
+> I can git-pull from Linus tree through http in my company, this one
+> can't. If it is not easy to open it by you guys, I have to git-pull at
+> home, -:))
 
->    Swap/hibernate files can be created, deleted, and resized without
-> partitioning.
+In that case, it's almost certainly that that tree isn't doing the proper 
+"git update-server-info" when people push to it.
 
-if you just use the hibernate file as a reserved set of blocks and never 
-touch them from the main OS things will work, but if you do anything that 
-could put those blocks into the OS write cache all bets are off.
+Chris/Greg: just add a
 
->    Also: not all platforms support a large number of partitions.
-> It's not academic -- Intel Macintoshes are limited to four, with two
-> taken by Mac OS.  Add Windows and a Linux /, and you're out --
-> there's no room for a swap file.
+	hooks/post-update
 
-interesting, I didn't know that. I know that the Tivo's use Mac style 
-partition tables and they have many partitions (10+). it seems odd that 
-when switching from powerpc to x86 that they would lock themselves down 
-like that. are you sure that they can't have extended partitions like 
-standard PC's? it seems odd that they would have such a special partition 
-table type if windows can access it.
+file to your git repo that is executable, and just contains
 
-David Lang
+	#!/bin/sh
+	exec git-update-server-info
+
+in it, and you'll be golden. It will mean that every time you push to the 
+repo, it will run the "git update-server-info" thing after the push. And 
+that will update all the necessary files for the stupid protocols (ie 
+http) that don't know about git natively.
+
+Oh, and run the "git-update-server-info" once by hand, just so that you 
+don't then have to wait until after the next push for the git repo to be 
+accessible by http://
+
+www.kernel.org serves git repos fine, but the git repos have to help a bit 
+at doing so.
+
+What git update-server-info does is to create "info/refs" and 
+"objects/info/packs" files that contain enough information for a client to 
+figure out what refs and pack objects exist, so that they can try to fetch 
+the necessary data on their own.
+
+		Linus
