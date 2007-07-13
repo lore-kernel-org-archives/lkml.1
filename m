@@ -1,40 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbXGMAfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbXGMAjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760548AbXGMAfn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 20:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbXGMAfg
+	id S1759556AbXGMAjh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 20:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbXGMAja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 20:35:36 -0400
-Received: from gw.goop.org ([64.81.55.164]:47594 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751846AbXGMAff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 20:35:35 -0400
-Message-ID: <4696C89E.4010002@goop.org>
-Date: Thu, 12 Jul 2007 17:34:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	Thu, 12 Jul 2007 20:39:30 -0400
+Received: from evsync.sierrawireless.com ([204.50.29.40]:34814 "EHLO
+	mx1.sierrawireless.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbXGMAj3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 20:39:29 -0400
+Message-ID: <4696C9EF.9050406@sierrawireless.com>
+Date: Thu, 12 Jul 2007 17:40:15 -0700
+From: Kevin Lloyd <klloyd@sierrawireless.com>
 User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <200707111916.35036.jesper.juhl@gmail.com>	 <2c0942db0707112159v3ee2cd83i74759c7138e273f7@mail.gmail.com> <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com>
-In-Reply-To: <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com>
+To: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de
+CC: linux-kernel@vger.kernel.org, torvalds@osdl.org, linux@sierrawireless.com
+Subject: [PATCH 01/02] USB: sierra: Add TRU-Install (c) Support [ATTEMPT 4]
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Jul 2007 00:39:27.0095 (UTC) FILETIME=[444FC870:01C7C4E6]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1166-5.0.1021-15292.002
+X-TM-AS-Result: No--9.577000-5.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> If, on the other hand, we consider 4K stacks to be the superior
-> solution, then we should work to get all code fixed to be able to
-> handle it so that it's actually something distros will start to enable
-> so that we can eventually get rid of the 8K stack option alltogether.
-> Making 4K stacks default and no longer a debug option is just the
-> first step in that direction.
+From: Kevin Lloyd <linux@sierrawireless.com>
 
-First step is to apply wli's patch which makes separate interrupt stacks 
-orthogonal to the 4K stack option.
+This patch adds compatibility with Sierra Wireless' new TRU-Install feature. Future devices that use this feature will not work unless this patch has been applied.
 
-    J
+This attempt of the patch corrects a hard-coded return and the dev_dbg messages form the previous patch submission.
+
+This patch was tested on the 2.6.21.1 kernel source patched with the following patches (found at http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/usb/):
+   usb-sierra-cleanup-urb-startup.patch
+   usb-sierra-fix-status-usage.patch
+   usb-sierra-status.patch
+
+There were three previous submissions for similar support (6/6/2007 & 6/5/2007 & 7/11/2007) they were however rejected so please disregard those.
+
+Signed-off-by: Kevin Lloyd <linux@sierrawireless.com>
+
+--- 
+
+diff -uprN a/drivers/usb/serial/sierra.c b/drivers/usb/serial/sierra.c
+--- a/drivers/usb/serial/sierra.c	2007-07-10 16:53:07.000000000 -0700
++++ b/drivers/usb/serial/sierra.c	2007-07-12 09:17:44.000000000 -0700
+@@ -1,7 +1,7 @@
+ /*
+   USB Driver for Sierra Wireless
+ 
+-  Copyright (C) 2006  Kevin Lloyd <linux@sierrawireless.com>
++  Copyright (C) 2007  Kevin Lloyd <linux@sierrawireless.com>
+ 
+   IMPORTANT DISCLAIMER: This driver is not commercially supported by
+   Sierra Wireless. Use at your own risk.
+@@ -12,10 +12,9 @@
+ 
+   Portions based on the option driver by Matthias Urlichs <smurf@smurf.noris.de>
+   Whom based his on the Keyspan driver by Hugh Blemings <hugh@blemings.org>
+-
+ */
+ 
+-#define DRIVER_VERSION "v.1.0.6"
++#define DRIVER_VERSION "v.1.2.4"
+ #define DRIVER_AUTHOR "Kevin Lloyd <linux@sierrawireless.com>"
+ #define DRIVER_DESC "USB Driver for Sierra Wireless USB modems"
+ 
+@@ -28,6 +27,70 @@
+ #include <linux/usb.h>
+ #include <linux/usb/serial.h>
+ 
++#define SWIMS_USB_REQUEST_SetMode	0x0B
++#define SWIMS_USB_REQUEST_TYPE_SetMode	0x40
++#define SWIMS_USB_INDEX_SetMode		0x0000
++#define SWIMS_SET_MODE_Modem		0x0001
++
++/* per port private data */
++#define N_IN_URB	4
++#define N_OUT_URB	4
++#define IN_BUFLEN	4096
++
++static int debug;
++
++enum devicetype {
++	DEVICE_3_PORT =		0,
++	DEVICE_1_PORT =		1,
++	DEVICE_INSTALLER =	2,
++};
++
++int sierra_set_power_state(struct usb_device *udev, __u16 swiState)
++{
++	int result;
++	dev_dbg(&udev->dev, "%s", "SET POWER STATE");
++	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
++			0x00,			/* __u8 request      */
++			0x40,			/* __u8 request type */
++			swiState,		/* __u16 value       */
++			0,			/* __u16 index       */
++			NULL,			/* void *data        */
++			0,			/* __u16 size 	     */
++			USB_CTRL_SET_TIMEOUT);	/* int timeout 	     */
++	return result;
++}
++
++int sierra_set_ms_mode(struct usb_device *udev, __u16 eSocMode)
++{
++	int result;
++	dev_dbg(&udev->dev, "%s", "DEVICE MODE SWITCH");
++	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
++			SWIMS_USB_REQUEST_SetMode,	/* __u8 request      */
++			SWIMS_USB_REQUEST_TYPE_SetMode,	/* __u8 request type */
++			eSocMode,			/* __u16 value       */
++			SWIMS_USB_INDEX_SetMode,	/* __u16 index       */
++			NULL,				/* void *data        */
++			0,				/* __u16 size 	     */
++			USB_CTRL_SET_TIMEOUT);		/* int timeout       */
++	return result;
++}
++
++int sierra_probe(struct usb_interface *iface, const struct usb_device_id *id)
++{
++	int result;	
++	struct usb_device *udev;
++
++	udev = usb_get_dev(interface_to_usbdev(iface));
++
++	/* Check if in installer mode */
++	if (id->driver_info == DEVICE_INSTALLER){
++		dev_dbg(&udev->dev, "%s", "FOUND DEVICE(SW)\n");
++		result = sierra_set_ms_mode(udev, SWIMS_SET_MODE_Modem);
++		return result;
++	}
++
++	return usb_serial_probe(iface, id);	
++}
+ 
+ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(0x1199, 0x0017) },	/* Sierra Wireless EM5625 */
+@@ -43,8 +106,10 @@ static struct usb_device_id id_table [] 
+ 	{ USB_DEVICE(0x1199, 0x6812) },	/* Sierra Wireless MC8775 */
+ 	{ USB_DEVICE(0x1199, 0x6820) },	/* Sierra Wireless AirCard 875 */
+ 
+-	{ USB_DEVICE(0x1199, 0x0112) }, /* Sierra Wireless AirCard 580 */
+-	{ USB_DEVICE(0x0F3D, 0x0112) }, /* AirPrime/Sierra PC 5220 */
++	{ USB_DEVICE(0x1199, 0x0112), .driver_info = DEVICE_1_PORT }, /* Sierra Wireless AirCard 580 */
++	{ USB_DEVICE(0x0F3D, 0x0112), .driver_info = DEVICE_1_PORT }, /* Airprime/Sierra PC 5220 */
++
++	{ USB_DEVICE(0x1199, 0x0FFF), .driver_info = DEVICE_INSTALLER},	
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(usb, id_table);
+@@ -56,6 +121,7 @@ static struct usb_device_id id_table_1po
+ };
+ 
+ static struct usb_device_id id_table_3port [] = {
++	/* CDMA Devices */
+ 	{ USB_DEVICE(0x1199, 0x0017) },	/* Sierra Wireless EM5625 */
+ 	{ USB_DEVICE(0x1199, 0x0018) },	/* Sierra Wireless MC5720 */
+ 	{ USB_DEVICE(0x1199, 0x0218) },	/* Sierra Wireless MC5720 */
+@@ -63,6 +129,8 @@ static struct usb_device_id id_table_3po
+ 	{ USB_DEVICE(0x1199, 0x0019) },	/* Sierra Wireless AirCard 595 */
+ 	{ USB_DEVICE(0x1199, 0x0120) },	/* Sierra Wireless AirCard 595U */
+ 	{ USB_DEVICE(0x1199, 0x0021) },	/* Sierra Wireless AirCard 597E */
++
++	/* GSM/UMTS Devices */
+ 	{ USB_DEVICE(0x1199, 0x6802) },	/* Sierra Wireless MC8755 */
+ 	{ USB_DEVICE(0x1199, 0x6804) },	/* Sierra Wireless MC8755 */
+ 	{ USB_DEVICE(0x1199, 0x6803) },	/* Sierra Wireless MC8765 */
+@@ -73,20 +141,13 @@ static struct usb_device_id id_table_3po
+ 
+ static struct usb_driver sierra_driver = {
+ 	.name       = "sierra",
+-	.probe      = usb_serial_probe,
++	.probe      = sierra_probe,
+ 	.disconnect = usb_serial_disconnect,
+ 	.id_table   = id_table,
+ 	.no_dynamic_id = 	1,
+ };
+ 
+ 
+-static int debug;
+-
+-/* per port private data */
+-#define N_IN_URB	4
+-#define N_OUT_URB	4
+-#define IN_BUFLEN	4096
+-
+ struct sierra_port_private {
+ 	spinlock_t lock;	/* lock the structure */
+ 	int outstanding_urbs;	/* number of out urbs in flight */
+@@ -421,8 +482,7 @@ static int sierra_open(struct usb_serial
+ 	int i;
+ 	struct urb *urb;
+ 	int result;
+-	__u16 set_mode_dzero = 0x0000;
+-
++	
+ 	portdata = usb_get_serial_port_data(port);
+ 
+ 	dbg("%s", __FUNCTION__);
+@@ -457,12 +517,6 @@ static int sierra_open(struct usb_serial
+ 
+ 	port->tty->low_latency = 1;
+ 
+-	/* set mode to D0 */
+-	result = usb_control_msg(serial->dev,
+-				 usb_rcvctrlpipe(serial->dev, 0),
+-				 0x00, 0x40, set_mode_dzero, 0, NULL,
+-				 0, USB_CTRL_SET_TIMEOUT);
+-
+ 	sierra_send_setup(port);
+ 
+ 	/* start up the interrupt endpoint if we have one */
+@@ -510,6 +564,9 @@ static int sierra_startup(struct usb_ser
+ 
+ 	dbg("%s", __FUNCTION__);
+ 
++	/*Set Device mode to D0 */
++	sierra_set_power_state(serial->dev, 0x0000);
++
+ 	/* Now setup per port private data */
+ 	for (i = 0; i < serial->num_ports; i++) {
+ 		port = serial->port[i];
+diff -uprN a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
+--- a/drivers/usb/storage/unusual_devs.h	2007-07-10 16:57:52.000000000 -0700
++++ b/drivers/usb/storage/unusual_devs.h	2007-07-10 16:40:41.000000000 -0700
+@@ -1384,6 +1384,17 @@ UNUSUAL_DEV(  0x1019, 0x0c55, 0x0000, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_ucr61s2b_init,
+ 		0 ),
+ 
++/* Reported by Kevin Lloyd <linux@sierrawireless.com>
++ * Entry is needed for the initializer function override, 
++ * which instructs the device to load as a modem
++ * device.
++ */
++UNUSUAL_DEV(  0x1199, 0x0fff, 0x0000, 0x9999,
++		"Sierra Wireless",
++		"USB MMC Storage",
++		US_SC_DEVICE, US_PR_DEVICE, NULL, 
++		US_FL_IGNORE_DEVICE),
++
+ /* Reported by Jaco Kroon <jaco@kroon.co.za>
+  * The usb-storage module found on the Digitech GNX4 (and supposedly other
+  * devices) misbehaves and causes a bunch of invalid I/O errors.
+
