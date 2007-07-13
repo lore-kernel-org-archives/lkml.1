@@ -1,203 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937129AbXGMTCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935915AbXGMTJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937129AbXGMTCd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 15:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756939AbXGMTC0
+	id S935915AbXGMTJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 15:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXGMTJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 15:02:26 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:63896 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761375AbXGMTCZ (ORCPT
+	Fri, 13 Jul 2007 15:09:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:14638 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757492AbXGMTJE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 15:02:25 -0400
-Date: Fri, 13 Jul 2007 21:02:11 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Bodo Eggert <7eggert@gmx.de>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3][try 1] init: enable system-on-initramfs: make mount-on-boot
- optional
-In-Reply-To: <Pine.LNX.4.58.0707132039080.3222@be1.lrz>
-Message-ID: <Pine.LNX.4.58.0707132100320.3303@be1.lrz>
-References: <Pine.LNX.4.58.0707132039080.3222@be1.lrz>
+	Fri, 13 Jul 2007 15:09:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=O8o+l25gtiNj/YVgi3So062R8zTM53AxdqFUQMnD6ynJI6CwXU0py32owCyHr64HPSq9KE19zZNRhonoDfyAh6b648ZrfIDIqXe9VkmoO2+HLt1rEbCy+SqK/SMfiqRcLGg9++hHixenW4xhgZfmZG/viGZJ0TQP/7v3a91DL1A=
+Message-ID: <4697CDB5.1060708@googlemail.com>
+Date: Fri, 13 Jul 2007 21:08:37 +0200
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/exbphKZ+jWlB7YvQ7GxaZMIGSlz+b2xUi3Pt
- RhBPtoXjgXUep6eJOJsvGdSxVoOhhiAi5bUM5tumeopkSUFh+6
- GlIDzNbvSoYrXzoJcpYyg==
+To: Paul Moore <paul.moore@hp.com>
+CC: jmorris@namei.org, michal.k.k.piotrowski@gmail.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sds@tycho.nsa.gov
+Subject: The art of breaking userspace (was Re: [GIT] SELinux changes for
+ 2.6.23 (updated))
+References: <3267153665.17485311@mail.hp.com>
+In-Reply-To: <3267153665.17485311@mail.hp.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds an option to disables the kernel's capability of mounting a
-root device other than the ramfs. If you use initramfs, you don't need to
-have this legacy feature anymore.
+Paul Moore pisze:
+[..]
+> On Fri, 13 Jul 2007, Michal Piotrowski wrote:
+>> My system is too secure, I can not login :)
+>>
+>> Do you have CONFIG_NETLABEL=y ?
+>>
+>> If so, please try disabling it.
+> 
+> Disabling NetLabel should solve the problem.
 
-Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
+Disabling NetLabel solves the problem.
+
+>  The recommended solution to this problem, as discussed on the SELinux list and mentioned in the patch description, is to upgrade your SELinux policy to the latest Reference Policy sources.  For those with custom SELinux policy, the patch description explains the changes to the SELinux policy required. 
+
+I'm sorry to say this, but this kind of patches should not be accepted.
+
+Patch
+
+commit 9faf65fb6ee2b4e08325ba2d69e5ccf0c46453d0
+Author: Paul Moore <paul.moore@hp.com>
+Date:   Fri Jun 29 11:48:16 2007 -0400
+
+    SELinux: use SECINITSID_NETMSG instead of SECINITSID_UNLABELED for NetLabel
+
+    These changes will make NetLabel behave like labeled IPsec where there is an
+    access check for both labeled and unlabeled packets as well as providing the
+    ability to restrict domains to receiving only labeled packets when NetLabel
+    is in use.  The changes to the policy are straight forward with the
+    following necessary to receive labeled traffic (with SECINITSID_NETMSG
+    defined as "netlabel_peer_t"):
+
+     allow mydom_t netlabel_peer_t:{ tcp_socket udp_socket rawip_socket } recvfrom;
+
+    The policy for unlabeled traffic would be:
+
+     allow mydom_t unlabeled_t:{ tcp_socket udp_socket rawip_socket } recvfrom;
+
+    These policy changes, as well as more general NetLabel support, are included
+    in the SELinux Reference Policy SVN tree, r2352 or later.  Users who enable
+    NetLabel support in the kernel are strongly encouraged to upgrade their
+    policy to avoid network problems.
+
+    Signed-off-by: Paul Moore <paul.moore@hp.com>
+    Signed-off-by: James Morris <jmorris@namei.org>
 
 
-diff -X dontdiff -pruN linux-2.6.22.base/init/do_mounts.c linux-2.6.22.tmpfsroot/init/do_mounts.c
---- linux-2.6.22.base/init/do_mounts.c	2007-07-12 23:30:39.000000000 +0200
-+++ linux-2.6.22.tmpfsroot/init/do_mounts.c	2007-07-12 23:07:50.000000000 +0200
-@@ -18,11 +18,46 @@
- 
- #include "do_mounts.h"
- 
-+int __initdata rd_doload;   /* 1 = load RAM disk, 0 = don't load */
-+
-+dev_t ROOT_DEV;
-+int root_mountflags = MS_RDONLY | MS_SILENT;
-+
-+#if defined(CONFIG_BLK_DEV_RAM) || defined(CONFIG_BLK_DEV_FD)
-+void __init change_floppy(char *fmt, ...)
-+{
-+	struct termios termios;
-+	char buf[80];
-+	char c;
-+	int fd;
-+	va_list args;
-+	va_start(args, fmt);
-+	vsprintf(buf, fmt, args);
-+	va_end(args);
-+	fd = sys_open("/dev/root", O_RDWR | O_NDELAY, 0);
-+	if (fd >= 0) {
-+		sys_ioctl(fd, FDEJECT, 0);
-+		sys_close(fd);
-+	}
-+	printk(KERN_NOTICE "VFS: Insert %s and press ENTER\n", buf);
-+	fd = sys_open("/dev/console", O_RDWR, 0);
-+	if (fd >= 0) {
-+		sys_ioctl(fd, TCGETS, (long)&termios);
-+		termios.c_lflag &= ~ICANON;
-+		sys_ioctl(fd, TCSETSF, (long)&termios);
-+		sys_read(fd, &c, 1);
-+		termios.c_lflag |= ICANON;
-+		sys_ioctl(fd, TCSETSF, (long)&termios);
-+		sys_close(fd);
-+	}
-+}
-+#endif
-+
-+#ifndef CONFIG_DISABLE_MOUNT_ON_BOOT
-+
- extern int get_filesystem_list(char * buf);
- 
--int __initdata rd_doload;	/* 1 = load RAM disk, 0 = don't load */
- 
--int root_mountflags = MS_RDONLY | MS_SILENT;
- char * __initdata root_device_name;
- #ifdef CONFIG_TMPFS_ROOT
- static char __initdata saved_root_name[64] = "rootfs";
-@@ -30,8 +65,6 @@ static char __initdata saved_root_name[6
- static char __initdata saved_root_name[64];
- #endif
- 
--dev_t ROOT_DEV;
--
- static int __init load_ramdisk(char *str)
- {
- 	rd_doload = simple_strtol(str,NULL,0) & 3;
-@@ -353,36 +386,6 @@ static int __init mount_nfs_root(void)
- }
- #endif
- 
--#if defined(CONFIG_BLK_DEV_RAM) || defined(CONFIG_BLK_DEV_FD)
--void __init change_floppy(char *fmt, ...)
--{
--	struct termios termios;
--	char buf[80];
--	char c;
--	int fd;
--	va_list args;
--	va_start(args, fmt);
--	vsprintf(buf, fmt, args);
--	va_end(args);
--	fd = sys_open("/dev/root", O_RDWR | O_NDELAY, 0);
--	if (fd >= 0) {
--		sys_ioctl(fd, FDEJECT, 0);
--		sys_close(fd);
--	}
--	printk(KERN_NOTICE "VFS: Insert %s and press ENTER\n", buf);
--	fd = sys_open("/dev/console", O_RDWR, 0);
--	if (fd >= 0) {
--		sys_ioctl(fd, TCGETS, (long)&termios);
--		termios.c_lflag &= ~ICANON;
--		sys_ioctl(fd, TCSETSF, (long)&termios);
--		sys_read(fd, &c, 1);
--		termios.c_lflag |= ICANON;
--		sys_ioctl(fd, TCSETSF, (long)&termios);
--		sys_close(fd);
--	}
--}
--#endif
--
- void __init mount_root(void)
- {
- #ifdef CONFIG_ROOT_NFS
-@@ -460,3 +463,19 @@ out_nomount:
- 	security_sb_post_mountroot();
- }
- 
-+#else
-+
-+/*
-+ * Prepare the namespace - decide what/where to mount, load ramdisks, etc.
-+ */
-+void __init prepare_namespace(void)
-+{
-+	security_sb_post_mountroot();
-+}
-+
-+void __init mount_block_root(char *name, int flags)
-+{
-+	panic("Booting without initramfs is disabled");
-+}
-+
-+#endif
-diff -X dontdiff -pruN linux-2.6.22.base/init/do_mounts_initrd.c linux-2.6.22.tmpfsroot/init/do_mounts_initrd.c
---- linux-2.6.22.base/init/do_mounts_initrd.c	2007-07-12 23:28:43.000000000 +0200
-+++ linux-2.6.22.tmpfsroot/init/do_mounts_initrd.c	2007-07-12 23:33:22.000000000 +0200
-@@ -13,6 +13,9 @@
- unsigned long initrd_start, initrd_end;
- int initrd_below_start_ok;
- unsigned int real_root_dev;	/* do_proc_dointvec cannot handle kdev_t */
-+
-+#ifndef CONFIG_DISABLE_MOUNT_ON_BOOT
-+
- static int __initdata old_fd, root_fd;
- static int __initdata mount_initrd = 1;
- 
-@@ -122,3 +125,5 @@ int __init initrd_load(void)
- 	sys_unlink("/initrd.image");
- 	return 0;
- }
-+
-+#endif
-diff -X dontdiff -pruN linux-2.6.22.base/init/initramfs.c linux-2.6.22.tmpfsroot/init/initramfs.c
---- linux-2.6.22.base/init/initramfs.c	2007-07-12 23:28:07.000000000 +0200
-+++ linux-2.6.22.tmpfsroot/init/initramfs.c	2007-07-12 23:23:25.000000000 +0200
-@@ -549,7 +549,7 @@ static int __init populate_rootfs(void)
- 		panic(err);
- #ifdef CONFIG_BLK_DEV_INITRD
- 	if (initrd_start) {
--#ifdef CONFIG_BLK_DEV_RAM
-+#if defined CONFIG_BLK_DEV_RAM && !defined CONFIG_DISABLE_MOUNT_ON_BOOT
- 		int fd;
- 		printk(KERN_INFO "checking if image is initramfs...");
- 		err = unpack_to_rootfs((char *)initrd_start,
-diff -X dontdiff -pruN linux-2.6.22.base/usr/Kconfig linux-2.6.22.tmpfsroot/usr/Kconfig
---- linux-2.6.22.base/usr/Kconfig	2007-07-12 23:28:45.000000000 +0200
-+++ linux-2.6.22.tmpfsroot/usr/Kconfig	2007-07-12 23:39:00.000000000 +0200
-@@ -44,3 +44,11 @@ config INITRAMFS_ROOT_GID
- 	  owned by group root in the initial ramdisk image.
- 
- 	  If you are not sure, leave it set to "0".
-+
-+config DISABLE_MOUNT_ON_BOOT
-+	bool "Disable kernel root filesystem mount code"
-+	depends on TMPFS_ROOT
-+	help
-+	  This disables the kernel's ability to mount a user-specified filesysten
-+	  on boot. This REQUIRES an inital system on initramfs, either using
-+	  /init for system setup, or directly using /sbin/init.
+breaks systems with recent selinux policy.
+
+(rpm -qa selinux-policy-*
+selinux-policy-devel-2.6.4-25.fc7
+selinux-policy-targeted-2.6.4-25.fc7)
+
+I will add this as a regression unless Linus says "Fsck it! We don't care about compatibility"
+
+> 
+> If needed I can post more instructions later, let me know, but right now I'm tapping this out on my phone while at the airport.
+> 
+> . paul moore
+> . linux security @ hp
+> 
+> 
+> 
+
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
