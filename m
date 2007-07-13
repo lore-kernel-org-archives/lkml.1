@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934347AbXGMIiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936038AbXGMIjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934347AbXGMIiy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 04:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbXGMIir
+	id S936038AbXGMIjT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 04:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbXGMIjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 04:38:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:15515 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756441AbXGMIiq (ORCPT
+	Fri, 13 Jul 2007 04:39:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52369 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935217AbXGMIi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 04:38:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GuzE3N4WZp6bTjzUD6fHoXr0ex2L1w8jFb+IztEzlryFyUx9mtAj2YbqYkNAy56tK8zsZo+vbL/Q/NWmd40zouTNTkskJo6iuZvlJjW5GqnIKNJsXlN97EIaOb5aTIdhrT2R1EnkyoKbdFDlqCnEQWIh/+gsmnJpkqD7DW54pWA=
-Message-ID: <91b13c310707130138p6cffd0b4va34eec320d66ab44@mail.gmail.com>
-Date: Fri, 13 Jul 2007 16:38:44 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Kirill Korotaev" <dev@sw.ru>
-Subject: Re: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to remove some following zero initializations.
-Cc: trivial@kernel.org, Denis <cr_quan@163.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4697357A.10605@sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 13 Jul 2007 04:38:57 -0400
+Date: Fri, 13 Jul 2007 01:38:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Jackson <pj@sgi.com>
+Cc: joe.jin@oracle.com, bill.irwin@oracle.com, linux-kernel@vger.kernel.org,
+       gurudas.pai@oracle.com, Zwane Mwaikambo <zwane@arm.linux.org.uk>
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-Id: <20070713013819.0f8bd1ea.akpm@linux-foundation.org>
+In-Reply-To: <20070713012906.a6f63c90.pj@sgi.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+	<20070712221842.f5e47065.akpm@linux-foundation.org>
+	<20070713064004.GA21833@joejin-pc.cn.oracle.com>
+	<20070712234938.c77f3a48.akpm@linux-foundation.org>
+	<20070712235707.a08f0d42.akpm@linux-foundation.org>
+	<20070713012906.a6f63c90.pj@sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1184290905.5475.5.camel@tux.homenetwork> <4697357A.10605@sw.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/13/07, Kirill Korotaev <dev@sw.ru> wrote:
-> This doesn't look worth zeroing half of the struct
-> when it is initialized to non-zeros then.
-But why?
+On Fri, 13 Jul 2007 01:29:06 -0700 Paul Jackson <pj@sgi.com> wrote:
 
-My reason to think it's better and faster is that:
-1. the code will be shorter if it calls zalloc and then removes the
-NULL and zero initilization;
-2. in the assembly code objdumped, many mov operations reduced, such as:
-    movl $0,0x40(%ebp)
-    ...
-    this style of zero initialization occupies 7 bytes per line
-(i386), and then multiply 7 lines,
+> > I'm scratching my head over that min_t in __first_node(), too.   I don't think
+> > it's possible for find_first_bit(..., N) to return anything >N _anyway_.  And if
+> > it does, we want to know about it.
+> > 
+> > <looks at Paul>
+> 
+> I'm not sure I've got this right, but looks like that min_t went in after
+> Zwane Mwaikambo, then <zwane@fsmlabs.com>, whom I am presuming is the same
+> person as now at <zwane@arm.linux.org.uk>, found a problem with the i386
+> find_next_bit implementation returning > N when merging i386 cpu hotplug.
 
-3. the only change is that calls to kmem_cache_zalloc other than
-kmem_cache_alloc, it's just an extra memset is called, as we all know
-the memset implimentation is string operation, that's rather fast.
+Ah, Zwane was involved - say no more ;)
 
->
-> Denis Cheng wrote:
-> >>From 4d87e14b67890f06885a76b5792ca034de2e9d06 Mon Sep 17 00:00:00 2001
-> > From: Denis Cheng <crquan@gmail.com>
-> > Date: Thu, 12 Jul 2007 11:53:58 +0800
-> > Subject: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to
-> > remove some following zero initializations.
-> >
-> > Signed-off-by: Denis Cheng <crquan@gmail.com>
-> > ---
-> >  fs/dcache.c |   12 ++----------
-> >  1 files changed, 2 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/fs/dcache.c b/fs/dcache.c
-> > index 0e73aa0..8c559b2 100644
-> > --- a/fs/dcache.c
-> > +++ b/fs/dcache.c
-> > @@ -898,7 +898,7 @@ struct dentry *d_alloc(struct dentry * parent, const
-> > struct qstr *name)
-> >       struct dentry *dentry;
-> >       char *dname;
-> >
-> > -     dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL);
-> > +     dentry = kmem_cache_zalloc(dentry_cache, GFP_KERNEL);
-> >       if (!dentry)
-> >               return NULL;
-> >
-> > @@ -921,15 +921,7 @@ struct dentry *d_alloc(struct dentry * parent,
-> > const struct qstr *name)
-> >       atomic_set(&dentry->d_count, 1);
-> >       dentry->d_flags = DCACHE_UNHASHED;
-> >       spin_lock_init(&dentry->d_lock);
-> > -     dentry->d_inode = NULL;
-> > -     dentry->d_parent = NULL;
-> > -     dentry->d_sb = NULL;
-> > -     dentry->d_op = NULL;
-> > -     dentry->d_fsdata = NULL;
-> > -     dentry->d_mounted = 0;
-> > -#ifdef CONFIG_PROFILING
-> > -     dentry->d_cookie = NULL;
-> > -#endif
-> > +
-> >       INIT_HLIST_NODE(&dentry->d_hash);
-> >       INIT_LIST_HEAD(&dentry->d_lru);
-> >       INIT_LIST_HEAD(&dentry->d_subdirs);
->
->
+> See the thread:
+> 
+>   http://lkml.org/lkml/2004/7/31/102
+>   [PATCH][2.6] first/next_cpu returns values > NR_CPUS
+> 
+> I apparently lobbied at the time to mandate that find_first_bit(..., N)
+> return exactly N on failure to find a set bit, but gave up, after some
+> confusions on my part.
+
+iirc, find_first_bit(..., N) _must_ return N on nothing-found.  It'd be
+untidy to return some randomly-larger number.
+
+I wonder which was the culpable architecture?  Oh, i386.
+
+Note how the i386 implementation's documentation carefully avoids describing
+the return value.  I don't think _any_ of our find_foo_bit()
+implementations have return-value docs, and here we see the result.
+
+Sigh.  What crap.  I guess we leave it as-is.
 
 
--- 
-Denis Cheng
-Linux Application Developer
-
-"One of my most productive days was throwing away 1000 lines of code."
- - Ken Thompson.
