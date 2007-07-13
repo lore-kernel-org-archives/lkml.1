@@ -1,70 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935947AbXGMHEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbXGMHFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935947AbXGMHEl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 03:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762265AbXGMHE3
+	id S933025AbXGMHFY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 03:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760737AbXGMHE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 03:04:29 -0400
-Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:57852 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761662AbXGMHE1 (ORCPT
+	Fri, 13 Jul 2007 03:04:59 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35413 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760955AbXGMHE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 03:04:27 -0400
-Subject: Re: [EXT4 set 3][PATCH 1/1] ext4 nanosecond timestamp
-From: Kalpak Shah <kalpak@clusterfs.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Andreas Dilger <adilger@clusterfs.com>
-In-Reply-To: <4696FFBE.3030806@linux.vnet.ibm.com>
-References: <1183275416.4010.125.camel@localhost.localdomain>
-	 <20070710163027.1bf7e94e.akpm@linux-foundation.org>
-	 <1184245126.4299.20.camel@garfield>  <4696FFBE.3030806@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 12:35:18 +0530
-Message-Id: <1184310318.4372.5.camel@garfield>
+	Fri, 13 Jul 2007 03:04:58 -0400
+Date: Fri, 13 Jul 2007 00:04:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] h8300 entry.S update
+Message-Id: <20070713000444.4e2facb5.akpm@linux-foundation.org>
+In-Reply-To: <m2k5t4u6zv.wl%ysato@users.sourceforge.jp>
+References: <m2k5t4u6zv.wl%ysato@users.sourceforge.jp>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SystemSpamProbe: GOOD 0.0001819 657371c75079a589827f90a9bfc709b0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 09:59 +0530, Aneesh Kumar K.V wrote:
-> 
-> Kalpak Shah wrote:
-> > On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
-> >> On Sun, 01 Jul 2007 03:36:56 -0400
-> >> Mingming Cao <cmm@us.ibm.com> wrote:
-> >>
-> >>> This patch is a spinoff of the old nanosecond patches.
-> >> I don't know what the "old nanosecond patches" are.  A link to a suitable
-> >> changlog for those patches would do in a pinch.  Preferable would be to
-> >> write a proper changelog for this patch.
-> > 
-> > The incremental patch contains a proper changelog describing the patch.
-> > 
-> 
-> 
-> Instead of  putting incremental patches it would be nice if we can have replacement patches.
-> for the already existing patches with the comments addressed. For example if we have a 
-> review comment on the patch message ( commit log ) then adding an incremental patch doesn't help.
+On Fri, 13 Jul 2007 15:56:20 +0900 Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
 
-I think that it would be easier to review just the changes that have
-been made to the patches instead of having people go through the entire
-patch again. I was hoping that someone with write access to ext4-git
-would update the commit logs.
-
-If replacement patches are preferred, then I will send them again.
-
-Thanks,
-Kalpak.
-
+> Subject: [PATCH] h8300 entry.S update
+> Date: Fri, 13 Jul 2007 15:56:20 +0900
+> Organization: SIOS Technology, Inc.
+> User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
+>  FLIM/1.14.8 (Shijō) APEL/10.6 Emacs/22.0.93
+>  (i486-pc-linux-gnu) MULE/5.0 (SAKAKI)
 > 
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 > 
-> -aneesh
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> diff --git a/arch/h8300/kernel/Makefile b/arch/h8300/kernel/Makefile
 
+hm, we're missing any description of what this change actually does?
