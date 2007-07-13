@@ -1,94 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932970AbXGMOTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933372AbXGMOWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932970AbXGMOTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbXGMOTJ
+	id S933372AbXGMOWT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 10:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbXGMOWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:19:09 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:57013 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757394AbXGMOTG (ORCPT
+	Fri, 13 Jul 2007 10:22:12 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:49323 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757772AbXGMOWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:19:06 -0400
-Date: Fri, 13 Jul 2007 19:48:58 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, tytso@mit.edu, cmm@us.ibm.com, suparna@in.ibm.com,
-       adilger@clusterfs.com, dgc@sgi.com
-Subject: Re: [PATCH 2/6][TAKE7] fallocate() implementation in i386, x86_64 and powerpc
-Message-ID: <20070713141858.GB27291@amitarora.in.ibm.com>
-References: <20070713123816.GA18000@amitarora.in.ibm.com> <20070713124755.GB22961@amitarora.in.ibm.com> <20070713132118.GA23256@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713132118.GA23256@infradead.org>
-User-Agent: Mutt/1.4.1i
+	Fri, 13 Jul 2007 10:22:11 -0400
+Message-ID: <46978A71.6030706@gmail.com>
+Date: Fri, 13 Jul 2007 16:21:37 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+CC: Tilman Schmidt <tilman@imap.cc>, Satyam Sharma <satyam.sharma@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Gmail and flowed text (was Re: Correction to LZO1X)
+References: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com>	 <4697402C.9000402@imap.cc> <4d8e3fd30707130242r1ee26618ua6bd20ec82132b8f@mail.gmail.com>
+In-Reply-To: <4d8e3fd30707130242r1ee26618ua6bd20ec82132b8f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 02:21:19PM +0100, Christoph Hellwig wrote:
-> On Fri, Jul 13, 2007 at 06:17:55PM +0530, Amit K. Arora wrote:
-> >  /*
-> > + * sys_fallocate - preallocate blocks or free preallocated blocks
-> > + * @fd: the file descriptor
-> > + * @mode: mode specifies the behavior of allocation.
-> > + * @offset: The offset within file, from where allocation is being
-> > + *	    requested. It should not have a negative value.
-> > + * @len: The amount of space in bytes to be allocated, from the offset.
-> > + *	 This can not be zero or a negative value.
+On 07/13/2007 11:42 AM, Paolo Ciarrocchi wrote:
+
+> On 7/13/07, Tilman Schmidt <tilman@imap.cc> wrote:
+
+>> Get a real E-mail account. :-)
+>>
+>> Seriously: after years of hassles with freemailers, I finally
+>> decided that E-mail is so important for me it's worth spending
+>> a small yearly amount. Never regretted the step.
 > 
-> kerneldoc comments are for in-kernel APIs which syscalls aren't.  I'd say
-> just temove this comment, the manpage is a much better documentation anyway.
-
-Ok. I will remove this entire comment.
- 
-> > + * <TBD> Generic fallocate to be added for file systems that do not
-> > + *	 support fallocate.
+> Sorry for suddently jumping into the discussion, my understanding is
+> that all the problems with Gmail are related to the web interface, if
+> you don't use it, or you use it only to read messages/sent messages
+> (no patches), everything is fine.
 > 
-> Please remove the comment, adding a generic fallback in kernelspace is a
-> very dumb idea as we already discussed long time ago.
->
-> > --- linux-2.6.22.orig/include/linux/fs.h
-> > +++ linux-2.6.22/include/linux/fs.h
-> > @@ -266,6 +266,21 @@ extern int dir_notify_enable;
-> >  #define SYNC_FILE_RANGE_WRITE		2
-> >  #define SYNC_FILE_RANGE_WAIT_AFTER	4
-> >  
-> > +/*
-> > + * sys_fallocate modes
-> > + * Currently sys_fallocate supports two modes:
-> > + * FALLOC_ALLOCATE :	This is the preallocate mode, using which an application
-> > + *			may request reservation of space for a particular file.
-> > + *			The file size will be changed if the allocation is
-> > + *			beyond EOF.
-> > + * FALLOC_RESV_SPACE :	This is same as the above mode, with only one difference
-> > + *			that the file size will not be modified.
-> > + */
-> > +#define FALLOC_FL_KEEP_SIZE    0x01 /* default is extend/shrink size */
-> > +
-> > +#define FALLOC_ALLOCATE        0
-> > +#define FALLOC_RESV_SPACE      FALLOC_FL_KEEP_SIZE
-> 
-> Just remove FALLOC_ALLOCATE, 0 flags should be the default.  I'm also
-> not sure there is any point in having two namespace now that we have a flags-
-> based ABI.
+> Am I correct?
 
-Ok. Since we have only one flag (FALLOC_FL_KEEP_SIZE) and we do not want
-to declare the default mode (FALLOC_ALLOCATE), we can _just_ have this
-flag and remove the other mode too (FALLOC_RESV_SPACE).
-Is this what you are suggesting ?
+No, definitely not. Gmail is a lost cause.
 
-> Also please don't add this to fs.h.  fs.h is a complete mess and the
-> falloc flags are a new user ABI.  Add a linux/falloc.h instead which can
-> be added to headers-y so the ABI constant can be exported to userspace.
+For example, I get moderation requests for a mailing lists that include a
+copy of the message and gmail's mandatory spamfilter just cannot be taught
+that I _do_ want to see those moderation requests, however it may feel about
+the included message. I have much better spam-filtering at home, since I can
+train it to my personal usage patterns. Can't switch it off though...
 
-Should we need a header file just to declare one flag - i.e.
-FALLOC_FL_KEEP_SIZE (since now there is no point of declaring the two
-modes) ? If "linux/fs.h" is not a good place, will "asm-generic/fcntl.h"
-be a sane place for this flag ?
+As another example, also if you only use the SMTP/POP access, gmail filters
+out your own posts to mailing lists, overriding whatever "send back to me"
+preference you may have set in the mailing list configuration.
 
-Thanks!
---
-Regards,
-Amit Arora
+It also does mandatory "duplicate" filtering where a duplicate is defined as
+any message that was delivered to you as part of a mailing list, again
+overriding personal preferences the user has set in the mailing list
+configuration and personally having caused me to miss messages addressed to 
+me. Daddy gmail knows best...
+
+If you are emailing to destinations that can be made to let through the SPF
+neutral result gmail sends back if you use a different SMTP server (this was
+a problem with osdl.org for a short while; I couldn't reach @osdl.org
+addresses anymore) and _have_ a different SMTP server that'll allow you to
+post with an @gmail.com from address, using gmail as a forwarding-only 
+address sort of works.
+
+You'll have to login frequently to the web-interface anyway to go through
+its spam folder fishing out all the non-spam and will have to suffer
+sometimes getting and sometimes not getting back your own list mail (I
+completely lost sight of the logic there) though and I'm close to just
+giving up and telling gmail where to stick its mandatory crap.
+
+A simple forwarding address can be had anywhere and most won't keep a, 
+privacy sensitive but again mandatory, archive of all mail you received in 
+the "Trash" folder until you manually login and empty that as well.
+
+Gmail is all about not letting you make your own choices. Which probably
+accounts for its success -- it's a goal shared by the most successful
+companies in IT it seems.
+
+Rene.
+
