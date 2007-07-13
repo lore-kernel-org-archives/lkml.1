@@ -1,128 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937129AbXGMXA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937877AbXGMXBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937129AbXGMXA5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 19:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbXGMXAt
+	id S937877AbXGMXBt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 19:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXGMXBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 19:00:49 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:52907 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752296AbXGMXAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 19:00:48 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/12] drivers/isdn/hisax/niccy.c: replace pci_find_device with pci_get_device
-Date: Sat, 14 Jul 2007 02:00:32 +0300
-User-Agent: KMail/1.9.7
-Cc: kkeil@suse.de, kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de
-References: <200707140144.36035.caglar@pardus.org.tr>
-In-Reply-To: <200707140144.36035.caglar@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200707140200.34017.caglar@pardus.org.tr>
+	Fri, 13 Jul 2007 19:01:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42824 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932067AbXGMXBh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 19:01:37 -0400
+Date: Fri, 13 Jul 2007 16:01:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: <neilb@suse.de>, <raziebe@gmail.com>, <linux-raid@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [-mm PATCH 0/2] 74% decrease in dispatched writes, stripe-queue
+ take3
+Message-Id: <20070713160117.0db9d36d.akpm@linux-foundation.org>
+In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5202234462@azsmsx413.amr.corp.intel.com>
+References: <20070713155400.24689606.akpm@linux-foundation.org>
+	<0C7297FA1D2D244A9C7F6959C0BF1E5202234462@azsmsx413.amr.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[resend] i forget to quilt refresh :(, sorry for noise
+On Fri, 13 Jul 2007 15:57:26 -0700
+"Williams, Dan J" <dan.j.williams@intel.com> wrote:
 
-14 Tem 2007 Cts tarihinde, S.Çağlar Onur şunları yazmıştı: 
-> ---
->  drivers/isdn/hisax/niccy.c |   21 +++++++++++++--------
->  1 file changed, 13 insertions(+), 8 deletions(-)
+> > -----Original Message-----
+> > From: Andrew Morton [mailto:akpm@linux-foundation.org]
+> > > The following patches replace the stripe-queue patches currently in
+> -mm.
+> > 
+> > I have a little practical problem here: am presently unable to compile
+> > anything much due to all the git rejects coming out of
+> git-md-accel.patch.
+> > 
+> > It'd be appreciated if you could keep on top of that, please.  It's a
+> common
+> > problem at this time of the kernel cycle.  The quilt trees are much
+> worse -
+> > Greg's
+> > stuff is an unholy mess.  Ho hum.
+> 
+> Sorry, please drop git-md-accel.patch and git-ioat.patch as they have
+> been merged into Linus' tree.
 
-Following patch replaces pci_find_device with pci_get_device to avoid 
-following compiliation warning;
-
-drivers/isdn/hisax/niccy.c: In function `setup_niccy':
-drivers/isdn/hisax/niccy.c:305: warning: `pci_find_device' is deprecated 
-(declared at include/linux/pci.h:478)
-
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
-
----
- drivers/isdn/hisax/niccy.c |   21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/drivers/isdn/hisax/niccy.c
-===================================================================
---- linux-2.6.orig/drivers/isdn/hisax/niccy.c
-+++ linux-2.6/drivers/isdn/hisax/niccy.c
-@@ -302,29 +302,29 @@ int __devinit setup_niccy(struct IsdnCar
- #ifdef CONFIG_PCI
- 		u_int pci_ioaddr;
- 		cs->subtyp = 0;
--		if ((niccy_dev = pci_find_device(PCI_VENDOR_ID_SATSAGEM,
-+		if ((niccy_dev = pci_get_device(PCI_VENDOR_ID_SATSAGEM,
- 						 PCI_DEVICE_ID_SATSAGEM_NICCY,
- 						 niccy_dev))) {
- 			if (pci_enable_device(niccy_dev))
--				return 0;
-+				goto niccy_dev_cleanup;
- 			/* get IRQ */
- 			if (!niccy_dev->irq) {
- 				printk(KERN_WARNING
- 				       "Niccy: No IRQ for PCI card found\n");
--				return 0;
-+				goto niccy_dev_cleanup;
- 			}
- 			cs->irq = niccy_dev->irq;
- 			cs->hw.niccy.cfg_reg = pci_resource_start(niccy_dev, 0);
- 			if (!cs->hw.niccy.cfg_reg) {
- 				printk(KERN_WARNING
- 				       "Niccy: No IO-Adr for PCI cfg found\n");
--				return 0;
-+				goto niccy_dev_cleanup;
- 			}
- 			pci_ioaddr = pci_resource_start(niccy_dev, 1);
- 			if (!pci_ioaddr) {
- 				printk(KERN_WARNING
- 				       "Niccy: No IO-Adr for PCI card found\n");
--				return 0;
-+				goto niccy_dev_cleanup;
- 			}
- 			cs->subtyp = NICCY_PCI;
- 		} else {
-@@ -341,7 +341,7 @@ int __devinit setup_niccy(struct IsdnCar
- 			       "HiSax: %s data port %x-%x already in use\n",
- 			       CardType[card->typ],
- 			       cs->hw.niccy.isac, cs->hw.niccy.isac + 4);
--			return 0;
-+			goto niccy_dev_cleanup;
- 		}
- 		if (!request_region(cs->hw.niccy.cfg_reg, 0x40, "niccy pci")) {
- 			printk(KERN_WARNING
-@@ -350,7 +350,7 @@ int __devinit setup_niccy(struct IsdnCar
- 			       cs->hw.niccy.cfg_reg,
- 			       cs->hw.niccy.cfg_reg + 0x40);
- 			release_region(cs->hw.niccy.isac, 4);
--			return 0;
-+			goto niccy_dev_cleanup;
- 		}
- #else
- 		printk(KERN_WARNING "Niccy: io0 0 and NO_PCI_BIOS\n");
-@@ -376,7 +376,12 @@ int __devinit setup_niccy(struct IsdnCar
- 		printk(KERN_WARNING "Niccy: wrong HSCX versions check IO "
- 			"address\n");
- 		release_io_niccy(cs);
--		return 0;
-+		goto niccy_dev_cleanup;
- 	}
-+	pci_dev_put(niccy_dev);
- 	return 1;
-+
-+niccy_dev_cleanup:
-+	pci_dev_put(niccy_dev);
-+	return (0);
- }
-
-
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+But your ongoing maintenance activity will continue to be held in those
+trees, won't it?
