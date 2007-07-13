@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936523AbXGMOmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936253AbXGMOqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936523AbXGMOmS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932584AbXGMOmH
+	id S936253AbXGMOqb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 10:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760448AbXGMOqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:42:07 -0400
-Received: from web26913.mail.ukl.yahoo.com ([217.146.177.80]:27361 "HELO
-	web26913.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932099AbXGMOmG (ORCPT
+	Fri, 13 Jul 2007 10:46:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43392 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760157AbXGMOqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:42:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=XA6eY2hLb83k7OsJGoBHvHIsYLUQQWmOYB0x8xtCtiklI/GmhIz6/qukDRT5thu55MSjgk55J9F1jA3rvTut1jY3jvAJ6CjUGfWjl6Yw8JePxLDBZWYxGONEVcV3gEmGKEMGHRGG7EXpVcydjCU/pXBJKWlBC2EvMfvmBF+iYrI=;
-X-YMail-OSG: 1iT1M9kVM1nzz9XY0GIlJY6EvMaBokHuCIPal2uv157U0jT0AxGVu9Q1CTj7S.Mdkg--
-Date: Fri, 13 Jul 2007 16:42:02 +0200 (CEST)
-From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Subject: Re: x86 setup code rewrite in C - revised
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <590581.39283.qm@web26913.mail.ukl.yahoo.com>
+	Fri, 13 Jul 2007 10:46:19 -0400
+Date: Fri, 13 Jul 2007 15:46:12 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, tytso@mit.edu, cmm@us.ibm.com, suparna@in.ibm.com,
+       adilger@clusterfs.com, dgc@sgi.com
+Subject: Re: [PATCH 2/6][TAKE7] fallocate() implementation in i386, x86_64 and powerpc
+Message-ID: <20070713144612.GA26879@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, tytso@mit.edu,
+	cmm@us.ibm.com, suparna@in.ibm.com, adilger@clusterfs.com,
+	dgc@sgi.com
+References: <20070713123816.GA18000@amitarora.in.ibm.com> <20070713124755.GB22961@amitarora.in.ibm.com> <20070713132118.GA23256@infradead.org> <20070713141858.GB27291@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713141858.GB27291@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi wrote:
-> The only thing questionable is that .code16gcc is arguably quite
-> an abuse of gcc. I even checked with some gcc developers 
-> and they weren't too happy about it. e.g. it's not regression
-> tested at all so we would be basically on our own with it.
+On Fri, Jul 13, 2007 at 07:48:58PM +0530, Amit K. Arora wrote:
+> Ok. Since we have only one flag (FALLOC_FL_KEEP_SIZE) and we do not want
+> to declare the default mode (FALLOC_ALLOCATE), we can _just_ have this
+> flag and remove the other mode too (FALLOC_RESV_SPACE).
+> Is this what you are suggesting ?
 
- On the other hand GCC just produces an assembly text file, it is
-not the GCC developper problem what the user does with this text file.
-Usually it goes to the assembler with standard options - .code16gcc
-is a "special" option - and bugs (if there is) should be forwarded to binutils.
- GCC tries to go around CPU bugs, and those bug may be different in
-protected or real mode - but I still do not have one example of such
-a bug.
- GCC also has a base library support (multiplication & divisions of
-64 bits...), and when you use .code16gcc you know you cannot touch it
-(it is assembled with .code32); so that management may be what they
-are refering to.
+Yes.
 
- Etienne.
+> Should we need a header file just to declare one flag - i.e.
+> FALLOC_FL_KEEP_SIZE (since now there is no point of declaring the two
+> modes) ? If "linux/fs.h" is not a good place, will "asm-generic/fcntl.h"
+> be a sane place for this flag ?
 
+It might sound a litte silly but is the cleanest thing we could do by
+far.  And I suspect there will be more more flags soon..
 
-      _____________________________________________________________________________ 
-Ne gardez plus qu'une seule adresse mail ! Copiez vos mails vers Yahoo! Mail 
