@@ -1,170 +1,378 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763134AbXGMQrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933308AbXGMQrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763134AbXGMQrQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 12:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932191AbXGMQqm
+	id S933308AbXGMQrh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 12:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763042AbXGMQq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 12:46:42 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35704 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760652AbXGMQqk (ORCPT
+	Fri, 13 Jul 2007 12:46:58 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:12797 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932700AbXGMQqy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 12:46:40 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<20070711172243.ab44c4d4.akpm@linux-foundation.org>
-	<1184251423.9346.55.camel@caritas-dev.intel.com>
-	<m14pk9fuqa.fsf@ebiederm.dsl.xmission.com>
-	<1184368525.1069.68.camel@caritas-dev.intel.com>
-Date: Fri, 13 Jul 2007 10:43:03 -0600
-In-Reply-To: <1184368525.1069.68.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Fri, 13 Jul 2007 23:15:25 +0000")
-Message-ID: <m1k5t4dzl4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 13 Jul 2007 12:46:54 -0400
+Date: Fri, 13 Jul 2007 10:53:10 -0600
+From: dougthompson@xmission.com
+To: dougthompson@xmission.com, greg@kroah.com, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: [PATCH 3/8] drivers edac new pasemi driver 
+Message-ID: <4697adf6.ml1pGGjvWEkYBXbh%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
+From: Egor Martovetsky <egor@pasemi.com>
 
-> On Thu, 2007-07-12 at 10:32 -0600, Eric W. Biederman wrote:
->> >
->> > 1. Separate device suspend from device hibernate.
->> 
->> Actually in some very practical sense we already have two copies of
->> this in the kernel.  device_shutdown and the hotunplug/module
->> remove code.  So it is should be mostly a matter of using what we have.
->
-> Maybe I misuse the terminology. The "device hibernate" here means put
-> device into quiescent state and save the device state into memory for
-> later restore.
->
-> But, how to restore device state after jumping back from kexeced kernel
-> if device_shutdown or hotplug/module removing code is used?
+NEW EDAC driver for the memory controllers on PA Semi PA6T-1682M.
 
-With device_shutdown there really isn't a path (although putting
-the device into a quiescent state is exactly what that method does).
+Changes since last submission:
 
-However with the module remove path you disassociate the pci device
-and the pci device driver and then after restore you go through
-the pci devices and you redo the association (as if the pci
-device or the module had just been loaded).
+* Rebased on top of 2.6.22-rc4-mm2 with the EDAC changes merged there.
+* Minor checkpatch.pl cleanups
+* Renamed ctl_name
+* Added dev_name
+* edac_mc.h -> edac_core.h
 
-For devices that have a really slow probe/initialization this might be
-an issue but it will work, and generally it will work fairly quickly.
+CC:             Alan Cox alan@lxorguk.ukuu.org.uk
+Signed-off-by: Egor Martovetsky <egor@pasemi.com>
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com
+---
+ drivers/edac/Kconfig       |    9 +
+ drivers/edac/Makefile      |    1
+ drivers/edac/pasemi_edac.c |  298 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 308 insertions(+)
 
-So in that sense restore may be the wrong concept for devices.
-At least for prototypes.
-
->> Basically all this entails is to modify sys_reboot()
->> and adding a LINUX_REBOOT_CMD_KSPAWN and have that command
->> enter the kexec path with the appropriate set of calls.
->> I would be really surprised if this winds up with much
->> more code then the current kernel_kexec function.
->
-> Yes, this is the right place to trigger kexec jump. Thank you for your
-> valuable comments. It seems that just the device state
-> quiesce/save/restore and CPU state save/restore code need to be
-> added.
-
-Yes.
-
-For cpu state I'm fairly certain we don't need to do anything fancy.
-
-At least for the first pass prototyping with a uniprocessor kernel
-will remove that hurdle.
-
-
->> For prototyping I would:
->> - reserve a chunk of memory (possibly with the crashkernel= option)
->>   and run a relocatable kernel out of it.  
->> 
->>   By using the normal kexec you can boot a relocatable restore kernel
->>   in that reserved region. It is an extra step but it makes things
->>   work today.
->> 
->> - I would use the normal sys_kexec_load.
->> 
->> - I would debug/tweak the user space and the code to reenter the
->>   old kernel.  I.e. the device driver stop/start code.
->
-> The above 3 steps are exactly what I have done in this patch. I reserve
-> memory with crashkernel=, use sys_kexec_load (kexec -p ...) to load the
-> kexec kernel and manage to jump back to normal kernel. But I should not
-> mix the kexec jump trigger code with the software suspend code, that is,
-> use "kexec -e", not "echo disk > /sys/power/state".
-
-Right.  That caused all kinds of weirdness in your patch.
-
-
->> > 5. A smooth resume process. Maybe it is not needed to kexec a new kernel
->> > for resume. For example, in the first stage of kernel boot, just first
->> > 16M (or a little more) RAM is used, if the resume image is found, the
->> > saved kernel image is resumed; if the resume image is not found, turn on
->> > the remaining RAM. This will depends on 3.
->> 
->> Well I expect the resume will be load the resumed kernel into reserved
->> memory.  And kexec a very small assembly stub that will jump back
->> to the code in relocate_kernel.S which will call ret.
->> 
->> Then either hot add the rest of our memory or kexec to a kernel without
->> restrictions.
->
-> Why a assembly stub is necessary? Is it not sufficient that just
-> continue to complete a normal boot (hot add the reset of memory) or load
-> the hibernated kernel (hibernated image) and jump to it?
-
-I was thinking the assembly stub would be the small piece that jumps
-to loaded hibernated kernel.  Quite possibly we could just get away
-with providing no memory and just an entry point to kexec but it
-makes sense to me to plan on running a couple of instructions.
-
-Actually the way the kexec infrastructure it might be reasonable to
-just use sys_kexec_load to load the entire hibernated image.  Except
-for the fact that sys_kexec_load requires the source pages to be
-in the processes memory image the code shouldn't have the 50% of
-memory limitation already.
-
-If we can get that going we don't even need to restrict the first
-kernels memory.  So it might just require teaching sys_kexec_load
-how to steal process pages.  Anyway something to think about.
-
->> Well just not loading drivers you aren't going to use and generally avoiding
->> long disk probing times will help here.  We control all of the code so
->> it should be relatively straight forward.
->
-> Just not loading unnecessary drivers may be sufficient. But further
-> optimization is also possible.
->
-> The basic idea of optimization is:
->
-> For first run:
->
-> 1. boot the normal kernel A
-> 2. kexec the hibernate kernel B
-> 3. jump back to kernel A
-> 4. Save the kernel B into a image
-> 5. Work under kernel A.
->
-> For normal use:
->
-> 1. boot the normal kernel A
-> 2. resume the image of kernel B
-> 3. jump to kernel B
-> 4. Save the kernel A into image
-
-Yes.  That may help.  Cooperative multitasking between kernels.
-
-Anyway all of that comes after we get something simple working.
-Then we can see what really needs to be optimized, and what works
-well enough.
-
-Eric
+Index: linux-2.6.22-rc6-mm1/drivers/edac/pasemi_edac.c
+===================================================================
+--- /dev/null
++++ linux-2.6.22-rc6-mm1/drivers/edac/pasemi_edac.c
+@@ -0,0 +1,298 @@
++/*
++ * Copyright (C) 2006-2007 PA Semi, Inc
++ *
++ * Author: Egor Martovetsky <egor@pasemi.com>
++ * Maintained by: Olof Johansson <olof@lixom.net>
++ *
++ * Driver for the PWRficient onchip memory controllers
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++#include <linux/pci_ids.h>
++#include <linux/slab.h>
++#include "edac_core.h"
++
++#define MODULE_NAME "pasemi_edac"
++
++#define MCCFG_MCEN				0x300
++#define   MCCFG_MCEN_MMC_EN			0x00000001
++#define MCCFG_ERRCOR				0x388
++#define   MCCFG_ERRCOR_RNK_FAIL_DET_EN		0x00000100
++#define   MCCFG_ERRCOR_ECC_GEN_EN		0x00000010
++#define   MCCFG_ERRCOR_ECC_CRR_EN		0x00000001
++#define MCCFG_SCRUB				0x384
++#define   MCCFG_SCRUB_RGLR_SCRB_EN		0x00000001
++#define MCDEBUG_ERRCTL1				0x728
++#define   MCDEBUG_ERRCTL1_RFL_LOG_EN		0x00080000
++#define   MCDEBUG_ERRCTL1_MBE_LOG_EN		0x00040000
++#define   MCDEBUG_ERRCTL1_SBE_LOG_EN		0x00020000
++#define MCDEBUG_ERRSTA				0x730
++#define   MCDEBUG_ERRSTA_RFL_STATUS		0x00000004
++#define   MCDEBUG_ERRSTA_MBE_STATUS		0x00000002
++#define   MCDEBUG_ERRSTA_SBE_STATUS		0x00000001
++#define MCDEBUG_ERRCNT1				0x734
++#define   MCDEBUG_ERRCNT1_SBE_CNT_OVRFLO	0x00000080
++#define MCDEBUG_ERRLOG1A			0x738
++#define   MCDEBUG_ERRLOG1A_MERR_TYPE_M		0x30000000
++#define   MCDEBUG_ERRLOG1A_MERR_TYPE_NONE	0x00000000
++#define   MCDEBUG_ERRLOG1A_MERR_TYPE_SBE	0x10000000
++#define   MCDEBUG_ERRLOG1A_MERR_TYPE_MBE	0x20000000
++#define   MCDEBUG_ERRLOG1A_MERR_TYPE_RFL	0x30000000
++#define   MCDEBUG_ERRLOG1A_MERR_BA_M		0x00700000
++#define   MCDEBUG_ERRLOG1A_MERR_BA_S		20
++#define   MCDEBUG_ERRLOG1A_MERR_CS_M		0x00070000
++#define   MCDEBUG_ERRLOG1A_MERR_CS_S		16
++#define   MCDEBUG_ERRLOG1A_SYNDROME_M		0x0000ffff
++#define MCDRAM_RANKCFG				0x114
++#define   MCDRAM_RANKCFG_EN			0x00000001
++#define   MCDRAM_RANKCFG_TYPE_SIZE_M		0x000001c0
++#define   MCDRAM_RANKCFG_TYPE_SIZE_S		6
++
++#define PASEMI_EDAC_NR_CSROWS			8
++#define PASEMI_EDAC_NR_CHANS			1
++#define PASEMI_EDAC_ERROR_GRAIN			64
++
++static int last_page_in_mmc;
++static int system_mmc_id;
++
++
++static u32 pasemi_edac_get_error_info(struct mem_ctl_info *mci)
++{
++	struct pci_dev *pdev = to_pci_dev(mci->dev);
++	u32 tmp;
++
++	pci_read_config_dword(pdev, MCDEBUG_ERRSTA,
++			      &tmp);
++
++	tmp &= (MCDEBUG_ERRSTA_RFL_STATUS | MCDEBUG_ERRSTA_MBE_STATUS
++		| MCDEBUG_ERRSTA_SBE_STATUS);
++
++	if (tmp) {
++		if (tmp & MCDEBUG_ERRSTA_SBE_STATUS)
++			pci_write_config_dword(pdev, MCDEBUG_ERRCNT1,
++					       MCDEBUG_ERRCNT1_SBE_CNT_OVRFLO);
++		pci_write_config_dword(pdev, MCDEBUG_ERRSTA, tmp);
++	}
++
++	return tmp;
++}
++
++static void pasemi_edac_process_error_info(struct mem_ctl_info *mci, u32 errsta)
++{
++	struct pci_dev *pdev = to_pci_dev(mci->dev);
++	u32 errlog1a;
++	u32 cs;
++
++	if (!errsta)
++		return;
++
++	pci_read_config_dword(pdev, MCDEBUG_ERRLOG1A, &errlog1a);
++
++	cs = (errlog1a & MCDEBUG_ERRLOG1A_MERR_CS_M) >>
++		MCDEBUG_ERRLOG1A_MERR_CS_S;
++
++	/* uncorrectable/multi-bit errors */
++	if (errsta & (MCDEBUG_ERRSTA_MBE_STATUS |
++		      MCDEBUG_ERRSTA_RFL_STATUS)) {
++		edac_mc_handle_ue(mci, mci->csrows[cs].first_page, 0,
++				  cs, mci->ctl_name);
++	}
++
++	/* correctable/single-bit errors */
++	if (errsta & MCDEBUG_ERRSTA_SBE_STATUS) {
++		edac_mc_handle_ce(mci, mci->csrows[cs].first_page, 0,
++				  0, cs, 0, mci->ctl_name);
++	}
++}
++
++static void pasemi_edac_check(struct mem_ctl_info *mci)
++{
++	u32 errsta;
++
++	errsta = pasemi_edac_get_error_info(mci);
++	if (errsta)
++		pasemi_edac_process_error_info(mci, errsta);
++}
++
++static int pasemi_edac_init_csrows(struct mem_ctl_info *mci,
++				   struct pci_dev *pdev,
++				   enum edac_type edac_mode)
++{
++	struct csrow_info *csrow;
++	u32 rankcfg;
++	int index;
++
++	for (index = 0; index < mci->nr_csrows; index++) {
++		csrow = &mci->csrows[index];
++
++		pci_read_config_dword(pdev,
++				      MCDRAM_RANKCFG + (index * 12),
++				      &rankcfg);
++
++		if (!(rankcfg & MCDRAM_RANKCFG_EN))
++			continue;
++
++		switch ((rankcfg & MCDRAM_RANKCFG_TYPE_SIZE_M) >>
++			MCDRAM_RANKCFG_TYPE_SIZE_S) {
++		case 0:
++			csrow->nr_pages = 128 << (20 - PAGE_SHIFT);
++			break;
++		case 1:
++			csrow->nr_pages = 256 << (20 - PAGE_SHIFT);
++			break;
++		case 2:
++		case 3:
++			csrow->nr_pages = 512 << (20 - PAGE_SHIFT);
++			break;
++		case 4:
++			csrow->nr_pages = 1024 << (20 - PAGE_SHIFT);
++			break;
++		case 5:
++			csrow->nr_pages = 2048 << (20 - PAGE_SHIFT);
++			break;
++		default:
++			edac_mc_printk(mci, KERN_ERR,
++				       "Unrecognized Rank Config\n");
++			return -EINVAL;
++		}
++
++		csrow->first_page = last_page_in_mmc;
++		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
++		last_page_in_mmc += csrow->nr_pages;
++		csrow->page_mask = 0;
++		csrow->grain = PASEMI_EDAC_ERROR_GRAIN;
++		csrow->mtype = MEM_DDR;
++		csrow->dtype = DEV_UNKNOWN;
++		csrow->edac_mode = edac_mode;
++	}
++	return 0;
++}
++
++static int __devinit pasemi_edac_probe(struct pci_dev *pdev,
++		const struct pci_device_id *ent)
++{
++	struct mem_ctl_info *mci = NULL;
++	u32 errctl1, errcor, scrub, mcen;
++
++	pci_read_config_dword(pdev, MCCFG_MCEN, &mcen);
++	if (!(mcen & MCCFG_MCEN_MMC_EN))
++		return -ENODEV;
++
++	/*
++	 * We should think about enabling other error detection later on
++	 */
++
++	pci_read_config_dword(pdev, MCDEBUG_ERRCTL1, &errctl1);
++	errctl1 |= MCDEBUG_ERRCTL1_SBE_LOG_EN |
++		MCDEBUG_ERRCTL1_MBE_LOG_EN |
++		MCDEBUG_ERRCTL1_RFL_LOG_EN;
++	pci_write_config_dword(pdev, MCDEBUG_ERRCTL1, errctl1);
++
++	mci = edac_mc_alloc(0, PASEMI_EDAC_NR_CSROWS, PASEMI_EDAC_NR_CHANS);
++
++	if (mci == NULL)
++		return -ENOMEM;
++
++	pci_read_config_dword(pdev, MCCFG_ERRCOR, &errcor);
++	errcor |= MCCFG_ERRCOR_RNK_FAIL_DET_EN |
++		MCCFG_ERRCOR_ECC_GEN_EN |
++		MCCFG_ERRCOR_ECC_CRR_EN;
++
++	mci->dev = &pdev->dev;
++	mci->mtype_cap = MEM_FLAG_DDR | MEM_FLAG_RDDR;
++	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
++	mci->edac_cap = (errcor & MCCFG_ERRCOR_ECC_GEN_EN) ?
++		((errcor & MCCFG_ERRCOR_ECC_CRR_EN) ?
++		 (EDAC_FLAG_EC | EDAC_FLAG_SECDED) : EDAC_FLAG_EC) :
++		EDAC_FLAG_NONE;
++	mci->mod_name = MODULE_NAME;
++	mci->dev_name = pci_name(pdev);
++	mci->ctl_name = "pasemi,1682m-mc";
++	mci->edac_check = pasemi_edac_check;
++	mci->ctl_page_to_phys = NULL;
++	pci_read_config_dword(pdev, MCCFG_SCRUB, &scrub);
++	mci->scrub_cap = SCRUB_FLAG_HW_PROG | SCRUB_FLAG_HW_SRC;
++	mci->scrub_mode =
++		((errcor & MCCFG_ERRCOR_ECC_CRR_EN) ? SCRUB_FLAG_HW_SRC : 0) |
++		((scrub & MCCFG_SCRUB_RGLR_SCRB_EN) ? SCRUB_FLAG_HW_PROG : 0);
++
++	if (pasemi_edac_init_csrows(mci, pdev,
++				    (mci->edac_cap & EDAC_FLAG_SECDED) ?
++				    EDAC_SECDED :
++				    ((mci->edac_cap & EDAC_FLAG_EC) ?
++				     EDAC_EC : EDAC_NONE)))
++		goto fail;
++
++	/*
++	 * Clear status
++	 */
++	pasemi_edac_get_error_info(mci);
++
++	if (edac_mc_add_mc(mci, system_mmc_id++)) {
++		goto fail;
++	}
++
++	/* get this far and it's successful */
++	return 0;
++
++fail:
++	edac_mc_free(mci);
++	return -ENODEV;
++}
++
++static void __devexit pasemi_edac_remove(struct pci_dev *pdev)
++{
++	struct mem_ctl_info *mci = edac_mc_del_mc(&pdev->dev);
++
++	if (!mci)
++		return;
++
++	edac_mc_free(mci);
++}
++
++
++static const struct pci_device_id pasemi_edac_pci_tbl[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_PASEMI, 0xa00a) },
++};
++
++MODULE_DEVICE_TABLE(pci, pasemi_edac_pci_tbl);
++
++static struct pci_driver pasemi_edac_driver = {
++	.name = MODULE_NAME,
++	.probe = pasemi_edac_probe,
++	.remove = __devexit_p(pasemi_edac_remove),
++	.id_table = pasemi_edac_pci_tbl,
++};
++
++static int __init pasemi_edac_init(void)
++{
++	return pci_register_driver(&pasemi_edac_driver);
++}
++
++static void __exit pasemi_edac_exit(void)
++{
++	pci_unregister_driver(&pasemi_edac_driver);
++}
++
++module_init(pasemi_edac_init);
++module_exit(pasemi_edac_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Egor Martovetsky <egor@pasemi.com>");
++MODULE_DESCRIPTION("MC support for PA Semi PA6T-1682M memory controller");
+Index: linux-2.6.22-rc6-mm1/drivers/edac/Kconfig
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/Kconfig
++++ linux-2.6.22-rc6-mm1/drivers/edac/Kconfig
+@@ -116,4 +116,13 @@ config EDAC_I5000
+ 	  Support for error detection and correction the Intel
+ 	  Greekcreek/Blackford chipsets.
+ 
++config EDAC_PASEMI
++	tristate "PA Semi PWRficient"
++	depends on EDAC_MM_EDAC && PCI
++	depends on PPC
++	help
++	  Support for error detection and correction on PA Semi
++	  PWRficient.
++
++
+ endif # EDAC
+Index: linux-2.6.22-rc6-mm1/drivers/edac/Makefile
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/Makefile
++++ linux-2.6.22-rc6-mm1/drivers/edac/Makefile
+@@ -26,4 +26,5 @@ obj-$(CONFIG_EDAC_I82875P)		+= i82875p_e
+ obj-$(CONFIG_EDAC_I3000)		+= i3000_edac.o
+ obj-$(CONFIG_EDAC_I82860)		+= i82860_edac.o
+ obj-$(CONFIG_EDAC_R82600)		+= r82600_edac.o
++obj-$(CONFIG_EDAC_PASEMI)		+= pasemi_edac.o
+ 
