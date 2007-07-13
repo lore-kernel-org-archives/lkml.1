@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937067AbXGMUFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937392AbXGMUG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937067AbXGMUFd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 16:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbXGMUFX
+	id S937392AbXGMUG1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 16:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbXGMUGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 16:05:23 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:51976 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756749AbXGMUFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 16:05:22 -0400
-Date: Fri, 13 Jul 2007 15:05:15 -0500
-To: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Subject: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-Message-ID: <20070713200515.GS5549@austin.ibm.com>
+	Fri, 13 Jul 2007 16:06:18 -0400
+Received: from h155.mvista.com ([63.81.120.155]:46404 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755592AbXGMUGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 16:06:17 -0400
+Message-ID: <4697DBB2.7020507@ru.mvista.com>
+Date: Sat, 14 Jul 2007 00:08:18 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+To: Mark Lord <liml@rtr.ca>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
+References: <20070221011922.GA1777@freefall.freebsd.org>	<200702210342.20775.bzolnier@gmail.com>	<466EEFD6.9030001@ru.mvista.com>	<200706160123.55636.bzolnier@gmail.com>	<4693D9B6.4090408@ru.mvista.com> <20070713161612.2f2ebb0b@the-village.bc.nu> <46979652.6040201@rtr.ca> <4697987E.3040406@ru.mvista.com> <4697D425.7000300@rtr.ca>
+In-Reply-To: <4697D425.7000300@rtr.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark Lord wrote:
 
-This is a patch (& bug report) for a crash in sysctl_set_parent() 
-in 2.6.22-git2. 
+>>>> O> >>    BTW, why the timeout is so damn long? 2*WAIT_CMD is 20 
+>>>> secs, and if DMA is not complete or interrupt pending, it may wait 
+>>>> 10 more secs...
 
-Problem: 2.6.22-git2 crashes with a stack trace 
-[c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
-[c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
-[c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
-[c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
-[c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
-[c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
-[c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
+> ..
 
-A bit of poking around makes it clear what the problem is:
-In sysctl_set_parent(), the for loop 
+>>> I've lost the original question from this thread, but the idea of the 
 
-   for (; table->ctl_name || table->procname; table++) {
+>>    The original question concerned specifically the DMA command 
+>> timeout which is twice more than the usual one, WAIT_CMD (10 seconds).
 
-walks off the end of the table, and into garbage.  Basically,
-this for-loop iterator expects all table arrays to be 
-"null terminated".  However, net/ipv4/devinet.c statically 
-declares an array that is not null-terminated.  The patch 
-below fixes that; it works for me.  Its somewhat conservative;
-if one wishes to assume that the compiler will always zero out
-the empty parts of the structure, then this pach can be shrunk 
-to one line: +	ctl_table		devinet_root_dir[3];
+>>> longish
+>>> timeouts was that drive *may* be spun down ("standby"), and thus have 
+>>> to spin
+>>> up again to complete media commands.  Back then, drives were much 
+>>> slower at
+>>> spinning up than nowadays, and the ATA spec says to allow up to 30 
+>>> seconds.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+>>    Well, that doesn't explain the DMA case.
 
-----
-I tried to audit some of the code to see where else there 
-might be similar badly-formed static declarations.  This is hard,
-as there's a lot of code. Most seems fine.
+> When a drive is in standby, we don't send it anything special to wake up.
 
+    Wait, aren't we sending IDLE on resume step 2 -- looking at 
+ide-io.cide_start_power_step()?
 
- net/core/neighbour.c |    4 ++++
- net/ipv4/devinet.c   |    7 ++++++-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+> Cheers
 
-Index: linux-2.6.22-git2/net/ipv4/devinet.c
-===================================================================
---- linux-2.6.22-git2.orig/net/ipv4/devinet.c	2007-07-13 14:23:21.000000000 -0500
-+++ linux-2.6.22-git2/net/ipv4/devinet.c	2007-07-13 14:24:15.000000000 -0500
-@@ -1424,7 +1424,7 @@ static struct devinet_sysctl_table {
- 	ctl_table		devinet_dev[2];
- 	ctl_table		devinet_conf_dir[2];
- 	ctl_table		devinet_proto_dir[2];
--	ctl_table		devinet_root_dir[2];
-+	ctl_table		devinet_root_dir[3];
- } devinet_sysctl = {
- 	.devinet_vars = {
- 		DEVINET_SYSCTL_COMPLEX_ENTRY(FORWARDING, "forwarding",
-@@ -1493,8 +1493,13 @@ static struct devinet_sysctl_table {
- 			.data		= &ipv4_devconf.loop,
- 			.maxlen		= sizeof(int),
- 			.mode		= 0644,
-+			.child	= 0x0,
- 			.proc_handler	= &proc_dointvec,
- 		},
-+		{
-+			.ctl_name	= 0,
-+			.procname	= 0,
-+		},
- 	},
- };
- 
+MBR, Sergei
