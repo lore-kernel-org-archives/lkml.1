@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbXGMNVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762049AbXGMNV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbXGMNVk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXGMNV3
+	id S1762049AbXGMNV6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbXGMNVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:21:29 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:55987 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbXGMNV2 (ORCPT
+	Fri, 13 Jul 2007 09:21:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44679 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755253AbXGMNV2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Jul 2007 09:21:28 -0400
-Message-ID: <46977C36.8010403@gmail.com>
-Date: Fri, 13 Jul 2007 15:20:54 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Jesper Juhl <jesper.juhl@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <200707111916.35036.jesper.juhl@gmail.com>	 <2c0942db0707112159v3ee2cd83i74759c7138e273f7@mail.gmail.com>	 <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com>	 <4696C89E.4010002@goop.org> <9a8748490707121925w5fb22c0o61068f06d66d5845@mail.gmail.com> <4696FC43.3000201@goop.org>
-In-Reply-To: <4696FC43.3000201@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Date: Fri, 13 Jul 2007 14:21:19 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, tytso@mit.edu,
+       cmm@us.ibm.com, suparna@in.ibm.com, adilger@clusterfs.com, dgc@sgi.com
+Subject: Re: [PATCH 2/6][TAKE7] fallocate() implementation in i386, x86_64 and powerpc
+Message-ID: <20070713132118.GA23256@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, tytso@mit.edu,
+	cmm@us.ibm.com, suparna@in.ibm.com, adilger@clusterfs.com,
+	dgc@sgi.com
+References: <20070713123816.GA18000@amitarora.in.ibm.com> <20070713124755.GB22961@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713124755.GB22961@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/13/2007 06:14 AM, Jeremy Fitzhardinge wrote:
+On Fri, Jul 13, 2007 at 06:17:55PM +0530, Amit K. Arora wrote:
+>  /*
+> + * sys_fallocate - preallocate blocks or free preallocated blocks
+> + * @fd: the file descriptor
+> + * @mode: mode specifies the behavior of allocation.
+> + * @offset: The offset within file, from where allocation is being
+> + *	    requested. It should not have a negative value.
+> + * @len: The amount of space in bytes to be allocated, from the offset.
+> + *	 This can not be zero or a negative value.
 
-> Jesper Juhl wrote:
+kerneldoc comments are for in-kernel APIs which syscalls aren't.  I'd say
+just temove this comment, the manpage is a much better documentation anyway.
 
->> Yes and no.  If that will get things moving in the direction of
->> getting rid of the stack size as a config option, then I'm all for it.
->> But on the other hand it is my personal opinion that this is an area
->> where we should just make up our minds as to whether we want 4K or 8K
->> stacks and whether we want interrupt stacks or not, and then not have
->> it configurable at all.  
-> 
-> Well, smaller stacks are better where possible, but there's nothing 
-> magic about 4k.
+> + * <TBD> Generic fallocate to be added for file systems that do not
+> + *	 support fallocate.
 
-Except offcourse it happens to also be the value of PAGE_SIZE at least on x86...
+Please remove the comment, adding a generic fallback in kernelspace is a
+very dumb idea as we already discussed long time ago.
 
-> Sure, its mostly enough, but there's no particular reason to believe it
-> will be enough for everything.  You could state a priori that all kernel
-> code paths must fit into 4k of stack, but that's pretty arbitrary.
+> --- linux-2.6.22.orig/include/linux/fs.h
+> +++ linux-2.6.22/include/linux/fs.h
+> @@ -266,6 +266,21 @@ extern int dir_notify_enable;
+>  #define SYNC_FILE_RANGE_WRITE		2
+>  #define SYNC_FILE_RANGE_WAIT_AFTER	4
+>  
+> +/*
+> + * sys_fallocate modes
+> + * Currently sys_fallocate supports two modes:
+> + * FALLOC_ALLOCATE :	This is the preallocate mode, using which an application
+> + *			may request reservation of space for a particular file.
+> + *			The file size will be changed if the allocation is
+> + *			beyond EOF.
+> + * FALLOC_RESV_SPACE :	This is same as the above mode, with only one difference
+> + *			that the file size will not be modified.
+> + */
+> +#define FALLOC_FL_KEEP_SIZE    0x01 /* default is extend/shrink size */
+> +
+> +#define FALLOC_ALLOCATE        0
+> +#define FALLOC_RESV_SPACE      FALLOC_FL_KEEP_SIZE
 
-As far as I'm aware, the actual reason for 4K stacks is that after the 
-system has been up and running for some time getting "1 physically 
-contiguous pages" becomes significantly easier than 2 which wouldn't be 
-arbitrary.
+Just remove FALLOC_ALLOCATE, 0 flags should be the default.  I'm also
+not sure there is any point in having two namespace now that we have a flags-
+based ABI.
 
-Rene
+Also please don't add this to fs.h.  fs.h is a complete mess and the
+falloc flags are a new user ABI.  Add a linux/falloc.h instead which can
+be added to headers-y so the ABI constant can be exported to userspace.
+
