@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934796AbXGMGoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933638AbXGMGrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934796AbXGMGoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbXGMGoF
+	id S933638AbXGMGrR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbXGMGrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:44:05 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:55699 "EHLO mail.g-house.de"
+	Fri, 13 Jul 2007 02:47:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36296 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753418AbXGMGoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:44:04 -0400
-Date: Fri, 13 Jul 2007 08:43:56 +0200 (CEST)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Nathan Lynch <ntl@pobox.com>
-cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: Weird oopses with 2.6.22-rc7
-In-Reply-To: <20070712233719.GK17955@localdomain>
-Message-ID: <alpine.DEB.0.99.0707130840470.18512@sheep.housecafe.de>
-References: <alpine.DEB.0.99.0707130016270.18512@sheep.housecafe.de>
- <20070712233719.GK17955@localdomain>
+	id S1751489AbXGMGrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 02:47:06 -0400
+From: Neil Brown <neilb@suse.de>
+To: nikola.trajic@telus.net
+Date: Fri, 13 Jul 2007 16:47:21 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18071.8185.249040.492399@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Is it fixed in 2.6.20 (raid1 spare rebuilding does not resume after raid1 is stopped)
+In-Reply-To: message from nikola.trajic@telus.net on Thursday July 12
+References: <1184286293.4696c655bccb2@webmail.telus.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007, Nathan Lynch wrote:
-> Have you tried 2.6.22?  Linus committed a utimensat-related oops fix
-> right before releasing it:
+On Thursday July 12, nikola.trajic@telus.net wrote:
+> 
+> 
+> [1.] One line summary of the problem:
+>  
+> raid1 spare rebuilding does not resume after the reboot ( 2.6.18)
+>  
+> [2.] Full description of the problem/report:
+(lots of details, thanks).
 
-Ah, this seem to have fixed http://lkml.org/lkml/2007/7/8/21 and really 
-looks promising, I'll try 2.6.22-git2 now.
+I just tried it on 2.6.22-rc6-mm1 (just what I happen to be working
+on) and it works fine.  I do have a vague memory of something like
+this being fixed in the last several months.
+So I suggest that you try a newer kernel.
 
-thanks,
-Christian.
--- 
-BOFH excuse #208:
+It could be that commit 1757128438d41670ded8bc3bc735325cc07dc8f9
+is the one that fixed this problem, but I cannot be sure.
 
-Your mail is being routed through Germany ... and they're censoring us.
+NeilBrown
