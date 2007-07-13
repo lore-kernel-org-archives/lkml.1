@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937319AbXGMWtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937154AbXGMWtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937319AbXGMWtY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 18:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935704AbXGMWpI
+	id S937154AbXGMWtv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 18:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760627AbXGMWpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 18:45:08 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:59102 "EHLO uludag.org.tr"
+	Fri, 13 Jul 2007 18:45:23 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:59106 "EHLO uludag.org.tr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S937333AbXGMWpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 18:45:03 -0400
+	id S1758624AbXGMWpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 18:45:07 -0400
 From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
 Reply-To: caglar@pardus.org.tr
 Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-Subject: [PATCH 9/12] drivers/isdn/hisax/nj_u.c: replace pci_find_device with pci_get_device
-Date: Sat, 14 Jul 2007 01:44:48 +0300
+Subject: [PATCH 10/12] drivers/isdn/hisax/sedlbauer.c: replace pci_find_device with pci_get_device
+Date: Sat, 14 Jul 2007 01:44:51 +0300
 User-Agent: KMail/1.9.7
 MIME-Version: 1.0
 Content-Disposition: inline
@@ -22,15 +22,15 @@ Cc: kkeil@suse.de, kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <200707140144.49983.caglar@pardus.org.tr>
+Message-Id: <200707140144.53441.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Following patch replaces pci_find_device with pci_get_device to avoid 
 following compiliation warning;
 
-drivers/isdn/hisax/nj_u.c: In function `setup_netjet_u':
-drivers/isdn/hisax/nj_u.c:154: warning: `pci_find_device' is deprecated 
+drivers/isdn/hisax/sedlbauer.c: In function `setup_sedlbauer':
+drivers/isdn/hisax/sedlbauer.c:621: warning: `pci_find_device' is deprecated 
 (declared at include/linux/pci.h:478)
 
 and also removes trailing whitespaces at the ends of lines and converts 
@@ -39,70 +39,138 @@ smarttabs/whitespaces into real tabs
 Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 
 ---
- drivers/isdn/hisax/nj_u.c |   21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+ drivers/isdn/hisax/sedlbauer.c |   43 
+++++++++++++++++++++++-------------------
+ 1 file changed, 24 insertions(+), 19 deletions(-)
 
-Index: linux-2.6/drivers/isdn/hisax/nj_u.c
+Index: linux-2.6/drivers/isdn/hisax/sedlbauer.c
 ===================================================================
---- linux-2.6.orig/drivers/isdn/hisax/nj_u.c
-+++ linux-2.6/drivers/isdn/hisax/nj_u.c
-@@ -151,20 +151,20 @@ setup_netjet_u(struct IsdnCard *card)
+--- linux-2.6.orig/drivers/isdn/hisax/sedlbauer.c
++++ linux-2.6/drivers/isdn/hisax/sedlbauer.c
+@@ -540,19 +540,19 @@ setup_sedlbauer(struct IsdnCard *card)
+ 	strcpy(tmp, Sedlbauer_revision);
+ 	printk(KERN_INFO "HiSax: Sedlbauer driver Rev. %s\n", HiSax_getrev(tmp));
+ 	
+- 	if (cs->typ == ISDN_CTYPE_SEDLBAUER) {
+- 		cs->subtyp = SEDL_SPEED_CARD_WIN;
++	if (cs->typ == ISDN_CTYPE_SEDLBAUER) {
++		cs->subtyp = SEDL_SPEED_CARD_WIN;
+ 		cs->hw.sedl.bus = SEDL_BUS_ISA;
+ 		cs->hw.sedl.chip = SEDL_CHIP_TEST;
+- 	} else if (cs->typ == ISDN_CTYPE_SEDLBAUER_PCMCIA) {	
+- 		cs->subtyp = SEDL_SPEED_STAR;
++	} else if (cs->typ == ISDN_CTYPE_SEDLBAUER_PCMCIA) {
++		cs->subtyp = SEDL_SPEED_STAR;
+ 		cs->hw.sedl.bus = SEDL_BUS_PCMCIA;
+ 		cs->hw.sedl.chip = SEDL_CHIP_TEST;
+- 	} else if (cs->typ == ISDN_CTYPE_SEDLBAUER_FAX) {	
+- 		cs->subtyp = SEDL_SPEED_FAX;
++	} else if (cs->typ == ISDN_CTYPE_SEDLBAUER_FAX) {
++		cs->subtyp = SEDL_SPEED_FAX;
+ 		cs->hw.sedl.bus = SEDL_BUS_ISA;
+ 		cs->hw.sedl.chip = SEDL_CHIP_ISAC_ISAR;
+- 	} else
++	} else
+ 		return (0);
  
- 	for ( ;; )
- 	{
--		if ((dev_netjet = pci_find_device(PCI_VENDOR_ID_TIGERJET,
-+		if ((dev_netjet = pci_get_device(PCI_VENDOR_ID_TIGERJET,
- 			PCI_DEVICE_ID_TIGERJET_300,  dev_netjet))) {
- 			if (pci_enable_device(dev_netjet))
+ 	bytecnt = 8;
+@@ -618,14 +618,14 @@ setup_sedlbauer(struct IsdnCard *card)
+ #endif
+ /* Probe for Sedlbauer speed pci */
+ #ifdef CONFIG_PCI
+-		if ((dev_sedl = pci_find_device(PCI_VENDOR_ID_TIGERJET,
++		if ((dev_sedl = pci_get_device(PCI_VENDOR_ID_TIGERJET,
+ 				PCI_DEVICE_ID_TIGERJET_100, dev_sedl))) {
+ 			if (pci_enable_device(dev_sedl))
 -				return(0);
-+				goto dev_netjet_cleanup;
- 			pci_set_master(dev_netjet);
- 			cs->irq = dev_netjet->irq;
++				goto dev_sedl_cleanup;
+ 			cs->irq = dev_sedl->irq;
  			if (!cs->irq) {
- 				printk(KERN_WARNING "NETspider-U: No IRQ for PCI card found\n");
+ 				printk(KERN_WARNING "Sedlbauer: No IRQ for PCI card found\n");
 -				return(0);
-+				goto dev_netjet_cleanup;
++				goto dev_sedl_cleanup;
  			}
- 			cs->hw.njet.base = pci_resource_start(dev_netjet, 0);
- 			if (!cs->hw.njet.base) {
- 				printk(KERN_WARNING "NETspider-U: No IO-Adr for PCI card found\n");
--				return(0);
-+				goto dev_netjet_cleanup;
+ 			cs->hw.sedl.cfg_reg = pci_resource_start(dev_sedl, 0);
+ 		} else {
+@@ -642,7 +642,7 @@ setup_sedlbauer(struct IsdnCard *card)
+ 			cs->hw.sedl.cfg_reg);
+ 		if (sub_id != PCI_SUB_ID_SEDLBAUER) {
+ 			printk(KERN_ERR "Sedlbauer: unknown sub id %#x\n", sub_id);
+-			return(0);
++			goto dev_sedl_cleanup;
+ 		}
+ 		if (sub_vendor_id == PCI_SUBVENDOR_SPEEDFAX_PYRAMID) {
+ 			cs->hw.sedl.chip = SEDL_CHIP_ISAC_ISAR;
+@@ -659,7 +659,7 @@ setup_sedlbauer(struct IsdnCard *card)
+ 		} else {
+ 			printk(KERN_ERR "Sedlbauer: unknown sub vendor id %#x\n",
+ 				sub_vendor_id);
+-			return(0);
++			goto dev_sedl_cleanup;
+ 		}
+ 		bytecnt = 256;
+ 		cs->hw.sedl.reset_on = SEDL_ISAR_PCI_ISAR_RESET_ON;
+@@ -676,10 +676,10 @@ setup_sedlbauer(struct IsdnCard *card)
+ 		printk(KERN_WARNING "Sedlbauer: NO_PCI_BIOS\n");
+ 		return (0);
+ #endif /* CONFIG_PCI */
+-	}	
++	}
+ 
+ #ifdef __ISAPNP__
+-ready:	
++ready:
+ #endif
+ 
+ 	/* In case of the sedlbauer pcmcia card, this region is in use,
+@@ -693,7 +693,7 @@ ready:	
+ 			CardType[card->typ],
+ 			cs->hw.sedl.cfg_reg,
+ 			cs->hw.sedl.cfg_reg + bytecnt);
+-			return (0);
++			goto dev_sedl_cleanup;
+ 	}
+ 
+ 	printk(KERN_INFO
+@@ -711,7 +711,7 @@ ready:	
+  * testing ISA and PCMCIA Cards for IPAC, default is ISAC
+  * do not test for PCI card, because ports are different
+  * and PCI card uses only IPAC (for the moment)
+- */	
++ */
+ 	if (cs->hw.sedl.bus != SEDL_BUS_PCI) {
+ 		val = readreg(cs->hw.sedl.cfg_reg + SEDL_IPAC_ANY_ADR,
+ 			cs->hw.sedl.cfg_reg + SEDL_IPAC_ANY_IPAC, IPAC_ID);
+@@ -804,7 +804,7 @@ ready:	
+ 			}
+ 			if (!bytecnt) {
+ 				release_io_sedlbauer(cs);
+-				return (0);
++				goto dev_sedl_cleanup;
  			}
  		} else {
- 			printk(KERN_WARNING "NETspider-U: No PCI card found\n");
-@@ -202,9 +202,9 @@ setup_netjet_u(struct IsdnCard *card)
- 
- 			default :
- 				printk( KERN_WARNING "NETspider-U: No PCI card found\n" );
--				return 0;
--                }
--                break;
-+				goto dev_netjet_cleanup;
-+		}
-+		break;
+ 			if (cs->hw.sedl.bus == SEDL_BUS_PCMCIA) {
+@@ -823,14 +823,19 @@ ready:	
+ 			}
+ 			cs->irq_func = &sedlbauer_interrupt;
+ 			ISACVersion(cs, "Sedlbauer:");
+-		
++
+ 			if (HscxVersion(cs, "Sedlbauer:")) {
+ 				printk(KERN_WARNING
+ 					"Sedlbauer: wrong HSCX versions check IO address\n");
+ 				release_io_sedlbauer(cs);
+-				return (0);
++				goto dev_sedl_cleanup;
+ 			}
+ 		}
  	}
- #else
- 
-@@ -225,7 +225,7 @@ setup_netjet_u(struct IsdnCard *card)
- 		       CardType[card->typ],
- 		       cs->hw.njet.base,
- 		       cs->hw.njet.base + bytecnt);
--		return (0);
-+		goto dev_netjet_cleanup;
- 	}
- 	setup_icc(cs);
- 	cs->readisac  = &NETjet_ReadIC;
-@@ -239,5 +239,10 @@ setup_netjet_u(struct IsdnCard *card)
- 	cs->irq_func = &netjet_u_interrupt;
- 	cs->irq_flags |= IRQF_SHARED;
- 	ICCVersion(cs, "NETspider-U:");
-+	pci_dev_put(dev_netjet);
++	pci_dev_put(dev_sedl);
  	return (1);
 +
-+dev_netjet_cleanup:
-+		pci_dev_put(dev_netjet);
-+		return (0);
++dev_sedl_cleanup:
++	pci_dev_put(dev_sedl);
++	return 0;
  }
 
 -- 
