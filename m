@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935775AbXGMIQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935909AbXGMIRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935775AbXGMIQI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 04:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760993AbXGMIPy
+	id S935909AbXGMIRm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 04:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762265AbXGMIR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 04:15:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53969 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761377AbXGMIPx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 04:15:53 -0400
-Date: Fri, 13 Jul 2007 01:15:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Jin <joe.jin@oracle.com>
-Cc: bill.irwin@oracle.com, linux-kernel@vger.kernel.org,
-       gurudas.pai@oracle.com, Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
-Message-Id: <20070713011543.22797645.akpm@linux-foundation.org>
-In-Reply-To: <20070713080336.GB21833@joejin-pc.cn.oracle.com>
-References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
-	<20070712221842.f5e47065.akpm@linux-foundation.org>
-	<20070713064004.GA21833@joejin-pc.cn.oracle.com>
-	<20070712234938.c77f3a48.akpm@linux-foundation.org>
-	<20070713080336.GB21833@joejin-pc.cn.oracle.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Jul 2007 04:17:29 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:10829 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762235AbXGMIR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 04:17:28 -0400
+Message-ID: <4697357A.10605@sw.ru>
+Date: Fri, 13 Jul 2007 12:19:06 +0400
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: Denis Cheng <crquan@gmail.com>
+CC: trivial@kernel.org, Denis <cr_quan@163.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to remove
+ some following zero initializations.
+References: <1184290905.5475.5.camel@tux.homenetwork>
+In-Reply-To: <1184290905.5475.5.camel@tux.homenetwork>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 16:03:36 +0800 Joe Jin <joe.jin@oracle.com> wrote:
+This doesn't look worth zeroing half of the struct
+when it is initialized to non-zeros then.
 
-> > > 
-> > > The patch looks good for this bug, thanks :)
-> > 
-> > If you have time could you test it and sent it back at me please?
-> > 
+Denis Cheng wrote:
+>>From 4d87e14b67890f06885a76b5792ca034de2e9d06 Mon Sep 17 00:00:00 2001
+> From: Denis Cheng <crquan@gmail.com>
+> Date: Thu, 12 Jul 2007 11:53:58 +0800
+> Subject: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to
+> remove some following zero initializations.
 > 
-> Test passed and panic gone.
-
-Patch gone too ;) I deleted it.  I was hoping that you'd send me the final
-finished product (please).
-
-> thanks.
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+>  fs/dcache.c |   12 ++----------
+>  1 files changed, 2 insertions(+), 10 deletions(-)
 > 
-> > > if other caller give a invalid nid to alloc_pages_node(), __alloc_pages
-> > > will crash again.
-> > 
-> > That would be a buggy caller, so we should fix that caller.
-> > 
-> > > So I think we add some sanity check for nid at alloc_pages_node is
-> > > meaningful.  
-> > > 
-> > > another question, if (nid >= MAX_NUMNODES),  may I set nid to 0 directly
-> > > like following code?
-> > > 
-> > > 	if (unlikly(nid >= MAX_NUMNODES)
-> > > 		nid = 0
-> > 
-> > if (nid > MAX_NUMNODES) then that is a bug and we should report it (doing
-> > this via a BUG() is OK) rather than quietly covering it up.
-> > 
-> > if (nid == MAX_NUMNODES) then we should set it to
-> > first_node(node_online_map);
-> 
-> OK, will do it and send you a patch :)
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index 0e73aa0..8c559b2 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -898,7 +898,7 @@ struct dentry *d_alloc(struct dentry * parent, const
+> struct qstr *name)
+>  	struct dentry *dentry;
+>  	char *dname;
+>  
+> -	dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL); 
+> +	dentry = kmem_cache_zalloc(dentry_cache, GFP_KERNEL); 
+>  	if (!dentry)
+>  		return NULL;
+>  
+> @@ -921,15 +921,7 @@ struct dentry *d_alloc(struct dentry * parent,
+> const struct qstr *name)
+>  	atomic_set(&dentry->d_count, 1);
+>  	dentry->d_flags = DCACHE_UNHASHED;
+>  	spin_lock_init(&dentry->d_lock);
+> -	dentry->d_inode = NULL;
+> -	dentry->d_parent = NULL;
+> -	dentry->d_sb = NULL;
+> -	dentry->d_op = NULL;
+> -	dentry->d_fsdata = NULL;
+> -	dentry->d_mounted = 0;
+> -#ifdef CONFIG_PROFILING
+> -	dentry->d_cookie = NULL;
+> -#endif
+> +
+>  	INIT_HLIST_NODE(&dentry->d_hash);
+>  	INIT_LIST_HEAD(&dentry->d_lru);
+>  	INIT_LIST_HEAD(&dentry->d_subdirs);
 
-Thanks.  Please cc Paul Jackson <pj@sgi.com> on that patch.
