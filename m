@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933872AbXGMIFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763322AbXGMIM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933872AbXGMIFo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 04:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934513AbXGMIFL
+	id S1763322AbXGMIM3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 04:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760200AbXGMIMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 04:05:11 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:41670 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756441AbXGMIFH (ORCPT
+	Fri, 13 Jul 2007 04:12:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53301 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755948AbXGMIMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 04:05:07 -0400
-Date: Fri, 13 Jul 2007 16:03:36 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joe Jin <joe.jin@oracle.com>, bill.irwin@oracle.com,
-       linux-kernel@vger.kernel.org, gurudas.pai@oracle.com
-Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
-Message-ID: <20070713080336.GB21833@joejin-pc.cn.oracle.com>
-References: <20070713024507.GA19438@joejin-pc.cn.oracle.com> <20070712221842.f5e47065.akpm@linux-foundation.org> <20070713064004.GA21833@joejin-pc.cn.oracle.com> <20070712234938.c77f3a48.akpm@linux-foundation.org>
+	Fri, 13 Jul 2007 04:12:18 -0400
+Subject: Re: [RFT][PATCH] mm: drop behind
+From: Peter Zijlstra <peterz@infradead.org>
+To: Chris Snook <csnook@redhat.com>
+Cc: Tim Pepper <lnxninja@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <46967EE2.8020803@redhat.com>
+References: <1184007008.1913.45.camel@twins>
+	 <eada2a070707111537p20ab429anebd8b1840f5e5b5f@mail.gmail.com>
+	 <1184225086.20032.45.camel@twins>  <46967EE2.8020803@redhat.com>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 10:12:09 +0200
+Message-Id: <1184314329.20032.70.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070712234938.c77f3a48.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > The patch looks good for this bug, thanks :)
-> 
-> If you have time could you test it and sent it back at me please?
-> 
+On Thu, 2007-07-12 at 15:20 -0400, Chris Snook wrote:
 
-Test passed and panic gone.
-thanks.
+> Then do what we do for FADV_SEQUENTIAL.  With that advice, we double the 
+> readahead window.  We're already doing readahead, but we do a lot more 
+> when we have the advice.  NOREUSE should put much greater pressure on 
+> the vm to drop these pages quickly, or perhaps simply eliminate the 
+> heuristic evaluation of the access pattern and short-circuit straight to 
+> dropping the pages.
+> 
+> We should be encouraging application writers to actually use things like 
+> fadvise when they can tune things more intelligently than kernel 
+> heuristics can.
 
-> > if other caller give a invalid nid to alloc_pages_node(), __alloc_pages
-> > will crash again.
-> 
-> That would be a buggy caller, so we should fix that caller.
-> 
-> > So I think we add some sanity check for nid at alloc_pages_node is
-> > meaningful.  
-> > 
-> > another question, if (nid >= MAX_NUMNODES),  may I set nid to 0 directly
-> > like following code?
-> > 
-> > 	if (unlikly(nid >= MAX_NUMNODES)
-> > 		nid = 0
-> 
-> if (nid > MAX_NUMNODES) then that is a bug and we should report it (doing
-> this via a BUG() is OK) rather than quietly covering it up.
-> 
-> if (nid == MAX_NUMNODES) then we should set it to
-> first_node(node_online_map);
+I like this, I'll see what I can do.. :-)
 
-OK, will do it and send you a patch :)
