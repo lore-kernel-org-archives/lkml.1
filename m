@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935224AbXGMTOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935600AbXGMTSH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935224AbXGMTOp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 15:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758828AbXGMTOe
+	id S935600AbXGMTSH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 15:18:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbXGMTR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 15:14:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48675 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757492AbXGMTOc (ORCPT
+	Fri, 13 Jul 2007 15:17:56 -0400
+Received: from dns.hk.18mail.cn ([210.245.210.181]:54876 "EHLO
+	hkm1.server.hk.18mail.cn" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758316AbXGMTR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 15:14:32 -0400
-Date: Fri, 13 Jul 2007 12:12:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
- features in larger inode
-Message-Id: <20070713121259.20066d5b.akpm@linux-foundation.org>
-In-Reply-To: <1184333621.20032.85.camel@twins>
-References: <1183275482.4010.133.camel@localhost.localdomain>
-	<20070710163247.5c8bfa3f.akpm@linux-foundation.org>
-	<20070713020529.1486491f.akpm@linux-foundation.org>
-	<1184333621.20032.85.camel@twins>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Jul 2007 15:17:56 -0400
+X-Greylist: delayed 1604 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Jul 2007 15:17:56 EDT
+Message-ID: <4697C980.1040902@zh-kernel.org>
+Date: Sat, 14 Jul 2007 02:50:40 +0800
+From: TripleX Chung <triplex@zh-kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: trivial@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Ask for help, about the trivial patches.
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 15:33:41 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+I am working on the chinese translated version of
+Documentation/SubmittingPatches and get some problem about the "Trivial
+patches".I can not understand what "Trivial patches" exactly means.The
+documentation said:
 
-> On Fri, 2007-07-13 at 02:05 -0700, Andrew Morton wrote:
-> 
-> > Except lockdep doesn't know about journal_start(), which has ranking
-> > requirements similar to a semaphore.  
-> 
-> Something like so?
+Trivial patches must qualify for one of the following rules:
 
-Looks OK.
+ Spelling fixes in documentation
+ //Understand
 
-> Or can journal_stop() be done by a different task than the one that did
-> journal_start()? - in which case nothing much can be done :-/
+ Spelling fixes which could break grep(1)
+ //Is there any wrong spelling won't break grep(1)?
 
-Yeah, journal_start() and journal_stop() are well-behaved.
- 
-> This seems to boot... albeit I did not push it hard.
+ Warning fixes (cluttering with useless warnings is bad)
+ //Understand
 
-I fear the consequences of this change :(
+ Compilation fixes (only if they are actually correct)
+ //Understand
 
-Oh well, please keep it alive, maybe beat on it a bit, resend it
-later on?
+ Runtime fixes (only if they actually fix things)
+ //What kind of runtime fixes? Could anyone give some examples?
+
+ Removing use of deprecated functions/macros (eg. check_region)
+ //Understand
+
+ Contact detail and documentation fixes
+ //Means Contact detail fixes and documentation fixes, right?
+   Are all the documentation fixes "trivial"?
+
+ Non-portable code replaced by portable code (even in arch-specific,
+ since people copy, as long as it's trivial)
+ //Do not understand the words in the brackets.
+
+ Any fix by the author/maintainer of the file (ie. patch monkey
+ in re-transmission mode)
+ //It means if I am the author of a file, when I modify the file, the
+patch is trivial, right?
+
+Please give me some advice. Thanks in advance.
+
