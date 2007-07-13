@@ -1,100 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbXGMNZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbXGMN2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932356AbXGMNZt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXGMNZk
+	id S1760859AbXGMN2R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbXGMN2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:25:40 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:48273 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755142AbXGMNZj (ORCPT
+	Fri, 13 Jul 2007 09:28:06 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:42374 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751738AbXGMN2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:25:39 -0400
-Date: Fri, 13 Jul 2007 15:25:37 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <20070713130508.GQ5328@kernel.dk>
-Message-ID: <Pine.LNX.4.62.0707131518120.18802@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
- <20070704132346.591348000@pademelon.sonytel.be> <1184331741.3402.13.camel@localhost.localdomain>
- <20070713130508.GQ5328@kernel.dk>
+	Fri, 13 Jul 2007 09:28:05 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46977D5D.6050002@s5r6.in-berlin.de>
+Date: Fri, 13 Jul 2007 15:25:49 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1348962474-1184333137=:18802"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Theodore Tso <tytso@mit.edu>, Rob Landley <rob@landley.net>,
+       leoli@freescale.com, Gerrit Huizenga <gh@us.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
+       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
+       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
+Subject: Re: Documentation of kernel messages (Summary)
+References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com>	<200707101212.38981.rob@landley.net>	<1184163990.23373.46.camel@Gundam>	<200707111413.03513.rob@landley.net>	<20070711213234.GE19456@thunk.org> <20070713115321.23e3544f@the-village.bc.nu>
+In-Reply-To: <20070713115321.23e3544f@the-village.bc.nu>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Alan Cox wrote:
+> The English versions need a last updated too, that way we would know when
+> they are past their best before date (as most of them are)
 
----584337861-1348962474-1184333137=:18802
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 13 Jul 2007, Jens Axboe wrote:
-> On Fri, Jul 13 2007, James Bottomley wrote:
-> > On Wed, 2007-07-04 at 15:22 +0200, Geert Uytterhoeven wrote:
-> > > +                       kaddr = kmap_atomic(sgpnt->page, KM_USER0);
-> > > +                       if (!kaddr)
-> > > +                               return -1;
-> > > +                       len = sgpnt->length;
-> > > +                       if ((req_len + len) > buflen) {
-> > > +                               active = 0;
-> > > +                               len = buflen - req_len;
-> > > +                       }
-> > > +                       memcpy(kaddr + sgpnt->offset, buf + req_len,
-> > > len);
-> > > +                       kunmap_atomic(kaddr, KM_USER0);
-> > 
-> > This isn't a SCSI objection, but this sequence appears several times in
-> > this driver.  It's wrong for a non-PIPT architecture (and I believe the
-> > PS3 is VIPT) because you copy into the kernel alias for the page, which
-> > dirties the line in the cache of that alias (the user alias cache line
-> > was already invalidated).  However, unless you flush the kernel alias to
-> > main memory, the user could read stale data.  The way this is supposed
-> > to be done is to do a 
-> > 
-> > flush_kernel_dcache_page(kaddr)
-> > 
-> > before doing the kunmap.
-> > 
-> > Otherwise it looks OK from the SCSI point of view.
-
-kmap() just returns page_address() on ppc64, as there's no highmem.
-kunmap() is a no-op.
-
-So technically I could just use page_address() directly, but Christoph wanted
-me to keep the kmap()/kunmap() sequence because it's considered a good
-practice.
-
-> Well, even worse is that fact that it's using KM_USER0 from interrupt
-> context.
-
-So should I replace it by e.g. KM_IRQ0?
-I'm not so familiar with these parts, and I couldn't find what these values
-really mean.
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1348962474-1184333137=:18802--
+I've got the impression that whenever I saw a "last updated:" note in a
+documentation, this note was out of date.
+-- 
+Stefan Richter
+-=====-=-=== -=== -==-=
+http://arcgraph.de/sr/
