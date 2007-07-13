@@ -1,121 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938011AbXGMXES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938048AbXGMXEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938011AbXGMXES (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 19:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbXGMXEE
+	id S938048AbXGMXEs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 19:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760506AbXGMXEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 19:04:04 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:33843 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757574AbXGMXEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 19:04:01 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 9/12] drivers/isdn/hisax/nj_u.c: replace pci_find_device with pci_get_device
-Date: Sat, 14 Jul 2007 02:03:45 +0300
-User-Agent: KMail/1.9.7
-Cc: kkeil@suse.de, kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de
-References: <200707140144.49983.caglar@pardus.org.tr>
-In-Reply-To: <200707140144.49983.caglar@pardus.org.tr>
+	Fri, 13 Jul 2007 19:04:39 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:54723 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759346AbXGMXEi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 19:04:38 -0400
+X-Sasl-enc: gFmfOBJcwbZa8om3gH8Shvv68OjdAiltXMJkMPs2FGk6 1184367877
+Message-ID: <46980610.9080705@imap.cc>
+Date: Sat, 14 Jul 2007 01:09:04 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200707140203.47008.caglar@pardus.org.tr>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: -mm merge plans for 2.6.23
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <Pine.LNX.4.64.0707101107340.11053@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0707101107340.11053@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig25ACA098E83F99DFBFF6FE48"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[resend] i forget to quilt refresh :(, sorry for noise
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig25ACA098E83F99DFBFF6FE48
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-14 Tem 2007 Cts tarihinde, S.Çağlar Onur şunları yazmıştı: 
-> ---
->  drivers/isdn/hisax/nj_u.c |   21 +++++++++++++--------
->  1 file changed, 13 insertions(+), 8 deletions(-)
+Am 13.07.2007 11:46 schrieb Jan Engelhardt:
+> On Jul 10 2007 01:31, Andrew Morton wrote:
+>=20
+>> use-menuconfig-objects-isdn-config_isdn_i4l.patch
+>>
+>> tilman didn't like it - might drop
+>=20
+> Or replace by his suggestion patch ( http://lkml.org/lkml/2007/5/31/222=
+ )
 
-Following patch replaces pci_find_device with pci_get_device to avoid 
-following compiliation warning;
+That posting was just a change proposal for the drivers/isdn/Kconfig
+part, not a complete replacement for the entire patch. If you'd care to
+reissue that patch with the modification I proposed, I'll gladly ack it.
+Alternatively I can also send a full replacement patch if you prefer.
 
-drivers/isdn/hisax/nj_u.c: In function `setup_netjet_u':
-drivers/isdn/hisax/nj_u.c:154: warning: `pci_find_device' is deprecated 
-(declared at include/linux/pci.h:478)
+Regards,
+Tilman
 
-and also removes trailing whitespaces at the ends of lines and converts 
-smarttabs/whitespaces into real tabs
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 
----
- drivers/isdn/hisax/nj_u.c |   21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+--------------enig25ACA098E83F99DFBFF6FE48
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Index: linux-2.6/drivers/isdn/hisax/nj_u.c
-===================================================================
---- linux-2.6.orig/drivers/isdn/hisax/nj_u.c
-+++ linux-2.6/drivers/isdn/hisax/nj_u.c
-@@ -151,20 +151,20 @@ setup_netjet_u(struct IsdnCard *card)
- 
- 	for ( ;; )
- 	{
--		if ((dev_netjet = pci_find_device(PCI_VENDOR_ID_TIGERJET,
-+		if ((dev_netjet = pci_get_device(PCI_VENDOR_ID_TIGERJET,
- 			PCI_DEVICE_ID_TIGERJET_300,  dev_netjet))) {
- 			if (pci_enable_device(dev_netjet))
--				return(0);
-+				goto dev_netjet_cleanup;
- 			pci_set_master(dev_netjet);
- 			cs->irq = dev_netjet->irq;
- 			if (!cs->irq) {
- 				printk(KERN_WARNING "NETspider-U: No IRQ for PCI card found\n");
--				return(0);
-+				goto dev_netjet_cleanup;
- 			}
- 			cs->hw.njet.base = pci_resource_start(dev_netjet, 0);
- 			if (!cs->hw.njet.base) {
- 				printk(KERN_WARNING "NETspider-U: No IO-Adr for PCI card found\n");
--				return(0);
-+				goto dev_netjet_cleanup;
- 			}
- 		} else {
- 			printk(KERN_WARNING "NETspider-U: No PCI card found\n");
-@@ -202,9 +202,9 @@ setup_netjet_u(struct IsdnCard *card)
- 
- 			default :
- 				printk( KERN_WARNING "NETspider-U: No PCI card found\n" );
--				return 0;
--                }
--                break;
-+				goto dev_netjet_cleanup;
-+		}
-+		break;
- 	}
- #else
- 
-@@ -225,7 +225,7 @@ setup_netjet_u(struct IsdnCard *card)
- 		       CardType[card->typ],
- 		       cs->hw.njet.base,
- 		       cs->hw.njet.base + bytecnt);
--		return (0);
-+		goto dev_netjet_cleanup;
- 	}
- 	setup_icc(cs);
- 	cs->readisac  = &NETjet_ReadIC;
-@@ -239,5 +239,10 @@ setup_netjet_u(struct IsdnCard *card)
- 	cs->irq_func = &netjet_u_interrupt;
- 	cs->irq_flags |= IRQF_SHARED;
- 	ICCVersion(cs, "NETspider-U:");
-+	pci_dev_put(dev_netjet);
- 	return (1);
-+
-+dev_netjet_cleanup:
-+	pci_dev_put(dev_netjet);
-+	return (0);
- }
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+iD8DBQFGmAYZMdB4Whm86/kRAlJOAJoCRFoLB//tNEs8E8fJIBbmLPZa2QCfQmL7
+4CUOiSf3JXSyiJxbsUCbmrs=
+=1lOS
+-----END PGP SIGNATURE-----
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+--------------enig25ACA098E83F99DFBFF6FE48--
