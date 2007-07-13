@@ -1,61 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935936AbXGMPuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762614AbXGMP4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935936AbXGMPuZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 11:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbXGMPuO
+	id S1762614AbXGMP4W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 11:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbXGMP4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 11:50:14 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:39819 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760745AbXGMPuN (ORCPT
+	Fri, 13 Jul 2007 11:56:14 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:43342 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755522AbXGMP4N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 11:50:13 -0400
-Date: Fri, 13 Jul 2007 11:50:11 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, <david@lang.hm>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       <nigel@nigel.suspend2.net>, <linux-kernel@vger.kernel.org>,
-       <linux-pm@lists.linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-In-Reply-To: <200707131745.43055.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
+	Fri, 13 Jul 2007 11:56:13 -0400
+Date: Fri, 13 Jul 2007 16:56:10 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: npiggin@suse.de, kenchen@google.com, jschopp@austin.ibm.com,
+       apw@shadowen.org, kamezawa.hiroyu@jp.fujitsu.com,
+       a.p.zijlstra@chello.nl, y-goto@jp.fujitsu.com, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Add a movablecore= parameter for sizing ZONE_MOVABLE
+Message-ID: <20070713155610.GD14125@skynet.ie>
+References: <20070710102043.GA20303@skynet.ie> <20070712122925.192a6601.akpm@linux-foundation.org> <20070712213241.GA7279@skynet.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070712213241.GA7279@skynet.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
+On (12/07/07 22:32), Mel Gorman didst pronounce:
 
-> Okay, I have thought it through and I think that, as an initial step, we can do
-> something like this:
+> > Should we at least go for
+> > 
+> > add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
+> > create-the-zone_movable-zone.patch
+> > allow-huge-page-allocations-to-use-gfp_high_movable.patch
+> > handle-kernelcore=-generic.patch
+> > 
+> > in 2.6.23?
 > 
-> - preload the image-saving kernel before hibernation
-> - in the hibernation code path replace device_suspend() with the shutting down of
->   all devices without unregistering them (not very nice, but should be sufficient
->   for a while)
-> - when we've called device_power_down() and save_processor_state(), jump to
->   the image-saving kernel and let it run
-> - make the image-saving kernel set up everything, save the image without
->   starting any user space (we may use the existing image-saving code for this
->   purpose, with some modifications) and power off the system (or make it enter
->   S4)
-> - use the existing restoration code to load the image and jump to the
->   hibernated kernel
-> - in the restore code patch replace device_resume() with the reprobing of all
->   devices.
-> 
-> Comments?
+> Well, yes please from me obviously :) . There is one additional patch
+> I would like to send on tomorrow and that is providing the movablecore=
 
-I doubt that re-probing devices will work.  The probe routine won't 
-expect there to be any registered children, so it will try to 
-re-register them.
+This is the patch. It has been boot-tested on a number of machines and
+behaves as expected. Nick, with this in addition, do you have any
+objection to the ZONE_MOVABLE patches going through to 2.6.23?
 
-On the other hand, post_restore methods could be written to expect 
-something like this.
+Thanks
 
-Alan Stern
+=====
+This patch adds a new parameter for sizing ZONE_MOVABLE called
+movablecore=. While kernelcore= is used to specify the minimum amount of
+memory that must be available for all allocation types, movablecore= is
+used to specify the minimum amount of memory that is used for migratable
+allocations. The amount of memory used for migratable allocations determines
+how large the huge page pool could be dynamically resized to at runtime
+for example.
 
+How movablecore is actually handled is that the total number of pages in the system is calculated and a value is set for kernelcore that is
+
+kernelcore == totalpages - movablecore
+
+Both kernelcore= and movablecore= can be safely specified at the same time.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+---
+ Documentation/kernel-parameters.txt |   10 +++++
+ mm/page_alloc.c                     |   65 ++++++++++++++++++++++++++++++++----
+ 2 files changed, 68 insertions(+), 7 deletions(-)
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-zonemovable/Documentation/kernel-parameters.txt linux-2.6.22-movablecore/Documentation/kernel-parameters.txt
+--- linux-2.6.22-zonemovable/Documentation/kernel-parameters.txt	2007-07-09 11:50:18.000000000 +0100
++++ linux-2.6.22-movablecore/Documentation/kernel-parameters.txt	2007-07-10 11:38:04.000000000 +0100
+@@ -850,6 +850,16 @@ and is between 256 and 4096 characters. 
+ 			use the HighMem zone if it exists, and the Normal
+ 			zone if it does not.
+ 
++	movablecore=nn[KMG]	[KNL,IA-32,IA-64,PPC,X86-64] This parameter
++			is similar to kernelcore except it specifies the
++			amount of memory used for migratable allocations.
++			If both kernelcore and movablecore is specified,
++			then kernelcore will be at *least* the specified
++			value but may be more. If movablecore on its own
++			is specified, the administrator must be careful
++			that the amount of memory usable for all allocations
++			is not too small.
++
+ 	keepinitrd	[HW,ARM]
+ 
+ 	kstack=N	[IA-32,X86-64] Print N words from the kernel stack
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-zonemovable/mm/page_alloc.c linux-2.6.22-movablecore/mm/page_alloc.c
+--- linux-2.6.22-zonemovable/mm/page_alloc.c	2007-07-09 11:50:18.000000000 +0100
++++ linux-2.6.22-movablecore/mm/page_alloc.c	2007-07-13 10:37:37.000000000 +0100
+@@ -137,6 +137,7 @@ static unsigned long __meminitdata dma_r
+   unsigned long __initdata node_boundary_end_pfn[MAX_NUMNODES];
+ #endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
+   unsigned long __initdata required_kernelcore;
++  unsigned long __initdata required_movablecore;
+   unsigned long __initdata zone_movable_pfn[MAX_NUMNODES];
+ 
+   /* movable_zone is the "real" zone pages in ZONE_MOVABLE are taken from */
+@@ -2980,6 +2981,18 @@ unsigned long __init find_max_pfn_with_a
+ 	return max_pfn;
+ }
+ 
++unsigned long __init early_calculate_totalpages(void)
++{
++	int i;
++	unsigned long totalpages = 0;
++
++	for (i = 0; i < nr_nodemap_entries; i++)
++		totalpages += early_node_map[i].end_pfn -
++						early_node_map[i].start_pfn;
++
++	return totalpages;
++}
++
+ /*
+  * Find the PFN the Movable zone begins in each node. Kernel memory
+  * is spread evenly between nodes as long as the nodes have enough
+@@ -2993,6 +3006,29 @@ void __init find_zone_movable_pfns_for_n
+ 	unsigned long kernelcore_node, kernelcore_remaining;
+ 	int usable_nodes = num_online_nodes();
+ 
++	/*
++	 * If movablecore was specified, calculate what size of
++	 * kernelcore that corresponds so that memory usable for
++	 * any allocation type is evenly spread. If both kernelcore
++	 * and movablecore are specified, then the value of kernelcore
++	 * will be used for required_kernelcore if it's greater than
++	 * what movablecore would have allowed.
++	 */
++	if (required_movablecore) {
++		unsigned long totalpages = early_calculate_totalpages();
++		unsigned long corepages;
++
++		/*
++		 * Round-up so that ZONE_MOVABLE is at least as large as what
++		 * was requested by the user
++		 */
++		required_movablecore =
++			roundup(required_movablecore, MAX_ORDER_NR_PAGES);
++		corepages = totalpages - required_movablecore;
++
++		required_kernelcore = max(required_kernelcore, corepages);
++	}
++
+ 	/* If kernelcore was not specified, there is no ZONE_MOVABLE */
+ 	if (!required_kernelcore)
+ 		return;
+@@ -3173,26 +3209,41 @@ void __init free_area_init_nodes(unsigne
+ 	}
+ }
+ 
+-/*
+- * kernelcore=size sets the amount of memory for use for allocations that
+- * cannot be reclaimed or migrated.
+- */
+-static int __init cmdline_parse_kernelcore(char *p)
++static int __init cmdline_parse_core(char *p, unsigned long *core)
+ {
+ 	unsigned long long coremem;
+ 	if (!p)
+ 		return -EINVAL;
+ 
+ 	coremem = memparse(p, &p);
+-	required_kernelcore = coremem >> PAGE_SHIFT;
++	*core = coremem >> PAGE_SHIFT;
+ 
+-	/* Paranoid check that UL is enough for required_kernelcore */
++	/* Paranoid check that UL is enough for the coremem value */
+ 	WARN_ON((coremem >> PAGE_SHIFT) > ULONG_MAX);
+ 
+ 	return 0;
+ }
+ 
++/*
++ * kernelcore=size sets the amount of memory for use for allocations that
++ * cannot be reclaimed or migrated.
++ */
++static int __init cmdline_parse_kernelcore(char *p)
++{
++	return cmdline_parse_core(p, &required_kernelcore);
++}
++
++/*
++ * movablecore=size sets the amount of memory for use for allocations that
++ * can be reclaimed or migrated.
++ */
++static int __init cmdline_parse_movablecore(char *p)
++{
++	return cmdline_parse_core(p, &required_movablecore);
++}
++
+ early_param("kernelcore", cmdline_parse_kernelcore);
++early_param("movablecore", cmdline_parse_movablecore);
+ 
+ #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
+ 
