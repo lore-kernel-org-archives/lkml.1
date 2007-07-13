@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936088AbXGMOca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935998AbXGMOdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936088AbXGMOca (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935728AbXGMOcL
+	id S935998AbXGMOdw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 10:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759744AbXGMOdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:32:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47964 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935646AbXGMOcK (ORCPT
+	Fri, 13 Jul 2007 10:33:44 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45064 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758007AbXGMOdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:32:10 -0400
-Subject: Re: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>, kirk@hpc.ee.ntu.edu.tw,
-       akpm@osdl.org, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070713142442.GA8190@linux-mips.org>
-References: <20070712150135.GA4102@localhost.localdomain>
-	 <1184256718.32199.111.camel@weaponx.rchland.ibm.com>
-	 <20070713034822.GA2370@localhost.localdomain>
-	 <1184320602.2785.18.camel@shinybook.infradead.org>
-	 <20070713131458.GA1997@localhost.localdomain>
-	 <1184333884.8809.5.camel@hades.cambridge.redhat.com>
-	 <20070713142442.GA8190@linux-mips.org>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 15:31:29 +0100
-Message-Id: <1184337089.8809.11.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 13 Jul 2007 10:33:43 -0400
+Date: Fri, 13 Jul 2007 10:33:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [Bug 7750] open/close loop causes disabled irq (fwd)
+Message-ID: <Pine.LNX.4.44L0.0707131030280.4865-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 15:24 +0100, Ralf Baechle wrote:
-> +config MTD_PMC_MSP_EVM
-> +       tristate "CFI Flash device mapped on PMC-Sierra MSP"
-> +       depends on PMC_MSP && MTD_CFI
-> +       select MTD_PARTITIONS
-> 
-> drivers/mtd/maps/Makefile:obj-$(CONFIG_MTD_PMC_MSP_EVM)   +=
-> pmcmsp-flash.o
-> 
-> Is he trying to build something else than very recent kernel.org
-> tree? 
+Alan:
 
-Hm. His mail did say "Even when I use `make allyesconfig`, I still can't
-compile some drivers. I should add the corresponding CONFIGs manually."
-          
-I wonder if he disabled the correct conditions and then tried building
-it in an i386 kernel?
+Can this be ignored, or is it a case of a patch papering over a real
+problem?  It seems possible that some serial driver is leaving device
+IRQs enabled after it has unregistered itself as an interrupt handler.
+
+Alan Stern
+
+
+---------- Forwarded message ----------
+Date: Thu, 12 Jul 2007 20:02:25 -0700 (PDT)
+From: bugme-daemon@bugzilla.kernel.org
+To: stern@rowland.harvard.edu
+Subject: [Bug 7750] open/close loop causes disabled irq
+
+http://bugzilla.kernel.org/show_bug.cgi?id=7750
+
+
+
+
+
+------- Comment #4 from dannf@dannf.org  2007-07-12 20:07 -------
+I attempted to reproduce this today under 2.6.22 and was unable to. I then used
+git bisect to try and identify the changeset that fixed the issue and ended up
+with the one below.
+
+I wonder if this should be considered a security issue (DoS)?
+
+commit 8528b0f1de1101c6002036fd53638fb21111d0ea
+Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+Date:   Tue Jan 23 14:16:31 2007 -0800
+
+    Clear spurious irq stat information when adding irq handler
+
+    Any newly added irq handler may obviously make any old spurious irq
+    status invalid, since the new handler may well be the thing that is
+    supposed to handle any interrupts that came in.
+
+    So just clear the statistics when adding handlers.
+
+    Pointed-out-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+    Acked-by: Thomas Gleixner <tglx@linutronix.de>
+    Acked-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+:040000 040000 d3bd3ddf15462bca9f796e899b96f2e17d30bc34
+3ea41ebe53747377873202db8b59e2c4e84aef8c M      kernel
+
 
 -- 
-dwmw2
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
+
 
