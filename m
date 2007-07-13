@@ -1,84 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935127AbXGMOvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934675AbXGMO7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935127AbXGMOvz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbXGMOvn
+	id S934675AbXGMO7Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 10:59:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759536AbXGMO7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:51:43 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:10850 "EHLO kernel.dk"
+	Fri, 13 Jul 2007 10:59:16 -0400
+Received: from rtr.ca ([64.26.128.89]:4741 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758697AbXGMOvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:51:42 -0400
-Date: Fri, 13 Jul 2007 16:51:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-Message-ID: <20070713145126.GR5328@kernel.dk>
-References: <20070704132212.726923000@pademelon.sonytel.be> <20070704132346.591348000@pademelon.sonytel.be> <1184331741.3402.13.camel@localhost.localdomain> <20070713130508.GQ5328@kernel.dk> <Pine.LNX.4.62.0707131518120.18802@pademelon.sonytel.be>
+	id S1757394AbXGMO7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 10:59:15 -0400
+Message-ID: <46979342.3030203@rtr.ca>
+Date: Fri, 13 Jul 2007 10:59:14 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0707131518120.18802@pademelon.sonytel.be>
+To: Ingo Freund <linux-kernel-news@e-dict.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: howto create partitions bigger than 2TB
+References: <4697760E.4070803@e-dict.net>
+In-Reply-To: <4697760E.4070803@e-dict.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13 2007, Geert Uytterhoeven wrote:
-> On Fri, 13 Jul 2007, Jens Axboe wrote:
-> > On Fri, Jul 13 2007, James Bottomley wrote:
-> > > On Wed, 2007-07-04 at 15:22 +0200, Geert Uytterhoeven wrote:
-> > > > +                       kaddr = kmap_atomic(sgpnt->page, KM_USER0);
-> > > > +                       if (!kaddr)
-> > > > +                               return -1;
-> > > > +                       len = sgpnt->length;
-> > > > +                       if ((req_len + len) > buflen) {
-> > > > +                               active = 0;
-> > > > +                               len = buflen - req_len;
-> > > > +                       }
-> > > > +                       memcpy(kaddr + sgpnt->offset, buf + req_len,
-> > > > len);
-> > > > +                       kunmap_atomic(kaddr, KM_USER0);
-> > > 
-> > > This isn't a SCSI objection, but this sequence appears several times in
-> > > this driver.  It's wrong for a non-PIPT architecture (and I believe the
-> > > PS3 is VIPT) because you copy into the kernel alias for the page, which
-> > > dirties the line in the cache of that alias (the user alias cache line
-> > > was already invalidated).  However, unless you flush the kernel alias to
-> > > main memory, the user could read stale data.  The way this is supposed
-> > > to be done is to do a 
-> > > 
-> > > flush_kernel_dcache_page(kaddr)
-> > > 
-> > > before doing the kunmap.
-> > > 
-> > > Otherwise it looks OK from the SCSI point of view.
+Ingo Freund wrote:
+> Hi
 > 
-> kmap() just returns page_address() on ppc64, as there's no highmem.
-> kunmap() is a no-op.
-> 
-> So technically I could just use page_address() directly, but Christoph wanted
-> me to keep the kmap()/kunmap() sequence because it's considered a good
-> practice.
+> I've got a RAID5 (driver aacraid for an ICP9047MA) with four
+> 750GB hdds which provides a 2.25TB sized device.
+> None of the until now used tools will work with that device.
+> fdisk complains about missing cylinder count.
+> cfdisk misses the device size.
+> parted shows the right device size but only creates a partion
+> with 51GB.
+> What am I supposed to do to work with this device?
 
-If you have the kmap sequence there, put the flush in as well. People
-copy code, you know... Or put a big comment explaining why it isn't
-needed.
+Create a single RAID which covers the entire drive set
+(as it sounds like you have already done).
 
-> > Well, even worse is that fact that it's using KM_USER0 from interrupt
-> > context.
-> 
-> So should I replace it by e.g. KM_IRQ0?
-> I'm not so familiar with these parts, and I couldn't find what these values
-> really mean.
+Then use LVM on top of that, instead of conventional partitions.
 
-You corrupt data, using KM_USER0 from interrupt context. So it's a big
-flaw right now. Use KM_IRQ0 for code where interrupts are always
-disabled.
-
--- 
-Jens Axboe
-
+-ml
