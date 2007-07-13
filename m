@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbXGMLxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbXGMLyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758706AbXGMLxx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 07:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbXGMLxr
+	id S1759015AbXGMLyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 07:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbXGMLyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 07:53:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59756 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755588AbXGMLxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 07:53:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Fri, 13 Jul 2007 14:01:34 +0200
-User-Agent: KMail/1.9.5
-Cc: david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm> <1184347974.4523.30.camel@caritas-dev.intel.com>
-In-Reply-To: <1184347974.4523.30.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Fri, 13 Jul 2007 07:54:06 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:9196 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755898AbXGMLyE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 07:54:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=T7MWcuimdEOPHNekSuGKhx8RsQsmclfRbkNdw1zlUxmdVzt0xq9xPiCIL0SyKcTTJJ3egquccCJX5oBU8rMn+izEgPN/btP0anjxShie5lrPOiISQa+K9l/LljGCREFSZ1ycqA2h+aIGsvOXg5/RYJAef2iPXI+suVAWvaumL5U=
+Subject: Re: [patch 2/4] fbdev: Add fb_append_extra_logo()
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       James Simmons <jsimmons@infradead.org>,
+       linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <Pine.LNX.4.62.0707130857350.15603@pademelon.sonytel.be>
+References: <20070710122702.765654000@pademelon.sonytel.be>
+	 <20070710123540.678435000@pademelon.sonytel.be>
+	 <1184285757.4566.11.camel@daplas>
+	 <Pine.LNX.4.62.0707130857350.15603@pademelon.sonytel.be>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 19:53:53 +0800
+Message-Id: <1184327633.4702.11.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707131401.35274.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 13 July 2007 19:32, Huang, Ying wrote:
-> On Thu, 2007-07-12 at 20:06 -0700, david@lang.hm wrote:
-> > >> I agree, a stipped down hibernate kernel can be very small, not allocating
-> > >> this memory until it's needed is a step for the final polishing.
-> > >
-> > > I'm not sure if I agree with that.  In any case, having to use two different
-> > > kernels for hibernation would be a big drawback.
+On Fri, 2007-07-13 at 08:58 +0200, Geert Uytterhoeven wrote:
+> On Fri, 13 Jul 2007, Antonino A. Daplas wrote:
+> > On Tue, 2007-07-10 at 14:27 +0200, Geert Uytterhoeven wrote:
+> > > --- a/include/linux/linux_logo.h
+> > > +++ b/include/linux/linux_logo.h
+> > > @@ -33,5 +33,13 @@ struct linux_logo {
+> > >  };
+> > >  
+> > >  extern const struct linux_logo *fb_find_logo(int depth);
+> > > +#if defined(CONFIG_LOGO) && defined(CONFIG_FB)
 > > 
-> > I see it as a big advantage to not have to use the main kernel for the 
-> > suspend. please keep it as an option at least.
+> > The CONFIG_LOGO is also probably redundant, but that's arguable.
 > 
-> Yes. It has additional bonus to make it possible to write/read image
-> from a program other than main kernel. For example, for a specific
-> mobile device product (Such as Intel MID), a customized ultra-small
-> program (or kernel) can be composed to write/read image. That way, the
-> hibernate/resume time can be reduced to minimal.
+> You can have CONFIG_LOGO without CONFIG_FB (depends on FB ||
+> SGI_NEWPORT_CONSOLE).
+> 
 
-You don't need kexec for that.  This is how the userland hibernation (aka
-uswsusp) works.
+Okay.
 
-Greetings,
-Rafael
+Tony 
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
