@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763674AbXGMUXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934920AbXGMUZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763674AbXGMUXt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 16:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbXGMUXl
+	id S934920AbXGMUZK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 16:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758488AbXGMUY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 16:23:41 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:39823 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758158AbXGMUXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 16:23:40 -0400
-Date: Fri, 13 Jul 2007 22:23:20 +0200 (CEST)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: linuxppc-dev@ozlabs.org
-cc: Nathan Lynch <ntl@pobox.com>, linux-kernel@vger.kernel.org
-Subject: Re: Weird oopses with 2.6.22-rc7 [SOLVED]
-In-Reply-To: <alpine.DEB.0.99.0707130840470.18512@sheep.housecafe.de>
-Message-ID: <alpine.DEB.0.99.0707132221320.18512@sheep.housecafe.de>
-References: <alpine.DEB.0.99.0707130016270.18512@sheep.housecafe.de>
- <20070712233719.GK17955@localdomain>
- <alpine.DEB.0.99.0707130840470.18512@sheep.housecafe.de>
+	Fri, 13 Jul 2007 16:24:58 -0400
+Received: from stinky.trash.net ([213.144.137.162]:49340 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758373AbXGMUY6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 16:24:58 -0400
+Message-ID: <4697DF7F.3030400@trash.net>
+Date: Fri, 13 Jul 2007 22:24:31 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Chuck Ebbert <cebbert@redhat.com>, neilb@suse.de,
+       nfs@lists.sourceforge.net,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: nfsd oops in current -git
+References: <469780BB.3070206@trash.net> <4697A7EC.6050006@redhat.com> <20070713163337.GT5328@kernel.dk> <20070713165001.GV5328@kernel.dk>
+In-Reply-To: <20070713165001.GV5328@kernel.dk>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007, Christian Kujau wrote:
-> Ah, this seem to have fixed http://lkml.org/lkml/2007/7/8/21 and really
-> looks promising, I'll try 2.6.22-git2 now.
+Jens Axboe wrote:
+>>>On 07/13/2007 09:40 AM, Patrick McHardy wrote:
+>>>
+>>>>I get this oops with current -git:
+>>>>
+>>>>[ 3437.018923] Pid: 4432, comm: nfsd Not tainted 2.6.22 #5
+>>>>[ 3437.018926] RIP: 0010:[<ffffffff81054eff>]  [<ffffffff81054eff>]
+>>>>put_page+0x4/0xb3
 
-for the record: running 2.6.22-git3 now and the Oopses went away ;)
+> Patrick, does this work?
 
-thanks,
-Christian.
--- 
-BOFH excuse #352:
 
-The cables are not the same length.
+Seems to work fine, thanks Jens.
+
