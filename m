@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934268AbXGMGSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934904AbXGMGVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934268AbXGMGSL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbXGMGSA
+	id S934904AbXGMGVE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXGMGUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:18:00 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:36965 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbXGMGR7 (ORCPT
+	Fri, 13 Jul 2007 02:20:55 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:2922 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbXGMGUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:17:59 -0400
-Date: Thu, 12 Jul 2007 23:16:17 -0700
-From: Greg KH <greg@kroah.com>
-To: Bryan Wu <bryan.wu@analog.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-Subject: Re: Linux 2.6.22.1
-Message-ID: <20070713061617.GA24317@kroah.com>
-References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com> <1184307380.8943.7.camel@roc-desktop>
+	Fri, 13 Jul 2007 02:20:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=hDLCMoZgAoKcw/RaRtWKDXLayeA44BWz1zNv96EE6snkYuSAfoyQGb9fDxH/AD6gqjcnUTXFNMQmL7VuJUvBD960WGh3klEKc2Y9qHLwHQc5DVaDl+36xC0c/84yC/Rma9aQo2VxzwBz67ydqK30YjTshSaSnoQt3u4tsXykvuE=
+Date: Fri, 13 Jul 2007 02:20:39 -0400
+To: david@lang.hm
+Cc: Joseph Fannin <jfannin@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: Hibernating To Swap Considered Harmful
+Message-ID: <20070713062039.GA29055@nineveh.local>
+Mail-Followup-To: david@lang.hm, Joseph Fannin <jfannin@gmail.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	"Huang, Ying" <ying.huang@intel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+	Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+	linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707121453.49616.rjw@sisk.pl> <Pine.LNX.4.64.0707121150460.25614@asgard.lang.hm> <200707122134.29991.rjw@sisk.pl> <Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm> <20070713054244.GA20082@nineveh.local> <Pine.LNX.4.64.0707122250170.25614@asgard.lang.hm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184307380.8943.7.camel@roc-desktop>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <Pine.LNX.4.64.0707122250170.25614@asgard.lang.hm>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: jfannin@gmail.com (Joseph Fannin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 02:16:20PM +0800, Bryan Wu wrote:
-> On Fri, 2007-07-13 at 02:35 +0800, Nish Aravamudan wrote:
-> > On 7/10/07, Greg KH <greg@kroah.com> wrote: 
-> > > We (the -stable team) are announcing the release of the 2.6.22.1
-> > kernel. 
-> > > It contains a security fix for SCTP that somehow forgot to be added
-> > to 
-> > > the 2.6.22 kernel (was already released in the 2.6.21.y releases). 
-> > > Thanks to Patrick McHardy for noticing the mistake. 
-> > > 
-> > > I'll also be replying to this message with a copy of the patch
-> > between 
-> > > 2.6.22 and 2.6.22.1 
-> > > 
-> > > The updated 2.6.22.y git tree can be found at: 
-> > >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
-> > 
-> > Can you please also update
-> > 
-> >  git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6-stable.git
-> > 
-> > ? Maybe make that update part of whatever process you use to push out 
-> > the 2.6.Y trees, as I've had to ask for this more than once now?
-> > 
-> 
-> Could you please open http:// git-pull? I was blocked by company's
-> firewall except http method -:((.
+On Thu, Jul 12, 2007 at 10:57:04PM -0700, david@lang.hm wrote:
+> On Fri, 13 Jul 2007, Joseph Fannin wrote:
+>
+> the only justification I have heard for why the hibernate image must be
+> written to the swap partition is backwards compatibility (i.e., we've
+> always done it that way)
+>
+> if you are going to reserve disk space for hibernation, what is so bad
+> about useing a normal partition?
+>
+    You have to either repartition when you upgrade your memory, or
+waste a bunch of disk space with a partition as large as you think
+your RAM might ever expand to.
 
-That is up to the kernel.org admins, but last time I checked, I think it
-was enabled already.  Can you pull anything else from kernel.org with
-http but not this tree?
+    Swap/hibernate files can be created, deleted, and resized without
+partitioning.
 
-thanks,
+    Also: not all platforms support a large number of partitions.
+It's not academic -- Intel Macintoshes are limited to four, with two
+taken by Mac OS.  Add Windows and a Linux /, and you're out --
+there's no room for a swap file.
 
-greg k-h
+--
+Joseph Fannin
+jfannin@gmail.com
+
