@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbXGMHFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936086AbXGMHFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933025AbXGMHFY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 03:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760737AbXGMHE7
+	id S936086AbXGMHFp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 03:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934871AbXGMHFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 03:04:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35413 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760955AbXGMHE6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 03:04:58 -0400
-Date: Fri, 13 Jul 2007 00:04:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] h8300 entry.S update
-Message-Id: <20070713000444.4e2facb5.akpm@linux-foundation.org>
-In-Reply-To: <m2k5t4u6zv.wl%ysato@users.sourceforge.jp>
-References: <m2k5t4u6zv.wl%ysato@users.sourceforge.jp>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 13 Jul 2007 03:05:07 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35414 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933182AbXGMHFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 03:05:05 -0400
+Date: Fri, 13 Jul 2007 11:03:22 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matt Mackall <mpm@selenic.com>, Alasdair G Kergon <agk@redhat.com>,
+       dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Mike Anderson <andmike@us.ibm.com>, netdev@vger.kernel.org
+Subject: Re: [2.6.23 PATCH 13/18] dm: netlink
+Message-ID: <20070713070321.GA10361@2ka.mipt.ru>
+References: <20070711210137.GE24114@agk.fab.redhat.com> <20070711142712.e646995b.akpm@linux-foundation.org> <20070712231920.GZ11166@waste.org> <20070712163115.ee686f8d.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070712163115.ee686f8d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 15:56:20 +0900 Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
-
-> Subject: [PATCH] h8300 entry.S update
-> Date: Fri, 13 Jul 2007 15:56:20 +0900
-> Organization: SIOS Technology, Inc.
-> User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
->  FLIM/1.14.8 (Shijō) APEL/10.6 Emacs/22.0.93
->  (i486-pc-linux-gnu) MULE/5.0 (SAKAKI)
+On Thu, Jul 12, 2007 at 04:31:15PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > > Need a dependency on NET there?
+> > 
+> > It's really sad to make DM dependent on the network layer.
+> > 
 > 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> 
-> diff --git a/arch/h8300/kernel/Makefile b/arch/h8300/kernel/Makefile
+> Yes, it would be somewhat sad.  However one can presumably continue to use
+> DM, just without "DM netlink events".
 
-hm, we're missing any description of what this change actually does?
+On my machine device mapper (lvm, raid) does not work without sockets,
+(maybe not dm, but hotplug, which creates nodes, or configuration)
+so it already depends on it. Hotplug depends on networking.
+
+You missed the day when everyone started to depend on networking :)
+
+-- 
+	Evgeniy Polyakov
