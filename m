@@ -1,122 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXGMQqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763134AbXGMQrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761469AbXGMQqs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 12:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759714AbXGMQqf
+	id S1763134AbXGMQrQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 12:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932191AbXGMQqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 12:46:35 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:12772 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760556AbXGMQqe (ORCPT
+	Fri, 13 Jul 2007 12:46:42 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35704 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760652AbXGMQqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 12:46:34 -0400
-Date: Fri, 13 Jul 2007 10:52:50 -0600
-From: dougthompson@xmission.com
-To: dougthompson@xmission.com, greg@kroah.com, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH 2/8] drivers edac fix e752x reversed csrows 
-Message-ID: <4697ade2.XFh1evOxapfqx+Ph%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.1 6/15/06
+	Fri, 13 Jul 2007 12:46:40 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<20070711172243.ab44c4d4.akpm@linux-foundation.org>
+	<1184251423.9346.55.camel@caritas-dev.intel.com>
+	<m14pk9fuqa.fsf@ebiederm.dsl.xmission.com>
+	<1184368525.1069.68.camel@caritas-dev.intel.com>
+Date: Fri, 13 Jul 2007 10:43:03 -0600
+In-Reply-To: <1184368525.1069.68.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Fri, 13 Jul 2007 23:15:25 +0000")
+Message-ID: <m1k5t4dzl4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mark Grondona <mgrondona@llnl.gov>
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-Found a 'reversal' decoding bug in the driver. This patch fixes that
-mapping to correctly display the CSROW entries in their proper order.
-Users will be enable to correctly identifiy the failing DIMM with
-this fix.
+> On Thu, 2007-07-12 at 10:32 -0600, Eric W. Biederman wrote:
+>> >
+>> > 1. Separate device suspend from device hibernate.
+>> 
+>> Actually in some very practical sense we already have two copies of
+>> this in the kernel.  device_shutdown and the hotunplug/module
+>> remove code.  So it is should be mostly a matter of using what we have.
+>
+> Maybe I misuse the terminology. The "device hibernate" here means put
+> device into quiescent state and save the device state into memory for
+> later restore.
+>
+> But, how to restore device state after jumping back from kexeced kernel
+> if device_shutdown or hotplug/module removing code is used?
 
-CC:             Alan Cox alan@lxorguk.ukuu.org.uk
-Signed-off-by: Mark Grondona <mgrondona@llnl.gov>
-Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
----
- e752x_edac.c |   34 +++++++++++++++++++++-------------
- 1 files changed, 21 insertions(+), 13 deletions(-)
+With device_shutdown there really isn't a path (although putting
+the device into a quiescent state is exactly what that method does).
 
-Index: linux-2.6.22-rc4-mm2/drivers/edac/e752x_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/e752x_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/e752x_edac.c
-@@ -284,9 +284,6 @@ static void do_process_ce(struct mem_ctl
- 	/* 0 = channel A, 1 = channel B */
- 	channel = !(error_one & 1);
- 
--	if (!pvt->map_type)
--		row = 7 - row;
--
- 	/* e752x mc reads 34:6 of the DRAM linear address */
- 	edac_mc_handle_ce(mci, page, offset_in_page(sec1_add << 4),
- 			sec1_syndrome, row, channel, "e752x CE");
-@@ -774,6 +771,18 @@ static inline int dual_channel_active(u1
- 	return (((ddrcsr >> 12) & 3) == 3);
- }
- 
-+/* Remap csrow index numbers if map_type is "reverse"
-+ */
-+static inline int remap_csrow_index(struct mem_ctl_info *mci, int index)
-+{
-+	struct e752x_pvt *pvt = (struct e752x_pvt *) mci->pvt_info;
-+
-+	if (!pvt->map_type)
-+		return (7 - index);
-+
-+	return (index);
-+}
-+
- static void e752x_init_csrows(struct mem_ctl_info *mci, struct pci_dev *pdev,
- 			u16 ddrcsr)
- {
-@@ -804,7 +813,7 @@ static void e752x_init_csrows(struct mem
- 	for (last_cumul_size = index = 0; index < mci->nr_csrows; index++) {
- 		/* mem_dev 0=x8, 1=x4 */
- 		mem_dev = (dra >> (index * 4 + 2)) & 0x3;
--		csrow = &mci->csrows[index];
-+		csrow = &mci->csrows[remap_csrow_index(mci, index)];
- 
- 		mem_dev = (mem_dev == 2);
- 		pci_read_config_byte(pdev, E752X_DRB + index, &value);
-@@ -844,7 +853,7 @@ static void e752x_init_mem_map_table(str
- 				struct e752x_pvt *pvt)
- {
- 	int index;
--	u8 value, last, row, stat8;
-+	u8 value, last, row;
- 
- 	last = 0;
- 	row = 0;
-@@ -873,10 +882,6 @@ static void e752x_init_mem_map_table(str
- 			last = value;
- 		}
- 	}
--
--	/* set the map type.  1 = normal, 0 = reversed */
--	pci_read_config_byte(pdev, E752X_DRM, &stat8);
--	pvt->map_type = ((stat8 & 0x0f) > ((stat8 >> 4) & 0x0f));
- }
- 
- /* Return 0 on success or 1 on failure. */
-@@ -1003,13 +1008,16 @@ static int e752x_probe1(struct pci_dev *
- 	mci->edac_check = e752x_check;
- 	mci->ctl_page_to_phys = ctl_page_to_phys;
- 
--	e752x_init_csrows(mci, pdev, ddrcsr);
--	e752x_init_mem_map_table(pdev, pvt);
--
--	/* set the map type.  1 = normal, 0 = reversed */
-+	/* set the map type.  1 = normal, 0 = reversed
-+	 * Must be set before e752x_init_csrows in case csrow mapping
-+	 * is reversed.
-+	 */
- 	pci_read_config_byte(pdev, E752X_DRM, &stat8);
- 	pvt->map_type = ((stat8 & 0x0f) > ((stat8 >> 4) & 0x0f));
- 
-+	e752x_init_csrows(mci, pdev, ddrcsr);
-+	e752x_init_mem_map_table(pdev, pvt);
-+
- 	mci->edac_cap |= EDAC_FLAG_NONE;
- 	debugf3("%s(): tolm, remapbase, remaplimit\n", __func__);
- 
+However with the module remove path you disassociate the pci device
+and the pci device driver and then after restore you go through
+the pci devices and you redo the association (as if the pci
+device or the module had just been loaded).
+
+For devices that have a really slow probe/initialization this might be
+an issue but it will work, and generally it will work fairly quickly.
+
+So in that sense restore may be the wrong concept for devices.
+At least for prototypes.
+
+>> Basically all this entails is to modify sys_reboot()
+>> and adding a LINUX_REBOOT_CMD_KSPAWN and have that command
+>> enter the kexec path with the appropriate set of calls.
+>> I would be really surprised if this winds up with much
+>> more code then the current kernel_kexec function.
+>
+> Yes, this is the right place to trigger kexec jump. Thank you for your
+> valuable comments. It seems that just the device state
+> quiesce/save/restore and CPU state save/restore code need to be
+> added.
+
+Yes.
+
+For cpu state I'm fairly certain we don't need to do anything fancy.
+
+At least for the first pass prototyping with a uniprocessor kernel
+will remove that hurdle.
+
+
+>> For prototyping I would:
+>> - reserve a chunk of memory (possibly with the crashkernel= option)
+>>   and run a relocatable kernel out of it.  
+>> 
+>>   By using the normal kexec you can boot a relocatable restore kernel
+>>   in that reserved region. It is an extra step but it makes things
+>>   work today.
+>> 
+>> - I would use the normal sys_kexec_load.
+>> 
+>> - I would debug/tweak the user space and the code to reenter the
+>>   old kernel.  I.e. the device driver stop/start code.
+>
+> The above 3 steps are exactly what I have done in this patch. I reserve
+> memory with crashkernel=, use sys_kexec_load (kexec -p ...) to load the
+> kexec kernel and manage to jump back to normal kernel. But I should not
+> mix the kexec jump trigger code with the software suspend code, that is,
+> use "kexec -e", not "echo disk > /sys/power/state".
+
+Right.  That caused all kinds of weirdness in your patch.
+
+
+>> > 5. A smooth resume process. Maybe it is not needed to kexec a new kernel
+>> > for resume. For example, in the first stage of kernel boot, just first
+>> > 16M (or a little more) RAM is used, if the resume image is found, the
+>> > saved kernel image is resumed; if the resume image is not found, turn on
+>> > the remaining RAM. This will depends on 3.
+>> 
+>> Well I expect the resume will be load the resumed kernel into reserved
+>> memory.  And kexec a very small assembly stub that will jump back
+>> to the code in relocate_kernel.S which will call ret.
+>> 
+>> Then either hot add the rest of our memory or kexec to a kernel without
+>> restrictions.
+>
+> Why a assembly stub is necessary? Is it not sufficient that just
+> continue to complete a normal boot (hot add the reset of memory) or load
+> the hibernated kernel (hibernated image) and jump to it?
+
+I was thinking the assembly stub would be the small piece that jumps
+to loaded hibernated kernel.  Quite possibly we could just get away
+with providing no memory and just an entry point to kexec but it
+makes sense to me to plan on running a couple of instructions.
+
+Actually the way the kexec infrastructure it might be reasonable to
+just use sys_kexec_load to load the entire hibernated image.  Except
+for the fact that sys_kexec_load requires the source pages to be
+in the processes memory image the code shouldn't have the 50% of
+memory limitation already.
+
+If we can get that going we don't even need to restrict the first
+kernels memory.  So it might just require teaching sys_kexec_load
+how to steal process pages.  Anyway something to think about.
+
+>> Well just not loading drivers you aren't going to use and generally avoiding
+>> long disk probing times will help here.  We control all of the code so
+>> it should be relatively straight forward.
+>
+> Just not loading unnecessary drivers may be sufficient. But further
+> optimization is also possible.
+>
+> The basic idea of optimization is:
+>
+> For first run:
+>
+> 1. boot the normal kernel A
+> 2. kexec the hibernate kernel B
+> 3. jump back to kernel A
+> 4. Save the kernel B into a image
+> 5. Work under kernel A.
+>
+> For normal use:
+>
+> 1. boot the normal kernel A
+> 2. resume the image of kernel B
+> 3. jump to kernel B
+> 4. Save the kernel A into image
+
+Yes.  That may help.  Cooperative multitasking between kernels.
+
+Anyway all of that comes after we get something simple working.
+Then we can see what really needs to be optimized, and what works
+well enough.
+
+Eric
