@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXGMKPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXGMKVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbXGMKPK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 06:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXGMKO7
+	id S1756791AbXGMKVS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 06:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbXGMKVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 06:14:59 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:13132 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751219AbXGMKO6 (ORCPT
+	Fri, 13 Jul 2007 06:21:03 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1811 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752304AbXGMKVB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 06:14:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lAxEAZo4DOtKuZ5O0+JnfGRCsaIXSZde+WBoLFqX6hhP9rOys4Tz3bipZdawSk4/bIDvSCfqwqn0KKABfSSajfyTRmO5hNGv5ktFuD+7S9neA4lKPtWm3kpKhz166lmviQrH9J0ufAUDfzZtmqN1ZxNBimrkica/v7hJnZzUKGs=
-Message-ID: <ffe84fe30707130314y71434167u54d30feabda8ed36@mail.gmail.com>
-Date: Fri, 13 Jul 2007 18:14:57 +0800
-From: "Eden Chen" <eden.s16@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] [PATCH] USB: driver for CM109 chipset
-In-Reply-To: <ffe84fe30707130312u584d8fddhbf4ddc9bbcac553d@mail.gmail.com>
+	Fri, 13 Jul 2007 06:21:01 -0400
+Message-ID: <469751E9.7060904@shadowen.org>
+Date: Fri, 13 Jul 2007 11:20:25 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Mel Gorman <mel@skynet.ie>, npiggin@suse.de, kenchen@google.com,
+       jschopp@austin.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
+       a.p.zijlstra@chello.nl, y-goto@jp.fujitsu.com, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans -- anti-fragmentation
+References: <20070710102043.GA20303@skynet.ie> <20070712122925.192a6601.akpm@linux-foundation.org>
+In-Reply-To: <20070712122925.192a6601.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ffe84fe30707130312u584d8fddhbf4ddc9bbcac553d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
+Andrew Morton wrote:
+> On Tue, 10 Jul 2007 11:20:43 +0100
+> mel@skynet.ie (Mel Gorman) wrote:
+> 
+>>> create-the-zone_movable-zone.patch
+>>> allow-huge-page-allocations-to-use-gfp_high_movable.patch
+>>> handle-kernelcore=-generic.patch
+>>>
+>>>  Mel's moveable-zone work.  In a similar situation.  We need to stop whatever
+>>>  we're doing and get down and work out what we're going to do with all this
+>>>  stuff.
+>>>
+>> Whatever about grouping pages by mobility, I would like to see these go
+>> through. They have a real application for hugetlb pool resizing where the
+>> administrator knows the range of hugepages that will be required but doesn't
+>> want to waste memory when the required number of hugepages is small. I've
+>> cc'd Kenneth Chen as I believe he has run into this problem recently where
+>> I believe partitioning memory would have helped. He'll either confirm or deny.
+> 
+> Still no decision here, really.
+> 
+> Should we at least go for
+> 
+> add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
+> create-the-zone_movable-zone.patch
+> allow-huge-page-allocations-to-use-gfp_high_movable.patch
+> handle-kernelcore=-generic.patch
+> 
+> in 2.6.23?
 
-I have a question about CM109 USB VoIP device.
-Hope someone could told me how to treat it, many thanks first.
+These patches are pretty simple and self-contained utilising the
+existing zone infrastructure.  They provide a significant degree of
+placement control when configured, which gives a lot of the benefits of
+grouping-pages-by-mobility.  Merging these would seem like a low-risk
+option.
 
-There are two CM109 chip VoIP phone device from different hardware vendor,
-and they have the same vid/pid(0x0d8c/0x000e).
-Now, here is the problem that key definition is different on them.
-key matrix mapping is not the same between KomuniKate KIP1000
-and Goodway AA2650.
-How does the cm109.c distinguish two cm109 chip device except vid/pid?
+Having a degree of placement control as delivered by ZONE_MOVABLE
+greatly increases the effectiveness of lumpy reclaim at higher orders.
+These patches plus lumpy would (IMO) provide a good base for further
+development.  In particular I would envisage better usability for
+hugepage users in terms of simpler configuration.
 
-Goodway AA2650 USB Phone
-http://www.goodway.com.tw/en/product3.asp?id=6&subid=37&pid=517&typeid=
+I would like to see ZONE_MOVABLE and lumpy considered for 2.6.23.
 
-KIP1000
-http://www.komunikate.eu.com/kip1000.php
-
-On windows, most vendor ship their VoIP device with CD
-that include key configuration utility.
-So end user can easy set every key of VoIP device.
-
-On Linux, should we create a VoIP driver interface to userland for
-anyone wants to customize key definition? Then the CM109 driver can
-focus report transmission on HID device. But this kind of interface
-seems only hiddev interface supported, right?
+-apw
