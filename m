@@ -1,96 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbXGMVTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933341AbXGMVUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762139AbXGMVTx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 17:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbXGMVTr
+	id S933341AbXGMVUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 17:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbXGMVUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 17:19:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50782 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123AbXGMVTq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 17:19:46 -0400
-Message-ID: <4697EC66.2030404@zytor.com>
-Date: Fri, 13 Jul 2007 14:19:34 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 13 Jul 2007 17:20:25 -0400
+Received: from mail.tmr.com ([64.65.253.246]:55487 "EHLO posidon.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbXGMVUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 17:20:25 -0400
+Message-ID: <4697EC49.4070303@tmr.com>
+Date: Fri, 13 Jul 2007 17:19:05 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
 MIME-Version: 1.0
-To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: RE : Re: x86 setup code rewrite in C - revised
-References: <700342.61011.qm@web26915.mail.ukl.yahoo.com>
-In-Reply-To: <700342.61011.qm@web26915.mail.ukl.yahoo.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [patch] CFS scheduler, -v19
+References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu>
+In-Reply-To: <20070711205556.GA27266@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Etienne Lorrain wrote:
-> --- "H. Peter Anvin" <hpa@zytor.com> wrote:
->> Chuck Ebbert wrote:
+Ingo Molnar wrote:
+> * Bill Davidsen <davidsen@tmr.com> wrote:
 > 
->   Wrong name.
-> 
->>>>  Have fun, this code:
->>>>  - do not open the fast A20 gate before checking if the slow A20 gate is open or
->> closed.
+>>> I've taken mainline git tree (freshly integrated CFS!) out for a 
+>>> multimedia spin.  I tested watching movies and listenign to music in 
+>>> the presence of various sleep/burn loads, pure burn loads, and mixed 
+>>> loads. All was peachy here.. I saw no frame drops or sound skips or 
+>>> other artifacts under any load where the processor could possibly 
+>>> meet demand.
+>> I would agree with preliminary testing, save that if you get a lot of 
+>> processes updating the screen at once, there seems to be a notable 
+>> case of processes getting no CPU for 100-300ms, followed by a lot of 
+>> CPU.
 >>
->> As does the current code; this is highly intentional behaviour since
->> there are machines (in particular a whole series of machines made by
->> Olivetti) which lock up if you do it differently.
+>> I see this clearly with the "glitch1" test with four scrolling xterms 
+>> and glxgears, but also watching videos with little busy processes on 
+>> the screen. The only version where I never see this in test or with 
+>> real use is cfs-v13.
 > 
->  There was some discussion on this list about some machine which would not wake-up
-> correctly if slow A20 was not closed, long time ago. I did not really follow
-> the code after that discussion.
->  I wonder if you should do a "outb(0xFF, 0x64);" after "outb(0xdf, 0x60);" like
-> the HIMEM.SYS driver, to force an immediate update of the I/O ports - I think
-> I also read that in this initial chip docs, long time ago also.
-
-Well, the code we have now has worked for quite some years as-is.  This
-code is not an algorithmic change.  I haven't seen any machines which
-need outb(0xff, 0x64) -- I wonder if that has the same effect as our
-io_delay() or if it is actually potent.  I shall look into it.
-
->>>>  - Does not save and restore %ds when printing a char on the screen (%ds is
->>>>  destroyed only when the content of the screen scroll - only for some video cards)
->> %ds?  Aren't you confusing it with the old bug which would destroy %bp?
->>  If you have any references to %ds being destroyed I would be very
->> surprised.  I can guarantee that very little if any assembly code I've
->> ever seen that deals with INT 10h -- and I've seen a lot of it -- guards
->> against %ds being randomly trashed.
->>
->> However, the trashing of %bp is a well-known bug (although only for
->> machines older than the ones that can run Linux) -- the Interrupt List has:
->>
->> BUGS:   some implementations (including the original IBM PC) have a bug
->>  	which destroys BP
+> just as a test, does this go away if you:
 > 
->  That is on Trident cards, old card but may still be used, and BIOS may have
-> been copied to other cards.
->  Detected and documented on Gujin (boot.c and vgabios.h scroll)
-
-Are you talking about BP or DS?  As I said, the BP is well-known, and
-the code accounts for it in the form of the INT10 macro.
-
->>>>  and probably few other problems - just seen those by reading the patches (the
->>>>  asm("") are inlined in the C code - I find it more difficult to check).
->>>>
->>>>  Also, I do not know if "m" is right in here:
->>>> static inline u8 rdfs8(addr_t addr)
->>>> {
->>>> 	u8 v;
->>>> 	asm("movb %%fs:%1,%0" : "=r" (v) : "m" (*(u8 *)addr));
->>>> 	return v;
->>>> }
->> The "m" is correct right there.
+> 	renice -20 pidof `Xorg`
 > 
->  strange, "g" would mean anything can go there - and this assembly instruction
-> should accept every access modes.
+> i.e. is this connected to the way X is scheduled?
+> 
+Doing this slows down the display rates, but doesn't significantly help 
+the smoothness of the gears.
 
-Not with an %fs: prefix.  It would also allow the compiler to do a move
-into a register "on its own", which would be disastrous, since it would
-lack the prefix.  So "m" is correct.
+> Another thing to check would be whether it goes away if you set the 
+> granularity to some really finegrained value:
+> 
+>     echo 0 > /proc/sys/kernel/sched_wakeup_granularity_ns
+>     echo 500000 > /proc/sys/kernel/sched_granularity_ns
+> 
+> this really pushes things - but it tests the theory whether this is 
+> related to granularity.
+> 
+I didn't test this with standard Xorg priority, I should go back and try 
+that. But it didn't really make much difference. The gears and scrolling 
+xterms ran slower with Xorg at -20 with any sched settings. I'll do that 
+as soon as a build finishes and I can reboot.
 
-	-hpa
+I should really go back to 2.6.21.6, 2.6.22 has many bizarre behaviors 
+with FC6. Automount starts taking 30% of CPU (unused at the moment), the 
+sensors applet doesn't work, etc. I hope over the weekend I can get bug 
+reports out on all this, but there are lots of non-critical oddities.
+> 	Ingo
+
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
