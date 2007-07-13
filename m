@@ -1,176 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937089AbXGMSw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762621AbXGMS4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937089AbXGMSw1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 14:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761268AbXGMSwJ
+	id S1762621AbXGMS4l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 14:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761268AbXGMS4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 14:52:09 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:52187 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758251AbXGMSwG (ORCPT
+	Fri, 13 Jul 2007 14:56:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:51842 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760162AbXGMS4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 14:52:06 -0400
-Date: Sat, 14 Jul 2007 00:22:16 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Cc: xfs@oss.sgi.com, tytso@mit.edu, cmm@us.ibm.com, suparna@in.ibm.com,
-       adilger@clusterfs.com, dgc@sgi.com
-Subject: [PATCH 5/5][TAKE8] ext4: change for better extent-to-group alignment
-Message-ID: <20070713185216.GF12156@amitarora.in.ibm.com>
-References: <20070713184125.GA12156@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713184125.GA12156@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 13 Jul 2007 14:56:33 -0400
+Date: Fri, 13 Jul 2007 20:56:00 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: linux-kernel@vger.kernel.org, 7eggert@gmx.de
+Subject: [PATCH 0/3][try 1] init: enable system-on-initramfs
+Message-ID: <Pine.LNX.4.58.0707132039080.3222@be1.lrz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/ZTxKiCOiZS+svrIAoX75L/ltyDlpErDGpak7
+ v6i213ZDGqu4x7uxOSiZGcm/iTepNFSn4m0MyT4VhDgIqiX4eI
+ jq6ThxpdRjG6+Q3RtUE+w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amit Arora <aarora@in.ibm.com>
+I toyed with setting up a diskless system in initramfs. In the process, I
+came across some things:
 
-Change on-disk format for extent to represent uninitialized/initialized extents
+1)  There is no way to have the kernel not mount a filesystem,
+    unless you use /init or rdinit=.
 
-This change was suggested by Andreas Dilger. 
-This patch changes the EXT_MAX_LEN value and extent code which marks/checks
-uninitialized extents. With this change it will be possible to have
-initialized extents with 2^15 blocks (earlier the max blocks we could have
-was 2^15 - 1). This way we can have better extent-to-block alignment.
-Now, maximum number of blocks we can have in an initialized extent is 2^15
-and in an uninitialized extent is 2^15 - 1.
+1a) In the process of writing these patches, I found prepare_namespace not to
+    be called if /init is present. prepare_namespace will call
+    security_sb_post_mountroot after mounting the root fs. I did not yet see
+    a way to call this from /init, and grepping kinit for "security" did not
+    help, too.
 
+   This is probably a bug, but using the features of this patchset, you'll
+   avoid hitting it. Therefore this patchset does nothing about that.
+ 
+2)  If you want to use tmpfs, you need a script which essentially duplicates
+    the work the kernel just did: Mount the root fs, unpack or move the files.
+    Using tmpfs instead for the first root mount is as cheap as using ramfs,
+    as long as tmpfs is used anyway (and most likely it is).
 
-CHANGELOG:
----------
-This patch did not change from TAKE7 (besides offsets ;).
+2a) I figured if you prepared the root fs to contain a running system, you
+    woud probably also set up a runnable system on it. Therefore I changed
+    the default to boot from tmpfs if there was no /init nor a root= option.
+    (If there is a /init, it will be executed as usural.)
 
-Following changed from TAKE6 to TAKE7:
-1. Taken care of Andreas's suggestion of using EXT_INIT_MAX_LEN instead of
-   0x8000 at some places.
+    Unfortunately the way I do it, this will override the rdev setting, but
+    that should be OK, since rdev is dead. Isn't it?
 
-Signed-off-by: Amit Arora <aarora@in.ibm.com>
+3)  While I was at it, I figured I would not need most of the init/mount*
+    code anymore. Therefore I made patch 3, which ifdefs it out as far as
+    possible while still aiming for a small change.
 
-Index: linux-2.6.22/fs/ext4/extents.c
-===================================================================
---- linux-2.6.22.orig/fs/ext4/extents.c
-+++ linux-2.6.22/fs/ext4/extents.c
-@@ -1107,7 +1107,7 @@ static int
- ext4_can_extents_be_merged(struct inode *inode, struct ext4_extent *ex1,
- 				struct ext4_extent *ex2)
- {
--	unsigned short ext1_ee_len, ext2_ee_len;
-+	unsigned short ext1_ee_len, ext2_ee_len, max_len;
- 
- 	/*
- 	 * Make sure that either both extents are uninitialized, or
-@@ -1116,6 +1116,11 @@ ext4_can_extents_be_merged(struct inode 
- 	if (ext4_ext_is_uninitialized(ex1) ^ ext4_ext_is_uninitialized(ex2))
- 		return 0;
- 
-+	if (ext4_ext_is_uninitialized(ex1))
-+		max_len = EXT_UNINIT_MAX_LEN;
-+	else
-+		max_len = EXT_INIT_MAX_LEN;
-+
- 	ext1_ee_len = ext4_ext_get_actual_len(ex1);
- 	ext2_ee_len = ext4_ext_get_actual_len(ex2);
- 
-@@ -1128,7 +1133,7 @@ ext4_can_extents_be_merged(struct inode 
- 	 * as an RO_COMPAT feature, refuse to merge to extents if
- 	 * this can result in the top bit of ee_len being set.
- 	 */
--	if (ext1_ee_len + ext2_ee_len > EXT_MAX_LEN)
-+	if (ext1_ee_len + ext2_ee_len > max_len)
- 		return 0;
- #ifdef AGGRESSIVE_TEST
- 	if (le16_to_cpu(ex1->ee_len) >= 4)
-@@ -1815,7 +1820,11 @@ ext4_ext_rm_leaf(handle_t *handle, struc
- 
- 		ex->ee_block = cpu_to_le32(block);
- 		ex->ee_len = cpu_to_le16(num);
--		if (uninitialized)
-+		/*
-+		 * Do not mark uninitialized if all the blocks in the
-+		 * extent have been removed.
-+		 */
-+		if (uninitialized && num)
- 			ext4_ext_mark_uninitialized(ex);
- 
- 		err = ext4_ext_dirty(handle, inode, path + depth);
-@@ -2308,6 +2317,19 @@ int ext4_ext_get_blocks(handle_t *handle
- 	/* allocate new block */
- 	goal = ext4_ext_find_goal(inode, path, iblock);
- 
-+	/*
-+	 * See if request is beyond maximum number of blocks we can have in
-+	 * a single extent. For an initialized extent this limit is
-+	 * EXT_INIT_MAX_LEN and for an uninitialized extent this limit is
-+	 * EXT_UNINIT_MAX_LEN.
-+	 */
-+	if (max_blocks > EXT_INIT_MAX_LEN &&
-+	    create != EXT4_CREATE_UNINITIALIZED_EXT)
-+		max_blocks = EXT_INIT_MAX_LEN;
-+	else if (max_blocks > EXT_UNINIT_MAX_LEN &&
-+		 create == EXT4_CREATE_UNINITIALIZED_EXT)
-+		max_blocks = EXT_UNINIT_MAX_LEN;
-+
- 	/* Check if we can really insert (iblock)::(iblock+max_blocks) extent */
- 	newex.ee_block = cpu_to_le32(iblock);
- 	newex.ee_len = cpu_to_le16(max_blocks);
-Index: linux-2.6.22/include/linux/ext4_fs_extents.h
-===================================================================
---- linux-2.6.22.orig/include/linux/ext4_fs_extents.h
-+++ linux-2.6.22/include/linux/ext4_fs_extents.h
-@@ -141,7 +141,25 @@ typedef int (*ext_prepare_callback)(stru
- 
- #define EXT_MAX_BLOCK	0xffffffff
- 
--#define EXT_MAX_LEN	((1UL << 15) - 1)
-+/*
-+ * EXT_INIT_MAX_LEN is the maximum number of blocks we can have in an
-+ * initialized extent. This is 2^15 and not (2^16 - 1), since we use the
-+ * MSB of ee_len field in the extent datastructure to signify if this
-+ * particular extent is an initialized extent or an uninitialized (i.e.
-+ * preallocated).
-+ * EXT_UNINIT_MAX_LEN is the maximum number of blocks we can have in an
-+ * uninitialized extent.
-+ * If ee_len is <= 0x8000, it is an initialized extent. Otherwise, it is an
-+ * uninitialized one. In other words, if MSB of ee_len is set, it is an
-+ * uninitialized extent with only one special scenario when ee_len = 0x8000.
-+ * In this case we can not have an uninitialized extent of zero length and
-+ * thus we make it as a special case of initialized extent with 0x8000 length.
-+ * This way we get better extent-to-group alignment for initialized extents.
-+ * Hence, the maximum number of blocks we can have in an *initialized*
-+ * extent is 2^15 (32768) and in an *uninitialized* extent is 2^15-1 (32767).
-+ */
-+#define EXT_INIT_MAX_LEN	(1UL << 15)
-+#define EXT_UNINIT_MAX_LEN	(EXT_INIT_MAX_LEN - 1)
- 
- 
- #define EXT_FIRST_EXTENT(__hdr__) \
-@@ -190,17 +208,22 @@ ext4_ext_invalidate_cache(struct inode *
- 
- static inline void ext4_ext_mark_uninitialized(struct ext4_extent *ext)
- {
--	ext->ee_len |= cpu_to_le16(0x8000);
-+	/* We can not have an uninitialized extent of zero length! */
-+	BUG_ON((le16_to_cpu(ext->ee_len) & ~EXT_INIT_MAX_LEN) == 0);
-+	ext->ee_len |= cpu_to_le16(EXT_INIT_MAX_LEN);
- }
- 
- static inline int ext4_ext_is_uninitialized(struct ext4_extent *ext)
- {
--	return (int)(le16_to_cpu((ext)->ee_len) & 0x8000);
-+	/* Extent with ee_len of 0x8000 is treated as an initialized extent */
-+	return (le16_to_cpu(ext->ee_len) > EXT_INIT_MAX_LEN);
- }
- 
- static inline int ext4_ext_get_actual_len(struct ext4_extent *ext)
- {
--	return (int)(le16_to_cpu((ext)->ee_len) & 0x7FFF);
-+	return (le16_to_cpu(ext->ee_len) <= EXT_INIT_MAX_LEN ?
-+		le16_to_cpu(ext->ee_len) :
-+		(le16_to_cpu(ext->ee_len) - EXT_INIT_MAX_LEN));
- }
- 
- extern int ext4_extent_tree_init(handle_t *, struct inode *);
+Patch 1 adds the capability to use root=rootfs.
+Patch 2 adds the capability to use tmpfs for root, default root=rootfs.
+        ramfs becomes optional if rootfs=tmpfs.
+Patch 3 allows to remove the capability of automounting filesystems.
+
+All patches appyl to 2.6.22.1
+-- 
+Fun things to slip into your budget
+Remuneration compensation upgrade. (otherwise called a pay raise).
