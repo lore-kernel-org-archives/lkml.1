@@ -1,34 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbXGMATe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762119AbXGMAVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761001AbXGMATe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 20:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758772AbXGMAT2
+	id S1762119AbXGMAVy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 20:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbXGMAVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 20:19:28 -0400
-Received: from mail.suse.de ([195.135.220.2]:37677 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756165AbXGMAT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 20:19:27 -0400
-Date: Thu, 12 Jul 2007 17:19:06 -0700
-From: Greg KH <gregkh@suse.de>
+	Thu, 12 Jul 2007 20:21:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54423 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757141AbXGMAVq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 20:21:46 -0400
+Date: Thu, 12 Jul 2007 17:20:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
+Cc: Greg KH <gregkh@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
        Jan Engelhardt <jengelh@computergmbh.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-usb-devel@lists.sourceforge.net
 Subject: Re: [GIT PATCH] USB patches for 2.6.22
-Message-ID: <20070713001906.GA24272@suse.de>
-References: <20070712234233.GA22339@kroah.com> <alpine.LFD.0.999.0707121647420.20061@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-Id: <20070712172023.d59c3001.akpm@linux-foundation.org>
 In-Reply-To: <alpine.LFD.0.999.0707121647420.20061@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+References: <20070712234233.GA22339@kroah.com>
+	<alpine.LFD.0.999.0707121647420.20061@woody.linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 05:03:46PM -0700, Linus Torvalds wrote:
+On Thu, 12 Jul 2007 17:03:46 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
 > On Thu, 12 Jul 2007, Greg KH wrote:
 > >
@@ -61,19 +64,7 @@ On Thu, Jul 12, 2007 at 05:03:46PM -0700, Linus Torvalds wrote:
 > menuconfig entry without a default, which at least fixes "make oldconfig", 
 > but I just found this really irritating. I can pretty much guarantee that 
 > nobody actually *tested* this change, did they?
+> 
 
-Hm, odd.  Ok, I see how it went.
-
-I tested it _before_ that change went in with make oldconfig, and then
-later after that patch went in.  If you do that (running oldconfig
-between the patches) you do not get asked the zillion different USB
-questions.  If, however, you just start with all of the patches at once,
-it becomes annoying as hell.
-
-So sorry about this fix, I agree with the revert, and am going to have
-to try to figure out some way to check for things like this in the
-future (rolling back .config files to the last version or something...)
-
-thanks,
-
-greg k-h
+I went through the same pain a few weeks ago and I _thought_ all except one
+of these "fixes" got tossed.  However it looks like the USB one escaped.
