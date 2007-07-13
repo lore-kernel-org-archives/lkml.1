@@ -1,99 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760538AbXGMDCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbXGMDDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760538AbXGMDCr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 23:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbXGMDCi
+	id S1762139AbXGMDDh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 23:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXGMDDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 23:02:38 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:46528 "EHLO
-	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753856AbXGMDCh (ORCPT
+	Thu, 12 Jul 2007 23:03:30 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:58557 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbXGMDD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 23:02:37 -0400
-X-BigFish: V
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 209.50.91.134;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C7C4FA.208961E3"
-Subject: =?utf-7?B?K0FGcy1wYXRjaCtBRjAtIEFkZCBtb3JlIGRldmljZSBJRHMgZm9yIA==?=
-	=?utf-7?B?c3VwcG9ydGluZyBBVEkgU0I3MDAgU0FUQSBjb250cm8=?=
-	=?utf-7?B?bGxlciBjb21wbGV0ZWx5IA==?=
-Date: Fri, 13 Jul 2007 11:01:35 +0800
-Message-ID: <FFECF24D2A7F6D418B9511AF6F3586020209802C@shacnexch2.atitech.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: =?utf-7?B?K0FGcy1wYXRjaCtBRjAtIEFkZCBtb3JlIGRldmljZSBJRHMgZm9yIA==?=
-	=?utf-7?B?c3VwcG9ydGluZyBBVEkgU0I3MDAgU0FUQSBjb250cm8=?=
-	=?utf-7?B?bGxlciBjb21wbGV0ZWx5IA==?=
-Thread-Index: AcfE
-From: "Henry Su" <henry.su@amd.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Cc: <linux-kernel@vger.kernel.org>, <gregkh@suse.de>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Shane Huang" <shane.huang@amd.com>
-X-OriginalArrivalTime: 13 Jul 2007 03:02:31.0907 (UTC) FILETIME=[41422330:01C7C4FA]
+	Thu, 12 Jul 2007 23:03:29 -0400
+Date: Fri, 13 Jul 2007 11:54:46 +0900 (JST)
+Message-Id: <20070713.115446.48513196.tshibata@ab.jp.nec.com>
+To: rob@landley.net
+Cc: LeoLi@freescale.com, gh@us.ibm.com, hpa@zytor.com,
+       kunai@linux-foundation.jp, holzheu@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       lf_kernel_messages@linux-foundation.jp.nec.com, tshibata@ab.jp.nec.com
+Subject: Re: Documentation of kernel messages (Summary)
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+In-Reply-To: <200707121335.55817.rob@landley.net>
+References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
+	<200707121335.55817.rob@landley.net>
+X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
+ =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Thu, 12 Jul 2007 13:35:54 -0400, rob wrote:
+> On Thursday 12 July 2007 9:53:54 am Li Yang-r58472 wrote:
+> > > Fielding patches and questions sounds like plenty to me...)
+> >
+> > I do think the documentation translation is very necessary even when
+> > there is a language maintainer, especially for the policy documents as
+> > HOWTO, codestyle , and etc.  The contributors should go through these
+> > policies and check their code for compliance before going to the
+> > language maintainer for help, or there will be too much for the language
+> > maintainer to translate.  The language maintainer doesn't need to
+> > translate all the documents himself, but he can help to coordinate the
+> > translation effort and help to make it update to date.
+> 
+> It would help if all the policy documents got grouped into a single 
+> Documentation/development directory so we could separate "policy documents in 
+> each language would be nice" from "that document about the amiga zorro bus 
+> really needs to be kept up-to-date in Navajo and that should be in the kernel 
+> tarball please".
+> 
+> Lemme see, which ones are we talking about?  The candidates are:
+>   applying-patches.txt
+>   BUG-HUNTING
+>   Changes
+>   CodingStyle
+>   debugging-modules.txt
+This file seems mostly technical. may not policy related document.
 
-------_=_NextPart_001_01C7C4FA.208961E3
-Content-Type: text/plain;
-	charset="utf-7"
-Content-Transfer-Encoding: 7bit
+>   feature-removal-schedule.txt
+>   HOWTO
+>   kernel-docs.txt
+>   language-maintainers.txt
+>   ManagementStyle
+>   oops-tracing.txt
+>   SecurityBugs
+>   sparse.txt
+>   stable_api_nonsense.txt
+>   stable_kernel_rules.txt
+>   SubmitChecklist
+>   SubmittingDrivers
+>   SubmittingPatches
+>   volatile-considered-harmful.txt
 
-From: henry.su+AEA-amd.com
+How about adding; 
+kernel-doc-nano-HOWTO.txt
 
-The sata controller device ID will be different according to the onchip
- sata type setting in system BIOS:
-Device                                                                 Device ID
-SATA in IDE mode                                             0x4390
-SATA in AHCI mode                                           0x4391
-SATA in RAID mode with non-Raid 5 driver  0x4392
-SATA in RAID mode with Raid 5 driver          0x4393
+These three slightly include some policy in the documents but purpose
+are mostly technical. (So, it's just comment)
+devices.txt
+kernel-parameters.txt
+unicode.txt
 
-Signed-off-by: henry.su+AEA-amd.com
-----------------------------------------------
-diff -Nur linux-2.6.22.1.orig/drivers/ata/ahci.c linux-2.6.22.1/drivers/ata/ahci.c
---- linux-2.6.22.1.orig/drivers/ata/ahci.c      2007-07-13 10:39:27.854093200 +-0800
-+-+-+- linux-2.6.22.1/drivers/ata/ahci.c   2007-07-13 10:52:58.625022700 +-0800
-+AEAAQA- -399,7 +-399,10 +AEAAQA-
-
-        /+ACo- ATI +ACo-/
-        +AHs- PCI+AF8-VDEVICE(ATI, 0x4380), board+AF8-ahci+AF8-sb600 +AH0-, /+ACo- ATI SB600 +ACo-/
--       +AHs- PCI+AF8-VDEVICE(ATI, 0x4390), board+AF8-ahci+AF8-sb600 +AH0-, /+ACo- ATI SB700 +ACo-/
-+-       +AHs- PCI+AF8-VDEVICE(ATI, 0x4390), board+AF8-ahci+AF8-sb600 +AH0-, /+ACo- ATI SB700 IDE +ACo-/
-+-       +AHs- PCI+AF8-VDEVICE(ATI, 0x4391), board+AF8-ahci+AF8-sb600 +AH0-, /+ACo- ATI SB700 AHCI +ACo-/
-+-       +AHs- PCI+AF8-VDEVICE(ATI, 0x4392), board+AF8-ahci+AF8-sb600 +AH0-, /+ACo- ATI SB700 nor-raid5 +ACo-/
-+-       +AHs- PCI+AF8-VDEVICE(ATI, 0x4393), board+AF8-ahci+AF8-sb600 +AH0-, /+ACo- ATI SB700 raid5 +ACo-/
-
-        /+ACo- VIA +ACo-/
-        +AHs- PCI+AF8-VDEVICE(VIA, 0x3349), board+AF8-ahci+AF8-vt8251 +AH0-, /+ACo- VIA VT8251 +ACo-/
-
-------_=_NextPart_001_01C7C4FA.208961E3
-Content-Type: application/octet-stream;
-	name="sb700sataids.patch"
-Content-Transfer-Encoding: base64
-Content-Description: sb700sataids.patch
-Content-Disposition: attachment;
-	filename="sb700sataids.patch"
-
-ZGlmZiAtTnVyIGxpbnV4LTIuNi4yMi4xLm9yaWcvZHJpdmVycy9hdGEvYWhjaS5jIGxpbnV4LTIu
-Ni4yMi4xL2RyaXZlcnMvYXRhL2FoY2kuYwotLS0gbGludXgtMi42LjIyLjEub3JpZy9kcml2ZXJz
-L2F0YS9haGNpLmMJMjAwNy0wNy0xMyAxMDozOToyNy44NTQwOTMyMDAgKzA4MDAKKysrIGxpbnV4
-LTIuNi4yMi4xL2RyaXZlcnMvYXRhL2FoY2kuYwkyMDA3LTA3LTEzIDEwOjUyOjU4LjYyNTAyMjcw
-MCArMDgwMApAQCAtMzk5LDcgKzM5OSwxMCBAQAogCiAJLyogQVRJICovCiAJeyBQQ0lfVkRFVklD
-RShBVEksIDB4NDM4MCksIGJvYXJkX2FoY2lfc2I2MDAgfSwgLyogQVRJIFNCNjAwICovCi0JeyBQ
-Q0lfVkRFVklDRShBVEksIDB4NDM5MCksIGJvYXJkX2FoY2lfc2I2MDAgfSwgLyogQVRJIFNCNzAw
-ICovCisJeyBQQ0lfVkRFVklDRShBVEksIDB4NDM5MCksIGJvYXJkX2FoY2lfc2I2MDAgfSwgLyog
-QVRJIFNCNzAwIElERSAqLworCXsgUENJX1ZERVZJQ0UoQVRJLCAweDQzOTEpLCBib2FyZF9haGNp
-X3NiNjAwIH0sIC8qIEFUSSBTQjcwMCBBSENJICovCisJeyBQQ0lfVkRFVklDRShBVEksIDB4NDM5
-MiksIGJvYXJkX2FoY2lfc2I2MDAgfSwgLyogQVRJIFNCNzAwIG5vci1yYWlkNSAqLworCXsgUENJ
-X1ZERVZJQ0UoQVRJLCAweDQzOTMpLCBib2FyZF9haGNpX3NiNjAwIH0sIC8qIEFUSSBTQjcwMCBy
-YWlkNSAqLwogCiAJLyogVklBICovCiAJeyBQQ0lfVkRFVklDRShWSUEsIDB4MzM0OSksIGJvYXJk
-X2FoY2lfdnQ4MjUxIH0sIC8qIFZJQSBWVDgyNTEgKi8KCg==
-
-------_=_NextPart_001_01C7C4FA.208961E3--
-
+> That's everything I noticed in the top level directory that's a good candidate 
+> to be grouped into a "development" subdirectory.  Did I miss anything?
+> 
+> I note that Changes is a bit stale in places (16 bit assembly?), 
+> feature-removal-schedule.txt changes often but is good to know, 
+> kernel-docs.txt might be useless to translate considering it's mostly links 
+> to english documentation, language-maintainers.txt is assuming my patch from 
+> earlier today gets accepted...
+> 
+> I can submit a patch grouping all that stuff together into a subdirectory if 
+> it would help...
+> 
+> > If we do need a contact person, I can do it.  However I don't think
+> > there will be much translation work to do here.  As I stated before,
+> > most Chinese programmers are more or less capable of read/write
+> > technical English.  The difficult part is to let them know the benefit
+> > of merging code in kernel and teach them how to do it.  That's why the
+> > policy documents in native language will be very useful.
+> 
+> Does the above look like a good list?  There are more that need to be written, 
+> but that's what I saw in Documentation...
+> 
+> Rob
+> 
+> P.S.  Dear kmail/postfix developers: having a transient DNS lookup failure on 
+> one address in a long cc: list is _NOT_ a reason to have the message stay in 
+> the kmail outbox.  It should go into the postfix send queue and be retried 
+> from there.  Right now, if I tell it to resend, how do I know who it has and 
+> hasn't been successfully distributed to on the first attempt?  I've gotten 
+> dinged for trimming the cc: list before, but now I'm about to send out 
+> duplicates.  Wheee...
