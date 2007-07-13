@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935570AbXGMI3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935570AbXGMIf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935570AbXGMI3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 04:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761920AbXGMI3L
+	id S935570AbXGMIf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 04:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761026AbXGMIfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 04:29:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52482 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761026AbXGMI3J (ORCPT
+	Fri, 13 Jul 2007 04:35:19 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:48578 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756441AbXGMIfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 04:29:09 -0400
-Date: Fri, 13 Jul 2007 01:29:06 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: joe.jin@oracle.com, bill.irwin@oracle.com, linux-kernel@vger.kernel.org,
-       gurudas.pai@oracle.com, Zwane Mwaikambo <zwane@arm.linux.org.uk>
-Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
-Message-Id: <20070713012906.a6f63c90.pj@sgi.com>
-In-Reply-To: <20070712235707.a08f0d42.akpm@linux-foundation.org>
-References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
-	<20070712221842.f5e47065.akpm@linux-foundation.org>
-	<20070713064004.GA21833@joejin-pc.cn.oracle.com>
-	<20070712234938.c77f3a48.akpm@linux-foundation.org>
-	<20070712235707.a08f0d42.akpm@linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Jul 2007 04:35:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=fXoewELUuNSxEJumdcj/fquT7nKUZbNfZiMNuKSvfCwP4QDFHxQxqQjPVznrk4ZP+MHwWvdSop/QLZH20mL2GMJskvMFsFZMgqmmUkjJqSFhltVBc3uD5ACFokit5QDSOKGrd932Gs8whfWEGGCaJTzfrWCHY/e9FOEGP0/XJxY=
+Message-ID: <4697393F.2070002@gmail.com>
+Date: Fri, 13 Jul 2007 17:35:11 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Miles Lane <miles.lane@gmail.com>
+CC: Tejun Heo <htejunu@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc6-mm1 -- BUG - EIP: [<c01a77a1>] sysfs_addrm_finish+0x1c2/0x226
+ SS:ESP 0068:c5ff9db8
+References: <a44ae5cd0707030932h16a90ca3j8ad65b7a3ec64b03@mail.gmail.com>	 <a44ae5cd0707060101g38147b2gb3d33d9903082113@mail.gmail.com>	 <468F36F5.4010803@gmail.com>	 <a44ae5cd0707071753g6dd4445bsaac2e2296327e510@mail.gmail.com>	 <469038EF.7040709@gmail.com>	 <a44ae5cd0707072156y7d0c9e5am2ded3efdc036bcf7@mail.gmail.com>	 <469484E1.6040000@gmail.com> <4694A769.7040502@gmail.com>	 <a44ae5cd0707111539l5e5adc4ct76ae2f4cb9063e58@mail.gmail.com>	 <46959A2C.7090908@gmail.com> <a44ae5cd0707120125u4c17020bvc9a3a28a24ef042a@mail.gmail.com>
+In-Reply-To: <a44ae5cd0707120125u4c17020bvc9a3a28a24ef042a@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm scratching my head over that min_t in __first_node(), too.   I don't think
-> it's possible for find_first_bit(..., N) to return anything >N _anyway_.  And if
-> it does, we want to know about it.
+Miles Lane wrote:
+> Tejun,
 > 
-> <looks at Paul>
+> I tried 2.6.22-rc6-mm1 + your latest patch, and it failed to boot.
+> Unfortunately, the machine limped along and am unable to capture
+> the initial BUG or OOPS.  I'll try to get a serial connection set up for
+> debugging tomorrow, but I am very busy with other stuff.  It would be
+> great if you could test your own build with the .config file I initially
+> sent
+> to you for the original BUG: issue.  If you would like me to resend the
+> .config, just let me know.
 
-I'm not sure I've got this right, but looks like that min_t went in after
-Zwane Mwaikambo, then <zwane@fsmlabs.com>, whom I am presuming is the same
-person as now at <zwane@arm.linux.org.uk>, found a problem with the i386
-find_next_bit implementation returning > N when merging i386 cpu hotplug.
+Hmmm... I did test with your .config before posting the updated patch
+and I just tested again.  It runs well on my ICH9 box.  I'm sorry but
+I'll need to see the oops.
 
-See the thread:
-
-  http://lkml.org/lkml/2004/7/31/102
-  [PATCH][2.6] first/next_cpu returns values > NR_CPUS
-
-I apparently lobbied at the time to mandate that find_first_bit(..., N)
-return exactly N on failure to find a set bit, but gave up, after some
-confusions on my part.
-
-Adding Zwane to this thread -- the other participant on that thread,
-Bill Irwin, is already on the CC list.
+Thanks a lot.
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+tejun
