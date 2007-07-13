@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932834AbXGMQrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933850AbXGMQsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932834AbXGMQrz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 12:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763142AbXGMQrQ
+	id S933850AbXGMQsd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 12:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933249AbXGMQrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 12:47:16 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:12823 "EHLO
+	Fri, 13 Jul 2007 12:47:35 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:12849 "EHLO
 	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1763099AbXGMQrO (ORCPT
+	by vger.kernel.org with ESMTP id S933170AbXGMQre (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 12:47:14 -0400
-Date: Fri, 13 Jul 2007 10:53:30 -0600
+	Fri, 13 Jul 2007 12:47:34 -0400
+Date: Fri, 13 Jul 2007 10:53:50 -0600
 From: dougthompson@xmission.com
 To: dougthompson@xmission.com, greg@kroah.com, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH 4/8] drivers edac fix leaf sysfs attribute 
-Message-ID: <4697ae0a.Vk1tbJ/Un94wmck+%dougthompson@xmission.com>
+Subject: [PATCH 5/8] drivers edac fix edac_mc init apis 
+Message-ID: <4697ae1e.mkXIkr5qgmQr5jhm%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,329 +23,359 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Douglas Thompson <dougthompson@xmission.com>
+From:   Doug Thompson <dougthompson@xmission.com>
 
-This patch fixes and enhances the driver level set of sysfs attributes
-that can be added to the 'block' level of an edac_device type
-of driver.
+Refactoring of sysfs code necessitated the refactoring of
+the edac_mc_alloc() and edac_mc_add_mc() apis, of moving
+the index value to the alloc() function. This patch
+alters the in tree drivers to utilize this new api signature.
 
-There is a controller information structure, which contains
-one or more instances of device. Each instance will have one
-or more blocks of device specific counters. This patch
-fixes the ability to have more detailed attributes/controls
-for each of the 'blocks', providing for the addition of 
-controls/attributes from the low level driver to user space
-via sysfs.
+Having the index value performed later created a chicken-and-the-egg
+issue. Moving it to the alloc() function allows for creating the
+necessary sysfs entries with the proper index number
 
 CC:             Alan Cox alan@lxorguk.ukuu.org.uk
-Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
+Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
 ---
- edac_core.h         |   67 +++++++++++++++++---------------------
- edac_device.c       |   91 ++++++++++++++++++++++++++++++++++------------------
- edac_device_sysfs.c |   22 ++++++++++++
- 3 files changed, 112 insertions(+), 68 deletions(-)
+ amd76x_edac.c     |    4 ++--
+ e752x_edac.c      |    4 ++--
+ e7xxx_edac.c      |    4 ++--
+ edac_core.h       |   27 ++++++++++++++-------------
+ edac_mc.c         |    9 +++++----
+ i3000_edac.c      |    4 ++--
+ i5000_edac.c      |    6 ++----
+ i82443bxgx_edac.c |    4 ++--
+ i82860_edac.c     |    4 ++--
+ i82875p_edac.c    |    4 ++--
+ pasemi_edac.c     |    5 +++--
+ r82600_edac.c     |    4 ++--
+ 12 files changed, 40 insertions(+), 39 deletions(-)
 
+
+Index: linux-2.6.22-rc6-mm1/drivers/edac/amd76x_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/amd76x_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/amd76x_edac.c
+@@ -238,7 +238,7 @@ static int amd76x_probe1(struct pci_dev 
+ 	debugf0("%s()\n", __func__);
+ 	pci_read_config_dword(pdev, AMD76X_ECC_MODE_STATUS, &ems);
+ 	ems_mode = (ems >> 10) & 0x3;
+-	mci = edac_mc_alloc(0, AMD76X_NR_CSROWS, AMD76X_NR_CHANS);
++	mci = edac_mc_alloc(0, AMD76X_NR_CSROWS, AMD76X_NR_CHANS, 0);
+ 
+ 	if (mci == NULL) {
+ 		return -ENOMEM;
+@@ -263,7 +263,7 @@ static int amd76x_probe1(struct pci_dev 
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/e752x_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/e752x_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/e752x_edac.c
+@@ -977,7 +977,7 @@ static int e752x_probe1(struct pci_dev *
+ 	/* Dual channel = 1, Single channel = 0 */
+ 	drc_chan = dual_channel_active(ddrcsr);
+ 
+-	mci = edac_mc_alloc(sizeof(*pvt), E752X_NR_CSROWS, drc_chan + 1);
++	mci = edac_mc_alloc(sizeof(*pvt), E752X_NR_CSROWS, drc_chan + 1, 0);
+ 
+ 	if (mci == NULL) {
+ 		return -ENOMEM;
+@@ -1035,7 +1035,7 @@ static int e752x_probe1(struct pci_dev *
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/e7xxx_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/e7xxx_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/e7xxx_edac.c
+@@ -427,7 +427,7 @@ static int e7xxx_probe1(struct pci_dev *
+ 	pci_read_config_dword(pdev, E7XXX_DRC, &drc);
+ 
+ 	drc_chan = dual_channel_active(drc, dev_idx);
+-	mci = edac_mc_alloc(sizeof(*pvt), E7XXX_NR_CSROWS, drc_chan + 1);
++	mci = edac_mc_alloc(sizeof(*pvt), E7XXX_NR_CSROWS, drc_chan + 1, 0);
+ 
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -478,7 +478,7 @@ static int e7xxx_probe1(struct pci_dev *
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail1;
+ 	}
 Index: linux-2.6.22-rc6-mm1/drivers/edac/edac_core.h
 ===================================================================
 --- linux-2.6.22-rc6-mm1.orig/drivers/edac/edac_core.h
 +++ linux-2.6.22-rc6-mm1/drivers/edac/edac_core.h
-@@ -468,32 +468,34 @@ struct edac_device_counter {
- 	u32 ce_count;
- };
+@@ -765,8 +765,11 @@ static inline void pci_write_bits32(stru
  
--/*
-- * An array of these is passed to the alloc() function
-- * to specify attributes of the edac_block
-- */
--struct edac_attrib_spec {
--	char name[EDAC_DEVICE_NAME_LEN + 1];
-+/* forward reference */
-+struct edac_device_ctl_info;
-+struct edac_device_block;
+ #endif				/* CONFIG_PCI */
  
--	int type;
--#define	EDAC_ATTR_INT		0x01
--#define EDAC_ATTR_CHAR		0x02
-+/* edac_dev_sysfs_attribute structure
-+ *	used for driver sysfs attributes in mem_ctl_info
-+ *	for extra controls and attributes:
-+ *		like high level error Injection controls
-+ */
-+struct edac_dev_sysfs_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct edac_device_ctl_info *, char *);
-+	ssize_t (*store)(struct edac_device_ctl_info *, const char *, size_t);
- };
- 
--/* Attribute control structure
-- * In this structure is a pointer to the driver's edac_attrib_spec
-- * The life of this pointer is inclusive in the life of the driver's
-- * life cycle.
-+/* edac_dev_sysfs_block_attribute structure
-+ *	used in leaf 'block' nodes for adding controls/attributes
++extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
++					  unsigned nr_chans, int edac_index);
++extern int edac_mc_add_mc(struct mem_ctl_info *mci);
++extern void edac_mc_free(struct mem_ctl_info *mci);
+ extern struct mem_ctl_info *edac_mc_find(int idx);
+-extern int edac_mc_add_mc(struct mem_ctl_info *mci, int mc_idx);
+ extern struct mem_ctl_info *edac_mc_del_mc(struct device *dev);
+ extern int edac_mc_find_csrow_by_page(struct mem_ctl_info *mci,
+ 				      unsigned long page);
+@@ -803,33 +806,31 @@ extern void edac_mc_handle_fbd_ce(struct
+ /*
+  * edac_device APIs
   */
--struct edac_attrib {
--	struct edac_device_block *block;	/* Up Pointer */
--
--	struct edac_attrib_spec *spec;	/* ptr to module spec entry */
--
--	union {			/* actual value */
--		int edac_attrib_int_value;
--		char edac_attrib_char_value[EDAC_ATTRIB_VALUE_LEN + 1];
--	} edac_attrib_value;
-+struct edac_dev_sysfs_block_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct kobject *, struct attribute *, char *);
-+	ssize_t (*store)(struct kobject *, struct attribute *,
-+			const char *, size_t);
-+	struct edac_device_block *block;
-+
-+	/* low driver use */
-+	void *arg;
-+	unsigned int value;
- };
- 
- /* device block control structure */
-@@ -504,7 +506,9 @@ struct edac_device_block {
- 	struct edac_device_counter counters;	/* basic UE and CE counters */
- 
- 	int nr_attribs;		/* how many attributes */
--	struct edac_attrib *attribs;	/* this block's attributes */
-+
-+	/* this block's attributes, could be NULL */
-+	struct edac_dev_sysfs_block_attribute *block_attributes;
- 
- 	/* edac sysfs device control */
- 	struct kobject kobj;
-@@ -526,15 +530,6 @@ struct edac_device_instance {
- 	struct completion kobj_complete;
- };
- 
--/* edac_dev_sysfs_attribute structure
-- *     used for driver sysfs attributes and in mem_ctl_info
-- *     sysfs top level entries
-- */
--struct edac_dev_sysfs_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct edac_device_ctl_info *,char *);
--	ssize_t (*store)(struct edac_device_ctl_info *, const char *,size_t);
--};
+-extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+-					  unsigned nr_chans);
+-extern void edac_mc_free(struct mem_ctl_info *mci);
+ extern int edac_device_add_device(struct edac_device_ctl_info *edac_dev,
+-				  int edac_idx);
++				int dev_idx);
+ extern struct edac_device_ctl_info *edac_device_del_device(struct device *dev);
+ extern void edac_device_handle_ue(struct edac_device_ctl_info *edac_dev,
+-				  int inst_nr, int block_nr, const char *msg);
++				int inst_nr, int block_nr, const char *msg);
+ extern void edac_device_handle_ce(struct edac_device_ctl_info *edac_dev,
+-				  int inst_nr, int block_nr, const char *msg);
++				int inst_nr, int block_nr, const char *msg);
  
  /*
-  * Abstract edac_device control info structure
-@@ -635,12 +630,10 @@ struct edac_device_ctl_info {
+  * edac_pci APIs
   */
- extern struct edac_device_ctl_info *edac_device_alloc_ctl_info(
- 		unsigned sizeof_private,
--		char *edac_device_name,
--		unsigned nr_instances,
--		char *edac_block_name,
--		unsigned nr_blocks,
-+		char *edac_device_name, unsigned nr_instances,
-+		char *edac_block_name, unsigned nr_blocks,
- 		unsigned offset_value,
--		struct edac_attrib_spec *attrib_spec,
-+		struct edac_dev_sysfs_block_attribute *block_attributes,
- 		unsigned nr_attribs);
+-extern struct edac_pci_ctl_info *edac_pci_alloc_ctl_info(unsigned int sz_pvt, const char
+-							 *edac_pci_name);
++extern struct edac_pci_ctl_info *edac_pci_alloc_ctl_info(unsigned int sz_pvt,
++				const char *edac_pci_name);
  
- /* The offset value can be:
-Index: linux-2.6.22-rc6-mm1/drivers/edac/edac_device.c
+ extern void edac_pci_free_ctl_info(struct edac_pci_ctl_info *pci);
+ 
+-extern void
+-edac_pci_reset_delay_period(struct edac_pci_ctl_info *pci, unsigned long value);
++extern void edac_pci_reset_delay_period(struct edac_pci_ctl_info *pci,
++				unsigned long value);
+ 
+ extern int edac_pci_add_device(struct edac_pci_ctl_info *pci, int edac_idx);
+ extern struct edac_pci_ctl_info *edac_pci_del_device(struct device *dev);
+ 
+-extern struct edac_pci_ctl_info *edac_pci_create_generic_ctl(struct device *dev, const char
+-							     *mod_name);
++extern struct edac_pci_ctl_info *edac_pci_create_generic_ctl(
++				struct device *dev,
++				const char *mod_name);
+ 
+ extern void edac_pci_release_generic_ctl(struct edac_pci_ctl_info *pci);
+ extern int edac_pci_create_sysfs(struct edac_pci_ctl_info *pci);
+Index: linux-2.6.22-rc6-mm1/drivers/edac/edac_mc.c
 ===================================================================
---- linux-2.6.22-rc6-mm1.orig/drivers/edac/edac_device.c
-+++ linux-2.6.22-rc6-mm1/drivers/edac/edac_device.c
-@@ -67,12 +67,12 @@ struct edac_device_ctl_info *edac_device
- 	char *edac_device_name, unsigned nr_instances,
- 	char *edac_block_name, unsigned nr_blocks,
- 	unsigned offset_value,		/* zero, 1, or other based offset */
--	struct edac_attrib_spec *attrib_spec, unsigned nr_attribs)
-+	struct edac_dev_sysfs_block_attribute *attrib_spec, unsigned nr_attrib)
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/edac_mc.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/edac_mc.c
+@@ -129,7 +129,7 @@ void *edac_align_ptr(void *ptr, unsigned
+  *	struct mem_ctl_info pointer
+  */
+ struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+-				unsigned nr_chans)
++				unsigned nr_chans, int edac_index)
  {
- 	struct edac_device_ctl_info *dev_ctl;
- 	struct edac_device_instance *dev_inst, *inst;
- 	struct edac_device_block *dev_blk, *blk_p, *blk;
--	struct edac_attrib *dev_attrib, *attrib_p, *attrib;
-+	struct edac_dev_sysfs_block_attribute *dev_attrib, *attrib_p, *attrib;
- 	unsigned total_size;
- 	unsigned count;
- 	unsigned instance, block, attr;
-@@ -81,29 +81,47 @@ struct edac_device_ctl_info *edac_device
- 	debugf1("%s() instances=%d blocks=%d\n",
- 		__func__, nr_instances, nr_blocks);
+ 	struct mem_ctl_info *mci;
+ 	struct csrow_info *csi, *csrow;
+@@ -159,7 +159,8 @@ struct mem_ctl_info *edac_mc_alloc(unsig
+ 	chi = (struct channel_info *)(((char *)mci) + ((unsigned long)chi));
+ 	pvt = sz_pvt ? (((char *)mci) + ((unsigned long)pvt)) : NULL;
  
--	/* Figure out the offsets of the various items from the start of an
--	 * ctl_info structure.  We want the alignment of each item
-+	/* Calculate the size of memory we need to allocate AND
-+	 * determine the offsets of the various item arrays
-+	 * (instance,block,attrib) from the start of an  allocated structure.
-+	 * We want the alignment of each item  (instance,block,attrib)
- 	 * to be at least as stringent as what the compiler would
- 	 * provide if we could simply hardcode everything into a single struct.
- 	 */
- 	dev_ctl = (struct edac_device_ctl_info *)NULL;
+-	memset(mci, 0, size);	/* clear all fields */
++	/* setup index and various internal pointers */
++	mci->mc_idx = edac_index;
+ 	mci->csrows = csi;
+ 	mci->pvt_info = pvt;
+ 	mci->nr_csrows = nr_csrows;
+@@ -405,10 +406,10 @@ EXPORT_SYMBOL(edac_mc_find);
+  */
  
--	/* Calc the 'end' offset past the ctl_info structure */
-+	/* Calc the 'end' offset past end of ONE ctl_info structure
-+	 * which will become the start of the 'instance' array
-+	 */
- 	dev_inst = edac_align_ptr(&dev_ctl[1], sizeof(*dev_inst));
- 
--	/* Calc the 'end' offset past the instance array */
-+	/* Calc the 'end' offset past the instance array within the ctl_info
-+	 * which will become the start of the block array
-+	 */
- 	dev_blk = edac_align_ptr(&dev_inst[nr_instances], sizeof(*dev_blk));
- 
--	/* Calc the 'end' offset past the dev_blk array */
-+	/* Calc the 'end' offset past the dev_blk array
-+	 * which will become the start of the attrib array, if any.
-+	 */
- 	count = nr_instances * nr_blocks;
- 	dev_attrib = edac_align_ptr(&dev_blk[count], sizeof(*dev_attrib));
- 
--	/* Check for case of NO attributes specified */
--	if (nr_attribs > 0)
--		count *= nr_attribs;
-+	/* Check for case of when an attribute array is specified */
-+	if (nr_attrib > 0) {
-+		/* calc how many nr_attrib we need */
-+		count *= nr_attrib;
- 
--	/* Calc the 'end' offset past the attributes array */
--	pvt = edac_align_ptr(&dev_attrib[count], sz_private);
-+		/* Calc the 'end' offset past the attributes array */
-+		pvt = edac_align_ptr(&dev_attrib[count], sz_private);
-+	} else {
-+		/* no attribute array specificed */
-+		pvt = edac_align_ptr(dev_attrib, sz_private);
-+	}
+ /* FIXME - should a warning be printed if no error detection? correction? */
+-int edac_mc_add_mc(struct mem_ctl_info *mci, int mc_idx)
++int edac_mc_add_mc(struct mem_ctl_info *mci)
+ {
+ 	debugf0("%s()\n", __func__);
+-	mci->mc_idx = mc_idx;
 +
-+	/* 'pvt' now points to where the private data area is.
-+	 * At this point 'pvt' (like dev_inst,dev_blk and dev_attrib)
-+	 * is baselined at ZERO
-+	 */
- 	total_size = ((unsigned long)pvt) + sz_private;
- 
- 	/* Allocate the amount of memory for the set of control structures */
-@@ -111,17 +129,22 @@ struct edac_device_ctl_info *edac_device
- 	if (dev_ctl == NULL)
- 		return NULL;
- 
--	/* Adjust pointers so they point within the memory we just allocated
--	 * rather than an imaginary chunk of memory located at address 0.
-+	/* Adjust pointers so they point within the actual memory we
-+	 * just allocated rather than an imaginary chunk of memory
-+	 * located at address 0.
-+	 * 'dev_ctl' points to REAL memory, while the others are
-+	 * ZERO based and thus need to be adjusted to point within
-+	 * the allocated memory.
+ #ifdef CONFIG_EDAC_DEBUG
+ 	if (edac_debug_level >= 3)
+ 		edac_mc_dump_mci(mci);
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i3000_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i3000_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i3000_edac.c
+@@ -309,7 +309,7 @@ static int i3000_probe1(struct pci_dev *
  	 */
- 	dev_inst = (struct edac_device_instance *)
- 		(((char *)dev_ctl) + ((unsigned long)dev_inst));
- 	dev_blk = (struct edac_device_block *)
- 		(((char *)dev_ctl) + ((unsigned long)dev_blk));
--	dev_attrib = (struct edac_attrib *)
-+	dev_attrib = (struct edac_dev_sysfs_block_attribute *)
- 		(((char *)dev_ctl) + ((unsigned long)dev_attrib));
- 	pvt = sz_private ? (((char *)dev_ctl) + ((unsigned long)pvt)) : NULL;
+ 	interleaved = i3000_is_interleaved(c0dra, c1dra, c0drb, c1drb);
+ 	nr_channels = interleaved ? 2 : 1;
+-	mci = edac_mc_alloc(0, I3000_RANKS / nr_channels, nr_channels);
++	mci = edac_mc_alloc(0, I3000_RANKS / nr_channels, nr_channels, 0);
+ 	if (!mci)
+ 		return -ENOMEM;
  
-+	/* Begin storing the information into the control info structure */
- 	dev_ctl->nr_instances = nr_instances;
- 	dev_ctl->instances = dev_inst;
- 	dev_ctl->pvt_info = pvt;
-@@ -145,28 +168,37 @@ struct edac_device_ctl_info *edac_device
- 		for (block = 0; block < nr_blocks; block++) {
- 			blk = &blk_p[block];
- 			blk->instance = inst;
--			blk->nr_attribs = nr_attribs;
--			attrib_p = &dev_attrib[block * nr_attribs];
--			blk->attribs = attrib_p;
- 			snprintf(blk->name, sizeof(blk->name),
- 				 "%s%d", edac_block_name, block+offset_value);
+@@ -370,7 +370,7 @@ static int i3000_probe1(struct pci_dev *
+ 			 I3000_ERRSTS_BITS);
  
- 			debugf1("%s() instance=%d block=%d name=%s\n",
- 				__func__, instance, block, blk->name);
+ 	rc = -ENODEV;
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("MC: %s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i5000_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i5000_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i5000_edac.c
+@@ -338,8 +338,6 @@ struct i5000_pvt {
+ 	struct pci_dev *branch_0;	/* 21.0 */
+ 	struct pci_dev *branch_1;	/* 22.0 */
  
--			if (attrib_spec != NULL) {
--				/* when there is an attrib_spec passed int then
--				 * Initialize every attrib of each block
--				 */
--				for (attr = 0; attr < nr_attribs; attr++) {
--					attrib = &attrib_p[attr];
--					attrib->block = blk;
+-	int node_id;		/* ID of this node */
 -
--					/* Link each attribute to the caller's
--					 * spec entry, for name and type
--					 */
--					attrib->spec = &attrib_spec[attr];
--				}
-+			/* if there are NO attributes OR no attribute pointer
-+			 * then continue on to next block iteration
-+			 */
-+			if ((nr_attrib == 0) || (attrib_spec == NULL))
-+				continue;
-+
-+			/* setup the attribute array for this block */
-+			blk->nr_attribs = nr_attrib;
-+			attrib_p = &dev_attrib[block*nr_instances*nr_attrib];
-+			blk->block_attributes = attrib_p;
-+
-+			/* Initialize every user specified attribute in this
-+			 * block with the data the caller passed in
-+			 */
-+			for (attr = 0; attr < nr_attrib; attr++) {
-+				attrib = &attrib_p[attr];
-+				attrib->attr = attrib_spec->attr;
-+				attrib->show = attrib_spec->show;
-+				attrib->store = attrib_spec->store;
-+
-+				/* up reference this block */
-+				attrib->block = blk;
-+
-+				/* bump the attrib_spec */
-+				attrib_spec++;
- 			}
- 		}
+ 	u16 tolm;		/* top of low memory */
+ 	u64 ambase;		/* AMB BAR */
+ 
+@@ -1319,7 +1317,7 @@ static int i5000_probe1(struct pci_dev *
+ 		__func__, num_channels, num_dimms_per_channel, num_csrows);
+ 
+ 	/* allocate a new MC control structure */
+-	mci = edac_mc_alloc(sizeof(*pvt), num_csrows, num_channels);
++	mci = edac_mc_alloc(sizeof(*pvt), num_csrows, num_channels, 0);
+ 
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -1366,7 +1364,7 @@ static int i5000_probe1(struct pci_dev *
  	}
-Index: linux-2.6.22-rc6-mm1/drivers/edac/edac_device_sysfs.c
+ 
+ 	/* add this new MC control structure to EDAC's list of MCs */
+-	if (edac_mc_add_mc(mci, pvt->node_id)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf0("MC: " __FILE__
+ 			": %s(): failed edac_mc_add_mc()\n", __func__);
+ 		/* FIXME: perhaps some code should go here that disables error
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i82443bxgx_edac.c
 ===================================================================
---- linux-2.6.22-rc6-mm1.orig/drivers/edac/edac_device_sysfs.c
-+++ linux-2.6.22-rc6-mm1/drivers/edac/edac_device_sysfs.c
-@@ -456,8 +456,10 @@ static int edac_device_create_block(stru
- 				struct edac_device_instance *instance,
- 				int idx)
- {
-+	int i;
- 	int err;
- 	struct edac_device_block *block;
-+	struct edac_dev_sysfs_block_attribute *sysfs_attrib;
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i82443bxgx_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i82443bxgx_edac.c
+@@ -239,7 +239,7 @@ static int i82443bxgx_edacmc_probe1(stru
+ 	if (pci_read_config_dword(pdev, I82443BXGX_NBXCFG, &nbxcfg))
+ 		return -EIO;
  
- 	block = &instance->blocks[idx];
+-	mci = edac_mc_alloc(0, I82443BXGX_NR_CSROWS, I82443BXGX_NR_CHANS);
++	mci = edac_mc_alloc(0, I82443BXGX_NR_CSROWS, I82443BXGX_NR_CHANS, 0);
  
-@@ -480,7 +482,27 @@ static int edac_device_create_block(stru
- 		return err;
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -314,7 +314,7 @@ static int i82443bxgx_edacmc_probe1(stru
+ 	mci->edac_check = i82443bxgx_edacmc_check;
+ 	mci->ctl_page_to_phys = NULL;
+ 
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i82860_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i82860_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i82860_edac.c
+@@ -186,7 +186,7 @@ static int i82860_probe1(struct pci_dev 
+ 	   the channel and the GRA registers map to physical devices so we are
+ 	   going to make 1 channel for group.
+ 	 */
+-	mci = edac_mc_alloc(0, 16, 1);
++	mci = edac_mc_alloc(0, 16, 1, 0);
+ 
+ 	if (!mci)
+ 		return -ENOMEM;
+@@ -209,7 +209,7 @@ static int i82860_probe1(struct pci_dev 
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/i82875p_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/i82875p_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/i82875p_edac.c
+@@ -400,7 +400,7 @@ static int i82875p_probe1(struct pci_dev
+ 	drc = readl(ovrfl_window + I82875P_DRC);
+ 	nr_chans = dual_channel_active(drc) + 1;
+ 	mci = edac_mc_alloc(sizeof(*pvt), I82875P_NR_CSROWS(nr_chans),
+-			nr_chans);
++			nr_chans, 0);
+ 
+ 	if (!mci) {
+ 		rc = -ENOMEM;
+@@ -428,7 +428,7 @@ static int i82875p_probe1(struct pci_dev
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail1;
+ 	}
+Index: linux-2.6.22-rc6-mm1/drivers/edac/pasemi_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/pasemi_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/pasemi_edac.c
+@@ -204,7 +204,8 @@ static int __devinit pasemi_edac_probe(s
+ 		MCDEBUG_ERRCTL1_RFL_LOG_EN;
+ 	pci_write_config_dword(pdev, MCDEBUG_ERRCTL1, errctl1);
+ 
+-	mci = edac_mc_alloc(0, PASEMI_EDAC_NR_CSROWS, PASEMI_EDAC_NR_CHANS);
++	mci = edac_mc_alloc(0, PASEMI_EDAC_NR_CSROWS, PASEMI_EDAC_NR_CHANS,
++				system_mmc_id++);
+ 
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -244,7 +245,7 @@ static int __devinit pasemi_edac_probe(s
+ 	 */
+ 	pasemi_edac_get_error_info(mci);
+ 
+-	if (edac_mc_add_mc(mci, system_mmc_id++)) {
++	if (edac_mc_add_mc(mci)) {
+ 		goto fail;
  	}
  
-+	/* If there are driver level block attributes, then added them
-+	 * to the block kobject
-+	 */
-+	sysfs_attrib = block->block_attributes;
-+	if (sysfs_attrib != NULL) {
-+		for (i = 0; i < block->nr_attribs; i++) {
-+			err = sysfs_create_file(&block->kobj,
-+				(struct attribute *) &sysfs_attrib[i]);
-+			if (err)
-+				goto err_on_attrib;
-+
-+			sysfs_attrib++;
-+		}
-+	}
-+
- 	return 0;
-+
-+err_on_attrib:
-+	kobject_unregister(&block->kobj);
-+
-+	return err;
- }
+Index: linux-2.6.22-rc6-mm1/drivers/edac/r82600_edac.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/edac/r82600_edac.c
++++ linux-2.6.22-rc6-mm1/drivers/edac/r82600_edac.c
+@@ -278,7 +278,7 @@ static int r82600_probe1(struct pci_dev 
+ 	debugf2("%s(): sdram refresh rate = %#0x\n", __func__,
+ 		sdram_refresh_rate);
+ 	debugf2("%s(): DRAMC register = %#0x\n", __func__, dramcr);
+-	mci = edac_mc_alloc(0, R82600_NR_CSROWS, R82600_NR_CHANS);
++	mci = edac_mc_alloc(0, R82600_NR_CSROWS, R82600_NR_CHANS, 0);
  
- /*
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+@@ -316,7 +316,7 @@ static int r82600_probe1(struct pci_dev 
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci, 0)) {
++	if (edac_mc_add_mc(mci)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
