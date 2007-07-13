@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936606AbXGMJyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936367AbXGMJ4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936606AbXGMJyj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 05:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763125AbXGMJyb
+	id S936367AbXGMJ4I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 05:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762139AbXGMJz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 05:54:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47499 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762139AbXGMJya (ORCPT
+	Fri, 13 Jul 2007 05:55:56 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:39020 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760319AbXGMJzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 05:54:30 -0400
-Date: Fri, 13 Jul 2007 10:54:13 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org,
-       "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: Re: [PATCH 012 of 20] knfsd: nfsd4: make readonly access depend on pseudoflavor
-Message-ID: <20070713095413.GC16304@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org,
-	"J. Bruce Fields" <bfields@citi.umich.edu>
-References: <20070710121949.12548.patches@notabene> <1070710022615.13375@suse.de> <20070713002704.2287f5a3.akpm@linux-foundation.org>
+	Fri, 13 Jul 2007 05:55:55 -0400
+Subject: Re: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
+From: David Woodhouse <dwmw2@infradead.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, kirk@hpc.ee.ntu.edu.tw,
+       akpm@osdl.org, linux-mtd@lists.infradead.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070713034822.GA2370@localhost.localdomain>
+References: <20070712150135.GA4102@localhost.localdomain>
+	 <1184256718.32199.111.camel@weaponx.rchland.ibm.com>
+	 <20070713034822.GA2370@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 10:56:42 +0100
+Message-Id: <1184320602.2785.18.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713002704.2287f5a3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 12:27:04AM -0700, Andrew Morton wrote:
-> On Tue, 10 Jul 2007 12:26:15 +1000 NeilBrown <neilb@suse.de> wrote:
-> 
-> > +static inline int EX_RDONLY(struct svc_export *exp, struct svc_rqst *rqstp)
-> > +{
-> > +	struct exp_flavor_info *f;
-> > +	struct exp_flavor_info *end = exp->ex_flavors + exp->ex_nflavors;
-> > +
-> > +	for (f = exp->ex_flavors; f < end; f++) {
-> > +		if (f->pseudoflavor == rqstp->rq_flavor)
-> > +			return f->flags & NFSEXP_READONLY;
-> > +	}
-> > +	return exp->ex_flags & NFSEXP_READONLY;
-> > +}
-> 
-> It is fortunate that this inlined monster has only one callsite.
-> 
-> otoh, given that it has only one callsite, perhaps it should be private
-> to fs/nfsd/vfs.c.
+On Fri, 2007-07-13 at 11:48 +0800, WANG Cong wrote:
+>                 if(map_banks[idx] == NULL) {
+>                         ret = -ENOMEM;
+> -                       /* FIXME: What if some MTD devices were probed already? */
+> +                       /* FIXME: What if some MTD devices were probed
+> +                       already? */
+>                         goto error_mem;
+>                 } 
 
-Absolutely.  Pluse a sane lower-case name and removing the inline qualifier
-please.
+
+That's just horrid. Leave it as it was.
+
+-- 
+dwmw2
+
