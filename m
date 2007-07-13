@@ -1,60 +1,375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935583AbXGMOhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934852AbXGMOi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935583AbXGMOhr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759790AbXGMOhk
+	id S934852AbXGMOi1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 10:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760454AbXGMOiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:37:40 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56249 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759521AbXGMOhj (ORCPT
+	Fri, 13 Jul 2007 10:38:13 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:50715 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1759521AbXGMOiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:37:39 -0400
-Date: Fri, 13 Jul 2007 10:37:38 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: david@lang.hm, <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-pm@lists.linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: [PATCH 0/2] Kexec jump: The first step to kexec
- base hibernation
-In-Reply-To: <200707131359.53309.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0707131035150.4865-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 13 Jul 2007 10:38:11 -0400
+Date: Fri, 13 Jul 2007 10:37:56 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 3/3] UML - Remove dead file
+Message-ID: <20070713143756.GA6250@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
+I forgot this file was here.  It hasn't been used since UML has been
+in mainline.
 
-> > I missed this discussion. is this idea to suspend, write to disk, but 
-> > leave things in ram so that if you wakeup soon enough you have everything 
-> > for ram, but if you don't and the battery dies you can restore from disk?
-> > 
-> > if so I think it's a mistake to mix the two. it would be better to just 
-> > suspend to ram, and wake up once in a while to check the battery state and 
-> > when the battery gets low enough do the suspend to disk.
-> > 
-> > otherwise you end up mixing the requirements of the two types of suspend, 
-> > which is how things got so ugly in the first place.
-> 
-> Not necessarily.  If we don't put devices into low power states before creating
-> the image, that should work just fine (quiesce devices, create the image or
-> kexec the new kernel, reprobe devices, save the image, suspend to RAM,
-> resume from RAM, continue - or restore from the image if power failed in the
-> meantime).  Still, for this purpose, both kernels need to be able to handle the
-> same set of devices.
+Thanks to Jesper for finding something that needed doing to it, thus
+reminding me of its existence.
 
-Why?
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ arch/um/config.release |  333 -------------------------------------------------
+ 1 file changed, 333 deletions(-)
 
-Suppose the kexec kernel can't handle some device.  The normal kernel 
-has already quiesced the device, so it will remain quiescent while the 
-kexec kernel runs and throughout the suspend.  When the regular kernel 
-regains control the device will be ready for use.  I don't see any 
-problem.
-
-Alan Stern
-
+Index: linux-2.6.21-mm/arch/um/config.release
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/config.release	2007-02-04 13:44:54.000000000 -0500
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,333 +0,0 @@
+-#
+-# Automatically generated make config: don't edit
+-#
+-CONFIG_USERMODE=y
+-# CONFIG_ISA is not set
+-# CONFIG_SBUS is not set
+-# CONFIG_PCI is not set
+-CONFIG_UID16=y
+-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+-
+-#
+-# Code maturity level options
+-#
+-CONFIG_EXPERIMENTAL=y
+-
+-#
+-# General Setup
+-#
+-CONFIG_STDIO_CONSOLE=y
+-CONFIG_NET=y
+-CONFIG_SYSVIPC=y
+-CONFIG_BSD_PROCESS_ACCT=y
+-CONFIG_SYSCTL=y
+-CONFIG_BINFMT_AOUT=y
+-CONFIG_BINFMT_ELF=y
+-CONFIG_BINFMT_MISC=y
+-CONFIG_UNIX98_PTYS=y
+-CONFIG_UNIX98_PTY_COUNT=256
+-CONFIG_SSL=y
+-CONFIG_HOSTFS=y
+-CONFIG_MCONSOLE=y
+-CONFIG_MAGIC_SYSRQ=y
+-# CONFIG_HOST_2G_2G is not set
+-# CONFIG_UML_SMP is not set
+-# CONFIG_SMP is not set
+-CONFIG_CON_ZERO_CHAN="fd:0,fd:1"
+-CONFIG_CON_CHAN="xterm"
+-CONFIG_SSL_CHAN="pty"
+-CONFIG_NEST_LEVEL=0
+-CONFIG_KERNEL_HALF_GIGS=1
+-
+-#
+-# Loadable module support
+-#
+-CONFIG_MODULES=y
+-CONFIG_KMOD=y
+-
+-#
+-# Devices
+-#
+-CONFIG_BLK_DEV_UBD=y
+-# CONFIG_BLK_DEV_UBD_SYNC is not set
+-CONFIG_BLK_DEV_LOOP=y
+-CONFIG_BLK_DEV_NBD=y
+-CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_SIZE=4096
+-CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_MMAPPER is not set
+-CONFIG_UML_SOUND=y
+-CONFIG_SOUND=y
+-CONFIG_HOSTAUDIO=y
+-# CONFIG_UML_WATCHDOG is not set
+-# CONFIG_TTY_LOG is not set
+-CONFIG_FD_CHAN=y
+-# CONFIG_NULL_CHAN is not set
+-CONFIG_PORT_CHAN=y
+-CONFIG_PTY_CHAN=y
+-CONFIG_TTY_CHAN=y
+-CONFIG_XTERM_CHAN=y
+-
+-#
+-# Networking options
+-#
+-CONFIG_PACKET=y
+-CONFIG_PACKET_MMAP=y
+-# CONFIG_NETLINK_DEV is not set
+-# CONFIG_NETFILTER is not set
+-# CONFIG_FILTER is not set
+-CONFIG_UNIX=y
+-CONFIG_INET=y
+-# CONFIG_IP_MULTICAST is not set
+-# CONFIG_IP_ADVANCED_ROUTER is not set
+-# CONFIG_IP_PNP is not set
+-# CONFIG_NET_IPIP is not set
+-# CONFIG_NET_IPGRE is not set
+-# CONFIG_ARPD is not set
+-# CONFIG_INET_ECN is not set
+-# CONFIG_SYN_COOKIES is not set
+-# CONFIG_IPV6 is not set
+-# CONFIG_KHTTPD is not set
+-# CONFIG_ATM is not set
+-# CONFIG_VLAN_8021Q is not set
+-
+-#
+-#  
+-#
+-# CONFIG_IPX is not set
+-# CONFIG_ATALK is not set
+-# CONFIG_DECNET is not set
+-# CONFIG_BRIDGE is not set
+-# CONFIG_X25 is not set
+-# CONFIG_LAPB is not set
+-# CONFIG_LLC is not set
+-# CONFIG_NET_DIVERT is not set
+-# CONFIG_ECONET is not set
+-# CONFIG_WAN_ROUTER is not set
+-# CONFIG_NET_HW_FLOWCONTROL is not set
+-
+-#
+-# QoS and/or fair queueing
+-#
+-# CONFIG_NET_SCHED is not set
+-
+-#
+-# Network device support
+-#
+-CONFIG_UML_NET=y
+-CONFIG_UML_NET_ETHERTAP=y
+-CONFIG_UML_NET_TUNTAP=y
+-CONFIG_UML_NET_SLIP=y
+-CONFIG_UML_NET_DAEMON=y
+-CONFIG_UML_NET_MCAST=y
+-CONFIG_NETDEVICES=y
+-
+-#
+-# ARCnet devices
+-#
+-# CONFIG_ARCNET is not set
+-CONFIG_DUMMY=y
+-CONFIG_BONDING=m
+-CONFIG_EQUALIZER=m
+-CONFIG_TUN=y
+-# CONFIG_ETHERTAP is not set
+-
+-#
+-# Ethernet (10 or 100Mbit)
+-#
+-# CONFIG_NET_ETHERNET is not set
+-
+-#
+-# Ethernet (1000 Mbit)
+-#
+-# CONFIG_ACENIC is not set
+-# CONFIG_DL2K is not set
+-# CONFIG_MYRI_SBUS is not set
+-# CONFIG_NS83820 is not set
+-# CONFIG_HAMACHI is not set
+-# CONFIG_YELLOWFIN is not set
+-# CONFIG_SK98LIN is not set
+-# CONFIG_FDDI is not set
+-# CONFIG_HIPPI is not set
+-CONFIG_PLIP=m
+-CONFIG_PPP=m
+-CONFIG_PPP_MULTILINK=y
+-# CONFIG_PPP_FILTER is not set
+-# CONFIG_PPP_ASYNC is not set
+-CONFIG_PPP_SYNC_TTY=m
+-CONFIG_PPP_DEFLATE=m
+-CONFIG_PPP_BSDCOMP=m
+-CONFIG_PPPOE=m
+-CONFIG_SLIP=m
+-CONFIG_SLIP_COMPRESSED=y
+-CONFIG_SLIP_SMART=y
+-# CONFIG_SLIP_MODE_SLIP6 is not set
+-
+-#
+-# Wireless LAN (non-hamradio)
+-#
+-# CONFIG_NET_RADIO is not set
+-
+-#
+-# Token Ring devices
+-#
+-# CONFIG_TR is not set
+-# CONFIG_NET_FC is not set
+-# CONFIG_RCPCI is not set
+-CONFIG_SHAPER=m
+-
+-#
+-# Wan interfaces
+-#
+-# CONFIG_WAN is not set
+-
+-#
+-# File systems
+-#
+-CONFIG_QUOTA=y
+-CONFIG_AUTOFS_FS=m
+-CONFIG_AUTOFS4_FS=m
+-CONFIG_REISERFS_FS=m
+-# CONFIG_REISERFS_CHECK is not set
+-# CONFIG_REISERFS_PROC_INFO is not set
+-CONFIG_ADFS_FS=m
+-# CONFIG_ADFS_FS_RW is not set
+-CONFIG_AFFS_FS=m
+-CONFIG_HFS_FS=m
+-CONFIG_BFS_FS=m
+-CONFIG_EXT3_FS=y
+-CONFIG_JBD=y
+-# CONFIG_JBD_DEBUG is not set
+-CONFIG_FAT_FS=y
+-CONFIG_MSDOS_FS=y
+-CONFIG_UMSDOS_FS=y
+-CONFIG_VFAT_FS=y
+-CONFIG_EFS_FS=m
+-# CONFIG_JFFS_FS is not set
+-# CONFIG_JFFS2_FS is not set
+-CONFIG_CRAMFS=m
+-CONFIG_TMPFS=y
+-CONFIG_RAMFS=m
+-CONFIG_ISO9660_FS=y
+-# CONFIG_JOLIET is not set
+-# CONFIG_ZISOFS is not set
+-CONFIG_MINIX_FS=m
+-CONFIG_VXFS_FS=m
+-# CONFIG_NTFS_FS is not set
+-# CONFIG_NTFS_RW is not set
+-CONFIG_HPFS_FS=m
+-CONFIG_PROC_FS=y
+-CONFIG_DEVFS_FS=y
+-CONFIG_DEVFS_MOUNT=y
+-# CONFIG_DEVFS_DEBUG is not set
+-CONFIG_DEVPTS_FS=y
+-CONFIG_QNX4FS_FS=m
+-# CONFIG_QNX4FS_RW is not set
+-CONFIG_ROMFS_FS=m
+-CONFIG_EXT2_FS=y
+-CONFIG_SYSV_FS=m
+-CONFIG_UDF_FS=m
+-CONFIG_UFS_FS=m
+-# CONFIG_UFS_FS_WRITE is not set
+-
+-#
+-# Network File Systems
+-#
+-# CONFIG_CODA_FS is not set
+-# CONFIG_INTERMEZZO_FS is not set
+-CONFIG_NFS_FS=y
+-CONFIG_NFS_V3=y
+-# CONFIG_ROOT_NFS is not set
+-CONFIG_NFSD=y
+-CONFIG_NFSD_V3=y
+-CONFIG_SUNRPC=y
+-CONFIG_LOCKD=y
+-CONFIG_LOCKD_V4=y
+-# CONFIG_SMB_FS is not set
+-# CONFIG_NCP_FS is not set
+-# CONFIG_NCPFS_PACKET_SIGNING is not set
+-# CONFIG_NCPFS_IOCTL_LOCKING is not set
+-# CONFIG_NCPFS_STRONG is not set
+-# CONFIG_NCPFS_NFS_NS is not set
+-# CONFIG_NCPFS_OS2_NS is not set
+-# CONFIG_NCPFS_SMALLDOS is not set
+-# CONFIG_NCPFS_NLS is not set
+-# CONFIG_NCPFS_EXTRAS is not set
+-# CONFIG_ZISOFS_FS is not set
+-CONFIG_ZLIB_FS_INFLATE=m
+-
+-#
+-# Partition Types
+-#
+-# CONFIG_PARTITION_ADVANCED is not set
+-CONFIG_MSDOS_PARTITION=y
+-# CONFIG_SMB_NLS is not set
+-CONFIG_NLS=y
+-
+-#
+-# Native Language Support
+-#
+-CONFIG_NLS_DEFAULT="iso8859-1"
+-# CONFIG_NLS_CODEPAGE_437 is not set
+-# CONFIG_NLS_CODEPAGE_737 is not set
+-# CONFIG_NLS_CODEPAGE_775 is not set
+-# CONFIG_NLS_CODEPAGE_850 is not set
+-# CONFIG_NLS_CODEPAGE_852 is not set
+-# CONFIG_NLS_CODEPAGE_855 is not set
+-# CONFIG_NLS_CODEPAGE_857 is not set
+-# CONFIG_NLS_CODEPAGE_860 is not set
+-# CONFIG_NLS_CODEPAGE_861 is not set
+-# CONFIG_NLS_CODEPAGE_862 is not set
+-# CONFIG_NLS_CODEPAGE_863 is not set
+-# CONFIG_NLS_CODEPAGE_864 is not set
+-# CONFIG_NLS_CODEPAGE_865 is not set
+-# CONFIG_NLS_CODEPAGE_866 is not set
+-# CONFIG_NLS_CODEPAGE_869 is not set
+-# CONFIG_NLS_CODEPAGE_936 is not set
+-# CONFIG_NLS_CODEPAGE_950 is not set
+-# CONFIG_NLS_CODEPAGE_932 is not set
+-# CONFIG_NLS_CODEPAGE_949 is not set
+-# CONFIG_NLS_CODEPAGE_874 is not set
+-# CONFIG_NLS_ISO8859_8 is not set
+-# CONFIG_NLS_CODEPAGE_1250 is not set
+-# CONFIG_NLS_CODEPAGE_1251 is not set
+-# CONFIG_NLS_ISO8859_1 is not set
+-# CONFIG_NLS_ISO8859_2 is not set
+-# CONFIG_NLS_ISO8859_3 is not set
+-# CONFIG_NLS_ISO8859_4 is not set
+-# CONFIG_NLS_ISO8859_5 is not set
+-# CONFIG_NLS_ISO8859_6 is not set
+-# CONFIG_NLS_ISO8859_7 is not set
+-# CONFIG_NLS_ISO8859_9 is not set
+-# CONFIG_NLS_ISO8859_13 is not set
+-# CONFIG_NLS_ISO8859_14 is not set
+-# CONFIG_NLS_ISO8859_15 is not set
+-# CONFIG_NLS_KOI8_R is not set
+-# CONFIG_NLS_KOI8_U is not set
+-# CONFIG_NLS_UTF8 is not set
+-
+-#
+-# Multi-device support (RAID and LVM)
+-#
+-# CONFIG_MD is not set
+-# CONFIG_BLK_DEV_MD is not set
+-# CONFIG_MD_LINEAR is not set
+-# CONFIG_MD_RAID0 is not set
+-# CONFIG_MD_RAID1 is not set
+-# CONFIG_MD_RAID5 is not set
+-# CONFIG_MD_MULTIPATH is not set
+-# CONFIG_BLK_DEV_LVM is not set
+-
+-#
+-# Memory Technology Devices (MTD)
+-#
+-# CONFIG_MTD is not set
+-
+-#
+-# Kernel hacking
+-#
+-# CONFIG_DEBUG_SLAB is not set
+-# CONFIG_DEBUG_INFO is not set
+-# CONFIG_PT_PROXY is not set
+-# CONFIG_GPROF is not set
+-# CONFIG_GCOV is not set
