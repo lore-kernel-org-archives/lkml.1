@@ -1,110 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935749AbXGMNu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935882AbXGMNvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935749AbXGMNu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935338AbXGMNui
+	id S935882AbXGMNvb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935591AbXGMNuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:50:38 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:37991 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935319AbXGMNuh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:50:37 -0400
-To: linux-kernel@vger.kernel.org
-Cc: Dmitry Torokhov <dtor@mail.ru>, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH] input: Fix interrupt enable in i8042_ctr when enabling interrupt fails
-From: Markus Armbruster <armbru@pond.sub.org>
-Date: Fri, 13 Jul 2007 15:50:34 +0200
-Message-ID: <87fy3sxvit.fsf@pike.pond.sub.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Fri, 13 Jul 2007 09:50:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:44428 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934976AbXGMNuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 09:50:51 -0400
+Message-ID: <46978303.6030004@goop.org>
+Date: Fri, 13 Jul 2007 06:49:55 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Christoph Lameter <clameter@sgi.com>
+CC: ak@suse.de, linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: Re: x86: Convert cpu_core_map to be a per cpu variable
+References: <Pine.LNX.4.64.0707122354340.17278@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0707122354340.17278@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When enabling interrupts fails, the interrupt enable bit remains set
-in i8042_ctr.  Later writes of i8042_ctr to the hardware could
-accidentally retry enabling interrupts.  Clear the bit on failure.
+Christoph Lameter wrote:
+> cpu_core_map is currently an array defined using NR_CPUS. This means that
+> we overallocate since we will rarely really use the maximum 
+> number of configured cpus. This may become a problem when we need to 
+> increase the NR_CPUs on x86_64 for our new product line.
+>
+> If we put the cpu_core_map into the per cpu area then it will be allocated
+> for each processor as it comes online.
+>
+> However, this means that the core map cannot be accessed until the per cpu 
+> area has been allocated. Xen does a weird thing here looping over all 
+> processors and zeroing the masks that are not yet allocated and that will 
+> be zeroed when they are allocated. I commented the code out. Maybe there 
+> is another purpose? Jeremy?
+>   
 
-Signed-off-by: Markus Armbruster <armbru@redhat.com>
+That code is identical to the code in smp_boot_cpus().  Not sure why it 
+needs to be there twice though.  Perhaps it doesn't need to be there at all.
 
----
+> @@ -1107,11 +1107,11 @@ static void __init smp_boot_cpus(unsigne
+>  	 */
+>  	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+>  		cpus_clear(cpu_sibling_map[cpu]);
+> -		cpus_clear(cpu_core_map[cpu]);
+> +		cpus_clear(per_cpu(cpu_core_map, cpu));
+>  	}
+>  
+>  	cpu_set(0, cpu_sibling_map[0]);
+> -	cpu_set(0, cpu_core_map[0]);
+> +	cpu_set(0, per_cpu(cpu_core_map, 0));
+>   
 
-Some time ago Steven Rostedt and I went over this changeset:
+> ===================================================================
+> --- linux-2.6.22-rc6-mm1.orig/arch/i386/xen/smp.c	2007-07-12 23:32:37.000000000 -0700
+> +++ linux-2.6.22-rc6-mm1/arch/i386/xen/smp.c	2007-07-12 23:52:08.000000000 -0700
+> @@ -150,7 +150,12 @@ void __init xen_smp_prepare_boot_cpu(voi
+>  
+>  	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+>  		cpus_clear(cpu_sibling_map[cpu]);
+> -		cpus_clear(cpu_core_map[cpu]);
+> +		/*
+> +		 * cpu_core_map lives in a per cpu area that is cleared
+> +		 * when the per cpu array is allocated.
+> +		 *
+> +		 * cpus_clear(per_cpu(cpu_core_map, cpu));
+> +		 */
+>  	}
+>  }
+>  
+> @@ -160,7 +165,11 @@ void __init xen_smp_prepare_cpus(unsigne
+>  
+>  	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+>  		cpus_clear(cpu_sibling_map[cpu]);
+> -		cpus_clear(cpu_core_map[cpu]);
+> +		/*
+> +		 * cpu_core_ map will be zeroed when the per cpu area is allocated.
+> +		 *
+> +		 * cpus_clear(per_cpu(cpu_core_map, cpu));
+> +		 */
+>  	}
+>  
+>  	smp_store_cpu_info(0);
+>   
 
-    commit de9ce703c6b807b1dfef5942df4f2fadd0fdb67a
-    Author: Dmitry Torokhov <dtor@insightbb.com>
-    Date:   Sun Sep 10 21:57:21 2006 -0400
-
-        Input: i8042 - get rid of polling timer
-
-        Remove polling timer that was used to detect keybord/mice hotplug and
-        register both IRQs right away instead of waiting for a driver to
-        attach to a port.
-
-        Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-
-Steven pointed out to me that it changes behavior when enabling IRQ
-fails.
-
-The old code enabled IRQs this way:
-
-	i8042_ctr |= port->irqen;
-
-	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-		i8042_ctr &= ~port->irqen;
-		return -1;
-	}
-
-i8042_ctr shadows the 8042's CTR.  So, when enabling fails, the bit is
-cleared in the shadow.
-
-The new code does not clear the bit on the error path:
-
-static int i8042_enable_kbd_port(void)
-{
-	i8042_ctr &= ~I8042_CTR_KBDDIS;
-	i8042_ctr |= I8042_CTR_KBDINT;
-
-	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
-		return -EIO;
-	}
-
-	return 0;
-}
-
-Same for i8042_enable_aux_port().
-
-This leads to the question whether there are later writes of i8042_ctr
-(possibly with other bits altered) to the hardware, which could
-accidentally retry enabling interrupts.
-
-I believe this possible, but unlikely.  Scenarios involve enable
-succeeding the first time, failing the second time, and succeeding the
-third time.  I can provide details, but the point I'd like to make is
-not that this is broken (although it is, strictly speaking), but that
-it is not obviously correct where it easily could be: just clear the
-interrupt enable bits when writing them to the hardware failed, like
-the old code did.
-
-diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-index db9cca3..71a7e39 100644
---- a/drivers/input/serio/i8042.c
-+++ b/drivers/input/serio/i8042.c
-@@ -385,6 +385,7 @@ static int i8042_enable_kbd_port(void)
- 	i8042_ctr |= I8042_CTR_KBDINT;
- 
- 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-+		i8042_ctr &= ~I8042_CTR_KBDINT;
- 		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
- 		return -EIO;
- 	}
-@@ -402,6 +403,7 @@ static int i8042_enable_aux_port(void)
- 	i8042_ctr |= I8042_CTR_AUXINT;
- 
- 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-+		i8042_ctr &= ~I8042_CTR_AUXINT;
- 		printk(KERN_ERR "i8042.c: Failed to enable AUX port.\n");
- 		return -EIO;
- 	}
+    J
