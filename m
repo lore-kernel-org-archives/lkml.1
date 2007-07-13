@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbXGMPC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbXGMPEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932222AbXGMPC0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 11:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759652AbXGMPCT
+	id S933869AbXGMPEo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 11:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760849AbXGMPEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 11:02:19 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:44388 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759536AbXGMPCS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 11:02:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=WzOhiF90mYXFSZwm2pFDguIXgsTlvPmwLq61bT0d+NXEg4572tdTg6AE+CRmpSS/YrWiczw2PTSvxziwkN6+U1uKKyJuGAoWXGRgEdFzt1UJGShLxA7DFCkqWDj8jZE2Lmes0sz8wAS51xHQhtnxzGnlqjzUNAsKnGVc++P7ZuU=
-Date: Fri, 13 Jul 2007 23:05:03 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>, kirk@hpc.ee.ntu.edu.tw,
-       akpm@osdl.org, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
-Message-ID: <20070713150503.GA4023@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20070712150135.GA4102@localhost.localdomain> <1184256718.32199.111.camel@weaponx.rchland.ibm.com> <20070713034822.GA2370@localhost.localdomain> <1184320602.2785.18.camel@shinybook.infradead.org> <20070713131458.GA1997@localhost.localdomain> <1184333884.8809.5.camel@hades.cambridge.redhat.com> <20070713142442.GA8190@linux-mips.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713142442.GA8190@linux-mips.org>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 13 Jul 2007 11:04:37 -0400
+Received: from rtr.ca ([64.26.128.89]:2621 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759720AbXGMPEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 11:04:37 -0400
+Message-ID: <46979483.2090502@rtr.ca>
+Date: Fri, 13 Jul 2007 11:04:35 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Maarten Maathuis <madman2003@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [realtime-preempt] [x86_64] HR_TIMER and/or DYNTICKS cause an
+ early boot freeze
+References: <6d4bc9fc0707130702l41f58c20l72423be27292d884@mail.gmail.com>
+In-Reply-To: <6d4bc9fc0707130702l41f58c20l72423be27292d884@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 03:24:43PM +0100, Ralf Baechle wrote:
->On Fri, Jul 13, 2007 at 02:38:03PM +0100, David Woodhouse wrote:
->
->> > drivers/mtd/maps/pmcmsp-flash.c:63: error: 'ELB_1PC_EN_REG' undeclared (first use in this function)
->> > drivers/mtd/maps/pmcmsp-flash.c:63: error: 'SINGLE_PCCARD' undeclared (first use in this function)
->> > 
->> > Did I miss something?
->> 
->> I think that map driver should probably depend on CONFIG_PMC_MSP. Ralf?
->
->*confused*
->
->68aa0fa87f6d4b2f5e8ad39ecaec8bba9137bb3d did add:
->
->+config MTD_PMC_MSP_EVM
->+       tristate "CFI Flash device mapped on PMC-Sierra MSP"
->+       depends on PMC_MSP && MTD_CFI
->+       select MTD_PARTITIONS
->
->drivers/mtd/maps/Makefile:obj-$(CONFIG_MTD_PMC_MSP_EVM)   += pmcmsp-flash.o
->
->Is he trying to build something else than very recent kernel.org tree?
->
+Maarten Maathuis wrote:
+> I have determined that version 2.6.22.1-rt2 freeze after:
+> 
+> NET: Register protocol family 2
+> 
+> This is very early in the boot stage, and i cannot determine what
+> exactly causes it.
+> 
+> It happens if either high resolution timers or dynamic ticks are active.
 
-Yes. very recent, 2.6.22.1.
+There's a race in there somewhere, and it seems to come and go
+depending upon exactly how the kernel is configured, and possibly
+on which things end up on which cache lines.
 
+First reported by me here (below), and never resolved.
+Currently it's not happening with my kernels, but it does reappear
+from time to time:
 
--- 
-
-If loving computers is wrong, I don't want to be right.
+> -------- Original Message --------
+> Subject: [BUG] 2.6.21: Kernel won't boot with either/both of CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
+> Date: Mon, 30 Apr 2007 16:17:00 -0400
+> From: Mark Lord <lkml@rtr.ca>
+> To: Linux Kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de
+> CC: Linus Torvalds <torvalds@osdl.org>
+>
+> I have a new notebook (Dell Inspiron 9400) with Core2-Duo T7400 @ 2.1Ghz.
+> When either/both of CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS is used,
+> the 2.6.21 kernel hangs on startup just after printing one/both of these:
+>
+> kernel: switched to high resolution mode on cpu 1
+> kernel: switched to high resolution mode on cpu 0
+>
+> 100% of the time.  The only fix I've found is to rebuild
+> the kernel without those two options.
+>
+> The failed kernel.config is attached.
+> Here is /proc/cpuinfo and lspci -v.
+>
+> Any help appreciated. 
