@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760725AbXGMRw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933425AbXGMSGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760725AbXGMRw3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 13:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbXGMRwS
+	id S933425AbXGMSGK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 14:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759058AbXGMSFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 13:52:18 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54168
+	Fri, 13 Jul 2007 14:05:54 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41304
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755383AbXGMRwR (ORCPT
+	by vger.kernel.org with ESMTP id S1759042AbXGMSFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 13:52:17 -0400
+	Fri, 13 Jul 2007 14:05:53 -0400
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
-To: leoli@freescale.com
-Subject: Re: [PATCH] Chinese Language Maintainer
-Date: Fri, 13 Jul 2007 13:52:11 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Documentation of kernel messages (Summary)
+Date: Fri, 13 Jul 2007 14:05:49 -0400
 User-Agent: KMail/1.9.6
-Cc: Gerrit Huizenga <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+Cc: Theodore Tso <tytso@mit.edu>, leoli@freescale.com,
+       Gerrit Huizenga <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
        "Kunai, Takashi" <kunai@linux-foundation.jp>,
        holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
@@ -26,55 +27,39 @@ Cc: Gerrit Huizenga <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
        auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
        Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
        heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
-References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net> <200707121205.20959.rob@landley.net> <1184330583.23373.65.camel@Gundam>
-In-Reply-To: <1184330583.23373.65.camel@Gundam>
+References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com> <20070711213234.GE19456@thunk.org> <20070713115321.23e3544f@the-village.bc.nu>
+In-Reply-To: <20070713115321.23e3544f@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707131352.12952.rob@landley.net>
+Message-Id: <200707131405.50143.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 July 2007 8:43:03 am Li Yang wrote:
-> On Thu, 2007-07-12 at 12:05 -0400, Rob Landley wrote:
-> > Proposed patch adding Li Yang to MAINTAINERS, and Documentation
-> > describing what a language maintainer is.
-> >
-> > Signed-off-by: Rob Landley <rob@landley.net>
+On Friday 13 July 2007 6:53:21 am Alan Cox wrote:
+> > One thing that would be a VERY good idea is to make sure that each
+> > translated document is tagged with when it was last translated, and
+> > against which kernel version (using either a GIT commit id or a
 >
-> Signed-off-by: Li Yang <leo@zh-kernel.org>
+> The English versions need a last updated too, that way we would know when
+> they are past their best before date (as most of them are)
 
-Yay!
+You can get this out of git annotate.  (Or in my case, hg annotate from 
+http://kernel.org/hg/linux-2.6 .)
 
-> > +A language maintainer accepts patches to the Linux kernel, written in C,
-> > from +authors who do not also speak English.  The language maintainer
-> > translates the +description of each patch into English, forwards the
-> > patches to linux-kernel +and to the appropriate maintainers for inclusion
-> > in the Linux kernel, and +translates questions and replies about such
-> > patches as part of the +patch review process.
->
-> In addiction to this responsibility, I would like to add two more which,
-> in my opinion, are more important.  And these are what I'm trying to
-> do.  :)
-> First, promoting contribution to Linux kernel in local language.
-> Second, coordinate the translation effort of key kernel documents.
+Cleaning up Documentation is on my todo list, but for this month I'm trying to 
+integrate the existing Documentation files with things like the OLS papers, 
+linux journal articles, lwn.net kernel articles, man-pages, and so on into 
+one big index.  (Indexing it requires reading large chunks of it.  My brain 
+hurts.)
 
-Cool.  It's good to do that, but not the problem I'm worried about solving.
-
-I was trying to describe the minimum requirements for being a language 
-maintainer, I.E. what non-english users need in order to be able to merge 
-their patches.  Because without someone to contribute patches to (I.E a 
-language maintainer), documentation in non-english languages promotes the 
-creation of patches that can't be merged.  That's the problem I'm trying to 
-solve.
-
-To me, finding language maintainers is the flip side of the coin of 
-translating documentation.
+If there's interest, I can push some patches to clean up Documentation by 
+moving files into subdirectories, but Documentation's not well-suited to link 
+out to the web.  (You need html for that, and it's text.)
 
 Rob
-
 -- 
 "One of my most productive days was throwing away 1000 lines of code."
   - Ken Thompson.
