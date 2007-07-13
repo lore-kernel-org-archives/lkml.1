@@ -1,118 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763109AbXGMXp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762152AbXGMXra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763109AbXGMXp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 19:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbXGMXpW
+	id S1762152AbXGMXra (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 19:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbXGMXrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 19:45:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36116 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757572AbXGMXpV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 19:45:21 -0400
-Date: Fri, 13 Jul 2007 16:45:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: darnok@68k.org
+	Fri, 13 Jul 2007 19:47:23 -0400
+Received: from smtp.qwerty.ru ([87.240.2.134]:33148 "EHLO smtp.qwerty.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752296AbXGMXrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 19:47:23 -0400
+Date: Sat, 14 Jul 2007 03:47:21 +0400
+From: Kirill Kuvaldin <kuvkir@epsmu.com>
+To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Inhibit NMI watchdog when Alt-SysRq-T operation is
- underway.
-Message-Id: <20070713164504.66b72e74.akpm@linux-foundation.org>
-In-Reply-To: <20070709155302.GB26570@andromeda.dapyr.net>
-References: <20070709140242.GA18098@andromeda.dapyr.net>
-	<20070709155302.GB26570@andromeda.dapyr.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] isofs: mounting to regular file may succeed
+Message-ID: <20070713234721.GG4536@zetta.epsmu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jul 2007 11:53:02 -0400
-darnok@68k.org wrote:
+It turned out that mounting a corrupted ISO image to a regular file may
+succeed, e.g. if an image was prepared as follows:
 
->  static void print_trace_address(void *data, unsigned long addr)
->  {
-> +	static int i = 0;		
-> +	if (i && ((i % 8) == 0)) 
-> +		touch_nmi_watchdog();
-> +	i++;
->  	printk_address(addr);
->  }
+$ dd if=correct.iso of=bad.iso bs=4k count=8
 
-I doubt if the "% 8" thing is really needed?  printk_address() is pretty
-slow and touch_nmi_watchdog is _reasonably_ fast.  It could be made heaps
-faster by:
+We then can mount it to a regular file:
 
-From: Andrew Morton <akpm@linux-foundation.org>
+# mount -o loop -t iso9660 bad.iso /tmp/file
 
-Avoid dirtying remote cpu's memory if it already has the correct value.
+But mounting it to a directory fails with -ENOTDIR, simply because 
+the root directory inode doesn't have S_IFDIR set and the condition
+in graft_tree() is met:
 
-Cc: Andi Kleen <ak@suse.de>
-Cc: Konrad Rzeszutek <konrad@darnok.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+	if (S_ISDIR(nd->dentry->d_inode->i_mode) !=
+	      S_ISDIR(mnt->mnt_root->d_inode->i_mode))
+		return -ENOTDIR
 
- arch/i386/kernel/nmi.c |    8 +++++---
- x86_64/kernel/nmi.c    |    0 
- 2 files changed, 5 insertions(+), 3 deletions(-)
+This is because the root directory inode was read from an incorrect
+block. It's supposed to be read from sbi->s_firstdatazone, which is
+an absolute value and gets messed up in the case of an incorrect image.
 
-diff -puN arch/i386/kernel/nmi.c~i386-speedup-touch_nmi_watchdog arch/i386/kernel/nmi.c
---- a/arch/i386/kernel/nmi.c~i386-speedup-touch_nmi_watchdog
-+++ a/arch/i386/kernel/nmi.c
-@@ -298,7 +298,7 @@ static unsigned int
- 	last_irq_sums [NR_CPUS],
- 	alert_counter [NR_CPUS];
- 
--void touch_nmi_watchdog (void)
-+void touch_nmi_watchdog(void)
- {
- 	if (nmi_watchdog > 0) {
- 		unsigned cpu;
-@@ -307,8 +307,10 @@ void touch_nmi_watchdog (void)
- 		 * Just reset the alert counters, (other CPUs might be
- 		 * spinning on locks we hold):
- 		 */
--		for_each_present_cpu (cpu)
--			alert_counter[cpu] = 0;
-+		for_each_present_cpu(cpu) {
-+			if (alert_counter[cpu])
-+				alert_counter[cpu] = 0;
-+		}
- 	}
- 
- 	/*
-
-So I'd be inclined to simplify your patch to a bare
-
-From: Konrad Rzeszutek <konrad@darnok.org>
-
-On large memory configuration with not so fast CPUs the NMI watchdog is
-triggered when memory addresses are being gathered and printed.  The code
-paths for Alt-SysRq-t are sprinkled with touch_nmi_watchdog in various
-places but not in this routine (or in the loop that utilizes this
-function).  The patch has been tested for regression on large CPU+memory
-configuration (128 logical CPUs + 224 GB) and 1,2,4,16-CPU sockets with
-various memory sizes (1,2,4,6,20).
-
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/x86_64/kernel/traps.c |    1 +
- 1 files changed, 1 insertion(+)
-
-diff -puN arch/x86_64/kernel/traps.c~inhibit-nmi-watchdog-when-alt-sysrq-t-operation-is-underway arch/x86_64/kernel/traps.c
---- a/arch/x86_64/kernel/traps.c~inhibit-nmi-watchdog-when-alt-sysrq-t-operation-is-underway
-+++ a/arch/x86_64/kernel/traps.c
-@@ -397,6 +397,7 @@ static int print_trace_stack(void *data,
- 
- static void print_trace_address(void *data, unsigned long addr)
- {
-+	touch_nmi_watchdog();
- 	printk_address(addr);
- }
- 
-_
+In order to somehow circumvent this we have to check that the root
+directory inode is actually a directory after all.
 
 
-OK?
+Signed-off-by: Kirill Kuvaldin <kuvkir@epsmu.com>
+
+diff --git a/fs/isofs/inode.c b/fs/isofs/inode.c
+index 5c3eecf..ce5062a 100644
+--- a/fs/isofs/inode.c
++++ b/fs/isofs/inode.c
+@@ -840,6 +840,15 @@ root_found:
+ 		goto out_no_root;
+ 	if (!inode->i_op)
+ 		goto out_bad_root;
++
++	/* Make sure the root inode is a directory */
++	if (!S_ISDIR(inode->i_mode)) {
++		printk(KERN_WARNING
++			"isofs_fill_super: root inode is not a directory. "
++			"Corrupted media?\n");
++		goto out_iput;
++	}
++
+ 	/* get the root dentry */
+ 	s->s_root = d_alloc_root(inode);
+ 	if (!(s->s_root))
