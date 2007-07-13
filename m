@@ -1,98 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbXGMNuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935749AbXGMNu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932442AbXGMNuj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbXGMNuW
+	id S935749AbXGMNu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935338AbXGMNui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:50:22 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57580 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757415AbXGMNuT (ORCPT
+	Fri, 13 Jul 2007 09:50:38 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:37991 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935319AbXGMNuh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:50:19 -0400
-Message-ID: <46978318.9080804@bx.jp.nec.com>
-Date: Fri, 13 Jul 2007 22:50:16 +0900
-From: KII Keiichi <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Fri, 13 Jul 2007 09:50:37 -0400
+To: linux-kernel@vger.kernel.org
+Cc: Dmitry Torokhov <dtor@mail.ru>, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH] input: Fix interrupt enable in i8042_ctr when enabling interrupt fails
+From: Markus Armbruster <armbru@pond.sub.org>
+Date: Fri, 13 Jul 2007 15:50:34 +0200
+Message-ID: <87fy3sxvit.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, Netdev <netdev@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2 -mm 9/9] netconsole: Support dynamic reconfiguration
- using configfs
-References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in> <20070710092006.23907.33652.sendpatchset@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <20070710092006.23907.33652.sendpatchset@cselinux1.cse.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Satyam,
+When enabling interrupts fails, the interrupt enable bit remains set
+in i8042_ctr.  Later writes of i8042_ctr to the hardware could
+accidentally retry enabling interrupts.  Clear the bit on failure.
 
-> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> 
-> [9/9] netconsole: Support dynamic reconfiguration using configfs
-> 
-> This patch introduces support for dynamic reconfiguration (adding, removing
-> and/or modifying parameters of netconsole targets at runtime) using a
-> userspace interface exported via configfs. Documentation is also updated
-> accordingly.
-> 
-> Issues and brief design overview:
-> 
-> (1) Kernel-initiated creation / destruction of kernel objects is not
-> possible with configfs -- the lifetimes of the "config items" is managed
-> exclusively from userspace. But netconsole must support boot/module params
-> too, and these are parsed in kernel and hence netpolls must be setup from
-> the kernel. Joel Becker suggested to separately manage the lifetimes of
-> the two kinds of netconsole_target objects -- those created via configfs
-> mkdir(2) from userspace and those specified from the boot/module option
-> string. This adds complexity and some redundancy here and also means that
-> boot/module param-created targets are not exposed through the configfs
-> namespace (and hence cannot be updated / destroyed dynamically). However,
-> this saves us from locking / refcounting complexities that would need to
-> be introduced in configfs to support kernel-initiated item creation /
-> destroy there. Also, this is similar to present behaviour in any case so
-> not really a problem.
-> 
-> (2) In configfs, item creation takes place in the call chain of the mkdir(2)
-> syscall in the driver subsystem. If we used an ioctl(2) to create / destroy
-> objects from userspace, the special userspace program is able to fill out
-> the structure to be passed into the ioctl and hence specify attributes such
-> as local interface that are required at the time we set up the netpoll.
-> For configfs, this information is not available at the time of mkdir(2).
-> So, we keep all newly-created targets (via configfs) disabled by default.
-> The user is expected to set various attributes appropriately (including the
-> local network interface if required) and then write(2) "1" to the "enabled"
-> attribute. Thus, netpoll_setup() is then called on the set parameters in the
-> context of _this_ write(2) on the "enabled" attribute itself. This design
-> enables the user to reconfigure existing netconsole targets at runtime to
-> be attached to newly-come-up interfaces that may not have existed when
-> netconsole was loaded or when the targets were actually created. This all
-> enables us to get rid of custom ioctls.
-> 
-> (3) Ultra-paranoid configfs attribute show() and store() operations, with
-> sanity and input range checking, using only safe string primitives, and
-> compliant with the recommendations in Documentation/filesystems/sysfs.txt.
-> 
-> (4) A new function netpoll_print_options() is created in the netpoll API,
-> that just prints out the configured parameters for a netpoll structure.
-> netpoll_parse_options() is modified to use that and it is also exported to
-> be used from netconsole.
-> 
-> Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-> 
-Acked-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+Signed-off-by: Markus Armbruster <armbru@redhat.com>
 
-Thanks
---
-Keiichi KII
-NEC Corporation OSS Platform Development Division
-E-mail: k-keiichi@bx.jp.nec.com
+---
 
+Some time ago Steven Rostedt and I went over this changeset:
 
+    commit de9ce703c6b807b1dfef5942df4f2fadd0fdb67a
+    Author: Dmitry Torokhov <dtor@insightbb.com>
+    Date:   Sun Sep 10 21:57:21 2006 -0400
+
+        Input: i8042 - get rid of polling timer
+
+        Remove polling timer that was used to detect keybord/mice hotplug and
+        register both IRQs right away instead of waiting for a driver to
+        attach to a port.
+
+        Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+
+Steven pointed out to me that it changes behavior when enabling IRQ
+fails.
+
+The old code enabled IRQs this way:
+
+	i8042_ctr |= port->irqen;
+
+	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
+		i8042_ctr &= ~port->irqen;
+		return -1;
+	}
+
+i8042_ctr shadows the 8042's CTR.  So, when enabling fails, the bit is
+cleared in the shadow.
+
+The new code does not clear the bit on the error path:
+
+static int i8042_enable_kbd_port(void)
+{
+	i8042_ctr &= ~I8042_CTR_KBDDIS;
+	i8042_ctr |= I8042_CTR_KBDINT;
+
+	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
+		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
+		return -EIO;
+	}
+
+	return 0;
+}
+
+Same for i8042_enable_aux_port().
+
+This leads to the question whether there are later writes of i8042_ctr
+(possibly with other bits altered) to the hardware, which could
+accidentally retry enabling interrupts.
+
+I believe this possible, but unlikely.  Scenarios involve enable
+succeeding the first time, failing the second time, and succeeding the
+third time.  I can provide details, but the point I'd like to make is
+not that this is broken (although it is, strictly speaking), but that
+it is not obviously correct where it easily could be: just clear the
+interrupt enable bits when writing them to the hardware failed, like
+the old code did.
+
+diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+index db9cca3..71a7e39 100644
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -385,6 +385,7 @@ static int i8042_enable_kbd_port(void)
+ 	i8042_ctr |= I8042_CTR_KBDINT;
+ 
+ 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
++		i8042_ctr &= ~I8042_CTR_KBDINT;
+ 		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
+ 		return -EIO;
+ 	}
+@@ -402,6 +403,7 @@ static int i8042_enable_aux_port(void)
+ 	i8042_ctr |= I8042_CTR_AUXINT;
+ 
+ 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
++		i8042_ctr &= ~I8042_CTR_AUXINT;
+ 		printk(KERN_ERR "i8042.c: Failed to enable AUX port.\n");
+ 		return -EIO;
+ 	}
