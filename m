@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933960AbXGMNp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934321AbXGMNqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933960AbXGMNp4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbXGMNpl
+	id S934321AbXGMNqf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932075AbXGMNqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:45:41 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:48475 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759236AbXGMNpj (ORCPT
+	Fri, 13 Jul 2007 09:46:19 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:56263 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932440AbXGMNqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:45:39 -0400
-Date: Fri, 13 Jul 2007 15:45:37 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: Jens Axboe <jens.axboe@oracle.com>, Paul Mackerras <paulus@samba.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <1184333670.3402.17.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
- <20070704132346.591348000@pademelon.sonytel.be> <1184331741.3402.13.camel@localhost.localdomain>
- <20070713130508.GQ5328@kernel.dk> <Pine.LNX.4.62.0707131518120.18802@pademelon.sonytel.be>
- <1184333670.3402.17.camel@localhost.localdomain>
+	Fri, 13 Jul 2007 09:46:18 -0400
+Message-ID: <4697822B.4050407@bx.jp.nec.com>
+Date: Fri, 13 Jul 2007 22:46:19 +0900
+From: KII Keiichi <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-427551646-1184334107=:18802"
-Content-ID: <Pine.LNX.4.62.0707131543130.18802@pademelon.sonytel.be>
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v2 -mm 5/9] netconsole: Introduce netconsole_target
+References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in> <20070710091946.23907.96503.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070710091946.23907.96503.sendpatchset@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Satyam,
 
----584337861-427551646-1184334107=:18802
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0707131543131.18802@pademelon.sonytel.be>
-
-On Fri, 13 Jul 2007, James Bottomley wrote:
-> On Fri, 2007-07-13 at 15:25 +0200, Geert Uytterhoeven wrote:
-> > kmap() just returns page_address() on ppc64, as there's no highmem.
-> > kunmap() is a no-op.
+> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 > 
-> > So technically I could just use page_address() directly, but Christoph
-> > wanted
-> > me to keep the kmap()/kunmap() sequence because it's considered a good
-> > practice.
+> [5/9] netconsole: Introduce netconsole_target
 > 
-> The point isn't what kmap and kunmap do ... it's the addresses they
-> return.  By and large, a kernel virtual address for a page is different
-> from the user virtual address.  If the cache is virtually indexed you
-> get different cache lines for the same page ... and that sets you up
-> with aliases you need to resolve.  parisc is the same ... our
-> kmap/kunmap are nops as well, but our kernel virtual addresses are still
-> different from the user virtual ones.
+> Introduce a wrapper structure over netpoll to represent logging targets
+> configured in netconsole. This will get extended with other members in
+> further patches.
+> 
+> The original patchset did this along with (and inside the #ifdef) of
+> CONFIG_NETCONSOLE_DYNAMIC itself. I decided otherwise, and was able to
+> drastically cut down on the #ifdef-complexity of final netconsole.c.
+> Also, struct netconsole_target would be required for multiple targets
+> support also, and not just dynamic reconfigurability. Previously these
+> two things were coupled, but I want to de-link that (more on this later).
+> 
+> Note that this patch in itself looks quite redundant / stupid, but it is
+> purposefully made this way, so further patches are more readable.
+> 
+> Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+> 
+Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
 
-IC.
-
-  - flush_kernel_dcache_page() is a no-op on ppc64
-    (ARCH_HAS_FLUSH_KERNEL_DCACHE_PAGE is defined on parisc only).
-
-  - For reference, drivers/scsi/ipr.c (another ppc64 driver) just uses a plain
-    kmap/memcpy/kunmap sequence
-
-So what should I do?
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-427551646-1184334107=:18802--
+Thanks
+--
+Keiichi KII
+NEC Corporation OSS Platform Development Division
+E-mail: k-keiichi@bx.jp.nec.com
