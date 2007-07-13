@@ -1,68 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934199AbXGMGfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933696AbXGMGlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934199AbXGMGfW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbXGMGfK
+	id S933696AbXGMGlr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbXGMGlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:35:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57119 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752086AbXGMGfI (ORCPT
+	Fri, 13 Jul 2007 02:41:39 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:58474 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753418AbXGMGli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:35:08 -0400
-Date: Thu, 12 Jul 2007 23:34:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bryan Wu <bryan.wu@analog.com>
-cc: Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-Subject: Re: Linux 2.6.22.1
-In-Reply-To: <1184308100.8943.12.camel@roc-desktop>
-Message-ID: <alpine.LFD.0.999.0707122328340.20061@woody.linux-foundation.org>
-References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com> 
- <1184307380.8943.7.camel@roc-desktop>  <20070713061617.GA24317@kroah.com>
- <1184308100.8943.12.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 13 Jul 2007 02:41:38 -0400
+Date: Fri, 13 Jul 2007 14:40:04 +0800
+From: Joe Jin <joe.jin@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Jin <joe.jin@oracle.com>, bill.irwin@oracle.com,
+       linux-kernel@vger.kernel.org, gurudas.pai@oracle.com
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-ID: <20070713064004.GA21833@joejin-pc.cn.oracle.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com> <20070712221842.f5e47065.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070712221842.f5e47065.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 13 Jul 2007, Bryan Wu wrote:
+On 2007-07-12 22:18, Andrew Morton wrote:
+> On Fri, 13 Jul 2007 10:45:07 +0800 Joe Jin <joe.jin@oracle.com> wrote:
 > 
-> I can git-pull from Linus tree through http in my company, this one
-> can't. If it is not easy to open it by you guys, I have to git-pull at
-> home, -:))
+> > This patch add nid sanity check on alloc_pages_node().
+> > While two process change nr_hugepages at a system, alloc_fresh_huge_page()
+> > been called, at this function, nid defined as a static variable, but, there
+> > is not any protection of, if 2 process called at the same time, maybe pass a
+> > invalid nid to alloc_pages_node. 
+> > 
+> > We have hit it by following scripts:
+> > 
+> > #!/bin/bash
+> > while : ; do 
+> > 	echo 1000000000000 > /proc/sys/vm/nr_hugepages 
+> > 	echo 1 > /proc/sys/vm/nr_hugepages 
+> > 	echo 10000000000000000000 > /proc/sys/vm/nr_hugepages 
+> > 	echo 0 > /proc/sys/vm/nr_hugepages 
+> > done 
+> > 
+> > 
+> > Run the script at _two_ difference terminal, after a short time, a kernel panic
+> > info will print.
+> > 
+> > 
+> > Signed-off-by: Joe Jin <joe.jin@oracle.com>
+> > ---
+> > 
+> > --- linux-2.6.22/include/linux/gfp.h.orig	2007-07-12 15:06:23.000000000 +0800
+> > +++ linux-2.6.22/include/linux/gfp.h	2007-07-12 15:02:59.000000000 +0800
+> > @@ -133,6 +133,9 @@
+> >  	/* Unknown node is current node */
+> >  	if (nid < 0)
+> >  		nid = numa_node_id();
+> > +	
+> > +	if (unlikely(nid == MAX_NUMNODES))
+> > +		nid = first_node(node_online_map);
+> >  
+> >  	return __alloc_pages(gfp_mask, order,
+> >  		NODE_DATA(nid)->node_zonelists + gfp_zone(gfp_mask));
+> 
+> alloc_pages_node() is pretty much the last place where we want to fix this:
+> it adds more cycles and more code to many important codepaths in the
+> kernel.
+> 
+> It'd be much better to fix the race within alloc_fresh_huge_page().  That
+> function is pretty pathetic.
+> 
+> Something like this?
+> 
+> --- a/mm/hugetlb.c~a
+> +++ a/mm/hugetlb.c
+> @@ -105,13 +105,20 @@ static void free_huge_page(struct page *
+>  
+>  static int alloc_fresh_huge_page(void)
+>  {
+> -	static int nid = 0;
+> +	static int prev_nid;
+> +	static DEFINE_SPINLOCK(nid_lock);
+>  	struct page *page;
+> -	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> -					HUGETLB_PAGE_ORDER);
+> -	nid = next_node(nid, node_online_map);
+> +	int nid;
+> +
+> +	spin_lock(&nid_lock);
+> +	nid = next_node(prev_nid, node_online_map);
+>  	if (nid == MAX_NUMNODES)
+>  		nid = first_node(node_online_map);
+> +	prev_nid = nid;
+> +	spin_unlock(&nid_lock);
+> +
+> +	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> +					HUGETLB_PAGE_ORDER);
+>  	if (page) {
+>  		set_compound_page_dtor(page, free_huge_page);
+>  		spin_lock(&hugetlb_lock);
+> _
+> 
 
-In that case, it's almost certainly that that tree isn't doing the proper 
-"git update-server-info" when people push to it.
+The patch looks good for this bug, thanks :)
 
-Chris/Greg: just add a
+if other caller give a invalid nid to alloc_pages_node(), __alloc_pages
+will crash again.
 
-	hooks/post-update
+So I think we add some sanity check for nid at alloc_pages_node is
+meaningful.  
 
-file to your git repo that is executable, and just contains
+another question, if (nid >= MAX_NUMNODES),  may I set nid to 0 directly
+like following code?
 
-	#!/bin/sh
-	exec git-update-server-info
+	if (unlikly(nid >= MAX_NUMNODES)
+		nid = 0
 
-in it, and you'll be golden. It will mean that every time you push to the 
-repo, it will run the "git update-server-info" thing after the push. And 
-that will update all the necessary files for the stupid protocols (ie 
-http) that don't know about git natively.
+Thanks,
+Joe
 
-Oh, and run the "git-update-server-info" once by hand, just so that you 
-don't then have to wait until after the next push for the git repo to be 
-accessible by http://
-
-www.kernel.org serves git repos fine, but the git repos have to help a bit 
-at doing so.
-
-What git update-server-info does is to create "info/refs" and 
-"objects/info/packs" files that contain enough information for a client to 
-figure out what refs and pack objects exist, so that they can try to fetch 
-the necessary data on their own.
-
-		Linus
