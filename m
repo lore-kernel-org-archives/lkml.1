@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936230AbXGMUrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936161AbXGMUsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936230AbXGMUrT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 16:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761032AbXGMUrL
+	id S936161AbXGMUsW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 16:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761134AbXGMUsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 16:47:11 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53972 "EHLO pasmtpB.tele.dk"
+	Fri, 13 Jul 2007 16:48:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33137 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761267AbXGMUrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 16:47:10 -0400
-Date: Fri, 13 Jul 2007 22:48:17 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: maps2-move-the-page-walker-code-to-lib.patch
-Message-ID: <20070713204817.GA3529@uranus.ravnborg.org>
-References: <1183873796.6005.269.camel@localhost.localdomain> <20070709202217.GS11115@waste.org> <1184033195.6005.439.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1760340AbXGMUsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 16:48:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Fri, 13 Jul 2007 22:55:37 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, david@lang.hm,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1184033195.6005.439.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200707132255.39077.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 12:06:35PM +1000, Rusty Russell wrote:
-> On Mon, 2007-07-09 at 15:22 -0500, Matt Mackall wrote:
-> > On Sun, Jul 08, 2007 at 03:49:56PM +1000, Rusty Russell wrote:
-> > > Matt wrote:
-> > > > This lets it get shared outside of proc/ and linked in only when needed.
-> > > 
-> > > Erk, this really belongs in the mm dir.  You can use "lib-y +=
-> > > pagewalk.o" there, and it seems to work as well as doing it in lib.
-> > 
-> > Are you sure? I tested that a few months ago and it didn't work for
-> > me. I seem to recall it wanted a chunk of makefile surgery.
+On Friday, 13 July 2007 17:50, Alan Stern wrote:
+> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
 > 
-> Well, I tested here and it worked unless I screwed something (producing
-> lib.a in mm/ and linking it in).  And when I turned off all the CONFIG
-> options which required it, the symbols disappeared from the vmlinux...
+> > Okay, I have thought it through and I think that, as an initial step, we can do
+> > something like this:
+> > 
+> > - preload the image-saving kernel before hibernation
+> > - in the hibernation code path replace device_suspend() with the shutting down of
+> >   all devices without unregistering them (not very nice, but should be sufficient
+> >   for a while)
+> > - when we've called device_power_down() and save_processor_state(), jump to
+> >   the image-saving kernel and let it run
+> > - make the image-saving kernel set up everything, save the image without
+> >   starting any user space (we may use the existing image-saving code for this
+> >   purpose, with some modifications) and power off the system (or make it enter
+> >   S4)
+> > - use the existing restoration code to load the image and jump to the
+> >   hibernated kernel
+> > - in the restore code patch replace device_resume() with the reprobing of all
+> >   devices.
+> > 
+> > Comments?
+> 
+> I doubt that re-probing devices will work.  The probe routine won't 
+> expect there to be any registered children, so it will try to 
+> re-register them.
 
-I think you had some additional change somewhere...
-kbuild will only look for lib.a files (produced from all files
-listed with lib-y _except_ files listed with obj-y too).
+I didn't mean to use .probe() for that.  I just used the term "reprobe" as
+similar to "reinit", but not exactly the same.
 
-kbuild by default know about lib/ but almost all archs
-add the directory: arch/$(ARCH)/lib but no-one
-add mm/.
-See assignment to libs-y.
+> On the other hand, post_restore methods could be written to expect 
+> something like this.
 
-Add see the bad documentation in Documentation/kbuild/makefiles.txt
+Yes, that's what I'm thinking of.
 
-	Sam
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
