@@ -1,38 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935431AbXGMGvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935507AbXGMGw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935431AbXGMGvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXGMGva
+	id S935507AbXGMGw0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759864AbXGMGwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:51:30 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53188 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760060AbXGMGv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:51:29 -0400
-Date: Thu, 12 Jul 2007 23:51:09 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bryan Wu <bryan.wu@analog.com>, Greg KH <greg@kroah.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-Subject: Re: Linux 2.6.22.1
-Message-ID: <20070713065109.GD4306@sequoia.sous-sol.org>
-References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com> <1184307380.8943.7.camel@roc-desktop> <20070713061617.GA24317@kroah.com> <1184308100.8943.12.camel@roc-desktop> <alpine.LFD.0.999.0707122328340.20061@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707122328340.20061@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 13 Jul 2007 02:52:18 -0400
+Received: from www.osadl.org ([213.239.205.134]:45267 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753973AbXGMGwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 02:52:17 -0400
+Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to
+	2.6.22	available
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
+       jim.houston@ccur.com, joe.korty@ccur.com, rostedt@goodmis.org,
+       dwalker@mvista.com, David Bahi <DBahi@novell.com>,
+       Moiz Kohari <MKohari@novell.com>, Sven Dietrich <SDietrich@novell.com>,
+       dsaxena@plexity.net, williams@redhat.com, abogani@texware.it,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <46971ADC.3030700@bigpond.net.au>
+References: <4695E5BB0200005A0002763E@mcclure.wal.novell.com>
+	 <20070712130958.GB17494@elte.hu>  <46971ADC.3030700@bigpond.net.au>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 08:52:13 +0200
+Message-Id: <1184309533.12353.295.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> In that case, it's almost certainly that that tree isn't doing the proper 
-> "git update-server-info" when people push to it.
+On Fri, 2007-07-13 at 16:25 +1000, Peter Williams wrote:
+> > we are working on something in this area :) Stay tuned ...
+> 
+> I've just been reviewing these patches and have spotted an error in the
+> file mm/slob.c at lines 500-501 whereby a non existent variable "c" is
+> referenced.  The attached patch is a proposed fix to the problem.
 
-Yup, should be fixed now.
+Yep, the slob forward port is incomplete. Your patch is definitely more
+correct than the stuff which is currently there.
 
-thanks,
--chris
+Thanks,
+
+	tglx
+
+
