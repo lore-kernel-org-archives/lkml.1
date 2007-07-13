@@ -1,101 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbXGMNkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761722AbXGMNmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbXGMNkk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXGMNkd
+	id S1761722AbXGMNmU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbXGMNmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:40:33 -0400
-Received: from stinky.trash.net ([213.144.137.162]:42276 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751219AbXGMNkc (ORCPT
+	Fri, 13 Jul 2007 09:42:09 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55600 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751219AbXGMNmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:40:32 -0400
-Message-ID: <469780BB.3070206@trash.net>
-Date: Fri, 13 Jul 2007 15:40:11 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Fri, 13 Jul 2007 09:42:08 -0400
+Message-ID: <46978084.2040504@bx.jp.nec.com>
+Date: Fri, 13 Jul 2007 22:39:16 +0900
+From: KII Keiichi <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-To: jens.axboe@oracle.com
-CC: neilb@suse.de, nfs@lists.sourceforge.net,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: nfsd oops in current -git
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC][PATCH v2 -mm 0/9] netconsole: Multiple targets and dynamic
+ reconfigurability
+References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I get this oops with current -git:
+Hi Satyam,
 
-[ 3437.018862] PGD 9acab067 PUD 9acaa067 PMD 0
-[ 3437.018870] CPU 1
-[ 3437.018872] Modules linked in: nfsd exportfs ppdev lp nfs lockd
-nfs_acl sunrpc deflate zlib_deflate zlib_inflate twofish twofish_common
-camellia serpent blowfish des cbc ecb blkcipher aes xcbc sha256
-crypto_null af_key rfcomm l2cap fuse nfnetlink_queue nfnetlink_log
-nf_conntrack_netlink nf_nat nf_conntrack_ipv6 nf_conntrack_ipv4
-nf_conntrack nfnetlink ip6_tables ip_tables x_tables hangcheck_timer
-cpufreq_ondemand powernow_k8 freq_table video backlight thermal
-processor fan ide_generic ide_disk ide_cd cdrom generic hci_usb
-bluetooth usbhid hid snd_via82xx snd_seq_dummy snd_seq_oss
-snd_via82xx_modem snd_ac97_codec ac97_bus snd_seq_midi
-snd_seq_midi_event snd_pcm_oss snd_mixer_oss snd_mpu401 snd_pcm
-snd_mpu401_uart snd_seq snd_timer snd_rawmidi snd_seq_device parport_pc
-snd psmouse parport via82cxxx serio_raw i2c_viapro evdev ehci_hcd sky2
-snd_page_alloc uhci_hcd ide_core soundcore pcspkr
-[ 3437.018923] Pid: 4432, comm: nfsd Not tainted 2.6.22 #5
-[ 3437.018926] RIP: 0010:[<ffffffff81054eff>]  [<ffffffff81054eff>]
-put_page+0x4/0xb3
-[ 3437.018932] RSP: 0018:ffff8101335f5c40  EFLAGS: 00010203
-[ 3437.018935] RAX: 0000000000000000 RBX: ffff810133576000 RCX:
-ffff8100a0fa5ab8
-[ 3437.018938] RDX: ffff810003754428 RSI: ffff8100a0fa5868 RDI:
-0000000000000000
-[ 3437.018942] RBP: ffff810003754428 R08: ffff8100a1b7c5d8 R09:
-ffff8101335f5c10
-[ 3437.018946] R10: ffff810003739a78 R11: ffff81009ec61d40 R12:
-ffff810133576570
-[ 3437.018950] R13: ffff8100a0fa5868 R14: 0000000000001000 R15:
-ffff810133576168
-[ 3437.018954] FS:  00002ad8e9fab6f0(0000) GS:ffff81013fc72e40(0000)
-knlGS:00000000f7e426c0
-[ 3437.018957] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[ 3437.018959] CR2: 0000000000000000 CR3: 000000009a91a000 CR4:
-00000000000006e0
-[ 3437.018963] Process nfsd (pid: 4432, threadinfo ffff8101335f4000,
-task ffff81013f969040)
-[ 3437.018965] Stack:  ffff810133576000 ffff810003754428
-ffff810133576570 ffffffff8830e001
-[ 3437.018973]  ffff810003747500 ffff8100a0fa5868 ffff8100a0fa5800
-ffff8101335f5d80
-[ 3437.018978]  0000000000000000 0000000000000000 ffffffff8122c440
-ffffffff810892ac
-[ 3437.018982] Call Trace:
-[ 3437.019002]  [<ffffffff8830e001>] :nfsd:nfsd_splice_actor+0x71/0xea
-[ 3437.019010]  [<ffffffff810892ac>] __splice_from_pipe+0x58/0x1bf
-[ 3437.019023]  [<ffffffff8830df90>] :nfsd:nfsd_splice_actor+0x0/0xea
-[ 3437.019040]  [<ffffffff8830d326>]
-:nfsd:nfsd_direct_splice_actor+0x10/0x12
-[ 3437.019044]  [<ffffffff81088efc>] splice_direct_to_actor+0xfd/0x19d
-[ 3437.019058]  [<ffffffff8830d316>] :nfsd:nfsd_direct_splice_actor+0x0/0x12
-[ 3437.019076]  [<ffffffff8830d1f4>] :nfsd:nfsd_vfs_read+0x22b/0x34d
-[ 3437.019098]  [<ffffffff8830d715>] :nfsd:nfsd_read+0xa7/0xc4
-[ 3437.019117]  [<ffffffff88314539>] :nfsd:nfsd3_proc_read+0x117/0x15a
-[ 3437.019133]  [<ffffffff8830924d>] :nfsd:nfsd_dispatch+0xdd/0x19e
-[ 3437.019156]  [<ffffffff88280194>] :sunrpc:svc_process+0x3f3/0x703
-[ 3437.019164]  [<ffffffff81212423>] __lock_text_start+0x23/0x7e
-[ 3437.019180]  [<ffffffff88309817>] :nfsd:nfsd+0x193/0x2b0
-[ 3437.019188]  [<ffffffff8100a9c8>] child_rip+0xa/0x12
-[ 3437.019207]  [<ffffffff88309684>] :nfsd:nfsd+0x0/0x2b0
-[ 3437.019212]  [<ffffffff8100a9be>] child_rip+0x0/0x12
-[ 3437.019215]
-[ 3437.019216]
-[ 3437.019217] Code: 8b 07 48 89 fb f6 c4 40 74 09 5b 5d 41 5c e9 42 fb
-ff ff f0
+> [0/9] netconsole: Multiple targets and dynamic reconfigurability
+> 
+> This patchset is a rework of the original idea and patches posted by
+> Keiichi Kii and Takayoshi Kochi at: http://lkml.org/lkml/2007/6/13/72
+> 
+> This is v2 of the patchset, the previous version is available at:
+> http://lkml.org/lkml/2007/7/4/107
+> 
+> This is diffed against 2.6.22-rc6-mm1 + the earlier netpoll fixlet and the
+> configfs cleanup patches (those are already merged in -mm AFAIK, and hence
+> not reproduced here).
+> 
+> [1/9] netconsole: Cleanups, codingstyle, prettyfication
+> [2/9] netconsole: Remove bogus check
+> [3/9] netconsole: Simplify boot/module option setup logic
+> [4/9] netconsole: Add some useful tips to documentation
+> [5/9] netconsole: Introduce netconsole_target
+> [6/9] netconsole: Introduce netconsole_netdev_notifier
+> [7/9] netconsole: Use netif_running() in write_msg()
+> [8/9] netconsole: Support multiple logging targets
+> [9/9] netconsole: Support dynamic reconfiguration using configfs
+> 
 
+I tested your v2 patches on the x86/IA64 architecture.
+There was no problem on my tests.
 
-It seems to be related to the splice patches. I tried fixing the
-crash by adding a NULL ptr check before the first put_page in
-nfsd_read_actor, that fixed the crash but the files contained
-what looks like random garbage afterwards.
+Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+
+Thanks
+-- 
+Keiichi KII
+NEC Corporation OSS Platform Development Division
+E-mail: k-keiichi@bx.jp.nec.com 
