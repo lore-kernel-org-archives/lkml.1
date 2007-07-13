@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934960AbXGMGWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934822AbXGMGZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934960AbXGMGWQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbXGMGWB
+	id S934822AbXGMGZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbXGMGZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:22:01 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:6219 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbXGMGWA (ORCPT
+	Fri, 13 Jul 2007 02:25:16 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47011 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbXGMGZO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:22:00 -0400
-X-IronPort-AV: i="4.16,535,1175486400"; 
-   d="scan'208"; a="34796913:sNHT31957842"
-Subject: Re: Linux 2.6.22.1
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Greg KH <greg@kroah.com>
-Cc: Bryan Wu <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-In-Reply-To: <20070713061617.GA24317@kroah.com>
-References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com>
-	 <1184307380.8943.7.camel@roc-desktop>  <20070713061617.GA24317@kroah.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Fri, 13 Jul 2007 14:28:20 +0800
-Message-Id: <1184308100.8943.12.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-X-OriginalArrivalTime: 13 Jul 2007 06:21:59.0127 (UTC) FILETIME=[1E46FE70:01C7C516]
+	Fri, 13 Jul 2007 02:25:14 -0400
+Date: Thu, 12 Jul 2007 23:27:56 -0700
+From: Greg KH <greg@kroah.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: Move prototypes for EXPORT_SYMBOL functions to
+	include/linux/pci.h
+Message-ID: <20070713062756.GG24317@kroah.com>
+References: <Pine.LNX.4.64.0707130015550.1975@blarg.am.freescale.net> <20070713053303.GB17039@kroah.com> <9A567C91-1DE7-46CC-91A0-58D498B8248B@kernel.crashing.org> <20070713060511.GA23618@kroah.com> <Pine.LNX.4.64.0707130108490.25195@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707130108490.25195@gate.crashing.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 23:16 -0700, Greg KH wrote:
-> On Fri, Jul 13, 2007 at 02:16:20PM +0800, Bryan Wu wrote:
-> > On Fri, 2007-07-13 at 02:35 +0800, Nish Aravamudan wrote:
-> > > On 7/10/07, Greg KH <greg@kroah.com> wrote: 
-> > > > We (the -stable team) are announcing the release of the 2.6.22.1
-> > > kernel. 
-> > > > It contains a security fix for SCTP that somehow forgot to be added
-> > > to 
-> > > > the 2.6.22 kernel (was already released in the 2.6.21.y releases). 
-> > > > Thanks to Patrick McHardy for noticing the mistake. 
-> > > > 
-> > > > I'll also be replying to this message with a copy of the patch
-> > > between 
-> > > > 2.6.22 and 2.6.22.1 
-> > > > 
-> > > > The updated 2.6.22.y git tree can be found at: 
+On Fri, Jul 13, 2007 at 01:10:46AM -0500, Kumar Gala wrote:
+> On Thu, 12 Jul 2007, Greg KH wrote:
+> 
+> > On Fri, Jul 13, 2007 at 12:55:39AM -0500, Kumar Gala wrote:
+> > >
+> > >  On Jul 13, 2007, at 12:33 AM, Greg KH wrote:
+> > >
+> > > > On Fri, Jul 13, 2007 at 12:16:29AM -0500, Kumar Gala wrote:
+> > > >> pci_do_scan_bus() and pci_bus_find_capability() are marked EXPORT_SYMBOL
+> > > >> and thus usable outside of the PCI drive core itself.  Make the prototypes
+> > > >> for these functions accessible to everyone.
 > > > >
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
-> > > 
-> > > Can you please also update
-> > > 
-> > >  git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6-stable.git
-> > > 
-> > > ? Maybe make that update part of whatever process you use to push out 
-> > > the 2.6.Y trees, as I've had to ask for this more than once now?
-> > > 
-> > 
-> > Could you please open http:// git-pull? I was blocked by company's
-> > firewall except http method -:((.
+> > > > Well, no, I'd like to only have the pci hotplug drivers use them if
+> > > > possible.  So until we have proper namespaces on the exported symbols,
+> > > > I'd really like to keep these as-is if possible.
+> > > >
+> > > > Or are you needing these symbols for some code outside of the
+> > > > drivers/pci/ directory tree?
+> > >
+> > >  I need pci_bus_find_capability() in arch/powerpc pci code.
+> > >
+> > >  I'm using it as a way to tell if we are a PCIe PHB.
+> >
+> > Ok, care to export only that function then?
 > 
-> That is up to the kernel.org admins, but last time I checked, I think it
-> was enabled already.  Can you pull anything else from kernel.org with
-> http but not this tree?
+> that's fine, will do.
 > 
+> I assume we want to kill the prototype pci_bus_alloc_resource() in
+> drivers/pci/pci.h since its duplicated in include/linux/pci.h
 
-I can git-pull from Linus tree through http in my company, this one
-can't. If it is not easy to open it by you guys, I have to git-pull at
-home, -:))
+Yes.
 
-Thanks anyway
+> Also, I wasn't sure 'extern int pci_bus_find_capability'.. or just 'int
+> pci_bus_find_capability'?
 
-- Bryan
+Whatever matches the surrounding code, I don't have a preference but I
+think others might.
+
+thanks,
+
+greg k-h
