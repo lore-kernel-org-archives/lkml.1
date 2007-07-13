@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932464AbXGMDXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762733AbXGMDbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932464AbXGMDXd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 23:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758354AbXGMDX0
+	id S1762733AbXGMDbG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 23:31:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757865AbXGMDay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 23:23:26 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:55599 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756416AbXGMDX0 (ORCPT
+	Thu, 12 Jul 2007 23:30:54 -0400
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:20945 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756416AbXGMDax (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 23:23:26 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>,
-       Mark Langsdorf <mark.langsdorf@amd.com>
-Subject: CPUFreq compilation failure with current GIT.
-Date: Fri, 13 Jul 2007 13:23:16 +1000
+	Thu, 12 Jul 2007 23:30:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ww7wVO6YQsvucsQWb0xXMfO+laa2RlFUVUd09OopMk467vIVVG4QkkgESDDN9jdKYcy0pTCVc2P146Wv4lRX63z6zPnhYy0gXKVWAF8Hseu241GFjm4OWRA9O8jmgZRH4JGjPPM1LTEEDsk6h0Z9evwm2ajXWbnQBl6OkQ46lek=  ;
+X-YMail-OSG: YgH.iVAVM1kHuM.cYTHEDVnyF_aawMVtQQRc3Ytt8O26l45fohPGOGyoS5v.F8mDvCAx_Pynww--
+From: David Brownell <david-b@pacbell.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.22-git] dev_vdbg(), available with -DVERBOSE_DEBUG
+Date: Thu, 12 Jul 2007 20:30:49 -0700
 User-Agent: KMail/1.9.6
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3033212.LaC9EBjBS4";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707131323.22185.nigel@nigel.suspend2.net>
-Sender: linux-kernel-owner@vger.kernel.org
-X-Mailing-List: linux-kernel@vger.kernel.org
-
---nextPart3033212.LaC9EBjBS4
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200707122030.49465.david-b@pacbell.net>
+Sender: linux-kernel-owner@vger.kernel.org
+X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+This defines a dev_vdbg() call, which is enabled with -DVERBOSE_DEBUG.
+When enabled, dev_vdbg() acts just like dev_dbg().  When disabled, it
+is a NOP ... just like dev_dbg() without -DDEBUG.  The specific code
+was moved out of a USB patch, but lots of drivers have similar support.
 
-Current git compilation fails on my amd64:
+That is, code can now be written to use an additional level of debug
+output, selected at compile time.  Many driver authors have found this
+idiom to be very useful.  A typical usage model is for "normal" debug
+messages to focus on fault paths and not be very "chatty", so that
+those messages can be left on during normal operation without much of
+a performance or syslog load.  On the other hand "verbose" messages
+would be noisy enough that they wouldn't normally be enabled; they
+might even affect timings enough to change system or driver behavior.
 
-  CC [M]  arch/x86_64/kernel/cpufreq/../../../i386/kernel/cpu/cpufreq/acpi-cpufreq.o
-  CC [M]  arch/x86_64/kernel/cpufreq/../../../i386/kernel/cpu/cpufreq/powernow-k8.o
-arch/x86_64/kernel/cpufreq/../../../i386/kernel/cpu/cpufreq/powernow-k8.c: In function 'powernowk8_init':
-arch/x86_64/kernel/cpufreq/../../../i386/kernel/cpu/cpufreq/powernow-k8.c:1334: error: 'struct cpuinfo_x86' has no member named 'booted_cores'
-make[2]: *** [arch/x86_64/kernel/cpufreq/../../../i386/kernel/cpu/cpufreq/powernow-k8.o] Error 1
-make[1]: *** [arch/x86_64/kernel/cpufreq] Error 2
-make: *** [arch/x86_64/kernel] Error 2
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/usb/core/driver.c |    7 -------
+ include/linux/device.h    |   10 ++++++++++
+ 2 files changed, 10 insertions(+), 7 deletions(-)
 
-The following commit apparently wasn't tested on x86_64 as well:
-
-Commit: 904f7a3f042b5c6aa9e53ce83f2c9de5e33170ff
-Author: Dave Jones <davej@redhat.com> Fri, 18 May 2007 13:22:28 -0400
-
-    [CPUFREQ] powernow-k8: clarify number of cores.
-
-    Indicate number of processors and cores more cleanly
-    in startup messages.
-
-    Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-Regards,
-
-Nigel
-
---nextPart3033212.LaC9EBjBS4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGlvAqN0y+n1M3mo0RAqznAKCTKm/a8s7muh3NYRFhFqYzK6fKXgCdFqWI
-tFnFlMvuuN5EF/wIDJdU+1E=
-=wMve
------END PGP SIGNATURE-----
-
---nextPart3033212.LaC9EBjBS4--
+--- g26.orig/drivers/usb/core/driver.c	2007-07-12 20:09:34.000000000 -0700
++++ g26/drivers/usb/core/driver.c	2007-07-12 20:11:35.000000000 -0700
+@@ -29,13 +29,6 @@
+ #include "hcd.h"
+ #include "usb.h"
+ 
+-#define VERBOSE_DEBUG	0
+-
+-#if VERBOSE_DEBUG
+-#define dev_vdbg	dev_dbg
+-#else
+-#define dev_vdbg(dev, fmt, args...)	do { } while (0)
+-#endif
+ 
+ #ifdef CONFIG_HOTPLUG
+ 
+--- g26.orig/include/linux/device.h	2007-07-12 20:09:16.000000000 -0700
++++ g26/include/linux/device.h	2007-07-12 20:11:13.000000000 -0700
+@@ -572,6 +572,16 @@ dev_dbg(struct device * dev, const char 
+ }
+ #endif
+ 
++#ifdef VERBOSE_DEBUG
++#define dev_vdbg	dev_dbg
++#else
++static inline int __attribute__ ((format (printf, 2, 3)))
++dev_vdbg(struct device * dev, const char * fmt, ...)
++{
++	return 0;
++}
++#endif
++
+ #define dev_err(dev, format, arg...)		\
+ 	dev_printk(KERN_ERR , dev , format , ## arg)
+ #define dev_info(dev, format, arg...)		\
