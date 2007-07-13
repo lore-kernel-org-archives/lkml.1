@@ -1,124 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762090AbXGMDKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762723AbXGMDM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762090AbXGMDKd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 23:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbXGMDKS
+	id S1762723AbXGMDM5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 23:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbXGMDMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 23:10:18 -0400
-Received: from 192.pool85-58-10.dynamic.orange.es ([85.58.10.192]:39940 "EHLO
-	cafe.aluzina.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755545AbXGMDKO (ORCPT
+	Thu, 12 Jul 2007 23:12:49 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:42465 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757451AbXGMDMs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 23:10:14 -0400
-X-Greylist: delayed 1672 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 23:10:14 EDT
-Message-ID: <4696E67E.4020100@aluzina.org>
-Date: Fri, 13 Jul 2007 04:42:06 +0200
-From: =?ISO-8859-1?Q?Zeus_G=F3mez_Marmolejo?= <zeus@aluzina.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 12 Jul 2007 23:12:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=l0uAkTQMWL4NICm+QTlFdRJE6tRVj58rkyTsB8h6kaibnf+Q0zBpU7Crb4ow15SLPJu9OYExK788d+T5eY7HfEDtuGm1JNzxajABQP/tcoKhTiCea9bZ5NhFQrtoGTNC2eO3skmC2HcR33gGW88X5v6ZNOhS2X7I8ryESC24hQM=
+Message-ID: <4696EDAB.10404@gmail.com>
+Date: Fri, 13 Jul 2007 12:12:43 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: casey@schaufler-ca.com
-CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: New LSM security operation
-References: <883505.60477.qm@web36609.mail.mud.yahoo.com>
-In-Reply-To: <883505.60477.qm@web36609.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pavel Machek <pavel@ucw.cz>
+CC: caglar@pardus.org.tr, Robert Hancock <hancockr@shaw.ca>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: SATA exceptions
+References: <fa.hBFih6KVHDFsBf6Qfg6XispiIuY@ifi.uio.no> <fa.NhBdOmH9+RkW+QO72+TjPRwEKj0@ifi.uio.no> <468FD5ED.5060401@shaw.ca> <200707080035.05718.caglar@pardus.org.tr> <46928066.7000705@gmail.com> <20070712195255.GA6015@ucw.cz>
+In-Reply-To: <20070712195255.GA6015@ucw.cz>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek wrote:
+>>>> Your SMART log shows 309 reallocated sectors. That seems somewhat high..
+>>> Ah sorry to misinterpret the content:), its a quiet new piece of hardware (at 
+>>> most ~1.5 month old) and  "Reallocated_Event_Count" constantly increases 
+>>> (currently its increased to 313) and although i'm not 100 percent sure these 
+>>> errors only occured with kernels > 2.6.18 (or 2.6.18 didn't report these 
+>>> cause according to kern.log these only visible with 2.6.22+) 
+>> OS and driver can't really do much about the reallocation event.  Some
+>> number of reallocations is okay but if you it going up constantly, you
+>> probably have a dying disk.
 > 
-> An application that is careful not to destroy existing information
-> would not be able to prevent itself from doing so if the file is
-> hidden. Its pretty important to avoid defeating programs that are
-> trying to behave properly.
-> 
+> Hmm... cut the power while writing is doable from OS and might force
+> reallocations?
 
-It's true what you are saying... But I think the best way to know if 
-there is an existing file with that name is by the stat() syscall, not 
-reading the contents of the directory, by the way is very inefficient if 
-there are a lot of files in that directory.
+Hmmm... We don't have any pending write when power goes out and I don't
+emergency unload can directly increase reallocation count.  It can
+shorten lifespan of the head tho.
 
-For example, the editor "vi" when editing a file "p1.c" and saving with 
-":w p2.c" it searches first if this file exists with:
+> You might want to check if number of reallocated sectors increases
+> with shutdowns/reboots.
 
-stat64("p2.c", {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+I'm curious too.
 
-(... just verified it with strace). I think doing this is the best way, 
-and most programs do that in this way.
-
-On the other hand, I'm only talking about modifying the: "sys_readdir", 
-"sys_getdents" and "sys_getdents64" system calls, all implemented in the 
-"fs/readdir.c" file.
-
-In fact, I've tried to code it, and I think it's best done in the 
-"filldir()" callback, called each time that an entry in the directory is 
-found by the underlying filesystem walk. Just check if this entry is 
-permitted to list and then return without adding it into the buffer. I 
-tried this (in fs/readdir.c, filldir64()):
-
-static int filldir64(void * __buf, const char * name, int namlen,
-                      loff_t offset, u64 ino, unsigned int d_type)
-{
-   struct linux_dirent64 __user *dirent;
-   struct getdents_callback64 * buf = (struct getdents_callback64 *) __buf;
-   int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(u64));
-+ int res;
-+
-+ res = security_inode_list( buf->i_dir, iget(buf->sb, ino) );
-+ if (res)
-+   return 0;
-
-   buf->error = -EINVAL;   /* only used if we fail.. */
-   ...
-}
-
-Adding two members in the callback structure (sb and i_dir) with the 
-superblock and inode of the parent directory.
-
-This works in all filesystems with a superblock, but for example in 
-sysfs, the operation iget() segfaults because can't search for an inode 
-using the superblock operations, because it doesn't have the 
-read_inode() operation.
-
-Is there any other way to obtain the "struct inode *" from the inode 
-number, without using the superblock operations!?
-
-> 
-> In the open-for-read case returning an error other than ENOENT gives
-> away the existance of the file. Returning ENOENT is a lie, so is just
-> wrong.
-> 
-
-OK. But maybe is what the administrator wants to return to the user. If 
-the file is not readable or writable and not listable by some user, then 
-for him simply doesn't exist... But, I don't care... if we are 
-consistent with what we are doing, the correct thing is to return an 
-EACCES because of the forbidding read.
-
-> 
-> Sounds to me like the problem you're out to solve is specific to
-> ls under SELinux. Fixing* ls is straitforward, don't say anything
-> about directory entries you don't have access to rather than the
-> current annoying error messages. Fixing* SELinux may be an option,
-> you may even be able to achieve what you're after using the current
-> mechanisms. The SELinux mailing list might be worth cross-posting.
-> 
-
-
-I don't think this is a "ls" problem. The fact is if some user wants to 
-know the pid names or some other directory entries, he just have to 
-compile his version of "ls" and would get all this names because the 
-getdents() system call is showing them.
-
-I think they are different policies, one is getting the attributes of a 
-given file (that is what SELinux can forbid) and then this is why "ls 
--l" complains about showing them. But the other policy is just not 
-showing the file, but you may get the permissions if you really know the 
-name: "ls -l /etc/abadbad", this is not possible with SELinux nor with 
-other security module because the Linux SM framework just lack the hook 
-to avoid doing this listing.
-
-Thank you for your comments!!
-
-
-Zeus.
+-- 
+tejun
