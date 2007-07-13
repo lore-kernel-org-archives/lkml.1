@@ -1,103 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbXGMQeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXGMQeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbXGMQeE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 12:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbXGMQdy
+	id S1761469AbXGMQeW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 12:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760617AbXGMQeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 12:33:54 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:21726 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752426AbXGMQdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 12:33:54 -0400
-Date: Fri, 13 Jul 2007 18:33:37 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Patrick McHardy <kaber@trash.net>, neilb@suse.de,
-       nfs@lists.sourceforge.net,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: nfsd oops in current -git
-Message-ID: <20070713163337.GT5328@kernel.dk>
-References: <469780BB.3070206@trash.net> <4697A7EC.6050006@redhat.com>
+	Fri, 13 Jul 2007 12:34:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39521 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760214AbXGMQeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 12:34:04 -0400
+Date: Fri, 13 Jul 2007 09:34:02 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: ak@suse.de, linux-kernel@vger.kernel.org, travis@sgi.com, jeremy@goop.org
+Subject: Re: x86: Convert cpu_core_map to be a per cpu variable
+In-Reply-To: <20070713.000814.102125147.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0707130933140.21777@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0707122354340.17278@schroedinger.engr.sgi.com>
+ <20070713.000814.102125147.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4697A7EC.6050006@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13 2007, Chuck Ebbert wrote:
-> On 07/13/2007 09:40 AM, Patrick McHardy wrote:
-> > I get this oops with current -git:
+On Fri, 13 Jul 2007, David Miller wrote:
+
+> From: Christoph Lameter <clameter@sgi.com>
+> Date: Thu, 12 Jul 2007 23:58:06 -0700 (PDT)
+> 
+> > cpu_core_map is currently an array defined using NR_CPUS. This means that
+> > we overallocate since we will rarely really use the maximum 
+> > number of configured cpus. This may become a problem when we need to 
+> > increase the NR_CPUs on x86_64 for our new product line.
+> 
+> I'm using NR_CPUS set to 1024 on my sparc64 workstation, it's
+> not that bad to be honest :-)  What kind of cpu arity are you
+> talking about?
+
+Up to 16k.
+
+> > If we put the cpu_core_map into the per cpu area then it will be allocated
+> > for each processor as it comes online.
 > > 
-> > [ 3437.018862] PGD 9acab067 PUD 9acaa067 PMD 0
-> > [ 3437.018870] CPU 1
-> > [ 3437.018872] Modules linked in: nfsd exportfs ppdev lp nfs lockd
-> > nfs_acl sunrpc deflate zlib_deflate zlib_inflate twofish twofish_common
-> > camellia serpent blowfish des cbc ecb blkcipher aes xcbc sha256
-> > crypto_null af_key rfcomm l2cap fuse nfnetlink_queue nfnetlink_log
-> > nf_conntrack_netlink nf_nat nf_conntrack_ipv6 nf_conntrack_ipv4
-> > nf_conntrack nfnetlink ip6_tables ip_tables x_tables hangcheck_timer
-> > cpufreq_ondemand powernow_k8 freq_table video backlight thermal
-> > processor fan ide_generic ide_disk ide_cd cdrom generic hci_usb
-> > bluetooth usbhid hid snd_via82xx snd_seq_dummy snd_seq_oss
-> > snd_via82xx_modem snd_ac97_codec ac97_bus snd_seq_midi
-> > snd_seq_midi_event snd_pcm_oss snd_mixer_oss snd_mpu401 snd_pcm
-> > snd_mpu401_uart snd_seq snd_timer snd_rawmidi snd_seq_device parport_pc
-> > snd psmouse parport via82cxxx serio_raw i2c_viapro evdev ehci_hcd sky2
-> > snd_page_alloc uhci_hcd ide_core soundcore pcspkr
-> > [ 3437.018923] Pid: 4432, comm: nfsd Not tainted 2.6.22 #5
-> > [ 3437.018926] RIP: 0010:[<ffffffff81054eff>]  [<ffffffff81054eff>]
-> > put_page+0x4/0xb3
-> > [ 3437.018932] RSP: 0018:ffff8101335f5c40  EFLAGS: 00010203
-> > [ 3437.018935] RAX: 0000000000000000 RBX: ffff810133576000 RCX:
-> > ffff8100a0fa5ab8
-> > [ 3437.018938] RDX: ffff810003754428 RSI: ffff8100a0fa5868 RDI:
-> > 0000000000000000
-> > [ 3437.018942] RBP: ffff810003754428 R08: ffff8100a1b7c5d8 R09:
-> > ffff8101335f5c10
-> > [ 3437.018946] R10: ffff810003739a78 R11: ffff81009ec61d40 R12:
-> > ffff810133576570
-> > [ 3437.018950] R13: ffff8100a0fa5868 R14: 0000000000001000 R15:
-> > ffff810133576168
-> > [ 3437.018954] FS:  00002ad8e9fab6f0(0000) GS:ffff81013fc72e40(0000)
-> > knlGS:00000000f7e426c0
-> > [ 3437.018957] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > [ 3437.018959] CR2: 0000000000000000 CR3: 000000009a91a000 CR4:
-> > 00000000000006e0
-> > [ 3437.018963] Process nfsd (pid: 4432, threadinfo ffff8101335f4000,
-> > task ffff81013f969040)
-> > [ 3437.018965] Stack:  ffff810133576000 ffff810003754428
-> > ffff810133576570 ffffffff8830e001
-> > [ 3437.018973]  ffff810003747500 ffff8100a0fa5868 ffff8100a0fa5800
-> > ffff8101335f5d80
-> > [ 3437.018978]  0000000000000000 0000000000000000 ffffffff8122c440
-> > ffffffff810892ac
-> > [ 3437.018982] Call Trace:
-> > [ 3437.019002]  [<ffffffff8830e001>] :nfsd:nfsd_splice_actor+0x71/0xea
-> > [ 3437.019010]  [<ffffffff810892ac>] __splice_from_pipe+0x58/0x1bf
-> > [ 3437.019023]  [<ffffffff8830df90>] :nfsd:nfsd_splice_actor+0x0/0xea
-> > [ 3437.019040]  [<ffffffff8830d326>]
-> > :nfsd:nfsd_direct_splice_actor+0x10/0x12
-> > [ 3437.019044]  [<ffffffff81088efc>] splice_direct_to_actor+0xfd/0x19d
-> > [ 3437.019058]  [<ffffffff8830d316>] :nfsd:nfsd_direct_splice_actor+0x0/0x12
-> > [ 3437.019076]  [<ffffffff8830d1f4>] :nfsd:nfsd_vfs_read+0x22b/0x34d
-> > [ 3437.019098]  [<ffffffff8830d715>] :nfsd:nfsd_read+0xa7/0xc4
-> > [ 3437.019117]  [<ffffffff88314539>] :nfsd:nfsd3_proc_read+0x117/0x15a
-> > [ 3437.019133]  [<ffffffff8830924d>] :nfsd:nfsd_dispatch+0xdd/0x19e
-> > [ 3437.019156]  [<ffffffff88280194>] :sunrpc:svc_process+0x3f3/0x703
-> > [ 3437.019164]  [<ffffffff81212423>] __lock_text_start+0x23/0x7e
-> > [ 3437.019180]  [<ffffffff88309817>] :nfsd:nfsd+0x193/0x2b0
-> > [ 3437.019188]  [<ffffffff8100a9c8>] child_rip+0xa/0x12
-> > [ 3437.019207]  [<ffffffff88309684>] :nfsd:nfsd+0x0/0x2b0
-> > [ 3437.019212]  [<ffffffff8100a9be>] child_rip+0x0/0x12
+> > However, this means that the core map cannot be accessed until the per cpu 
+> > area has been allocated. Xen does a weird thing here looping over all 
+> > processors and zeroing the masks that are not yet allocated and that will 
+> > be zeroed when they are allocated. I commented the code out. Maybe there 
+> > is another purpose? Jeremy?
+> > 
+> > Signed-off-by: Christoph Lameter <clameter@sgi.com>
 > 
-> Does Jens's patch fix it?
-> 
-> http://marc.info/?l=linux-netdev&m=118432481101579&q=raw
+> Please take care of sparc64 if you're going to do this change.
+> It uses cpu_core_map too.
 
-Probably not, that's for another bug. I'll try and see if I can take a
-look tonight.
-
--- 
-Jens Axboe
+But the code modified here is x86_64 and i386 specific? Is there an 
+overlap?
 
