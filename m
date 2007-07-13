@@ -1,52 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935908AbXGMG67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935864AbXGMHA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935908AbXGMG67 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935765AbXGMG61
+	id S935864AbXGMHA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 03:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbXGMHAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:58:27 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:8453 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935753AbXGMG6Z (ORCPT
+	Fri, 13 Jul 2007 03:00:22 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:21300 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752134AbXGMHAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:58:25 -0400
-X-IronPort-AV: i="4.16,536,1175486400"; 
-   d="scan'208"; a="34798254:sNHT23314837"
-Subject: Re: Linux 2.6.22.1
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bryan Wu <bryan.wu@analog.com>, Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-In-Reply-To: <20070713065109.GD4306@sequoia.sous-sol.org>
-References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com>
-	 <1184307380.8943.7.camel@roc-desktop> <20070713061617.GA24317@kroah.com>
-	 <1184308100.8943.12.camel@roc-desktop>
-	 <alpine.LFD.0.999.0707122328340.20061@woody.linux-foundation.org>
-	 <20070713065109.GD4306@sequoia.sous-sol.org>
-Content-Type: text/plain
+	Fri, 13 Jul 2007 03:00:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=f9JsWGtv2cCVtt1gORxrqgWAfV3T7vs6rJ7MIoANLinlTl3gOiJ3SpAjNayijogR18iyCCo4jzLMyPSTrp7QEbBIWpjEtuLypZ8RA5MX8gce9Tj9OJdoLwUsl7zdBvZ1F6Ctyxj4d3c3w3PxM3l1m+x6vJJ2ya89m1mEX2MU+IU=  ;
+X-YMail-OSG: P3nZ8uUVM1mMCQ5x7gEVVG_yxKoKnOjTdJOVur1mMQSbH2g4RmkZZxOTEM8t7mEH9mkflbLN6GxphtldfCpY8J6GfgDuuN3rwUJ8FOimxEt1gN8CmQ--
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.22-git] dev_vdbg(), available with -DVERBOSE_DEBUG
+Date: Fri, 13 Jul 2007 00:00:16 -0700
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <200707122030.49465.david-b@pacbell.net> <20070712220734.d98a43f1.akpm@linux-foundation.org>
+In-Reply-To: <20070712220734.d98a43f1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Fri, 13 Jul 2007 14:58:08 +0800
-Message-Id: <1184309888.6158.1.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 13 Jul 2007 06:58:24.0477 (UTC) FILETIME=[34D8F0D0:01C7C51B]
+Content-Disposition: inline
+Message-Id: <200707130000.17125.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 23:51 -0700, Chris Wright wrote:
-> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> > In that case, it's almost certainly that that tree isn't doing the proper 
-> > "git update-server-info" when people push to it.
+On Thursday 12 July 2007, Andrew Morton wrote:
+> On Thu, 12 Jul 2007 20:30:49 -0700 David Brownell <david-b@pacbell.net> wrote:
 > 
-> Yup, should be fixed now.
+> > This defines a dev_vdbg() call, which is enabled with -DVERBOSE_DEBUG.
+> > When enabled, dev_vdbg() acts just like dev_dbg().  When disabled, it
+> > is a NOP ... just like dev_dbg() without -DDEBUG.  The specific code
+> > was moved out of a USB patch, but lots of drivers have similar support.
 > 
-> thanks,
-> -chris
+> I suppose we should find some way of telling people about this.  Maybe
+> in the `make help' output?
 
-Thanks a lot. With you guys help, it is  works.
-- Bryan
+Whereever people learn about "-DDEBUG", they should probably
+be able to learn about "-DVERBOSE_DEBUG".  Which is likely
+from existing kernel code (although most C coders will expect
+that "-DDEBUG" does *something* interesting).
+
+I suspect maybe Documentation/CodingStyle would be better..
+
+- Dave
+
+====	CUT HERE
+Update CodingStyle to talk about "-DDEBUG" message conventions and the
+new "-DVERBOSE_DEBUG" convention.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ Documentation/CodingStyle |   20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
+
+--- g26.orig/Documentation/CodingStyle	2007-07-12 23:03:25.000000000 -0700
++++ g26/Documentation/CodingStyle	2007-07-12 23:53:52.000000000 -0700
+@@ -621,12 +621,27 @@ covers RTL which is used frequently with
+ 
+ Kernel developers like to be seen as literate. Do mind the spelling
+ of kernel messages to make a good impression. Do not use crippled
+-words like "dont" and use "do not" or "don't" instead.
++words like "dont"; use "do not" or "don't" instead.  Make the messages
++concise, clear, and unambiguous.
+ 
+ Kernel messages do not have to be terminated with a period.
+ 
+ Printing numbers in parentheses (%d) adds no value and should be avoided.
+ 
++There are a number of driver model diagnostic macros in <linux/device.h>
++which you should use to make sure messages are matched to the right device
++and driver, and are tagged with the right level:  dev_err(), dev_warn(),
++dev_info(), and so forth.  For messages that aren't associated with a
++particular device, <linux/kernel.h> defines pr_debug() and pr_info().
++
++Coming up with good debugging messages can be quite a challenge; and once
++you have them, they can be a huge help for remote troubleshooting.  Such
++messages should be compiled out when the DEBUG symbol is not defined (that
++is, by default they are not included).  When you use dev_dbg() or pr_debug(),
++that's automatic.  Many subsystems have Kconfig options to turn on -DDEBUG.
++A related convention uses VERBOSE_DEBUG to add dev_vdbg() messages to the
++ones already enabled by DEBUG.
++
+ 
+ 		Chapter 14: Allocating memory
+ 
+@@ -751,4 +766,5 @@ Kernel CodingStyle, by greg@kroah.com at
+ http://www.kroah.com/linux/talks/ols_2002_kernel_codingstyle_talk/html/
+ 
+ --
+-Last updated on 2006-December-06.
++Last updated on 2007-July-13.
++
+
