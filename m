@@ -1,89 +1,320 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbXGMK0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbXGMKaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756247AbXGMK0X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 06:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbXGMK0P
+	id S1755333AbXGMKaO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 06:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbXGMK36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 06:26:15 -0400
-Received: from mail.macqel.be ([194.78.208.39]:17051 "EHLO mail.macqel.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbXGMK0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 06:26:14 -0400
-Date: Fri, 13 Jul 2007 12:26:10 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fs : mark nibblemap const
-Message-ID: <20070713102610.GA16087@muff.macqel.be>
+	Fri, 13 Jul 2007 06:29:58 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:35319 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbXGMK34 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 06:29:56 -0400
+Subject: Re: [EXT4 set 7][PATCH 1/1]Remove 32000 subdirs limit.
+From: Kalpak Shah <kalpak@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <20070710224011.e60b9864.akpm@linux-foundation.org>
+References: <1183275498.4010.135.camel@localhost.localdomain>
+	 <20070710224011.e60b9864.akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary="=-TVUGqdff8sXzYLRjRH94"
+Date: Fri, 13 Jul 2007 16:00:48 +0530
+Message-Id: <1184322648.4315.2.camel@garfield.linsyssoft.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-SystemSpamProbe: GOOD 0.0000254 2de2ded3ea01eeaed84bf9adf8f17a10
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all
 
-Mark nibblemap const
+--=-TVUGqdff8sXzYLRjRH94
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+The updated patch is attached. comments inline...
 
-diff -r 6c0a10cc415a fs/affs/bitmap.c
---- a/fs/affs/bitmap.c	Thu Jul  5 16:10:16 2007 -0700
-+++ b/fs/affs/bitmap.c	Fri Jul 13 12:21:14 2007 +0200
-@@ -11,7 +11,7 @@
+On Tue, 2007-07-10 at 22:40 -0700, Andrew Morton wrote:
+> > If we exceed 65000 subdirectories in an htree directory it sets the
+> > inode link count to 1 and no longer counts subdirectories.  The
+> > directory link count is not actually used when determining if a
+> > directory is empty, as that only counts subdirectories and not regular
+> > files that might be in there. 
+> > 
+> > A EXT4_FEATURE_RO_COMPAT_DIR_NLINK flag has been added and it is set if
+> > the subdir count for any directory crosses 65000.
+> > 
+> 
+> Would I be correct in assuming that a later fsck will clear
+> EXT4_FEATURE_RO_COMPAT_DIR_NLINK if there are no longer any >65000 subdir
+> directories?
+> 
+> If so, that is worth a mention in the changelog, perhaps?
+
+The changelog has been updated to include this.
+
+> >  
+> > +static inline void ext4_inc_count(handle_t *handle, struct inode *inode)
+> > +{
+> > +	inc_nlink(inode);
+> > +	if (is_dx(inode) && inode->i_nlink > 1) {
+> > +		/* limit is 16-bit i_links_count */
+> > +		if (inode->i_nlink >= EXT4_LINK_MAX || inode->i_nlink == 2) {
+> > +			inode->i_nlink = 1;
+> > +			EXT4_SET_RO_COMPAT_FEATURE(inode->i_sb,
+> > +					      EXT4_FEATURE_RO_COMPAT_DIR_NLINK);
+> > +		}
+> > +	}
+> > +}
+> 
+> Looks too big to be inlined.
+> 
+> Why do we set EXT4_FEATURE_RO_COMPAT_DIR_NLINK if i_nlink==2?
+
+I have added a comment for this. (since it indicates that nlinks==1
+previously).
+
+> 
+> > +static inline void ext4_dec_count(handle_t *handle, struct inode *inode)
+> > +{
+> > +	drop_nlink(inode);
+> > +	if (S_ISDIR(inode->i_mode) && inode->i_nlink == 0)
+> > +		inc_nlink(inode);
+> > +}
+> 
+> Probably too big to inline.
+
+Removed the inline.
+
+> >  
+> > -	if (inode->i_nlink >= EXT4_LINK_MAX)
+> > +	if (EXT4_DIR_LINK_MAX(inode))
+> >  		return -EMLINK;
+> 
+> argh.  WHY_IS_EXT4_FULL_OF_UPPER_CASE_MACROS_WHICH_COULD_BE_IMPLEMENTED
+> as_lower_case_inlines?  Sigh.  It's all the old-timers, I guess.
+> 
+> EXT4_DIR_LINK_MAX() is buggy: it evaluates its arg twice.
+
+#define EXT4_DIR_LINK_MAX(dir) (!is_dx(dir) && (dir)->i_nlink >= EXT4_LINK_MAX)
+
+This just checks if directory has hash indexing in which case we need not worry about EXT4_LINK_MAX subdir limit. If directory is not hash indexed then we will need to enforce a max subdir limit. 
+
+Sorry, I didn't understand what is the problem with this macro?
+
+Thanks,
+Kalpak.
+
+--=-TVUGqdff8sXzYLRjRH94
+Content-Disposition: attachment; filename=ext4_remove_subdirs_limit.patch
+Content-Type: text/x-patch; name=ext4_remove_subdirs_limit.patch; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+This patch adds support to ext4 for allowing more than 65000
+subdirectories. Currently the maximum number of subdirectories is capped
+at 32000.
+
+If we exceed 65000 subdirectories in an htree directory it sets the
+inode link count to 1 and no longer counts subdirectories.  The
+directory link count is not actually used when determining if a
+directory is empty, as that only counts subdirectories and not regular
+files that might be in there. 
+
+A EXT4_FEATURE_RO_COMPAT_DIR_NLINK flag has been added and it is set if
+the subdir count for any directory crosses 65000. A later fsck will clear
+EXT4_FEATURE_RO_COMPAT_DIR_NLINK if there are no longer any directory
+with >65000 subdirs.
+
+Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
+Signed-off-by: Kalpak Shah <kalpak@clusterfs.com>
+
+
+---
+ fs/ext4/namei.c         |   52 +++++++++++++++++++++++++++++++++++-------------
+ include/linux/ext4_fs.h |    4 ++-
+ 2 files changed, 41 insertions(+), 15 deletions(-)
+
+Index: linux-2.6.22/fs/ext4/namei.c
+===================================================================
+--- linux-2.6.22.orig/fs/ext4/namei.c
++++ linux-2.6.22/fs/ext4/namei.c
+@@ -1617,6 +1617,35 @@ static int ext4_delete_entry (handle_t *
+ 	return -ENOENT;
+ }
  
- /* This is, of course, shamelessly stolen from fs/minix */
- 
--static int nibblemap[] = { 0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4 };
-+static const int nibblemap[] = { 0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4 };
- 
- static u32
- affs_count_free_bits(u32 blocksize, const void *data)
-diff -r 6c0a10cc415a fs/ext2/balloc.c
---- a/fs/ext2/balloc.c	Thu Jul  5 16:10:16 2007 -0700
-+++ b/fs/ext2/balloc.c	Fri Jul 13 12:21:14 2007 +0200
-@@ -522,7 +522,7 @@ io_error:
- 
- #ifdef EXT2FS_DEBUG
- 
--static int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
-+static const int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
- 
- unsigned long ext2_count_free (struct buffer_head * map, unsigned int numchars)
++/*
++ * DIR_NLINK feature is set if 1) nlinks > EXT4_LINK_MAX or 2) nlinks == 2,
++ * since this indicates that nlinks count was previously 1.
++ */
++static void ext4_inc_count(handle_t *handle, struct inode *inode)
++{
++	inc_nlink(inode);
++	if (is_dx(inode) && inode->i_nlink > 1) {
++		/* limit is 16-bit i_links_count */
++		if (inode->i_nlink >= EXT4_LINK_MAX || inode->i_nlink == 2) {
++			inode->i_nlink = 1;
++			EXT4_SET_RO_COMPAT_FEATURE(inode->i_sb,
++					      EXT4_FEATURE_RO_COMPAT_DIR_NLINK);
++		}
++	}
++}
++
++/*
++ * If a directory had nlink == 1, then we should let it be 1. This indicates
++ * directory has >EXT4_LINK_MAX subdirs.
++ */
++static void ext4_dec_count(handle_t *handle, struct inode *inode)
++{
++	drop_nlink(inode);
++	if (S_ISDIR(inode->i_mode) && inode->i_nlink == 0)
++		inc_nlink(inode);
++}
++
++
+ static int ext4_add_nondir(handle_t *handle,
+ 		struct dentry *dentry, struct inode *inode)
  {
-diff -r 6c0a10cc415a fs/ext3/bitmap.c
---- a/fs/ext3/bitmap.c	Thu Jul  5 16:10:16 2007 -0700
-+++ b/fs/ext3/bitmap.c	Fri Jul 13 12:21:14 2007 +0200
-@@ -13,7 +13,7 @@
+@@ -1713,7 +1742,7 @@ static int ext4_mkdir(struct inode * dir
+ 	struct ext4_dir_entry_2 * de;
+ 	int err, retries = 0;
  
- #ifdef EXT3FS_DEBUG
+-	if (dir->i_nlink >= EXT4_LINK_MAX)
++	if (EXT4_DIR_LINK_MAX(dir))
+ 		return -EMLINK;
  
--static int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
-+static const int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
+ retry:
+@@ -1736,7 +1765,7 @@ retry:
+ 	inode->i_size = EXT4_I(inode)->i_disksize = inode->i_sb->s_blocksize;
+ 	dir_block = ext4_bread (handle, inode, 0, 1, &err);
+ 	if (!dir_block) {
+-		drop_nlink(inode); /* is this nlink == 0? */
++		ext4_dec_count(handle, inode); /* is this nlink == 0? */
+ 		ext4_mark_inode_dirty(handle, inode);
+ 		iput (inode);
+ 		goto out_stop;
+@@ -1768,7 +1797,7 @@ retry:
+ 		iput (inode);
+ 		goto out_stop;
+ 	}
+-	inc_nlink(dir);
++	ext4_inc_count(handle, dir);
+ 	ext4_update_dx_flag(dir);
+ 	ext4_mark_inode_dirty(handle, dir);
+ 	d_instantiate(dentry, inode);
+@@ -2033,9 +2062,9 @@ static int ext4_rmdir (struct inode * di
+ 	retval = ext4_delete_entry(handle, dir, de, bh);
+ 	if (retval)
+ 		goto end_rmdir;
+-	if (inode->i_nlink != 2)
++	if (!EXT4_DIR_LINK_EMPTY(inode))
+ 		ext4_warning (inode->i_sb, "ext4_rmdir",
+-			      "empty directory has nlink!=2 (%d)",
++			      "empty directory has too many links (%d)",
+ 			      inode->i_nlink);
+ 	clear_nlink(inode);
+ 	/* There's no need to set i_disksize: the fact that i_nlink is
+@@ -2045,7 +2074,7 @@ static int ext4_rmdir (struct inode * di
+ 	ext4_orphan_add(handle, inode);
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = ext4_current_time(inode);
+ 	ext4_mark_inode_dirty(handle, inode);
+-	drop_nlink(dir);
++	ext4_dec_count(handle, dir);
+ 	ext4_update_dx_flag(dir);
+ 	ext4_mark_inode_dirty(handle, dir);
  
- unsigned long ext3_count_free (struct buffer_head * map, unsigned int numchars)
- {
-diff -r 6c0a10cc415a fs/ext4/bitmap.c
---- a/fs/ext4/bitmap.c	Thu Jul  5 16:10:16 2007 -0700
-+++ b/fs/ext4/bitmap.c	Fri Jul 13 12:21:14 2007 +0200
-@@ -13,7 +13,7 @@
+@@ -2096,7 +2125,7 @@ static int ext4_unlink(struct inode * di
+ 	dir->i_ctime = dir->i_mtime = ext4_current_time(dir);
+ 	ext4_update_dx_flag(dir);
+ 	ext4_mark_inode_dirty(handle, dir);
+-	drop_nlink(inode);
++	ext4_dec_count(handle, inode);
+ 	if (!inode->i_nlink)
+ 		ext4_orphan_add(handle, inode);
+ 	inode->i_ctime = ext4_current_time(inode);
+@@ -2146,7 +2175,7 @@ retry:
+ 		err = __page_symlink(inode, symname, l,
+ 				mapping_gfp_mask(inode->i_mapping) & ~__GFP_FS);
+ 		if (err) {
+-			drop_nlink(inode);
++			ext4_dec_count(handle, inode);
+ 			ext4_mark_inode_dirty(handle, inode);
+ 			iput (inode);
+ 			goto out_stop;
+@@ -2172,8 +2201,9 @@ static int ext4_link (struct dentry * ol
+ 	struct inode *inode = old_dentry->d_inode;
+ 	int err, retries = 0;
  
- #ifdef EXT4FS_DEBUG
+-	if (inode->i_nlink >= EXT4_LINK_MAX)
++	if (EXT4_DIR_LINK_MAX(inode))
+ 		return -EMLINK;
++
+ 	/*
+ 	 * Return -ENOENT if we've raced with unlink and i_nlink is 0.  Doing
+ 	 * otherwise has the potential to corrupt the orphan inode list.
+@@ -2191,7 +2221,7 @@ retry:
+ 		handle->h_sync = 1;
  
--static int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
-+static const int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
+ 	inode->i_ctime = ext4_current_time(inode);
+-	inc_nlink(inode);
++	ext4_inc_count(handle, inode);
+ 	atomic_inc(&inode->i_count);
  
- unsigned long ext4_count_free (struct buffer_head * map, unsigned int numchars)
- {
-diff -r 6c0a10cc415a fs/minix/bitmap.c
---- a/fs/minix/bitmap.c	Thu Jul  5 16:10:16 2007 -0700
-+++ b/fs/minix/bitmap.c	Fri Jul 13 12:21:14 2007 +0200
-@@ -17,7 +17,7 @@
- #include <linux/bitops.h>
- #include <linux/sched.h>
+ 	err = ext4_add_nondir(handle, dentry, inode);
+@@ -2323,7 +2353,7 @@ static int ext4_rename (struct inode * o
+ 	}
  
--static int nibblemap[] = { 4,3,3,2,3,2,2,1,3,2,2,1,2,1,1,0 };
-+static const int nibblemap[] = { 4,3,3,2,3,2,2,1,3,2,2,1,2,1,1,0 };
+ 	if (new_inode) {
+-		drop_nlink(new_inode);
++		ext4_dec_count(handle, new_inode);
+ 		new_inode->i_ctime = ext4_current_time(new_inode);
+ 	}
+ 	old_dir->i_ctime = old_dir->i_mtime = ext4_current_time(old_dir);
+@@ -2334,11 +2364,13 @@ static int ext4_rename (struct inode * o
+ 		PARENT_INO(dir_bh->b_data) = cpu_to_le32(new_dir->i_ino);
+ 		BUFFER_TRACE(dir_bh, "call ext4_journal_dirty_metadata");
+ 		ext4_journal_dirty_metadata(handle, dir_bh);
+-		drop_nlink(old_dir);
++		ext4_dec_count(handle, old_dir);
+ 		if (new_inode) {
+-			drop_nlink(new_inode);
++			/* checked empty_dir above, can't have another parent,
++			 * ext3_dec_count() won't work for many-linked dirs */
++			new_inode->i_nlink = 0;
+ 		} else {
+-			inc_nlink(new_dir);
++			ext4_inc_count(handle, new_dir);
+ 			ext4_update_dx_flag(new_dir);
+ 			ext4_mark_inode_dirty(handle, new_dir);
+ 		}
+Index: linux-2.6.22/include/linux/ext4_fs.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/ext4_fs.h
++++ linux-2.6.22/include/linux/ext4_fs.h
+@@ -71,7 +71,7 @@
+ /*
+  * Maximal count of links to a file
+  */
+-#define EXT4_LINK_MAX		32000
++#define EXT4_LINK_MAX		65000
  
- static unsigned long count_free(struct buffer_head *map[], unsigned numblocks, __u32 numbits)
- {
+ /*
+  * Macro-instructions used to manage several block sizes
+@@ -694,6 +694,7 @@ static inline int ext4_valid_inum(struct
+ #define EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+ #define EXT4_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
+ #define EXT4_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
++#define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
+ #define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
+ 
+ #define EXT4_FEATURE_INCOMPAT_COMPRESSION	0x0001
+@@ -712,6 +713,7 @@ static inline int ext4_valid_inum(struct
+ 					 EXT4_FEATURE_INCOMPAT_64BIT)
+ #define EXT4_FEATURE_RO_COMPAT_SUPP	(EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER| \
+ 					 EXT4_FEATURE_RO_COMPAT_LARGE_FILE| \
++					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK | \
+ 					 EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE | \
+ 					 EXT4_FEATURE_RO_COMPAT_BTREE_DIR)
+ 
+
+--=-TVUGqdff8sXzYLRjRH94--
+
