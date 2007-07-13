@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932715AbXGMNFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbXGMNKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932715AbXGMNFf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758003AbXGMNFZ
+	id S1760573AbXGMNKa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbXGMNKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:05:25 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:23834 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758874AbXGMNFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:05:24 -0400
-Date: Fri, 13 Jul 2007 15:05:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-Message-ID: <20070713130508.GQ5328@kernel.dk>
-References: <20070704132212.726923000@pademelon.sonytel.be> <20070704132346.591348000@pademelon.sonytel.be> <1184331741.3402.13.camel@localhost.localdomain>
+	Fri, 13 Jul 2007 09:10:23 -0400
+Received: from mail-gw3.adaptec.com ([216.52.22.36]:37542 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754639AbXGMNKX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 09:10:23 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184331741.3402.13.camel@localhost.localdomain>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: howto create partitions bigger than 2TB 
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Fri, 13 Jul 2007 09:10:19 -0400
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01BF5817@otce2k301.adaptec.com>
+In-Reply-To: <4697760E.4070803@e-dict.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: howto create partitions bigger than 2TB 
+Thread-Index: AcfFTWly1DinwtC9RPiIMX/iEnD1ywAAaEhg
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Ingo Freund" <linux-kernel-news@e-dict.net>,
+       <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13 2007, James Bottomley wrote:
-> On Wed, 2007-07-04 at 15:22 +0200, Geert Uytterhoeven wrote:
-> > +                       kaddr = kmap_atomic(sgpnt->page, KM_USER0);
-> > +                       if (!kaddr)
-> > +                               return -1;
-> > +                       len = sgpnt->length;
-> > +                       if ((req_len + len) > buflen) {
-> > +                               active = 0;
-> > +                               len = buflen - req_len;
-> > +                       }
-> > +                       memcpy(kaddr + sgpnt->offset, buf + req_len,
-> > len);
-> > +                       kunmap_atomic(kaddr, KM_USER0);
-> 
-> This isn't a SCSI objection, but this sequence appears several times in
-> this driver.  It's wrong for a non-PIPT architecture (and I believe the
-> PS3 is VIPT) because you copy into the kernel alias for the page, which
-> dirties the line in the cache of that alias (the user alias cache line
-> was already invalidated).  However, unless you flush the kernel alias to
-> main memory, the user could read stale data.  The way this is supposed
-> to be done is to do a 
-> 
-> flush_kernel_dcache_page(kaddr)
-> 
-> before doing the kunmap.
-> 
-> Otherwise it looks OK from the SCSI point of view.
+Put a file system on the entire device, stop trying to partition it.
 
-Well, even worse is that fact that it's using KM_USER0 from interrupt
-context.
+The standard DOS partition table is of no use to you above 2TB.
 
--- 
-Jens Axboe
+Sincerely -- Mark Salyzyn
 
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org 
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Ingo Freund
+> Sent: Friday, July 13, 2007 8:55 AM
+> To: linux-kernel@vger.kernel.org
+> Subject: howto create partitions bigger than 2TB 
+> 
+> Hi
+> 
+> I've got a RAID5 (driver aacraid for an ICP9047MA) with four
+> 750GB hdds which provides a 2.25TB sized device.
+> None of the until now used tools will work with that device.
+> fdisk complains about missing cylinder count.
+> cfdisk misses the device size.
+> parted shows the right device size but only creates a partion
+> with 51GB.
+> What am I supposed to do to work with this device?
+> Which fs can handle it?
+> (CONFIG LARGE BLOCK is on)
+> We are talking about a 32Bit machine with vanilla kernel 2.6.21.5.
+> 
+> Thanks in advance,
+> Regards - Ingo.
+> -
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
