@@ -1,130 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbXGMRK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbXGMRMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760590AbXGMRK2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 13:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbXGMRKT
+	id S1761338AbXGMRMk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 13:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbXGMRMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 13:10:19 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:48947 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752051AbXGMRKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 13:10:17 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: trenn@suse.de
-Subject: Re: [PATCH - 0/2] Identify native drivers and ACPI subsystem accessing the same resources
-Date: Fri, 13 Jul 2007 10:56:45 -0600
+	Fri, 13 Jul 2007 13:12:32 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:35087
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751843AbXGMRMb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 13:12:31 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+Subject: Re: Documentation of kernel messages (Summary)
+Date: Fri, 13 Jul 2007 13:12:27 -0400
 User-Agent: KMail/1.9.6
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Bernhard Walle <bwalle@suse.de>,
-       "Starikovskiy, Alexey Y" <aystarik@gmail.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, lm-sensors@lm-sensors.org,
-       Jean Delvare <khali@linux-fr.org>
-References: <1184331492.3960.100.camel@d88.suse.de>
-In-Reply-To: <1184331492.3960.100.camel@d88.suse.de>
+Cc: LeoLi@freescale.com, gh@us.ibm.com, hpa@zytor.com,
+       kunai@linux-foundation.jp, holzheu@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       lf_kernel_messages@linux-foundation.jp.nec.com
+References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net> <200707121335.55817.rob@landley.net> <20070713.115446.48513196.tshibata@ab.jp.nec.com>
+In-Reply-To: <20070713.115446.48513196.tshibata@ab.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707131056.46193.bjorn.helgaas@hp.com>
+Message-Id: <200707131312.28004.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 July 2007 06:58:12 am Thomas Renninger wrote:
-> This patch should:
-> a) Identify machines where potentially ACPI interference can happen and
->    tell the user which legacy drivers are affected.
-> b) Identify drivers/HW where we might need an ACPI driver in future
-> c) If it works out (if not too much important drivers are affected)
->    enforce that native, non-ACPI drivers using the same IO/System
->    memory addresses as declared in ACPI namespace fail to load.
+On Thursday 12 July 2007 10:54:46 pm Tsugikazu Shibata wrote:
+> On Thu, 12 Jul 2007 13:35:54 -0400, rob wrote:
+> > On Thursday 12 July 2007 9:53:54 am Li Yang-r58472 wrote:
+> > > > Fielding patches and questions sounds like plenty to me...)
+> > >
+> > > I do think the documentation translation is very necessary even when
+> > > there is a language maintainer, especially for the policy documents as
+> > > HOWTO, codestyle , and etc.  The contributors should go through these
+> > > policies and check their code for compliance before going to the
+> > > language maintainer for help, or there will be too much for the
+> > > language maintainer to translate.  The language maintainer doesn't need
+> > > to translate all the documents himself, but he can help to coordinate
+> > > the translation effort and help to make it update to date.
+> >
+> > It would help if all the policy documents got grouped into a single
+> > Documentation/development directory so we could separate "policy
+> > documents in each language would be nice" from "that document about the
+> > amiga zorro bus really needs to be kept up-to-date in Navajo and that
+> > should be in the kernel tarball please".
+> >
+> > Lemme see, which ones are we talking about?  The candidates are:
+> >   applying-patches.txt
+> >   BUG-HUNTING
+> >   Changes
+> >   CodingStyle
+> >   debugging-modules.txt
+>
+> This file seems mostly technical. may not policy related document.
 
-I like some of the ideas here, but as you say, there are some
-issues to work out.
+Yeah, I guess so.  My mental filter was actually more like "how to do linux 
+development", and it seemed both short and easy to translate, and also 
+generally relevant to the majority of developers no matter what subsystem 
+they're working on.
 
-> There are two kind of IO/System memory declarations in ACPI ASL
-> language: general variables and device specific resource
-> declarations.
-> The latter is already handled by pnpacpi and resources get requested 
-> from pnpacpi already. These resources can (with this patch) partly
-> already be requested by the general ACPI declarations and this patch
-> should handle this gracefully.
+But I agree, it's not policy.
 
-The PNP core does not request resources for devices that are active
-at boot.  Those resources currently don't get requested until a driver
-claims the device.  I think this is a bug that we should fix.
+> >   feature-removal-schedule.txt
+> >   HOWTO
+> >   kernel-docs.txt
+> >   language-maintainers.txt
+> >   ManagementStyle
+> >   oops-tracing.txt
+> >   SecurityBugs
+> >   sparse.txt
 
-> ACPI drivers (e.g. pnpacpi and others) are allowed to request these
-> resources (marked IORESOURCE_SHARED) through acpi_request_region().
+That one's not policy either, but it is general non-subsystem-specific 
+development.  Probably "applying-patches.txt" above goes in the same bucket.
 
-I'm not a fan of IORESOURCE_SHARED.  I think that will make people
-think it's acceptable to share a device between several drivers.  It
-would be better to keep the ugliness of forcibly taking over a resource,
-just as an incentive to clean up the drivers.
+Whether or not to include that bucket in the new directory depends on whether 
+the directory is labeled "development" or "policy" or something else...
 
-> Here two examples of not nice things that could happen with lax option:
-> 
->  a) legacy drivers (in this case arch/x86_64/setup.c) request resources
->     before ACPI variables (shared resources) are requested:
-> (/proc/ioports):
-> 0080-008f : dma page reg
->   0080-0080 : ACPI DEB0*
->     In this case it's working as "dma page reg" includes the ACPI 
->     SystemIO variable's space. If the ACPI variable is bigger, I expect
->     the ACPI variable would not get inserted...
+> >   stable_api_nonsense.txt
+> >   stable_kernel_rules.txt
+> >   SubmitChecklist
+> >   SubmittingDrivers
+> >   SubmittingPatches
+> >   volatile-considered-harmful.txt
+>
+> How about adding;
+> kernel-doc-nano-HOWTO.txt
 
-I think the best thing would be to reserve the PNP (including ACPI)
-resources first, then the legacy things from setup.c.  I haven't looked
-into that to see whether it's feasible.  Then you might have something
-like this:
+The problem is, the generated htmdocs are in english.  This file is about how 
+to generate (and author) English documentation that won't be translated.  
+What's the point of translating the instructions if the result won't be 
+translated?
 
-  0080-008f : 00:07 PNP0200
-    0080-008f : dma page reg
+On the other hand, if the authors of patches _do_ put javadoc comments into 
+the source code, the language maintainer should be aware of them and should 
+have some easy way to translate them for the list...
 
->  b) A legacy driver requests resources bigger than the ACPI SystemIO 
->     variable, but the ACPI resource variable lies within the requested
->     space. Example:
-> (/proc/ioports):
-> 0070-0071 : rtc0
-> 0072-0073 : ACPI KSB0*
-> (syslog):
-> IO region [rtc] conflicts with [ACPI KSB0].  Ignoring.., system might
-> run unstable.
-> rtc: I/O resource 70 is not free.
-> 
->     The rtc driver seems to request the whole rtc space (0x70-0x77)
->     which fails because 0x72-0x73 has already been requested SHARED by
->     an ACPI SystemIO variable. At least parts of the rtc space got
->     requested (rtc0), I haven't checked whether the device was working
->     correctly...
+> These three slightly include some policy in the documents but purpose
+> are mostly technical. (So, it's just comment)
+> devices.txt
+> kernel-parameters.txt
+> unicode.txt
 
-I tripped over a couple of these when I changed the PNP core to request
-resources for active devices.  The RTC is one; often BIOS says the RTC
-is at 0x70-0x71 and 0x72-0x73, but the rtc drivers like to claim 0x8
-(RTC_IO_EXTENT) ports.  However, I think the driver only *uses* two
-ports, so we should change the driver to only request what it is
-using.
+Extracting the policy out into separate documents I could see, but I agree 
+those are primarily technical.
 
-Another case is the "dma1" region from e820.c.  Currently this is
-0x0-0x1f, but most PNP0c02 devices only respond from 0x10-0x1f.  So
-I think we should start by splitting "dma1" into 0x0-0xf and 0x10-0x1f.
-
-> Another issue that needs fix up is that the motherboad driver is not
-> requesting it's resources anymore (which it still did with 2.6.18 - I
-> didn't dig here anymore, maybe someone can comment why this has changed)
-
-I don't know what's up here; I haven't looked at this recently.
-
-> Summary:
-> ...
->   - Not fixable (maybe someone has an idea): If ACPI IO region declares
->     a smaller IO part than the later native driver (e.g. example above
->     with rtc driver), the partially overlapping resource cannot be
->     registered and the native driver fails to load with strict and lax
->     option.
-
-Assuming the BIOS describes the region correctly, I'd say a driver
-that claims a larger region is buggy and should be fixed.
-
-Bjorn
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
