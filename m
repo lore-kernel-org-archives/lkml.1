@@ -1,95 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936252AbXGMPKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXGMPKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936252AbXGMPKZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 11:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761283AbXGMPKH
+	id S933012AbXGMPKn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 11:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936335AbXGMPK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 11:10:07 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:49524 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760565AbXGMPKF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 11:10:05 -0400
-Date: Fri, 13 Jul 2007 17:10:03 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Arnd Bergmann <arnd@arndb.de>
-cc: linuxppc-dev@ozlabs.org, James Bottomley <James.Bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <200707131619.54898.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
- <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
- <1184335333.3402.20.camel@localhost.localdomain> <200707131619.54898.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-967579323-1184339403=:18802"
+	Fri, 13 Jul 2007 11:10:29 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:34384 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936283AbXGMPK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 11:10:27 -0400
+Date: Fri, 13 Jul 2007 16:16:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
+Message-ID: <20070713161612.2f2ebb0b@the-village.bc.nu>
+In-Reply-To: <4693D9B6.4090408@ru.mvista.com>
+References: <20070221011922.GA1777@freefall.freebsd.org>
+	<200702210342.20775.bzolnier@gmail.com>
+	<466EEFD6.9030001@ru.mvista.com>
+	<200706160123.55636.bzolnier@gmail.com>
+	<4693D9B6.4090408@ru.mvista.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584337861-967579323-1184339403=:18802
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 13 Jul 2007, Arnd Bergmann wrote:
-> On Friday 13 July 2007, James Bottomley wrote:
-> > > IC.
-> > > 
-> > >   - flush_kernel_dcache_page() is a no-op on ppc64
-> > >     (ARCH_HAS_FLUSH_KERNEL_DCACHE_PAGE is defined on parisc only).
-> > > 
-> > >   - For reference, drivers/scsi/ipr.c (another ppc64 driver) just uses a plain
-> > >     kmap/memcpy/kunmap sequence
-> > > 
-> > > So what should I do?
-> > 
-> > Ask someone who knows the architecture ... Anton, Paulus or Benh ... I'm
-> > fairly certain PPC is VIPT and will need some kind of alias
-> > resolution ... perhaps its associative enough not to let the aliases be
-> > a problem.
+O> >>    BTW, why the timeout is so damn long? 2*WAIT_CMD is 20 secs, and if DMA is 
+> >>not complete or interrupt pending, it may wait 10 more secs...
 > 
-> I'm pretty sure that no ppc64 machine needs alias resolution in the kernel,
-> although some are VIPT. Last time we discussed this, Segher explained it
-> to me, but I don't remember which way Cell does it. IIRC, it automatically
-> flushes cache lines that are accessed through aliases.
+> > I really don't remember... :)
+> 
+> > Maybe Mark or Alan could help with figuring this out.
+> 
+>     They also have probably forgotten. :-)
 
-Thanks for confirming!
+Because that value seemed to work ok. Mark set the timeouts way back in
+history and I never touched most of them.
 
-> It's probably a good idea to have the flush_kernel_dcache_page() in there
-> anyway, if only to serve as an example for people that copy it into
-> architecture-independent drivers, same as what we do for the
-> k{,un}map_atomic() that is also not required on ppc64.
-
-Now my next question: why should I add it, if currently no single driver in
-mainline calls flush_kernel_dcache_page()? 
-
-`git grep' finds it in the following files only:
-    Documentation/cachetlb.txt
-    arch/parisc/kernel/cache.c
-    arch/parisc/kernel/pacache.S
-    include/asm-parisc/cacheflush.h
-    include/linux/highmem.h
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village Â· Da Vincilaan 7-D1 Â· B-1935 Zaventem Â· Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 Â· B-1840 Londerzeel Â· Belgium	
-VAT BE 0413.825.160 Â· RPR Brussels	
-Fortis Bank Zaventem Â· Swift GEBABEBB08A Â· IBAN BE39001382358619
----584337861-967579323-1184339403=:18802--
