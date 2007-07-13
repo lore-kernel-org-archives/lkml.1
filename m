@@ -1,68 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936121AbXGMSqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936914AbXGMSqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936121AbXGMSqP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 14:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbXGMSp7
+	id S936914AbXGMSqc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 14:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936681AbXGMSqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 14:45:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37422 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756492AbXGMSp6 (ORCPT
+	Fri, 13 Jul 2007 14:46:17 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:54884 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935494AbXGMSqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 14:45:58 -0400
-Date: Fri, 13 Jul 2007 11:45:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc][patch] slob: improvements
-Message-Id: <20070713114532.07f9fd53.akpm@linux-foundation.org>
-In-Reply-To: <20070713183506.GN11115@waste.org>
-References: <20070515084305.GA28631@wotan.suse.de>
-	<20070515151731.GO11115@waste.org>
-	<20070515233347.GA20468@wotan.suse.de>
-	<20070713112725.d75acf1d.randy.dunlap@oracle.com>
-	<20070713183506.GN11115@waste.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 13 Jul 2007 14:46:13 -0400
+Date: Sat, 14 Jul 2007 00:16:25 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Cc: xfs@oss.sgi.com, tytso@mit.edu, cmm@us.ibm.com, suparna@in.ibm.com,
+       adilger@clusterfs.com, dgc@sgi.com, michael.kerrisk@gmx.net
+Subject: [PATCH 1/5][TAKE8] manpage for fallocate
+Message-ID: <20070713184625.GB12156@amitarora.in.ibm.com>
+References: <20070713184125.GA12156@amitarora.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713184125.GA12156@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 13:35:06 -0500
-Matt Mackall <mpm@selenic.com> wrote:
+Following is the modified version of the manpage originally submitted by
+David Chinner. Please use `nroff -man fallocate.2 | less` to view.
 
-> On Fri, Jul 13, 2007 at 11:27:25AM -0700, Randy Dunlap wrote:
-> > > Index: linux-2.6/init/Kconfig
-> > > ===================================================================
-> > > --- linux-2.6.orig/init/Kconfig
-> > > +++ linux-2.6/init/Kconfig
-> > > @@ -529,7 +529,7 @@ config SLUB
-> > >  	   way and has enhanced diagnostics.
-> > >  
-> > >  config SLOB
-> > > -	depends on EMBEDDED && !SPARSEMEM
-> > > +	depends on EMBEDDED && !SPARSEMEM && !ARCH_USES_SLAB_PAGE_STRUCT
-> > >  	bool "SLOB (Simple Allocator)"
-> > >  	help
-> > >  	   SLOB replaces the SLAB allocator with a drastically simpler
-> > 
-> > Is this patch going in?  I have a randconfig (2.6.22) with
-> > CONFIG_SLOB=y
-> > CONFIG_NUMA=y
-> > CONFIG_SMP=y
-> > The kernel build fails with these config symbols set like that.
-> > It looks like SLOB needs that additional
-> > 	&& !ARCH_USES_SLAB_PAGE_STRUCT
-> > (or 	&& !SMP)
-> 
-> I think Andrew intends to push it to 2.6.23, yes.
-> 
+Following changed from TAKE7:
+* Removed FALLOC_ALLOCATE and FALLOCATE_RESV_SPACE modes.
+* Described only single flag for mode, i.e. FALLOC_FL_KEEP_SIZE.
+* s/zero blocks/zeroed blocks/ as suggested by Dave.
+* Included <linux/falloc.h> instead of <fcntl.h>.
 
-Yup.
+Following changed from TAKE6 to TAKE7:
+Included changes suggested by Heikki Orsila and Barry Naujok.
 
-I had to hunt for it though.  Turns out I renamed the patch to
-slob-rework-freelist-handling.  Please don't give patches dopey titles like
-"slob improvements".
 
+.TH fallocate 2
+.SH NAME
+fallocate \- manipulate file space
+.SH SYNOPSIS
+.nf
+.B #include <linux/falloc.h>
+.PP
+.BI "long fallocate(int " fd ", int " mode ", loff_t " offset ", loff_t " len ");
+.SH DESCRIPTION
+The
+.B fallocate
+syscall allows a user to directly manipulate the allocated disk space
+for the file referred to by
+.I fd
+for the byte range starting at
+.I offset
+and continuing for
+.I len
+bytes.
+The
+.I mode
+parameter determines the operation to be performed on the given range.
+Currently there is only one flag supported for the mode argument.
+.TP
+.B FALLOC_FL_KEEP_SIZE
+allocates and initialises to zero the disk space within the given range.
+After a successful call, subsequent writes are guaranteed not to fail because
+of lack of disk space.  Even if the size of the file is less than
+.IR offset + len ,
+the file size is not changed. This allows allocation of zeroed blocks beyond
+the end of file and is useful for optimising append workloads.
+.PP
+If
+.B FALLOC_FL_KEEP_SIZE
+flag is not specified in the mode argument, the default behavior of this system
+call is almost same as when this flag is passed. The only difference is that
+on success, the file size will be changed if the
+.IR offset + len
+is greater than the file size. This default behavior closely resembles
+.BR posix_fallocate (3)
+and is intended as a method of optimally implementing this function.
+.PP
+.B fallocate
+may allocate a larger range than that was specified.
+.SH RETURN VALUE
+.B fallocate
+returns zero on success, or an error number on failure.
+Note that
+.I errno
+is not set.
+.SH ERRORS
+.TP
+.B EBADF
+.I fd
+is not a valid file descriptor, or is not opened for writing.
+.TP
+.B EFBIG
+.IR offset + len
+exceeds the maximum file size.
+.TP
+.B EINVAL
+.I offset
+was less than 0, or
+.I len
+was less than or equal to 0.
+.TP
+.B ENODEV
+.I fd
+does not refer to a regular file or a directory.
+.TP
+.B ENOSPC
+There is not enough space left on the device containing the file
+referred to by
+.IR fd .
+.TP
+.B ESPIPE
+.I fd
+refers to a pipe of file descriptor.
+.TP
+.B ENOSYS
+The filesystem underlying the file descriptor does not support this
+operation.
+.TP
+.B EINTR
+A signal was caught during execution
+.TP
+.B EIO
+An I/O error occurred while reading from or writing to a file system.
+.TP
+.B EOPNOTSUPP
+The mode is not supported on the file descriptor.
+.SH AVAILABILITY
+The
+.B fallocate
+system call is available since 2.6.XX
+.SH SEE ALSO
+.BR posix_fallocate (3),
+.BR posix_fadvise (3),
+.BR ftruncate (3).
