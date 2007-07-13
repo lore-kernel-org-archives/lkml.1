@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbXGMKBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbXGMKBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbXGMKBR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 06:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbXGMKBG
+	id S1756268AbXGMKBa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 06:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXGMKBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 06:01:06 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:47264 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752958AbXGMKBE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 06:01:04 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 13 Jul 2007 05:58:30 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Christoph Hellwig <hch@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Make asm-generic/ioctl.h more generic using conditionals.
-In-Reply-To: <20070713095620.GD16304@infradead.org>
-Message-ID: <Pine.LNX.4.64.0707130557070.6531@localhost.localdomain>
-References: <Pine.LNX.4.64.0707100629070.11966@localhost.localdomain>
- <20070713095620.GD16304@infradead.org>
+	Fri, 13 Jul 2007 06:01:14 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:19738 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754123AbXGMKBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 06:01:12 -0400
+Date: Fri, 13 Jul 2007 12:00:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: On current git head webservers stopped working
+Message-ID: <20070713100057.GD5328@kernel.dk>
+References: <469745A8.6010005@googlemail.com> <20070713093459.GB5328@kernel.dk> <46974ABF.9030408@googlemail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46974ABF.9030408@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007, Christoph Hellwig wrote:
+On Fri, Jul 13 2007, Gabriel C wrote:
+> Jens Axboe wrote:
+> > On Fri, Jul 13 2007, Gabriel C wrote:
+> >   
+> >> Hello ,
+> >>
+> >> While doing some tests with 2.6.22-git2 ( at the time head
+> >> 4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4 ) all my webservers stopped
+> >> working.
+> >> I can't get any file using wget or whatever else , everything hangs
+> >> after 1% forever.
+> >>
+> >> I bisected this and here the result:
+> >>
+> >> 534f2aaa6ab07cd71164180bc958a7dcde41db11 is first bad commit
+> >> commit 534f2aaa6ab07cd71164180bc958a7dcde41db11
+> >> Author: Jens Axboe <jens.axboe@oracle.com>
+> >> Date:   Fri Jun 1 14:52:37 2007 +0200
+> >>
+> >>     sys_sendfile: switch to using ->splice_read, if available
+> >>
+> >>     This patch makes sendfile prefer to use ->splice_read(), if it's
+> >>     available in the file_operations structure.
+> >>
+> >>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> >>
+> >> :040000 040000 b19013793692eee0f632b3703dca0bd40cea753f
+> >> ed50576c0d3f0d3ce9f1a2ac9336d1164b45f63f M      fs
+> >>     
+> >
+> > Does this work?
+> >   
+> 
+> Yes , it does. Thx :)
 
-> On Tue, Jul 10, 2007 at 06:33:26AM -0400, Robert P. J. Day wrote:
-> > + * Let any architecture override either of the following before
-> > + * including this file.
-> > + */
-> > +
-> > +#ifndef _IOC_SIZEBITS
-> > +# define _IOC_SIZEBITS	14
-> > +#endif
-> > +
-> > +#ifndef _IOC_DIRBITS
-> > +# define _IOC_DIRBITS	2
-> > +#endif
->
-> I don't think this is usefull.  It just makes it less obvious to
-> find this definition which must not change ever due to abi reasons
-> anyway.
+Great, I'll polish it a bit and get it upstream asap. Thanks for the
+report and quick test feedback!
 
-huh?
-
-alpha:
-
- #define _IOC_SIZEBITS  13
- #define _IOC_DIRBITS   3
-
-mips:
-
- #define _IOC_SIZEBITS  13
- #define _IOC_DIRBITS   3
-
-powerpc:
-
- #define _IOC_SIZEBITS  13
- #define _IOC_DIRBITS   3
-
-rday
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Jens Axboe
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
