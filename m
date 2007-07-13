@@ -1,212 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbXGMDqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbXGMDrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932570AbXGMDqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 23:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXGMDpx
+	id S1759629AbXGMDrR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 23:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbXGMDrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 23:45:53 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:4100 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755637AbXGMDpw (ORCPT
+	Thu, 12 Jul 2007 23:47:00 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:55656 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755637AbXGMDq7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 23:45:52 -0400
+	Thu, 12 Jul 2007 23:46:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=KPjBt9HHYhxq1M647sClwO23IMGMKtHr78XkxxuqBZYQTNPgZsSVo9gYutbisnKa4+YrcH1cVpTbwJGgQmbQRYD06snKjLNInZBBVVMXGXZyA5B/BXognddN9WPJv8GbK8qznKzVE+FolJC5+1WE9dzBnd8V4e11PRTDQ0g5poc=
-Date: Fri, 13 Jul 2007 11:48:22 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: kirk@hpc.ee.ntu.edu.tw, dwmw2@infradead.org, akpm@osdl.org,
-       linux-mtd@lists.infradead.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
-Message-ID: <20070713034822.GA2370@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20070712150135.GA4102@localhost.localdomain> <1184256718.32199.111.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184256718.32199.111.camel@weaponx.rchland.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=f/ZKycxSd7YQmw++pqEVuGWO5OZTODmzaK3xLkKRKzSH0Sy8LE9lUp1QrGm32uJIoNuLIToljRNAeNhocQ2uXcgoy+9pPvChFP4xg6gur26mwVuby2HnEeW9BnJ1xvksWJ/rBVkFe3h+lPZ3FXmzYtKjbPgaRCe0BmwwGZnCMiU=
+Message-ID: <4696F5AD.1050306@gmail.com>
+Date: Fri, 13 Jul 2007 12:46:53 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jim.houston@ccur.com, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org, Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+       raisch@de.ibm.com, Kristian Hoegsberg <krh@redhat.com>
+Subject: Re: [PATCH] fix idr_get_new_above id alias bugs
+References: <200707021919.27251.hnguyen@linux.vnet.ibm.com>	<1183422700.3130.27.camel@localhost.localdomain>	<200707041611.30056.hnguyen@linux.vnet.ibm.com>	<1184097931.3020.73.camel@localhost.localdomain> <20070712143501.2c2cdf1f.akpm@linux-foundation.org>
+In-Reply-To: <20070712143501.2c2cdf1f.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 11:11:58AM -0500, Josh Boyer wrote:
->On Thu, 2007-07-12 at 23:01 +0800, WANG Cong wrote:
-{snip}
+Hello,
 
->> +/* trivial struct to describe partition information*/
->
->Needs a space at the end.
->
->>  struct mtd_part_def
->>  {
->>  	int nums;
->> @@ -46,7 +46,7 @@
->>  	struct mtd_partition* mtd_part;
->>  };
->> 
->> -//static struct mtd_info *mymtd;
->> +/*static struct mtd_info *mymtd;*/
->
->Just delete this...
->
->>  static struct mtd_info* mtd_banks[FLASH_BANK_MAX];
->>  static struct map_info* map_banks[FLASH_BANK_MAX];
->>  static struct mtd_part_def part_banks[FLASH_BANK_MAX];
->> @@ -106,7 +106,7 @@
->>  	  .name = "jffs",
->>  	  .offset = 0x00200000,
->>  	  .size = 0x00200000,
->> -	  //.size = MTDPART_SIZ_FULL,
->> +	  /*.size = MTDPART_SIZ_FULL,*/
->
->Delete it...
->
->>  	}
->>  };
->>  #endif
->> @@ -121,10 +121,11 @@
->>  	flash_addr = bd->bi_flashstart;
->>  	flash_size = bd->bi_flashsize;
->> 
->> -	//request maximum flash size address space
->> +	/*request maximum flash size address space*/
->
->Spaces needed (repeat for the rest of the ones that don't have spaces
->either).
+Andrew Morton wrote:
+>> Hoang-Nam Nguyen reported a bug in idr_get_new_above() 
+>> which occurred with a starting id value like 0x3ffffffc.
+>> His test module easily reproduced the problem.  Thanks.
+>>
+>> The test revealed the following bugs:
+>>
+>> 1. Relying on shift operations which have undefined results
+>>    e.g.: 1 << n where n > word size.  On i386 an integer shift
+>>    only uses the low 5 bits of the shift count.
+>>
+>> 2. An off by one error which prevented the top most layer
+>>    of the radix tree from being allocated.  This meant that
+>>    sub_alloc() would allocate an entry in the existing portion
+>>    of the radix tree which aliased the requested address.  When
+>>    it tried to allocate id 0x40000000, it might use the slot 
+>>    belonging to id 0.
+>>
+>> 3. There was also a failure in the code which walked back up
+>>    the tree if an allocation failed.  The normal case is to
+>>    descend the tree checking the starting id value against the
+>>    bitmap at each level.  If the bit is set, we know that the
+>>    entire sub-tree is full and we can short cut the search.
+>>    We may still descend to the lowest level and find that the
+>>    portion of the id space we want is full.  In this case we
+>>    need to walk back up the tree and continue the search.
+>>    The existing code just returned to the previous level and
+>>    continued.  This resulted in an attempt to allocate an id
+>>    above 0x3ffffffc using the slot for id 0x3ffffc00 instead of
+>>    0x40000000 which it then claimed to have allocated.  The same
+>>    problem occurs with 0x3ff as the requested id value if it
+>>    is already in use.
 
-Thanks, Josh. Could you please check if this one is fine for you?
+The third one sounds like the bug I fixed.  With it fixed, I verified
+idr works correctly at least in the lower range of allocation by running
+it parallelly with simple bitmap allocator but haven't tested higher
+range like 0x3ffffffc.
 
-
-Change C++ style comments into K&R's.
-Cut long lines into pieces.
-Don't need to cast the return value of kmalloc().
-
-This patch is against 2.6.22.1.
-
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-
----
- tqm8xxl.c |   42 ++++++++++++++++++++++++------------------
- 1 file changed, 24 insertions(+), 18 deletions(-)
-
-Index: linux-2.6.22.1/drivers/mtd/maps/tqm8xxl.c
-===================================================================
---- a/drivers/mtd/maps/tqm8xxl.c	2007-07-13 11:33:23.000000000 +0800
-+++ b/drivers/mtd/maps/tqm8xxl.c	2007-07-13 11:38:19.000000000 +0800
-@@ -38,7 +38,7 @@
- #define FLASH_SIZE 0x00800000
- #define FLASH_BANK_MAX 4
- 
--// trivial struct to describe partition information
-+/* trivial struct to describe partition information */
- struct mtd_part_def
- {
- 	int nums;
-@@ -46,7 +46,6 @@
- 	struct mtd_partition* mtd_part;
- };
- 
--//static struct mtd_info *mymtd;
- static struct mtd_info* mtd_banks[FLASH_BANK_MAX];
- static struct map_info* map_banks[FLASH_BANK_MAX];
- static struct mtd_part_def part_banks[FLASH_BANK_MAX];
-@@ -106,7 +105,6 @@
- 	  .name = "jffs",
- 	  .offset = 0x00200000,
- 	  .size = 0x00200000,
--	  //.size = MTDPART_SIZ_FULL,
- 	}
- };
- #endif
-@@ -121,10 +119,11 @@
- 	flash_addr = bd->bi_flashstart;
- 	flash_size = bd->bi_flashsize;
- 
--	//request maximum flash size address space
-+	/* request maximum flash size address space */
- 	start_scan_addr = ioremap(flash_addr, flash_size);
- 	if (!start_scan_addr) {
--		printk(KERN_WARNING "%s:Failed to ioremap address:0x%x\n", __FUNCTION__, flash_addr);
-+		printk(KERN_WARNING "%s:Failed to ioremap address:0x%x\n",
-+			__FUNCTION__, flash_addr);
- 		return -EIO;
- 	}
- 
-@@ -132,20 +131,23 @@
- 		if(mtd_size >= flash_size)
- 			break;
- 
--		printk(KERN_INFO "%s: chip probing count %d\n", __FUNCTION__, idx);
-+		printk(KERN_INFO "%s: chip probing count %d\n",
-+			__FUNCTION__, idx);
- 
- 		map_banks[idx] = kzalloc(sizeof(struct map_info), GFP_KERNEL);
- 		if(map_banks[idx] == NULL) {
- 			ret = -ENOMEM;
--			/* FIXME: What if some MTD devices were probed already? */
-+			/* FIXME: What if some MTD devices were probed
-+			already? */
- 			goto error_mem;
- 		}
- 
--		map_banks[idx]->name = (char *)kmalloc(16, GFP_KERNEL);
-+		map_banks[idx]->name = kmalloc(16, GFP_KERNEL);
- 
- 		if (!map_banks[idx]->name) {
- 			ret = -ENOMEM;
--			/* FIXME: What if some MTD devices were probed already? */
-+			/* FIXME: What if some MTD devices were probed
-+			already? */
- 			goto error_mem;
- 		}
- 		sprintf(map_banks[idx]->name, "TQM8xxL%d", idx);
-@@ -170,7 +172,7 @@
- 			map_banks[idx]->phys += mtd_banks[idx-1]->size;
- 		}
- 
--		//start to probe flash chips
-+		/* start to probe flash chips */
- 		mtd_banks[idx] = do_map_probe("cfi_probe", map_banks[idx]);
- 
- 		if (mtd_banks[idx]) {
-@@ -178,8 +180,9 @@
- 			mtd_size += mtd_banks[idx]->size;
- 			num_banks++;
- 
--			printk(KERN_INFO "%s: bank%d, name:%s, size:%dbytes \n", __FUNCTION__, num_banks,
--			mtd_banks[idx]->name, mtd_banks[idx]->size);
-+			printk(KERN_INFO "%s: bank%d, name:%s, size:%dbytes \n",
-+				__FUNCTION__, num_banks, mtd_banks[idx]->name,
-+				mtd_banks[idx]->size);
- 		}
- 	}
- 
-@@ -204,17 +207,20 @@
- 
- 	for(idx = 0; idx < num_banks ; idx++) {
- 		if (part_banks[idx].nums == 0) {
--			printk(KERN_NOTICE "TQM flash%d: no partition info available, registering whole flash at once\n", idx);
-+			printk(KERN_NOTICE "TQM flash%d: no partition info "
-+				"available, registering whole flash at once\n",
-+				idx);
- 			add_mtd_device(mtd_banks[idx]);
- 		} else {
--			printk(KERN_NOTICE "TQM flash%d: Using %s partition definition\n",
--					idx, part_banks[idx].type);
--			add_mtd_partitions(mtd_banks[idx], part_banks[idx].mtd_part,
--								part_banks[idx].nums);
-+			printk(KERN_NOTICE "TQM flash%d: Using %s partition "
-+				"definition\n", idx, part_banks[idx].type);
-+			add_mtd_partitions(mtd_banks[idx],
-+				part_banks[idx].mtd_part, part_banks[idx].nums);
- 		}
- 	}
- #else
--	printk(KERN_NOTICE "TQM flash: registering %d whole flash banks at once\n", num_banks);
-+	printk(KERN_NOTICE "TQM flash: registering %d whole flash banks at "
-+		"once\n", num_banks);
- 	for(idx = 0 ; idx < num_banks ; idx++)
- 		add_mtd_device(mtd_banks[idx]);
- #endif
+-- 
+tejun
