@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934676AbXGMFwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934832AbXGMFzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934676AbXGMFwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 01:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXGMFwF
+	id S934832AbXGMFzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 01:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbXGMFzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 01:52:05 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:35095 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbXGMFwD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 01:52:03 -0400
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] re-add required code to include/asm-v850/unistd.h
-References: <20070707211124.GN3492@stusta.de>
-	<200707072341.16389.arnd@arndb.de> <20070711151608.GG3492@stusta.de>
-From: Miles Bader <miles.bader@necel.com>
-Reply-To: Miles Bader <miles@gnu.org>
-System-Type: i686-pc-linux-gnu
-Blat: Foop
-Date: Fri, 13 Jul 2007 14:49:31 +0900
-In-Reply-To: <20070711151608.GG3492@stusta.de> (Adrian Bunk's message of "Wed\, 11 Jul 2007 17\:16\:08 +0200")
-Message-Id: <buo7ip4vono.fsf@dhapc248.dev.necel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Jul 2007 01:55:24 -0400
+Received: from gate.crashing.org ([63.228.1.57]:43700 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751071AbXGMFzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 01:55:23 -0400
+In-Reply-To: <20070713053303.GB17039@kroah.com>
+References: <Pine.LNX.4.64.0707130015550.1975@blarg.am.freescale.net> <20070713053303.GB17039@kroah.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9A567C91-1DE7-46CC-91A0-58D498B8248B@kernel.crashing.org>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] PCI: Move prototypes for EXPORT_SYMBOL functions to include/linux/pci.h
+Date: Fri, 13 Jul 2007 00:55:39 -0500
+To: Greg KH <greg@kroah.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> writes:
->> Wouldn't it be more appropriate to just open-code the contents of these
->> macros in the place where they are used?
->> 
->> Even better probably would be to convert the v850 kernel_thread code
->> to call do_fork directly, like most other architectures do.
+
+On Jul 13, 2007, at 12:33 AM, Greg KH wrote:
+
+> On Fri, Jul 13, 2007 at 12:16:29AM -0500, Kumar Gala wrote:
+>> pci_do_scan_bus() and pci_bus_find_capability() are marked  
+>> EXPORT_SYMBOL
+>> and thus usable outside of the PCI drive core itself.  Make the  
+>> prototypes
+>> for these functions accessible to everyone.
 >
-> The bigger problem seems to be that v850 is not that near at compiling 
-> at all...  :-(
+> Well, no, I'd like to only have the pci hotplug drivers use them if
+> possible.  So until we have proper namespaces on the exported symbols,
+> I'd really like to keep these as-is if possible.
+>
+> Or are you needing these symbols for some code outside of the
+> drivers/pci/ directory tree?
 
-Yeah, I'm working on other things these days, so I only check up on the
-v850 port occasionally.
+I need pci_bus_find_capability() in arch/powerpc pci code.
 
-I'll see what I can do to get things working again.
+I'm using it as a way to tell if we are a PCIe PHB.
 
-Thanks,
-
--Miles
-
--- 
-"Most attacks seem to take place at night, during a rainstorm, uphill,
- where four map sheets join."   -- Anon. British Officer in WW I
+- k
