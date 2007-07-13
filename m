@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935061AbXGMHdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763008AbXGMHhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935061AbXGMHdr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 03:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbXGMHdk
+	id S1763008AbXGMHhe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 03:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbXGMHhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 03:33:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35005 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751699AbXGMHdj (ORCPT
+	Fri, 13 Jul 2007 03:37:24 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:58535 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbXGMHhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 03:33:39 -0400
-Date: Fri, 13 Jul 2007 00:33:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: NeilBrown <neilb@suse.de>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       andros "@" citi "." umich "." edu <andros@citi.umich.edu>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       J "." Bruce Fields <bfields@puzzle.fieldses.org>,
-       Usha Ketineni <ketineni@us.ibm.com>,
-       Usha Ketineni <uketinen@us.ibm.com>
-Subject: Re: [PATCH 000 of 20] knfsd: Support 'secinfo' exports with related
- cleanups
-Message-Id: <20070713003310.2df90a38.akpm@linux-foundation.org>
-In-Reply-To: <20070710121949.12548.patches@notabene>
-References: <20070710121949.12548.patches@notabene>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 13 Jul 2007 03:37:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=TacM7Y/JGIYJ/XTFew/kKo0aCTcbwRRz0OXa1irqGRo9phTY2lGr2ezD/h3gN
+	1YYggdD/G9ZUSLv2x378Js4/Q==
+Date: Fri, 13 Jul 2007 09:37:20 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       John Donoghue <john.donoghue@ieee.org>
+Subject: Re: [2.6 patch] EP93XX_ETH must select MII
+Message-ID: <20070713073720.GC19718@xi.wantstofly.org>
+References: <20070713001208.GX3492@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713001208.GX3492@stusta.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 12:22:37 +1000 NeilBrown <neilb@suse.de> wrote:
+On Fri, Jul 13, 2007 at 02:12:08AM +0200, Adrian Bunk wrote:
 
-> With this patchset it becomes possible to list a number of different
-> security flavours that maybe used to access an exported filesystem,
-> and to attach different export options (e.g. readonly, rootsquash) to
-> different flavours.
-> Also, NFSv4 can report which flavours are available on a particular export.
+> From: John Donoghue <john.donoghue@ieee.org>
+> 
+> CONFIG_EP93XX_ETH=y, CONFIG_MII=n results in an obvious link error.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Please consider feeding knfsd patches through checkpatch in the future.  It
-did find several glitches in these patches which you might have chosen
-to address.
+Acked-by: Lennert Buytenhek <buytenh@wantstofly.org>
