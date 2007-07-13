@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934675AbXGMO7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbXGMPC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934675AbXGMO7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759536AbXGMO7Q
+	id S932222AbXGMPC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 11:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759652AbXGMPCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:59:16 -0400
-Received: from rtr.ca ([64.26.128.89]:4741 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757394AbXGMO7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:59:15 -0400
-Message-ID: <46979342.3030203@rtr.ca>
-Date: Fri, 13 Jul 2007 10:59:14 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Ingo Freund <linux-kernel-news@e-dict.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: howto create partitions bigger than 2TB
-References: <4697760E.4070803@e-dict.net>
-In-Reply-To: <4697760E.4070803@e-dict.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jul 2007 11:02:19 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:44388 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759536AbXGMPCS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 11:02:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=WzOhiF90mYXFSZwm2pFDguIXgsTlvPmwLq61bT0d+NXEg4572tdTg6AE+CRmpSS/YrWiczw2PTSvxziwkN6+U1uKKyJuGAoWXGRgEdFzt1UJGShLxA7DFCkqWDj8jZE2Lmes0sz8wAS51xHQhtnxzGnlqjzUNAsKnGVc++P7ZuU=
+Date: Fri, 13 Jul 2007 23:05:03 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>, kirk@hpc.ee.ntu.edu.tw,
+       akpm@osdl.org, linux-mtd@lists.infradead.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
+Message-ID: <20070713150503.GA4023@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070712150135.GA4102@localhost.localdomain> <1184256718.32199.111.camel@weaponx.rchland.ibm.com> <20070713034822.GA2370@localhost.localdomain> <1184320602.2785.18.camel@shinybook.infradead.org> <20070713131458.GA1997@localhost.localdomain> <1184333884.8809.5.camel@hades.cambridge.redhat.com> <20070713142442.GA8190@linux-mips.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713142442.GA8190@linux-mips.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Freund wrote:
-> Hi
-> 
-> I've got a RAID5 (driver aacraid for an ICP9047MA) with four
-> 750GB hdds which provides a 2.25TB sized device.
-> None of the until now used tools will work with that device.
-> fdisk complains about missing cylinder count.
-> cfdisk misses the device size.
-> parted shows the right device size but only creates a partion
-> with 51GB.
-> What am I supposed to do to work with this device?
+On Fri, Jul 13, 2007 at 03:24:43PM +0100, Ralf Baechle wrote:
+>On Fri, Jul 13, 2007 at 02:38:03PM +0100, David Woodhouse wrote:
+>
+>> > drivers/mtd/maps/pmcmsp-flash.c:63: error: 'ELB_1PC_EN_REG' undeclared (first use in this function)
+>> > drivers/mtd/maps/pmcmsp-flash.c:63: error: 'SINGLE_PCCARD' undeclared (first use in this function)
+>> > 
+>> > Did I miss something?
+>> 
+>> I think that map driver should probably depend on CONFIG_PMC_MSP. Ralf?
+>
+>*confused*
+>
+>68aa0fa87f6d4b2f5e8ad39ecaec8bba9137bb3d did add:
+>
+>+config MTD_PMC_MSP_EVM
+>+       tristate "CFI Flash device mapped on PMC-Sierra MSP"
+>+       depends on PMC_MSP && MTD_CFI
+>+       select MTD_PARTITIONS
+>
+>drivers/mtd/maps/Makefile:obj-$(CONFIG_MTD_PMC_MSP_EVM)   += pmcmsp-flash.o
+>
+>Is he trying to build something else than very recent kernel.org tree?
+>
 
-Create a single RAID which covers the entire drive set
-(as it sounds like you have already done).
+Yes. very recent, 2.6.22.1.
 
-Then use LVM on top of that, instead of conventional partitions.
 
--ml
+-- 
+
+If loving computers is wrong, I don't want to be right.
