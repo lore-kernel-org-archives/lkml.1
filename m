@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbXGMQqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXGMQqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762195AbXGMQqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 12:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757512AbXGMQqP
+	id S1761469AbXGMQqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 12:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759714AbXGMQqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 12:46:15 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:12747 "EHLO
+	Fri, 13 Jul 2007 12:46:35 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:12772 "EHLO
 	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758939AbXGMQqO (ORCPT
+	by vger.kernel.org with ESMTP id S1760556AbXGMQqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 12:46:14 -0400
-Date: Fri, 13 Jul 2007 10:52:30 -0600
+	Fri, 13 Jul 2007 12:46:34 -0400
+Date: Fri, 13 Jul 2007 10:52:50 -0600
 From: dougthompson@xmission.com
 To: dougthompson@xmission.com, greg@kroah.com, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH 1/8] drivers edac fix edac_device semaphore to mutex 
-Message-ID: <4697adce.fd5/aW//ehCfoyT0%dougthompson@xmission.com>
+Subject: [PATCH 2/8] drivers edac fix e752x reversed csrows 
+Message-ID: <4697ade2.XFh1evOxapfqx+Ph%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,118 +23,100 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Doug Thompson <dougthompson@xmission.com>
+From: Mark Grondona <mgrondona@llnl.gov>
 
-A previous patch changed the edac_mc src file from semaphore usage to mutex
-This patch changes the edac_device src file as well, from semaphore use
-to mutex operation.
+Found a 'reversal' decoding bug in the driver. This patch fixes that
+mapping to correctly display the CSROW entries in their proper order.
+Users will be enable to correctly identifiy the failing DIMM with
+this fix.
 
-Use a mutex primitive for mutex operations, as it does not require a 
-semaphore
-
-CC:		Alan Cox alan@lxorguk.ukuu.org.uk
-Signed-off-by:	Doug Thompson <dougthompson@xmission.com>
+CC:             Alan Cox alan@lxorguk.ukuu.org.uk
+Signed-off-by: Mark Grondona <mgrondona@llnl.gov>
+Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
 ---
- edac_device.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ e752x_edac.c |   34 +++++++++++++++++++++-------------
+ 1 files changed, 21 insertions(+), 13 deletions(-)
 
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_device.c
+Index: linux-2.6.22-rc4-mm2/drivers/edac/e752x_edac.c
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_device.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_device.c
-@@ -33,7 +33,7 @@
- #include "edac_module.h"
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/e752x_edac.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/e752x_edac.c
+@@ -284,9 +284,6 @@ static void do_process_ce(struct mem_ctl
+ 	/* 0 = channel A, 1 = channel B */
+ 	channel = !(error_one & 1);
  
- /* lock to memory controller's control array 'edac_device_list' */
--static DECLARE_MUTEX(device_ctls_mutex);
-+static DEFINE_MUTEX(device_ctls_mutex);
- static struct list_head edac_device_list = LIST_HEAD_INIT(edac_device_list);
+-	if (!pvt->map_type)
+-		row = 7 - row;
+-
+ 	/* e752x mc reads 34:6 of the DRAM linear address */
+ 	edac_mc_handle_ce(mci, page, offset_in_page(sec1_add << 4),
+ 			sec1_syndrome, row, channel, "e752x CE");
+@@ -774,6 +771,18 @@ static inline int dual_channel_active(u1
+ 	return (((ddrcsr >> 12) & 3) == 3);
+ }
  
- #ifdef CONFIG_EDAC_DEBUG
-@@ -340,7 +340,7 @@ static void edac_device_workq_function(s
- 	struct edac_device_ctl_info *edac_dev = to_edac_device_ctl_work(d_work);
- 
- 	//debugf0("%s() here and running\n", __func__);
--	down(&device_ctls_mutex);
-+	mutex_lock(&device_ctls_mutex);
- 
- 	/* Only poll controllers that are running polled and have a check */
- 	if ((edac_dev->op_state == OP_RUNNING_POLL) &&
-@@ -348,7 +348,7 @@ static void edac_device_workq_function(s
- 			edac_dev->edac_check(edac_dev);
- 	}
- 
--	up(&device_ctls_mutex);
-+	mutex_unlock(&device_ctls_mutex);
- 
- 	/* Reschedule */
- 	queue_delayed_work(edac_workqueue, &edac_dev->work, edac_dev->delay);
-@@ -393,7 +393,7 @@ void edac_device_workq_teardown(struct e
- void edac_device_reset_delay_period(struct edac_device_ctl_info *edac_dev,
- 					unsigned long value)
++/* Remap csrow index numbers if map_type is "reverse"
++ */
++static inline int remap_csrow_index(struct mem_ctl_info *mci, int index)
++{
++	struct e752x_pvt *pvt = (struct e752x_pvt *) mci->pvt_info;
++
++	if (!pvt->map_type)
++		return (7 - index);
++
++	return (index);
++}
++
+ static void e752x_init_csrows(struct mem_ctl_info *mci, struct pci_dev *pdev,
+ 			u16 ddrcsr)
  {
--	down(&device_ctls_mutex);
-+	mutex_lock(&device_ctls_mutex);
+@@ -804,7 +813,7 @@ static void e752x_init_csrows(struct mem
+ 	for (last_cumul_size = index = 0; index < mci->nr_csrows; index++) {
+ 		/* mem_dev 0=x8, 1=x4 */
+ 		mem_dev = (dra >> (index * 4 + 2)) & 0x3;
+-		csrow = &mci->csrows[index];
++		csrow = &mci->csrows[remap_csrow_index(mci, index)];
  
- 	/* cancel the current workq request */
- 	edac_device_workq_teardown(edac_dev);
-@@ -401,7 +401,7 @@ void edac_device_reset_delay_period(stru
- 	/* restart the workq request, with new delay value */
- 	edac_device_workq_setup(edac_dev, value);
+ 		mem_dev = (mem_dev == 2);
+ 		pci_read_config_byte(pdev, E752X_DRB + index, &value);
+@@ -844,7 +853,7 @@ static void e752x_init_mem_map_table(str
+ 				struct e752x_pvt *pvt)
+ {
+ 	int index;
+-	u8 value, last, row, stat8;
++	u8 value, last, row;
  
--	up(&device_ctls_mutex);
-+	mutex_unlock(&device_ctls_mutex);
- }
- 
- /**
-@@ -425,7 +425,7 @@ int edac_device_add_device(struct edac_d
- 	if (edac_debug_level >= 3)
- 		edac_device_dump_device(edac_dev);
- #endif
--	down(&device_ctls_mutex);
-+	mutex_lock(&device_ctls_mutex);
- 
- 	if (add_edac_dev_to_global_list(edac_dev))
- 		goto fail0;
-@@ -463,7 +463,7 @@ int edac_device_add_device(struct edac_d
- 				dev_name(edac_dev),
- 				edac_op_state_to_string(edac_dev->op_state));
- 
--	up(&device_ctls_mutex);
-+	mutex_unlock(&device_ctls_mutex);
- 	return 0;
- 
- fail1:
-@@ -471,7 +471,7 @@ fail1:
- 	del_edac_device_from_global_list(edac_dev);
- 
- fail0:
--	up(&device_ctls_mutex);
-+	mutex_unlock(&device_ctls_mutex);
- 	return 1;
- }
- EXPORT_SYMBOL_GPL(edac_device_add_device);
-@@ -495,12 +495,12 @@ struct edac_device_ctl_info *edac_device
- 
- 	debugf0("MC: %s()\n", __func__);
- 
--	down(&device_ctls_mutex);
-+	mutex_lock(&device_ctls_mutex);
- 
- 	/* Find the structure on the list, if not there, then leave */
- 	edac_dev = find_edac_device_by_dev(dev);
- 	if (edac_dev == NULL) {
--		up(&device_ctls_mutex);
-+		mutex_unlock(&device_ctls_mutex);
- 		return NULL;
+ 	last = 0;
+ 	row = 0;
+@@ -873,10 +882,6 @@ static void e752x_init_mem_map_table(str
+ 			last = value;
+ 		}
  	}
+-
+-	/* set the map type.  1 = normal, 0 = reversed */
+-	pci_read_config_byte(pdev, E752X_DRM, &stat8);
+-	pvt->map_type = ((stat8 & 0x0f) > ((stat8 >> 4) & 0x0f));
+ }
  
-@@ -516,7 +516,7 @@ struct edac_device_ctl_info *edac_device
- 	/* deregister from global list */
- 	del_edac_device_from_global_list(edac_dev);
+ /* Return 0 on success or 1 on failure. */
+@@ -1003,13 +1008,16 @@ static int e752x_probe1(struct pci_dev *
+ 	mci->edac_check = e752x_check;
+ 	mci->ctl_page_to_phys = ctl_page_to_phys;
  
--	up(&device_ctls_mutex);
-+	mutex_unlock(&device_ctls_mutex);
+-	e752x_init_csrows(mci, pdev, ddrcsr);
+-	e752x_init_mem_map_table(pdev, pvt);
+-
+-	/* set the map type.  1 = normal, 0 = reversed */
++	/* set the map type.  1 = normal, 0 = reversed
++	 * Must be set before e752x_init_csrows in case csrow mapping
++	 * is reversed.
++	 */
+ 	pci_read_config_byte(pdev, E752X_DRM, &stat8);
+ 	pvt->map_type = ((stat8 & 0x0f) > ((stat8 >> 4) & 0x0f));
  
- 	edac_printk(KERN_INFO, EDAC_MC,
- 		"Removed device %d for %s %s: DEV %s\n",
++	e752x_init_csrows(mci, pdev, ddrcsr);
++	e752x_init_mem_map_table(pdev, pvt);
++
+ 	mci->edac_cap |= EDAC_FLAG_NONE;
+ 	debugf3("%s(): tolm, remapbase, remaplimit\n", __func__);
+ 
