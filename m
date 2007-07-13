@@ -1,46 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935086AbXGMVtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbXGMWJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935086AbXGMVtU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 17:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758996AbXGMVtH
+	id S933883AbXGMWJd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 18:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758502AbXGMWJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 17:49:07 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:49033 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756292AbXGMVtF (ORCPT
+	Fri, 13 Jul 2007 18:09:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41037 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758518AbXGMWJY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 17:49:05 -0400
-Date: Fri, 13 Jul 2007 14:47:46 -0700
-From: Zach Brown <zach.brown@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, cmm@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support features in larger inode
-Message-ID: <20070713214746.GH23255@mami.zabbo.net>
-References: <1183275482.4010.133.camel@localhost.localdomain> <20070710163247.5c8bfa3f.akpm@linux-foundation.org> <20070713020529.1486491f.akpm@linux-foundation.org> <1184333621.20032.85.camel@twins> <20070713121259.20066d5b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713121259.20066d5b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Fri, 13 Jul 2007 18:09:24 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: [x86 setup] Fix assembly constraints
+Date: Fri, 13 Jul 2007 15:09:14 -0700
+Message-Id: <11843645541714-git-send-email-hpa@zytor.com>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I fear the consequences of this change :(
+Fix incorrect assembly constraints.  In particular, fix memory
+constraints used inside push..pop, which can cause invalid operation
+since gcc may generate %esp-relative references.
 
-I love it.  In the past I've lost time by working with patches which
-didn't quite realize that ext3 holds a transaction open during
-->direct_IO.
+Additionally:
 
-> Oh well, please keep it alive, maybe beat on it a bit, resend it
-> later on?
+outl() should have "dN" not "dn".
 
-I can test the patch to make sure that it catches mistakes I've made in
-the past.  Peter, do you have any interest in seeing how far we can get
-at tracking lock_page()?  I'm not holding my breath, but any little bit
-would probably help.
+query_mca() shouldn't listen 16/32-bit registers in an 8-bit only
+context.
 
-- z
+has_eflag(): the "mask" is only used well after both the stack pointer
+and the output registers have been touched; this requires the output
+registers to be earlyclobbers (=&) and the input to exclude memory (so
+"ri", not "g").
+
+Thanks to Chuck Ebbert for prompting this review.
+
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+
+diff --git a/arch/i386/boot/boot.h b/arch/i386/boot/boot.h
+index 0329c4f..dec70c9 100644
+--- a/arch/i386/boot/boot.h
++++ b/arch/i386/boot/boot.h
+@@ -56,7 +56,7 @@ static inline u16 inw(u16 port)
+ 
+ static inline void outl(u32 v, u16 port)
+ {
+-	asm volatile("outl %0,%1" : : "a" (v), "dn" (port));
++	asm volatile("outl %0,%1" : : "a" (v), "dN" (port));
+ }
+ static inline u32 inl(u32 port)
+ {
+diff --git a/arch/i386/boot/cpucheck.c b/arch/i386/boot/cpucheck.c
+index 8b0f447..991e8ce 100644
+--- a/arch/i386/boot/cpucheck.c
++++ b/arch/i386/boot/cpucheck.c
+@@ -115,8 +115,8 @@ static int has_eflag(u32 mask)
+ 	    "pushfl ; "
+ 	    "popl %1 ; "
+ 	    "popfl"
+-	    : "=r" (f0), "=r" (f1)
+-	    : "g" (mask));
++	    : "=&r" (f0), "=&r" (f1)
++	    : "ri" (mask));
+ 
+ 	return !!((f0^f1) & mask);
+ }
+diff --git a/arch/i386/boot/mca.c b/arch/i386/boot/mca.c
+index 9b68bd1..68222f2 100644
+--- a/arch/i386/boot/mca.c
++++ b/arch/i386/boot/mca.c
+@@ -26,7 +26,7 @@ int query_mca(void)
+ 	    "setc %0 ; "
+ 	    "movw %%es, %1 ; "
+ 	    "popw %%es"
+-	    : "=acdSDm" (err), "=acdSDm" (es), "=b" (bx)
++	    : "=acd" (err), "=acdSD" (es), "=b" (bx)
+ 	    : "a" (0xc000));
+ 
+ 	if (err)
+diff --git a/arch/i386/boot/pm.c b/arch/i386/boot/pm.c
+index 3fa53e1..1df025c 100644
+--- a/arch/i386/boot/pm.c
++++ b/arch/i386/boot/pm.c
+@@ -65,7 +65,7 @@ static void move_kernel_around(void)
+ 			     "popw %%ds ; "
+ 			     "popw %%es"
+ 			     : "+c" (dwords)
+-			     : "rm" (dst_seg), "rm" (src_seg)
++			     : "r" (dst_seg), "r" (src_seg)
+ 			     : "esi", "edi");
+ 
+ 		syssize -= paras;
+diff --git a/arch/i386/boot/video.c b/arch/i386/boot/video.c
+index 3bb3573..027a2c9 100644
+--- a/arch/i386/boot/video.c
++++ b/arch/i386/boot/video.c
+@@ -411,7 +411,7 @@ static void restore_screen(void)
+ 			     "1: rep;stosl ; "
+ 			     "popw %%es"
+ 			     : "+D" (dst), "+c" (npad)
+-			     : "bdSm" (video_segment),
++			     : "bdS" (video_segment),
+ 			       "a" (0x07200720));
+ 	}
+ 
+diff --git a/arch/i386/boot/voyager.c b/arch/i386/boot/voyager.c
+index 9221614..61c8fe0 100644
+--- a/arch/i386/boot/voyager.c
++++ b/arch/i386/boot/voyager.c
+@@ -32,7 +32,7 @@ int query_voyager(void)
+ 	    "setc %0 ; "
+ 	    "movw %%es, %1 ; "
+ 	    "popw %%es"
+-	    : "=qm" (err), "=rm" (es), "=D" (di)
++	    : "=q" (err), "=r" (es), "=D" (di)
+ 	    : "a" (0xffc0));
+ 
+ 	if (err)
