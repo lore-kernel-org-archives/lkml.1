@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933201AbXGMOY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934619AbXGMO13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933201AbXGMOY7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758979AbXGMOYv
+	id S934619AbXGMO13 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 10:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758638AbXGMO1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:24:51 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:53512 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755452AbXGMOYu (ORCPT
+	Fri, 13 Jul 2007 10:27:19 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:44085 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758005AbXGMO1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:24:50 -0400
-Date: Fri, 13 Jul 2007 15:24:43 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>, kirk@hpc.ee.ntu.edu.tw,
-       akpm@osdl.org, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
-Message-ID: <20070713142442.GA8190@linux-mips.org>
-References: <20070712150135.GA4102@localhost.localdomain> <1184256718.32199.111.camel@weaponx.rchland.ibm.com> <20070713034822.GA2370@localhost.localdomain> <1184320602.2785.18.camel@shinybook.infradead.org> <20070713131458.GA1997@localhost.localdomain> <1184333884.8809.5.camel@hades.cambridge.redhat.com>
-MIME-Version: 1.0
+	Fri, 13 Jul 2007 10:27:17 -0400
+Date: Fri, 13 Jul 2007 19:57:23 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: David Chinner <dgc@sgi.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, michael.kerrisk@gmx.net,
+       tytso@mit.edu, cmm@us.ibm.com, suparna@in.ibm.com,
+       adilger@clusterfs.com
+Subject: Re: [PATCH 1/6][TAKE7] manpage for fallocate
+Message-ID: <20070713142723.GC27291@amitarora.in.ibm.com>
+References: <20070713123816.GA18000@amitarora.in.ibm.com> <20070713124601.GA22961@amitarora.in.ibm.com> <20070713140651.GO31489@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184333884.8809.5.camel@hades.cambridge.redhat.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070713140651.GO31489@sgi.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 02:38:03PM +0100, David Woodhouse wrote:
-
-> > drivers/mtd/maps/pmcmsp-flash.c:63: error: 'ELB_1PC_EN_REG' undeclared (first use in this function)
-> > drivers/mtd/maps/pmcmsp-flash.c:63: error: 'SINGLE_PCCARD' undeclared (first use in this function)
+On Sat, Jul 14, 2007 at 12:06:51AM +1000, David Chinner wrote:
+> On Fri, Jul 13, 2007 at 06:16:01PM +0530, Amit K. Arora wrote:
+> > Following is the modified version of the manpage originally submitted by
+> > David Chinner. Please use `nroff -man fallocate.2 | less` to view.
 > > 
-> > Did I miss something?
+> > This includes changes suggested by Heikki Orsila and Barry Naujok.
 > 
-> I think that map driver should probably depend on CONFIG_PMC_MSP. Ralf?
+> Can we get itemised change logs for all these patches from now on?
 
-*confused*
+Sure.
+ 
+> > .TH fallocate 2
+> > .SH NAME
+> > fallocate \- allocate or remove file space
+> 
+> If fallocate is just being used for allocating space this is wrong.
+> maybe - "manipulate file space" instead?
 
-68aa0fa87f6d4b2f5e8ad39ecaec8bba9137bb3d did add:
+Yes, it needs to be changed.
+ 
+> dd> .TP
+> > .B FALLOC_RESV_SPACE
+> > provides the same functionality as
+> > .B FALLOC_ALLOCATE
+> > except it does not ever change the file size. This allows allocation
+> > of zero blocks beyond the end of file and is useful for optimising
+> 
+> "of zeroed blocks"
 
-+config MTD_PMC_MSP_EVM
-+       tristate "CFI Flash device mapped on PMC-Sierra MSP"
-+       depends on PMC_MSP && MTD_CFI
-+       select MTD_PARTITIONS
+Ok.
 
-drivers/mtd/maps/Makefile:obj-$(CONFIG_MTD_PMC_MSP_EVM)   += pmcmsp-flash.o
+--
+Regards,
+Amit Arora
 
-Is he trying to build something else than very recent kernel.org tree?
-
-  Ralf
+> -- 
+> Dave Chinner
+> Principal Engineer
+> SGI Australian Software Group
