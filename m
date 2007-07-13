@@ -1,46 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936260AbXGMJHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763539AbXGMJJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936260AbXGMJHZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 05:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933378AbXGMJHK
+	id S1763539AbXGMJJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 05:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXGMJJC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 05:07:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53577 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933003AbXGMJHH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 05:07:07 -0400
-Date: Fri, 13 Jul 2007 02:06:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
-       James Simmons <jsimmons@infradead.org>,
-       linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 0/4] Cell SPE logos
-Message-Id: <20070713020621.e8f2e4ce.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.62.0707131051190.18802@pademelon.sonytel.be>
-References: <20070710122702.765654000@pademelon.sonytel.be>
-	<20070712160621.644d78d2.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0707131051190.18802@pademelon.sonytel.be>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Jul 2007 05:09:02 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:47505 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756503AbXGMJI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 05:08:58 -0400
+Message-ID: <46974193.2020302@sw.ru>
+Date: Fri, 13 Jul 2007 13:10:43 +0400
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: rae l <crquan@gmail.com>
+CC: trivial@kernel.org, Denis <cr_quan@163.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to remove
+ some following zero initializations.
+References: <1184290905.5475.5.camel@tux.homenetwork> <4697357A.10605@sw.ru> <91b13c310707130138p6cffd0b4va34eec320d66ab44@mail.gmail.com>
+In-Reply-To: <91b13c310707130138p6cffd0b4va34eec320d66ab44@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 10:52:10 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+Look, until you have any numbers in hands it's impossible to say
+which one is faster.
 
-> > > Summaries:
-> > >   [1] fbdev: extract fb_show_logo_line()
-> > >   [2] fbdev: Add fb_append_extra_logo()
-> > 
-> > This one does give additional code and data to all fbdev users while only
-> > being useful to cell machines.  Should we fix that?
+Please measure N d_alloc()'s on i686 and some other archs w/o string operations
+and compare whether your patch improves something or not.
+
+Kirill
+
+rae l wrote:
+> On 7/13/07, Kirill Korotaev <dev@sw.ru> wrote:
 > 
-> I can protect it by #ifdef CONFIG_PPC_CELL (as long as there are no other
-> users). Would that be OK?
+>>This doesn't look worth zeroing half of the struct
+>>when it is initialized to non-zeros then.
+> 
+> But why?
+> 
+> My reason to think it's better and faster is that:
+> 1. the code will be shorter if it calls zalloc and then removes the
+> NULL and zero initilization;
+> 2. in the assembly code objdumped, many mov operations reduced, such as:
+>     movl $0,0x40(%ebp)
+>     ...
+>     this style of zero initialization occupies 7 bytes per line
+> (i386), and then multiply 7 lines,
+> 
+> 3. the only change is that calls to kmem_cache_zalloc other than
+> kmem_cache_alloc, it's just an extra memset is called, as we all know
+> the memset implimentation is string operation, that's rather fast.
+> 
+> 
+>>Denis Cheng wrote:
+>>
+>>>>From 4d87e14b67890f06885a76b5792ca034de2e9d06 Mon Sep 17 00:00:00 2001
+>>>From: Denis Cheng <crquan@gmail.com>
+>>>Date: Thu, 12 Jul 2007 11:53:58 +0800
+>>>Subject: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to
+>>>remove some following zero initializations.
+>>>
+>>>Signed-off-by: Denis Cheng <crquan@gmail.com>
+>>>---
+>>> fs/dcache.c |   12 ++----------
+>>> 1 files changed, 2 insertions(+), 10 deletions(-)
+>>>
+>>>diff --git a/fs/dcache.c b/fs/dcache.c
+>>>index 0e73aa0..8c559b2 100644
+>>>--- a/fs/dcache.c
+>>>+++ b/fs/dcache.c
+>>>@@ -898,7 +898,7 @@ struct dentry *d_alloc(struct dentry * parent, const
+>>>struct qstr *name)
+>>>      struct dentry *dentry;
+>>>      char *dname;
+>>>
+>>>-     dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL);
+>>>+     dentry = kmem_cache_zalloc(dentry_cache, GFP_KERNEL);
+>>>      if (!dentry)
+>>>              return NULL;
+>>>
+>>>@@ -921,15 +921,7 @@ struct dentry *d_alloc(struct dentry * parent,
+>>>const struct qstr *name)
+>>>      atomic_set(&dentry->d_count, 1);
+>>>      dentry->d_flags = DCACHE_UNHASHED;
+>>>      spin_lock_init(&dentry->d_lock);
+>>>-     dentry->d_inode = NULL;
+>>>-     dentry->d_parent = NULL;
+>>>-     dentry->d_sb = NULL;
+>>>-     dentry->d_op = NULL;
+>>>-     dentry->d_fsdata = NULL;
+>>>-     dentry->d_mounted = 0;
+>>>-#ifdef CONFIG_PROFILING
+>>>-     dentry->d_cookie = NULL;
+>>>-#endif
+>>>+
+>>>      INIT_HLIST_NODE(&dentry->d_hash);
+>>>      INIT_LIST_HEAD(&dentry->d_lru);
+>>>      INIT_LIST_HEAD(&dentry->d_subdirs);
+>>
+>>
+> 
+> 
 
-umm, your call.  If that makes sense, sure.
