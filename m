@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763002AbXGMXkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763109AbXGMXp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763002AbXGMXkj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 19:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbXGMXka
+	id S1763109AbXGMXp2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 19:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbXGMXpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 19:40:30 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:56367 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753516AbXGMXk3 (ORCPT
+	Fri, 13 Jul 2007 19:45:22 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36116 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757572AbXGMXpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 19:40:29 -0400
-Date: Fri, 13 Jul 2007 17:42:28 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Always zero test in arch/i386/pci/mmconfig-shared.c
-In-reply-to: <fa.nwpKC6+7UvIqGGeRe+rNP7ZO5P4@ifi.uio.no>
-To: Scott Ashcroft <scott.ashcroft@talk21.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>
-Message-id: <46980DE4.6090404@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.nwpKC6+7UvIqGGeRe+rNP7ZO5P4@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Fri, 13 Jul 2007 19:45:21 -0400
+Date: Fri, 13 Jul 2007 16:45:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: darnok@68k.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Inhibit NMI watchdog when Alt-SysRq-T operation is
+ underway.
+Message-Id: <20070713164504.66b72e74.akpm@linux-foundation.org>
+In-Reply-To: <20070709155302.GB26570@andromeda.dapyr.net>
+References: <20070709140242.GA18098@andromeda.dapyr.net>
+	<20070709155302.GB26570@andromeda.dapyr.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Ashcroft wrote:
-> I don't think it makes any change to subsequent flow but the code in 
-> pci_mmcfg_check_hostbridge is:
-> 
-> pci_mmcfg_config_num = 0;
-> 
+On Mon, 9 Jul 2007 11:53:02 -0400
+darnok@68k.org wrote:
 
-You missed this code:
+>  static void print_trace_address(void *data, unsigned long addr)
+>  {
+> +	static int i = 0;		
+> +	if (i && ((i % 8) == 0)) 
+> +		touch_nmi_watchdog();
+> +	i++;
+>  	printk_address(addr);
+>  }
 
-name = pci_mmcfg_probes[i].probe();
+I doubt if the "% 8" thing is really needed?  printk_address() is pretty
+slow and touch_nmi_watchdog is _reasonably_ fast.  It could be made heaps
+faster by:
 
-This calls one of the probe functions above, which will set 
-pci_mmcfg_config_num to something else, as with the name variable. It 
-may set the name but not the config num, if the chipset is recognized 
-but MMCONFIG isn't enabled, etc.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-> 
-> if (name) {
->     printk(KERN_INFO "PCI: Found %s %s MMCONFIG support.\n",
->            name, pci_mmcfg_config_num ? "with" : "without");
-> }
-> 
-> So it will always prints "without".
-> 
-> I'd make a patch but I'm not sure what this fix is. Just drop the test, 
-> the printk or make it say "which might possibly have"?
-> 
-> Cheers,
-> Scott
+Avoid dirtying remote cpu's memory if it already has the correct value.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Cc: Andi Kleen <ak@suse.de>
+Cc: Konrad Rzeszutek <konrad@darnok.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
+ arch/i386/kernel/nmi.c |    8 +++++---
+ x86_64/kernel/nmi.c    |    0 
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff -puN arch/i386/kernel/nmi.c~i386-speedup-touch_nmi_watchdog arch/i386/kernel/nmi.c
+--- a/arch/i386/kernel/nmi.c~i386-speedup-touch_nmi_watchdog
++++ a/arch/i386/kernel/nmi.c
+@@ -298,7 +298,7 @@ static unsigned int
+ 	last_irq_sums [NR_CPUS],
+ 	alert_counter [NR_CPUS];
+ 
+-void touch_nmi_watchdog (void)
++void touch_nmi_watchdog(void)
+ {
+ 	if (nmi_watchdog > 0) {
+ 		unsigned cpu;
+@@ -307,8 +307,10 @@ void touch_nmi_watchdog (void)
+ 		 * Just reset the alert counters, (other CPUs might be
+ 		 * spinning on locks we hold):
+ 		 */
+-		for_each_present_cpu (cpu)
+-			alert_counter[cpu] = 0;
++		for_each_present_cpu(cpu) {
++			if (alert_counter[cpu])
++				alert_counter[cpu] = 0;
++		}
+ 	}
+ 
+ 	/*
+
+So I'd be inclined to simplify your patch to a bare
+
+From: Konrad Rzeszutek <konrad@darnok.org>
+
+On large memory configuration with not so fast CPUs the NMI watchdog is
+triggered when memory addresses are being gathered and printed.  The code
+paths for Alt-SysRq-t are sprinkled with touch_nmi_watchdog in various
+places but not in this routine (or in the loop that utilizes this
+function).  The patch has been tested for regression on large CPU+memory
+configuration (128 logical CPUs + 224 GB) and 1,2,4,16-CPU sockets with
+various memory sizes (1,2,4,6,20).
+
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86_64/kernel/traps.c |    1 +
+ 1 files changed, 1 insertion(+)
+
+diff -puN arch/x86_64/kernel/traps.c~inhibit-nmi-watchdog-when-alt-sysrq-t-operation-is-underway arch/x86_64/kernel/traps.c
+--- a/arch/x86_64/kernel/traps.c~inhibit-nmi-watchdog-when-alt-sysrq-t-operation-is-underway
++++ a/arch/x86_64/kernel/traps.c
+@@ -397,6 +397,7 @@ static int print_trace_stack(void *data,
+ 
+ static void print_trace_address(void *data, unsigned long addr)
+ {
++	touch_nmi_watchdog();
+ 	printk_address(addr);
+ }
+ 
+_
+
+
+OK?
