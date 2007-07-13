@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbXGMKwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbXGMLAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbXGMKwz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 06:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbXGMKwq
+	id S1756701AbXGMLAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 07:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbXGMLAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 06:52:46 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49505 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751960AbXGMKwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 06:52:45 -0400
-Date: Fri, 13 Jul 2007 11:53:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Rob Landley <rob@landley.net>, leoli@freescale.com,
-       Gerrit Huizenga <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
-       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
-       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
-       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
-Subject: Re: Documentation of kernel messages (Summary)
-Message-ID: <20070713115321.23e3544f@the-village.bc.nu>
-In-Reply-To: <20070711213234.GE19456@thunk.org>
-References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com>
-	<200707101212.38981.rob@landley.net>
-	<1184163990.23373.46.camel@Gundam>
-	<200707111413.03513.rob@landley.net>
-	<20070711213234.GE19456@thunk.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jul 2007 07:00:22 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:3451 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752369AbXGMLAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 07:00:21 -0400
+Date: Fri, 13 Jul 2007 13:00:06 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: On current git head webservers stopped working
+Message-ID: <20070713110005.GE5328@kernel.dk>
+References: <469745A8.6010005@googlemail.com> <20070713093459.GB5328@kernel.dk> <46974ABF.9030408@googlemail.com> <20070713100057.GD5328@kernel.dk> <20070713100518.GF16304@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713100518.GF16304@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> One thing that would be a VERY good idea is to make sure that each
-> translated document is tagged with when it was last translated, and
-> against which kernel version (using either a GIT commit id or a
+On Fri, Jul 13 2007, Christoph Hellwig wrote:
+> On Fri, Jul 13, 2007 at 12:00:58PM +0200, Jens Axboe wrote:
+> > On Fri, Jul 13 2007, Gabriel C wrote:
+> > > Jens Axboe wrote:
+> > > > On Fri, Jul 13 2007, Gabriel C wrote:
+> > > >   
+> > > >> Hello ,
+> > > >>
+> > > >> While doing some tests with 2.6.22-git2 ( at the time head
+> > > >> 4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4 ) all my webservers stopped
+> > > >> working.
+> > > >> I can't get any file using wget or whatever else , everything hangs
+> > > >> after 1% forever.
+> > > >>
+> > > >> I bisected this and here the result:
+> > > >>
+> > > >> 534f2aaa6ab07cd71164180bc958a7dcde41db11 is first bad commit
+> > > >> commit 534f2aaa6ab07cd71164180bc958a7dcde41db11
+> > > >> Author: Jens Axboe <jens.axboe@oracle.com>
+> > > >> Date:   Fri Jun 1 14:52:37 2007 +0200
+> > > >>
+> > > >>     sys_sendfile: switch to using ->splice_read, if available
+> > > >>
+> > > >>     This patch makes sendfile prefer to use ->splice_read(), if it's
+> > > >>     available in the file_operations structure.
+> > > >>
+> > > >>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > >>
+> > > >> :040000 040000 b19013793692eee0f632b3703dca0bd40cea753f
+> > > >> ed50576c0d3f0d3ce9f1a2ac9336d1164b45f63f M      fs
+> > > >>     
+> > > >
+> > > > Does this work?
+> > > >   
+> > > 
+> > > Yes , it does. Thx :)
+> > 
+> > Great, I'll polish it a bit and get it upstream asap. Thanks for the
+> > report and quick test feedback!
+> 
+> Any chance someone could hack up a ltp testcase for this?
 
-The English versions need a last updated too, that way we would know when
-they are past their best before date (as most of them are)
+Certainly, I already created a private test case for it anyway.
+
+-- 
+Jens Axboe
+
