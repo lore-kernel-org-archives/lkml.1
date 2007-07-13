@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935965AbXGMNwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933135AbXGMNxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935965AbXGMNwa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932166AbXGMNwV
+	id S933135AbXGMNxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbXGMNxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:52:21 -0400
-Received: from main.gmane.org ([80.91.229.2]:48086 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761092AbXGMNwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:52:20 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: walt <wa1ter@myrealbox.com>
-Subject: Re: On current git head webservers stopped working
-Date: Fri, 13 Jul 2007 06:52:04 -0700
-Organization: none
-Message-ID: <f78025$m3u$1@sea.gmane.org>
-References: <469745A8.6010005@googlemail.com> <20070713093459.GB5328@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: adsl-69-234-194-123.dsl.irvnca.pacbell.net
-User-Agent: Thunderbird 3.0a1pre (X11/2007070907)
-In-Reply-To: <20070713093459.GB5328@kernel.dk>
+	Fri, 13 Jul 2007 09:53:07 -0400
+Received: from sicnat2.emn.fr ([193.54.76.193]:53710 "EHLO ron.emn.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759838AbXGMNxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 09:53:06 -0400
+From: Yoann Padioleau <padator@wanadoo.fr>
+To: linux-janitors@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] potential parse error
+Date: Fri, 13 Jul 2007 15:52:16 +0200
+Message-ID: <873azs9zsf.fsf@wanadoo.fr>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Fri, Jul 13 2007, Gabriel C wrote:
->> Hello ,
->>
->> While doing some tests with 2.6.22-git2 ( at the time head
->> 4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4 ) all my webservers stopped
->> working.
->> I can't get any file using wget or whatever else , everything hangs
->> after 1% forever.
->>
->> I bisected this and here the result:
->>
->> 534f2aaa6ab07cd71164180bc958a7dcde41db11 is first bad commit
->> commit 534f2aaa6ab07cd71164180bc958a7dcde41db11
->> Author: Jens Axboe <jens.axboe@oracle.com>
->> Date:   Fri Jun 1 14:52:37 2007 +0200
->>
->>     sys_sendfile: switch to using ->splice_read, if available
-...
 
-> Does this work?
-<patch snipped>
+parse error in ifdef or bad use of macro.
 
-Hi Jens,
-I was hoping this patch would fix a different problem caused by the
-same merge of 'splice-2.6.23' three days ago, but it didn't.
 
-When I run nfsd on the latest git kernel, it serves up what seems to
-be the wrong inodes for every fetched file.  I can navigate the served
-directory structure with no problems, but the contents of any file I
-fetch are completely unrelated to the real contents.
+Signed-off-by: Yoann Padioleau <padator@wanadoo.fr> 
 
-Does this suggest a possible cause or fix?
+ drivers/media/dvb/ttpci/av7110.c      |    2 +-
+ sound/aoa/codecs/snd-aoa-codec-onyx.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks.
-
+diff --git a/drivers/media/dvb/ttpci/av7110.c b/drivers/media/dvb/ttpci/av7110.c
+index ef1108c..0b4c6d6 100644
+--- a/drivers/media/dvb/ttpci/av7110.c
++++ b/drivers/media/dvb/ttpci/av7110.c
+@@ -2258,7 +2258,7 @@ static int frontend_init(struct av7110 *
+ 		FE_FUNC_OVERRIDE(av7110->fe->ops.diseqc_send_master_cmd, av7110->fe_diseqc_send_master_cmd, av7110_fe_diseqc_send_master_cmd);
+ 		FE_FUNC_OVERRIDE(av7110->fe->ops.diseqc_send_burst, av7110->fe_diseqc_send_burst, av7110_fe_diseqc_send_burst);
+ 		FE_FUNC_OVERRIDE(av7110->fe->ops.set_tone, av7110->fe_set_tone, av7110_fe_set_tone);
+-		FE_FUNC_OVERRIDE(av7110->fe->ops.set_voltage, av7110->fe_set_voltage, av7110_fe_set_voltage;)
++		FE_FUNC_OVERRIDE(av7110->fe->ops.set_voltage, av7110->fe_set_voltage, av7110_fe_set_voltage);
+ 		FE_FUNC_OVERRIDE(av7110->fe->ops.dishnetwork_send_legacy_command, av7110->fe_dishnetwork_send_legacy_command, av7110_fe_dishnetwork_send_legacy_command);
+ 		FE_FUNC_OVERRIDE(av7110->fe->ops.set_frontend, av7110->fe_set_frontend, av7110_fe_set_frontend);
+ 
+diff --git a/sound/aoa/codecs/snd-aoa-codec-onyx.c b/sound/aoa/codecs/snd-aoa-codec-onyx.c
+index ded5167..2a909a6 100644
+--- a/sound/aoa/codecs/snd-aoa-codec-onyx.c
++++ b/sound/aoa/codecs/snd-aoa-codec-onyx.c
+@@ -713,7 +713,7 @@ #ifdef SNDRV_PCM_FMTBIT_COMPRESSED_16BE
+ 	if (substream->runtime->format == SNDRV_PCM_FMTBIT_COMPRESSED_16BE) {
+ 		/* mute and lock analog output */
+ 		onyx_read_register(onyx, ONYX_REG_DAC_CONTROL, &v);
+-		if (onyx_write_register(onyx
++		if (onyx_write_register(onyx,
+ 					ONYX_REG_DAC_CONTROL,
+ 					v | ONYX_MUTE_RIGHT | ONYX_MUTE_LEFT))
+ 			goto out_unlock;
 
