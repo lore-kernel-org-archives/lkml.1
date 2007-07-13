@@ -1,145 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXGMVP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbXGMVTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932810AbXGMVP6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 17:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbXGMVPu
+	id S1762139AbXGMVTx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 17:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbXGMVTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 17:15:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33315 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752074AbXGMVPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 17:15:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Fri, 13 Jul 2007 23:23:21 +0200
-User-Agent: KMail/1.9.5
-Cc: david@lang.hm, "Huang\, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707131745.43055.rjw@sisk.pl> <87644o1c7v.fsf@jbms.ath.cx>
-In-Reply-To: <87644o1c7v.fsf@jbms.ath.cx>
+	Fri, 13 Jul 2007 17:19:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50782 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753123AbXGMVTq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 17:19:46 -0400
+Message-ID: <4697EC66.2030404@zytor.com>
+Date: Fri, 13 Jul 2007 14:19:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: RE : Re: x86 setup code rewrite in C - revised
+References: <700342.61011.qm@web26915.mail.ukl.yahoo.com>
+In-Reply-To: <700342.61011.qm@web26915.mail.ukl.yahoo.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707132323.22463.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 13 July 2007 18:48, Jeremy Maitin-Shepard wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Etienne Lorrain wrote:
+> --- "H. Peter Anvin" <hpa@zytor.com> wrote:
+>> Chuck Ebbert wrote:
 > 
-> [snip]
+>   Wrong name.
 > 
-> > Okay, I have thought it through and I think that, as an initial step, we can do
-> > something like this:
+>>>>  Have fun, this code:
+>>>>  - do not open the fast A20 gate before checking if the slow A20 gate is open or
+>> closed.
+>>
+>> As does the current code; this is highly intentional behaviour since
+>> there are machines (in particular a whole series of machines made by
+>> Olivetti) which lock up if you do it differently.
 > 
-> > - preload the image-saving kernel before hibernation
-> > - in the hibernation code path replace device_suspend() with the shutting down
-> > of
-> >   all devices without unregistering them (not very nice, but should be
-> > sufficient
-> >   for a while)
-> 
-> It seems that the effect of what is done by the current hibernate
-> implementations is to shutdown all of the devices, but according to
-> kernel data structures, have it look like the devices were merely
-> suspended (i.e. device_suspend).  Then in the resume path, the "restore
-> image" kernel also calls device_suspend just before jumping to the
-> hibernated kernel, so all of the devices the "restore image" kernel knew
-> about are in the state device_suspend expects them to be in, except that
-> they were actually suspended by a different kernel, so they might not be
-> in quite the right state.  There is also the issue that the "restore
-> image" kernel might not know about all of the devices; for instance, if
-> USB support is modular, and, as is likely to be the case, the user
-> didn't load the USB modules in the "restore image" kernel from an initrd
-> or something, then the USB devices will actually be powered off, rather
-> than "suspended".  Despite these apparent discrepancies, it seems that
-> for many devices (I'm not sure USB devices are included, though),
-> device_restore happens to do the right thing so that the device is
-> placed back in the state it needs to be so that the driver can begin
-> talking to it as it did before, and the device is recognized as the same
-> device as was there before (since otherwise mounted filesystems backed
-> by block devices that came back as a different device would cause great
-> havoc).
-> 
-> Since I recall there being issues with USB devices being recognized as
-> the same devices post-hibernate-resume, without looking at the code I'm
-> inclined to believe that the USB drivers still don't end up resuming
-> from hibernate correctly.
-> 
-> Note that I am describing what is done currently, not what is planned to
-> be done (i.e. change device_suspend to quiesce and device_resume to
-> unquiesce).  It seems that ironically, despite everyone believing that
-> device_suspend/device_resume is incorrect for hibernate, many of the
-> things that those functions do (like saving the PCI configuration,
-> perhaps, and then restoring it later, or re-initializing the device) are
-> actually necessary, especially for modular drivers that won't be loaded
-> by the "restore image" kernel.
-> 
-> What needs to be done is for the devices to be shut down (or possibly
-> just quiesced for a select few, but we won't worry about that
-> complication until later; in the case of the current implementations,
-> they should all be quiesced rather than shut down), but whatever
-> information that will be needed later to reinitialize the device
-> (ideally the reinitialization should be able to handle the device either
-> being in a quiesced state or completely off) and recognize it as the
-> same device must be saved.  This probably means they cannot be
-> "unregistered", as otherwise there would be nothing with which to
-> associate the saved information.
-> 
-> The resume path needs to use the saved state to reinitialize the device
-> and recognize it as the same device.  It seems that the existing
-> reprobing code may not be sufficient for this.  Note that exactly the
-> same thing must be done on resume for both the current hibernate
-> implementations and the kexec approach.  It seems that properly
-> restoring the devices should be relatively easy for the devices that
-> already get this correct, like IDE devices and basic PCI devices (and
-> SATA and SCSI devices as well perhaps?), and possibly harder for
-> Firewire or USB devices.
+>  There was some discussion on this list about some machine which would not wake-up
+> correctly if slow A20 was not closed, long time ago. I did not really follow
+> the code after that discussion.
+>  I wonder if you should do a "outb(0xFF, 0x64);" after "outb(0xdf, 0x60);" like
+> the HIMEM.SYS driver, to force an immediate update of the I/O ports - I think
+> I also read that in this initial chip docs, long time ago also.
 
-The problem of handling devices during hibernation has been discussed for many
-times on linux-pm and we have reached certain agreement.  I wouldn't like to
-repeat all of the arguments here.  For details, please refer, for example, to
-this thread:
+Well, the code we have now has worked for quite some years as-is.  This
+code is not an algorithmic change.  I haven't seen any machines which
+need outb(0xff, 0x64) -- I wonder if that has the same effect as our
+io_delay() or if it is actually potent.  I shall look into it.
 
-https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012386.html
-
-> > - when we've called device_power_down() and save_processor_state(), jump to
-> >   the image-saving kernel and let it run
-> > - make the image-saving kernel set up everything, save the image without
-> >   starting any user space (we may use the existing image-saving code for this
-> >   purpose, with some modifications) and power off the system (or make it enter
-> >   S4)
+>>>>  - Does not save and restore %ds when printing a char on the screen (%ds is
+>>>>  destroyed only when the content of the screen scroll - only for some video cards)
+>> %ds?  Aren't you confusing it with the old bug which would destroy %bp?
+>>  If you have any references to %ds being destroyed I would be very
+>> surprised.  I can guarantee that very little if any assembly code I've
+>> ever seen that deals with INT 10h -- and I've seen a lot of it -- guards
+>> against %ds being randomly trashed.
+>>
+>> However, the trashing of %bp is a well-known bug (although only for
+>> machines older than the ones that can run Linux) -- the Interrupt List has:
+>>
+>> BUGS:   some implementations (including the original IBM PC) have a bug
+>>  	which destroys BP
 > 
-> I suppose this has the advantage of not requiring that a
-> kernel-to-userspace interface be created for this purpose.
+>  That is on Trident cards, old card but may still be used, and BIOS may have
+> been copied to other cards.
+>  Detected and documented on Gujin (boot.c and vgabios.h scroll)
 
-Yes, and for now we're avoiding the problems with starting the new user space
-from a special place.
+Are you talking about BP or DS?  As I said, the BP is well-known, and
+the code accounts for it in the form of the INT10 macro.
 
-> > - use the existing restoration code to load the image and jump to the
-> >   hibernated kernel
+>>>>  and probably few other problems - just seen those by reading the patches (the
+>>>>  asm("") are inlined in the C code - I find it more difficult to check).
+>>>>
+>>>>  Also, I do not know if "m" is right in here:
+>>>> static inline u8 rdfs8(addr_t addr)
+>>>> {
+>>>> 	u8 v;
+>>>> 	asm("movb %%fs:%1,%0" : "=r" (v) : "m" (*(u8 *)addr));
+>>>> 	return v;
+>>>> }
+>> The "m" is correct right there.
 > 
-> This would again avoid the need for a separate userspace-kernelspace
-> interface for the purpose, so I agree it could be a useful thing to do
-> initially.
-> 
-> > - in the restore code patch replace device_resume() with the reprobing of all
-> >   devices.
-> 
-> See my comments above.
+>  strange, "g" would mean anything can go there - and this assembly instruction
+> should accept every access modes.
 
-And please see my reply. :-)
+Not with an %fs: prefix.  It would also allow the compiler to do a move
+into a register "on its own", which would be disastrous, since it would
+lack the prefix.  So "m" is correct.
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	-hpa
