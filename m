@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937839AbXGMWyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937851AbXGMW4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937839AbXGMWyZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 18:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXGMWyN
+	id S937851AbXGMW4t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 18:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbXGMW4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 18:54:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43800 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752246AbXGMWyL (ORCPT
+	Fri, 13 Jul 2007 18:56:40 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60201 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbXGMW4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 18:54:11 -0400
-Date: Fri, 13 Jul 2007 15:54:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: neilb@suse.de, raziebe@gmail.com, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [-mm PATCH 0/2] 74% decrease in dispatched writes, stripe-queue
- take3
-Message-Id: <20070713155400.24689606.akpm@linux-foundation.org>
-In-Reply-To: <20070713223257.25202.74399.stgit@dwillia2-linux.ch.intel.com>
-References: <20070713223257.25202.74399.stgit@dwillia2-linux.ch.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Jul 2007 18:56:40 -0400
+Message-ID: <46980232.4080500@zytor.com>
+Date: Fri, 13 Jul 2007 15:52:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Ingo Freund <linux-kernel-news@e-dict.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: howto create partitions bigger than 2TB
+References: <4697760E.4070803@e-dict.net>
+In-Reply-To: <4697760E.4070803@e-dict.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 15:35:42 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
+Ingo Freund wrote:
+> Hi
+> 
+> I've got a RAID5 (driver aacraid for an ICP9047MA) with four
+> 750GB hdds which provides a 2.25TB sized device.
+> None of the until now used tools will work with that device.
+> fdisk complains about missing cylinder count.
+> cfdisk misses the device size.
+> parted shows the right device size but only creates a partion
+> with 51GB.
+> What am I supposed to do to work with this device?
+> Which fs can handle it?
+> (CONFIG LARGE BLOCK is on)
+> We are talking about a 32Bit machine with vanilla kernel 2.6.21.5.
+> 
 
-> The following patches replace the stripe-queue patches currently in -mm.
+You have to use GPT partitions instead of DOS partitions (although you
+may have to leave your /boot as an DOS partitions, this is supposed to
+be possible as the two partitioning schemes are designed to coexist, but
+I don't think parted has support for it yet.)
 
-I have a little practical problem here: am presently unable to compile
-anything much due to all the git rejects coming out of git-md-accel.patch.
-
-It'd be appreciated if you could keep on top of that, please.  It's a common
-problem at this time of the kernel cycle.  The quilt trees are much worse - Greg's
-stuff is an unholy mess.  Ho hum.
+	-hpa
