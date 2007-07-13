@@ -1,85 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762049AbXGMNV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbXGMNWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762049AbXGMNV6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbXGMNVa
+	id S1758878AbXGMNWY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758890AbXGMNVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:21:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44679 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755253AbXGMNV2 (ORCPT
+	Fri, 13 Jul 2007 09:21:35 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:51966 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758181AbXGMNVc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:21:28 -0400
-Date: Fri, 13 Jul 2007 14:21:19 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, tytso@mit.edu,
-       cmm@us.ibm.com, suparna@in.ibm.com, adilger@clusterfs.com, dgc@sgi.com
-Subject: Re: [PATCH 2/6][TAKE7] fallocate() implementation in i386, x86_64 and powerpc
-Message-ID: <20070713132118.GA23256@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, tytso@mit.edu,
-	cmm@us.ibm.com, suparna@in.ibm.com, adilger@clusterfs.com,
-	dgc@sgi.com
-References: <20070713123816.GA18000@amitarora.in.ibm.com> <20070713124755.GB22961@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Jul 2007 09:21:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Bd0vqWs2iJRWfYMjl+lptNFhpLXNHIeZ3edjLMT77Poo0MKbqt66k4ZT7KCXaIoTzsng7Qb8iKYUKHlo4CgHufQTDyD722qpzY8PCAbf6euArwuPMhU7fioqTatSRNkOj7j+VqXXfGoDdZYtR1f5zEUH3wpyvwX+qQIAtxJ8nSc=
+Message-ID: <84144f020707130621g1d3618e0r85545f3aa26c7466@mail.gmail.com>
+Date: Fri, 13 Jul 2007 16:21:30 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Kirill Korotaev" <dev@sw.ru>
+Subject: Re: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to remove some following zero initializations.
+Cc: "rae l" <crquan@gmail.com>, trivial@kernel.org, Denis <cr_quan@163.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46974193.2020302@sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070713124755.GB22961@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <1184290905.5475.5.camel@tux.homenetwork> <4697357A.10605@sw.ru>
+	 <91b13c310707130138p6cffd0b4va34eec320d66ab44@mail.gmail.com>
+	 <46974193.2020302@sw.ru>
+X-Google-Sender-Auth: e66ddfd5373c32d7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 06:17:55PM +0530, Amit K. Arora wrote:
->  /*
-> + * sys_fallocate - preallocate blocks or free preallocated blocks
-> + * @fd: the file descriptor
-> + * @mode: mode specifies the behavior of allocation.
-> + * @offset: The offset within file, from where allocation is being
-> + *	    requested. It should not have a negative value.
-> + * @len: The amount of space in bytes to be allocated, from the offset.
-> + *	 This can not be zero or a negative value.
+Hi Kirill,
 
-kerneldoc comments are for in-kernel APIs which syscalls aren't.  I'd say
-just temove this comment, the manpage is a much better documentation anyway.
+On 7/13/07, Kirill Korotaev <dev@sw.ru> wrote:
+> Look, until you have any numbers in hands it's impossible to say
+> which one is faster.
 
-> + * <TBD> Generic fallocate to be added for file systems that do not
-> + *	 support fallocate.
+Well, it's not too hard to guess: struct dentry is 124 bytes on i386
+so kmem_cache_zalloc over it is bound to be slower tha
+kmem_cache_alloc as most members are initialized to non-NULL. And if
+you're into micro-benchmarks, here's one:
 
-Please remove the comment, adding a generic fallback in kernelspace is a
-very dumb idea as we already discussed long time ago.
+d_alloc takes 182.75ns
+d_alloc_zalloc takes 315.89ns
 
-> --- linux-2.6.22.orig/include/linux/fs.h
-> +++ linux-2.6.22/include/linux/fs.h
-> @@ -266,6 +266,21 @@ extern int dir_notify_enable;
->  #define SYNC_FILE_RANGE_WRITE		2
->  #define SYNC_FILE_RANGE_WAIT_AFTER	4
->  
-> +/*
-> + * sys_fallocate modes
-> + * Currently sys_fallocate supports two modes:
-> + * FALLOC_ALLOCATE :	This is the preallocate mode, using which an application
-> + *			may request reservation of space for a particular file.
-> + *			The file size will be changed if the allocation is
-> + *			beyond EOF.
-> + * FALLOC_RESV_SPACE :	This is same as the above mode, with only one difference
-> + *			that the file size will not be modified.
-> + */
-> +#define FALLOC_FL_KEEP_SIZE    0x01 /* default is extend/shrink size */
-> +
-> +#define FALLOC_ALLOCATE        0
-> +#define FALLOC_RESV_SPACE      FALLOC_FL_KEEP_SIZE
+So definitely NAK for Denis' patch.
 
-Just remove FALLOC_ALLOCATE, 0 flags should be the default.  I'm also
-not sure there is any point in having two namespace now that we have a flags-
-based ABI.
+                                               Pekka
 
-Also please don't add this to fs.h.  fs.h is a complete mess and the
-falloc flags are a new user ABI.  Add a linux/falloc.h instead which can
-be added to headers-y so the ABI constant can be exported to userspace.
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <string.h>
+#include <time.h>
 
+struct dentry {
+	void *a;
+	void *b;
+	void *c;
+	void *d;
+	void *e;
+	void *f;
+	void *g;
+	void *h;
+	unsigned char d_iname[36];
+};
+
+#define NR_ITERS 1000000
+
+#define MAX_DENTRIES (NR_ITERS*2)
+
+static unsigned long offset;
+static struct dentry dentries[MAX_DENTRIES];
+
+static inline void *__kmalloc(void)
+{
+	void *p = &dentries[offset++];
+	if (offset == MAX_DENTRIES)
+		offset = 0;
+	return p;
+}
+
+void *kmalloc(size_t sz)
+{
+	return __kmalloc();
+}
+
+struct dentry *d_alloc(const char *name)
+{
+	struct dentry *ret = kmalloc(sizeof *ret);
+	if (ret) {
+		ret->a = NULL;
+		ret->b = NULL;
+		ret->c = NULL;
+		ret->d = NULL;
+		ret->e = (void *) 0xdeadbeef;
+		ret->f = (void *) 0xdeadbeef;
+		ret->g = (void *) 0xdeadbeef;
+		ret->h = (void *) 0xdeadbeef;
+		strcpy(ret->d_iname, name);
+	}
+	return ret;
+}
+
+static inline void * __memset_generic(void * s, char c,size_t count)
+{
+	int d0, d1;
+	__asm__ __volatile__(
+	        "rep\n\t"
+	        "stosb"
+	        : "=&c" (d0), "=&D" (d1)
+	        :"a" (c),"1" (s),"0" (count)
+	        :"memory");
+	return s;
+}
+
+void *kzalloc(size_t sz)
+{
+	void *p = __kmalloc();
+	if (p)
+		__memset_generic(p, 0, sz);
+	return p;
+}
+
+struct dentry *d_alloc_zalloc(const char *name)
+{
+	struct dentry *ret = kzalloc(sizeof *ret);
+	if (ret) {
+		ret->e = (void *) 0xdeadbeef;
+		ret->f = (void *) 0xdeadbeef;
+		ret->g = (void *) 0xdeadbeef;
+		ret->h = (void *) 0xdeadbeef;
+		strcpy(ret->d_iname, name);
+	}
+	return ret;
+}
+
+int main(int argc, char *argv[])
+{
+	struct timeval start, end;
+	unsigned long long usec;
+	int i;
+
+	gettimeofday(&start, NULL);
+	for (i = 0; i < NR_ITERS; i++) {
+		struct dentry *dentry = d_alloc("root");
+
+		if (!dentry || dentry->a != NULL)
+			abort();
+	}
+	gettimeofday(&end, NULL);
+	usec = end.tv_usec + 1000000*(end.tv_sec - start.tv_sec) - start.tv_usec;
+	printf("d_alloc takes %0.2lfns\n", (double)usec * 1000 / NR_ITERS);
+
+	gettimeofday(&start, NULL);
+	for (i = 0; i < NR_ITERS; i++) {
+		struct dentry *dentry = d_alloc_zalloc("root");
+
+		if (!dentry || dentry->a != NULL)
+			abort();
+	}
+	gettimeofday(&end, NULL);
+	usec = end.tv_usec + 1000000*(end.tv_sec - start.tv_sec) - start.tv_usec;
+	printf("d_alloc_zalloc takes %0.2lfns\n", (double)usec * 1000 / NR_ITERS);
+
+	return 0;
+}
