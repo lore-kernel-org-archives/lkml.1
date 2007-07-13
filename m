@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbXGMEef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbXGMEmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbXGMEef (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 00:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbXGMEe2
+	id S1754371AbXGMEmG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 00:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbXGMEl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 00:34:28 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:10440 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbXGMEe2 (ORCPT
+	Fri, 13 Jul 2007 00:41:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39799 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750870AbXGMEl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 00:34:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=B8K9yRLIdH/VYtp2RqUSV/KOle5nzAtRbkQYQp0kepNjI88yUuPKi04IC8fwvmay+IAAH5OEFl8n4J+kvnzn5xzfU7wCxRa/23RdMqiBxJusiki7WgaBlRQ7XZBLzlGchYOqghnLgBJjhUcIzgN9tT2tDIacMlQfua6ZhVwzaWM=
-Message-ID: <a8e1da0707122134vc3d967aq21b7ca7e136778d@mail.gmail.com>
-Date: Fri, 13 Jul 2007 04:34:23 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Alistair John Strachan" <alistair@devzero.co.uk>
-Subject: Re: Gmail and flowed text (was Re: Correction to LZO1X)
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Nitin Gupta" <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200707112205.26470.alistair@devzero.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 13 Jul 2007 00:41:56 -0400
+Date: Thu, 12 Jul 2007 21:40:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+Message-Id: <20070712214048.703567db.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707130415520.1818@scrub.home>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<p734pkbyuu4.fsf@bingen.suse.de>
+	<20070711174252.GA16793@elte.hu>
+	<20070711211638.GE18767@one.firstfloor.org>
+	<20070711214649.GK14435@v2.random>
+	<alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+	<Pine.LNX.4.64.0707130415520.1818@scrub.home>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com>
-	 <20070711152144.GA1394@infradead.org>
-	 <200707112205.26470.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 7/11/07, Alistair John Strachan <alistair@devzero.co.uk> wrote:
-> On Wednesday 11 July 2007 16:21:44 Christoph Hellwig wrote:
-> > On Wed, Jul 11, 2007 at 07:06:23PM +0530, Satyam Sharma wrote:
-> > > Which leaves Gmail, but Gmail has the flowed text disease (that
-> > > cannot be disabled) and although Gmail offers SMTP/POP, our evil
-> > > proxy/NAT setup here wouldn't let me make any use of it to access
-> > > it from some other MUA such as pine/mutt.
-> >
-> > Given the amount of google people here maybe someone can get this
-> > piece of junk called gmail fixed?  If google claims they're not
-> > evil they should stop sending broken patches around..
->
-> It'd be nice if they stopped mangling headers too (spaces->tabs).
->
-Yes, it's boring for gmail users, I generally read messages from gmail
-web pages, and send patches via mutt with ssmtp.
-1. write ~/.mutt/ssmpt.conf as follows:
-mailhub=smtp.gmail.com:587
-UseSTARTTLS=YES
-UseTLS=YES
-AuthUser=yourid@gmail.com
-AuthPass=***
-FromLineOverride=YES
+On Fri, 13 Jul 2007 04:23:43 +0200 (CEST) Roman Zippel <zippel@linux-m68k.org> wrote:
 
-2. write ~/.mutt/ssmpt script:
-#!/bin/sh
-/usr/sbin/ssmtp -C ~/.mutt/ssmtp.conf $@
+> Hi,
+> 
+> On Wed, 11 Jul 2007, Linus Torvalds wrote:
+> 
+> > Sure, bugs happen, but code that everybody runs the same generally doesn't 
+> > break. So a CPU scheduler doesn't worry me all that much. CPU schedulers 
+> > are "easy".
+> 
+> A little more advance warning wouldn't have hurt though.
+> The new scheduler does _a_lot_ of heavy 64 bit calculations without any 
+> attempt to scale that down a little...
+> One can blame me now for not having it brought up earlier, but discussions 
+> with Ingo are not something I'm looking forward to. :(
+> 
 
-3.add the follow line to ~/.mutt/muttrc
-set sendmail="~/.mutt/ssmtp"
+I brought that up a couple of weeks ago, got handwaved at and gave up.
 
-Regards
-dave
+It still isn't obvious to me that all that arith needs to be 64-bit
+on 32-bit machines, or even on 64-bit.  4e9 is a big number.
