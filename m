@@ -1,97 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbXGMLFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbXGMLIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578AbXGMLFu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 07:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXGMLFn
+	id S1757495AbXGMLIo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 07:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbXGMLIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 07:05:43 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57570 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbXGMLFm (ORCPT
+	Fri, 13 Jul 2007 07:08:36 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:48964 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752795AbXGMLIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 07:05:42 -0400
-To: Neil Horman <nhorman@redhat.com>
-Cc: Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Determine version of kernel that produced vmcore
-In-reply-to: <20070710120243.GA10121@hmsendeavour.rdu.redhat.com>
-Message-Id: <20070713200533oomichi@mail.jp.nec.com>
-References: <20070710120243.GA10121@hmsendeavour.rdu.redhat.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:5W0000
-From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Date: Fri, 13 Jul 2007 20:05:33 +0900
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jul 2007 07:08:35 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 13 Jul 2007 07:05:31 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Ralf Baechle <ralf@linux-mips.org>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH][RFC] MIPS:  Simplify ioctl.h header file.
+Message-ID: <Pine.LNX.4.64.0707130700520.9634@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi all,
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-2007/07/10 08:02:43 -0400, Neil Horman <nhorman@redhat.com> wrote:
->> Besides Dan's plan, I'm planning the change of CONFIGFILE for distributors.
->> In the kernel building process, distributors need to make CONFIGFILE
->> on an older kernel (ex. RHEL5 kernel is built on RHEL4), and OSRELEASE
->> may be an older kernel. So OSRELEASE should be modified to the building
->> kernel version by hand, but it is not smart.
->> 
->> To solve this problem, I'm proposing 2 plans.
->> Could you give me your opinion ?
->> 
->> Plan 1:
->>   A new option [--osrelease="string"] is added.
->>   The OSRELEASE of CONFIGFILE is overwritten by "string".
->>   In the kernel building process, distributors should specify "string"
->>   as the building kernel version.
->> 
->> Plan2:
->>   Remove the OSRELEASE from CONFIGFILE.
->>   Instead of checking the OSRELEASE, makedumpfile only checks whether the
->>   area of /proc/vmcore specified by the symbol "system_utsname" in CONFIGFILE
->>   is the string "2.6.". If CONFIGFILE and /proc/vmcore don't match, the
->>   "system_utsname" must not point to the correct area in most cases.
->>   Old makedumpfile needs OSRELEASE, and it cannot work by new CONFIGFILE.
->>   But I think there are not any problems because old makedumpfile will not
->>   read new CONFIGFILE. Now, CONFIGFILE is used only by RHEL5's kdump initramfs,
->>   the CONFIGFILE is generated during 1st-kernel running. Even if CONFIGFILE
->>   will be updated, makedumpfile can read the CONFIGFILE because makedumpfile
->>   should be updated with CONFIGFILE.
->> 
->> 
->> I'd like to change the name of CONFIGFILE to mkdfinfo.
->> 
->Why not, instead of either plan above, just redefine OSRELEASE to be the version
->of the kernel the config file was built against?  i.e. when you build a config
->file, you need to specify a kernel to extract symbol information from, why not
->grab the utsname from that kernel and use that to set OSRELEASE?  When you're
->building a config file the running kernel on the system isn't really relevent
->anyway.
+---
 
-Did you say "makedumpfile should get OSRELEASE from a vmlinux file,
-and output it to a mkdfinfo file", right ?
-If so, you are right. I'm creating the patch for it.
+  given the application of the patch for the enhanced
+<asm-generic/ioctl.h> header file I submitted yesterday, this would be
+a patch against the MIPS ioctl.h file to shorter it considerably.
 
-BTW, I'd like to remove PAGESIZE from a mkdfinfo file.
-While 2nd-kernel is running, new makedumpfile comes to consider
-2nd-kernel PAGESIZE as 1st-kernel PAGESIZE without getting PAGESIZE
-from a mkdfinfo file.
-
-In current implementation, makedumpfile considers 2nd-kernel PAGESIZE
-as 1st-kernel PAGESIZE if a vmlinux file is specified instead of a
-mkdfinfo file. On the other hand, makedumpfile can get 1st-kernel
-PAGESIZE correctly if a mkdfinfo file is specified, because there
-is the rule that a mkdfinfo file should be generated on 1st-kernel.
-
-Now, I will change this rule for generating a mkdfinfo file on the
-kernel-building environment. I feel considering 2nd-kernel PAGESIZE
-as 1st-kernel PAGESIZE is better than considering the PAGESIZE of
-kernel-building environment, because 1st-kernel and 2nd-kernel have
-the same PAGESIZE in most cases such as relocatable kernel.
+  similar trivial patches would be available for alpha, parisc and
+powerpc.
 
 
-Please let me know your opinion.
+diff --git a/include/asm-mips/ioctl.h b/include/asm-mips/ioctl.h
+index 2036fcb..ff6c7e0 100644
+--- a/include/asm-mips/ioctl.h
++++ b/include/asm-mips/ioctl.h
+@@ -8,87 +8,22 @@
+ #ifndef _ASM_IOCTL_H
+ #define _ASM_IOCTL_H
 
+-/*
+- * The original linux ioctl numbering scheme was just a general
+- * "anything goes" setup, where more or less random numbers were
+- * assigned.  Sorry, I was clueless when I started out on this.
+- *
+- * On the alpha, we'll try to clean it up a bit, using a more sane
+- * ioctl numbering, and also trying to be compatible with OSF/1 in
+- * the process. I'd like to clean it up for the i386 as well, but
+- * it's so painful recognizing both the new and the old numbers..
+- *
+- * The same applies for for the MIPS ABI; in fact even the macros
+- * from Linux/Alpha fit almost perfectly.
+- */
+-
+-#define _IOC_NRBITS	8
+-#define _IOC_TYPEBITS	8
+ #define _IOC_SIZEBITS	13
+ #define _IOC_DIRBITS	3
 
-Thanks
-Ken'ichi Ohmichi
+-#define _IOC_NRMASK	((1 << _IOC_NRBITS)-1)
+-#define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)
+-#define _IOC_SIZEMASK	((1 << _IOC_SIZEBITS)-1)
+-#define _IOC_DIRMASK	((1 << _IOC_DIRBITS)-1)
+-
+-#define _IOC_NRSHIFT	0
+-#define _IOC_TYPESHIFT	(_IOC_NRSHIFT+_IOC_NRBITS)
+-#define _IOC_SIZESHIFT	(_IOC_TYPESHIFT+_IOC_TYPEBITS)
+-#define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)
+-
+-/*
+- * Direction bits _IOC_NONE could be 0, but OSF/1 gives it a bit.
+- * And this turns out useful to catch old ioctl numbers in header
+- * files for us.
+- */
+ #define _IOC_NONE	1U
+ #define _IOC_READ	2U
+ #define _IOC_WRITE	4U
+
++#include <asm-generic/ioctl.h>
++
+ /*
+  * The following are included for compatibility
+  */
++
+ #define _IOC_VOID	0x20000000
+ #define _IOC_OUT	0x40000000
+ #define _IOC_IN		0x80000000
+ #define _IOC_INOUT	(IOC_IN|IOC_OUT)
+
+-#define _IOC(dir,type,nr,size) \
+-	(((dir)  << _IOC_DIRSHIFT) | \
+-	 ((type) << _IOC_TYPESHIFT) | \
+-	 ((nr)   << _IOC_NRSHIFT) | \
+-	 ((size) << _IOC_SIZESHIFT))
+-
+-/* provoke compile error for invalid uses of size argument */
+-extern unsigned int __invalid_size_argument_for_IOC;
+-#define _IOC_TYPECHECK(t) \
+-	((sizeof(t) == sizeof(t[1]) && \
+-	  sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
+-	  sizeof(t) : __invalid_size_argument_for_IOC)
+-
+-/* used to create numbers */
+-#define _IO(type,nr)		_IOC(_IOC_NONE,(type),(nr),0)
+-#define _IOR(type,nr,size)	_IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))
+-#define _IOW(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
+-#define _IOWR(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
+-#define _IOR_BAD(type,nr,size)	_IOC(_IOC_READ,(type),(nr),sizeof(size))
+-#define _IOW_BAD(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),sizeof(size))
+-#define _IOWR_BAD(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),sizeof(size))
+-
+-
+-/* used to decode them.. */
+-#define _IOC_DIR(nr)		(((nr) >> _IOC_DIRSHIFT) & _IOC_DIRMASK)
+-#define _IOC_TYPE(nr)		(((nr) >> _IOC_TYPESHIFT) & _IOC_TYPEMASK)
+-#define _IOC_NR(nr)		(((nr) >> _IOC_NRSHIFT) & _IOC_NRMASK)
+-#define _IOC_SIZE(nr)		(((nr) >> _IOC_SIZESHIFT) & _IOC_SIZEMASK)
+-
+-/* ...and for the drivers/sound files... */
+-
+-#define IOC_IN		(_IOC_WRITE << _IOC_DIRSHIFT)
+-#define IOC_OUT		(_IOC_READ << _IOC_DIRSHIFT)
+-#define IOC_INOUT	((_IOC_WRITE|_IOC_READ) << _IOC_DIRSHIFT)
+-#define IOCSIZE_MASK	(_IOC_SIZEMASK << _IOC_SIZESHIFT)
+-#define IOCSIZE_SHIFT	(_IOC_SIZESHIFT)
+-
+ #endif /* _ASM_IOCTL_H */
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
