@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761849AbXGMCPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762620AbXGMCPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761849AbXGMCPb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 22:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbXGMCPW
+	id S1762620AbXGMCPn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 22:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761149AbXGMCP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 22:15:22 -0400
-Received: from ns1.suse.de ([195.135.220.2]:42103 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754617AbXGMCPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 22:15:22 -0400
-Date: Thu, 12 Jul 2007 19:14:45 -0700
-From: Greg KH <gregkh@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 01/61] Rules on how to use sysfs in userspace programs
-Message-ID: <20070713021445.GB27045@suse.de>
-References: <20070711233021.GA5253@kroah.com> <11841967403365-git-send-email-gregkh@suse.de> <20070712084846.GA1882@elf.ucw.cz> <20070712221402.GA30182@suse.de> <20070712224114.GE3374@elf.ucw.cz>
+	Thu, 12 Jul 2007 22:15:29 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:45258 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759853AbXGMCP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 22:15:27 -0400
+Date: Thu, 12 Jul 2007 19:15:26 -0700 (PDT)
+From: dean gaudet <dean@arctic.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       dave@thedillows.org
+Subject: Re: [RFT][PATCH v7] sata_mv: convert to new EH
+In-Reply-To: <46967B3C.708@garzik.org>
+Message-ID: <Pine.LNX.4.64.0707121323570.29365@twinlark.arctic.org>
+References: <20070711200538.GA7374@havoc.gtf.org>
+ <Pine.LNX.4.64.0707120212210.25837@twinlark.arctic.org> <46960225.5000502@garzik.org>
+ <Pine.LNX.4.64.0707121140560.29365@twinlark.arctic.org> <46967B3C.708@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070712224114.GE3374@elf.ucw.cz>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 12:41:14AM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > +The kernel exported sysfs exports internal kernel implementation-details
-> > > > +and depends on internal kernel structures and layout. It is agreed upon
-> > > > +by the kernel developers that the Linux kernel does not provide a stable
-> > > > +internal API. As sysfs is a direct export of kernel internal
-> > > > +structures, the sysfs interface can not provide a stable interface eighter,
-> > > > +it may always change along with internal kernel changes.
-> > > 
-> > > It is also agreed upon by the kernel developers that the Linux kernel
-> > > does have a stable user<->kernel API... so we have a small problem
-> > > here. 
+On Thu, 12 Jul 2007, Jeff Garzik wrote:
+
+> dean gaudet wrote:
+> > On Thu, 12 Jul 2007, Jeff Garzik wrote:
 > > 
-> > I agree, that is why we have described the proper ways to use /sys in a
-> > manner that is acceptable to future changes in it.
+> > > dean gaudet wrote:
+> > > > oh very nice... no warnings on boot, and no warnings while i "dd
+> > > > if=/dev/sdX
+> > > > of=/dev/null" and i'm seeing 74MB/s+ from each disk on this simple read
+> > > > test.
+> > > > 
+> > > > for lack of a better test i started an untar/diff stress test on the
+> > > > disks... we'll see how it goes.  (it's based on doug ledford's
+> > > > memtest.sh)
+> > > Thanks for the testing.  Looks like we might have hit on something good...
 > > 
-> > > Maybe solution is to declare /sys unstable, but... perhaps /sys can
-> > > stop mirroring internal structures? I do not think we should codify
-> > > our failure to keep /sys stable here.
-> > 
-> > I think that /sys is to valuable to say it can just never be used by
-> > userspace programs.  With these suggestions, do you see any problems
-> > with any potential future changes in the layout that you can come up
-> > with?
+> > yep this does look good.  no problems overnight in the untar/diff/rm
+> > workload.  if you've got any other workload you'd like me to throw at it,
+> > let me know.  i might be able to scare up a disk or two with errors to check
+> > error handling.
 > 
-> I'm afraid that userland programmers just will not read/follow
-> this... and we will not know.
+> Nothing specific.  I usually just throw various workloads at it, both
+> throughput-intensive, seek-intensive, multiple threads at the same time,
+> stressing multiple disks at the same time, etc.
 
-Yes we will, when things break on their side due to normal movements
-around within sysfs.
+yeah the untar/diff/rm workload is seek/thread intensive.
 
-Is there any other way you can imagine to get the word out on how to use
-this properly?  I'm working with the LSB, so perhaps we can add it to
-their next spec for compliance testing of applications...
 
-> [Perhaps CONFIG_STRESS_SYSFS_PARSERS would be useful? Move stuff
-> randomly to expose broken /sys users?]
+> I presume from your past messages your tests include multiple disks at the
+> same time?
 
-Right now that is CONFIG_SYSFS_DEPRECATED :)
+yep, 4 disks... i was getting 4x74MB/s with dd read.  unfortunately i 
+don't have more disks in the system at this point so i can't test all 8 
+ports at full tilt.
 
-> Then, we'll get binary-only applications working okay relying on
-> specific /sys structure, and soon, we'll be unable to change /sys.
+each disk had its own XFS filesystem.
+
+> > i tested hotplug just for kicks... no luck there :)  but then you didn't say
+> > that would work yet.
 > 
-> [Perhaps we can make large parts of sysfs superuser-only, so that
-> "normal" application can not rely on it?]
+> hehehe Well I sorta didn't want to mention it, to avoid clouding the waters
+> further.
+> 
+> In theory, hotplug and hot unplug -should- work, in version 7.  Your report is
+> a useful contradiction of that theory, and signals where to poke next.  Since
+> all this hacking is a spare-time effort, so promises as to when next I'll poke
+> at it.   It might be tomorrow, or a month from now.  Getting "new EH" upstream
+> was a big hurdle to overcome, and your testing really helped that along.
+> 
+> Anyway, something like Version 7 is probably what I will push upstream for
+> 2.6.23-rc1.
 
-Like those big "binary-only applications" don't already run as root...
+cool, thanks.
 
-thanks,
-
-greg k-h
+-dean
