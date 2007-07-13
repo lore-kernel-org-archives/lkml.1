@@ -1,108 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763539AbXGMJJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936260AbXGMJKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763539AbXGMJJT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 05:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXGMJJC
+	id S936260AbXGMJKA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 05:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761026AbXGMJJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 05:09:02 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:47505 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756503AbXGMJI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 05:08:58 -0400
-Message-ID: <46974193.2020302@sw.ru>
-Date: Fri, 13 Jul 2007 13:10:43 +0400
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	Fri, 13 Jul 2007 05:09:51 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:45805 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756503AbXGMJJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 05:09:50 -0400
+Date: Fri, 13 Jul 2007 11:09:48 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Antonino A. Daplas" <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+       James Simmons <jsimmons@infradead.org>,
+       linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 0/4] Cell SPE logos
+In-Reply-To: <20070713020621.e8f2e4ce.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.62.0707131108320.18802@pademelon.sonytel.be>
+References: <20070710122702.765654000@pademelon.sonytel.be>
+ <20070712160621.644d78d2.akpm@linux-foundation.org>
+ <Pine.LNX.4.62.0707131051190.18802@pademelon.sonytel.be>
+ <20070713020621.e8f2e4ce.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: rae l <crquan@gmail.com>
-CC: trivial@kernel.org, Denis <cr_quan@163.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to remove
- some following zero initializations.
-References: <1184290905.5475.5.camel@tux.homenetwork> <4697357A.10605@sw.ru> <91b13c310707130138p6cffd0b4va34eec320d66ab44@mail.gmail.com>
-In-Reply-To: <91b13c310707130138p6cffd0b4va34eec320d66ab44@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1293754850-1184317788=:18802"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Look, until you have any numbers in hands it's impossible to say
-which one is faster.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Please measure N d_alloc()'s on i686 and some other archs w/o string operations
-and compare whether your patch improves something or not.
+---584337861-1293754850-1184317788=:18802
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Kirill
+On Fri, 13 Jul 2007, Andrew Morton wrote:
+> On Fri, 13 Jul 2007 10:52:10 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> 
+> > > > Summaries:
+> > > >   [1] fbdev: extract fb_show_logo_line()
+> > > >   [2] fbdev: Add fb_append_extra_logo()
+> > > 
+> > > This one does give additional code and data to all fbdev users while only
+> > > being useful to cell machines.  Should we fix that?
+> > 
+> > I can protect it by #ifdef CONFIG_PPC_CELL (as long as there are no other
+> > users). Would that be OK?
+> 
+> umm, your call.  If that makes sense, sure.
 
-rae l wrote:
-> On 7/13/07, Kirill Korotaev <dev@sw.ru> wrote:
-> 
->>This doesn't look worth zeroing half of the struct
->>when it is initialized to non-zeros then.
-> 
-> But why?
-> 
-> My reason to think it's better and faster is that:
-> 1. the code will be shorter if it calls zalloc and then removes the
-> NULL and zero initilization;
-> 2. in the assembly code objdumped, many mov operations reduced, such as:
->     movl $0,0x40(%ebp)
->     ...
->     this style of zero initialization occupies 7 bytes per line
-> (i386), and then multiply 7 lines,
-> 
-> 3. the only change is that calls to kmem_cache_zalloc other than
-> kmem_cache_alloc, it's just an extra memset is called, as we all know
-> the memset implimentation is string operation, that's rather fast.
-> 
-> 
->>Denis Cheng wrote:
->>
->>>>From 4d87e14b67890f06885a76b5792ca034de2e9d06 Mon Sep 17 00:00:00 2001
->>>From: Denis Cheng <crquan@gmail.com>
->>>Date: Thu, 12 Jul 2007 11:53:58 +0800
->>>Subject: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to
->>>remove some following zero initializations.
->>>
->>>Signed-off-by: Denis Cheng <crquan@gmail.com>
->>>---
->>> fs/dcache.c |   12 ++----------
->>> 1 files changed, 2 insertions(+), 10 deletions(-)
->>>
->>>diff --git a/fs/dcache.c b/fs/dcache.c
->>>index 0e73aa0..8c559b2 100644
->>>--- a/fs/dcache.c
->>>+++ b/fs/dcache.c
->>>@@ -898,7 +898,7 @@ struct dentry *d_alloc(struct dentry * parent, const
->>>struct qstr *name)
->>>      struct dentry *dentry;
->>>      char *dname;
->>>
->>>-     dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL);
->>>+     dentry = kmem_cache_zalloc(dentry_cache, GFP_KERNEL);
->>>      if (!dentry)
->>>              return NULL;
->>>
->>>@@ -921,15 +921,7 @@ struct dentry *d_alloc(struct dentry * parent,
->>>const struct qstr *name)
->>>      atomic_set(&dentry->d_count, 1);
->>>      dentry->d_flags = DCACHE_UNHASHED;
->>>      spin_lock_init(&dentry->d_lock);
->>>-     dentry->d_inode = NULL;
->>>-     dentry->d_parent = NULL;
->>>-     dentry->d_sb = NULL;
->>>-     dentry->d_op = NULL;
->>>-     dentry->d_fsdata = NULL;
->>>-     dentry->d_mounted = 0;
->>>-#ifdef CONFIG_PROFILING
->>>-     dentry->d_cookie = NULL;
->>>-#endif
->>>+
->>>      INIT_HLIST_NODE(&dentry->d_hash);
->>>      INIT_LIST_HEAD(&dentry->d_lru);
->>>      INIT_LIST_HEAD(&dentry->d_subdirs);
->>
->>
-> 
-> 
+I just don't like putting platform-specific checks in common code.
 
+Perhaps I better add CONFIG_FB_LOGO_EXTRA and make it depend on
+CONFIG_PPC_CELL?
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1293754850-1184317788=:18802--
