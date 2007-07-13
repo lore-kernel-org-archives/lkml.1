@@ -1,169 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbXGMMw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbXGMMyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761317AbXGMMw4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 08:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757510AbXGMMwp
+	id S1761356AbXGMMyx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 08:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbXGMMyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 08:52:45 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48047 "EHLO e6.ny.us.ibm.com"
+	Fri, 13 Jul 2007 08:54:46 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58738 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755285AbXGMMwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 08:52:43 -0400
-Date: Fri, 13 Jul 2007 18:22:58 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Cc: xfs@oss.sgi.com, tytso@mit.edu, cmm@us.ibm.com, suparna@in.ibm.com,
-       adilger@clusterfs.com, dgc@sgi.com
-Subject: [PATCH 6/6][TAKE7] ext4: change for better extent-to-group alignment
-Message-ID: <20070713125258.GF22961@amitarora.in.ibm.com>
-References: <20070713123816.GA18000@amitarora.in.ibm.com>
+	id S1757510AbXGMMyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 08:54:45 -0400
+Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to 2.6.22
+	available
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gregory Haskins <ghaskins@novell.com>, jim.houston@ccur.com,
+       joe.korty@ccur.com, rostedt@goodmis.org, tglx@linutronix.de,
+       dwalker@mvista.com, David Bahi <DBahi@novell.com>,
+       Moiz Kohari <MKohari@novell.com>, Sven Dietrich <SDietrich@novell.com>,
+       dsaxena@plexity.net, williams@redhat.com, abogani@texware.it,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20070712163341.GA9622@elte.hu>
+References: <46961E080200005A000276AE@mcclure.wal.novell.com>
+	 <20070712163341.GA9622@elte.hu>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 22:52:55 +1000
+Message-Id: <1184331176.6059.225.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713123816.GA18000@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amit Arora <aarora@in.ibm.com>
+On Thu, 2007-07-12 at 18:33 +0200, Ingo Molnar wrote:
+> * Gregory Haskins <ghaskins@novell.com> wrote:
+> 
+> >   For the most part, it seems you guys have resolved most of the 
+> > issues that we ran into as well (e.g. early-flush-tlb, relocated 
+> > die-notifier, etc, come to mind).  I found one patch that was missing 
+> > that allows debug configurations to build properly.  Heres that patch:
+> > 
+> > --- linux-2.6.21.orig/kernel/latency_trace.c
+> > +++ linux-2.6.21/kernel/latency_trace.c
+> > @@ -24,6 +24,7 @@
+> >  #include <linux/utsrelease.h>
+> >  #include <asm/uaccess.h>
+> >  #include <asm/unistd.h>
+> > +#include <asm/asm-offsets.h>
+> 
+> i think this breaks PPC (which has no asm-offsets.h file). In any case i 
+> saw this build breakage too and the fix is in -rt2.
 
-Change on-disk format for extent to represent uninitialized/initialized extents
+Nah, ppc and powerpc both have asm-offset.h
 
-This change was suggested by Andreas Dilger. 
-This patch changes the EXT_MAX_LEN value and extent code which marks/checks
-uninitialized extents. With this change it will be possible to have
-initialized extents with 2^15 blocks (earlier the max blocks we could have
-was 2^15 - 1). This way we can have better extent-to-block alignment.
-Now, maximum number of blocks we can have in an initialized extent is 2^15
-and in an uninitialized extent is 2^15 - 1.
+Cheers,
+Ben.
 
-This patch takes care of Andreas's suggestion of using EXT_INIT_MAX_LEN
-instead of 0x8000 at some places.
-
-Signed-off-by: Amit Arora <aarora@in.ibm.com>
-
-Index: linux-2.6.22/fs/ext4/extents.c
-===================================================================
---- linux-2.6.22.orig/fs/ext4/extents.c
-+++ linux-2.6.22/fs/ext4/extents.c
-@@ -1106,7 +1106,7 @@ static int
- ext4_can_extents_be_merged(struct inode *inode, struct ext4_extent *ex1,
- 				struct ext4_extent *ex2)
- {
--	unsigned short ext1_ee_len, ext2_ee_len;
-+	unsigned short ext1_ee_len, ext2_ee_len, max_len;
- 
- 	/*
- 	 * Make sure that either both extents are uninitialized, or
-@@ -1115,6 +1115,11 @@ ext4_can_extents_be_merged(struct inode 
- 	if (ext4_ext_is_uninitialized(ex1) ^ ext4_ext_is_uninitialized(ex2))
- 		return 0;
- 
-+	if (ext4_ext_is_uninitialized(ex1))
-+		max_len = EXT_UNINIT_MAX_LEN;
-+	else
-+		max_len = EXT_INIT_MAX_LEN;
-+
- 	ext1_ee_len = ext4_ext_get_actual_len(ex1);
- 	ext2_ee_len = ext4_ext_get_actual_len(ex2);
- 
-@@ -1127,7 +1132,7 @@ ext4_can_extents_be_merged(struct inode 
- 	 * as an RO_COMPAT feature, refuse to merge to extents if
- 	 * this can result in the top bit of ee_len being set.
- 	 */
--	if (ext1_ee_len + ext2_ee_len > EXT_MAX_LEN)
-+	if (ext1_ee_len + ext2_ee_len > max_len)
- 		return 0;
- #ifdef AGGRESSIVE_TEST
- 	if (le16_to_cpu(ex1->ee_len) >= 4)
-@@ -1814,7 +1819,11 @@ ext4_ext_rm_leaf(handle_t *handle, struc
- 
- 		ex->ee_block = cpu_to_le32(block);
- 		ex->ee_len = cpu_to_le16(num);
--		if (uninitialized)
-+		/*
-+		 * Do not mark uninitialized if all the blocks in the
-+		 * extent have been removed.
-+		 */
-+		if (uninitialized && num)
- 			ext4_ext_mark_uninitialized(ex);
- 
- 		err = ext4_ext_dirty(handle, inode, path + depth);
-@@ -2307,6 +2316,19 @@ int ext4_ext_get_blocks(handle_t *handle
- 	/* allocate new block */
- 	goal = ext4_ext_find_goal(inode, path, iblock);
- 
-+	/*
-+	 * See if request is beyond maximum number of blocks we can have in
-+	 * a single extent. For an initialized extent this limit is
-+	 * EXT_INIT_MAX_LEN and for an uninitialized extent this limit is
-+	 * EXT_UNINIT_MAX_LEN.
-+	 */
-+	if (max_blocks > EXT_INIT_MAX_LEN &&
-+	    create != EXT4_CREATE_UNINITIALIZED_EXT)
-+		max_blocks = EXT_INIT_MAX_LEN;
-+	else if (max_blocks > EXT_UNINIT_MAX_LEN &&
-+		 create == EXT4_CREATE_UNINITIALIZED_EXT)
-+		max_blocks = EXT_UNINIT_MAX_LEN;
-+
- 	/* Check if we can really insert (iblock)::(iblock+max_blocks) extent */
- 	newex.ee_block = cpu_to_le32(iblock);
- 	newex.ee_len = cpu_to_le16(max_blocks);
-Index: linux-2.6.22/include/linux/ext4_fs_extents.h
-===================================================================
---- linux-2.6.22.orig/include/linux/ext4_fs_extents.h
-+++ linux-2.6.22/include/linux/ext4_fs_extents.h
-@@ -141,7 +141,25 @@ typedef int (*ext_prepare_callback)(stru
- 
- #define EXT_MAX_BLOCK	0xffffffff
- 
--#define EXT_MAX_LEN	((1UL << 15) - 1)
-+/*
-+ * EXT_INIT_MAX_LEN is the maximum number of blocks we can have in an
-+ * initialized extent. This is 2^15 and not (2^16 - 1), since we use the
-+ * MSB of ee_len field in the extent datastructure to signify if this
-+ * particular extent is an initialized extent or an uninitialized (i.e.
-+ * preallocated).
-+ * EXT_UNINIT_MAX_LEN is the maximum number of blocks we can have in an
-+ * uninitialized extent.
-+ * If ee_len is <= 0x8000, it is an initialized extent. Otherwise, it is an
-+ * uninitialized one. In other words, if MSB of ee_len is set, it is an
-+ * uninitialized extent with only one special scenario when ee_len = 0x8000.
-+ * In this case we can not have an uninitialized extent of zero length and
-+ * thus we make it as a special case of initialized extent with 0x8000 length.
-+ * This way we get better extent-to-group alignment for initialized extents.
-+ * Hence, the maximum number of blocks we can have in an *initialized*
-+ * extent is 2^15 (32768) and in an *uninitialized* extent is 2^15-1 (32767).
-+ */
-+#define EXT_INIT_MAX_LEN	(1UL << 15)
-+#define EXT_UNINIT_MAX_LEN	(EXT_INIT_MAX_LEN - 1)
- 
- 
- #define EXT_FIRST_EXTENT(__hdr__) \
-@@ -190,17 +208,22 @@ ext4_ext_invalidate_cache(struct inode *
- 
- static inline void ext4_ext_mark_uninitialized(struct ext4_extent *ext)
- {
--	ext->ee_len |= cpu_to_le16(0x8000);
-+	/* We can not have an uninitialized extent of zero length! */
-+	BUG_ON((le16_to_cpu(ext->ee_len) & ~EXT_INIT_MAX_LEN) == 0);
-+	ext->ee_len |= cpu_to_le16(EXT_INIT_MAX_LEN);
- }
- 
- static inline int ext4_ext_is_uninitialized(struct ext4_extent *ext)
- {
--	return (int)(le16_to_cpu((ext)->ee_len) & 0x8000);
-+	/* Extent with ee_len of 0x8000 is treated as an initialized extent */
-+	return (le16_to_cpu(ext->ee_len) > EXT_INIT_MAX_LEN);
- }
- 
- static inline int ext4_ext_get_actual_len(struct ext4_extent *ext)
- {
--	return (int)(le16_to_cpu((ext)->ee_len) & 0x7FFF);
-+	return (le16_to_cpu(ext->ee_len) <= EXT_INIT_MAX_LEN ?
-+		le16_to_cpu(ext->ee_len) :
-+		(le16_to_cpu(ext->ee_len) - EXT_INIT_MAX_LEN));
- }
- 
- extern int ext4_extent_tree_init(handle_t *, struct inode *);
