@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936946AbXGMPmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936986AbXGMPn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936946AbXGMPmu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 11:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbXGMPmn
+	id S936986AbXGMPn5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 11:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761603AbXGMPns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 11:42:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60475 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756784AbXGMPmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 11:42:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Al Boldi <a1426z@gawab.com>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Fri, 13 Jul 2007 17:50:31 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200707130808.31109.a1426z@gawab.com> <200707131828.54094.a1426z@gawab.com>
-In-Reply-To: <200707131828.54094.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jul 2007 11:43:48 -0400
+Received: from 74-0-229-162.T1.lbdsl.net ([74.0.229.162]:50006 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761569AbXGMPnq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 11:43:46 -0400
+Date: Fri, 13 Jul 2007 09:43:43 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support features in larger inode
+Message-ID: <20070713154343.GG5880@schatzie.adilger.int>
+Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+References: <1183275482.4010.133.camel@localhost.localdomain> <20070710163247.5c8bfa3f.akpm@linux-foundation.org> <20070713020529.1486491f.akpm@linux-foundation.org> <1184333621.20032.85.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707131750.31309.rjw@sisk.pl>
+In-Reply-To: <1184333621.20032.85.camel@twins>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 13 July 2007 17:28, Al Boldi wrote:
-> Rafael J. Wysocki wrote:
-> > We have quite an efficient restoration code in the kernel right now.  It's
-> > able to upload big images (something like total RAM minus the size of the
-> > boot kernel, initrd and, optionally, the resume application), which is
-> > much more than we're able to save. :-)
-> >
-> > It can work with images uploaded via /dev/snapshot from the user space
-> > (specific image format is required, but that can be changed easily).
-> 
-> Then all that is need is to dump /dev/oldmem under the hibernate kernel and 
-> then feed it into /dev/snapshot when booting the normal kernel.
-> 
-> Or is there more to it?
+On Jul 13, 2007  15:33 +0200, Peter Zijlstra wrote:
+> On Fri, 2007-07-13 at 02:05 -0700, Andrew Morton wrote:
+> Or can journal_stop() be done by a different task than the one that did
+> journal_start()? - in which case nothing much can be done :-/
 
-Not really.  Please see my recent message in the other branch of this thread.
+The call to journal_stop() has to be in the same process, since the
+journal handle is also held in current->journal_info so the handle
+does not need to be passed as an argument all over the VFS.
 
-Greetings,
-Rafael
+> This seems to boot... albeit I did not push it hard.
+
+Can you please also make a patch for jbd2.
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
