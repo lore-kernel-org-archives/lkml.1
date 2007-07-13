@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbXGMKDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbXGMKFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756010AbXGMKDk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 06:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXGMKDd
+	id S1756101AbXGMKFc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 06:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbXGMKFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 06:03:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60524 "EHLO
+	Fri, 13 Jul 2007 06:05:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57525 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbXGMKDd (ORCPT
+	with ESMTP id S1753678AbXGMKFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 06:03:33 -0400
-Date: Fri, 13 Jul 2007 11:03:29 +0100
+	Fri, 13 Jul 2007 06:05:23 -0400
+Date: Fri, 13 Jul 2007 11:05:18 +0100
 From: Christoph Hellwig <hch@infradead.org>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>
-Subject: Re: [patch] x86_64: Avoid too many remote cpu references due to /proc/stat
-Message-ID: <20070713100329.GE16304@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: On current git head webservers stopped working
+Message-ID: <20070713100518.GF16304@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Ravikiran G Thirumalai <kiran@scalex86.org>,
-	Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	"Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>
-References: <20070713000615.GA11942@localdomain>
+	Jens Axboe <jens.axboe@oracle.com>,
+	Gabriel C <nix.or.die@googlemail.com>,
+	linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <469745A8.6010005@googlemail.com> <20070713093459.GB5328@kernel.dk> <46974ABF.9030408@googlemail.com> <20070713100057.GD5328@kernel.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070713000615.GA11942@localdomain>
+In-Reply-To: <20070713100057.GD5328@kernel.dk>
 User-Agent: Mutt/1.4.2.3i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 05:06:16PM -0700, Ravikiran G Thirumalai wrote:
-> Too many remote cpu references due to /proc/stat.
+On Fri, Jul 13, 2007 at 12:00:58PM +0200, Jens Axboe wrote:
+> On Fri, Jul 13 2007, Gabriel C wrote:
+> > Jens Axboe wrote:
+> > > On Fri, Jul 13 2007, Gabriel C wrote:
+> > >   
+> > >> Hello ,
+> > >>
+> > >> While doing some tests with 2.6.22-git2 ( at the time head
+> > >> 4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4 ) all my webservers stopped
+> > >> working.
+> > >> I can't get any file using wget or whatever else , everything hangs
+> > >> after 1% forever.
+> > >>
+> > >> I bisected this and here the result:
+> > >>
+> > >> 534f2aaa6ab07cd71164180bc958a7dcde41db11 is first bad commit
+> > >> commit 534f2aaa6ab07cd71164180bc958a7dcde41db11
+> > >> Author: Jens Axboe <jens.axboe@oracle.com>
+> > >> Date:   Fri Jun 1 14:52:37 2007 +0200
+> > >>
+> > >>     sys_sendfile: switch to using ->splice_read, if available
+> > >>
+> > >>     This patch makes sendfile prefer to use ->splice_read(), if it's
+> > >>     available in the file_operations structure.
+> > >>
+> > >>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > >>
+> > >> :040000 040000 b19013793692eee0f632b3703dca0bd40cea753f
+> > >> ed50576c0d3f0d3ce9f1a2ac9336d1164b45f63f M      fs
+> > >>     
+> > >
+> > > Does this work?
+> > >   
+> > 
+> > Yes , it does. Thx :)
 > 
-> On x86_64, with newer kernel versions, kstat_irqs is a bit of a problem.
-> On every call to kstat_irqs, the process brings in per-cpu data from all
-> online cpus.  Doing this for NR_IRQS, which is now 256 + 32 * NR_CPUS
-> results in (256+32*63) * 63 remote cpu references on a 64 cpu config.
-> /proc/stat is parsed by common commands like top, who etc, causing
-> lots of cacheline transfers
-> 
-> This statistic seems useless. Other 'big iron' arches disable this.
-> Can we disable computing/reporting this statistic?  This piece of
-> statistic is not human readable on x86_64 anymore,
+> Great, I'll polish it a bit and get it upstream asap. Thanks for the
+> report and quick test feedback!
 
-At which point we might just remove it completely..
-
+Any chance someone could hack up a ltp testcase for this?
