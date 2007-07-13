@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936608AbXGMPT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934290AbXGMPY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936608AbXGMPT5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 11:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761248AbXGMPTf
+	id S934290AbXGMPY3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 11:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761292AbXGMPYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 11:19:35 -0400
-Received: from h155.mvista.com ([63.81.120.155]:44334 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755575AbXGMPTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 11:19:33 -0400
-Message-ID: <4697987E.3040406@ru.mvista.com>
-Date: Fri, 13 Jul 2007 19:21:34 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 13 Jul 2007 11:24:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60427 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759787AbXGMPYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 11:24:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Fri, 13 Jul 2007 17:31:35 +0200
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+References: <Pine.LNX.4.44L0.0707131035150.4865-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707131035150.4865-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
-References: <20070221011922.GA1777@freefall.freebsd.org>	<200702210342.20775.bzolnier@gmail.com>	<466EEFD6.9030001@ru.mvista.com>	<200706160123.55636.bzolnier@gmail.com>	<4693D9B6.4090408@ru.mvista.com> <20070713161612.2f2ebb0b@the-village.bc.nu> <46979652.6040201@rtr.ca>
-In-Reply-To: <46979652.6040201@rtr.ca>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707131731.36113.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Mark Lord wrote:
-
->> O> >>    BTW, why the timeout is so damn long? 2*WAIT_CMD is 20 secs, 
->> and if DMA is
-
->>>>> not complete or interrupt pending, it may wait 10 more secs...
->>>>
->>>> I really don't remember... :)
->>>> Maybe Mark or Alan could help with figuring this out.
-
->>>     They also have probably forgotten. :-)
-
->> Because that value seemed to work ok. Mark set the timeouts way back in
->> history and I never touched most of them.
+On Friday, 13 July 2007 16:37, Alan Stern wrote:
+> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
 > 
+> > > I missed this discussion. is this idea to suspend, write to disk, but 
+> > > leave things in ram so that if you wakeup soon enough you have everything 
+> > > for ram, but if you don't and the battery dies you can restore from disk?
+> > > 
+> > > if so I think it's a mistake to mix the two. it would be better to just 
+> > > suspend to ram, and wake up once in a while to check the battery state and 
+> > > when the battery gets low enough do the suspend to disk.
+> > > 
+> > > otherwise you end up mixing the requirements of the two types of suspend, 
+> > > which is how things got so ugly in the first place.
+> > 
+> > Not necessarily.  If we don't put devices into low power states before creating
+> > the image, that should work just fine (quiesce devices, create the image or
+> > kexec the new kernel, reprobe devices, save the image, suspend to RAM,
+> > resume from RAM, continue - or restore from the image if power failed in the
+> > meantime).  Still, for this purpose, both kernels need to be able to handle the
+> > same set of devices.
 > 
-> I've lost the original question from this thread, but the idea of the 
+> Why?
+> 
+> Suppose the kexec kernel can't handle some device.  The normal kernel 
+> has already quiesced the device, so it will remain quiescent while the 
+> kexec kernel runs and throughout the suspend.  When the regular kernel 
+> regains control the device will be ready for use.  I don't see any 
+> problem.
 
-    The original question concerned specifically the DMA command timeout which 
-is twice more than the usual one, WAIT_CMD (10 seconds).
+On an ACPI system the device may be in a power state that doesn't allow us to
+enter S3 (in theory, that is).
 
-> longish
-> timeouts was that drive *may* be spun down ("standby"), and thus have to 
-> spin
-> up again to complete media commands.  Back then, drives were much slower at
-> spinning up than nowadays, and the ATA spec says to allow up to 30 seconds.
+Greetings,
+Rafael
 
-    Well, that doesn't explain the DMA case.
 
-MBR, Sergei
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
