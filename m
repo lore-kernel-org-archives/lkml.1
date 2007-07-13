@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbXGMRDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758315AbXGMRIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762775AbXGMRDu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 13:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbXGMRDn
+	id S1758315AbXGMRIV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 13:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXGMRIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 13:03:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36544 "EHLO mx1.redhat.com"
+	Fri, 13 Jul 2007 13:08:07 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:48160 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751458AbXGMRDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 13:03:43 -0400
-Message-ID: <4697B056.9080508@redhat.com>
-Date: Fri, 13 Jul 2007 19:03:18 +0200
-From: Michal Schmidt <mschmidt@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+	id S1751782AbXGMRIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 13:08:05 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Fri, 13 Jul 2007 23:00:48 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: KII Keiichi <k-keiichi@bx.jp.nec.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC][PATCH v2 -mm 0/9] netconsole: Multiple targets and dynamic
+ reconfigurability
+In-Reply-To: <46978084.2040504@bx.jp.nec.com>
+Message-ID: <Pine.LNX.4.64.0707132255370.327@cselinux1.cse.iitk.ac.in>
+References: <20070710091920.23907.96483.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <46978084.2040504@bx.jp.nec.com>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] destroy_workqueue() can livelock
-References: <20070713131655.GA1033@tv-sign.ru>
-In-Reply-To: <20070713131655.GA1033@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> Pointed out by Michal Schmidt <mschmidt@redhat.com>.
-> 
-> The bug was introduced in 2.6.22 by me.
-> 
-> cleanup_workqueue_thread() does flush_cpu_workqueue(cwq) in a loop until
-> ->worklist becomes empty. This is live-lockable, a re-niced caller can
-> get CPU after wake_up() and insert a new barrier before the lower-priority
-> cwq->thread has a chance to clear ->current_work.
-> 
-> Change cleanup_workqueue_thread() to do flush_cpu_workqueue(cwq) only once.
-> We can rely on the fact that run_workqueue() won't return until it flushes
-> all works. So it is safe to call kthread_stop() after that, the "should stop"
-> request won't be noticed until run_workqueue() returns.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Hi Keiichi,
 
-I confirm the patch fixes the bug I was seeing.
+On Fri, 13 Jul 2007, KII Keiichi wrote:
+> Hi Satyam,
+> 
+> > [0/9] netconsole: Multiple targets and dynamic reconfigurability
+> > 
+> > This patchset is a rework of the original idea and patches posted by
+> > Keiichi Kii and Takayoshi Kochi at: http://lkml.org/lkml/2007/6/13/72
+> > 
+> > This is v2 of the patchset, the previous version is available at:
+> > http://lkml.org/lkml/2007/7/4/107
+> > 
+> > This is diffed against 2.6.22-rc6-mm1 + the earlier netpoll fixlet and the
+> > configfs cleanup patches (those are already merged in -mm AFAIK, and hence
+> > not reproduced here).
+> > 
+> > [1/9] netconsole: Cleanups, codingstyle, prettyfication
+> > [2/9] netconsole: Remove bogus check
+> > [3/9] netconsole: Simplify boot/module option setup logic
+> > [4/9] netconsole: Add some useful tips to documentation
+> > [5/9] netconsole: Introduce netconsole_target
+> > [6/9] netconsole: Introduce netconsole_netdev_notifier
+> > [7/9] netconsole: Use netif_running() in write_msg()
+> > [8/9] netconsole: Support multiple logging targets
+> > [9/9] netconsole: Support dynamic reconfiguration using configfs
+> > 
+> 
+> I tested your v2 patches on the x86/IA64 architecture.
+> There was no problem on my tests.
+> 
+> Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
 
-Michal
+Ok, thanks! I'll send out the next series (with the various few
+fixes and cleanups suggested this time) with your Sign-offs/Acks.
 
+Satyam
