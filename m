@@ -1,75 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759787AbXGMMm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbXGMMp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759787AbXGMMm4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 08:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbXGMMmt
+	id S1759602AbXGMMp7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 08:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbXGMMpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 08:42:49 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44777 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755253AbXGMMms (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 08:42:48 -0400
-Date: Fri, 13 Jul 2007 05:42:45 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Joe Jin <joe.jin@oracle.com>
-Cc: akpm@linux-foundation.org, joe.jin@oracle.com, bill.irwin@oracle.com,
-       linux-kernel@vger.kernel.org, gurudas.pai@oracle.com
-Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
-Message-Id: <20070713054245.b1319207.pj@sgi.com>
-In-Reply-To: <20070713121846.GA25236@joejin-pc.cn.oracle.com>
-References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
-	<20070712221842.f5e47065.akpm@linux-foundation.org>
-	<20070713064004.GA21833@joejin-pc.cn.oracle.com>
-	<20070712234938.c77f3a48.akpm@linux-foundation.org>
-	<20070713080336.GB21833@joejin-pc.cn.oracle.com>
-	<20070713011543.22797645.akpm@linux-foundation.org>
-	<20070713121846.GA25236@joejin-pc.cn.oracle.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Fri, 13 Jul 2007 08:45:49 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:34561 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753820AbXGMMpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 08:45:47 -0400
+Date: Fri, 13 Jul 2007 18:16:01 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Cc: xfs@oss.sgi.com, michael.kerrisk@gmx.net, tytso@mit.edu, cmm@us.ibm.com,
+       suparna@in.ibm.com, adilger@clusterfs.com, dgc@sgi.com
+Subject: [PATCH 1/6][TAKE7] manpage for fallocate
+Message-ID: <20070713124601.GA22961@amitarora.in.ibm.com>
+References: <20070713123816.GA18000@amitarora.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713123816.GA18000@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe wrote:
-> --- linux-2.6.22/mm/hugetlb.c.orig	2007-07-12 15:02:19.000000000 +0800
-> +++ linux-2.6.22/mm/hugetlb.c	2007-07-13 17:33:45.000000000 +0800
-> @@ -101,13 +101,20 @@ static void free_huge_page(struct page *
->  
->  static int alloc_fresh_huge_page(void)
->  {
->	...
+Following is the modified version of the manpage originally submitted by
+David Chinner. Please use `nroff -man fallocate.2 | less` to view.
 
-Patch looks ok to me, except for ...
+This includes changes suggested by Heikki Orsila and Barry Naujok.
 
-> Ha.., the patch against 2.6.22, at your patch have use htlb_alloc_mask, but I
-> cannot found it at 2.6.22 kernel tree, I think you must use difference kernel
-> tree :)
 
-Yes, as a matter of fact, he does have a different kernel tree, found at:
-
-    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/
-
-This is the infamous *-mm tree, which is currently at the following
-version 2.6.22-rc6-mm1, and also available as a quilt patch set,
-beneath:
-
-    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/
-
-My guess is Andrew will prefer a patch against this *-mm kernel, though
-sometimes he is a good chap and fixes up minor differences, such as
-this involving htlb_alloc_mask replacing GFP_HIGHUSER.  If you had the
-chance to verify your testing of this change against this
-2.6.22-rc6-mm1, that would be worth doing.  Probably the change to
-htlb_alloc_mask from GFP_HIGHUSER won't be any problem, but I suppose
-that there's a small chance that some other patch in *-mm will interact
-poorly with your proposed change.
-
-Thanks for getting on this so quickly.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+.TH fallocate 2
+.SH NAME
+fallocate \- allocate or remove file space
+.SH SYNOPSIS
+.nf
+.B #include <fcntl.h>
+.PP
+.BI "long fallocate(int " fd ", int " mode ", loff_t " offset ", loff_t " len);
+.SH DESCRIPTION
+The
+.B fallocate
+syscall allows a user to directly manipulate the allocated disk space
+for the file referred to by
+.I fd
+for the byte range starting at
+.I offset
+and continuing for
+.I len
+bytes.
+The
+.I mode
+parameter determines the operation to be performed on the given range.
+Currently there are two modes:
+.TP
+.B FALLOC_ALLOCATE
+allocates and initialises to zero the disk space within the given range.
+After a successful call, subsequent writes are guaranteed not to fail because
+of lack of disk space.  If the size of the file is less than
+.IR offset + len ,
+then the file is increased to this size; otherwise the file size is left
+unchanged.
+.B FALLOC_ALLOCATE
+closely resembles
+.BR posix_fallocate (3)
+and is intended as a method of optimally implementing this function.
+.B FALLOC_ALLOCATE
+may allocate a larger range than that was specified.
+.TP
+.B FALLOC_RESV_SPACE
+provides the same functionality as
+.B FALLOC_ALLOCATE
+except it does not ever change the file size. This allows allocation
+of zero blocks beyond the end of file and is useful for optimising
+append workloads.
+.SH RETURN VALUE
+.B fallocate
+returns zero on success, or an error number on failure.
+Note that
+.I errno
+is not set.
+.SH ERRORS
+.TP
+.B EBADF
+.I fd
+is not a valid file descriptor, or is not opened for writing.
+.TP
+.B EFBIG
+.IR offset + len
+exceeds the maximum file size.
+.TP
+.B EINVAL
+.I offset
+was less than 0, or
+.I len
+was less than or equal to 0.
+.TP
+.B ENODEV
+.I fd
+does not refer to a regular file or a directory.
+.TP
+.B ENOSPC
+There is not enough space left on the device containing the file
+referred to by
+.IR fd .
+.TP
+.B ESPIPE
+.I fd
+refers to a pipe of file descriptor.
+.TP
+.B ENOSYS
+The filesystem underlying the file descriptor does not support this
+operation.
+.TP
+.B EINTR
+A signal was caught during execution
+.TP
+.B EIO
+An I/O error occurred while reading from or writing to a file system.
+.TP
+.B EOPNOTSUPP
+The mode is not supported on the file descriptor.
+.SH AVAILABILITY
+The
+.B fallocate
+system call is available since 2.6.XX
+.SH SEE ALSO
+.BR syscall (2),
+.BR posix_fadvise (3),
+.BR ftruncate (3).
