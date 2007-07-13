@@ -1,76 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935909AbXGMIRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934702AbXGMIXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935909AbXGMIRm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 04:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762265AbXGMIR3
+	id S934702AbXGMIXI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 04:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbXGMIW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 04:17:29 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:10829 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762235AbXGMIR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 04:17:28 -0400
-Message-ID: <4697357A.10605@sw.ru>
-Date: Fri, 13 Jul 2007 12:19:06 +0400
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
-MIME-Version: 1.0
-To: Denis Cheng <crquan@gmail.com>
-CC: trivial@kernel.org, Denis <cr_quan@163.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to remove
- some following zero initializations.
-References: <1184290905.5475.5.camel@tux.homenetwork>
-In-Reply-To: <1184290905.5475.5.camel@tux.homenetwork>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Jul 2007 04:22:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42121 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751774AbXGMIW4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 04:22:56 -0400
+Date: Fri, 13 Jul 2007 01:19:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: gurudas pai <gurudas.pai@oracle.com>
+Cc: Joe Jin <joe.jin@oracle.com>, bill.irwin@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-Id: <20070713011924.75e6afd4.akpm@linux-foundation.org>
+In-Reply-To: <4697320D.1060703@oracle.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+	<20070712221842.f5e47065.akpm@linux-foundation.org>
+	<20070713064004.GA21833@joejin-pc.cn.oracle.com>
+	<20070712234938.c77f3a48.akpm@linux-foundation.org>
+	<4697320D.1060703@oracle.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This doesn't look worth zeroing half of the struct
-when it is initialized to non-zeros then.
+On Fri, 13 Jul 2007 13:34:29 +0530 gurudas pai <gurudas.pai@oracle.com> wrote:
 
-Denis Cheng wrote:
->>From 4d87e14b67890f06885a76b5792ca034de2e9d06 Mon Sep 17 00:00:00 2001
-> From: Denis Cheng <crquan@gmail.com>
-> Date: Thu, 12 Jul 2007 11:53:58 +0800
-> Subject: [PATCH] replace kmem_cache_alloc with kmem_cache_zalloc to
-> remove some following zero initializations.
 > 
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
-> ---
->  fs/dcache.c |   12 ++----------
->  1 files changed, 2 insertions(+), 10 deletions(-)
 > 
-> diff --git a/fs/dcache.c b/fs/dcache.c
-> index 0e73aa0..8c559b2 100644
-> --- a/fs/dcache.c
-> +++ b/fs/dcache.c
-> @@ -898,7 +898,7 @@ struct dentry *d_alloc(struct dentry * parent, const
-> struct qstr *name)
->  	struct dentry *dentry;
->  	char *dname;
->  
-> -	dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL); 
-> +	dentry = kmem_cache_zalloc(dentry_cache, GFP_KERNEL); 
->  	if (!dentry)
->  		return NULL;
->  
-> @@ -921,15 +921,7 @@ struct dentry *d_alloc(struct dentry * parent,
-> const struct qstr *name)
->  	atomic_set(&dentry->d_count, 1);
->  	dentry->d_flags = DCACHE_UNHASHED;
->  	spin_lock_init(&dentry->d_lock);
-> -	dentry->d_inode = NULL;
-> -	dentry->d_parent = NULL;
-> -	dentry->d_sb = NULL;
-> -	dentry->d_op = NULL;
-> -	dentry->d_fsdata = NULL;
-> -	dentry->d_mounted = 0;
-> -#ifdef CONFIG_PROFILING
-> -	dentry->d_cookie = NULL;
-> -#endif
+> Andrew Morton wrote:
+> > On Fri, 13 Jul 2007 14:40:04 +0800 Joe Jin <joe.jin@oracle.com> wrote:
+> >
+> >> On 2007-07-12 22:18, Andrew Morton wrote:
+> >>> On Fri, 13 Jul 2007 10:45:07 +0800 Joe Jin <joe.jin@oracle.com> wrote:
+> >>>
+> >>> Something like this?
+> >>>
+> >>> --- a/mm/hugetlb.c~a
+> >>> +++ a/mm/hugetlb.c
+> >>> @@ -105,13 +105,20 @@ static void free_huge_page(struct page *
+> >>>  
+> >>>  static int alloc_fresh_huge_page(void)
+> >>>  {
+> >>> -	static int nid = 0;
+> >>> +	static int prev_nid;
+> >>> +	static DEFINE_SPINLOCK(nid_lock);
+> >>>  	struct page *page;
+> >>> -	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> >>> -					HUGETLB_PAGE_ORDER);
+> >>> -	nid = next_node(nid, node_online_map);
+> >>> +	int nid;
+> >>> +
+> >>> +	spin_lock(&nid_lock);
+> >>> +	nid = next_node(prev_nid, node_online_map);
+> >>>  	if (nid == MAX_NUMNODES)
+> >>>  		nid = first_node(node_online_map);
+> >>> +	prev_nid = nid;
+> >>> +	spin_unlock(&nid_lock);
+> >>> +
+> >>> +	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> >>> +					HUGETLB_PAGE_ORDER);
+> >>>  	if (page) {
+> >>>  		set_compound_page_dtor(page, free_huge_page);
+> >>>  		spin_lock(&hugetlb_lock);
+> >>> _
+> >>>
+> I think this will never get pages from node 0 ? Because nid = 
+> next_node(prev_node,node_online_map) and even if prev_node = 0, nid will 
+> become 1.
+
+It'll start out at node 1.  But it will visit the final node (which is less
+than MAX_NUMNODES) and will then advance onto the fist node (which can be
+>= 0).
+
+This code needs a bit of thought and testing for the non-numa case too
+please.  At the least, there might be optimisation opportunities.
+
+
+> How about this patch ?
+> 
+> 
+> --- linux-2.6.22.orig/mm/hugetlb.c 2007-07-08 16:32:17.000000000 -0700
+> +++ linux-2.6.22-devel/mm//hugetlb.c 2007-07-13 00:26:27.000000000 -0700
+> @@ -103,11 +103,18 @@
+> {
+> static int nid = 0;
+> struct page *page;
+> - page = alloc_pages_node(nid, GFP_HIGHUSER|__GFP_COMP|__GFP_NOWARN,
+> - HUGETLB_PAGE_ORDER);
+> + int cur_nid;
+> + static DEFINE_SPINLOCK(nid_lock);
 > +
->  	INIT_HLIST_NODE(&dentry->d_hash);
->  	INIT_LIST_HEAD(&dentry->d_lru);
->  	INIT_LIST_HEAD(&dentry->d_subdirs);
+> + spin_lock(&nid_lock);
+> + cur_nid = nid;
+> nid = next_node(nid, node_online_map);
+> if (nid == MAX_NUMNODES)
+> nid = first_node(node_online_map);
+> + spin_unlock(&nid_lock);
+> +
+> + page = alloc_pages_node(cur_nid, GFP_HIGHUSER|__GFP_COMP|__GFP_NOWARN,
+> + HUGETLB_PAGE_ORDER);
+> if (page) {
+> set_compound_page_dtor(page, free_huge_page);
+> spin_lock(&hugetlb_lock);
 
+whoa, your email client made a huge mess of that one.
