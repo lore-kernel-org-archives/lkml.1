@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936304AbXGMJTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936247AbXGMJVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936304AbXGMJTl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 05:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbXGMJTc
+	id S936247AbXGMJVY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 05:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761026AbXGMJVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 05:19:32 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:7857 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759867AbXGMJTb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 05:19:31 -0400
-Date: Fri, 13 Jul 2007 11:19:30 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Jesper Juhl <jesper.juhl@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-In-Reply-To: <4696FC43.3000201@goop.org>
-Message-ID: <Pine.LNX.4.64.0707131114390.25352@fbirervta.pbzchgretzou.qr>
-References: <200707111916.35036.jesper.juhl@gmail.com> 
- <2c0942db0707112159v3ee2cd83i74759c7138e273f7@mail.gmail.com> 
- <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com> 
- <4696C89E.4010002@goop.org> <9a8748490707121925w5fb22c0o61068f06d66d5845@mail.gmail.com>
- <4696FC43.3000201@goop.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 13 Jul 2007 05:21:17 -0400
+Received: from mga01.intel.com ([192.55.52.88]:18020 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755948AbXGMJVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 05:21:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,536,1175497200"; 
+   d="scan'208";a="267813823"
+Subject: Re: [PATCH 2/2] Kexec jump: Kexec jump
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <200707122158.39024.rjw@sisk.pl>
+References: <1184167836.12556.15.camel@caritas-dev.intel.com>
+	 <200707122158.39024.rjw@sisk.pl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 13 Jul 2007 17:20:23 +0000
+Message-Id: <1184347223.4523.22.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 13 Jul 2007 09:21:05.0268 (UTC) FILETIME=[2379FB40:01C7C52F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2007-07-12 at 21:58 +0200, Rafael J. Wysocki wrote:
 
-On Jul 12 2007 21:14, Jeremy Fitzhardinge wrote:
->
-> Well, smaller stacks are better where possible, but there's nothing magic about
-> 4k.
+> I know a little about kexec.
+> 
+> Could you please tell me what I should know/read to understand this patch?
+> 
 
-There is. It is exactly one page on x86. I cannot remember who said it when,
-but anything greater than a page implies some penalty.
+It is sufficient to read the kernel/kexec.c,
+arch/i386/kernel/machine_kexec.c and arch/i386/kernel/relocate_kernel.S.
 
-> Sure, its mostly enough, but there's no particular reason to believe it
-> will be enough for everything.  You could state a priori that all kernel
-> code paths must fit into 4k of stack, but that's pretty arbitrary.
-
-	Jan
--- 
+Best Regards,
+Huang Ying
