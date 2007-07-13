@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936729AbXGMJnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936300AbXGMJn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936729AbXGMJnB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 05:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762674AbXGMJmy
+	id S936300AbXGMJn1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 05:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936757AbXGMJnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 05:42:54 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:39330 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762962AbXGMJmx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 05:42:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D7QSqJvL/rbfPCpQeI/jG4+xWt1JU09ypg0RHzvYM3ojpUfTEg5kcrqW1o+Prpum9WNgL1Rx/CYEOw6dHLJvzYWJXK7rn3kyfvEQ6JK/Qoribuggi9SLGxHZ3GWjbbkq4veV1U2q3TLdl3t0XjVdObjOGjrh3vwNZn9P1esEAcM=
-Message-ID: <4d8e3fd30707130242r1ee26618ua6bd20ec82132b8f@mail.gmail.com>
-Date: Fri, 13 Jul 2007 11:42:52 +0200
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Tilman Schmidt" <tilman@imap.cc>
-Subject: Re: Gmail and flowed text (was Re: Correction to LZO1X)
-Cc: "Satyam Sharma" <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4697402C.9000402@imap.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 13 Jul 2007 05:43:09 -0400
+Received: from www.osadl.org ([213.239.205.134]:58031 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936744AbXGMJnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 05:43:06 -0400
+Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to
+	2.6.22	available
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Peter Williams <pwil3058@bigpond.net.au>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, jim.houston@ccur.com,
+       joe.korty@ccur.com, rostedt@goodmis.org, dwalker@mvista.com,
+       David Bahi <DBahi@novell.com>, Moiz Kohari <MKohari@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, dsaxena@plexity.net,
+       williams@redhat.com, abogani@texware.it, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <200707130443.11356.gene.heskett@gmail.com>
+References: <4695E5BB0200005A0002763E@mcclure.wal.novell.com>
+	 <20070712130958.GB17494@elte.hu> <46971ADC.3030700@bigpond.net.au>
+	 <200707130443.11356.gene.heskett@gmail.com>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 11:42:55 +0200
+Message-Id: <1184319775.12353.300.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com>
-	 <4697402C.9000402@imap.cc>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/13/07, Tilman Schmidt <tilman@imap.cc> wrote:
-> Satyam Sharma schrieb:
-> > And yet another patch falls victim to format=flowed ...
+On Fri, 2007-07-13 at 04:43 -0400, Gene Heskett wrote:
+> >> we are working on something in this area :) Stay tuned ...
 > >
-> > I need some ideas here myself:
-> >
-> > I don't want to subscribe from my university mail account [...]
-> > Which leaves Gmail, [...]
->
-> Other E-mail providers do exist, some of them even free.
->
-> > I suspect others must have come across this ... any suggestions?
->
-> Get a real E-mail account. :-)
->
-> Seriously: after years of hassles with freemailers, I finally
-> decided that E-mail is so important for me it's worth spending
-> a small yearly amount. Never regretted the step.
+> >I've just been reviewing these patches and have spotted an error in the
+> >file mm/slob.c at lines 500-501 whereby a non existent variable "c" is
+> >referenced.  The attached patch is a proposed fix to the problem.
+> 
+> Could this explain why 2.6.22.1-rt1 seems to use a lot of swap?  I've been as 
+> high as 570 megs into swap, currently at 286megs after doing a 
+> swapoff --a;swapon -a about 8 hours ago.
 
-Sorry for suddently jumping into the discussion, my understanding is
-that all the problems with Gmail are related to the web interface, if
-you don't use it, or you use it only to read messages/sent messages
-(no patches), everything is fine.
+No, we disabled SLOB for now. So this is something different.
 
-Am I correct?
+	tglx
 
 
--- 
-Paolo
-"Tutto cio' che merita di essere fatto,merita di essere fatto bene"
-Philip Stanhope IV conte di Chesterfield
