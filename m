@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761297AbXGMQf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762230AbXGMQgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761297AbXGMQf4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 12:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbXGMQfq
+	id S1762230AbXGMQgS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 12:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761847AbXGMQf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 12:35:46 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:21738 "EHLO kernel.dk"
+	Fri, 13 Jul 2007 12:35:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53789 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754488AbXGMQfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 12:35:45 -0400
-Date: Fri, 13 Jul 2007 18:35:28 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-Message-ID: <20070713163528.GU5328@kernel.dk>
-References: <20070704132212.726923000@pademelon.sonytel.be> <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be> <1184335333.3402.20.camel@localhost.localdomain> <200707131619.54898.arnd@arndb.de> <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+	id S1761713AbXGMQf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 12:35:58 -0400
+Message-ID: <4697A9E9.3090502@redhat.com>
+Date: Fri, 13 Jul 2007 12:35:53 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+CC: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: x86 setup code rewrite in C - revised
+References: <526073.18540.qm@web26902.mail.ukl.yahoo.com>
+In-Reply-To: <526073.18540.qm@web26902.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13 2007, Geert Uytterhoeven wrote:
-> > It's probably a good idea to have the flush_kernel_dcache_page() in there
-> > anyway, if only to serve as an example for people that copy it into
-> > architecture-independent drivers, same as what we do for the
-> > k{,un}map_atomic() that is also not required on ppc64.
+On 07/13/2007 10:25 AM, Etienne Lorrain wrote:
+
+[ Added back cc:'s]
+
+> On Thu, 12 Jul 2007, Linus Torvalds wrote:
+>> On Thu, 12 Jul 2007, Andrew Morton wrote:
+>>> This code has been in -mm since 11 May, as git-newsetup.patch.  It has
+>>> caused (for what it is) astonishingly few problems.  Maybe a couple of
+>>> build glitches and one runtime failure, all quickly fixed.
+>>>
+>>> I'd say it's ready.
+>> Ok. That makes it easy. I'll just merge it.
+>>
+>> 		Linus
 > 
-> Now my next question: why should I add it, if currently no single driver in
-> mainline calls flush_kernel_dcache_page()? 
+>  Have fun, this code:
+>  - do not open the fast A20 gate before checking if the slow A20 gate is open or closed.
+>  - uses in asm("") inputs which may or may not be set by the compiler in the stack,
+>    after modifying the stack pointer in the asm block: at least has_eflag()
+>  - The VGA recalc has the same bug as the assembly version where a VGA write protected
+>    register is written (Overflow register) without setting the enable bit (see VGA docs).
+>  - Does not save and restore %ds when printing a char on the screen (%ds is destroyed
+>    only when the content of the screen scroll - only for some video cards)
+>  - Has a "dn" for outl() which sliped in instead of "dN"
+>  and probably few other problems - just seen those by reading the patches (the asm("")
+>  are inlined in the C code - I find it more difficult to check).
 > 
-> `git grep' finds it in the following files only:
->     Documentation/cachetlb.txt
->     arch/parisc/kernel/cache.c
->     arch/parisc/kernel/pacache.S
->     include/asm-parisc/cacheflush.h
->     include/linux/highmem.h
-
-Not many drivers fiddle around with stuff like this, it's usually hidden
-behind the dma api or in helpers.
-
--- 
-Jens Axboe
-
+>  Also, I do not know if "m" is right in here:
+> static inline u8 rdfs8(addr_t addr)
+> {
+> 	u8 v;
+> 	asm("movb %%fs:%1,%0" : "=r" (v) : "m" (*(u8 *)addr));
+> 	return v;
+> }
+> 
+>   I may repeat me, but to find these kind of problems, it is very nice to have an ELF
+>  file to do a readelf/objdump -D -m i8086 (even after final link).
