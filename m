@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964788AbXGMIOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935775AbXGMIQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964788AbXGMIOn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 04:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935680AbXGMIOW
+	id S935775AbXGMIQI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 04:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760993AbXGMIPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 04:14:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49347 "EHLO
+	Fri, 13 Jul 2007 04:15:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53969 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935600AbXGMIOS (ORCPT
+	by vger.kernel.org with ESMTP id S1761377AbXGMIPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 04:14:18 -0400
-Date: Fri, 13 Jul 2007 01:13:32 -0700
+	Fri, 13 Jul 2007 04:15:53 -0400
+Date: Fri, 13 Jul 2007 01:15:43 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitry Monakhov <dmonakhov@sw.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch] mm: recheck lock rlim after f_op->mmap() method
-Message-Id: <20070713011332.2550c5e1.akpm@linux-foundation.org>
-In-Reply-To: <20070709184917.GA8720@dnb.sw.ru>
-References: <20070709184917.GA8720@dnb.sw.ru>
+To: Joe Jin <joe.jin@oracle.com>
+Cc: bill.irwin@oracle.com, linux-kernel@vger.kernel.org,
+       gurudas.pai@oracle.com, Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-Id: <20070713011543.22797645.akpm@linux-foundation.org>
+In-Reply-To: <20070713080336.GB21833@joejin-pc.cn.oracle.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+	<20070712221842.f5e47065.akpm@linux-foundation.org>
+	<20070713064004.GA21833@joejin-pc.cn.oracle.com>
+	<20070712234938.c77f3a48.akpm@linux-foundation.org>
+	<20070713080336.GB21833@joejin-pc.cn.oracle.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,85 +30,41 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jul 2007 22:49:17 +0400 Dmitry Monakhov <dmonakhov@sw.ru> wrote:
+On Fri, 13 Jul 2007 16:03:36 +0800 Joe Jin <joe.jin@oracle.com> wrote:
 
-> Some device drivers can change vm_flags in their f_op->mmap
-> method. In order to be on the safe side we have to recheck
-> lock rlimit. Now we have to check lock rlimit from two places,
-> let's move this common code to helper functon.
+> > > 
+> > > The patch looks good for this bug, thanks :)
+> > 
+> > If you have time could you test it and sent it back at me please?
+> > 
 > 
-> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-> ---
->  mm/mmap.c |   33 ++++++++++++++++++++++++++-------
->  1 files changed, 26 insertions(+), 7 deletions(-)
+> Test passed and panic gone.
+
+Patch gone too ;) I deleted it.  I was hoping that you'd send me the final
+finished product (please).
+
+> thanks.
 > 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 906ed40..5c89f1d 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -885,6 +885,18 @@ void vm_stat_account(struct mm_struct *mm, unsigned long flags,
->  }
->  #endif /* CONFIG_PROC_FS */
->  
-> +static int check_lock_limit(unsigned long delta, struct mm_struct* mm)
-> +{
-> +	unsigned long locked, lock_limit;
-> +	locked = delta >> PAGE_SHIFT;
-> +	locked += mm->locked_vm;
-> +	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
-> +	lock_limit >>= PAGE_SHIFT;
-> +	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-> +		return -EAGAIN;
-> +	return 0;
-> +}
-> +
->  /*
->   * The caller must hold down_write(current->mm->mmap_sem).
->   */
-> @@ -954,13 +966,9 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
->  	}
->  	/* mlock MCL_FUTURE? */
->  	if (vm_flags & VM_LOCKED) {
-> -		unsigned long locked, lock_limit;
-> -		locked = len >> PAGE_SHIFT;
-> -		locked += mm->locked_vm;
-> -		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
-> -		lock_limit >>= PAGE_SHIFT;
-> -		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-> -			return -EAGAIN;
-> +		error = check_lock_limit(len, mm);
-> +		if (error)
-> +			return error;
->  	}
->  
->  	inode = file ? file->f_path.dentry->d_inode : NULL;
-> @@ -1101,6 +1109,17 @@ munmap_back:
->  		error = file->f_op->mmap(file, vma);
->  		if (error)
->  			goto unmap_and_free_vma;
-> +		
-> +		if (vma->vm_flags & VM_LOCKED
-> +				&& !(vm_flags & VM_LOCKED)) {
-> +		/*
-> +		 * VM_LOCKED was added in f_op->mmap() method,
-> +		 * so we have to recheck limit.
-> +		 */
-> +			error = check_lock_limit(len, mm);
-> +			if (error)
-> +				goto unmap_and_free_vma;
-> +		}
+> > > if other caller give a invalid nid to alloc_pages_node(), __alloc_pages
+> > > will crash again.
+> > 
+> > That would be a buggy caller, so we should fix that caller.
+> > 
+> > > So I think we add some sanity check for nid at alloc_pages_node is
+> > > meaningful.  
+> > > 
+> > > another question, if (nid >= MAX_NUMNODES),  may I set nid to 0 directly
+> > > like following code?
+> > > 
+> > > 	if (unlikly(nid >= MAX_NUMNODES)
+> > > 		nid = 0
+> > 
+> > if (nid > MAX_NUMNODES) then that is a bug and we should report it (doing
+> > this via a BUG() is OK) rather than quietly covering it up.
+> > 
+> > if (nid == MAX_NUMNODES) then we should set it to
+> > first_node(node_online_map);
+> 
+> OK, will do it and send you a patch :)
 
-Worried.  As far as the filesytem is concerned, its mmap has succeeded.
-
-But now we're taking the unmap_and_free_vma path _after_ ->mmap() has
-"succeeded".  So we will now tell userspace that the mmap syscall has
-failed, even though the fs thinks it succeeded, if you follow me.  And this
-is a new thing.  
-
-Could it cause bad things to happen?  Well, if filesystems had a
-file_operations.munmap() then yeah, we should have called that in your new
-code.  But filesystems don't have a ->munmap() method.
-
-Still.  Can we think of any way in which this change could lead to resource
-leaks or to any other such problems?
-
+Thanks.  Please cc Paul Jackson <pj@sgi.com> on that patch.
