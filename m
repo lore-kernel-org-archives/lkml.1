@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761175AbXGMArf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXGMAtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761175AbXGMArf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 20:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbXGMAr2
+	id S1761489AbXGMAtS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 20:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbXGMAtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 20:47:28 -0400
-Received: from mailgw.voltaire.com ([193.47.165.252]:56526 "EHLO
-	mailgw.voltaire.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754867AbXGMAr2 (ORCPT
+	Thu, 12 Jul 2007 20:49:11 -0400
+Received: from omr11.networksolutionsemail.com ([205.178.146.61]:41960 "EHLO
+	omr11.networksolutionsemail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751303AbXGMAtK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 20:47:28 -0400
-X-Greylist: delayed 1620 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jul 2007 20:47:27 EDT
-Subject: Re: [ofa-general] Further 2.6.23 merge plans...
-From: Hal Rosenstock <halr@voltaire.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-In-Reply-To: <adahco943ip.fsf@cisco.com>
-References: <adalkdl43w0.fsf@cisco.com>  <adahco943ip.fsf@cisco.com>
-Content-Type: text/plain
-Organization: 
-Message-Id: <1184285856.13276.34352.camel@hal.voltaire.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.2.2 (1.2.2-4) 
-Date: 12 Jul 2007 20:17:37 -0400
+	Thu, 12 Jul 2007 20:49:10 -0400
+From: James <LinuxKernel@jamesplace.net>
+Reply-To: LinuxKernel@jamesplace.net
+To: linux-kernel@vger.kernel.org
+Subject: Re: Problem recovering a failed RIAD5 array with 4-drives. --RESOLVED
+Date: Thu, 12 Jul 2007 19:49:08 -0500
+User-Agent: KMail/1.9.5
+Cc: Neil Brown <neilb@suse.de>
+References: <200707120849.16068.LinuxKernel@jamesplace.net> <200707121810.57648.LinuxKernel@jamesplace.net> <18070.46997.541325.761868@notabene.brown>
+In-Reply-To: <18070.46997.541325.761868@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707121949.08662.LinuxKernel@jamesplace.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 19:15, Roland Dreier wrote:
-> As you can see, I just sent my first 2.6.23 pull request for Linus.
-> There are still a few more things I plan to do in before the merge
-> window closes (in ~10 days):
+> > 
+> > I don't know the original order of the array before all the problems 
+started. 
+> > 
+> > Is there a way to determine the original order? 
 > 
->  - Write a patch to add P_Key handling to user_mad in the way we
->    discussed (add an ioctl to enable P_Key mode without breaking old
->    apps) -- I hope to do this tomorrow so we can get some review and
->    testing before merging it.
+> No, unless you have some old kernel logs of the last time it assembled
+> the array properly.
+> The one thing that "--create" does destroy is the information about
+> any previous array that the drives were a part of.
+> 
+> > 
+> > The order that --detail is showing now is the order that appeared after 
+> > issuing the command is it is in the email. (ie: a b c d)
+> 
+> Odd.  I cannot reproduce it.
+> I suggest you try different arrangements (of the 3 good drives and the
+> word 'missing') until you find one that 'fsck -n' likes.
+> 
+> NeilBrown
+> 
+> 
 
-Unfortunately, I'll mostly just be able to review it. Not sure how much
-testing I will be able to do but we'll see...
+I don't understand how the order of --detail was different than the command 
+line on my system, however....
 
--- Hal
+YOU ARE A LIFE SAVER!!!
 
->  - Take a look at Sean's local SA caching patches.  I merged
->    everything else from Sean's tree, but I'm still undecided about
->    these.  I haven't read them carefully yet, but even aside from that
->    I don't have a good feeling about whether there's consensus about
->    this yet.  Any opinions about merging, for or against, would be
->    appreciated here.
-> 
->  - Merge up pending hardware driver changes, including the cxgb3 and
->    ehca patches I have in my queue, plus Jack's catastrophic error
->    patch for mlx4.
-> 
->  - Try to get to resolution on the IPoIB "CM without SRQ" solution.
-> 
-> Also, if there's something I didn't list and didn't already include in
-> the tree I asked Linus to pull, please remind me.  I probably dropped it.
-> 
->  - R.
-> _______________________________________________
-> general mailing list
-> general@lists.openfabrics.org
-> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
-> 
-> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
+After going through 21 combinations, beginning to lose all hope and plummeting 
+into eternal despair, combo 22 worked. The array is up and working. All the 
+data (1.3Tb) is there and I'm probably the happiest character on the mail 
+list today. 
+
+Thanks a bunch for your help.
+
 
