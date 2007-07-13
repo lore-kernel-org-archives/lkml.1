@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762578AbXGMTqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763208AbXGMTsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762578AbXGMTqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 15:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbXGMTqQ
+	id S1763208AbXGMTsQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 15:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbXGMTsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 15:46:16 -0400
-Received: from rtr.ca ([64.26.128.89]:2013 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753437AbXGMTqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 15:46:15 -0400
-Message-ID: <4697D686.6090104@rtr.ca>
-Date: Fri, 13 Jul 2007 15:46:14 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Fri, 13 Jul 2007 15:48:04 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48507 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755592AbXGMTsD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 15:48:03 -0400
+Message-ID: <4697D6EB.5020404@zytor.com>
+Date: Fri, 13 Jul 2007 12:47:55 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
-References: <20070221011922.GA1777@freefall.freebsd.org>	<200702210342.20775.bzolnier@gmail.com>	<466EEFD6.9030001@ru.mvista.com>	<200706160123.55636.bzolnier@gmail.com>	<4693D9B6.4090408@ru.mvista.com> <20070713161612.2f2ebb0b@the-village.bc.nu> <46979652.6040201@rtr.ca> <4697987E.3040406@ru.mvista.com> <4697D425.7000300@rtr.ca> <4697D518.7010108@ru.mvista.com>
-In-Reply-To: <4697D518.7010108@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bodo Eggert <7eggert@gmx.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3][try 1] init: enable system-on-initramfs
+References: <Pine.LNX.4.58.0707132039080.3222@be1.lrz>
+In-Reply-To: <Pine.LNX.4.58.0707132039080.3222@be1.lrz>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
-> Mark Lord wrote:
+Bodo Eggert wrote:
+> I toyed with setting up a diskless system in initramfs. In the process, I
+> came across some things:
 > 
->>>    The original question concerned specifically the DMA command 
->>> timeout which is twice more than the usual one, WAIT_CMD (10 seconds).
-..
->> When a drive is in standby, we don't send it anything special to wake up.
->> So even DMA commands have to have a long enough timeout to allow
->> for spinning up.
+> 1)  There is no way to have the kernel not mount a filesystem,
+>     unless you use /init or rdinit=.
+
+And?  Just use rdinit=/sbin/init and no patch is needed.
+
+> 2a) I figured if you prepared the root fs to contain a running system, you
+>     woud probably also set up a runnable system on it. Therefore I changed
+>     the default to boot from tmpfs if there was no /init nor a root= option.
+>     (If there is a /init, it will be executed as usural.)
 > 
->    Yes, but why *twice* as long as the others?
+>     Unfortunately the way I do it, this will override the rdev setting, but
+>     that should be OK, since rdev is dead. Isn't it?
 
-I would guess simply because DMA has to transfer up to 256 sectors of data,
-possibly with sector reallocations, in addition to waiting for the drive
-to spin up.  Other commands don't.
+That's pretty hideous.  There shouldn't be a need for doing that.
 
-At the time that was coded (?), I suspect that PIO READ/WRITE commands
-were fed data as it became available to/from the drive.  This may or may
-not still be the case, but it does imply that they don't need to hang
-around as long on the timeouts as do DMA commands (which have to wait
-for *everything* to be transferred).
+rdev, unfortunately, isn't dead -- it lives on in the form of
+/proc/sys/kernel/real-root-dev, as I found out doing the klibc set.
 
-I'm guessing that this was the original concern of mine,
-way back in 1994 or whenever it was.
-
-Cheers
+	-hpa
